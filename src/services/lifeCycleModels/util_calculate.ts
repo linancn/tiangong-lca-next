@@ -12,11 +12,60 @@ import LCIAResultCalculation from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
 
+type Direction = 'INPUT' | 'OUTPUT';
+interface DbProcessMapValue {
+  id: string;
+  version: string;
+  exchanges: any[];
+  refExchangeMap: {
+    exchangeId: string;
+    flowId: string;
+    direction: Direction;
+    refExchange: any;
+  };
+}
+
+// Build fast lookup indices to avoid repeated finds/filters
+const dbProcessKey = (id?: string, version?: string) => `${id ?? ''}@${version ?? ''}`;
+
+// Pre-index processScalingFactors for O(1) lookups and per-node sums
+const processScalingFactorKey = (
+  direction: string,
+  flowUUID?: string,
+  dependenceNodeId?: string,
+  nodeId?: string,
+) => `${direction}|${flowUUID ?? ''}|${dependenceNodeId ?? ''}|${nodeId ?? ''}`;
+
+// Compute scalingFactor for a given edge using pre-indexed maps
+const getScalingFactorForEdge = (
+  ud: Up2DownEdge,
+  processScalingFactorMap: Map<string, number>,
+  sumScalingFactorByNodeId: Map<string, any>,
+): number => {
+  if (ud?.dependence === 'downstream') {
+    const k = processScalingFactorKey('downstream', ud?.flowUUID, ud?.downstreamId, ud?.upstreamId);
+    return processScalingFactorMap.get(k) ?? 0;
+  }
+  if (ud?.dependence === 'upstream') {
+    const k = processScalingFactorKey('upstream', ud?.flowUUID, ud?.upstreamId, ud?.downstreamId);
+    return processScalingFactorMap.get(k) ?? 0;
+  }
+  if (ud?.dependence === 'none') {
+    if (ud?.mainDependence === 'downstream') {
+      return sumScalingFactorByNodeId.get(ud?.upstreamId)?.scalingFactor ?? 0;
+    }
+    if (ud?.mainDependence === 'upstream') {
+      return sumScalingFactorByNodeId.get(ud?.downstreamId)?.scalingFactor ?? 0;
+    }
+  }
+  return 0;
+};
+
 // small helper: find first exchange by flow uuid + direction (case-insensitive)
 const findExchange = (
   exchanges: any[] | undefined,
   flowUUID: string | undefined,
-  requiredDirectionUpper: 'INPUT' | 'OUTPUT',
+  requiredDirectionUpper: Direction,
 ) => {
   if (!exchanges || !flowUUID) return undefined;
   for (const exchange of exchanges) {
@@ -30,166 +79,213 @@ const findExchange = (
   return undefined;
 };
 
-// Calculate scaling factors for processes connected to the current node, walking both
-// downstream (suppliers) and upstream (customers) by matching the shared flow UUID.
-// This function returns a flattened list of process nodes with their computed scalingFactor
-// and raw exchanges, to be grouped/allocated by callers.
-const calculateProcessScalingFactor = (
-  currentModelProcess: any,
-  currentDatabaseProcess: any,
-  dependence: any,
-  scalingFactor: number,
-  allUpstreamToDownstreamEdges: Up2DownEdge[],
-  modelProcesses: any[],
-  databaseProcesses: any[],
-) => {
-  const collectedProcesses: any[] = [];
-  const currentDatabaseProcessExchanges = jsonToList(currentDatabaseProcess?.exchange);
-  const currentNodeId = currentModelProcess?.['@dataSetInternalID'];
-
-  // Seed with the current process itself
-  collectedProcesses.push({
-    nodeId: currentNodeId,
-    dependence: dependence,
-    processId: currentDatabaseProcess.id,
-    processVersion: currentDatabaseProcess.version,
-    quantitativeReferenceFlowIndex:
-      currentDatabaseProcess?.quantitativeReference?.['referenceToReferenceFlow'],
-    scalingFactor: scalingFactor,
-    exchanges: currentDatabaseProcessExchanges,
-  });
-
-  // Single pass over edges: handle both directions without creating intermediate arrays
-  for (const edge of allUpstreamToDownstreamEdges) {
-    // 1) Walk to upstream model processes when current node depends on downstream (supplier relation)
-    if (edge?.downstreamId === currentNodeId && edge?.dependence === 'downstream') {
-      const upstreamModelProcess = modelProcesses.find(
-        (process: any) => process?.['@dataSetInternalID'] === edge?.upstreamId,
-      );
-      const upstreamDatabaseProcess = databaseProcesses.find(
-        (process: any) =>
-          process?.id === upstreamModelProcess?.referenceToProcess?.['@refObjectId'] &&
-          process?.version === upstreamModelProcess?.referenceToProcess?.['@version'],
-      );
-
-      if (upstreamModelProcess && upstreamDatabaseProcess) {
-        const currentInputExchange = findExchange(
-          currentDatabaseProcessExchanges,
-          edge?.flowUUID,
-          'INPUT',
-        );
-
-        const upstreamOutputExchange = findExchange(
-          jsonToList(upstreamDatabaseProcess?.exchange),
-          edge?.flowUUID,
-          'OUTPUT',
-        );
-
-        const upstreamMeanAmount = toAmountNumber(upstreamOutputExchange?.meanAmount);
-        const currentInputMeanAmount = toAmountNumber(currentInputExchange?.meanAmount);
-
-        let upstreamScalingFactor = 1;
-        if (upstreamMeanAmount !== 0) {
-          const upstreamTargetAmountBN =
-            currentInputMeanAmount !== 0 && scalingFactor !== 0
-              ? new BigNumber(currentInputMeanAmount).times(scalingFactor)
-              : null;
-          if (upstreamTargetAmountBN) {
-            upstreamScalingFactor = upstreamTargetAmountBN.div(upstreamMeanAmount).toNumber();
-          }
-        }
-
-        const upstreamProcesses = calculateProcessScalingFactor(
-          upstreamModelProcess,
-          upstreamDatabaseProcess,
-          {
-            direction: 'downstream',
-            nodeId: currentNodeId,
-            flowUUID: edge?.flowUUID,
-            // scalingFactor: upstreamScalingFactor,
-          },
-          upstreamScalingFactor,
-          allUpstreamToDownstreamEdges,
-          modelProcesses,
-          databaseProcesses,
-        );
-        if (upstreamProcesses && upstreamProcesses.length > 0) {
-          for (const p of upstreamProcesses) collectedProcesses.push(p);
-        }
-      }
+// Return the flowId with the maximum allocatedFraction among db exchanges
+// filtered by direction and allowed flow set. Single pass using comparePercentDesc.
+const selectMaxAllocatedFlowId = (
+  dbExchanges: any[] | undefined,
+  direction: Direction,
+  allowedFlowIds: Set<string>,
+): string => {
+  if (!dbExchanges || dbExchanges.length === 0 || allowedFlowIds.size === 0) return '';
+  let bestFlowId = '';
+  let bestAF: any = undefined;
+  for (const e of dbExchanges) {
+    const dir = String(e?.exchangeDirection ?? '').toUpperCase();
+    if (dir !== direction) continue;
+    const flowId = e?.referenceToFlowDataSet?.['@refObjectId'];
+    if (!flowId || !allowedFlowIds.has(flowId)) continue;
+    const af = e?.allocations?.allocation?.['@allocatedFraction'];
+    if (bestAF === undefined) {
+      bestAF = af;
+      bestFlowId = flowId;
+      continue;
     }
-
-    // 2) Walk to downstream model processes when current node depends on upstream (customer relation)
-    if (edge?.upstreamId === currentNodeId && edge?.dependence === 'upstream') {
-      const downstreamModelProcess = modelProcesses.find(
-        (process: any) => process?.['@dataSetInternalID'] === edge?.downstreamId,
-      );
-      const downstreamDatabaseProcess = databaseProcesses.find(
-        (process: any) =>
-          process?.id === downstreamModelProcess?.referenceToProcess?.['@refObjectId'] &&
-          process?.version === downstreamModelProcess?.referenceToProcess?.['@version'],
-      );
-      if (downstreamModelProcess && downstreamDatabaseProcess) {
-        const currentOutputExchange = findExchange(
-          currentDatabaseProcessExchanges,
-          edge?.flowUUID,
-          'OUTPUT',
-        );
-
-        const downstreamInputExchange = findExchange(
-          jsonToList(downstreamDatabaseProcess?.exchange),
-          edge?.flowUUID,
-          'INPUT',
-        );
-
-        const downstreamMeanAmount = toAmountNumber(downstreamInputExchange?.meanAmount);
-        const currentOutputMeanAmount = toAmountNumber(currentOutputExchange?.meanAmount);
-
-        let downstreamScalingFactor = 1;
-        if (downstreamMeanAmount !== 0) {
-          const downstreamTargetAmountBN =
-            currentOutputMeanAmount !== 0 && scalingFactor !== 0
-              ? new BigNumber(currentOutputMeanAmount).times(scalingFactor)
-              : null;
-          if (downstreamTargetAmountBN) {
-            downstreamScalingFactor = downstreamTargetAmountBN.div(downstreamMeanAmount).toNumber();
-          }
-        }
-
-        const downstreamProcesses = calculateProcessScalingFactor(
-          downstreamModelProcess,
-          downstreamDatabaseProcess,
-          {
-            direction: 'upstream',
-            nodeId: currentNodeId,
-            flowUUID: edge?.flowUUID,
-            // scalingFactor: downstreamScalingFactor,
-          },
-          downstreamScalingFactor,
-          allUpstreamToDownstreamEdges,
-          modelProcesses,
-          databaseProcesses,
-        );
-        if (downstreamProcesses && downstreamProcesses.length > 0) {
-          for (const p of downstreamProcesses) collectedProcesses.push(p);
-        }
+    // comparePercentDesc sorts in descending order; if a should come before b, it returns < 0
+    // So when comparePercentDesc(af, bestAF) < 0, af is larger than bestAF.
+    try {
+      if (comparePercentDesc(af, bestAF) < 0) {
+        bestAF = af;
+        bestFlowId = flowId;
       }
+    } catch {
+      // Fallback: keep current best on comparator issues
     }
   }
+  return bestFlowId;
+};
+
+// Decide main OUTPUT flowUUID for a modelled process' output exchanges.
+const getMainOutputFlowUUID = (
+  mdProcessOutputExchanges: any[],
+  dbProccess: DbProcessMapValue | undefined,
+): string => {
+  if (!mdProcessOutputExchanges || mdProcessOutputExchanges.length === 0) return '';
+  if (mdProcessOutputExchanges.length === 1) {
+    return mdProcessOutputExchanges[0]?.['@flowUUID'] ?? '';
+  }
+  const refExchange = dbProccess?.refExchangeMap;
+  if (refExchange && refExchange.direction === 'OUTPUT') {
+    // Prefer reference flow if it appears among mdProcess outputs
+    const ref = mdProcessOutputExchanges.find((o: any) => o?.['@flowUUID'] === refExchange.flowId);
+    if (ref) return ref?.['@flowUUID'] ?? '';
+  }
+
+  // Fallback: choose max allocated fraction among overlaps
+  const mdOutFlowIdSet = new Set(
+    mdProcessOutputExchanges.map((o: any) => o?.['@flowUUID'] ?? '').filter(Boolean),
+  );
+  return selectMaxAllocatedFlowId(dbProccess?.exchanges ?? [], 'OUTPUT', mdOutFlowIdSet);
+};
+
+// Decide main INPUT flowUUID for a node with multiple incoming edges.
+const getMainInputFlowUUID = (
+  inputEdges: Up2DownEdge[],
+  dbProccess: DbProcessMapValue | undefined,
+): string => {
+  if (!inputEdges || inputEdges.length === 0) return '';
+  if (inputEdges.length === 1) return inputEdges[0]?.flowUUID ?? '';
+
+  const refExchange = dbProccess?.refExchangeMap;
+  if (refExchange && refExchange.direction === 'INPUT') {
+    const refEdge = inputEdges.find((ie) => ie.flowUUID === refExchange.flowId);
+    if (refEdge) return refEdge.flowUUID ?? '';
+  }
+
+  const inputEdgeFlowIdSet = new Set(inputEdges.map((ie) => ie?.flowUUID ?? '').filter(Boolean));
+  const best = selectMaxAllocatedFlowId(dbProccess?.exchanges ?? [], 'INPUT', inputEdgeFlowIdSet);
+  return best ?? '';
+};
+
+const nextScaling = (targetAmount: number, baseAmount: number, curSF: number) => {
+  let result = 1;
+  if (baseAmount !== 0) {
+    const targetBN =
+      targetAmount !== 0 && curSF !== 0 ? new BigNumber(targetAmount).times(curSF) : null;
+    if (targetBN) {
+      result = targetBN.div(baseAmount).toNumber();
+    }
+  }
+  return result;
+};
+
+// Calculate scaling factors for processes connected to the current node, walking both
+// downstream (suppliers) and upstream (customers) by matching the shared flow UUID.
+// Use adjacency indices for O(degree) traversal; keep behavior with clearer, stack-based flow.
+const calculateProcessScalingFactor = (
+  currentModelProcess: any,
+  currentDatabaseProcess: DbProcessMapValue,
+  dependence: any,
+  scalingFactor: number,
+  edgesByDownstream: Map<string, Up2DownEdge[]>,
+  edgesByUpstream: Map<string, Up2DownEdge[]>,
+  mdProcessMap: Map<string, any>,
+  dbProcessMap: Map<string, DbProcessMapValue>,
+) => {
+  type Frame = {
+    md: any;
+    db: DbProcessMapValue;
+    dep: any;
+    sf: number;
+  };
+
+  const collectedProcesses: any[] = [];
+  const stack: Frame[] = [
+    { md: currentModelProcess, db: currentDatabaseProcess, dep: dependence, sf: scalingFactor },
+  ];
+
+  while (stack.length > 0) {
+    const { md, db, dep, sf } = stack.pop() as Frame;
+    const nodeId = md?.['@dataSetInternalID'];
+    const currentExs = jsonToList(db?.exchanges);
+
+    collectedProcesses.push({
+      nodeId: nodeId,
+      dependence: dep,
+      processId: db.id,
+      processVersion: db.version,
+      quantitativeReferenceFlowIndex: db?.refExchangeMap?.exchangeId,
+      scalingFactor: sf,
+      exchanges: currentExs,
+    });
+
+    const incomingEdges = edgesByDownstream.get(nodeId) ?? [];
+    for (const edge of incomingEdges) {
+      if (edge?.dependence !== 'downstream') continue;
+
+      const upstreamModelProcess = mdProcessMap.get(edge?.upstreamId);
+      if (!upstreamModelProcess) continue;
+
+      const upKey = dbProcessKey(
+        upstreamModelProcess?.referenceToProcess?.['@refObjectId'],
+        upstreamModelProcess?.referenceToProcess?.['@version'],
+      );
+      const upstreamDatabaseProcess = dbProcessMap.get(upKey);
+      if (!upstreamDatabaseProcess) continue;
+
+      const currentInputExchange = findExchange(currentExs, edge?.flowUUID, 'INPUT');
+      const upstreamExs = jsonToList(upstreamDatabaseProcess?.exchanges);
+      const upstreamOutputExchange = findExchange(upstreamExs, edge?.flowUUID, 'OUTPUT');
+
+      const upstreamMeanAmount = toAmountNumber(upstreamOutputExchange?.meanAmount);
+      const currentInputMeanAmount = toAmountNumber(currentInputExchange?.meanAmount);
+      const upstreamSF = nextScaling(currentInputMeanAmount, upstreamMeanAmount, sf);
+
+      stack.push({
+        md: upstreamModelProcess,
+        db: upstreamDatabaseProcess,
+        dep: { direction: 'downstream', nodeId: nodeId, flowUUID: edge?.flowUUID },
+        sf: upstreamSF,
+      });
+    }
+
+    const outgoingEdges = edgesByUpstream.get(nodeId) ?? [];
+    for (const edge of outgoingEdges) {
+      if (edge?.dependence !== 'upstream') continue;
+
+      const downstreamModelProcess = mdProcessMap.get(edge?.downstreamId);
+      if (!downstreamModelProcess) continue;
+
+      const downKey = dbProcessKey(
+        downstreamModelProcess?.referenceToProcess?.['@refObjectId'],
+        downstreamModelProcess?.referenceToProcess?.['@version'],
+      );
+      const downstreamDatabaseProcess = dbProcessMap.get(downKey);
+      if (!downstreamDatabaseProcess) continue;
+
+      const currentOutputExchange = findExchange(currentExs, edge?.flowUUID, 'OUTPUT');
+      const downstreamExs = jsonToList(downstreamDatabaseProcess?.exchanges);
+      const downstreamInputExchange = findExchange(downstreamExs, edge?.flowUUID, 'INPUT');
+
+      const downstreamMeanAmount = toAmountNumber(downstreamInputExchange?.meanAmount);
+      const currentOutputMeanAmount = toAmountNumber(currentOutputExchange?.meanAmount);
+      const downstreamSF = nextScaling(currentOutputMeanAmount, downstreamMeanAmount, sf);
+
+      stack.push({
+        md: downstreamModelProcess,
+        db: downstreamDatabaseProcess,
+        dep: { direction: 'upstream', nodeId: nodeId, flowUUID: edge?.flowUUID },
+        sf: downstreamSF,
+      });
+    }
+  }
+
   return collectedProcesses;
 };
 
-const allocatedProcess = (processes: any[]) => {
-  let childProcesses: any[] = [];
-  processes.forEach((p: any) => {
+const allocatedProcess = (processMap: Map<string, any>) => {
+  const childProcesses: any[] = [];
+
+  // Iterate map values directly; only Map<string, any> is supported
+  for (const p of processMap.values()) {
     const pExchanges = jsonToList(p?.exchanges ?? []);
     const allocatedExchanges: any[] = [];
     const nonAllocatedExchanges: any[] = [];
 
-    pExchanges.forEach((pExchange: any) => {
-      if (pExchange?.exchangeDirection?.toUpperCase() !== 'OUTPUT') {
+    for (const pExchange of pExchanges) {
+      const dir = String(pExchange?.exchangeDirection ?? '').toUpperCase();
+      if (dir !== 'OUTPUT') {
         nonAllocatedExchanges.push(pExchange);
-        return;
+        continue;
       }
 
       const allocations = jsonToList(pExchange?.allocations ?? []);
@@ -197,29 +293,25 @@ const allocatedProcess = (processes: any[]) => {
         const allocatedFractionStr = allocations[0]?.allocation?.['@allocatedFraction'] ?? '';
         const allocatedFraction = percentStringToNumber(allocatedFractionStr);
         if (allocatedFraction && allocatedFraction > 0) {
-          allocatedExchanges.push({
-            exchange: pExchange,
-            allocatedFraction: allocatedFraction,
-          });
-          return;
+          allocatedExchanges.push({ exchange: pExchange, allocatedFraction });
+          continue;
         }
       }
+
       if (pExchange['@dataSetInternalID'] !== p?.quantitativeReferenceFlowIndex) {
         nonAllocatedExchanges.push(pExchange);
       }
-    });
+    }
 
+    // If no allocated OUTPUT exchanges exist, fall back to reference output exchange
     if (allocatedExchanges.length === 0) {
       const refOutputExchange = pExchanges.find(
         (pe: any) =>
           pe['@dataSetInternalID'] === p?.quantitativeReferenceFlowIndex &&
-          pe?.exchangeDirection?.toUpperCase() === 'OUTPUT',
+          String(pe?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT',
       );
       if (refOutputExchange) {
-        allocatedExchanges.push({
-          exchange: refOutputExchange,
-          allocatedFraction: 1,
-        });
+        allocatedExchanges.push({ exchange: refOutputExchange, allocatedFraction: 1 });
       }
     }
 
@@ -230,7 +322,7 @@ const allocatedProcess = (processes: any[]) => {
 
       if (
         refExchange &&
-        refExchange?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
+        String(refExchange?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT' &&
         !allocatedExchanges.find(
           (ne: any) => ne?.exchange?.['@dataSetInternalID'] === refExchange?.['@dataSetInternalID'],
         )
@@ -238,8 +330,8 @@ const allocatedProcess = (processes: any[]) => {
         nonAllocatedExchanges.push(refExchange);
       }
 
-      allocatedExchanges.forEach((allocatedExchange: any) => {
-        const childProcess = {
+      for (const allocatedExchange of allocatedExchanges) {
+        childProcesses.push({
           ...p,
           isAllocated: true,
           allocatedExchangeId: allocatedExchange.exchange?.['@dataSetInternalID'],
@@ -247,21 +339,20 @@ const allocatedProcess = (processes: any[]) => {
             allocatedExchange.exchange?.referenceToFlowDataSet?.['@refObjectId'],
           allocatedFraction: allocatedExchange.allocatedFraction,
           exchanges: [...nonAllocatedExchanges, allocatedExchange.exchange],
-        };
-        childProcesses.push(childProcess);
-      });
+        });
+      }
     } else {
-      const childProcess = {
+      childProcesses.push({
         ...p,
         isAllocated: false,
         allocatedExchangeId: '',
         allocatedExchangeFlowId: '',
         allocatedFraction: 1,
         exchanges: nonAllocatedExchanges,
-      };
-      childProcesses.push(childProcess);
+      });
     }
-  });
+  }
+
   return childProcesses;
 };
 
@@ -317,23 +408,6 @@ const getFinalProductGroup = (
       ...finalProductProcess,
       childAllocatedFraction: newAllocatedFraction,
       childScalingPercentage: scalingPercentage,
-      // exchanges: finalProductProcess?.exchanges?.map((e: any) => {
-      //   if (e['@dataSetInternalID'] === finalProductProcess?.allocatedExchangeId) {
-      //     return {
-      //       ...e,
-      //       meanAmount: new BigNumber(e?.meanAmount).times(allocatedFraction).toNumber(),
-      //       resultingAmount: new BigNumber(e?.resultingAmount).times(allocatedFraction).toNumber(),
-      //     };
-      //   } else {
-      //     return {
-      //       ...e,
-      //       meanAmount: new BigNumber(e?.meanAmount).times(newAllocatedFraction).toNumber(),
-      //       resultingAmount: new BigNumber(e?.resultingAmount)
-      //         .times(newAllocatedFraction)
-      //         .toNumber(),
-      //     };
-      //   }
-      // }),
     });
 
     const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
@@ -395,6 +469,7 @@ const getFinalProductGroup = (
             newAllocatedFraction ?? 1,
             new BigNumber(edge?.scalingFactor ?? 1)
               .div(nextChildProcess?.scalingFactor ?? 1)
+              .times(scalingPercentage)
               .toNumber(),
             childProcesses,
             allUp2DownEdges,
@@ -498,13 +573,30 @@ const sumProcessExchange = (processExchanges: any[]) => {
 
 export async function genLifeCycleModelProcesses(
   id: string,
-  refNode: any,
+  refTargetAmount: number | null,
   data: any,
   oldSubmodels: any[],
 ) {
+  const refProcessNodeId =
+    data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess;
+
+  if (!refProcessNodeId) {
+    throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
+  }
+
   const mdProcesses = jsonToList(
     data?.lifeCycleModelInformation?.technology?.processes?.processInstance,
   );
+
+  // Fast lookup: model process by nodeId
+  const mdProcessMap = new Map<string, any>();
+  for (const p of mdProcesses as any[]) {
+    const nid = p?.['@dataSetInternalID'];
+    if (nid) mdProcessMap.set(nid, p);
+  }
+
+  const refMdProcess = mdProcessMap.get(refProcessNodeId);
+
   const processKeys = mdProcesses.map((p: any) => {
     return {
       id: p?.referenceToProcess?.['@refObjectId'],
@@ -531,28 +623,52 @@ export async function genLifeCycleModelProcesses(
             .or(orConditions)
         )?.data ?? []);
 
-  // Build fast lookup indices to avoid repeated finds/filters
-  const dbProcKey = (id?: string, version?: string) => `${id ?? ''}@${version ?? ''}`;
-  const dbProcMap = new Map<string, any>();
-  const dbExchangesMap = new Map<string, any[]>();
-  const dbRefInfoMap = new Map<
-    string,
-    { flowId: string; direction: 'INPUT' | 'OUTPUT'; ref?: any }
-  >();
+  const dbProcessMap = new Map<string, DbProcessMapValue>();
 
   for (const p of dbProcesses as any[]) {
-    const key = dbProcKey(p?.id, p?.version);
+    const key = dbProcessKey(p?.id, p?.version);
     const exchanges = jsonToList(p?.exchange);
-    dbProcMap.set(key, p);
-    dbExchangesMap.set(key, exchanges);
-    const ref = exchanges?.find(
-      (e: any) =>
-        e?.['@dataSetInternalID'] === (p?.quantitativeReference as any)?.referenceToReferenceFlow,
-    );
-    const flowId = ref?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
+    const refExchangeId = (p?.quantitativeReference as any)?.referenceToReferenceFlow ?? '';
+    const refExchange = exchanges?.find((e: any) => e?.['@dataSetInternalID'] === refExchangeId);
+    const flowId = refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
     const direction =
-      ((ref?.exchangeDirection ?? '') as string).toUpperCase() === 'INPUT' ? 'INPUT' : 'OUTPUT';
-    dbRefInfoMap.set(key, { flowId, direction: direction as 'INPUT' | 'OUTPUT', ref });
+      ((refExchange?.exchangeDirection ?? '') as string).toUpperCase() === 'INPUT'
+        ? 'INPUT'
+        : 'OUTPUT';
+
+    const newP = {
+      id: p.id,
+      version: p.version,
+      exchanges: exchanges,
+      refExchangeMap: {
+        exchangeId: refExchangeId,
+        flowId,
+        direction: direction as Direction,
+        refExchange,
+      },
+    };
+    dbProcessMap.set(key, newP);
+  }
+
+  const refProcessKey = dbProcessKey(
+    refMdProcess?.referenceToProcess?.['@refObjectId'],
+    refMdProcess?.referenceToProcess?.['@version'],
+  );
+
+  const refDbProcess = dbProcessMap.get(refProcessKey);
+  const refModelExchange = refDbProcess?.refExchangeMap;
+
+  if (!refDbProcess) {
+    throw new Error('Reference process not found in database');
+  }
+
+  const refModelMeanAmount = toAmountNumber(refModelExchange?.refExchange?.meanAmount);
+  const modelTargetAmount = refTargetAmount ?? refModelMeanAmount;
+
+  let refScalingFactor = 1;
+
+  if (refModelMeanAmount !== 0 && modelTargetAmount !== 0) {
+    refScalingFactor = new BigNumber(modelTargetAmount).div(refModelMeanAmount).toNumber();
   }
 
   let up2DownEdges: Up2DownEdge[] = [];
@@ -561,74 +677,14 @@ export async function genLifeCycleModelProcesses(
   const edgesByUpstream = new Map<string, Up2DownEdge[]>();
   for (const mdProcess of mdProcesses as any[]) {
     const mdProcessOutputExchanges = jsonToList(mdProcess?.connections?.outputExchange);
-    let mainOutputExchange = { '@flowUUID': '' } as { [k: string]: any };
-
-    if (mdProcessOutputExchanges?.length > 0) {
-      if (mdProcessOutputExchanges?.length === 1) {
-        mainOutputExchange = { '@flowUUID': mdProcessOutputExchanges[0]?.['@flowUUID'] ?? '' };
-      } else {
-        const key = dbProcKey(
-          mdProcess?.['referenceToProcess']?.['@refObjectId'],
-          mdProcess?.['referenceToProcess']?.['@version'],
-        );
-        const dbProcessExchanges = dbExchangesMap.get(key) ?? [];
-        const refInfo = dbRefInfoMap.get(key);
-
-        // Try reference flow if it's OUTPUT
-        if (refInfo && refInfo.direction === 'OUTPUT') {
-          const refMdProcessOutputExchange = mdProcessOutputExchanges.find(
-            (o: any) => o?.['@flowUUID'] === refInfo.flowId,
-          );
-          if (refMdProcessOutputExchange) {
-            mainOutputExchange = { '@flowUUID': refMdProcessOutputExchange?.['@flowUUID'] ?? '' };
-          } else {
-            // fallback to max allocated fraction among overlapping OUTPUT exchanges
-            const mdOutFlowIdSet = new Set(
-              mdProcessOutputExchanges.map((o: any) => o?.['@flowUUID'] ?? ''),
-            );
-            const fes = dbProcessExchanges.filter(
-              (e: any) =>
-                e?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
-                mdOutFlowIdSet.has(e?.referenceToFlowDataSet?.['@refObjectId']),
-            );
-            if (fes.length > 0) {
-              const allocatedFractions = fes.map(
-                (e: any) => e?.allocations?.allocation?.['@allocatedFraction'],
-              );
-              const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
-              const maxFlow = fes.find(
-                (e: any) => e?.allocations?.allocation?.['@allocatedFraction'] === maxAF,
-              );
-              mainOutputExchange = {
-                '@flowUUID': maxFlow?.referenceToFlowDataSet?.['@refObjectId'] ?? '',
-              };
-            }
-          }
-        } else {
-          // No usable reference as OUTPUT; choose by max allocated fraction among overlaps
-          const mdOutFlowIdSet = new Set(
-            mdProcessOutputExchanges.map((o: any) => o?.['@flowUUID'] ?? ''),
-          );
-          const fes = dbProcessExchanges.filter(
-            (e: any) =>
-              e?.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
-              mdOutFlowIdSet.has(e?.referenceToFlowDataSet?.['@refObjectId']),
-          );
-          if (fes.length > 0) {
-            const allocatedFractions = fes.map(
-              (e: any) => e?.allocations?.allocation?.['@allocatedFraction'],
-            );
-            const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
-            const maxFlow = fes.find(
-              (e: any) => e?.allocations?.allocation?.['@allocatedFraction'] === maxAF,
-            );
-            mainOutputExchange = {
-              '@flowUUID': maxFlow?.referenceToFlowDataSet?.['@refObjectId'] ?? '',
-            };
-          }
-        }
-      }
-    }
+    const dbKey = dbProcessKey(
+      mdProcess?.['referenceToProcess']?.['@refObjectId'],
+      mdProcess?.['referenceToProcess']?.['@version'],
+    );
+    const mainOutputFlowUUID = getMainOutputFlowUUID(
+      mdProcessOutputExchanges,
+      dbProcessMap.get(dbKey),
+    );
 
     for (const o of mdProcessOutputExchanges) {
       const downstreamList = jsonToList(o?.downstreamProcess);
@@ -637,7 +693,7 @@ export async function genLifeCycleModelProcesses(
           flowUUID: o?.['@flowUUID'],
           upstreamId: mdProcess?.['@dataSetInternalID'],
           downstreamId: dp?.['@id'],
-          mainOutputFlowUUID: mainOutputExchange?.['@flowUUID'],
+          mainOutputFlowUUID: mainOutputFlowUUID,
           mainInputFlowUUID: '',
         };
         up2DownEdges.push(nowUp2DownEdge);
@@ -661,67 +717,20 @@ export async function genLifeCycleModelProcesses(
     const inputEdges = edgesByDownstream.get(mdNodeId) ?? [];
 
     if (inputEdges.length > 0) {
-      const key = dbProcKey(
+      const key = dbProcessKey(
         mdProcess?.['referenceToProcess']?.['@refObjectId'],
         mdProcess?.['referenceToProcess']?.['@version'],
       );
-      if (inputEdges.length === 1) {
-        inputEdges[0].mainInputFlowUUID = inputEdges[0]?.flowUUID ?? '';
-      } else {
-        const dbProcessExchanges = dbExchangesMap.get(key) ?? [];
-        const refInfo = dbRefInfoMap.get(key);
-
-        let mainInputExchange = { '@flowUUID': '' } as { [k: string]: any };
-        let refInputEdge: Up2DownEdge | undefined;
-        if (refInfo && refInfo.direction === 'INPUT') {
-          refInputEdge = inputEdges.find((ie) => ie.flowUUID === refInfo.flowId);
-        }
-
-        if (refInputEdge) {
-          mainInputExchange = { '@flowUUID': refInputEdge?.flowUUID ?? '' };
-        } else {
-          const inputEdgeFlowIdSet = new Set(inputEdges.map((ie) => ie?.flowUUID ?? ''));
-          const fes = dbProcessExchanges.filter(
-            (e: any) =>
-              e?.exchangeDirection?.toUpperCase() === 'INPUT' &&
-              inputEdgeFlowIdSet.has(e?.referenceToFlowDataSet?.['@refObjectId']),
-          );
-          if (fes.length > 0) {
-            const allocatedFractions = fes.map(
-              (e: any) => e?.allocations?.allocation?.['@allocatedFraction'] ?? '',
-            );
-            const maxAF = allocatedFractions.sort(comparePercentDesc)[0];
-            if (maxAF !== '') {
-              const maxFlow = fes.find(
-                (e: any) => e?.allocations?.allocation?.['@allocatedFraction'] === maxAF,
-              );
-              const mainInputEdge = inputEdges.find(
-                (ie) => ie.flowUUID === maxFlow?.referenceToFlowDataSet?.['@refObjectId'],
-              );
-              if (mainInputEdge) {
-                mainInputExchange = { '@flowUUID': mainInputEdge?.flowUUID ?? '' };
-              }
-            }
-          }
-        }
-
-        for (const ie of inputEdges) {
-          ie.mainInputFlowUUID = mainInputExchange?.['@flowUUID'] ?? '';
-        }
+      const mainInputFlowUUID = getMainInputFlowUUID(inputEdges, dbProcessMap.get(key));
+      for (const ie of inputEdges) {
+        ie.mainInputFlowUUID = mainInputFlowUUID;
       }
     }
   }
 
-  const referenceToReferenceProcess =
-    data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess;
-
-  if (!referenceToReferenceProcess) {
-    throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
-  }
-
   let baseIds1: any[] = [];
-  baseIds1.push(referenceToReferenceProcess);
-  let direction1: 'OUTPUT' | 'INPUT' = 'OUTPUT';
+  baseIds1.push(refProcessNodeId);
+  let direction1: Direction = 'OUTPUT';
 
   while (true) {
     // Expand as far as possible in the current direction until no further nodes can be reached
@@ -830,970 +839,866 @@ export async function genLifeCycleModelProcesses(
     baseIds1 = nextBaseIds;
   }
 
-  const refMdProcess = mdProcesses.find(
-    (p: any) => p?.['@dataSetInternalID'] === referenceToReferenceProcess,
+  const processScalingFactors = calculateProcessScalingFactor(
+    refMdProcess,
+    refDbProcess,
+    {
+      direction: '',
+      nodeId: '',
+      flowUUID: '',
+    },
+    refScalingFactor,
+    edgesByDownstream,
+    edgesByUpstream,
+    mdProcessMap,
+    dbProcessMap,
   );
 
-  const refKey = dbProcKey(
-    refMdProcess?.referenceToProcess?.['@refObjectId'],
-    refMdProcess?.referenceToProcess?.['@version'],
-  );
-  const refDbProcess = (dbProcMap.get(refKey) as any) ?? undefined;
-  const refInfo = dbRefInfoMap.get(refKey);
+  const processScalingFactorMap = new Map<string, number>();
+  const sumScalingFactorByNodeId = new Map<string, any>();
+  for (const psf of processScalingFactors as any[]) {
+    const dir = psf?.dependence?.direction;
+    const flowUUID = psf?.dependence?.flowUUID;
+    const depNodeId = psf?.dependence?.nodeId;
+    const nodeId = psf?.nodeId;
+    const sf = psf?.scalingFactor ?? 0;
 
-  const thisRefFlow = refInfo?.ref
-    ? refInfo.ref
-    : refDbProcess?.exchange?.find(
-        (e: any) =>
-          refDbProcess?.quantitativeReference?.referenceToReferenceFlow ===
-          e?.['@dataSetInternalID'],
-      );
-
-  const thisRefMeanAmount = toAmountNumber(thisRefFlow?.meanAmount);
-  const targetAmountParsed = Number(refNode?.data?.targetAmount);
-  const targetAmount = Number.isFinite(targetAmountParsed) ? targetAmountParsed : thisRefMeanAmount;
-
-  let scalingFactor = 1;
-
-  if (thisRefMeanAmount !== 0 && targetAmount !== 0) {
-    scalingFactor = new BigNumber(targetAmount).div(thisRefMeanAmount).toNumber();
-  }
-  if (refMdProcess && refDbProcess) {
-    const processScalingFactors = calculateProcessScalingFactor(
-      refMdProcess,
-      refDbProcess,
-      {
-        direction: '',
-        nodeId: '',
-        flowUUID: '',
-      },
-      scalingFactor,
-      up2DownEdges,
-      mdProcesses,
-      dbProcesses,
-    );
-
-    // Pre-index processScalingFactors for O(1) lookups and per-node sums
-    const psfKey = (
-      direction: string,
-      flowUUID?: string,
-      dependenceNodeId?: string,
-      nodeId?: string,
-    ) => `${direction}|${flowUUID ?? ''}|${dependenceNodeId ?? ''}|${nodeId ?? ''}`;
-
-    const psfMap = new Map<string, number>();
-    const sumByNodeId = new Map<string, number>();
-    for (const psf of processScalingFactors as any[]) {
-      const dir = psf?.dependence?.direction;
-      const flowUUID = psf?.dependence?.flowUUID;
-      const depNodeId = psf?.dependence?.nodeId;
-      const nodeId = psf?.nodeId;
-      const sf = psf?.scalingFactor ?? 0;
-      if (dir && flowUUID && depNodeId && nodeId) {
-        const key = psfKey(dir, flowUUID, depNodeId, nodeId);
-        // preserve first-match behavior of Array.find
-        if (!psfMap.has(key)) psfMap.set(key, sf);
-      }
-      if (nodeId) sumByNodeId.set(nodeId, (sumByNodeId.get(nodeId) ?? 0) + sf);
+    if (dir && flowUUID && depNodeId && nodeId && sf !== 0) {
+      const key = processScalingFactorKey(dir, flowUUID, depNodeId, nodeId);
+      processScalingFactorMap.set(key, (processScalingFactorMap.get(key) ?? 0) + sf);
     }
+    if (nodeId && sf !== 0) {
+      const sumSF = sumScalingFactorByNodeId.get(nodeId) ?? { ...psf, scalingFactor: 0, count: 0 };
+      sumScalingFactorByNodeId.set(nodeId, {
+        ...sumSF,
+        scalingFactor: (sumSF?.scalingFactor ?? 0) + sf,
+        count: (sumSF?.count ?? 0) + 1,
+      });
+    }
+  }
 
-    const newUp2DownEdges = up2DownEdges.map((ud: Up2DownEdge) => {
-      if (ud?.dependence === 'downstream') {
-        const k = psfKey('downstream', ud?.flowUUID, ud?.downstreamId, ud?.upstreamId);
-        const sf = psfMap.get(k);
-        if (sf !== undefined) {
-          return { ...ud, scalingFactor: sf };
-        }
-      } else if (ud?.dependence === 'upstream') {
-        const k = psfKey('upstream', ud?.flowUUID, ud?.upstreamId, ud?.downstreamId);
-        const sf = psfMap.get(k);
-        if (sf !== undefined) {
-          return { ...ud, scalingFactor: sf };
-        }
-      } else if (ud?.dependence === 'none') {
-        if (ud?.mainDependence === 'downstream') {
-          const sum = sumByNodeId.get(ud?.upstreamId) ?? 0;
-          return { ...ud, scalingFactor: sum };
-        }
-        if (ud?.mainDependence === 'upstream') {
-          const sum = sumByNodeId.get(ud?.downstreamId) ?? 0;
-          return { ...ud, scalingFactor: sum };
-        }
-      }
-      return { ...ud, scalingFactor: 0 };
-    });
+  const newUp2DownEdges = up2DownEdges.map((ud: Up2DownEdge) => ({
+    ...ud,
+    scalingFactor: getScalingFactorForEdge(ud, processScalingFactorMap, sumScalingFactorByNodeId),
+  }));
 
-    const groupedProcesses: Record<string, any[]> = {};
-    processScalingFactors.forEach((npe: any) => {
-      if (!groupedProcesses[npe.nodeId]) {
-        groupedProcesses[npe.nodeId] = [];
-      }
-      groupedProcesses[npe.nodeId].push(npe);
-    });
+  const childProcesses = allocatedProcess(sumScalingFactorByNodeId);
 
-    const newProcesses = Object.values(groupedProcesses).map((group: any[]) => {
-      // const sumData = sumProcessExchange(group);
-      const sumScalingFactor = group.reduce((acc, curr) => {
-        return acc + (curr?.scalingFactor ?? 0);
-      }, 0);
-
-      return {
-        ...group[0],
-        scalingFactor: sumScalingFactor,
-      };
-    });
-
-    const childProcesses = allocatedProcess(newProcesses);
-
-    childProcesses.forEach((childProcess: any) => {
-      if (childProcess?.nodeId === referenceToReferenceProcess) {
+  childProcesses.forEach((childProcess: any) => {
+    if (childProcess?.nodeId === refProcessNodeId) {
+      childProcess.finalProductType = 'has';
+      return;
+    }
+    if (childProcess?.isAllocated) {
+      const downstreamEdges = newUp2DownEdges.filter(
+        (ud: Up2DownEdge) =>
+          ud?.upstreamId === childProcess?.nodeId &&
+          ud?.flowUUID === childProcess?.allocatedExchangeFlowId,
+      );
+      if (downstreamEdges.length === 0) {
         childProcess.finalProductType = 'has';
         return;
-      }
-      if (childProcess?.isAllocated) {
-        const downstreamEdges = newUp2DownEdges.filter(
-          (ud: Up2DownEdge) =>
-            ud?.upstreamId === childProcess?.nodeId &&
-            ud?.flowUUID === childProcess?.allocatedExchangeFlowId,
-        );
-        if (downstreamEdges.length === 0) {
-          childProcess.finalProductType = 'has';
-          return;
-        } else {
-          childProcess.finalProductType = 'unknown';
-          return;
-        }
       } else {
-        childProcess.finalProductType = 'no';
+        childProcess.finalProductType = 'unknown';
         return;
       }
-    });
-
-    let whileCount = 0;
-    let whileUnknown = true;
-    const unknownCount = childProcesses.filter(
-      (cpe: any) => cpe?.finalProductType === 'unknown',
-    )?.length;
-    while (whileUnknown) {
-      const unknownCPEs = childProcesses.filter((cpe: any) => cpe?.finalProductType === 'unknown');
-      unknownCPEs.forEach((cpe: any) => {
-        const finalProductType = hasFinalProductProcessExchange(
-          cpe,
-          newUp2DownEdges,
-          childProcesses,
-        );
-        cpe.finalProductType = finalProductType;
-      });
-      if (unknownCPEs.length === 0) {
-        whileUnknown = false;
-      }
-      whileCount++;
-      if (whileCount > 3 + (unknownCount ?? 0) * 3) {
-        console.error(`Too many iterations (${whileCount}), breaking out of the loop`);
-        whileUnknown = false;
-      }
+    } else {
+      childProcess.finalProductType = 'no';
+      return;
     }
+  });
 
-    const hasFinalProductProcesses = childProcesses.filter(
-      (cpe: any) => cpe?.finalProductType === 'has',
-    );
+  let whileCount = 0;
+  let whileUnknown = true;
+  const unknownCount = childProcesses.filter(
+    (cpe: any) => cpe?.finalProductType === 'unknown',
+  )?.length;
+  while (whileUnknown) {
+    const unknownCPEs = childProcesses.filter((cpe: any) => cpe?.finalProductType === 'unknown');
+    unknownCPEs.forEach((cpe: any) => {
+      const finalProductType = hasFinalProductProcessExchange(cpe, newUp2DownEdges, childProcesses);
+      cpe.finalProductType = finalProductType;
+    });
+    if (unknownCPEs.length === 0) {
+      whileUnknown = false;
+    }
+    whileCount++;
+    if (whileCount > 3 + (unknownCount ?? 0) * 3) {
+      console.error(`Too many iterations (${whileCount}), breaking out of the loop`);
+      whileUnknown = false;
+    }
+  }
 
-    const sumFinalProductGroups = await Promise.all(
-      hasFinalProductProcesses.map(async (hasFinalProductProcess: any) => {
-        const finalProductGroup = getFinalProductGroup(
-          hasFinalProductProcess,
-          1,
-          1,
-          childProcesses,
-          newUp2DownEdges,
-        );
+  const hasFinalProductProcesses = childProcesses.filter(
+    (cpe: any) => cpe?.finalProductType === 'has',
+  );
 
-        if (finalProductGroup?.length > 0) {
-          let newSumExchanges: any = [];
+  const inputFlowsByNodeId = new Map<string, Set<string>>();
+  const outputFlowsByNodeId = new Map<string, Set<string>>();
+  for (const ud of newUp2DownEdges as Up2DownEdge[]) {
+    if (!ud) continue;
+    if (ud.downstreamId && ud.flowUUID) {
+      const set = inputFlowsByNodeId.get(ud.downstreamId) ?? new Set<string>();
+      set.add(ud.flowUUID);
+      inputFlowsByNodeId.set(ud.downstreamId, set);
+    }
+    if (ud.upstreamId && ud.flowUUID) {
+      const set = outputFlowsByNodeId.get(ud.upstreamId) ?? new Set<string>();
+      set.add(ud.flowUUID);
+      outputFlowsByNodeId.set(ud.upstreamId, set);
+    }
+  }
 
-          const unconnectedProcessExchanges = finalProductGroup.map((npe: any) => {
-            const connectedInputFlowIds = newUp2DownEdges
-              .map((ud: Up2DownEdge) => {
-                if (ud?.downstreamId === npe?.nodeId) {
-                  return ud?.flowUUID;
-                }
-                return null;
-              })
-              .filter((flowUUID: any) => flowUUID !== null);
+  const sumFinalProductGroups = await Promise.all(
+    hasFinalProductProcesses.map(async (hasFinalProductProcess: any) => {
+      const finalProductGroup = getFinalProductGroup(
+        hasFinalProductProcess,
+        1,
+        1,
+        childProcesses,
+        newUp2DownEdges,
+      );
 
-            const connectedOutputFlowIds = newUp2DownEdges
-              .map((ud: Up2DownEdge) => {
-                if (ud?.upstreamId === npe?.nodeId) {
-                  return ud?.flowUUID;
-                }
-                return null;
-              })
-              .filter((flowUUID: any) => flowUUID !== null);
+      if (finalProductGroup?.length > 0) {
+        let newSumExchanges: any = [];
 
-            const npeExchanges = jsonToList(npe?.exchanges);
-            const unconnectedExchanges = npeExchanges
-              .map((e: any) => {
-                if (
-                  (e?.exchangeDirection ?? '').toUpperCase() === 'INPUT' &&
-                  connectedInputFlowIds.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
-                ) {
-                  return null;
-                }
-                if (
-                  (e?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT' &&
-                  connectedOutputFlowIds.includes(e?.referenceToFlowDataSet?.['@refObjectId'])
-                ) {
-                  return null;
-                }
-                return e;
-              })
-              .filter((item: any) => item !== null);
+        const unconnectedProcessExchanges = finalProductGroup.map((npe: any) => {
+          const nodeId = npe?.nodeId;
+          const connectedInputSet = nodeId
+            ? (inputFlowsByNodeId.get(nodeId) ?? new Set<string>())
+            : new Set<string>();
+          const connectedOutputSet = nodeId
+            ? (outputFlowsByNodeId.get(nodeId) ?? new Set<string>())
+            : new Set<string>();
 
+          const npeExchanges = jsonToList(npe?.exchanges);
+          const unconnectedExchanges = npeExchanges.filter((e: any) => {
+            const dir = String(e?.exchangeDirection ?? '').toUpperCase();
+            const flowId = e?.referenceToFlowDataSet?.['@refObjectId'];
+            if (!flowId) return true;
+            if (dir === 'INPUT' && connectedInputSet.has(flowId)) return false;
+            if (dir === 'OUTPUT' && connectedOutputSet.has(flowId)) return false;
+            return true;
+          });
+
+          return {
+            ...npe,
+            exchanges: unconnectedExchanges,
+          };
+        });
+
+        if (unconnectedProcessExchanges.length > 0) {
+          newSumExchanges = sumProcessExchange(unconnectedProcessExchanges).map(
+            (e: any, index: number) => {
+              return {
+                ...e,
+                meanAmount: toAmountNumber(e?.meanAmount),
+                resultingAmount: toAmountNumber(e?.resultingAmount),
+                '@dataSetInternalID': (index + 1).toString(),
+              };
+            },
+          );
+
+          const finalProductProcessExchange = unconnectedProcessExchanges.find(
+            (npe: any) => npe?.finalProductType === 'has',
+          );
+
+          let finalId: any = {
+            nodeId: finalProductProcessExchange?.nodeId ?? '',
+            processId: finalProductProcessExchange?.processId ?? '',
+          };
+          if (finalProductProcessExchange?.isAllocated) {
+            finalId = {
+              ...finalId,
+              allocatedExchangeFlowId: finalProductProcessExchange?.allocatedExchangeFlowId ?? '',
+              allocatedExchangeDirection:
+                finalProductProcessExchange?.allocatedExchangeDirection ?? '',
+            };
+          } else {
+            finalId = {
+              ...finalId,
+              referenceToFlowDataSet: {
+                '@refObjectId': refModelExchange?.flowId ?? '',
+                '@exchangeDirection': refModelExchange?.direction ?? '',
+              },
+            };
+          }
+
+          const isPrimaryGroup =
+            finalProductProcessExchange?.nodeId === refProcessNodeId &&
+            finalProductProcessExchange?.allocatedExchangeId === refModelExchange?.exchangeId;
+
+          let type: 'primary' | 'secondary' = isPrimaryGroup ? 'primary' : 'secondary';
+          let option: 'create' | 'update' = isPrimaryGroup ? 'update' : 'create';
+          let newId = isPrimaryGroup ? id : v4();
+
+          const refFlowId = refModelExchange?.flowId ?? '';
+          const refDirection = String(refModelExchange?.direction ?? '').toUpperCase();
+
+          const newExchanges = newSumExchanges.map((e: any) => {
+            const dir = String(e?.exchangeDirection ?? '').toUpperCase();
+            const flowId = e?.referenceToFlowDataSet?.['@refObjectId'];
+            const isRefMatch = isPrimaryGroup && flowId === refFlowId && dir === refDirection;
             return {
-              ...npe,
-              exchanges: unconnectedExchanges,
+              ...e,
+              allocatedFraction: undefined,
+              allocations: undefined,
+              meanAmount: (isRefMatch ? modelTargetAmount : e?.meanAmount)?.toString(),
+              resultingAmount: (isRefMatch ? modelTargetAmount : e?.resultingAmount)?.toString(),
             };
           });
 
-          if (unconnectedProcessExchanges.length > 0) {
-            newSumExchanges = sumProcessExchange(unconnectedProcessExchanges).map(
-              (e: any, index: number) => {
-                return {
-                  ...e,
-                  meanAmount: toAmountNumber(e?.meanAmount),
-                  resultingAmount: toAmountNumber(e?.resultingAmount),
-                  '@dataSetInternalID': (index + 1).toString(),
-                };
-              },
+          const LCIAResults = await LCIAResultCalculation(newExchanges);
+
+          // log execution time for LCIAResultCalculation
+          // const __lciaLabel = `[LCIA] LCIAResultCalculation (exchanges=${Array.isArray(newExchanges) ? newExchanges.length : 'n/a'}, type=${type}, id=${newId})`;
+          // console.time(__lciaLabel);
+          // let LCIAResults: any;
+          // try {
+          //   LCIAResults = await LCIAResultCalculation(newExchanges);
+          // } finally {
+          //   console.timeEnd(__lciaLabel);
+          // }
+
+          if (type === 'secondary') {
+            const oldProcesses = oldSubmodels?.find(
+              (o: any) =>
+                o.type === 'secondary' &&
+                o.finalId.nodeId === finalId.nodeId &&
+                o.finalId.processId === finalId.processId &&
+                o.finalId.allocatedExchangeDirection === finalId.allocatedExchangeDirection &&
+                o.finalId.allocatedExchangeFlowId === finalId.allocatedExchangeFlowId,
             );
-
-            const finalProductProcessExchange = unconnectedProcessExchanges.find(
-              (npe: any) => npe?.finalProductType === 'has',
-            );
-
-            let finalId: any = {
-              nodeId: finalProductProcessExchange?.nodeId ?? '',
-              processId: finalProductProcessExchange?.processId ?? '',
-            };
-            if (finalProductProcessExchange?.isAllocated) {
-              finalId = {
-                ...finalId,
-                allocatedExchangeFlowId: finalProductProcessExchange?.allocatedExchangeFlowId ?? '',
-                allocatedExchangeDirection:
-                  finalProductProcessExchange?.allocatedExchangeDirection ?? '',
-              };
-            } else {
-              finalId = {
-                ...finalId,
-                referenceToFlowDataSet: {
-                  '@refObjectId': thisRefFlow?.referenceToFlowDataSet?.['@refObjectId'] ?? '',
-                  '@exchangeDirection': thisRefFlow?.exchangeDirection ?? '',
-                },
-              };
+            if (oldProcesses && oldProcesses.id.length > 0) {
+              option = 'update';
+              newId = oldProcesses.id;
             }
-
-            let newId = v4();
-            let option = 'create';
-            let type = 'secondary';
-            const newExchanges = newSumExchanges?.map((e: any) => {
-              if (
-                finalProductProcessExchange?.nodeId === referenceToReferenceProcess &&
-                e?.referenceToFlowDataSet?.['@refObjectId'] ===
-                  thisRefFlow?.referenceToFlowDataSet?.['@refObjectId'] &&
-                e?.exchangeDirection?.toUpperCase() ===
-                  thisRefFlow?.exchangeDirection?.toUpperCase()
-              ) {
-                newId = id;
-                option = 'update';
-                type = 'primary';
-                return {
-                  ...e,
-                  allocatedFraction: undefined,
-                  allocations: undefined,
-                  meanAmount: targetAmount.toString(),
-                  resultingAmount: targetAmount.toString(),
-                };
-              } else {
-                if (
-                  finalProductProcessExchange?.isAllocated &&
-                  e?.referenceToFlowDataSet?.['@refObjectId'] ===
-                    finalProductProcessExchange?.allocatedExchangeFlowId &&
-                  e?.exchangeDirection?.toUpperCase() ===
-                    finalProductProcessExchange?.allocatedExchangeDirection?.toUpperCase()
-                ) {
-                  return {
-                    ...e,
-                    allocatedFraction: undefined,
-                    allocations: undefined,
-                    meanAmount: e?.meanAmount.toString(),
-                    resultingAmount: e?.resultingAmount.toString(),
-                  };
-                } else {
-                  return {
-                    ...e,
-                    allocatedFraction: undefined,
-                    allocations: undefined,
-                    meanAmount: e?.meanAmount.toString(),
-                    resultingAmount: e?.resultingAmount.toString(),
-                  };
-                }
-              }
-            });
-
-            const LCIAResults = await LCIAResultCalculation(newExchanges);
-
-            // log execution time for LCIAResultCalculation
-            // const __lciaLabel = `[LCIA] LCIAResultCalculation (exchanges=${Array.isArray(newExchanges) ? newExchanges.length : 'n/a'}, type=${type}, id=${newId})`;
-            // console.time(__lciaLabel);
-            // let LCIAResults: any;
-            // try {
-            //   LCIAResults = await LCIAResultCalculation(newExchanges);
-            // } finally {
-            //   console.timeEnd(__lciaLabel);
-            // }
-
-            if (type === 'secondary') {
-              const oldProcesses = oldSubmodels?.find(
-                (o: any) =>
-                  o.type === 'secondary' &&
-                  o.finalId.nodeId === finalId.nodeId &&
-                  o.finalId.processId === finalId.processId &&
-                  o.finalId.allocatedExchangeDirection === finalId.allocatedExchangeDirection &&
-                  o.finalId.allocatedExchangeFlowId === finalId.allocatedExchangeFlowId,
-              );
-              if (oldProcesses && oldProcesses.id.length > 0) {
-                option = 'update';
-                newId = oldProcesses.id;
-              }
-            }
-
-            const refExchange = newExchanges.find((e: any) => e?.quantitativeReference);
-
-            const subproductPrefix = [
-              { '@xml:lang': 'zh', '#text': '子产品: ' },
-              { '@xml:lang': 'en', '#text': 'Subproduct: ' },
-            ];
-            const subproductLeftBracket = [
-              { '@xml:lang': 'zh', '#text': '[' },
-              { '@xml:lang': 'en', '#text': '[' },
-            ];
-            const subproductRightBracket = [
-              { '@xml:lang': 'zh', '#text': '] ' },
-              { '@xml:lang': 'en', '#text': '] ' },
-            ];
-
-            const baseName =
-              type === 'primary'
-                ? data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName
-                : mergeLangArrays(
-                    subproductLeftBracket,
-                    subproductPrefix,
-                    jsonToList(refExchange?.referenceToFlowDataSet['common:shortDescription']),
-                    subproductRightBracket,
-                    jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
-                  );
-            const newData = removeEmptyObjects({
-              option: option,
-              modelInfo: {
-                id: newId,
-                type: type,
-                finalId: finalId,
-              },
-              data: {
-                processDataSet: {
-                  processInformation: {
-                    dataSetInformation: {
-                      'common:UUID': newId,
-                      name: {
-                        baseName: baseName,
-                        treatmentStandardsRoutes:
-                          data?.lifeCycleModelInformation?.dataSetInformation?.name
-                            ?.treatmentStandardsRoutes,
-                        mixAndLocationTypes:
-                          data?.lifeCycleModelInformation?.dataSetInformation?.name
-                            ?.mixAndLocationTypes,
-                        functionalUnitFlowProperties:
-                          data?.lifeCycleModelInformation?.dataSetInformation?.name
-                            ?.functionalUnitFlowProperties,
-                      },
-                      identifierOfSubDataSet:
-                        data?.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet,
-                      'common:synonyms':
-                        data?.lifeCycleModelInformation?.dataSetInformation?.['common:synonyms'],
-                      classificationInformation: {
-                        'common:classification': {
-                          'common:class':
-                            data?.lifeCycleModelInformation?.dataSetInformation
-                              ?.classificationInformation?.['common:classification']?.[
-                              'common:class'
-                            ],
-                        },
-                      },
-                      'common:generalComment':
-                        data?.lifeCycleModelInformation?.dataSetInformation?.[
-                          'common:generalComment'
-                        ],
-                      referenceToExternalDocumentation: {
-                        '@refObjectId':
-                          data?.lifeCycleModelInformation?.dataSetInformation
-                            ?.referenceToExternalDocumentation?.['@refObjectId'] ?? {},
-                        '@type':
-                          data?.lifeCycleModelInformation?.dataSetInformation
-                            ?.referenceToExternalDocumentation?.['@type'] ?? {},
-                        '@uri':
-                          data?.lifeCycleModelInformation?.dataSetInformation
-                            ?.referenceToExternalDocumentation?.['@uri'] ?? {},
-                        '@version':
-                          data?.lifeCycleModelInformation?.dataSetInformation
-                            ?.referenceToExternalDocumentation?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.lifeCycleModelInformation?.dataSetInformation
-                            ?.referenceToExternalDocumentation?.['common:shortDescription'],
-                      },
-                    },
-                    // quantitativeReference: {
-                    //   '@type': refDbProcess?.quantitativeReference?.['@type'],
-                    //   referenceToReferenceFlow: referenceToReferenceFlow?.['@dataSetInternalID'],
-                    //   functionalUnitOrOther:
-                    //     refDbProcess?.quantitativeReference?.functionalUnitOrOther,
-                    // },
-                    time: {
-                      'common:referenceYear':
-                        data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
-                      'common:dataSetValidUntil':
-                        data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'],
-                      'common:timeRepresentativenessDescription':
-                        data?.lifeCycleModelInformation?.time?.[
-                          'common:timeRepresentativenessDescription'
-                        ],
-                    },
-                    geography: {
-                      locationOfOperationSupplyOrProduction: {
-                        '@location':
-                          data?.lifeCycleModelInformation?.geography
-                            ?.locationOfOperationSupplyOrProduction?.['@location'] === 'NULL'
-                            ? {}
-                            : (data?.lifeCycleModelInformation?.geography
-                                ?.locationOfOperationSupplyOrProduction?.['@location'] ?? {}),
-                        descriptionOfRestrictions:
-                          data?.lifeCycleModelInformation?.geography
-                            ?.locationOfOperationSupplyOrProduction?.descriptionOfRestrictions,
-                      },
-                      subLocationOfOperationSupplyOrProduction: {
-                        '@subLocation':
-                          data?.lifeCycleModelInformation?.geography
-                            ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'] === 'NULL'
-                            ? {}
-                            : (data?.lifeCycleModelInformation?.geography
-                                ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'] ?? {}),
-                        descriptionOfRestrictions:
-                          data?.lifeCycleModelInformation?.geography
-                            ?.subLocationOfOperationSupplyOrProduction?.descriptionOfRestrictions,
-                      },
-                    },
-                    technology: {
-                      technologyDescriptionAndIncludedProcesses:
-                        data?.lifeCycleModelInformation?.technology
-                          ?.technologyDescriptionAndIncludedProcesses,
-                      technologicalApplicability:
-                        data?.lifeCycleModelInformation?.technology?.technologicalApplicability,
-                      referenceToTechnologyPictogramme: {
-                        '@type':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyPictogramme?.['@type'],
-                        '@refObjectId':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyPictogramme?.['@refObjectId'],
-                        '@version':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyPictogramme?.['@version'],
-                        '@uri':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyPictogramme?.['@uri'],
-                        'common:shortDescription':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyPictogramme?.['common:shortDescription'],
-                      },
-                      referenceToTechnologyFlowDiagrammOrPicture: {
-                        '@type':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'],
-                        '@version':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'],
-                        '@refObjectId':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'],
-                        '@uri':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'],
-                        'common:shortDescription':
-                          data?.lifeCycleModelInformation?.technology
-                            ?.referenceToTechnologyFlowDiagrammOrPicture?.[
-                            'common:shortDescription'
-                          ],
-                      },
-                    },
-                    mathematicalRelations: {
-                      modelDescription:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.modelDescription,
-                      variableParameter: {
-                        '@name':
-                          data?.lifeCycleModelInformation?.mathematicalRelations
-                            ?.variableParameter?.['@name'],
-                        formula:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.formula,
-                        meanValue:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.meanValue,
-                        minimumValue:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.minimumValue,
-                        maximumValue:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.maximumValue,
-                        uncertaintyDistributionType:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.uncertaintyDistributionType,
-                        relativeStandardDeviation95In:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.relativeStandardDeviation95In,
-                        comment:
-                          data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                            ?.comment,
-                      },
-                    },
-                  },
-                  modellingAndValidation: {
-                    LCIMethodAndAllocation: {
-                      typeOfDataSet:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? {},
-                      LCIMethodPrinciple:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ??
-                        {},
-                      deviationsFromLCIMethodPrinciple:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.deviationsFromLCIMethodPrinciple,
-                      LCIMethodApproaches:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ??
-                        {},
-                      deviationsFromLCIMethodApproaches:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.deviationsFromLCIMethodApproaches,
-                      modellingConstants:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants,
-                      deviationsFromModellingConstants:
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.deviationsFromModellingConstants,
-                      referenceToLCAMethodDetails: {
-                        '@type':
-                          data?.modellingAndValidation?.LCIMethodAndAllocation
-                            ?.referenceToLCAMethodDetails?.['@type'] ?? {},
-                        '@refObjectId':
-                          data?.modellingAndValidation?.LCIMethodAndAllocation
-                            ?.referenceToLCAMethodDetails?.['@refObjectId'] ?? {},
-                        '@uri':
-                          data?.modellingAndValidation?.LCIMethodAndAllocation
-                            ?.referenceToLCAMethodDetails?.['@uri'] ?? {},
-                        '@version':
-                          data?.modellingAndValidation?.LCIMethodAndAllocation
-                            ?.referenceToLCAMethodDetails?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.modellingAndValidation?.LCIMethodAndAllocation
-                            ?.referenceToLCAMethodDetails?.['common:shortDescription'],
-                      },
-                    },
-                    dataSourcesTreatmentAndRepresentativeness: {
-                      dataCutOffAndCompletenessPrinciples:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.dataCutOffAndCompletenessPrinciples,
-                      deviationsFromCutOffAndCompletenessPrinciples:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.deviationsFromCutOffAndCompletenessPrinciples,
-                      dataSelectionAndCombinationPrinciples:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.dataSelectionAndCombinationPrinciples,
-                      deviationsFromSelectionAndCombinationPrinciples:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.deviationsFromSelectionAndCombinationPrinciples,
-                      dataTreatmentAndExtrapolationsPrinciples:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.dataTreatmentAndExtrapolationsPrinciples,
-                      deviationsFromTreatmentAndExtrapolationPrinciples:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.deviationsFromTreatmentAndExtrapolationPrinciples,
-                      referenceToDataHandlingPrinciples: {
-                        '@type':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataHandlingPrinciples?.['@type'] ?? {},
-                        '@refObjectId':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ?? {},
-                        '@uri':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataHandlingPrinciples?.['@uri'] ?? {},
-                        '@version':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
-                      },
-                      referenceToDataSource: {
-                        '@type':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataSource?.['@type'] ?? {},
-                        '@version':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataSource?.['@version'] ?? {},
-                        '@refObjectId':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataSource?.['@refObjectId'] ?? {},
-                        '@uri':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataSource?.['@uri'] ?? {},
-                        'common:shortDescription':
-                          data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                            ?.referenceToDataSource?.['common:shortDescription'],
-                      },
-                      percentageSupplyOrProductionCovered:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.percentageSupplyOrProductionCovered ?? {},
-                      annualSupplyOrProductionVolume:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.annualSupplyOrProductionVolume,
-                      samplingProcedure:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.samplingProcedure,
-                      dataCollectionPeriod:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.dataCollectionPeriod,
-                      uncertaintyAdjustments:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.uncertaintyAdjustments,
-                      useAdviceForDataSet:
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.useAdviceForDataSet,
-                    },
-                    completeness: {
-                      completenessProductModel:
-                        data?.modellingAndValidation?.completeness?.completenessProductModel,
-                      completenessElementaryFlows: {
-                        '@type':
-                          data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                            '@type'
-                          ],
-                        '@value':
-                          data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                            '@value'
-                          ],
-                      },
-                      completenessOtherProblemField:
-                        data?.modellingAndValidation?.completeness?.completenessOtherProblemField,
-                      // completenessDescription: getLangJson(
-                      //   data?.modellingAndValidation?.completeness?.completenessDescription,
-                      // ),
-                    },
-                    validation: { ...data?.modellingAndValidation?.validation },
-                    complianceDeclarations: {
-                      ...data?.modellingAndValidation?.complianceDeclarations,
-                    },
-                  },
-                  administrativeInformation: {
-                    ['common:commissionerAndGoal']: {
-                      'common:referenceToCommissioner': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                            'common:referenceToCommissioner'
-                          ]?.['@refObjectId'] ?? {},
-                        '@type':
-                          data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                            'common:referenceToCommissioner'
-                          ]?.['@type'] ?? {},
-                        '@uri':
-                          data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                            'common:referenceToCommissioner'
-                          ]?.['@uri'] ?? {},
-                        '@version':
-                          data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                            'common:referenceToCommissioner'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                            'common:referenceToCommissioner'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:project':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                          'common:project'
-                        ],
-                      'common:intendedApplications':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                          'common:intendedApplications'
-                        ],
-                    },
-                    dataGenerator: {
-                      'common:referenceToPersonOrEntityGeneratingTheDataSet': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.dataGenerator?.[
-                            'common:referenceToPersonOrEntityGeneratingTheDataSet'
-                          ]?.['@refObjectId'],
-                        '@type':
-                          data?.administrativeInformation?.dataGenerator?.[
-                            'common:referenceToPersonOrEntityGeneratingTheDataSet'
-                          ]?.['@type'],
-                        '@uri':
-                          data?.administrativeInformation?.dataGenerator?.[
-                            'common:referenceToPersonOrEntityGeneratingTheDataSet'
-                          ]?.['@uri'],
-                        '@version':
-                          data?.administrativeInformation?.dataGenerator?.[
-                            'common:referenceToPersonOrEntityGeneratingTheDataSet'
-                          ]?.['@version'],
-                        'common:shortDescription':
-                          data?.administrativeInformation?.dataGenerator?.[
-                            'common:referenceToPersonOrEntityGeneratingTheDataSet'
-                          ]?.['common:shortDescription'],
-                      },
-                    },
-                    dataEntryBy: {
-                      'common:timeStamp':
-                        data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
-                      'common:referenceToDataSetFormat': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetFormat'
-                          ]?.['@refObjectId'],
-                        '@type':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetFormat'
-                          ]?.['@type'],
-                        '@uri':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetFormat'
-                          ]?.['@uri'],
-                        '@version':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetFormat'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetFormat'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:referenceToConvertedOriginalDataSetFrom': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToConvertedOriginalDataSetFrom'
-                          ]?.['@refObjectId'],
-                        '@type':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToConvertedOriginalDataSetFrom'
-                          ]?.['@type'],
-                        '@uri':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToConvertedOriginalDataSetFrom'
-                          ]?.['@uri'],
-                        '@version':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToConvertedOriginalDataSetFrom'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToConvertedOriginalDataSetFrom'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:referenceToPersonOrEntityEnteringTheData': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToPersonOrEntityEnteringTheData'
-                          ]?.['@refObjectId'],
-                        '@type':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToPersonOrEntityEnteringTheData'
-                          ]?.['@type'],
-                        '@uri':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToPersonOrEntityEnteringTheData'
-                          ]?.['@uri'],
-                        '@version':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToPersonOrEntityEnteringTheData'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToPersonOrEntityEnteringTheData'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:referenceToDataSetUseApproval': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetUseApproval'
-                          ]?.['@refObjectId'],
-                        '@type':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetUseApproval'
-                          ]?.['@type'],
-                        '@uri':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetUseApproval'
-                          ]?.['@uri'],
-                        '@version':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetUseApproval'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.dataEntryBy?.[
-                            'common:referenceToDataSetUseApproval'
-                          ]?.['common:shortDescription'],
-                      },
-                    },
-                    publicationAndOwnership: {
-                      'common:dateOfLastRevision':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:dateOfLastRevision'
-                        ] ?? {},
-                      'common:dataSetVersion':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:dataSetVersion'
-                        ],
-                      'common:permanentDataSetURI':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:permanentDataSetURI'
-                        ] ?? {},
-                      'common:workflowAndPublicationStatus':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:workflowAndPublicationStatus'
-                        ] ?? {},
-                      'common:referenceToUnchangedRepublication': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToUnchangedRepublication'
-                          ]?.['@refObjectId'] ?? {},
-                        '@type':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToUnchangedRepublication'
-                          ]?.['@type'] ?? {},
-                        '@uri':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToUnchangedRepublication'
-                          ]?.['@uri'] ?? {},
-                        '@version':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToUnchangedRepublication'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToUnchangedRepublication'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:referenceToRegistrationAuthority': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToRegistrationAuthority'
-                          ]?.['@refObjectId'] ?? {},
-                        '@type':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToRegistrationAuthority'
-                          ]?.['@type'] ?? {},
-                        '@uri':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToRegistrationAuthority'
-                          ]?.['@uri'] ?? {},
-                        '@version':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToRegistrationAuthority'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToRegistrationAuthority'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:registrationNumber':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:registrationNumber'
-                        ] ?? {},
-                      'common:referenceToOwnershipOfDataSet': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToOwnershipOfDataSet'
-                          ]?.['@refObjectId'],
-                        '@type':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToOwnershipOfDataSet'
-                          ]?.['@type'],
-                        '@uri':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToOwnershipOfDataSet'
-                          ]?.['@uri'],
-                        '@version':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToOwnershipOfDataSet'
-                          ]?.['@version'],
-                        'common:shortDescription':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToOwnershipOfDataSet'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:copyright':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:copyright'
-                        ],
-                      'common:referenceToEntitiesWithExclusiveAccess': {
-                        '@refObjectId':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToEntitiesWithExclusiveAccess'
-                          ]?.['@refObjectId'] ?? {},
-                        '@type':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToEntitiesWithExclusiveAccess'
-                          ]?.['@type'] ?? {},
-                        '@uri':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToEntitiesWithExclusiveAccess'
-                          ]?.['@uri'] ?? {},
-                        '@version':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToEntitiesWithExclusiveAccess'
-                          ]?.['@version'] ?? {},
-                        'common:shortDescription':
-                          data?.administrativeInformation?.publicationAndOwnership?.[
-                            'common:referenceToEntitiesWithExclusiveAccess'
-                          ]?.['common:shortDescription'],
-                      },
-                      'common:licenseType':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:licenseType'
-                        ],
-                      'common:accessRestrictions':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:accessRestrictions'
-                        ],
-                    },
-                  },
-                  exchanges: {
-                    exchange: newExchanges,
-                  },
-                  LCIAResults: {
-                    LCIAResult: LCIAResults,
-                  },
-                },
-              },
-            });
-
-            // if(type==='primary'){
-            //   console.log('primary newData', newData);
-            // }
-
-            return newData;
           }
-        }
-        return null;
-      }),
-    );
 
-    return sumFinalProductGroups.filter((item) => item !== null);
-  }
-  return [];
+          const refExchange = newExchanges.find((e: any) => e?.quantitativeReference);
+
+          const subproductPrefix = [
+            { '@xml:lang': 'zh', '#text': '子产品: ' },
+            { '@xml:lang': 'en', '#text': 'Subproduct: ' },
+          ];
+          const subproductLeftBracket = [
+            { '@xml:lang': 'zh', '#text': '[' },
+            { '@xml:lang': 'en', '#text': '[' },
+          ];
+          const subproductRightBracket = [
+            { '@xml:lang': 'zh', '#text': '] ' },
+            { '@xml:lang': 'en', '#text': '] ' },
+          ];
+
+          const baseName =
+            type === 'primary'
+              ? data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName
+              : mergeLangArrays(
+                  subproductLeftBracket,
+                  subproductPrefix,
+                  jsonToList(refExchange?.referenceToFlowDataSet['common:shortDescription']),
+                  subproductRightBracket,
+                  jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
+                );
+          const newData = removeEmptyObjects({
+            option: option,
+            modelInfo: {
+              id: newId,
+              type: type,
+              finalId: finalId,
+            },
+            data: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    'common:UUID': newId,
+                    name: {
+                      baseName: baseName,
+                      treatmentStandardsRoutes:
+                        data?.lifeCycleModelInformation?.dataSetInformation?.name
+                          ?.treatmentStandardsRoutes,
+                      mixAndLocationTypes:
+                        data?.lifeCycleModelInformation?.dataSetInformation?.name
+                          ?.mixAndLocationTypes,
+                      functionalUnitFlowProperties:
+                        data?.lifeCycleModelInformation?.dataSetInformation?.name
+                          ?.functionalUnitFlowProperties,
+                    },
+                    identifierOfSubDataSet:
+                      data?.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet,
+                    'common:synonyms':
+                      data?.lifeCycleModelInformation?.dataSetInformation?.['common:synonyms'],
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class':
+                          data?.lifeCycleModelInformation?.dataSetInformation
+                            ?.classificationInformation?.['common:classification']?.[
+                            'common:class'
+                          ],
+                      },
+                    },
+                    'common:generalComment':
+                      data?.lifeCycleModelInformation?.dataSetInformation?.[
+                        'common:generalComment'
+                      ],
+                    referenceToExternalDocumentation: {
+                      '@refObjectId':
+                        data?.lifeCycleModelInformation?.dataSetInformation
+                          ?.referenceToExternalDocumentation?.['@refObjectId'] ?? {},
+                      '@type':
+                        data?.lifeCycleModelInformation?.dataSetInformation
+                          ?.referenceToExternalDocumentation?.['@type'] ?? {},
+                      '@uri':
+                        data?.lifeCycleModelInformation?.dataSetInformation
+                          ?.referenceToExternalDocumentation?.['@uri'] ?? {},
+                      '@version':
+                        data?.lifeCycleModelInformation?.dataSetInformation
+                          ?.referenceToExternalDocumentation?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.lifeCycleModelInformation?.dataSetInformation
+                          ?.referenceToExternalDocumentation?.['common:shortDescription'],
+                    },
+                  },
+                  // quantitativeReference: {
+                  //   '@type': refDbProcess?.quantitativeReference?.['@type'],
+                  //   referenceToReferenceFlow: referenceToReferenceFlow?.['@dataSetInternalID'],
+                  //   functionalUnitOrOther:
+                  //     refDbProcess?.quantitativeReference?.functionalUnitOrOther,
+                  // },
+                  time: {
+                    'common:referenceYear':
+                      data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
+                    'common:dataSetValidUntil':
+                      data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'],
+                    'common:timeRepresentativenessDescription':
+                      data?.lifeCycleModelInformation?.time?.[
+                        'common:timeRepresentativenessDescription'
+                      ],
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location':
+                        data?.lifeCycleModelInformation?.geography
+                          ?.locationOfOperationSupplyOrProduction?.['@location'] === 'NULL'
+                          ? {}
+                          : (data?.lifeCycleModelInformation?.geography
+                              ?.locationOfOperationSupplyOrProduction?.['@location'] ?? {}),
+                      descriptionOfRestrictions:
+                        data?.lifeCycleModelInformation?.geography
+                          ?.locationOfOperationSupplyOrProduction?.descriptionOfRestrictions,
+                    },
+                    subLocationOfOperationSupplyOrProduction: {
+                      '@subLocation':
+                        data?.lifeCycleModelInformation?.geography
+                          ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'] === 'NULL'
+                          ? {}
+                          : (data?.lifeCycleModelInformation?.geography
+                              ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'] ?? {}),
+                      descriptionOfRestrictions:
+                        data?.lifeCycleModelInformation?.geography
+                          ?.subLocationOfOperationSupplyOrProduction?.descriptionOfRestrictions,
+                    },
+                  },
+                  technology: {
+                    technologyDescriptionAndIncludedProcesses:
+                      data?.lifeCycleModelInformation?.technology
+                        ?.technologyDescriptionAndIncludedProcesses,
+                    technologicalApplicability:
+                      data?.lifeCycleModelInformation?.technology?.technologicalApplicability,
+                    referenceToTechnologyPictogramme: {
+                      '@type':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyPictogramme?.['@type'],
+                      '@refObjectId':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyPictogramme?.['@refObjectId'],
+                      '@version':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyPictogramme?.['@version'],
+                      '@uri':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyPictogramme?.['@uri'],
+                      'common:shortDescription':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyPictogramme?.['common:shortDescription'],
+                    },
+                    referenceToTechnologyFlowDiagrammOrPicture: {
+                      '@type':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'],
+                      '@version':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'],
+                      '@refObjectId':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'],
+                      '@uri':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'],
+                      'common:shortDescription':
+                        data?.lifeCycleModelInformation?.technology
+                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['common:shortDescription'],
+                    },
+                  },
+                  mathematicalRelations: {
+                    modelDescription:
+                      data?.lifeCycleModelInformation?.mathematicalRelations?.modelDescription,
+                    variableParameter: {
+                      '@name':
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.[
+                          '@name'
+                        ],
+                      formula:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.formula,
+                      meanValue:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.meanValue,
+                      minimumValue:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.minimumValue,
+                      maximumValue:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.maximumValue,
+                      uncertaintyDistributionType:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.uncertaintyDistributionType,
+                      relativeStandardDeviation95In:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.relativeStandardDeviation95In,
+                      comment:
+                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                          ?.comment,
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? {},
+                    LCIMethodPrinciple:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ??
+                      {},
+                    deviationsFromLCIMethodPrinciple:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation
+                        ?.deviationsFromLCIMethodPrinciple,
+                    LCIMethodApproaches:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ??
+                      {},
+                    deviationsFromLCIMethodApproaches:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation
+                        ?.deviationsFromLCIMethodApproaches,
+                    modellingConstants:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants,
+                    deviationsFromModellingConstants:
+                      data?.modellingAndValidation?.LCIMethodAndAllocation
+                        ?.deviationsFromModellingConstants,
+                    referenceToLCAMethodDetails: {
+                      '@type':
+                        data?.modellingAndValidation?.LCIMethodAndAllocation
+                          ?.referenceToLCAMethodDetails?.['@type'] ?? {},
+                      '@refObjectId':
+                        data?.modellingAndValidation?.LCIMethodAndAllocation
+                          ?.referenceToLCAMethodDetails?.['@refObjectId'] ?? {},
+                      '@uri':
+                        data?.modellingAndValidation?.LCIMethodAndAllocation
+                          ?.referenceToLCAMethodDetails?.['@uri'] ?? {},
+                      '@version':
+                        data?.modellingAndValidation?.LCIMethodAndAllocation
+                          ?.referenceToLCAMethodDetails?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.modellingAndValidation?.LCIMethodAndAllocation
+                          ?.referenceToLCAMethodDetails?.['common:shortDescription'],
+                    },
+                  },
+                  dataSourcesTreatmentAndRepresentativeness: {
+                    dataCutOffAndCompletenessPrinciples:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.dataCutOffAndCompletenessPrinciples,
+                    deviationsFromCutOffAndCompletenessPrinciples:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.deviationsFromCutOffAndCompletenessPrinciples,
+                    dataSelectionAndCombinationPrinciples:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.dataSelectionAndCombinationPrinciples,
+                    deviationsFromSelectionAndCombinationPrinciples:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.deviationsFromSelectionAndCombinationPrinciples,
+                    dataTreatmentAndExtrapolationsPrinciples:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.dataTreatmentAndExtrapolationsPrinciples,
+                    deviationsFromTreatmentAndExtrapolationPrinciples:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.deviationsFromTreatmentAndExtrapolationPrinciples,
+                    referenceToDataHandlingPrinciples: {
+                      '@type':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataHandlingPrinciples?.['@type'] ?? {},
+                      '@refObjectId':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ?? {},
+                      '@uri':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataHandlingPrinciples?.['@uri'] ?? {},
+                      '@version':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
+                    },
+                    referenceToDataSource: {
+                      '@type':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataSource?.['@type'] ?? {},
+                      '@version':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataSource?.['@version'] ?? {},
+                      '@refObjectId':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataSource?.['@refObjectId'] ?? {},
+                      '@uri':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataSource?.['@uri'] ?? {},
+                      'common:shortDescription':
+                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                          ?.referenceToDataSource?.['common:shortDescription'],
+                    },
+                    percentageSupplyOrProductionCovered:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.percentageSupplyOrProductionCovered ?? {},
+                    annualSupplyOrProductionVolume:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.annualSupplyOrProductionVolume,
+                    samplingProcedure:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.samplingProcedure,
+                    dataCollectionPeriod:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.dataCollectionPeriod,
+                    uncertaintyAdjustments:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.uncertaintyAdjustments,
+                    useAdviceForDataSet:
+                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        ?.useAdviceForDataSet,
+                  },
+                  completeness: {
+                    completenessProductModel:
+                      data?.modellingAndValidation?.completeness?.completenessProductModel,
+                    completenessElementaryFlows: {
+                      '@type':
+                        data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                          '@type'
+                        ],
+                      '@value':
+                        data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                          '@value'
+                        ],
+                    },
+                    completenessOtherProblemField:
+                      data?.modellingAndValidation?.completeness?.completenessOtherProblemField,
+                    // completenessDescription: getLangJson(
+                    //   data?.modellingAndValidation?.completeness?.completenessDescription,
+                    // ),
+                  },
+                  validation: { ...data?.modellingAndValidation?.validation },
+                  complianceDeclarations: {
+                    ...data?.modellingAndValidation?.complianceDeclarations,
+                  },
+                },
+                administrativeInformation: {
+                  ['common:commissionerAndGoal']: {
+                    'common:referenceToCommissioner': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                          'common:referenceToCommissioner'
+                        ]?.['@refObjectId'] ?? {},
+                      '@type':
+                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                          'common:referenceToCommissioner'
+                        ]?.['@type'] ?? {},
+                      '@uri':
+                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                          'common:referenceToCommissioner'
+                        ]?.['@uri'] ?? {},
+                      '@version':
+                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                          'common:referenceToCommissioner'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                          'common:referenceToCommissioner'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:project':
+                      data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        'common:project'
+                      ],
+                    'common:intendedApplications':
+                      data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        'common:intendedApplications'
+                      ],
+                  },
+                  dataGenerator: {
+                    'common:referenceToPersonOrEntityGeneratingTheDataSet': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.dataGenerator?.[
+                          'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                        ]?.['@refObjectId'],
+                      '@type':
+                        data?.administrativeInformation?.dataGenerator?.[
+                          'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                        ]?.['@type'],
+                      '@uri':
+                        data?.administrativeInformation?.dataGenerator?.[
+                          'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                        ]?.['@uri'],
+                      '@version':
+                        data?.administrativeInformation?.dataGenerator?.[
+                          'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                        ]?.['@version'],
+                      'common:shortDescription':
+                        data?.administrativeInformation?.dataGenerator?.[
+                          'common:referenceToPersonOrEntityGeneratingTheDataSet'
+                        ]?.['common:shortDescription'],
+                    },
+                  },
+                  dataEntryBy: {
+                    'common:timeStamp':
+                      data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+                    'common:referenceToDataSetFormat': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetFormat'
+                        ]?.['@refObjectId'],
+                      '@type':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetFormat'
+                        ]?.['@type'],
+                      '@uri':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetFormat'
+                        ]?.['@uri'],
+                      '@version':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetFormat'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetFormat'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:referenceToConvertedOriginalDataSetFrom': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToConvertedOriginalDataSetFrom'
+                        ]?.['@refObjectId'],
+                      '@type':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToConvertedOriginalDataSetFrom'
+                        ]?.['@type'],
+                      '@uri':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToConvertedOriginalDataSetFrom'
+                        ]?.['@uri'],
+                      '@version':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToConvertedOriginalDataSetFrom'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToConvertedOriginalDataSetFrom'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:referenceToPersonOrEntityEnteringTheData': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToPersonOrEntityEnteringTheData'
+                        ]?.['@refObjectId'],
+                      '@type':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToPersonOrEntityEnteringTheData'
+                        ]?.['@type'],
+                      '@uri':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToPersonOrEntityEnteringTheData'
+                        ]?.['@uri'],
+                      '@version':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToPersonOrEntityEnteringTheData'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToPersonOrEntityEnteringTheData'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:referenceToDataSetUseApproval': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetUseApproval'
+                        ]?.['@refObjectId'],
+                      '@type':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetUseApproval'
+                        ]?.['@type'],
+                      '@uri':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetUseApproval'
+                        ]?.['@uri'],
+                      '@version':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetUseApproval'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.dataEntryBy?.[
+                          'common:referenceToDataSetUseApproval'
+                        ]?.['common:shortDescription'],
+                    },
+                  },
+                  publicationAndOwnership: {
+                    'common:dateOfLastRevision':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:dateOfLastRevision'
+                      ] ?? {},
+                    'common:dataSetVersion':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:dataSetVersion'
+                      ],
+                    'common:permanentDataSetURI':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:permanentDataSetURI'
+                      ] ?? {},
+                    'common:workflowAndPublicationStatus':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:workflowAndPublicationStatus'
+                      ] ?? {},
+                    'common:referenceToUnchangedRepublication': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToUnchangedRepublication'
+                        ]?.['@refObjectId'] ?? {},
+                      '@type':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToUnchangedRepublication'
+                        ]?.['@type'] ?? {},
+                      '@uri':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToUnchangedRepublication'
+                        ]?.['@uri'] ?? {},
+                      '@version':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToUnchangedRepublication'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToUnchangedRepublication'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:referenceToRegistrationAuthority': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToRegistrationAuthority'
+                        ]?.['@refObjectId'] ?? {},
+                      '@type':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToRegistrationAuthority'
+                        ]?.['@type'] ?? {},
+                      '@uri':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToRegistrationAuthority'
+                        ]?.['@uri'] ?? {},
+                      '@version':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToRegistrationAuthority'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToRegistrationAuthority'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:registrationNumber':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:registrationNumber'
+                      ] ?? {},
+                    'common:referenceToOwnershipOfDataSet': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToOwnershipOfDataSet'
+                        ]?.['@refObjectId'],
+                      '@type':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToOwnershipOfDataSet'
+                        ]?.['@type'],
+                      '@uri':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToOwnershipOfDataSet'
+                        ]?.['@uri'],
+                      '@version':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToOwnershipOfDataSet'
+                        ]?.['@version'],
+                      'common:shortDescription':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToOwnershipOfDataSet'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:copyright':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:copyright'
+                      ],
+                    'common:referenceToEntitiesWithExclusiveAccess': {
+                      '@refObjectId':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToEntitiesWithExclusiveAccess'
+                        ]?.['@refObjectId'] ?? {},
+                      '@type':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToEntitiesWithExclusiveAccess'
+                        ]?.['@type'] ?? {},
+                      '@uri':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToEntitiesWithExclusiveAccess'
+                        ]?.['@uri'] ?? {},
+                      '@version':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToEntitiesWithExclusiveAccess'
+                        ]?.['@version'] ?? {},
+                      'common:shortDescription':
+                        data?.administrativeInformation?.publicationAndOwnership?.[
+                          'common:referenceToEntitiesWithExclusiveAccess'
+                        ]?.['common:shortDescription'],
+                    },
+                    'common:licenseType':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:licenseType'
+                      ],
+                    'common:accessRestrictions':
+                      data?.administrativeInformation?.publicationAndOwnership?.[
+                        'common:accessRestrictions'
+                      ],
+                  },
+                },
+                exchanges: {
+                  exchange: newExchanges,
+                },
+                LCIAResults: {
+                  LCIAResult: LCIAResults,
+                },
+              },
+            },
+          });
+
+          // if (type === 'primary') {
+          //   console.log('primary newData', newData);
+          // }
+
+          return newData;
+        }
+      }
+      return null;
+    }),
+  );
+
+  return sumFinalProductGroups.filter((item) => item !== null);
 }
