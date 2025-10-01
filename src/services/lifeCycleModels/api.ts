@@ -325,7 +325,7 @@ export async function updateLifeCycleModel(data: any) {
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
     const newLifeCycleModelProcesses = await genLifeCycleModelProcesses(
       data.id,
-      refNode,
+      refNode?.data?.targetAmount,
       newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet,
       jsonToList(oldData.submodels),
     );
