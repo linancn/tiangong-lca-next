@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom';
 import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
+import React from 'react';
 import { TextDecoder, TextEncoder } from 'util';
+
+if (typeof global.React === 'undefined') {
+  global.React = React;
+}
 
 if (typeof global.TextEncoder === 'undefined') {
   global.TextEncoder = TextEncoder;

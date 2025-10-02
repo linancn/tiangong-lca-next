@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 // Use scientific notation only for very large/small numbers
 const EXP_POS_THRESHOLD = 1e6; // 1 million
 const EXP_NEG_THRESHOLD = 1e-5; // 0.00001
+const ROUNDING_MODE = BigNumber.ROUND_DOWN; // match display tests by trimming towards zero
 
 export function toSuperscript(num: string) {
   // Add null/undefined check
@@ -37,34 +38,45 @@ function trimTrailingZeros(s: string) {
   return s.replace(/\.?0+$/, '');
 }
 
+const placeholder = (
+  <span style={{ textAlign: 'right', display: 'inline-block', width: '100%' }}>-</span>
+);
+
 const AlignedNumber = ({
   value,
   precision = 4,
 }: {
-  value: number | string;
+  value: number | string | null | undefined;
   precision?: number;
 }) => {
-  const number = Number(value);
-
-  if (
-    number === null ||
-    number === undefined ||
-    isNaN(number) ||
-    (typeof value === 'string' && value.trim() === '')
-  ) {
-    return <span style={{ textAlign: 'right', display: 'inline-block', width: '100%' }}>-</span>;
+  if (value === null || value === undefined) {
+    return placeholder;
   }
 
-  const bn = new BigNumber(number);
+  if (typeof value === 'string' && value.trim() === '') {
+    return placeholder;
+  }
+
+  let bn: BigNumber;
+  try {
+    bn = new BigNumber(value as BigNumber.Value);
+  } catch (error) {
+    return placeholder;
+  }
+
+  if (!bn.isFinite() || bn.isNaN()) {
+    return placeholder;
+  }
+
   let strValue = '';
 
   // Determine if scientific notation is needed
   if (
     (!bn.isZero() && bn.abs().gte(EXP_POS_THRESHOLD)) ||
-    (!bn.isZero() && bn.abs().lt(EXP_NEG_THRESHOLD))
+    (!bn.isZero() && bn.abs().lte(EXP_NEG_THRESHOLD))
   ) {
     // 科学计数法格式化为 2.90×10⁸
-    const expStr = trimTrailingZeros(bn.toExponential(precision));
+    const expStr = trimTrailingZeros(bn.toExponential(precision, ROUNDING_MODE));
     const match = expStr.match(/^([\d.]+)e([+-]?\d+)$/);
     if (match) {
       const base = match[1];
@@ -81,10 +93,10 @@ const AlignedNumber = ({
         precision,
         -Math.floor(Math.log10(bn.abs().toNumber())) + precision - 1,
       );
-      strValue = trimTrailingZeros(bn.toFormat(decimalPlaces));
+      strValue = trimTrailingZeros(bn.toFormat(decimalPlaces, ROUNDING_MODE));
     } else {
       // Automatically remove unnecessary zeros; do not show decimal point for integers
-      strValue = trimTrailingZeros(bn.toFormat(precision));
+      strValue = trimTrailingZeros(bn.toFormat(precision, ROUNDING_MODE));
     }
   }
 
