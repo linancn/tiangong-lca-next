@@ -55,7 +55,7 @@
     "not ie <= 10"
   ],
   "dependencies": {
-    "@ant-design/icons": "^6.0.2",
+    "@ant-design/icons": "^6.1.0",
     "@ant-design/pro-components": "^2.8.10",
     "@ant-design/pro-table": "^3.21.0",
     "@antv/xflow": "^2.1.13",
@@ -87,7 +87,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^16.2.3",
-    "npm-check-updates": "^18.3.0",
+    "npm-check-updates": "^19.0.0",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.3.0",
     "react-dev-inspector": "^2.0.1",
