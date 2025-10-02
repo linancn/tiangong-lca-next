@@ -14,17 +14,57 @@ export function removeEmptyObjects(obj: any) {
   return obj;
 }
 
-export function comparePercentDesc(a: string, b: string): number {
-  const numA = parseFloat(a.replace('%', ''));
-  const numB = parseFloat(b.replace('%', ''));
-  return numB - numA;
-}
-
 export function percentStringToNumber(str: string): number | null {
   if (typeof str !== 'string') return null;
   const match = str.match(/^(-?\d+(\.\d+)?)%$/);
   if (!match) return null;
   return parseFloat(match[1]) / 100;
+}
+
+export function comparePercentDesc(
+  a: string | number | null | undefined,
+  b: string | number | null | undefined,
+): number {
+  const toComparable = (value: typeof a): number | null => {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : null;
+    }
+    const trimmed = String(value).trim();
+    if (!trimmed) {
+      return null;
+    }
+    const percent = percentStringToNumber(trimmed);
+    if (percent !== null) {
+      return percent;
+    }
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const numA = toComparable(a);
+  const numB = toComparable(b);
+
+  if (numA === null && numB === null) {
+    return 0;
+  }
+  if (numA === null) {
+    return 1;
+  }
+  if (numB === null) {
+    return -1;
+  }
+
+  const absA = Math.abs(numA);
+  const absB = Math.abs(numB);
+
+  if (absA !== absB) {
+    return absB - absA;
+  }
+
+  return numB - numA;
 }
 
 export async function getUnitData(idType: string, data: any) {
@@ -492,19 +532,15 @@ export function genClassificationZH(classifications: any[], categoryData: any[])
 }
 
 export function isValidURL(url: string): boolean {
-  if (!url || url === '') {
+  if (typeof url !== 'string' || url.trim() === '') {
     return false;
   }
-  const urlPattern = new RegExp(
-    '^(https?:\\/\\/)?' +
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
-      '((\\d{1,3}\\.){3}\\d{1,3}))' +
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-      '(\\?[;&a-z\\d%_.~+=-]*)?' +
-      '(\\#[-a-z\\d_]*)?$',
-    'i',
-  );
-  return !!urlPattern.test(url);
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 export function formatDateTime(date: any): string {

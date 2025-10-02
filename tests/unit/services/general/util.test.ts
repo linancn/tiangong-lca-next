@@ -498,8 +498,11 @@ describe('General Utility Functions', () => {
     it('should pad single digits with zero', () => {
       const date = new Date('2024-01-05T09:08:07Z');
       const result = formatDateTime(date);
-      expect(result).toContain('-01-05');
-      expect(result).toContain('T09:08:07');
+      const pad = (num: number) => num.toString().padStart(2, '0');
+      const expectedDatePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      const expectedTimePart = `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+      expect(result).toContain(expectedDatePart);
+      expect(result).toContain(expectedTimePart);
     });
   });
 
