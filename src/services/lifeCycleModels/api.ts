@@ -330,8 +330,6 @@ export async function updateLifeCycleModel(data: any) {
       jsonToList(oldData.submodels),
     );
 
-    return;
-
     const rule_verification = getRuleVerification(schema, newLifeCycleModelJsonOrdered)?.valid;
     const session = await supabase.auth.getSession();
     if (session.data.session) {

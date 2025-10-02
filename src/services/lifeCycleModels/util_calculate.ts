@@ -12,6 +12,13 @@ import LCIAResultCalculation from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
 
+/**
+ * zh-CN: 交换方向常量，仅允许 'INPUT' | 'OUTPUT'。
+ * - 与数据集字段 exchangeDirection 保持一致的取值范围与语义。
+ *
+ * en-US: Exchange direction constants, restricted to 'INPUT' | 'OUTPUT'.
+ * - Aligned with the dataset field exchangeDirection in both domain and semantics.
+ */
 type Direction = 'INPUT' | 'OUTPUT';
 
 /**
@@ -817,12 +824,9 @@ const getScalingFactorForEdge = (
  *     已打上 dependence/mainDependence 的边集合（通常由 assignEdgeDependence 产出）。
  *
  * 返回 / Returns:
- * - newUp2DownEdges: Up2DownEdge[]
- *     与传入数组为同一引用的边数组（已原地写入 scalingFactor）。
  * - sumScalingFactorByNodeId: Map<string, any>
  *     按节点聚合的缩放汇总与计数，供后续分配与汇总流程使用。
- * - processScalingFactorMap: Map<string, number>
- *     精确键聚合的缩放索引，供边级命中与调试使用。
+ *   注：函数会原地为 up2DownEdges 写入 scalingFactor，不返回新的边数组。
  *
  * 前置条件 / Preconditions:
  * - up2DownEdges.dependence 和 mainDependence 已正确设置（由 assignEdgeDependence 完成）。
@@ -1654,8 +1658,6 @@ export async function genLifeCycleModelProcesses(
     refProcessNodeId,
   );
 
-  console.log('allocatedProcesses', allocatedProcesses);
-
   const hasFinalProductProcesses = allocatedProcesses.filter(
     (cpe: any) => cpe?.finalProductType === 'has',
   );
@@ -2416,9 +2418,9 @@ export async function genLifeCycleModelProcesses(
             },
           });
 
-          if (type === 'primary') {
-            console.log('primary newData', newData);
-          }
+          // if (type === 'primary') {
+          //   console.log('primary newData', newData);
+          // }
 
           return newData;
         }
