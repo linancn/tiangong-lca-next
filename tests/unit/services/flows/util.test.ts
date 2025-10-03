@@ -3,6 +3,7 @@
  * Path: src/services/flows/util.ts
  */
 
+import flowDemoData from '@/pages/Flows/demo.json';
 import {
   genFlowFromData,
   genFlowJsonOrdered,
@@ -1181,6 +1182,74 @@ describe('Flow Utility Functions', () => {
       expect(prop.relativeStandardDeviation95In).toBe('0.1');
       expect(prop.dataDerivationTypeStatus).toBe('Measured');
       expect(prop.quantitativeReference).toBe(true);
+    });
+  });
+
+  describe('Real-world integration scenarios', () => {
+    const cloneSampleFlowData = () => JSON.parse(JSON.stringify(flowDemoData.flowDataSet));
+
+    it('should transform published ILCD dataset into UI-friendly structure', () => {
+      const sampleData = cloneSampleFlowData();
+      const formFlow = genFlowFromData(sampleData);
+
+      expect(formFlow.flowInformation.dataSetInformation['common:UUID']).toBe(
+        '0000b186-aea3-4c0a-b0c2-c284de7cdf92',
+      );
+      expect(formFlow.modellingAndValidation.LCIMethod.typeOfDataSet).toBe('Elementary flow');
+
+      const properties = formFlow.flowProperties.flowProperty as unknown as any[];
+      expect(Array.isArray(properties)).toBe(true);
+      expect(properties).toHaveLength(1);
+
+      const firstProperty = properties[0];
+      expect(firstProperty['@dataSetInternalID']).toBe('0');
+      expect(firstProperty.quantitativeReference).toBe(true);
+      expect(firstProperty.referenceToFlowPropertyDataSet['@refObjectId']).toBe(
+        '93a60a56-a3c8-11da-a746-0800200b9a66',
+      );
+      const shortDescription =
+        firstProperty.referenceToFlowPropertyDataSet['common:shortDescription'];
+      expect(shortDescription[0]['#text']).toBe('Mass');
+    });
+
+    it('should rebuild ordered JSON from form data while keeping key references', () => {
+      const sampleData = cloneSampleFlowData();
+      const formFlow = genFlowFromData(sampleData);
+      const flowId =
+        sampleData.flowInformation?.dataSetInformation?.['common:UUID'] ?? 'sample-flow-id';
+
+      const ordered = genFlowJsonOrdered(flowId, formFlow);
+
+      expect(ordered.flowDataSet.flowInformation.dataSetInformation['common:UUID']).toBe(flowId);
+      expect(
+        ordered.flowDataSet.flowInformation.quantitativeReference.referenceToReferenceFlowProperty,
+      ).toBe('0');
+      const serializedProperty = ordered.flowDataSet.flowProperties.flowProperty as any;
+      expect(serializedProperty['@dataSetInternalID']).toBe('0');
+      expect(serializedProperty.referenceToFlowPropertyDataSet['@refObjectId']).toBe(
+        '93a60a56-a3c8-11da-a746-0800200b9a66',
+      );
+      expect(
+        ordered.flowDataSet.flowInformation.dataSetInformation.classificationInformation,
+      ).toHaveProperty('common:elementaryFlowCategorization');
+    });
+
+    it('should present flow properties as table rows for UI consumption', () => {
+      const sampleData = cloneSampleFlowData();
+      const formFlow = genFlowFromData(sampleData);
+
+      const rows = genFlowPropertyTabTableData(formFlow.flowProperties.flowProperty, 'en');
+
+      expect(Array.isArray(rows)).toBe(true);
+      expect(rows).toHaveLength(1);
+      const row = rows[0];
+      expect(row.key).toBe('0');
+      expect(row.dataSetInternalID).toBe('0');
+      expect(row.referenceToFlowPropertyDataSetId).toBe('93a60a56-a3c8-11da-a746-0800200b9a66');
+      expect(row.referenceToFlowPropertyDataSetVersion).toBe('-');
+      expect(row.referenceToFlowPropertyDataSet).toBe('Mass');
+      expect(row.quantitativeReference).toBe(true);
+      expect(row.meanValue).toBe('1.0');
     });
   });
 
