@@ -306,7 +306,8 @@ describe('genLifeCycleModelInfoFromData', () => {
 
     const baseName = result.lifeCycleModelInformation.dataSetInformation.name.baseName;
     expect(Array.isArray(baseName)).toBe(true);
-    expect(baseName?.[0]).toEqual(createLangText('Model base name'));
+    const baseNameList = Array.isArray(baseName) ? baseName : [baseName];
+    expect(baseNameList[0]).toEqual(createLangText('Model base name'));
 
     expect(result.lifeCycleModelInformation.quantitativeReference.referenceToReferenceProcess).toBe(
       '0',
@@ -316,8 +317,9 @@ describe('genLifeCycleModelInfoFromData', () => {
       result.lifeCycleModelInformation.dataSetInformation.classificationInformation[
         'common:classification'
       ]['common:class'];
-    expect(classification.value).toEqual(['Systems', 'Unspecific parts']);
-    expect(classification.id).toEqual(['class-0', 'class-1']);
+    const classificationList = classification as { id?: string[]; value?: string[] };
+    expect(classificationList.value).toEqual(['Systems', 'Unspecific parts']);
+    expect(classificationList.id).toEqual(['class-0', 'class-1']);
   });
 });
 
