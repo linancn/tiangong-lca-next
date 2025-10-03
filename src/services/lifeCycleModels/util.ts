@@ -70,8 +70,8 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
 
     return removeEmptyObjects({
       '@dataSetInternalID': n?.['@dataSetInternalID'] ?? {},
-      '@multiplicationFactor': n?.data?.multiplicationFactor ?? {},
-      scalingFactor: n?.data?.scalingFactor,
+      // '@multiplicationFactor': n?.data?.multiplicationFactor ?? {},
+      // scalingFactor: n?.data?.scalingFactor,
       referenceToProcess: {
         '@refObjectId': n?.data?.id ?? {},
         '@type': 'process data set',

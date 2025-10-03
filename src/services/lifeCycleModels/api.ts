@@ -322,11 +322,12 @@ export async function updateLifeCycleModel(data: any) {
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0];
     const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data, oldData.json);
+
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
     const newLifeCycleModelProcesses = await genLifeCycleModelProcesses(
       data.id,
       refNode?.data?.targetAmount,
-      newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet,
+      newLifeCycleModelJsonOrdered,
       jsonToList(oldData.submodels),
     );
 

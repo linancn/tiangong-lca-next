@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 import {
   comparePercentDesc,
   jsonToList,
+  listToJson,
   mergeLangArrays,
   percentStringToNumber,
   removeEmptyObjects,
@@ -1526,14 +1527,15 @@ export async function genLifeCycleModelProcesses(
   oldSubmodels: any[],
 ) {
   const refProcessNodeId =
-    data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess;
+    data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.quantitativeReference
+      ?.referenceToReferenceProcess;
 
   if (!refProcessNodeId) {
     throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
   }
 
   const mdProcesses = jsonToList(
-    data?.lifeCycleModelInformation?.technology?.processes?.processInstance,
+    data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology?.processes?.processInstance,
   );
 
   const mdProcessMap = new Map<string, any>();
@@ -1821,13 +1823,17 @@ export async function genLifeCycleModelProcesses(
 
           const baseName =
             type === 'primary'
-              ? data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName
+              ? data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name
+                  ?.baseName
               : mergeLangArrays(
                   subproductLeftBracket,
                   subproductPrefix,
                   jsonToList(refExchange?.referenceToFlowDataSet['common:shortDescription']),
                   subproductRightBracket,
-                  jsonToList(data?.lifeCycleModelInformation?.dataSetInformation?.name?.baseName),
+                  jsonToList(
+                    data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name
+                      ?.baseName,
+                  ),
                 );
           const newData = removeEmptyObjects({
             option: option,
@@ -2428,6 +2434,23 @@ export async function genLifeCycleModelProcesses(
       return null;
     }),
   );
+
+  const newProcessInstance = mdProcesses.map((mdProcess) => {
+    return removeEmptyObjects({
+      '@dataSetInternalID': mdProcess?.['@dataSetInternalID'] ?? {},
+      '@multiplicationFactor':
+        sumScalingFactorByNodeId
+          ?.get(mdProcess?.['@dataSetInternalID'])
+          ?.scalingFactor?.toString() ?? {},
+      referenceToProcess: mdProcess?.referenceToProcess,
+      groups: mdProcess?.groups,
+      parameters: mdProcess.parameters,
+      connections: mdProcess.connections,
+    });
+  });
+
+  data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
+    listToJson(newProcessInstance);
 
   return sumFinalProductGroups.filter((item) => item !== null);
 }
