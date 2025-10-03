@@ -67,7 +67,7 @@ describe('Auth profile helpers (src/services/auth/profile.ts)', () => {
 
     it('fails fast when the existing email is not provided', async () => {
       const result = await changeEmail({
-        email: null,
+        email: undefined,
         newEmail: 'new@example.com',
         type: 'changeEmail',
       });
