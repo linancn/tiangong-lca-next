@@ -47,6 +47,7 @@ module.exports = async () => {
       ...config.moduleNameMapper,
       '^@/tests/(.*)$': '<rootDir>/tests/$1',
     },
+    reporters: ['default', '<rootDir>/tests/reporters/failureSkippedSummaryReporter.js'],
     verbose: true,
   };
 };
