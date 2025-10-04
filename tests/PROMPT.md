@@ -62,12 +62,9 @@ Requirements:
 
 **Important**: Check tests/QUICK_REFERENCE.md for detailed patterns before starting!
 
-```
-
 ## Integration Test Prompt Template
 
-```
-
+````
 Add or update integration tests for [WORKFLOW] (e.g., review reassignment workflow)
 
 Context:
@@ -177,7 +174,7 @@ Requirements:
 
 **Important**: Use @testing-library/react, not enzyme patterns!
 
-````
+```
 
 ## Quick Commands Reference
 
