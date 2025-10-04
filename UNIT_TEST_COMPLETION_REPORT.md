@@ -67,7 +67,7 @@ Tests:       2 skipped, 504 passed, 506 total
 
 ## Remaining Work
 
-### ❌ Services Still Needing Tests (6/9)
+### ❌ Services Still Needing Tests (5/9)
 
 **High Priority:**
 
@@ -77,13 +77,11 @@ Tests:       2 skipped, 504 passed, 506 total
 
 **Medium Priority:** 4. **flowproperties** - Data model operations 5. **ilcd** - Classification system
 
-**Low Priority:** 6. **swagger** - Generated code (skip unless custom logic added)
-
 ### Estimated Effort
 
 - **High Priority services:** ~4-6 hours per service
 - **Medium Priority services:** ~3-4 hours per service
-- **Total remaining:** ~20-25 hours
+- **Total remaining:** ~17-21 hours
 
 ## Implementation Pattern for Remaining Services
 

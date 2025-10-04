@@ -244,7 +244,6 @@ npm test -- tests/unit/services/ --watch
    - Add mock factory functions for common Supabase patterns
 
 2. **Enhance Placeholder Tests:**
-   - Investigate real usage for `swagger/*` modules
    - Add meaningful tests for `sources/api.ts` and `teams/api.ts`
    - Expand tests based on actual business requirements
 
@@ -391,7 +390,6 @@ Failing tests:
 
 ### Simple/Placeholder Tests 📝
 
-- `swagger/pet.test.ts`, `swagger/store.test.ts`, `swagger/user.test.ts` - Basic module validation
 - `sources/api.test.ts`, `teams/api.test.ts` - Placeholder tests
 - `supabase/key.test.ts` - Basic export validation
 
@@ -442,7 +440,7 @@ Failing tests:
 
 ### Short Term (Medium Priority)
 
-1. Enhance placeholder tests (swagger/\*, teams/api, sources/api)
+1. Enhance placeholder tests (teams/api, sources/api)
    - Investigate real usage patterns
    - Add meaningful test cases
 
