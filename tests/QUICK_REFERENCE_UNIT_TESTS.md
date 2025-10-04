@@ -231,7 +231,118 @@ npx eslint --ext .ts tests/unit/services/<service_name>
 - Null/undefined handling
 - Array vs single object
 
+## Shared Test Utilities
+
+### Query Builder Pattern
+
+Use the `createQueryBuilder` helper from `tests/helpers/mockBuilders.ts` to create chainable Supabase query mocks:
+
+```typescript
+import { createQueryBuilder } from '../../../helpers/mockBuilders';
+
+// Create a query builder that resolves with success data
+const successResult = { data: [{ id: '1', name: 'Test' }], error: null, count: 1 };
+const builder = createQueryBuilder(successResult);
+
+supabase.from.mockReturnValue(builder);
+
+// Now this works:
+const result = await supabase.from('table').select('*').eq('id', '123').order('name').range(0, 9);
+
+expect(result).toEqual(successResult);
+```
+
+### Mock Builders
+
+Use helpers from `tests/helpers/mockBuilders.ts`:
+
+```typescript
+import {
+  createQueryBuilder,
+  createMockSession,
+  createMockNoSession,
+  createMockSuccessResponse,
+  createMockErrorResponse,
+  createMockEdgeFunctionResponse,
+  createMockRpcResponse,
+} from '../../../helpers/mockBuilders';
+
+// Session mocks
+const session = createMockSession('user-123', 'token-abc');
+const noSession = createMockNoSession();
+
+// Response mocks
+const success = createMockSuccessResponse([{ id: '1' }], 10);
+const error = createMockErrorResponse('Database error', 'PGRST000');
+
+// Edge function mocks
+const edgeSuccess = createMockEdgeFunctionResponse({ success: true });
+const edgeError = createMockEdgeFunctionError('Function failed');
+
+// RPC mocks
+const rpcResult = createMockRpcResponse([{ id: '1', score: 0.95 }]);
+```
+
+### Test Data Fixtures
+
+Use fixtures from `tests/helpers/testData.ts`:
+
+```typescript
+import {
+  mockTeam,
+  mockSource,
+  mockUser,
+  mockRole,
+  mockPaginationParams,
+  mockSortOrder,
+  createMockTeam,
+  createMockSource,
+  createMockTableResponse,
+} from '../../../helpers/testData';
+
+// Use pre-defined fixtures
+const team = mockTeam;
+const params = mockPaginationParams; // { current: 1, pageSize: 10 }
+
+// Create customized fixtures
+const customTeam = createMockTeam({ rank: 5, is_public: false });
+const customSource = createMockSource({ version: '02.00.000' });
+
+// Create table response
+const tableData = createMockTableResponse([mockTeam], 1, 1);
+```
+
 ## Gotchas to Avoid
+
+### ❌ Don't repeat createQueryBuilder in every test file
+
+```typescript
+// ❌ BAD - duplicated helper function
+const createQueryBuilder = <T>(resolvedValue: T) => {
+  const builder: any = {
+    select: jest.fn().mockReturnThis(),
+    // ... rest of implementation
+  };
+  return builder;
+};
+
+// ✅ GOOD - use shared helper
+import { createQueryBuilder } from '../../../helpers/mockBuilders';
+```
+
+### ❌ Don't create inline mock data
+
+```typescript
+// ❌ BAD - hard to maintain
+const mockTeam = {
+  id: 'team-123',
+  json: { title: [{ '@xml:lang': 'en', '#text': 'Test' }] },
+  // ... lots of properties
+};
+
+// ✅ GOOD - use shared fixtures
+import { mockTeam, createMockTeam } from '../../../helpers/testData';
+```
 
 ### ❌ Don't use type casting with imported values
 
@@ -272,11 +383,51 @@ expect(result).toEqual(expectedData);
 expect(mockFrom).toHaveBeenCalledWith('table_name');
 ```
 
+## Common Pitfalls & Solutions
+
+### Problem: Query builder doesn't support chaining
+
+**Solution:** Use `createQueryBuilder` which returns `this` from all methods:
+
+```typescript
+const builder = createQueryBuilder({ data: [], error: null });
+supabase.from.mockReturnValue(builder);
+
+// All these methods chain properly
+await supabase.from('table').select('*').eq('id', '1').order('name');
+```
+
+### Problem: TypeScript errors with mock types
+
+**Solution:** Use proper destructuring and avoid type assertions:
+
+```typescript
+// ✅ GOOD
+const { supabase } = jest.requireMock('@/services/supabase');
+const { getUserId } = jest.requireMock('@/services/users/api');
+
+// Then use directly
+supabase.from.mockReturnValue(builder);
+getUserId.mockResolvedValue('user-123');
+```
+
+### Problem: Tests fail due to undefined properties
+
+**Solution:** Use complete fixtures from `testData.ts`:
+
+```typescript
+import { mockSource } from '../../../helpers/testData';
+
+// mockSource has all required properties pre-filled
+const result = createMockSuccessResponse([mockSource]);
+```
+
 ## Checklist
 
 - [ ] Investigated real usage in `src/pages/`
 - [ ] Created test file with proper header
 - [ ] Set up mocks using destructuring
+- [ ] Used shared utilities from `tests/helpers/`
 - [ ] Tested happy path
 - [ ] Tested error cases
 - [ ] Tested edge cases (null, undefined, empty)
@@ -288,7 +439,7 @@ expect(mockFrom).toHaveBeenCalledWith('table_name');
 
 ## Resources
 
-- **Full Guide:** `/tests/UNIT_TEST_GENERATION_SUMMARY.md`
-- **Existing Examples:** `/tests/unit/services/flows/`, `/tests/unit/services/users/`
+- **Shared Utilities:** `/tests/helpers/mockBuilders.ts`, `/tests/helpers/testData.ts`
+- **Existing Examples:** `/tests/unit/services/sources/`, `/tests/unit/services/teams/`
 - **Project Standards:** `/tests/README.md`
 - **Jest Config:** `/jest.config.cjs`
