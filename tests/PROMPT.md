@@ -5,7 +5,7 @@ Use these prompts when asking AI assistants to help write tests for the Tiangong
 ## Unit Test Prompt Template
 
 ````
-Add unit tests for [MODULE_PATH] (e.g., src/services/contacts/api.ts)
+Add or update unit tests for [MODULE_PATH] (e.g., src/services/contacts/api.ts)
 
 Requirements:
 1. **Follow Project Patterns**: Use existing test structure in tests/unit/services/
@@ -68,39 +68,87 @@ Requirements:
 
 ```
 
-Add integration tests for [WORKFLOW] (e.g., review creation workflow)
+Add or update integration tests for [WORKFLOW] (e.g., review reassignment workflow)
+
+Context:
+
+- Target the real user journey in `src/pages/[feature]` and any nested components under test.
+- Reuse helpers from `tests/helpers/testUtils` (e.g., `renderWithProviders`, `fireEvent`, `waitFor`) and fixtures from `tests/helpers/testData`.
 
 Requirements:
 
-1. **Follow Project Patterns**: Use existing test structure in tests/integration/
-   - Test complete user workflows across multiple modules
-   - Mock external APIs but test real component interactions
+1. **Investigate the workflow first**
+   - Trace UI flows in `src/pages/[feature]` (tabs, drawers, modals, etc.).
+   - Map service usage with `grep -r "[serviceFn]" src/pages` and note API params.
+   - Document the paths under test at the top of the spec (see review workflow example).
 
-2. **Investigate Real User Flows**:
-   - Trace user journey through src/pages/[feature]
-   - Identify: What's the happy path? What can go wrong?
-   - Include multi-step workflows (create → read → update → delete)
+2. **Follow integration test structure**
+   - Place files at `tests/integration/[feature]/[Workflow].integration.test.tsx`.
+   - Import React Testing Library utilities from `tests/helpers/testUtils` for consistent providers/locales.
+   - Stub external APIs/network calls with `jest.mock` blocks near the top (mirror `tests/integration/reviews/ReviewWorkflow.integration.test.tsx`).
 
-3. **Test Coverage**:
-   - ✅ Complete workflows from start to finish
-   - ✅ Cross-module data flow
-   - ✅ State management during workflows
-   - ✅ Error recovery scenarios
-   - ✅ User permission validation
+3. **Workflow coverage**
+   - ✅ Happy path: render with `renderWithProviders`, simulate user interactions, and assert UI state.
+   - ✅ Cross-module calls: assert mocked services (`jest.mocked(fn)`) receive correct params/order.
+   - ✅ Role/permission branches, locale toggles, and pagination/drawer flows via `actionRef` where applicable.
+   - ✅ Error recovery: force mock rejections/edge responses and assert messages/toasts/layout changes.
+   - ✅ State transitions: tabs, modal open/close, selection, multi-step sequences (create → review → update → delete).
 
-4. **Known Issues**: If you find workflow problems:
-   - Add tests demonstrating the issue
-   - Mark with: describe.skip() or it.skip() + TODO comment
-   - Document expected vs actual behavior
+4. **Testing mechanics**
+   - Prefer semantic queries (`screen.getByRole`, `screen.findByText`); fall back to `getByTestId` only when required.
+   - Wrap async expectations in `await waitFor(...)` rather than timeouts.
+   - Extract helper functions for repeated render/setup logic to keep tests readable.
 
-5. **Code Quality**:
-   - Run: npm test -- tests/integration/[workflow]
-   - Run: npm run lint
-   - All tests must pass
+5. **Known issues & documentation**
+   - If you uncover a real bug, write a skipped test (`it.skip`) with a `// TODO` explaining the defect and expected fix.
+   - Note any unexpected API shape or translation gaps directly in the test comments.
 
-**Important**: Integration tests should test multiple modules working together!
+6. **Quality gates**
+   - Run: `npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-coverage`
+   - Run: `npm run lint`
+   - Ensure tests remain deterministic (no real network/file I/O, mock timers when needed).
 
+Example skeleton:
+
+```tsx
+/**
+ * Integration tests for review reassignment workflow
+ * Paths under test:
+ * - src/pages/Review/index.tsx
+ * - src/pages/Review/Components/AssignmentReview.tsx
+ */
+
+import React from 'react';
+import { renderWithProviders, screen, fireEvent, waitFor } from '../../helpers/testUtils';
+import Review from '@/pages/Review';
+import { getReviewsTableData } from '@/services/reviews/api';
+
+jest.mock('@/services/reviews/api', () => ({ getReviewsTableData: jest.fn() }));
+const mockGetReviewsTableData = jest.mocked(getReviewsTableData);
+
+describe('Review workflow integration', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetReviewsTableData.mockResolvedValue({ data: [], success: true });
+  });
+
+  it('loads pending queue by default and supports tab switching', async () => {
+    renderWithProviders(<Review />);
+
+    await waitFor(() => expect(mockGetReviewsTableData).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByTestId('tab-assigned'));
+
+    await waitFor(() =>
+      expect(
+        mockGetReviewsTableData.mock.calls.some(([, , queueType]) => queueType === 'assigned'),
+      ).toBe(true),
+    );
+  });
+});
 ```
+
+````
 
 ## Component Test Prompt Template
 
@@ -155,7 +203,7 @@ grep -r "createContact\|updateContact" src/
 
 # Find test examples
 ls tests/unit/services/*/api.test.ts
-````
+```
 
 ## Tips for AI Assistants
 
