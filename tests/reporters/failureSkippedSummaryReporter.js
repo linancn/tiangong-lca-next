@@ -10,6 +10,30 @@ class FailureSkippedSummaryReporter {
     const rootDir = results.globalConfig?.rootDir || process.cwd();
     const failedSuites = [];
     const skippedTests = [];
+    const expectedFailingTests = [];
+
+    const isExpectedFailing = (testCase) => {
+      if (!testCase || testCase.status !== 'passed') {
+        return false;
+      }
+
+      const zeroPassingAsserts =
+        typeof testCase.numPassingAsserts === 'number' && testCase.numPassingAsserts === 0;
+      const hasSuppressedFailures =
+        Array.isArray(testCase.failureDetails) && testCase.failureDetails.length > 0;
+
+      if (hasSuppressedFailures) {
+        return true;
+      }
+
+      if (zeroPassingAsserts) {
+        const name = `${testCase.fullName || testCase.title || ''}`.toLowerCase();
+        const hints = ['failing', 'should', 'returns', 'handles'];
+        return hints.some((hint) => name.includes(hint));
+      }
+
+      return false;
+    };
 
     testResults.forEach((suite) => {
       const relativePath = path.relative(rootDir, suite.testFilePath);
@@ -37,9 +61,27 @@ class FailureSkippedSummaryReporter {
       if (skippedCases.length > 0) {
         skippedTests.push({ path: relativePath || suite.testFilePath, skippedCases });
       }
+
+      const suppressedFailingCases = suite.testResults
+        .filter(isExpectedFailing)
+        .map((testCase) => ({
+          name: testCase.fullName || testCase.title,
+          assertions: testCase.numPassingAsserts,
+        }));
+
+      if (suppressedFailingCases.length > 0) {
+        expectedFailingTests.push({
+          path: relativePath || suite.testFilePath,
+          suppressedFailingCases,
+        });
+      }
     });
 
-    if (failedSuites.length === 0 && skippedTests.length === 0) {
+    if (
+      failedSuites.length === 0 &&
+      skippedTests.length === 0 &&
+      expectedFailingTests.length === 0
+    ) {
       return;
     }
 
@@ -70,6 +112,19 @@ class FailureSkippedSummaryReporter {
         process.stdout.write(`- ${filePath}\n`);
         skippedCases.forEach(({ name, status }) => {
           process.stdout.write(`  ○ ${name} [${status}]\n`);
+        });
+      });
+      process.stdout.write('\n');
+    }
+
+    if (expectedFailingTests.length > 0) {
+      process.stdout.write('Expected Failing Tests by File:\n');
+      expectedFailingTests.forEach(({ path: filePath, suppressedFailingCases }) => {
+        process.stdout.write(`- ${filePath}\n`);
+        suppressedFailingCases.forEach(({ name, assertions }) => {
+          const assertionInfo =
+            typeof assertions === 'number' ? ` (assertions: ${assertions})` : '';
+          process.stdout.write(`  ! ${name}${assertionInfo}\n`);
         });
       });
       process.stdout.write('\n');
