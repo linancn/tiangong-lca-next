@@ -12,6 +12,7 @@ const mockGetILCDFlowCategorizationAll = jest.fn();
 const mockGetILCDLocationByValues = jest.fn();
 const mockGenClassificationZH = jest.fn(() => ['classification-zh']);
 const mockClassificationToString = jest.fn(() => 'classification-string');
+const mockJsonToList = jest.fn<string[], any[]>(() => []);
 const mockGetLangText = jest.fn((value: any, lang: string) => {
   if (!value) return '-';
   if (typeof value === 'string') return value;
@@ -67,10 +68,12 @@ jest.mock('@/services/general/util', () => {
     genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
     classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
     getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
+    jsonToList: (...args: any[]) => mockJsonToList.apply(null, args),
   };
 });
 
 import * as generalApi from '@/services/general/api';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { message as antdMessage } from 'antd';
 
 type MessageMock = { error: jest.Mock; success: jest.Mock };
@@ -848,6 +851,197 @@ describe('Edge Cases and Error Handling', () => {
       await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Network error' });
+
+      consoleLogSpy.mockRestore();
+    });
+  });
+
+  describe('getAllVersions', () => {
+    it('should fetch all versions for tg dataSource', async () => {
+      const mockData = [
+        { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
+        { id: sampleId, version: '02.00.000', created_at: '2024-02-01', modified_at: '2024-02-01' },
+      ];
+      const builder = createQueryBuilder({ data: mockData, error: null, count: 2 });
+      mockFrom.mockReturnValue(builder);
+      mockGetILCDClassification.mockResolvedValue({ data: [] });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        { created_at: 'descend' },
+        'en',
+        'tg',
+      );
+
+      expect(mockFrom).toHaveBeenCalledWith('contacts');
+      expect(builder.eq).toHaveBeenCalledWith('id', sampleId);
+      expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+      expect(result).toBeDefined();
+    });
+
+    it('should fetch versions for my dataSource with session', async () => {
+      const mockData = [
+        { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
+      ];
+      const builder = createQueryBuilder({ data: mockData, error: null, count: 1 });
+      mockFrom.mockReturnValue(builder);
+      mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
+      mockGetILCDClassification.mockResolvedValue({ data: [] });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'my',
+      );
+
+      expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-1');
+      expect(result).toBeDefined();
+    });
+
+    it('should return empty for my dataSource without session', async () => {
+      const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+      mockFrom.mockReturnValue(builder);
+      mockAuthGetSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'my',
+      );
+
+      expect(result).toEqual({ data: [], success: false, total: 0 });
+    });
+
+    it('should handle sources table with Chinese classification', async () => {
+      const mockData = [
+        {
+          id: sampleId,
+          version: '01.00.000',
+          'common:shortName': { en: 'Source 1' },
+          'common:class': { '#text': 'class1' },
+          sourceCitation: 'Citation',
+          publicationType: 'Journal',
+          created_at: '2024-01-01',
+          modified_at: '2024-01-01',
+        },
+      ];
+      const builder = createQueryBuilder({ data: mockData, error: null, count: 1 });
+      mockFrom.mockReturnValue(builder);
+      mockGetILCDClassification.mockResolvedValue({ data: [] });
+      mockJsonToList.mockReturnValue(['class1']);
+      mockGenClassificationZH.mockReturnValue(['分类']);
+      mockClassificationToString.mockReturnValue('分类字符串');
+      mockGetLangText.mockReturnValue('来源 1');
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'sources',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Source', 'zh', ['all']);
+      expect(result).toBeDefined();
+    });
+
+    it('should handle te dataSource with team ID', async () => {
+      const mockData = [
+        { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
+      ];
+      const rolesBuilder = createQueryBuilder({
+        data: [{ team_id: 'team-123', role: 'member' }],
+      });
+      const builder = createQueryBuilder({ data: mockData, error: null, count: 1 });
+      mockFrom.mockReturnValueOnce(rolesBuilder).mockReturnValueOnce(builder);
+      mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
+      mockGetILCDClassification.mockResolvedValue({ data: [] });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'te',
+      );
+
+      // Verify calls were made
+      expect(mockFrom).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should handle te dataSource without team ID', async () => {
+      const rolesBuilder = createQueryBuilder({ data: [], error: null });
+      const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+      mockFrom.mockReturnValueOnce(rolesBuilder).mockReturnValueOnce(builder);
+      mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'te',
+      );
+
+      expect(result).toEqual({ data: [], success: false, total: 0 });
+    });
+  });
+
+  describe('getAISuggestion', () => {
+    it('should get AI suggestion successfully', async () => {
+      const mockResponse = { suggestion: 'AI generated content' };
+      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
+      mockFunctionsInvoke.mockResolvedValue({ data: mockResponse, error: null });
+
+      const result = await generalApi.getAISuggestion({ name: 'test' }, 'process', { lang: 'en' });
+
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('ai_suggest', {
+        headers: { Authorization: 'Bearer token-xyz' },
+        body: {
+          tidasData: { name: 'test' },
+          dataType: 'process',
+          options: { lang: 'en' },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should return undefined when no session exists', async () => {
+      mockAuthGetSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await generalApi.getAISuggestion({ name: 'test' }, 'process', {});
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle edge function error', async () => {
+      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
+      mockFunctionsInvoke.mockResolvedValue({ data: null, error: { message: 'AI error' } });
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const result = await generalApi.getAISuggestion({ name: 'test' }, 'flow', {});
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'AI error' });
+      expect(result).toBeNull();
 
       consoleLogSpy.mockRestore();
     });

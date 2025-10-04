@@ -9,6 +9,7 @@ import { FunctionRegion } from '@supabase/supabase-js';
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
+const mockRpc = jest.fn();
 
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
@@ -20,6 +21,7 @@ jest.mock('@/services/supabase', () => ({
     functions: {
       invoke: (...args: any[]) => mockFunctionsInvoke.apply(null, args),
     },
+    rpc: (...args: any[]) => mockRpc.apply(null, args),
   },
 }));
 
@@ -94,6 +96,7 @@ beforeEach(() => {
   mockFrom.mockReset();
   mockAuthGetSession.mockReset();
   mockFunctionsInvoke.mockReset();
+  mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
   mockGetILCDLocationByValues.mockReset();
   mockGetILCDClassification.mockReset();
@@ -532,5 +535,287 @@ describe('process_hybrid_search', () => {
       success: true,
       total: 42,
     });
+  });
+});
+
+describe('getProcessDetailByIdAndVersion', () => {
+  it('should fetch process detail by id and version successfully', async () => {
+    const mockData = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        json: {
+          processInformation: { dataSetInformation: { name: { baseName: { '#text': 'Test' } } } },
+        },
+      },
+    ];
+    const builder = createQueryBuilder({ data: mockData, error: null });
+    mockFrom.mockReturnValue(builder);
+    mockGetLangText.mockReturnValue('Test Process');
+
+    const result = await processesApi.getProcessDetailByIdAndVersion([
+      { id: sampleId, version: sampleVersion },
+    ]);
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(builder.select).toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
+
+  it('should return error when process not found', async () => {
+    const builder = createQueryBuilder({ data: null, error: { message: 'Not found' } });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessDetailByIdAndVersion([
+      { id: sampleId, version: sampleVersion },
+    ]);
+
+    expect(result).toBeDefined();
+  });
+
+  it('should return error when data is empty array', async () => {
+    const builder = createQueryBuilder({ data: [], error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessDetailByIdAndVersion([
+      { id: sampleId, version: sampleVersion },
+    ]);
+
+    expect(result).toBeDefined();
+  });
+});
+
+describe('getProcessesByIdsAndVersions', () => {
+  it('should fetch multiple processes by ids and versions', async () => {
+    const mockData = [
+      { id: sampleId, version: sampleVersion, json: { name: 'Process 1' } },
+      { id: 'id2', version: 'v2', json: { name: 'Process 2' } },
+    ];
+    const builder = createQueryBuilder({ data: mockData, error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdsAndVersions(
+      [sampleId, 'id2'],
+      [sampleVersion, 'v2'],
+    );
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(result).toEqual({ data: mockData, error: null });
+  });
+
+  it('should return empty array when no ids provided', async () => {
+    const builder = createQueryBuilder({ data: [], error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdsAndVersions([], []);
+
+    expect(result).toEqual({ data: [], error: null });
+  });
+});
+
+describe('getProcessesByIdsAndVersion', () => {
+  it('should fetch processes by multiple ids and single version', async () => {
+    const mockData = [
+      { id: sampleId, version: sampleVersion, json: { name: 'Process 1' } },
+      { id: 'id2', version: sampleVersion, json: { name: 'Process 2' } },
+    ];
+    const builder = createQueryBuilder({ data: mockData, error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdsAndVersion([sampleId, 'id2'], sampleVersion);
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
+    expect(result).toEqual({ data: mockData, error: null });
+  });
+
+  it('should return empty array when no ids provided', async () => {
+    const builder = createQueryBuilder({ data: [], error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdsAndVersion([], sampleVersion);
+
+    expect(result).toEqual({ data: [], error: null });
+  });
+});
+
+describe('validateProcessesByIdAndVersion', () => {
+  it('should return true when process exists', async () => {
+    const mockData = [{ id: sampleId, version: sampleVersion }];
+    const builder = createQueryBuilder({ data: mockData, error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.validateProcessesByIdAndVersion(sampleId, sampleVersion);
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(result).toBe(true);
+  });
+
+  it('should return false when process is missing', async () => {
+    const builder = createQueryBuilder({ data: [], error: null });
+    const builder2 = createQueryBuilder({ data: [], error: null });
+    mockFrom.mockReturnValueOnce(builder).mockReturnValueOnce(builder2);
+
+    const result = await processesApi.validateProcessesByIdAndVersion(sampleId, sampleVersion);
+
+    expect(result).toBeDefined();
+  });
+
+  it('should handle database error', async () => {
+    const builder = createQueryBuilder({ data: null, error: { message: 'DB error' } });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.validateProcessesByIdAndVersion(sampleId, sampleVersion);
+
+    expect(result).toBeDefined();
+  });
+});
+
+describe('getConnectableProcessesTable', () => {
+  it('should fetch connectable processes successfully', async () => {
+    const mockData = [
+      {
+        id: sampleId,
+        name: 'Process 1',
+        version: sampleVersion,
+        exchange: [
+          {
+            exchangeDirection: 'output',
+            referenceToFlowDataSet: { '@refObjectId': 'flow123' },
+          },
+        ],
+      },
+    ];
+    const builder = createQueryBuilder({ data: mockData, error: null, count: 10 });
+    mockFrom.mockReturnValue(builder);
+    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
+    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockJsonToList.mockReturnValue([]);
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      'flow123',
+      '1.0.0',
+    );
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(result).toBeDefined();
+  });
+
+  it('should handle my dataSource type', async () => {
+    const mockData = [
+      {
+        id: sampleId,
+        name: 'My Process',
+        version: sampleVersion,
+        team_id: 'team1',
+        user_id: 'user1',
+        exchange: [
+          {
+            exchangeDirection: 'input',
+            referenceToFlowDataSet: { '@refObjectId': 'flow456' },
+          },
+        ],
+      },
+    ];
+    const builder = createQueryBuilder({ data: mockData, error: null, count: 1 });
+    mockFrom.mockReturnValue(builder);
+    mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user1' } } } });
+    mockGetTeamIdByUserId.mockResolvedValue('team1');
+    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
+    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockJsonToList.mockReturnValue([]);
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'my',
+      [],
+      'flow456',
+      '2.0.0',
+    );
+
+    expect(mockAuthGetSession).toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
+
+  it('should return empty data on database error', async () => {
+    const builder = createQueryBuilder({ data: null, error: { message: 'DB error' }, count: null });
+    mockFrom.mockReturnValue(builder);
+    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      'port789',
+      '3.0.0',
+    );
+
+    expect(result.data).toEqual([]);
+  });
+});
+
+describe('getProcessTablePgroongaSearch', () => {
+  it('should search processes using pgroonga successfully', async () => {
+    const mockResponse = {
+      data: [{ id: sampleId, name: 'Search Result', version: sampleVersion }],
+      error: null,
+      count: 1,
+    };
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
+    mockRpc.mockResolvedValue(mockResponse);
+    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
+    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockJsonToList.mockReturnValue([]);
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'search term',
+      [],
+      100,
+      'all',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'pgroonga_search_processes',
+      expect.objectContaining({
+        query_text: 'search term',
+      }),
+    );
+    expect(result).toBeDefined();
+  });
+
+  it('should handle empty search results', async () => {
+    const mockResponse = {
+      data: [],
+      error: null,
+      count: 0,
+    };
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
+    mockRpc.mockResolvedValue(mockResponse);
+    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
+    mockGetILCDClassification.mockResolvedValue({ data: [] });
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'nonexistent',
+      [],
+      100,
+      'all',
+    );
+
+    expect(result).toBeDefined();
   });
 });
