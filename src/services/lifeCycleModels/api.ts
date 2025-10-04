@@ -15,6 +15,7 @@ import { getILCDClassification } from '../ilcd/api';
 import {
   createProcess,
   deleteProcess,
+  getProcessesByIdsAndVersion,
   getProcessesByIdsAndVersions,
   updateProcess,
   validateProcessesByIdAndVersion,
@@ -85,20 +86,20 @@ const updateLifeCycleModelProcesses = async (id: string, version: string, data: 
 };
 
 export async function createLifeCycleModel(data: any) {
-  const oldData = {
-    lifeCycleModelDataSet: {
-      '@xmlns': 'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
-      '@xmlns:acme': 'http://acme.com/custom',
-      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@locations': '../ILCDLocations.xml',
-      '@version': '1.1',
-      '@xsi:schemaLocation':
-        'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd',
-    },
-  };
+  // const oldData = {
+  //   lifeCycleModelDataSet: {
+  //     '@xmlns': 'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
+  //     '@xmlns:acme': 'http://acme.com/custom',
+  //     '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+  //     '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+  //     '@locations': '../ILCDLocations.xml',
+  //     '@version': '1.1',
+  //     '@xsi:schemaLocation':
+  //       'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd',
+  //   },
+  // };
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
-  const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data, oldData);
+  const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
   const newLifeCycleModelProcesses = await genLifeCycleModelProcesses(
     data.id,
@@ -321,9 +322,10 @@ export async function updateLifeCycleModel(data: any) {
 
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0];
-    const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data, oldData.json);
+    const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
 
     const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
+
     const newLifeCycleModelProcesses = await genLifeCycleModelProcesses(
       data.id,
       refNode?.data?.targetAmount,
@@ -383,10 +385,11 @@ export async function updateLifeCycleModel(data: any) {
           });
 
         if (newLifeCycleModelProcesses && newLifeCycleModelProcesses.length > 0) {
-          const { data: oldProcesses } = await getProcessesByIdsAndVersions(
+          const { data: oldProcesses } = await getProcessesByIdsAndVersion(
             newLifeCycleModelProcesses.map((n: any) => n.modelInfo.id),
-            [data.version],
+            data.version,
           );
+
           newLifeCycleModelProcesses.forEach(async (n: any) => {
             if (n.option === 'update')
               try {

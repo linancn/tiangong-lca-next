@@ -1167,6 +1167,7 @@ const allocatedProcess = (processMap: Map<string, any>) => {
           ...p,
           isAllocated: true,
           allocatedExchangeId: allocatedExchange.exchange?.['@dataSetInternalID'],
+          allocatedExchangeDirection: allocatedExchange.exchange?.exchangeDirection ?? '',
           allocatedExchangeFlowId:
             allocatedExchange.exchange?.referenceToFlowDataSet?.['@refObjectId'],
           allocatedFraction: allocatedExchange.allocatedFraction,
@@ -1178,6 +1179,7 @@ const allocatedProcess = (processMap: Map<string, any>) => {
         ...p,
         isAllocated: false,
         allocatedExchangeId: '',
+        allocatedExchangeDirection: '',
         allocatedExchangeFlowId: '',
         allocatedFraction: 1,
         exchanges: nonAllocatedExchanges,
@@ -1523,19 +1525,20 @@ const sumProcessExchange = (processExchanges: any[]) => {
 export async function genLifeCycleModelProcesses(
   id: string,
   refTargetAmount: number | null,
-  data: any,
+  lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {
   const refProcessNodeId =
-    data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.quantitativeReference
-      ?.referenceToReferenceProcess;
+    lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+      ?.quantitativeReference?.referenceToReferenceProcess;
 
   if (!refProcessNodeId) {
     throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
   }
 
   const mdProcesses = jsonToList(
-    data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology?.processes?.processInstance,
+    lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology
+      ?.processes?.processInstance,
   );
 
   const mdProcessMap = new Map<string, any>();
@@ -1823,16 +1826,16 @@ export async function genLifeCycleModelProcesses(
 
           const baseName =
             type === 'primary'
-              ? data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name
-                  ?.baseName
+              ? lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                  ?.dataSetInformation?.name?.baseName
               : mergeLangArrays(
                   subproductLeftBracket,
                   subproductPrefix,
                   jsonToList(refExchange?.referenceToFlowDataSet['common:shortDescription']),
                   subproductRightBracket,
                   jsonToList(
-                    data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name
-                      ?.baseName,
+                    lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                      ?.dataSetInformation?.name?.baseName,
                   ),
                 );
           const newData = removeEmptyObjects({
@@ -1850,48 +1853,55 @@ export async function genLifeCycleModelProcesses(
                     name: {
                       baseName: baseName,
                       treatmentStandardsRoutes:
-                        data?.lifeCycleModelInformation?.dataSetInformation?.name
-                          ?.treatmentStandardsRoutes,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.name?.treatmentStandardsRoutes,
                       mixAndLocationTypes:
-                        data?.lifeCycleModelInformation?.dataSetInformation?.name
-                          ?.mixAndLocationTypes,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.name?.mixAndLocationTypes,
                       functionalUnitFlowProperties:
-                        data?.lifeCycleModelInformation?.dataSetInformation?.name
-                          ?.functionalUnitFlowProperties,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.name?.functionalUnitFlowProperties,
                     },
                     identifierOfSubDataSet:
-                      data?.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.dataSetInformation?.identifierOfSubDataSet,
                     'common:synonyms':
-                      data?.lifeCycleModelInformation?.dataSetInformation?.['common:synonyms'],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.dataSetInformation?.['common:synonyms'],
                     classificationInformation: {
                       'common:classification': {
                         'common:class':
-                          data?.lifeCycleModelInformation?.dataSetInformation
+                          lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                            ?.lifeCycleModelInformation?.dataSetInformation
                             ?.classificationInformation?.['common:classification']?.[
                             'common:class'
                           ],
                       },
                     },
                     'common:generalComment':
-                      data?.lifeCycleModelInformation?.dataSetInformation?.[
-                        'common:generalComment'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.dataSetInformation?.['common:generalComment'],
                     referenceToExternalDocumentation: {
                       '@refObjectId':
-                        data?.lifeCycleModelInformation?.dataSetInformation
-                          ?.referenceToExternalDocumentation?.['@refObjectId'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.referenceToExternalDocumentation?.[
+                          '@refObjectId'
+                        ] ?? {},
                       '@type':
-                        data?.lifeCycleModelInformation?.dataSetInformation
-                          ?.referenceToExternalDocumentation?.['@type'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.referenceToExternalDocumentation?.['@type'] ?? {},
                       '@uri':
-                        data?.lifeCycleModelInformation?.dataSetInformation
-                          ?.referenceToExternalDocumentation?.['@uri'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.referenceToExternalDocumentation?.['@uri'] ?? {},
                       '@version':
-                        data?.lifeCycleModelInformation?.dataSetInformation
-                          ?.referenceToExternalDocumentation?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.referenceToExternalDocumentation?.['@version'] ??
+                        {},
                       'common:shortDescription':
-                        data?.lifeCycleModelInformation?.dataSetInformation
-                          ?.referenceToExternalDocumentation?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.dataSetInformation?.referenceToExternalDocumentation?.[
+                          'common:shortDescription'
+                        ],
                     },
                   },
                   // quantitativeReference: {
@@ -1902,516 +1912,590 @@ export async function genLifeCycleModelProcesses(
                   // },
                   time: {
                     'common:referenceYear':
-                      data?.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.time?.['common:referenceYear'] ?? {},
                     'common:dataSetValidUntil':
-                      data?.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.time?.['common:dataSetValidUntil'],
                     'common:timeRepresentativenessDescription':
-                      data?.lifeCycleModelInformation?.time?.[
-                        'common:timeRepresentativenessDescription'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.time?.['common:timeRepresentativenessDescription'],
                   },
                   geography: {
                     locationOfOperationSupplyOrProduction: {
                       '@location':
-                        data?.lifeCycleModelInformation?.geography
-                          ?.locationOfOperationSupplyOrProduction?.['@location'] === 'NULL'
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.geography?.locationOfOperationSupplyOrProduction?.['@location'] ===
+                        'NULL'
                           ? {}
-                          : (data?.lifeCycleModelInformation?.geography
+                          : (lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                              ?.lifeCycleModelInformation?.geography
                               ?.locationOfOperationSupplyOrProduction?.['@location'] ?? {}),
                       descriptionOfRestrictions:
-                        data?.lifeCycleModelInformation?.geography
-                          ?.locationOfOperationSupplyOrProduction?.descriptionOfRestrictions,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.geography?.locationOfOperationSupplyOrProduction
+                          ?.descriptionOfRestrictions,
                     },
                     subLocationOfOperationSupplyOrProduction: {
                       '@subLocation':
-                        data?.lifeCycleModelInformation?.geography
-                          ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'] === 'NULL'
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.geography?.subLocationOfOperationSupplyOrProduction?.[
+                          '@subLocation'
+                        ] === 'NULL'
                           ? {}
-                          : (data?.lifeCycleModelInformation?.geography
+                          : (lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                              ?.lifeCycleModelInformation?.geography
                               ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'] ?? {}),
                       descriptionOfRestrictions:
-                        data?.lifeCycleModelInformation?.geography
-                          ?.subLocationOfOperationSupplyOrProduction?.descriptionOfRestrictions,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.geography?.subLocationOfOperationSupplyOrProduction
+                          ?.descriptionOfRestrictions,
                     },
                   },
                   technology: {
                     technologyDescriptionAndIncludedProcesses:
-                      data?.lifeCycleModelInformation?.technology
-                        ?.technologyDescriptionAndIncludedProcesses,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.technology?.technologyDescriptionAndIncludedProcesses,
                     technologicalApplicability:
-                      data?.lifeCycleModelInformation?.technology?.technologicalApplicability,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.technology?.technologicalApplicability,
                     referenceToTechnologyPictogramme: {
                       '@type':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyPictogramme?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyPictogramme?.['@type'],
                       '@refObjectId':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyPictogramme?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyPictogramme?.['@refObjectId'],
                       '@version':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyPictogramme?.['@version'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyPictogramme?.['@version'],
                       '@uri':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyPictogramme?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyPictogramme?.['@uri'],
                       'common:shortDescription':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyPictogramme?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyPictogramme?.[
+                          'common:shortDescription'
+                        ],
                     },
                     referenceToTechnologyFlowDiagrammOrPicture: {
                       '@type':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.['@type'],
                       '@version':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.['@version'],
                       '@refObjectId':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                          '@refObjectId'
+                        ],
                       '@uri':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.['@uri'],
                       'common:shortDescription':
-                        data?.lifeCycleModelInformation?.technology
-                          ?.referenceToTechnologyFlowDiagrammOrPicture?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                          'common:shortDescription'
+                        ],
                     },
                   },
                   mathematicalRelations: {
                     modelDescription:
-                      data?.lifeCycleModelInformation?.mathematicalRelations?.modelDescription,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                        ?.mathematicalRelations?.modelDescription,
                     variableParameter: {
                       '@name':
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.[
-                          '@name'
-                        ],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.['@name'],
                       formula:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.formula,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.formula,
                       meanValue:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.meanValue,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.meanValue,
                       minimumValue:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.minimumValue,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.minimumValue,
                       maximumValue:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.maximumValue,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.maximumValue,
                       uncertaintyDistributionType:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.uncertaintyDistributionType,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.uncertaintyDistributionType,
                       relativeStandardDeviation95In:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.relativeStandardDeviation95In,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.relativeStandardDeviation95In,
                       comment:
-                        data?.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                          ?.comment,
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                          ?.mathematicalRelations?.variableParameter?.comment,
                     },
                   },
                 },
                 modellingAndValidation: {
                   LCIMethodAndAllocation: {
                     typeOfDataSet:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.typeOfDataSet ?? {},
                     LCIMethodPrinciple:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ??
-                      {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? {},
                     deviationsFromLCIMethodPrinciple:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation
-                        ?.deviationsFromLCIMethodPrinciple,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.deviationsFromLCIMethodPrinciple,
                     LCIMethodApproaches:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ??
-                      {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.LCIMethodApproaches ?? {},
                     deviationsFromLCIMethodApproaches:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation
-                        ?.deviationsFromLCIMethodApproaches,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches,
                     modellingConstants:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.modellingConstants,
                     deviationsFromModellingConstants:
-                      data?.modellingAndValidation?.LCIMethodAndAllocation
-                        ?.deviationsFromModellingConstants,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.LCIMethodAndAllocation?.deviationsFromModellingConstants,
                     referenceToLCAMethodDetails: {
                       '@type':
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.referenceToLCAMethodDetails?.['@type'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.['@type'] ?? {},
                       '@refObjectId':
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.referenceToLCAMethodDetails?.['@refObjectId'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.['@refObjectId'] ??
+                        {},
                       '@uri':
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.referenceToLCAMethodDetails?.['@uri'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.['@uri'] ?? {},
                       '@version':
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.referenceToLCAMethodDetails?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.['@version'] ?? {},
                       'common:shortDescription':
-                        data?.modellingAndValidation?.LCIMethodAndAllocation
-                          ?.referenceToLCAMethodDetails?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
+                          'common:shortDescription'
+                        ],
                     },
                   },
                   dataSourcesTreatmentAndRepresentativeness: {
                     dataCutOffAndCompletenessPrinciples:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.dataCutOffAndCompletenessPrinciples,
                     deviationsFromCutOffAndCompletenessPrinciples:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.deviationsFromCutOffAndCompletenessPrinciples,
                     dataSelectionAndCombinationPrinciples:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.dataSelectionAndCombinationPrinciples,
                     deviationsFromSelectionAndCombinationPrinciples:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.deviationsFromSelectionAndCombinationPrinciples,
                     dataTreatmentAndExtrapolationsPrinciples:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.dataTreatmentAndExtrapolationsPrinciples,
                     deviationsFromTreatmentAndExtrapolationPrinciples:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.deviationsFromTreatmentAndExtrapolationPrinciples,
                     referenceToDataHandlingPrinciples: {
                       '@type':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness
                           ?.referenceToDataHandlingPrinciples?.['@type'] ?? {},
                       '@refObjectId':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness
                           ?.referenceToDataHandlingPrinciples?.['@refObjectId'] ?? {},
                       '@uri':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness
                           ?.referenceToDataHandlingPrinciples?.['@uri'] ?? {},
                       '@version':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness
                           ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
                       'common:shortDescription':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness
                           ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
                     },
                     referenceToDataSource: {
                       '@type':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.referenceToDataSource?.['@type'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
+                          '@type'
+                        ] ?? {},
                       '@version':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.referenceToDataSource?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
+                          '@version'
+                        ] ?? {},
                       '@refObjectId':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.referenceToDataSource?.['@refObjectId'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
+                          '@refObjectId'
+                        ] ?? {},
                       '@uri':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.referenceToDataSource?.['@uri'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
+                          '@uri'
+                        ] ?? {},
                       'common:shortDescription':
-                        data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                          ?.referenceToDataSource?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.dataSourcesTreatmentAndRepresentativeness?.referenceToDataSource?.[
+                          'common:shortDescription'
+                        ],
                     },
                     percentageSupplyOrProductionCovered:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness
                         ?.percentageSupplyOrProductionCovered ?? {},
                     annualSupplyOrProductionVolume:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                        ?.annualSupplyOrProductionVolume,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness?.annualSupplyOrProductionVolume,
                     samplingProcedure:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                        ?.samplingProcedure,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness?.samplingProcedure,
                     dataCollectionPeriod:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                        ?.dataCollectionPeriod,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness?.dataCollectionPeriod,
                     uncertaintyAdjustments:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                        ?.uncertaintyAdjustments,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness?.uncertaintyAdjustments,
                     useAdviceForDataSet:
-                      data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                        ?.useAdviceForDataSet,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.dataSourcesTreatmentAndRepresentativeness?.useAdviceForDataSet,
                   },
                   completeness: {
                     completenessProductModel:
-                      data?.modellingAndValidation?.completeness?.completenessProductModel,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.completeness?.completenessProductModel,
                     completenessElementaryFlows: {
                       '@type':
-                        data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                          '@type'
-                        ],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.completeness?.completenessElementaryFlows?.['@type'],
                       '@value':
-                        data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                          '@value'
-                        ],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                          ?.completeness?.completenessElementaryFlows?.['@value'],
                     },
                     completenessOtherProblemField:
-                      data?.modellingAndValidation?.completeness?.completenessOtherProblemField,
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                        ?.completeness?.completenessOtherProblemField,
                     // completenessDescription: getLangJson(
-                    //   data?.modellingAndValidation?.completeness?.completenessDescription,
+                    //   lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation?.completeness?.completenessDescription,
                     // ),
                   },
-                  validation: { ...data?.modellingAndValidation?.validation },
+                  validation: {
+                    ...lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                      ?.validation,
+                  },
                   complianceDeclarations: {
-                    ...data?.modellingAndValidation?.complianceDeclarations,
+                    ...lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.modellingAndValidation
+                      ?.complianceDeclarations,
                   },
                 },
                 administrativeInformation: {
                   ['common:commissionerAndGoal']: {
                     'common:referenceToCommissioner': {
                       '@refObjectId':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                          ?.administrativeInformation?.['common:commissionerAndGoal']?.[
                           'common:referenceToCommissioner'
                         ]?.['@refObjectId'] ?? {},
                       '@type':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                          ?.administrativeInformation?.['common:commissionerAndGoal']?.[
                           'common:referenceToCommissioner'
                         ]?.['@type'] ?? {},
                       '@uri':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                          ?.administrativeInformation?.['common:commissionerAndGoal']?.[
                           'common:referenceToCommissioner'
                         ]?.['@uri'] ?? {},
                       '@version':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                          ?.administrativeInformation?.['common:commissionerAndGoal']?.[
                           'common:referenceToCommissioner'
                         ]?.['@version'] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.['common:commissionerAndGoal']?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                          ?.administrativeInformation?.['common:commissionerAndGoal']?.[
                           'common:referenceToCommissioner'
                         ]?.['common:shortDescription'],
                     },
                     'common:project':
-                      data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                        'common:project'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation?.[
+                        'common:commissionerAndGoal'
+                      ]?.['common:project'],
                     'common:intendedApplications':
-                      data?.administrativeInformation?.['common:commissionerAndGoal']?.[
-                        'common:intendedApplications'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation?.[
+                        'common:commissionerAndGoal'
+                      ]?.['common:intendedApplications'],
                   },
                   dataGenerator: {
                     'common:referenceToPersonOrEntityGeneratingTheDataSet': {
                       '@refObjectId':
-                        data?.administrativeInformation?.dataGenerator?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataGenerator?.[
                           'common:referenceToPersonOrEntityGeneratingTheDataSet'
                         ]?.['@refObjectId'],
                       '@type':
-                        data?.administrativeInformation?.dataGenerator?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataGenerator?.[
                           'common:referenceToPersonOrEntityGeneratingTheDataSet'
                         ]?.['@type'],
                       '@uri':
-                        data?.administrativeInformation?.dataGenerator?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataGenerator?.[
                           'common:referenceToPersonOrEntityGeneratingTheDataSet'
                         ]?.['@uri'],
                       '@version':
-                        data?.administrativeInformation?.dataGenerator?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataGenerator?.[
                           'common:referenceToPersonOrEntityGeneratingTheDataSet'
                         ]?.['@version'],
                       'common:shortDescription':
-                        data?.administrativeInformation?.dataGenerator?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataGenerator?.[
                           'common:referenceToPersonOrEntityGeneratingTheDataSet'
                         ]?.['common:shortDescription'],
                     },
                   },
                   dataEntryBy: {
                     'common:timeStamp':
-                      data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.dataEntryBy?.['common:timeStamp'],
                     'common:referenceToDataSetFormat': {
                       '@refObjectId':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetFormat'
-                        ]?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@refObjectId'],
                       '@type':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetFormat'
-                        ]?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@type'],
                       '@uri':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetFormat'
-                        ]?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@uri'],
                       '@version':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetFormat'
-                        ]?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetFormat']?.['@version'] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetFormat'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
+                          'common:shortDescription'
+                        ],
                     },
                     'common:referenceToConvertedOriginalDataSetFrom': {
                       '@refObjectId':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToConvertedOriginalDataSetFrom'
-                        ]?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToConvertedOriginalDataSetFrom']?.[
+                          '@refObjectId'
+                        ],
                       '@type':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToConvertedOriginalDataSetFrom'
-                        ]?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToConvertedOriginalDataSetFrom']?.[
+                          '@type'
+                        ],
                       '@uri':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToConvertedOriginalDataSetFrom'
-                        ]?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToConvertedOriginalDataSetFrom']?.[
+                          '@uri'
+                        ],
                       '@version':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToConvertedOriginalDataSetFrom'
-                        ]?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToConvertedOriginalDataSetFrom']?.[
+                          '@version'
+                        ] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToConvertedOriginalDataSetFrom'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToConvertedOriginalDataSetFrom']?.[
+                          'common:shortDescription'
+                        ],
                     },
                     'common:referenceToPersonOrEntityEnteringTheData': {
                       '@refObjectId':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToPersonOrEntityEnteringTheData'
-                        ]?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToPersonOrEntityEnteringTheData']?.[
+                          '@refObjectId'
+                        ],
                       '@type':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToPersonOrEntityEnteringTheData'
-                        ]?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToPersonOrEntityEnteringTheData']?.[
+                          '@type'
+                        ],
                       '@uri':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToPersonOrEntityEnteringTheData'
-                        ]?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToPersonOrEntityEnteringTheData']?.[
+                          '@uri'
+                        ],
                       '@version':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToPersonOrEntityEnteringTheData'
-                        ]?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToPersonOrEntityEnteringTheData']?.[
+                          '@version'
+                        ] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToPersonOrEntityEnteringTheData'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToPersonOrEntityEnteringTheData']?.[
+                          'common:shortDescription'
+                        ],
                     },
                     'common:referenceToDataSetUseApproval': {
                       '@refObjectId':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetUseApproval'
-                        ]?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetUseApproval']?.['@refObjectId'],
                       '@type':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetUseApproval'
-                        ]?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetUseApproval']?.['@type'],
                       '@uri':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetUseApproval'
-                        ]?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetUseApproval']?.['@uri'],
                       '@version':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetUseApproval'
-                        ]?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetUseApproval']?.['@version'] ??
+                        {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.dataEntryBy?.[
-                          'common:referenceToDataSetUseApproval'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.dataEntryBy?.['common:referenceToDataSetUseApproval']?.[
+                          'common:shortDescription'
+                        ],
                     },
                   },
                   publicationAndOwnership: {
                     'common:dateOfLastRevision':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:dateOfLastRevision'
-                      ] ?? {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:dateOfLastRevision'] ?? {},
                     'common:dataSetVersion':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:dataSetVersion'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:dataSetVersion'],
                     'common:permanentDataSetURI':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:permanentDataSetURI'
-                      ] ?? {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:permanentDataSetURI'] ?? {},
                     'common:workflowAndPublicationStatus':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:workflowAndPublicationStatus'
-                      ] ?? {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:workflowAndPublicationStatus'] ?? {},
                     'common:referenceToUnchangedRepublication': {
                       '@refObjectId':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToUnchangedRepublication'
-                        ]?.['@refObjectId'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToUnchangedRepublication']?.[
+                          '@refObjectId'
+                        ] ?? {},
                       '@type':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToUnchangedRepublication'
-                        ]?.['@type'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToUnchangedRepublication']?.[
+                          '@type'
+                        ] ?? {},
                       '@uri':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToUnchangedRepublication'
-                        ]?.['@uri'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToUnchangedRepublication']?.[
+                          '@uri'
+                        ] ?? {},
                       '@version':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToUnchangedRepublication'
-                        ]?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToUnchangedRepublication']?.[
+                          '@version'
+                        ] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToUnchangedRepublication'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToUnchangedRepublication']?.[
+                          'common:shortDescription'
+                        ],
                     },
                     'common:referenceToRegistrationAuthority': {
                       '@refObjectId':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToRegistrationAuthority'
-                        ]?.['@refObjectId'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToRegistrationAuthority']?.[
+                          '@refObjectId'
+                        ] ?? {},
                       '@type':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToRegistrationAuthority'
-                        ]?.['@type'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToRegistrationAuthority']?.[
+                          '@type'
+                        ] ?? {},
                       '@uri':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToRegistrationAuthority'
-                        ]?.['@uri'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToRegistrationAuthority']?.[
+                          '@uri'
+                        ] ?? {},
                       '@version':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToRegistrationAuthority'
-                        ]?.['@version'] ?? {},
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToRegistrationAuthority']?.[
+                          '@version'
+                        ] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToRegistrationAuthority'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToRegistrationAuthority']?.[
+                          'common:shortDescription'
+                        ],
                     },
                     'common:registrationNumber':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:registrationNumber'
-                      ] ?? {},
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:registrationNumber'] ?? {},
                     'common:referenceToOwnershipOfDataSet': {
                       '@refObjectId':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToOwnershipOfDataSet'
-                        ]?.['@refObjectId'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToOwnershipOfDataSet']?.[
+                          '@refObjectId'
+                        ],
                       '@type':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToOwnershipOfDataSet'
-                        ]?.['@type'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToOwnershipOfDataSet']?.[
+                          '@type'
+                        ],
                       '@uri':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToOwnershipOfDataSet'
-                        ]?.['@uri'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToOwnershipOfDataSet']?.[
+                          '@uri'
+                        ],
                       '@version':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToOwnershipOfDataSet'
-                        ]?.['@version'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToOwnershipOfDataSet']?.[
+                          '@version'
+                        ],
                       'common:shortDescription':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
-                          'common:referenceToOwnershipOfDataSet'
-                        ]?.['common:shortDescription'],
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.['common:referenceToOwnershipOfDataSet']?.[
+                          'common:shortDescription'
+                        ],
                     },
                     'common:copyright':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:copyright'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:copyright'],
                     'common:referenceToEntitiesWithExclusiveAccess': {
                       '@refObjectId':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.[
                           'common:referenceToEntitiesWithExclusiveAccess'
                         ]?.['@refObjectId'] ?? {},
                       '@type':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.[
                           'common:referenceToEntitiesWithExclusiveAccess'
                         ]?.['@type'] ?? {},
                       '@uri':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.[
                           'common:referenceToEntitiesWithExclusiveAccess'
                         ]?.['@uri'] ?? {},
                       '@version':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.[
                           'common:referenceToEntitiesWithExclusiveAccess'
                         ]?.['@version'] ?? {},
                       'common:shortDescription':
-                        data?.administrativeInformation?.publicationAndOwnership?.[
+                        lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                          ?.publicationAndOwnership?.[
                           'common:referenceToEntitiesWithExclusiveAccess'
                         ]?.['common:shortDescription'],
                     },
                     'common:licenseType':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:licenseType'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:licenseType'],
                     'common:accessRestrictions':
-                      data?.administrativeInformation?.publicationAndOwnership?.[
-                        'common:accessRestrictions'
-                      ],
+                      lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.administrativeInformation
+                        ?.publicationAndOwnership?.['common:accessRestrictions'],
                   },
                 },
                 exchanges: {
@@ -2449,7 +2533,7 @@ export async function genLifeCycleModelProcesses(
     });
   });
 
-  data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
+  lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
     listToJson(newProcessInstance);
 
   return sumFinalProductGroups.filter((item) => item !== null);

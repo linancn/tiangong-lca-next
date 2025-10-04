@@ -1,6 +1,6 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
-import { getProcessDetailByIdAndVersion } from '@/services/processes/api';
+import { getProcessesByIdsAndVersion } from '@/services/processes/api';
 import { genProcessName } from '@/services/processes/util';
 import { CloseOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -128,13 +128,13 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.mainProduct' />}
           actionRef={mainProcuctTableRef}
           request={async () => {
-            const mainProduct = submodels.filter((e) => e.id === modelId);
-            const processData = mainProduct.map((submodel) => ({
-              id: submodel.id,
-              version: modelVersion,
-            }));
+            // const mainProduct = submodels.filter((e) => e.id === modelId);
+            // const processData = mainProduct.map((submodel) => ({
+            //   id: submodel.id,
+            //   version: modelVersion,
+            // }));
 
-            const result = await getProcessDetailByIdAndVersion(processData);
+            const result = await getProcessesByIdsAndVersion([modelId], modelVersion);
 
             if (result?.data && result.data.length > 0) {
               const data = result.data.map((item: any) => {
@@ -170,12 +170,11 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
           actionRef={subProcuctTableRef}
           request={async () => {
             const subProducts = submodels.filter((e) => e.id !== modelId);
-            const processData = subProducts.map((submodel) => ({
-              id: submodel.id,
-              version: modelVersion,
-            }));
+            const processIds = subProducts.map((submodel) => submodel.id);
 
-            const result = await getProcessDetailByIdAndVersion(processData);
+            const result = await getProcessesByIdsAndVersion(processIds, modelVersion);
+
+            console.log('result', result);
 
             if (result?.data && result.data.length > 0) {
               const data = result.data.map((item: any) => {

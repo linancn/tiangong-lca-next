@@ -29,7 +29,7 @@ export function genPortLabel(label: string, lang: string, nodeWidth: number) {
   return label !== labelSub ? labelSub + '...' : label;
 }
 
-export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any) {
+export function genLifeCycleModelJsonOrdered(id: string, data: any) {
   const nodes = data?.model?.nodes?.map((n: any, index: number) => {
     return {
       ...n,
@@ -89,14 +89,14 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any, oldData: any
 
   return removeEmptyObjects({
     lifeCycleModelDataSet: {
-      '@xmlns': oldData?.lifeCycleModelDataSet?.['@xmlns'],
-      '@xmlns:acme': oldData?.lifeCycleModelDataSet?.['@xmlns:acme'],
-      '@xmlns:common': oldData?.lifeCycleModelDataSet?.['@xmlns:common'],
-      '@xmlns:ecn': oldData?.lifeCycleModelDataSet?.['@xmlns:ecn'],
-      '@xmlns:xsi': oldData?.lifeCycleModelDataSet?.['@xmlns:xsi'],
-      '@locations': oldData?.lifeCycleModelDataSet?.['@locations'],
-      '@version': oldData?.lifeCycleModelDataSet?.['@version'],
-      '@xsi:schemaLocation': oldData?.lifeCycleModelDataSet?.['@xsi:schemaLocation'],
+      '@xmlns': 'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
+      '@xmlns:acme': 'http://acme.com/custom',
+      '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@locations': '../ILCDLocations.xml',
+      '@version': '1.1',
+      '@xsi:schemaLocation':
+        'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd',
       lifeCycleModelInformation: {
         dataSetInformation: {
           'common:UUID': id,

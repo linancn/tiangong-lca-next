@@ -836,26 +836,20 @@ export async function process_hybrid_search(
 
   return result;
 }
-export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
-  if (data && data.length) {
-    const ids = data.map((item) => item.id);
 
-    const resultByIds = await supabase
+export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
+  if (data && data.length > 0) {
+    const orConditions = data.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+
+    const result = await supabase
       .from('processes')
       .select('id,json,version, modified_at')
-      .in('id', ids);
+      .or(orConditions);
 
-    if (resultByIds?.data && resultByIds.data.length > 0) {
-      const result = resultByIds.data.filter((i) => {
-        const target = data.find((j) => j.id === i.id) || { id: '', version: '' };
-        return target.version === i.version;
-      });
-
-      return Promise.resolve({
-        data: result,
-        success: true,
-      });
-    }
+    return Promise.resolve({
+      data: result,
+      success: true,
+    });
   }
   return Promise.resolve({
     data: null,
@@ -957,9 +951,9 @@ export async function validateProcessesByIdAndVersion(id: string, version: strin
   if (resultVersion?.data && resultVersion.data.length > 0) {
     return true;
   }
-  const result = await supabase.from('processes').select('id,version').eq('id', id);
-  if (result?.data && result.data.length > 0) {
-    return true;
-  }
+  // const result = await supabase.from('processes').select('id,version').eq('id', id);
+  // if (result?.data && result.data.length > 0) {
+  //   return true;
+  // }
   return false;
 }
