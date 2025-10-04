@@ -15,7 +15,7 @@ import { getILCDClassification } from '../ilcd/api';
 import {
   createProcess,
   deleteProcess,
-  getProcessesByIdsAndVersion,
+  getProcessDetailByIdsAndVersion,
   getProcessesByIdsAndVersions,
   updateProcess,
   validateProcessesByIdAndVersion,
@@ -333,7 +333,8 @@ export async function updateLifeCycleModel(data: any) {
       jsonToList(oldData.submodels),
     );
 
-    const rule_verification = getRuleVerification(schema, newLifeCycleModelJsonOrdered)?.valid;
+    const rule_verification = await getRuleVerification(schema, newLifeCycleModelJsonOrdered)
+      ?.valid;
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       const oldSubmodels: any[] = jsonToList(oldData.submodels);
@@ -375,50 +376,58 @@ export async function updateLifeCycleModel(data: any) {
       if (updateResult.error) {
         console.error(updateResult.error);
       } else {
-        if (deleteOldSubmodels && deleteOldSubmodels.length > 0)
-          deleteOldSubmodels.forEach((o: any) => {
-            try {
-              deleteProcess(o.id, data.version);
-            } catch (error) {
-              console.error(error);
-            }
-          });
+        // 1) 删除旧的子模型：并发执行并等待完成
+        const deletionPromises: Promise<any>[] =
+          deleteOldSubmodels && deleteOldSubmodels.length > 0
+            ? deleteOldSubmodels.map((o: any) =>
+                deleteProcess(o.id, data.version).catch((error) => {
+                  console.error(error);
+                }),
+              )
+            : [];
 
+        // 2) 创建/更新新的子模型：并发执行并等待完成
+        let updatePromises: Promise<any>[] = [];
         if (newLifeCycleModelProcesses && newLifeCycleModelProcesses.length > 0) {
-          const { data: oldProcesses } = await getProcessesByIdsAndVersion(
+          const { data: oldProcesses } = await getProcessDetailByIdsAndVersion(
             newLifeCycleModelProcesses.map((n: any) => n.modelInfo.id),
             data.version,
           );
 
-          newLifeCycleModelProcesses.forEach(async (n: any) => {
-            if (n.option === 'update')
-              try {
-                const validate = await validateProcessesByIdAndVersion(
-                  n.modelInfo.id,
-                  data.version,
-                );
-                if (validate) {
-                  const oldProcess = oldProcesses?.find(
-                    (p: any) => p.id === n.modelInfo.id && p.version === data.version,
-                  );
-                  if (oldProcess) {
-                    overrideWithOldProcess(n.data, oldProcess.json);
+          updatePromises = newLifeCycleModelProcesses
+            .map((n: any) => {
+              return (async () => {
+                try {
+                  if (n.option === 'update') {
+                    const validate = await validateProcessesByIdAndVersion(
+                      n.modelInfo.id,
+                      data.version,
+                    );
+                    if (validate) {
+                      const oldProcess = oldProcesses?.find(
+                        (p: any) => p.id === n.modelInfo.id && p.version === data.version,
+                      );
+                      if (oldProcess) {
+                        overrideWithOldProcess(n.data, oldProcess.json);
+                      }
+                      return updateProcess(n.modelInfo.id, data.version, n.data.processDataSet);
+                    } else {
+                      return createProcess(n.modelInfo.id, n.data.processDataSet);
+                    }
+                  } else if (n.option === 'create') {
+                    return createProcess(n.modelInfo.id, n.data.processDataSet);
                   }
-                  await updateProcess(n.modelInfo.id, data.version, n.data.processDataSet);
-                } else {
-                  await createProcess(n.modelInfo.id, n.data.processDataSet);
+                } catch (error) {
+                  console.error(error);
                 }
-              } catch (error) {
-                console.error(error);
-              }
-            if (n.option === 'create')
-              try {
-                await createProcess(n.modelInfo.id, n.data.processDataSet);
-              } catch (error) {
-                console.error(error);
-              }
-          });
+              })();
+            })
+            .filter(Boolean) as Promise<any>[];
         }
+
+        // 等待所有删除与更新/创建完成，再返回结果
+        await Promise.all([...deletionPromises, ...updatePromises]);
+
         return updateResult?.data;
       }
     }

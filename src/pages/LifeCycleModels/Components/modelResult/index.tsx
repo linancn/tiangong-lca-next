@@ -1,7 +1,8 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
+import { ListPagination } from '@/services/general/data';
 import { getProcessesByIdsAndVersion } from '@/services/processes/api';
-import { genProcessName } from '@/services/processes/util';
+import { ProcessTable } from '@/services/processes/data';
 import { CloseOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Tooltip } from 'antd';
@@ -20,38 +21,45 @@ type Props = {
   actionType: 'view' | 'edit';
 };
 
-type ProcessTableItem = {
-  key: string;
-  id: string;
-  version: string;
-  name: string;
-  modifiedAt: Date;
-};
-
 const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, actionType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const subProcuctTableRef = useRef<ActionType>();
   const mainProcuctTableRef = useRef<ActionType>();
 
-  const columns: ProColumns<ProcessTableItem>[] = [
+  const columns: ProColumns<ProcessTable>[] = [
+    {
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
+      dataIndex: 'index',
+      valueType: 'index',
+      search: false,
+      width: 60,
+    },
     {
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
+      sorter: true,
       search: false,
-      width: 400,
+      render: (_, row) => {
+        return [
+          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+            {row.name}
+          </Tooltip>,
+        ];
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       search: false,
-      width: 120,
+      width: 100,
     },
     {
-      title: <FormattedMessage id='pages.table.title.modifiedAt' defaultMessage='Modified at' />,
+      title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
-      search: false,
-      width: 180,
       valueType: 'dateTime',
+      sorter: false,
+      search: false,
+      width: 120,
     },
     {
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
@@ -102,6 +110,8 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
           style={{ boxShadow: 'none' }}
           onClick={() => {
             setDrawerVisible(true);
+            mainProcuctTableRef.current?.reload();
+            subProcuctTableRef.current?.reload();
           }}
         />
       </Tooltip>
@@ -122,48 +132,17 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
-        <ProTable<ProcessTableItem>
+        <ProTable<ProcessTable, ListPagination>
           search={false}
           pagination={false}
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.mainProduct' />}
           actionRef={mainProcuctTableRef}
           request={async () => {
-            // const mainProduct = submodels.filter((e) => e.id === modelId);
-            // const processData = mainProduct.map((submodel) => ({
-            //   id: submodel.id,
-            //   version: modelVersion,
-            // }));
-
-            const result = await getProcessesByIdsAndVersion([modelId], modelVersion);
-
-            if (result?.data && result.data.length > 0) {
-              const data = result.data.map((item: any) => {
-                const processInfo = item?.json?.processDataSet?.processInformation;
-                return {
-                  key: `${item.id}:${item.version}`,
-                  id: item.id,
-                  version: item.version,
-                  name: genProcessName(processInfo?.dataSetInformation?.name ?? {}, lang) || '-',
-                  modifiedAt: new Date(item.modified_at),
-                };
-              });
-
-              return {
-                data,
-                success: true,
-                total: data.length,
-              };
-            }
-
-            return {
-              data: [],
-              success: true,
-              total: 0,
-            };
+            return getProcessesByIdsAndVersion([modelId], modelVersion, lang);
           }}
           columns={columns}
         />
-        <ProTable<ProcessTableItem>
+        <ProTable<ProcessTable, ListPagination>
           search={false}
           pagination={false}
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.subProduct' />}
@@ -172,34 +151,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
             const subProducts = submodels.filter((e) => e.id !== modelId);
             const processIds = subProducts.map((submodel) => submodel.id);
 
-            const result = await getProcessesByIdsAndVersion(processIds, modelVersion);
-
-            console.log('result', result);
-
-            if (result?.data && result.data.length > 0) {
-              const data = result.data.map((item: any) => {
-                const processInfo = item?.json?.processDataSet?.processInformation;
-                return {
-                  key: `${item.id}:${item.version}`,
-                  id: item.id,
-                  version: item.version,
-                  name: genProcessName(processInfo?.dataSetInformation?.name ?? {}, lang) || '-',
-                  modifiedAt: new Date(item.modified_at),
-                };
-              });
-
-              return {
-                data,
-                success: true,
-                total: data.length,
-              };
-            }
-
-            return {
-              data: [],
-              success: true,
-              total: 0,
-            };
+            return getProcessesByIdsAndVersion(processIds, modelVersion, lang);
           }}
           columns={columns}
         />
