@@ -10,6 +10,8 @@ nvm alias default 22
 nvm use
 
 npm install
+
+npm update && npm ci
 ```
 
 ## Configuration Files
