@@ -3,6 +3,13 @@
  * Path: src/services/general/util.ts
  */
 
+// Mock external API dependencies
+jest.mock('@/services/flowproperties/api');
+jest.mock('@/services/flows/api');
+jest.mock('@/services/unitgroups/api');
+
+import { getReferenceUnitGroups } from '@/services/flowproperties/api';
+import { getFlowProperties } from '@/services/flows/api';
 import {
   classificationToJsonList,
   classificationToString,
@@ -10,12 +17,15 @@ import {
   comparePercentDesc,
   formatDateTime,
   genClassIdList,
+  genClassJsonZH,
   genClassStr,
   getDataSource,
   getLang,
   getLangJson,
   getLangList,
   getLangText,
+  getRuleVerification,
+  getUnitData,
   isValidURL,
   jsonToList,
   listToJson,
@@ -25,6 +35,7 @@ import {
   toAmountNumber,
   validatePasswordStrength,
 } from '@/services/general/util';
+import { getReferenceUnits } from '@/services/unitgroups/api';
 
 // Mock classification data
 const mockClassificationData = [
@@ -56,6 +67,231 @@ const mockClassificationData = [
 ];
 
 describe('General Utility Functions', () => {
+  // Reset mocks before each test
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getUnitData', () => {
+    it('should fetch and attach unit data for flow type', async () => {
+      const mockData = [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '01.00.000',
+        },
+      ];
+
+      const mockFlowProperties = {
+        data: [
+          {
+            id: 'flow-1',
+            version: '01.00.000',
+            refFlowPropertytId: 'fp-1',
+            typeOfDataSet: 'Elementary flow',
+          },
+        ],
+      };
+
+      const mockUnitGroups = {
+        data: [
+          {
+            id: 'fp-1',
+            version: '01.00.000',
+            refUnitGroupId: 'ug-1',
+          },
+        ],
+      };
+
+      const mockUnits = {
+        data: [
+          {
+            id: 'ug-1',
+            version: '01.00.000',
+            name: 'kilogram',
+          },
+        ],
+      };
+
+      (getFlowProperties as jest.Mock).mockResolvedValue(mockFlowProperties);
+      (getReferenceUnitGroups as jest.Mock).mockResolvedValue(mockUnitGroups);
+      (getReferenceUnits as jest.Mock).mockResolvedValue(mockUnits);
+
+      const result = await getUnitData('flow', mockData);
+
+      expect(getFlowProperties).toHaveBeenCalledWith([{ id: 'flow-1', version: '01.00.000' }]);
+      expect(result).toEqual([
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '01.00.000',
+          typeOfDataSet: 'Elementary flow',
+          refUnitRes: {
+            id: 'ug-1',
+            version: '01.00.000',
+            name: 'kilogram',
+          },
+        },
+      ]);
+    });
+
+    it('should fetch and attach unit data for unitgroup type', async () => {
+      const mockData = [
+        {
+          refUnitGroupId: 'ug-1',
+          version: '01.00.000',
+        },
+      ];
+
+      const mockUnits = {
+        data: [
+          {
+            id: 'ug-1',
+            version: '01.00.000',
+            name: 'meter',
+          },
+        ],
+      };
+
+      (getReferenceUnits as jest.Mock).mockResolvedValue(mockUnits);
+
+      const result = await getUnitData('unitgroup', mockData);
+
+      expect(getReferenceUnits).toHaveBeenCalledWith([{ id: 'ug-1', version: '01.00.000' }]);
+      expect(result).toEqual([
+        {
+          refUnitGroupId: 'ug-1',
+          version: '01.00.000',
+          refUnitRes: {
+            id: 'ug-1',
+            version: '01.00.000',
+            name: 'meter',
+          },
+        },
+      ]);
+    });
+
+    it('should fetch and attach unit data for flowproperty type', async () => {
+      const mockData = [
+        {
+          referenceToFlowPropertyDataSetId: 'fp-1',
+          referenceToFlowPropertyDataSetVersion: '01.00.000',
+        },
+      ];
+
+      const mockUnitGroups = {
+        data: [
+          {
+            id: 'fp-1',
+            version: '01.00.000',
+            refUnitGroupId: 'ug-1',
+          },
+        ],
+      };
+
+      const mockUnits = {
+        data: [
+          {
+            id: 'ug-1',
+            version: '01.00.000',
+            name: 'liter',
+          },
+        ],
+      };
+
+      (getReferenceUnitGroups as jest.Mock).mockResolvedValue(mockUnitGroups);
+      (getReferenceUnits as jest.Mock).mockResolvedValue(mockUnits);
+
+      const result = await getUnitData('flowproperty', mockData);
+
+      expect(getReferenceUnitGroups).toHaveBeenCalledWith([{ id: 'fp-1', version: '01.00.000' }]);
+      expect(result).toEqual([
+        {
+          referenceToFlowPropertyDataSetId: 'fp-1',
+          referenceToFlowPropertyDataSetVersion: '01.00.000',
+          refUnitRes: {
+            id: 'ug-1',
+            version: '01.00.000',
+            name: 'liter',
+          },
+        },
+      ]);
+    });
+
+    it('should handle version mismatch and fallback to ID only match', async () => {
+      const mockData = [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '01.00.000',
+        },
+      ];
+
+      const mockFlowProperties = {
+        data: [
+          {
+            id: 'flow-1',
+            version: '02.00.000', // Different version
+            refFlowPropertytId: 'fp-1',
+            typeOfDataSet: 'Product flow',
+          },
+        ],
+      };
+
+      const mockUnitGroups = {
+        data: [
+          {
+            id: 'fp-1',
+            version: '02.00.000',
+            refUnitGroupId: 'ug-1',
+          },
+        ],
+      };
+
+      const mockUnits = {
+        data: [
+          {
+            id: 'ug-1',
+            version: '02.00.000',
+            name: 'kilogram',
+          },
+        ],
+      };
+
+      (getFlowProperties as jest.Mock).mockResolvedValue(mockFlowProperties);
+      (getReferenceUnitGroups as jest.Mock).mockResolvedValue(mockUnitGroups);
+      (getReferenceUnits as jest.Mock).mockResolvedValue(mockUnits);
+
+      const result = (await getUnitData('flow', mockData)) as any[];
+
+      expect(result[0].typeOfDataSet).toBe('Product flow');
+      expect(result[0].refUnitRes.name).toBe('kilogram');
+    });
+
+    it('should handle empty data array', async () => {
+      const result = await getUnitData('flow', []);
+
+      expect(result).toEqual([]);
+      expect(getFlowProperties).toHaveBeenCalledWith([]);
+    });
+
+    it('should handle missing refUnitRes when unit not found', async () => {
+      const mockData = [
+        {
+          refUnitGroupId: 'ug-unknown',
+          version: '01.00.000',
+        },
+      ];
+
+      const mockUnits = {
+        data: [],
+      };
+
+      (getReferenceUnits as jest.Mock).mockResolvedValue(mockUnits);
+
+      const result = (await getUnitData('unitgroup', mockData)) as any[];
+
+      expect(result[0].refUnitRes).toBeUndefined();
+    });
+  });
+
   describe('removeEmptyObjects', () => {
     it('should remove empty objects from nested structure', () => {
       const input = {
@@ -626,6 +862,244 @@ describe('General Utility Functions', () => {
 
     it('should match partial paths', () => {
       expect(getDataSource('/prefix/mydata/suffix')).toBe('my');
+    });
+  });
+
+  describe('genClassificationZH', () => {
+    it('should generate Chinese classification from English', () => {
+      const classifications = [
+        { '@level': '0', '#text': 'Category A' },
+        { '@level': '1', '#text': 'Subcategory B' },
+      ];
+      const categoryData = [
+        {
+          value: 'Category A',
+          label: '分类 A',
+          children: [
+            {
+              value: 'Subcategory B',
+              label: '子分类 B',
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const result = genClassJsonZH(classifications, 0, categoryData);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ '@level': '0', '#text': '分类 A' });
+      expect(result[1]).toEqual({ '@level': '1', '#text': '子分类 B' });
+    });
+
+    it('should preserve original text when no translation found', () => {
+      const classifications = [{ '@level': '0', '#text': 'Unknown Category' }];
+      const categoryData: any[] = [];
+
+      const result = genClassJsonZH(classifications, 0, categoryData);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({ '@level': '0', '#text': 'Unknown Category' });
+    });
+
+    it('should return empty array for empty classifications', () => {
+      const classifications: any[] = [];
+      const categoryData: any[] = [];
+
+      const result = genClassJsonZH(classifications, 0, categoryData);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getRuleVerification', () => {
+    it('should validate required fields and return errors', () => {
+      const schema = {
+        field1: {
+          rules: [
+            {
+              required: true,
+              messageKey: 'validator.required',
+              defaultMessage: 'This field is required',
+            },
+          ],
+        },
+        field2: {
+          rules: [],
+        },
+      };
+
+      const data = {
+        field1: '',
+        field2: 'value',
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toEqual({
+        path: 'field1',
+        message: 'This field is required',
+        rule: 'required',
+      });
+    });
+
+    it('should validate multilingual fields require English', () => {
+      const schema = {
+        name: {
+          value: [{ '@xml:lang': 'zh', '#text': '名称' }],
+          rules: [
+            {
+              required: true,
+              messageKey: 'validator.required',
+              defaultMessage: 'Name is required',
+            },
+          ],
+        },
+      };
+
+      const data = {
+        name: [{ '@xml:lang': 'zh', '#text': '名称' }],
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(false);
+      const englishError = result.errors.find(
+        (e: { rule: string }) => e.rule === 'english_required',
+      );
+      expect(englishError).toBeDefined();
+      expect(englishError?.path).toBe('name');
+    });
+
+    it('should pass validation when all required fields are present', () => {
+      const schema = {
+        field1: {
+          rules: [
+            {
+              required: true,
+              messageKey: 'validator.required',
+              defaultMessage: 'This field is required',
+            },
+          ],
+        },
+        field2: {
+          value: [{ '@xml:lang': 'en', '#text': 'English text' }],
+          rules: [
+            {
+              required: true,
+              messageKey: 'validator.required',
+              defaultMessage: 'Field 2 is required',
+            },
+          ],
+        },
+      };
+
+      const data = {
+        field1: 'value1',
+        field2: [
+          { '@xml:lang': 'en', '#text': 'English text' },
+          { '@xml:lang': 'zh', '#text': '中文文本' },
+        ],
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should handle nested object paths', () => {
+      const schema = {
+        parent: {
+          child: {
+            rules: [
+              {
+                required: true,
+                messageKey: 'validator.required',
+                defaultMessage: 'Child field is required',
+              },
+            ],
+          },
+        },
+      };
+
+      const data = {
+        parent: {
+          child: '',
+        },
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].path).toBe('parent.child');
+    });
+
+    it('should skip validation for review and compliance paths', () => {
+      const schema = {
+        modellingAndValidation: {
+          validation: {
+            review: {
+              field: {
+                rules: [
+                  {
+                    required: true,
+                    messageKey: 'validator.required',
+                    defaultMessage: 'This field is required',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const data = {
+        modellingAndValidation: {
+          validation: {
+            review: {
+              field: '',
+            },
+          },
+        },
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      // Review fields should be skipped
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should handle array items validation', () => {
+      const schema = {
+        items: {
+          0: {
+            name: {
+              rules: [
+                {
+                  required: true,
+                  messageKey: 'validator.required',
+                  defaultMessage: 'Item name is required',
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const data = {
+        items: [{ name: '' }, { name: 'valid' }],
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThanOrEqual(1);
+      expect(result.errors[0].path).toContain('items.0.name');
     });
   });
 });
