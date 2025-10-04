@@ -15,15 +15,22 @@
 
 import {
   acceptTeamInvitationApi,
+  addReviewMemberApi,
   addRoleApi,
+  addSystemMemberApi,
   createTeamMessage,
   delRoleApi,
+  getLatestRolesOfMine,
+  getReviewMembersApi,
+  getReviewUserRoleApi,
+  getRoleByUserId,
   getRoleByuserId,
   getSystemMembersApi,
   getSystemUserRoleApi,
   getTeamInvitationStatusApi,
   getTeamRoles,
   getUserIdsByTeamIds,
+  getUserManageTableData,
   getUserRoles,
   getUserTeamId,
   reInvitedApi,
@@ -871,6 +878,391 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           success: true,
         });
         consoleLogSpy.mockRestore();
+      });
+    });
+
+    describe('addSystemMemberApi', () => {
+      const { getUserIdByEmail } = jest.requireMock('@/services/users/api');
+
+      it('should add system member successfully', async () => {
+        const email = 'newmember@test.com';
+        const newUserId = 'new-user-id';
+        getUserIdByEmail.mockResolvedValue(newUserId);
+
+        const mockInsert = jest.fn().mockResolvedValue({ error: null });
+        supabase.from.mockReturnValue({
+          insert: mockInsert,
+        });
+
+        const result = await addSystemMemberApi(email);
+
+        expect(getUserIdByEmail).toHaveBeenCalledWith(email);
+        expect(mockInsert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            user_id: newUserId,
+            team_id: '00000000-0000-0000-0000-000000000000',
+            role: 'member',
+          }),
+        );
+        expect(result).toEqual({ success: true });
+      });
+
+      it('should return error when user not registered', async () => {
+        getUserIdByEmail.mockResolvedValue(null);
+
+        const result = await addSystemMemberApi('nonexistent@test.com');
+
+        expect(result).toEqual({
+          success: false,
+          error: 'notRegistered',
+        });
+      });
+
+      it('should handle database errors', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        getUserIdByEmail.mockResolvedValue('user-id');
+
+        const mockInsert = jest.fn().mockResolvedValue({ error: new Error('DB error') });
+        supabase.from.mockReturnValue({
+          insert: mockInsert,
+        });
+
+        const result = await addSystemMemberApi('test@test.com');
+
+        expect(result).toEqual({ success: false });
+        consoleLogSpy.mockRestore();
+      });
+    });
+  });
+
+  describe('Review role management', () => {
+    const { getUserManageComments } = jest.requireMock('@/services/comments/api');
+
+    describe('getReviewUserRoleApi', () => {
+      it('should get review user role', async () => {
+        const mockRole = { user_id: mockUserId, role: 'review-admin' };
+
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: mockRole, error: null }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+
+        const result = await getReviewUserRoleApi();
+
+        expect(queryChain.eq).toHaveBeenCalledWith('user_id', mockUserId);
+        expect(queryChain.eq).toHaveBeenCalledWith(
+          'team_id',
+          '00000000-0000-0000-0000-000000000000',
+        );
+        expect(queryChain.in).toHaveBeenCalledWith('role', ['review-admin', 'review-member']);
+        expect(result).toEqual(mockRole);
+      });
+
+      it('should return null on error', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: new Error('DB error') }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+
+        const result = await getReviewUserRoleApi();
+
+        expect(result).toBeNull();
+        consoleLogSpy.mockRestore();
+      });
+    });
+
+    describe('getUserManageTableData', () => {
+      it('should get user manage table data with comments', async () => {
+        const params = { pageSize: 10, current: 1 };
+        const sort = { created_at: 'descend' as const };
+        const mockRoles = [
+          { user_id: 'reviewer1', role: 'review-admin' },
+          { user_id: 'reviewer2', role: 'review-member' },
+        ];
+        const mockUsers = [
+          { id: 'reviewer1', email: 'reviewer1@test.com', display_name: 'Reviewer 1' },
+          { id: 'reviewer2', email: 'reviewer2@test.com', display_name: 'Reviewer 2' },
+        ];
+        const mockComments = [
+          { reviewer_id: 'reviewer1', state_code: 0 },
+          { reviewer_id: 'reviewer1', state_code: 1 },
+          { reviewer_id: 'reviewer2', state_code: 0 },
+          { reviewer_id: 'reviewer2', state_code: 2 },
+        ];
+
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockResolvedValue({ data: mockRoles, error: null, count: 2 }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+        getUsersByIds.mockResolvedValue(mockUsers);
+        getUserManageComments.mockResolvedValue({ data: mockComments });
+
+        const result = await getUserManageTableData(params, sort);
+
+        expect(queryChain.in).toHaveBeenCalledWith('role', ['review-admin', 'review-member']);
+        expect(result).toEqual({
+          data: [
+            {
+              user_id: 'reviewer1',
+              role: 'review-admin',
+              email: 'reviewer1@test.com',
+              display_name: 'Reviewer 1',
+              team_id: '00000000-0000-0000-0000-000000000000',
+              pendingCount: 1,
+              reviewedCount: 1,
+            },
+            {
+              user_id: 'reviewer2',
+              role: 'review-member',
+              email: 'reviewer2@test.com',
+              display_name: 'Reviewer 2',
+              team_id: '00000000-0000-0000-0000-000000000000',
+              pendingCount: 1,
+              reviewedCount: 1,
+            },
+          ],
+          success: true,
+          total: 2,
+        });
+      });
+
+      it('should filter by specific role', async () => {
+        const params = { pageSize: 10, current: 1 };
+        const sort = {};
+        const mockRoles = [{ user_id: 'reviewer1', role: 'review-admin' }];
+        const mockUsers = [{ id: 'reviewer1', email: 'reviewer1@test.com', display_name: 'R1' }];
+
+        // The chain builds: select -> eq(team_id) -> in(role) -> order -> range -> eq(role)
+        const mockEqForRole = jest
+          .fn()
+          .mockResolvedValue({ data: mockRoles, error: null, count: 1 });
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnValue({
+            eq: mockEqForRole, // This is the conditional role filter
+          }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+        getUsersByIds.mockResolvedValue(mockUsers);
+        getUserManageComments.mockResolvedValue({ data: [] });
+
+        await getUserManageTableData(params, sort, 'review-admin');
+
+        // Should be called for the role filter after range
+        expect(mockEqForRole).toHaveBeenCalledWith('role', 'review-admin');
+      });
+
+      it('should handle errors gracefully', async () => {
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockRejectedValue(new Error('DB error')),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+
+        const result = await getUserManageTableData({}, {});
+
+        expect(result).toEqual({
+          data: [],
+          total: 0,
+          success: true,
+        });
+      });
+    });
+
+    describe('getReviewMembersApi', () => {
+      it('should get review members', async () => {
+        const params = { pageSize: 10, current: 1 };
+        const sort = { created_at: 'descend' as const };
+        const mockRoles = [
+          { user_id: 'reviewer1', role: 'review-member' },
+          { user_id: 'reviewer2', role: 'review-member' },
+        ];
+        const mockUsers = [
+          { id: 'reviewer1', email: 'r1@test.com', display_name: 'R1' },
+          { id: 'reviewer2', email: 'r2@test.com', display_name: 'R2' },
+        ];
+
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockResolvedValue({ data: mockRoles, error: null, count: 2 }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+        getUsersByIds.mockResolvedValue(mockUsers);
+
+        const result = await getReviewMembersApi(params, sort);
+
+        expect(queryChain.in).toHaveBeenCalledWith('role', ['review-admin', 'review-member']);
+        expect(result).toEqual({
+          data: [
+            {
+              user_id: 'reviewer1',
+              role: 'review-member',
+              email: 'r1@test.com',
+              display_name: 'R1',
+              team_id: '00000000-0000-0000-0000-000000000000',
+            },
+            {
+              user_id: 'reviewer2',
+              role: 'review-member',
+              email: 'r2@test.com',
+              display_name: 'R2',
+              team_id: '00000000-0000-0000-0000-000000000000',
+            },
+          ],
+          success: true,
+          total: 2,
+        });
+      });
+
+      it('should handle errors gracefully', async () => {
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockRejectedValue(new Error('DB error')),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+
+        const result = await getReviewMembersApi({}, {});
+
+        expect(result).toEqual({
+          data: [],
+          total: 0,
+          success: true,
+        });
+      });
+    });
+
+    describe('addReviewMemberApi', () => {
+      it('should add review member successfully', async () => {
+        const userId = 'new-reviewer-id';
+
+        const mockInsert = jest.fn().mockResolvedValue({ error: null });
+        supabase.from.mockReturnValue({
+          insert: mockInsert,
+        });
+
+        const result = await addReviewMemberApi(userId);
+
+        expect(mockInsert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            user_id: userId,
+            team_id: '00000000-0000-0000-0000-000000000000',
+            role: 'review-member',
+          }),
+        );
+        expect(result).toEqual({ success: true, error: null });
+      });
+
+      it('should handle errors', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        const mockError = new Error('DB error');
+
+        const mockInsert = jest.fn().mockResolvedValue({ error: mockError });
+        supabase.from.mockReturnValue({
+          insert: mockInsert,
+        });
+
+        const result = await addReviewMemberApi('user-id');
+
+        expect(result).toEqual({ success: false, error: mockError });
+        consoleLogSpy.mockRestore();
+      });
+    });
+  });
+
+  describe('Utility functions', () => {
+    describe('getLatestRolesOfMine', () => {
+      it('should get latest role of current user', async () => {
+        getUserId.mockResolvedValue(mockUserId);
+        const mockRole = {
+          user_id: mockUserId,
+          team_id: mockTeamId,
+          role: 'admin',
+          modified_at: '2024-01-01T00:00:00Z',
+        };
+
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: mockRole }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+
+        const result = await getLatestRolesOfMine();
+
+        expect(getUserId).toHaveBeenCalled();
+        expect(queryChain.eq).toHaveBeenCalledWith('user_id', mockUserId);
+        expect(queryChain.in).toHaveBeenCalledWith('role', ['admin', 'member', 'is_invited']);
+        expect(queryChain.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+        expect(queryChain.limit).toHaveBeenCalledWith(1);
+        expect(result).toEqual(mockRole);
+      });
+
+      it('should return null when user ID not found', async () => {
+        getUserId.mockResolvedValue(null);
+
+        const result = await getLatestRolesOfMine();
+
+        expect(result).toBeNull();
+        expect(supabase.from).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('getRoleByUserId', () => {
+      it('should get all roles for current user', async () => {
+        getUserId.mockResolvedValue(mockUserId);
+        const mockRoles = [
+          { team_id: 'team1', role: 'admin' },
+          { team_id: 'team2', role: 'member' },
+        ];
+
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockResolvedValue({ data: mockRoles }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+
+        const result = await getRoleByUserId();
+
+        expect(getUserId).toHaveBeenCalled();
+        expect(queryChain.select).toHaveBeenCalledWith('team_id,role');
+        expect(queryChain.eq).toHaveBeenCalledWith('user_id', mockUserId);
+        expect(result).toEqual(mockRoles);
       });
     });
   });
