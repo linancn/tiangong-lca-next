@@ -13,11 +13,17 @@
 import {
   createFlowproperties,
   deleteFlowproperties,
+  flowproperty_hybrid_search,
+  getFlowpropertyDetail,
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
+  getReferenceUnitGroup,
+  getReferenceUnitGroups,
   updateFlowproperties,
 } from '@/services/flowproperties/api';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { createMockSession, createQueryBuilder } from '../../../helpers/mockBuilders';
+import { mockILCDClassificationResponse, mockMultilingualText } from '../../../helpers/testData';
 
 // Mock dependencies
 jest.mock('@/services/supabase', () => ({
@@ -56,36 +62,18 @@ jest.mock('@/services/general/api', () => ({
 
 const { supabase } = jest.requireMock('@/services/supabase');
 const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperties/util');
-const { getRuleVerification, getLangText, classificationToString, jsonToList } =
-  jest.requireMock('@/services/general/util');
+const {
+  getRuleVerification,
+  getLangText,
+  classificationToString,
+  jsonToList,
+  genClassificationZH,
+} = jest.requireMock('@/services/general/util');
 const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
-const { getTeamIdByUserId } = jest.requireMock('@/services/general/api');
-
-// Helper to create query builder mock
-const createQueryBuilder = <T>(resolvedValue: T) => {
-  const builder: any = {
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    neq: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    ilike: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(resolvedValue),
-    then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
-  };
-  return builder;
-};
+const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
-  const mockSession = {
-    data: {
-      session: {
-        user: { id: 'user-123' },
-        access_token: 'test-token',
-      },
-    },
-  };
+  const mockSession = createMockSession('user-123', 'test-token');
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -376,6 +364,100 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       });
       consoleLogSpy.mockRestore();
     });
+
+    it('should localize flow properties for zh language', async () => {
+      const params = { current: 1, pageSize: 10 };
+      const sort = {};
+
+      const builder = createQueryBuilder({
+        data: [
+          {
+            id: 'fp-zh',
+            version: '01.00.000',
+            'common:name': mockMultilingualText,
+            'common:class': mockMultilingualText,
+            'common:generalComment': mockMultilingualText,
+            '@refObjectId': 'ug-1',
+            'common:shortDescription': mockMultilingualText,
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+        count: 1,
+      });
+
+      supabase.from.mockReturnValue(builder);
+
+      jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
+      genClassificationZH.mockReturnValue(['第0级分类']);
+      classificationToString.mockReturnValue('第0级分类');
+      getLangText.mockImplementation((value: any, lang: string) => {
+        if (Array.isArray(value)) {
+          return value.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '';
+        }
+        return typeof value === 'string' ? value : '';
+      });
+      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+
+      const result = await getFlowpropertyTableAll(params, sort, 'zh', 'tg', [], undefined);
+
+      expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+      expect(getILCDClassification).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(genClassificationZH).toHaveBeenCalledWith(
+        [{ id: 'class-id-1' }],
+        mockILCDClassificationResponse.data,
+      );
+      expect(result.success).toBe(true);
+      expect(result.data[0]).toMatchObject({
+        id: 'fp-zh',
+        name: '中文文本',
+        classification: '第0级分类',
+        refUnitGroupId: 'ug-1',
+      });
+      expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
+    });
+
+    it('should fallback gracefully when mapping throws', async () => {
+      const builder = createQueryBuilder({
+        data: [
+          {
+            id: 'fp-error',
+            version: '01.00.000',
+            'common:class': null,
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      });
+
+      supabase.from.mockReturnValue(builder);
+      jsonToList.mockImplementationOnce(() => {
+        throw new Error('parse error');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getFlowpropertyTableAll(
+        { current: 1, pageSize: 10 },
+        {},
+        'en',
+        'tg',
+        [],
+        undefined,
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([
+        {
+          id: 'fp-error',
+        },
+      ]);
+
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe('getFlowpropertyTablePgroongaSearch', () => {
@@ -488,6 +570,351 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           state_code: 100,
         }),
       );
+    });
+
+    it('should localize PGroonga results for zh language', async () => {
+      const searchResult: any = [
+        {
+          id: 'fp-zh',
+          version: '01.00.000',
+          json: {
+            flowPropertyDataSet: {
+              flowPropertiesInformation: {
+                dataSetInformation: {
+                  'common:name': mockMultilingualText,
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': mockMultilingualText,
+                    },
+                  },
+                  'common:generalComment': mockMultilingualText,
+                },
+                quantitativeReference: {
+                  referenceToReferenceUnitGroup: {
+                    '@refObjectId': 'ug-1',
+                    'common:shortDescription': mockMultilingualText,
+                  },
+                },
+              },
+            },
+          },
+          modified_at: '2024-01-01T00:00:00Z',
+          team_id: 'team-1',
+          total_count: 1,
+        },
+      ];
+
+      supabase.rpc.mockResolvedValue({ data: searchResult, error: null });
+      jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
+      genClassificationZH.mockReturnValue(['第0级分类']);
+      classificationToString.mockReturnValue('第0级分类');
+      getLangText.mockImplementation((value: any, lang: string) => {
+        if (Array.isArray(value)) {
+          return value.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '';
+        }
+        return typeof value === 'string' ? value : '';
+      });
+      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+
+      const result = await getFlowpropertyTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        'zh',
+        'tg',
+        '质量',
+        {},
+        undefined,
+      );
+
+      expect(getILCDClassification).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(genClassificationZH).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+      expect(result.total).toBe(1);
+      expect(result.data[0]).toMatchObject({
+        id: 'fp-zh',
+        name: '中文文本',
+        classification: '第0级分类',
+        refUnitGroupId: 'ug-1',
+      });
+    });
+  });
+
+  describe('flowproperty_hybrid_search', () => {
+    it('should map hybrid search results for zh language', async () => {
+      const params = { current: 1, pageSize: 10 };
+      const hybridResult: any = [
+        {
+          id: 'fp-hybrid',
+          version: '01.00.000',
+          json: {
+            flowPropertyDataSet: {
+              flowPropertiesInformation: {
+                dataSetInformation: {
+                  'common:name': mockMultilingualText,
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': mockMultilingualText,
+                    },
+                  },
+                  'common:generalComment': mockMultilingualText,
+                },
+                quantitativeReference: {
+                  referenceToReferenceUnitGroup: {
+                    '@refObjectId': 'ug-1',
+                    'common:shortDescription': mockMultilingualText,
+                  },
+                },
+              },
+            },
+          },
+          modified_at: '2024-01-01T00:00:00Z',
+          team_id: 'team-1',
+        },
+      ];
+      hybridResult.total_count = 1;
+
+      supabase.functions.invoke.mockResolvedValue({ data: { data: hybridResult }, error: null });
+      jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
+      genClassificationZH.mockReturnValue(['第0级分类']);
+      classificationToString.mockReturnValue('第0级分类');
+      getLangText.mockImplementation((value: any, lang: string) => {
+        if (Array.isArray(value)) {
+          return value.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '';
+        }
+        return typeof value === 'string' ? value : '';
+      });
+      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+
+      const result = await flowproperty_hybrid_search(params, 'zh', 'tg', '质量', {}, 100);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith(
+        'flowproperty_hybrid_search',
+        expect.objectContaining({
+          body: {
+            query: '质量',
+            filter: {},
+            state_code: 100,
+          },
+        }),
+      );
+      expect(getILCDClassification).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(result.success).toBe(true);
+      expect(result.total).toBe(1);
+      expect(result.data[0]).toMatchObject({
+        id: 'fp-hybrid',
+        name: '中文文本',
+        classification: '第0级分类',
+        refUnitGroupId: 'ug-1',
+      });
+    });
+
+    it('should return empty success when hybrid search yields no data', async () => {
+      supabase.functions.invoke.mockResolvedValue({ data: { data: [] }, error: null });
+
+      const result = await flowproperty_hybrid_search(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'test',
+        {},
+        undefined,
+      );
+
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
+    });
+
+    it('should return raw result when no active session', async () => {
+      supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
+
+      const result = await flowproperty_hybrid_search(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'test',
+        {},
+        undefined,
+      );
+
+      expect(result).toEqual({});
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getFlowpropertyDetail', () => {
+    it('should delegate to getDataDetail with flowproperties table', async () => {
+      const mockDetail = { data: { id: 'fp-1' }, success: true };
+      getDataDetail.mockResolvedValue(mockDetail);
+
+      const result = await getFlowpropertyDetail('fp-1', '01.00.000');
+
+      expect(getDataDetail).toHaveBeenCalledWith('fp-1', '01.00.000', 'flowproperties');
+      expect(result).toEqual(mockDetail);
+    });
+  });
+
+  describe('getReferenceUnitGroups', () => {
+    const validId1 = '12345678-1234-1234-1234-1234567890ab';
+    const validId2 = 'abcdefab-cdef-cdef-cdef-abcdefabcdef';
+
+    it('should fetch unit groups and match requested params', async () => {
+      const supabaseResponse = {
+        data: [
+          {
+            id: validId1,
+            version: '01.00.000',
+            'common:name': mockMultilingualText,
+            referenceToReferenceUnitGroup: {
+              '@refObjectId': 'ug-1',
+              'common:shortDescription': mockMultilingualText,
+            },
+          },
+          {
+            id: validId2,
+            version: '03.00.000',
+            'common:name': mockMultilingualText,
+            referenceToReferenceUnitGroup: {
+              '@refObjectId': 'ug-2',
+              'common:shortDescription': mockMultilingualText,
+            },
+          },
+        ],
+        error: null,
+      };
+
+      const builder = createQueryBuilder(supabaseResponse);
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getReferenceUnitGroups([
+        { id: validId1, version: '01.00.000' },
+        { id: validId2, version: '02.00.000' },
+        { id: 'short-id', version: '01.00.000' },
+      ]);
+
+      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
+      expect(builder.in).toHaveBeenCalledWith('id', [validId1, validId2]);
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([
+        {
+          id: validId1,
+          version: '01.00.000',
+          name: mockMultilingualText,
+          refUnitGroupId: 'ug-1',
+          refUnitGroupShortDescription: mockMultilingualText,
+        },
+        {
+          id: validId2,
+          version: '03.00.000',
+          name: mockMultilingualText,
+          refUnitGroupId: 'ug-2',
+          refUnitGroupShortDescription: mockMultilingualText,
+        },
+        {
+          id: undefined,
+          version: undefined,
+          name: '-',
+          refUnitGroupId: '-',
+          refUnitGroupShortDescription: {},
+        },
+      ]);
+    });
+
+    it('should return empty result when no valid ids provided', async () => {
+      const result = await getReferenceUnitGroups([{ id: 'short-id', version: '01.00.000' }]);
+
+      expect(result).toEqual({
+        data: [],
+        success: false,
+      });
+      expect(supabase.from).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getReferenceUnitGroup', () => {
+    const validId = 'abcdef12-3456-7890-abcd-ef1234567890';
+
+    it('should return matching unit group for id and version', async () => {
+      const mockEqVersion = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: validId,
+            version: '01.00.000',
+            'common:name': mockMultilingualText,
+            referenceToReferenceUnitGroup: {
+              '@refObjectId': 'ug-1',
+              'common:shortDescription': mockMultilingualText,
+            },
+          },
+        ],
+      });
+      const mockEqId = jest.fn().mockReturnValue({ eq: mockEqVersion });
+      const mockSelect = jest.fn().mockReturnValue({ eq: mockEqId });
+
+      supabase.from.mockReturnValueOnce({ select: mockSelect });
+
+      const result = await getReferenceUnitGroup(validId, '01.00.000');
+
+      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
+      expect(result).toEqual({
+        data: {
+          id: validId,
+          version: '01.00.000',
+          name: mockMultilingualText,
+          refUnitGroupId: 'ug-1',
+          refUnitGroupShortDescription: mockMultilingualText,
+        },
+        success: true,
+      });
+    });
+
+    it('should fallback to latest version when specific version missing', async () => {
+      const mockMissingVersion = jest.fn().mockResolvedValue({ data: [] });
+      const mockEqIdFirst = jest.fn().mockReturnValue({ eq: mockMissingVersion });
+      const mockSelectFirst = jest.fn().mockReturnValue({ eq: mockEqIdFirst });
+
+      const mockRange = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: validId,
+            version: '02.00.000',
+            'common:name': mockMultilingualText,
+            referenceToReferenceUnitGroup: {
+              '@refObjectId': 'ug-2',
+              'common:shortDescription': mockMultilingualText,
+            },
+          },
+        ],
+      });
+      const mockOrder = jest.fn().mockReturnValue({ range: mockRange });
+      const mockEqIdSecond = jest.fn().mockReturnValue({ order: mockOrder });
+      const mockSelectSecond = jest.fn().mockReturnValue({ eq: mockEqIdSecond });
+
+      supabase.from
+        .mockReturnValueOnce({ select: mockSelectFirst })
+        .mockReturnValueOnce({ select: mockSelectSecond });
+
+      const result = await getReferenceUnitGroup(validId, '01.00.000');
+
+      expect(result).toEqual({
+        data: {
+          id: validId,
+          version: '02.00.000',
+          name: mockMultilingualText,
+          refUnitGroupId: 'ug-2',
+          refUnitGroupShortDescription: mockMultilingualText,
+        },
+        success: true,
+      });
+      expect(mockOrder).toHaveBeenCalledWith('version', { ascending: false });
+      expect(mockRange).toHaveBeenCalledWith(0, 0);
+    });
+
+    it('should return undefined for invalid id', async () => {
+      const result = await getReferenceUnitGroup('short-id', '01.00.000');
+
+      expect(result).toBeUndefined();
+      expect(supabase.from).not.toHaveBeenCalled();
     });
   });
 });
