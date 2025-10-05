@@ -14,6 +14,19 @@ import {
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
+const selectStr4Table = `
+    id,
+    json->processDataSet->processInformation->dataSetInformation->name,
+    json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
+    json->processDataSet->processInformation->time->>"common:referenceYear",
+    json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
+    json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+    version,
+    modified_at,
+    team_id
+  `;
+
 export async function createProcess(id: string, data: any) {
   const newData = genProcessJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData)?.valid;
@@ -78,24 +91,11 @@ export async function getProcessTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-    id,
-    json->processDataSet->processInformation->dataSetInformation->name,
-    json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
-    json->processDataSet->processInformation->time->>"common:referenceYear",
-    json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
-    json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
-    version,
-    modified_at,
-    team_id
-  `;
-
   const tableName = 'processes';
 
   let query = supabase
     .from(tableName)
-    .select(selectStr, { count: 'exact' })
+    .select(selectStr4Table, { count: 'exact' })
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range(
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -836,26 +836,20 @@ export async function process_hybrid_search(
 
   return result;
 }
-export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
-  if (data && data.length) {
-    const ids = data.map((item) => item.id);
 
-    const resultByIds = await supabase
+export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
+  if (data && data.length > 0) {
+    const orConditions = data.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+
+    const result = await supabase
       .from('processes')
       .select('id,json,version, modified_at')
-      .in('id', ids);
+      .or(orConditions);
 
-    if (resultByIds?.data && resultByIds.data.length > 0) {
-      const result = resultByIds.data.filter((i) => {
-        const target = data.find((j) => j.id === i.id) || { id: '', version: '' };
-        return target.version === i.version;
-      });
-
-      return Promise.resolve({
-        data: result,
-        success: true,
-      });
-    }
+    return Promise.resolve({
+      data: result,
+      success: true,
+    });
   }
   return Promise.resolve({
     data: null,
@@ -939,13 +933,56 @@ export async function getProcessesByIdsAndVersions(ids: string[], versions: stri
   return result;
 }
 
-export async function getProcessesByIdsAndVersion(ids: string[], version: string) {
+export async function getProcessDetailByIdsAndVersion(ids: string[], version: string) {
+  if (ids && ids.length > 0) {
+    const result = await supabase
+      .from('processes')
+      .select('id,json,version, modified_at')
+      .eq('version', version)
+      .in('id', ids);
+
+    return Promise.resolve({
+      data: result.data ?? [],
+      success: true,
+    });
+  }
+  return Promise.resolve({
+    data: [],
+    success: true,
+  });
+}
+
+export async function getProcessesByIdsAndVersion(ids: string[], version: string, lang: string) {
   const result = await supabase
     .from('processes')
-    .select('id,json,version, modified_at,user_id')
+    .select(selectStr4Table)
     .eq('version', version)
     .in('id', ids);
-  return result;
+
+  const data: any[] =
+    result?.data?.map((i: any) => {
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: genProcessName(i.name ?? {}, lang),
+        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+        // classification,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: location ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i?.team_id,
+      };
+    }) ?? [];
+
+  return {
+    data: data,
+    success: true,
+    page: 1,
+    total: result.data?.length ?? 0,
+  };
 }
 
 export async function validateProcessesByIdAndVersion(id: string, version: string) {
@@ -957,9 +994,9 @@ export async function validateProcessesByIdAndVersion(id: string, version: strin
   if (resultVersion?.data && resultVersion.data.length > 0) {
     return true;
   }
-  const result = await supabase.from('processes').select('id,version').eq('id', id);
-  if (result?.data && result.data.length > 0) {
-    return true;
-  }
+  // const result = await supabase.from('processes').select('id,version').eq('id', id);
+  // if (result?.data && result.data.length > 0) {
+  //   return true;
+  // }
   return false;
 }

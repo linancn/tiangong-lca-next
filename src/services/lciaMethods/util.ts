@@ -321,21 +321,20 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
       factors = await getDecompressedMethod(flow_factors_file);
     }
 
-    if (!Array.isArray(factors) || factors.length === 0) {
+    // Only support current preprocessed object map format
+    const hasFactors =
+      !!factors &&
+      typeof factors === 'object' &&
+      !Array.isArray(factors) &&
+      Object.keys(factors).length > 0;
+
+    if (!hasFactors) {
       console.warn(`No characterisation factors found in file: ${flow_factors_file}`);
       return lciaResults;
     }
 
-    // Build an index for fast factor lookup: flowId+direction -> factor
-    const factorIndex = new Map<string, any>();
-    factors.forEach((factor: any) => {
-      const flowId = factor['@refObjectId'];
-      const direction = String(factor.exchangeDirection || '').toUpperCase();
-      if (flowId && direction) {
-        const key = `${flowId}:${direction}`;
-        factorIndex.set(key, factor);
-      }
-    });
+    // Use preprocessed object map directly for lookup
+    const factorsObj = factors as Record<string, any>;
 
     let lciaFlowResults: any[] = [];
 
@@ -344,7 +343,7 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
       const exchangeDirection = String(exchange.exchangeDirection || '').toUpperCase();
       if (exchangeFlowId && exchangeDirection) {
         const key = `${exchangeFlowId}:${exchangeDirection}`;
-        const matchingFactor = factorIndex.get(key);
+        const matchingFactor = factorsObj[key];
         if (matchingFactor) {
           const exchangeAmount = new BigNumber(exchange.meanAmount);
           if (
