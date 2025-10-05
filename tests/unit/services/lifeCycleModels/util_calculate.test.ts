@@ -43,73 +43,75 @@ const mockLCIAResultCalculation = jest.requireMock('@/services/lciaMethods/util'
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
 const createLifeCycleModelData = () => ({
-  lifeCycleModelInformation: {
-    quantitativeReference: {
-      referenceToReferenceProcess: 'nodeA',
-    },
-    dataSetInformation: {
-      name: {
-        baseName: [
-          { '@xml:lang': 'en', '#text': 'Reference Process' },
-          { '@xml:lang': 'zh', '#text': '参考过程' },
-        ],
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
       },
-    },
-    technology: {
-      processes: {
-        processInstance: [
-          {
-            '@dataSetInternalID': 'nodeA',
-            referenceToProcess: {
-              '@refObjectId': 'procA',
-              '@version': '1',
-            },
-            connections: {
-              outputExchange: [
-                {
-                  '@flowUUID': 'flow-A-final',
-                  downstreamProcess: [],
-                },
-              ],
-            },
-          },
-          {
-            '@dataSetInternalID': 'nodeB',
-            referenceToProcess: {
-              '@refObjectId': 'procB',
-              '@version': '1',
-            },
-            connections: {
-              outputExchange: [
-                {
-                  '@flowUUID': 'flow-B-to-A',
-                  downstreamProcess: {
-                    '@id': 'nodeA',
+      dataSetInformation: {
+        name: {
+          baseName: [
+            { '@xml:lang': 'en', '#text': 'Reference Process' },
+            { '@xml:lang': 'zh', '#text': '参考过程' },
+          ],
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-A-final',
+                    downstreamProcess: [],
                   },
-                },
-                {
-                  '@flowUUID': 'flow-B-to-C',
-                  downstreamProcess: {
-                    '@id': 'nodeC',
-                  },
-                },
-              ],
-            },
-          },
-          {
-            '@dataSetInternalID': 'nodeC',
-            referenceToProcess: {
-              '@refObjectId': 'procC',
-              '@version': '1',
-            },
-            connections: {
-              outputExchange: {
-                '@flowUUID': 'flow-C-final',
-                downstreamProcess: [],
+                ],
               },
             },
-          },
-        ],
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-B-to-A',
+                    downstreamProcess: {
+                      '@id': 'nodeA',
+                    },
+                  },
+                  {
+                    '@flowUUID': 'flow-B-to-C',
+                    downstreamProcess: {
+                      '@id': 'nodeC',
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeC',
+              referenceToProcess: {
+                '@refObjectId': 'procC',
+                '@version': '1',
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-C-final',
+                  downstreamProcess: [],
+                },
+              },
+            },
+          ],
+        },
       },
     },
   },
@@ -270,7 +272,7 @@ describe('genLifeCycleModelProcesses', () => {
           nodeId: 'nodeC',
           processId: 'procC',
           allocatedExchangeFlowId: 'flow-C-final',
-          allocatedExchangeDirection: '',
+          allocatedExchangeDirection: 'OUTPUT',
         },
       },
     ];

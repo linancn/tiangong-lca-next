@@ -218,19 +218,6 @@ const baseModelData = {
   },
 };
 
-const baseOldData = {
-  lifeCycleModelDataSet: {
-    '@xmlns': 'http://example.com/xmlns',
-    '@xmlns:acme': 'http://example.com/acme',
-    '@xmlns:common': 'http://example.com/common',
-    '@xmlns:ecn': 'http://example.com/ecn',
-    '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-    '@locations': '../Locations.xml',
-    '@version': '1.0',
-    '@xsi:schemaLocation': 'http://example.com/schema',
-  },
-};
-
 describe('genNodeLabel', () => {
   it('should truncate long labels for non-Chinese languages based on node width', () => {
     const label = 'Alpha; Beta; Gamma; Delta';
@@ -270,10 +257,13 @@ describe('genPortLabel', () => {
 
 describe('genLifeCycleModelJsonOrdered', () => {
   it('should build ordered ILCD JSON with sequential internal IDs and references', () => {
-    const result = genLifeCycleModelJsonOrdered('model-123', baseModelData, baseOldData);
+    const result = genLifeCycleModelJsonOrdered('model-123', baseModelData);
 
-    expect(result.lifeCycleModelDataSet['@xmlns']).toBe('http://example.com/xmlns');
-    expect(result.lifeCycleModelDataSet['@xsi:schemaLocation']).toBe('http://example.com/schema');
+    // After removing oldData parameter, the function uses default xmlns values
+    expect(result.lifeCycleModelDataSet['@xmlns']).toBe(
+      'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
+    );
+    expect(result.lifeCycleModelDataSet['@xsi:schemaLocation']).toBeDefined();
 
     const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
       .processInstance as any[];
@@ -300,7 +290,7 @@ describe('genLifeCycleModelJsonOrdered', () => {
 
 describe('genLifeCycleModelInfoFromData', () => {
   it('should convert ordered dataset back to form-friendly data structures', () => {
-    const ordered = genLifeCycleModelJsonOrdered('model-456', baseModelData, baseOldData);
+    const ordered = genLifeCycleModelJsonOrdered('model-456', baseModelData);
 
     const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
 

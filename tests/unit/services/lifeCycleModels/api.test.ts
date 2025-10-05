@@ -55,6 +55,7 @@ jest.mock('@/services/ilcd/api', () => ({
 
 const mockCreateProcess = jest.fn();
 const mockDeleteProcess = jest.fn();
+const mockGetProcessDetailByIdsAndVersion = jest.fn();
 const mockGetProcessesByIdsAndVersions = jest.fn();
 const mockUpdateProcess = jest.fn();
 const mockValidateProcessesByIdAndVersion = jest.fn();
@@ -63,6 +64,8 @@ jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   createProcess: (...args: any[]) => mockCreateProcess.apply(null, args),
   deleteProcess: (...args: any[]) => mockDeleteProcess.apply(null, args),
+  getProcessDetailByIdsAndVersion: (...args: any[]) =>
+    mockGetProcessDetailByIdsAndVersion.apply(null, args),
   getProcessesByIdsAndVersions: (...args: any[]) =>
     mockGetProcessesByIdsAndVersions.apply(null, args),
   updateProcess: (...args: any[]) => mockUpdateProcess.apply(null, args),
@@ -498,11 +501,7 @@ describe('createLifeCycleModel', () => {
     const result = await lifeCycleModelsApi.createLifeCycleModel(payload);
     await waitForMicrotasks();
 
-    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(
-      sampleModelId,
-      payload,
-      expect.any(Object),
-    );
+    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(sampleModelId, payload);
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalled();
     expect(insertMock).toHaveBeenCalledWith([
       {
