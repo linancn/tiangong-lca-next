@@ -971,7 +971,7 @@ export async function getProcessesByIdsAndVersion(ids: string[], version: string
         // classification,
         typeOfDataSet: i.typeOfDataSet ?? '-',
         referenceYear: i['common:referenceYear'] ?? '-',
-        location: location ?? '-',
+        // location: location ?? '-',
         modifiedAt: new Date(i.modified_at),
         teamId: i?.team_id,
       };
