@@ -34,12 +34,18 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
 
   const handleUnitChange = () => {
     const values = form.getFieldsValue();
-    if (values.value && values.unit) {
-      const selectedUnit = units.find((u) => u.name === values.unit);
+    const { value: inputValue, unit } = values;
+    const hasValue = inputValue !== undefined && inputValue !== null && `${inputValue}` !== '';
+
+    if (hasValue && unit) {
+      const selectedUnit = units.find((u) => u.name === unit);
       if (selectedUnit) {
-        setResult(new BigNumber(values.value).times(selectedUnit.meanValue).toNumber());
+        setResult(new BigNumber(inputValue).times(selectedUnit.meanValue).toNumber());
+        return;
       }
     }
+
+    setResult(undefined);
   };
 
   const handleReset = () => {
@@ -54,7 +60,7 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
 
   const handleOk = async () => {
     await form.validateFields();
-    if (result) {
+    if (result !== undefined) {
       onOk(result);
     }
     handleClose();
@@ -98,7 +104,12 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
         <Form.Item
           label={<FormattedMessage id='pages.process.unitConvert.result' defaultMessage='Result' />}
         >
-          <Input addonAfter={targetUnit} value={result} disabled />
+          <Input
+            addonAfter={targetUnit}
+            value={result}
+            disabled
+            data-testid='unit-convert-result'
+          />
         </Form.Item>
       </Form>
     </Modal>

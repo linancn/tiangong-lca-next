@@ -6,26 +6,28 @@ import { supabase } from '@/services/supabase';
  * @returns Result with status and message
  */
 export async function changeEmail(body: Auth.EmailChangeParams): Promise<Auth.LoginResult> {
-  if (body.email !== null) {
-    const { error } = await supabase.auth.updateUser({
-      email: body.newEmail ?? '',
-    });
-    if (error) {
-      return {
-        status: 'error',
-        message: error.message,
-        type: body.type,
-      };
-    } else {
-      return { status: 'ok', type: body.type };
-    }
-  } else {
+  if (!body?.email) {
     return {
       status: 'error',
       message: 'An error occurred, please try again later!',
       type: body.type,
     };
   }
+
+  const response = await supabase.auth.updateUser({
+    email: body.newEmail ?? '',
+  });
+  const error = response?.error;
+
+  if (error) {
+    return {
+      status: 'error',
+      message: error.message,
+      type: body.type,
+    };
+  }
+
+  return { status: 'ok', type: body.type };
 }
 
 /**

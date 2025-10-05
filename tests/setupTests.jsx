@@ -1,4 +1,33 @@
-﻿const localStorageMock = {
+import '@testing-library/jest-dom';
+import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
+import React from 'react';
+import { TextDecoder, TextEncoder } from 'util';
+
+if (typeof global.React === 'undefined') {
+  global.React = React;
+}
+
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = TextEncoder;
+}
+
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = TextDecoder;
+}
+
+if (typeof global.ReadableStream === 'undefined') {
+  global.ReadableStream = ReadableStream;
+}
+
+if (typeof global.WritableStream === 'undefined') {
+  global.WritableStream = WritableStream;
+}
+
+if (typeof global.TransformStream === 'undefined') {
+  global.TransformStream = TransformStream;
+}
+
+const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
@@ -22,6 +51,7 @@ class Worker {
     this.onmessage(msg);
   }
 }
+
 window.Worker = Worker;
 
 /* eslint-disable global-require */
@@ -38,6 +68,7 @@ if (typeof window !== 'undefined') {
       })),
     });
   }
+
   if (!window.matchMedia) {
     Object.defineProperty(global.window, 'matchMedia', {
       writable: true,
@@ -50,6 +81,7 @@ if (typeof window !== 'undefined') {
     });
   }
 }
+
 const errorLog = console.error;
 Object.defineProperty(global.window.console, 'error', {
   writable: true,
@@ -59,6 +91,7 @@ Object.defineProperty(global.window.console, 'error', {
     if (logStr.includes('Warning: An update to %s inside a test was not wrapped in act(...)')) {
       return;
     }
+
     errorLog(...rest);
   },
 });
