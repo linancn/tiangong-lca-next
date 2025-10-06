@@ -2,9 +2,10 @@
 /**
  * Manage System workflow integration tests
  * User paths covered:
- * - System admin lands on Manage System, sees the teams overview, and opens member management
- * - System owner manages members (add, promote/demote, remove) with API validation and reloads
- * - Restricted member role observes disabled controls and handles API errors gracefully
+ * - Owner visits Manage System, role is resolved via getSystemUserRoleApi, teams overview renders, tab swap reveals member management fed by getSystemMembersApi
+ * - Owner adds a member through AddMemberModal (happy path + failure states) invoking addSystemMemberApi and causes ProTable reload
+ * - Owner promotes/demotes/removes members with updateRoleApi/delRoleApi reloads and toast feedback; member-only users observe disabled controls
+ * Services touched under test: getSystemUserRoleApi, getSystemMembersApi, addSystemMemberApi, updateRoleApi, delRoleApi
  */
 
 jest.mock('@/components/AllTeams', () => {
@@ -60,6 +61,120 @@ jest.mock('antd', () => {
     return '';
   };
 
+  const message = {
+    success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warning: jest.fn(),
+    loading: jest.fn(),
+  };
+
+  const FormContext = React.createContext(null);
+
+  const Form = React.forwardRef(({ children }, ref) => {
+    const [values, setValues] = React.useState({});
+    const rulesRef = React.useRef({});
+
+    const registerRules = React.useCallback((name, rules = []) => {
+      rulesRef.current[name] = rules;
+    }, []);
+
+    const setFieldValue = React.useCallback((name, value) => {
+      setValues((previous) => ({ ...previous, [name]: value }));
+    }, []);
+
+    const resetFields = React.useCallback(() => {
+      setValues({});
+    }, []);
+
+    const setFieldsValue = React.useCallback((fields = {}) => {
+      setValues((previous) => ({ ...previous, ...fields }));
+    }, []);
+
+    const validateFields = React.useCallback(async () => {
+      const errors = [];
+      Object.entries(rulesRef.current).forEach(([field, rules]) => {
+        const value = values[field];
+        (rules ?? []).forEach((rule) => {
+          const messageText = toText(rule.message) || 'Validation failed';
+          if (rule.required && (value === undefined || value === null || value === '')) {
+            errors.push({ name: [field], errors: [messageText] });
+          }
+          if (rule.type === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(String(value))) {
+              errors.push({ name: [field], errors: [messageText] });
+            }
+          }
+        });
+      });
+      if (errors.length) {
+        const error = new Error('Validation failed');
+        error.errorFields = errors;
+        throw error;
+      }
+      return values;
+    }, [values]);
+
+    React.useImperativeHandle(ref, () => ({
+      validateFields,
+      resetFields,
+      setFieldsValue,
+    }));
+
+    const contextValue = React.useMemo(
+      () => ({ values, setFieldValue, registerRules }),
+      [values, setFieldValue, registerRules],
+    );
+
+    return (
+      <FormContext.Provider value={contextValue}>
+        <form data-testid='form'>{children}</form>
+      </FormContext.Provider>
+    );
+  });
+  Form.displayName = 'MockForm';
+
+  const FormItem = ({ name, rules = [], children, label }) => {
+    const context = React.useContext(FormContext);
+
+    React.useEffect(() => {
+      context?.registerRules?.(name, rules);
+    }, [context, name, rules]);
+
+    const value = context?.values?.[name] ?? '';
+    const inputId = `${name}-input`;
+
+    const handleChange = (event) => {
+      const nextValue = event?.target?.value ?? '';
+      context?.setFieldValue?.(name, nextValue);
+      if (children?.props?.onChange) {
+        children.props.onChange(event);
+      }
+    };
+
+    const labelText = toText(label);
+
+    return (
+      <div data-testid={`form-item-${name}`}>
+        {labelText ? <label htmlFor={inputId}>{labelText}</label> : null}
+        {React.cloneElement(children, {
+          id: inputId,
+          name,
+          value,
+          onChange: handleChange,
+        })}
+      </div>
+    );
+  };
+
+  Form.Item = FormItem;
+
+  const Input = React.forwardRef(({ value = '', onChange, ...rest }, ref) => (
+    <input ref={ref} value={value} onChange={(event) => onChange?.(event)} {...rest} />
+  ));
+  Input.displayName = 'MockInput';
+
   const Button = React.forwardRef((props, ref) => {
     const { children, onClick, disabled, type = 'button', icon, ...rest } = props ?? {};
     return (
@@ -82,11 +197,7 @@ jest.mock('antd', () => {
     <div data-testid='tabs'>
       {items.map((item) => (
         <div key={item.key}>
-          <button
-            type='button'
-            data-testid={`tab-${item.key}`}
-            onClick={() => onChange?.(item.key)}
-          >
+          <button type='button' onClick={() => onChange?.(item.key)}>
             {item.label}
           </button>
           {item.key === activeKey ? <div>{item.children}</div> : null}
@@ -127,17 +238,7 @@ jest.mock('antd', () => {
       </div>
     ) : null;
 
-  const modalConfirm = jest.fn((config) => {
-    return config;
-  });
-
-  const message = {
-    success: jest.fn(),
-    error: jest.fn(),
-    info: jest.fn(),
-    warning: jest.fn(),
-    loading: jest.fn(),
-  };
+  const modalConfirm = jest.fn((config) => config);
 
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
@@ -146,12 +247,14 @@ jest.mock('antd', () => {
   return {
     __esModule: true,
     Button,
+    ConfigProvider,
     Flex,
+    Form,
+    Input,
     Modal: Object.assign(ModalComponent, { confirm: modalConfirm }),
     Spin,
     Tabs,
     Tooltip,
-    ConfigProvider,
     message,
     theme,
   };
@@ -263,27 +366,6 @@ jest.mock('@ant-design/pro-components', () => {
   };
 });
 
-jest.mock('@/pages/ManageSystem/Components/AddMemberModal', () => ({
-  __esModule: true,
-  default: ({ open, onCancel, onSuccess }) =>
-    open ? (
-      <div data-testid='add-member-modal'>
-        <button
-          type='button'
-          onClick={() => {
-            onSuccess?.();
-            onCancel?.();
-          }}
-        >
-          Complete Add
-        </button>
-        <button type='button' onClick={onCancel}>
-          Cancel Add
-        </button>
-      </div>
-    ) : null,
-}));
-
 jest.mock('@/services/roles/api', () => ({
   getSystemMembersApi: jest.fn(),
   getSystemUserRoleApi: jest.fn(),
@@ -294,12 +376,14 @@ jest.mock('@/services/roles/api', () => ({
 
 import ManageSystem from '@/pages/ManageSystem';
 import {
+  addSystemMemberApi,
   delRoleApi,
   getSystemMembersApi,
   getSystemUserRoleApi,
   updateRoleApi,
 } from '@/services/roles/api';
 import { Modal, message } from 'antd';
+import { mockRole, mockUser } from '../../helpers/testData';
 import {
   act,
   fireEvent,
@@ -313,6 +397,19 @@ const mockGetSystemUserRoleApi = getSystemUserRoleApi;
 const mockGetSystemMembersApi = getSystemMembersApi;
 const mockUpdateRoleApi = updateRoleApi;
 const mockDelRoleApi = delRoleApi;
+const mockAddSystemMemberApi = addSystemMemberApi;
+
+const buildMemberRecord = (overrides = {}) => ({
+  email: overrides.email ?? mockUser.email,
+  display_name: overrides.display_name ?? mockUser.display_name,
+  role: overrides.role ?? mockRole.role,
+  user_id: overrides.user_id ?? mockUser.id,
+  team_id: overrides.team_id ?? mockRole.team_id,
+  ...overrides,
+});
+
+const ownerUserData = { user_id: 'owner-1', role: 'owner' };
+const memberUserData = { user_id: 'member-1', role: 'member' };
 
 const resetMessages = () => {
   Object.values(message).forEach((fn) => {
@@ -331,6 +428,11 @@ const reloadMembersTable = async () => {
   });
 };
 
+const openMembersTab = async () => {
+  fireEvent.click(screen.getByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+  await reloadMembersTable();
+};
+
 describe('ManageSystem workflows', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -338,19 +440,20 @@ describe('ManageSystem workflows', () => {
     mockGetSystemMembersApi.mockResolvedValue({ data: [], success: true, total: 0 } as any);
     mockUpdateRoleApi.mockResolvedValue({ error: null } as any);
     mockDelRoleApi.mockResolvedValue({ error: null } as any);
+    mockAddSystemMemberApi.mockResolvedValue({ success: true } as any);
   });
 
-  it('loads admin overview and refreshes member list after add success', async () => {
+  it('loads owner overview and refreshes member list after successful add', async () => {
     const members = [
-      {
+      buildMemberRecord({
         email: 'member@example.com',
         display_name: 'Member Example',
         role: 'member',
         user_id: 'member-1',
         team_id: 'team-1',
-      },
+      }),
     ];
-    mockGetSystemUserRoleApi.mockResolvedValue({ user_id: 'owner-1', role: 'owner' } as any);
+    mockGetSystemUserRoleApi.mockResolvedValue(ownerUserData as any);
     mockGetSystemMembersApi.mockResolvedValue({
       data: members,
       success: true,
@@ -365,11 +468,10 @@ describe('ManageSystem workflows', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('all-teams')).toHaveTextContent('all-teams::manageSystem::owner');
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
     });
 
-    fireEvent.click(screen.getByTestId('tab-settings'));
-
-    await reloadMembersTable();
+    await openMembersTab();
 
     await waitFor(() => {
       expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(2);
@@ -381,38 +483,52 @@ describe('ManageSystem workflows', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Add' }));
 
-    expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Complete Add' }));
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'new.user@example.com' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /ok/i }));
+
+    await waitFor(() => {
+      expect(mockAddSystemMemberApi).toHaveBeenCalledWith('new.user@example.com');
+    });
+
+    await waitFor(() => {
+      expect(message.success).toHaveBeenCalledWith('Member added successfully!');
+    });
 
     await waitFor(() => {
       expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(3);
     });
 
     await waitFor(() => {
-      expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
     });
   });
 
   it('allows owners to promote, demote, and remove members', async () => {
     const members = [
-      {
+      buildMemberRecord({
         email: 'member@example.com',
         display_name: 'Member Example',
         role: 'member',
         user_id: 'member-1',
         team_id: 'team-1',
-      },
-      {
+      }),
+      buildMemberRecord({
         email: 'admin@example.com',
         display_name: 'Admin Example',
         role: 'admin',
         user_id: 'admin-1',
         team_id: 'team-1',
-      },
+      }),
     ];
 
-    mockGetSystemUserRoleApi.mockResolvedValue({ user_id: 'owner-1', role: 'owner' } as any);
+    mockGetSystemUserRoleApi.mockResolvedValue(ownerUserData as any);
     mockGetSystemMembersApi.mockResolvedValue({
       data: members,
       success: true,
@@ -421,9 +537,7 @@ describe('ManageSystem workflows', () => {
 
     renderWithProviders(<ManageSystem />);
 
-    fireEvent.click(screen.getByTestId('tab-settings'));
-
-    await reloadMembersTable();
+    await openMembersTab();
 
     await waitFor(() => {
       expect(screen.getByTestId('pro-table-row-member@example.com')).toBeInTheDocument();
@@ -472,16 +586,16 @@ describe('ManageSystem workflows', () => {
 
   it('disables management controls for basic members', async () => {
     const members = [
-      {
+      buildMemberRecord({
         email: 'admin@example.com',
         display_name: 'Admin Example',
         role: 'admin',
         user_id: 'admin-1',
         team_id: 'team-1',
-      },
+      }),
     ];
 
-    mockGetSystemUserRoleApi.mockResolvedValue({ user_id: 'member-1', role: 'member' } as any);
+    mockGetSystemUserRoleApi.mockResolvedValue(memberUserData as any);
     mockGetSystemMembersApi.mockResolvedValue({
       data: members,
       success: true,
@@ -490,9 +604,7 @@ describe('ManageSystem workflows', () => {
 
     renderWithProviders(<ManageSystem />);
 
-    fireEvent.click(screen.getByTestId('tab-settings'));
-
-    await reloadMembersTable();
+    await openMembersTab();
 
     await waitFor(() => {
       expect(screen.getByTestId('pro-table-row-admin@example.com')).toBeInTheDocument();
@@ -512,16 +624,16 @@ describe('ManageSystem workflows', () => {
 
   it('shows error messages when role updates or deletions fail', async () => {
     const members = [
-      {
+      buildMemberRecord({
         email: 'member@example.com',
         display_name: 'Member Example',
         role: 'member',
         user_id: 'member-1',
         team_id: 'team-1',
-      },
+      }),
     ];
 
-    mockGetSystemUserRoleApi.mockResolvedValue({ user_id: 'owner-1', role: 'owner' } as any);
+    mockGetSystemUserRoleApi.mockResolvedValue(ownerUserData as any);
     mockGetSystemMembersApi.mockResolvedValue({
       data: members,
       success: true,
@@ -532,13 +644,13 @@ describe('ManageSystem workflows', () => {
 
     renderWithProviders(<ManageSystem />);
 
-    fireEvent.click(screen.getByTestId('tab-settings'));
-
-    await reloadMembersTable();
+    await openMembersTab();
 
     await waitFor(() => {
       expect(screen.getByTestId('pro-table-row-member@example.com')).toBeInTheDocument();
     });
+
+    const loadCountAfterOpen = mockGetSystemMembersApi.mock.calls.length;
 
     const memberRow = screen.getByTestId('pro-table-row-member@example.com');
 
@@ -550,7 +662,7 @@ describe('ManageSystem workflows', () => {
 
     expect(message.error).toHaveBeenCalledWith('Action failed!');
     expect(message.success).not.toHaveBeenCalled();
-    expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(1);
+    expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen);
 
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
 
@@ -562,7 +674,67 @@ describe('ManageSystem workflows', () => {
     });
 
     expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen + 1);
   });
+
+  it.each([
+    ['notRegistered', 'User is not registered!'],
+    ['unexpected', 'Failed to add member!'],
+  ])(
+    'surfaces add member API %s error without closing the modal',
+    async (errorCode, expectedMessage) => {
+      const members = [
+        buildMemberRecord({
+          email: 'admin@example.com',
+          display_name: 'Admin Example',
+          role: 'admin',
+          user_id: 'admin-1',
+          team_id: 'team-1',
+        }),
+      ];
+
+      mockGetSystemUserRoleApi.mockResolvedValue(ownerUserData as any);
+      mockGetSystemMembersApi.mockResolvedValue({
+        data: members,
+        success: true,
+        total: members.length,
+      } as any);
+      mockAddSystemMemberApi.mockResolvedValue({ success: false, error: errorCode } as any);
+
+      renderWithProviders(<ManageSystem />);
+
+      await openMembersTab();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pro-table-row-admin@example.com')).toBeInTheDocument();
+      });
+      const initialLoadCount = mockGetSystemMembersApi.mock.calls.length;
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('modal')).toBeInTheDocument();
+      });
+
+      fireEvent.change(screen.getByLabelText('Email'), {
+        target: { value: 'new.member@example.com' },
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /ok/i }));
+
+      await waitFor(() => {
+        expect(mockAddSystemMemberApi).toHaveBeenCalledWith('new.member@example.com');
+      });
+
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith(expectedMessage);
+      });
+
+      expect(message.success).not.toHaveBeenCalledWith('Member added successfully!');
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(initialLoadCount);
+    },
+  );
 
   it.skip('should handle pagination updates from the members table without manual reloads', () => {
     // TODO: Fix expected behavior once table auto-refresh on page change is implemented
