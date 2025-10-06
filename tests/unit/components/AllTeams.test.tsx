@@ -1,4 +1,6 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+
+let mockLastActionRef: any;
 
 jest.mock('umi', () => ({
   FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
@@ -74,6 +76,7 @@ jest.mock('@ant-design/pro-components', () => {
           },
           pageInfo,
         };
+        mockLastActionRef = actionRef;
       }
       runRequest();
     }, [actionRef, runRequest, pageInfo]);
@@ -155,6 +158,7 @@ jest.mock('@ant-design/pro-components', () => {
           },
           pageInfo,
         };
+        mockLastActionRef = actionRef;
       }
       runRequest();
     }, [actionRef, runRequest, pageInfo]);
@@ -177,6 +181,7 @@ jest.mock('@ant-design/pro-components', () => {
   return {
     DragSortTable,
     ProTable,
+    __getLastActionRef: () => mockLastActionRef,
   };
 });
 
@@ -270,6 +275,13 @@ const renderAllTeams = (
   );
 };
 
+const getLastActionRef = () => {
+  const { __getLastActionRef } = jest.requireMock('@ant-design/pro-components') as {
+    __getLastActionRef: () => any;
+  };
+  return __getLastActionRef();
+};
+
 const findRemoveButtonForRow = async (rowId: string) => {
   const row = await screen.findByTestId(`row-${rowId}`);
   const buttons = within(row).getAllByRole('button');
@@ -285,6 +297,7 @@ const findRemoveButtonForRow = async (rowId: string) => {
 describe('AllTeams component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLastActionRef = undefined;
     const modalConfirmMock = Modal.confirm as jest.Mock;
     modalConfirmMock.mockImplementation(({ onOk }: any) => (onOk ? onOk() : undefined));
     mockGetAllTableTeams.mockResolvedValue({
@@ -306,9 +319,13 @@ describe('AllTeams component', () => {
 
     expect(await screen.findByText('Alpha Team')).toBeInTheDocument();
     expect(screen.getByText('Beta Team')).toBeInTheDocument();
+    expect(screen.getByText('A long description f...')).toBeInTheDocument();
 
     const removeButton = await findRemoveButtonForRow('t1');
     expect(removeButton).toBeEnabled();
+
+    const selectButton = screen.getByRole('button', { name: /open select teams/i });
+    expect(selectButton).toBeEnabled();
 
     expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'manageSystem');
   });
@@ -317,7 +334,20 @@ describe('AllTeams component', () => {
     renderAllTeams({ tableType: 'joinTeam' });
 
     expect(await screen.findByText('Alpha Team')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /open select teams/i })).not.toBeInTheDocument();
     expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'joinTeam');
+  });
+
+  it('searches by keyword in join-team view', async () => {
+    renderAllTeams({ tableType: 'joinTeam' });
+
+    const searchBox = await screen.findByRole('searchbox');
+    fireEvent.change(searchBox, { target: { value: 'alpha' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => {
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('alpha');
+    });
   });
 
   it('searches by keyword and reloads results', async () => {
@@ -358,6 +388,30 @@ describe('AllTeams component', () => {
     await waitFor(() => {
       expect(screen.queryByRole('img', { name: /save/i })).not.toBeInTheDocument();
     });
+  });
+
+  it('calculates updated ranks based on current pagination state', async () => {
+    renderAllTeams();
+
+    await screen.findByText('Alpha Team');
+    const actionRef = getLastActionRef();
+    expect(actionRef?.current).toBeDefined();
+
+    act(() => {
+      actionRef?.current?.setPageInfo?.({ current: 2 });
+    });
+
+    const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
+    fireEvent.click(dragButton);
+
+    const saveIcon = await screen.findByRole('img', { name: /save/i });
+    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+
+    await waitFor(() => {
+      expect(mockUpdateSort).toHaveBeenCalled();
+    });
+    const payload = mockUpdateSort.mock.calls.at(-1)?.[0] as Array<{ id: string; rank: number }>;
+    expect(payload.map(({ rank }) => rank)).toEqual([11, 12]);
   });
 
   it.skip('preserves dragged order when saving ranks', async () => {
@@ -408,11 +462,16 @@ describe('AllTeams component', () => {
 
     const removeButton = await findRemoveButtonForRow('t1');
     expect(removeButton).toBeDisabled();
+
+    const selectButton = screen.getByRole('button', { name: /open select teams/i });
+    expect(selectButton).toBeDisabled();
   });
 
   it('removes a team after confirmation and shows success message', async () => {
     renderAllTeams({ systemUserRole: 'admin' });
 
+    await screen.findByText('Alpha Team');
+    const initialCallCount = mockGetAllTableTeams.mock.calls.length;
     const removeButton = await findRemoveButtonForRow('t1');
     fireEvent.click(removeButton);
 
@@ -420,6 +479,9 @@ describe('AllTeams component', () => {
       expect(mockUpdateTeamRank).toHaveBeenCalledWith('t1', 0);
     });
     expect(getMessageMock().success).toHaveBeenCalledWith('Team removed successfully');
+    await waitFor(() => {
+      expect(mockGetAllTableTeams.mock.calls.length).toBeGreaterThan(initialCallCount);
+    });
   });
 
   it('shows error message when removing a team fails', async () => {
