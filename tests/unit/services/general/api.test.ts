@@ -1003,6 +1003,123 @@ describe('Edge Cases and Error Handling', () => {
 
       expect(result).toEqual({ data: [], success: false, total: 0 });
     });
+
+    it('should map flow datasets with Chinese locale including classification and location translations', async () => {
+      const flowRecord = {
+        id: sampleId,
+        version: '01.00.000',
+        typeOfDataSet: 'Elementary flow',
+        name: {
+          baseName: [
+            { '@xml:lang': 'zh', '#text': '流基础名称' },
+            { '@xml:lang': 'en', '#text': 'Flow Base Name' },
+          ],
+        },
+        classificationInformation: {
+          'common:elementaryFlowCategorization': {
+            'common:category': 'elementary-category',
+          },
+        },
+        CASNumber: '123-45-6',
+        referenceToFlowPropertyDataSet: { '@refObjectId': 'flow-prop-1' },
+        locationOfSupply: 'CN-EC',
+        modified_at: '2024-04-05T08:00:00Z',
+        team_id: 'team-flow',
+      } as any;
+
+      const builder = createQueryBuilder({ data: [flowRecord], error: null, count: 1 });
+      mockFrom.mockReturnValue(builder);
+      mockGetILCDFlowCategorizationAll.mockResolvedValue({
+        data: {
+          categoryElementaryFlow: [{ '@value': 'elementary-category', '#text': '分类ZH' }],
+        },
+      });
+      mockGetILCDLocationByValues.mockResolvedValue({
+        data: [{ '@value': 'CN-EC', '#text': '中国华东' }],
+      });
+      mockGenClassificationZH.mockReturnValue(['分类ZH']);
+      mockClassificationToString.mockReturnValue('分类ZH');
+      mockJsonToList.mockImplementation((value: any) => {
+        if (value === 'elementary-category') {
+          return ['elementary-category'];
+        }
+        return [];
+      });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'flows',
+        flowRecord.id,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(mockGetILCDFlowCategorizationAll).toHaveBeenCalledWith('zh');
+      expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('zh', ['CN-EC']);
+      expect(result.data?.[0]).toMatchObject({
+        id: flowRecord.id,
+        flowType: 'Elementary flow',
+        classification: '分类ZH',
+        locationOfSupply: '中国华东',
+        version: '01.00.000',
+      });
+
+      mockJsonToList.mockImplementation(() => []);
+    });
+
+    it('should map process datasets with translated locations', async () => {
+      const processRecord = {
+        id: 'process-1',
+        version: '02.00.000',
+        '@location': 'US-NE',
+        name: {
+          baseName: [
+            { '@xml:lang': 'en', '#text': 'Process Base Name' },
+            { '@xml:lang': 'zh', '#text': '工艺名称' },
+          ],
+        },
+        'common:class': 'process-category',
+        typeOfDataSet: 'LCI result',
+        'common:generalComment': [{ '@xml:lang': 'en', '#text': 'General comment' }],
+        modified_at: '2024-05-01T10:00:00Z',
+        team_id: 'team-process',
+      } as any;
+
+      const builder = createQueryBuilder({ data: [processRecord], error: null, count: 1 });
+      mockFrom.mockReturnValue(builder);
+      mockGetILCDLocationByValues.mockResolvedValue({
+        data: [{ '@value': 'US-NE', '#text': 'North East US' }],
+      });
+      mockClassificationToString.mockReturnValue('Process Class EN');
+      mockJsonToList.mockImplementation((value: any) => {
+        if (value === 'process-category') {
+          return ['process-category'];
+        }
+        return [];
+      });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'processes',
+        processRecord.id,
+        { pageSize: 5, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('en', ['US-NE']);
+      expect(result.data?.[0]).toMatchObject({
+        id: processRecord.id,
+        classification: 'Process Class EN',
+        location: 'North East US',
+        version: '02.00.000',
+      });
+
+      mockJsonToList.mockImplementation(() => []);
+    });
   });
 
   describe('getAISuggestion', () => {
