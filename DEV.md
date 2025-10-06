@@ -56,7 +56,7 @@ The project provides a powerful test coverage analysis script (`scripts/test-cov
 # Recommended: Run tests and generate detailed coverage report
 npm run test:report
 
-# View coverage report only (requires prior test run)
+# Run tests and generate detailed coverage report (same as above)
 npm run test:coverage:report
 
 # Run tests and generate standard coverage data (HTML format)
@@ -117,7 +117,7 @@ Each category displays:
 | ------------------------------ | ------------------------------------------------ |
 | `npm test`                     | Run all tests                                    |
 | `npm run test:coverage`        | Run tests and generate coverage data             |
-| `npm run test:coverage:report` | Generate readable coverage report                |
+| `npm run test:coverage:report` | Run tests and generate readable coverage report  |
 | `npm run test:report`          | Run tests and generate report (combined command) |
 | `npm run test:update`          | Update test snapshots                            |
 

@@ -56,7 +56,7 @@ npm test
 # 推荐：运行测试并生成详细覆盖率报告
 npm run test:report
 
-# 仅查看覆盖率报告（需要先运行过测试）
+# 运行测试并生成详细覆盖率报告（同上）
 npm run test:coverage:report
 
 # 运行测试并生成标准覆盖率数据（HTML格式）
