@@ -4,6 +4,7 @@
  */
 
 import type { LCIAResultTable } from '@/services/lciaMethods/data';
+import { createMockTableResponse } from '../../../helpers/testData';
 
 describe('LCIA Methods Data Types (src/services/lciaMethods/data.ts)', () => {
   describe('LCIAResultTable type', () => {
@@ -76,6 +77,25 @@ describe('LCIA Methods Data Types (src/services/lciaMethods/data.ts)', () => {
 
       expect(zeroResult.meanAmount).toBe(0);
       expect(negativeResult.meanAmount).toBe(-10.5);
+    });
+
+    it('should integrate with shared table response helper', () => {
+      const row: LCIAResultTable = {
+        key: 'summary',
+        referenceToLCIAMethodDataSet: {
+          '@refObjectId': 'method-aggregate',
+          '@type': 'LCIA method data set',
+          '@uri': '../lciamethods/method-aggregate.xml',
+          '@version': '03.00.000',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Aggregate impact' }],
+        },
+        meanAmount: 12.34,
+      };
+
+      const response = createMockTableResponse<LCIAResultTable>([row], 1);
+
+      expect(response.success).toBe(true);
+      expect(response.data[0].key).toBe('summary');
     });
 
     it('should match structure used in LCIA results display', () => {

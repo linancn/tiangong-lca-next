@@ -11,6 +11,17 @@ import type {
   FlowpropertyTable,
   FormFlowProperty,
 } from '@/services/flowproperties/data';
+import { createMockTableResponse, mockFlowProperty } from '../../../helpers/testData';
+import type { Equal, ExpectTrue } from '../../../helpers/typeAssertions';
+
+type FlowPropertyDataSetKeys =
+  | 'flowPropertiesInformation'
+  | 'modellingAndValidation'
+  | 'administrativeInformation';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type AssertFlowPropertyDataSetKeys = ExpectTrue<
+  Equal<FlowPropertyDataSetObjectKeys, FlowPropertyDataSetKeys>
+>;
 
 describe('Flow Properties Data Types (src/services/flowproperties/data.ts)', () => {
   describe('FlowpropertyTable type', () => {
@@ -33,6 +44,29 @@ describe('Flow Properties Data Types (src/services/flowproperties/data.ts)', () 
       expect(mockFlowPropertyTable.refUnitGroupId).toBe('unitgroup-456');
       expect(mockFlowPropertyTable.modifiedAt).toBeInstanceOf(Date);
       expect(mockFlowPropertyTable.refUnitRes).toHaveProperty('kg');
+    });
+
+    it('should interoperate with shared table response helper', () => {
+      const tableRow: FlowpropertyTable = {
+        id: mockFlowProperty.id,
+        version: mockFlowProperty.version,
+        name: 'Mass',
+        classification: 'Technical flow properties',
+        generalComment: '',
+        refUnitGroupId: `${mockFlowProperty.id}-unit`,
+        refUnitGroup: 'Mass units',
+        modifiedAt: new Date(mockFlowProperty.modified_at),
+        teamId: mockFlowProperty.team_id,
+        refUnitRes: {
+          kg: { factor: 1 },
+        },
+      };
+
+      const response = createMockTableResponse<FlowpropertyTable>([tableRow], 1);
+
+      expect(response.success).toBe(true);
+      expect(response.data[0].id).toBe(mockFlowProperty.id);
+      expect(response.total).toBe(1);
     });
 
     it('should allow refUnitRes to be any key-value object', () => {
