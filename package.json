@@ -37,6 +37,8 @@
     "start:test": "cross-env REACT_APP_ENV=test MOCK=none UMI_ENV=dev max dev",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "test:coverage:report": "node scripts/test-coverage-report.js",
+    "test:report": "npm run test:coverage && npm run test:coverage:report",
     "test:update": "jest -u",
     "tsc": "tsc --noEmit",
     "test:antchain": "npx tsx src/services/antchain/api.ts",
@@ -74,6 +76,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.13",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.1",
