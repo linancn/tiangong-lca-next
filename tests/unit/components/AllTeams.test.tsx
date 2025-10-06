@@ -20,6 +20,7 @@ jest.mock('umi', () => ({
 
 jest.mock('@/services/general/util', () => ({
   getLangText: jest.fn((obj: any) => (typeof obj === 'string' ? obj : (obj?.en ?? ''))),
+  getLang: jest.fn(() => 'en'),
 }));
 
 jest.mock('@/services/teams/api', () => ({

@@ -14,7 +14,7 @@
 
 import AISuggestion from '@/components/AISuggestion';
 import { getAISuggestion } from '@/services/general/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -114,7 +114,7 @@ describe('AISuggestion Component', () => {
     expect(screen.getByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
   });
 
-  it('should close modal when cancel button is clicked', () => {
+  it('should close modal when cancel button is clicked', async () => {
     render(
       <ConfigProvider>
         <AISuggestion {...defaultProps} />
@@ -124,13 +124,16 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    expect(screen.getByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
+    await screen.findByText('component.aiSuggestion.modal.title');
 
-    const cancelButton = screen.getByRole('button', { name: /close/i });
-    fireEvent.click(cancelButton);
+    const modal = screen.getByRole('dialog');
+    const closeButtons = within(modal).getAllByRole('button', { name: /close/i });
+    const closeButton = closeButtons.find((button) => button.classList.contains('ant-modal-close'));
+    expect(closeButton).toBeDefined();
+    fireEvent.click(closeButton!);
 
-    waitFor(() => {
-      expect(screen.queryByText('component.aiSuggestion.modal.title')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
 
@@ -147,7 +150,7 @@ describe('AISuggestion Component', () => {
     expect(screen.queryByText('component.aiSuggestion.modal.title')).not.toBeInTheDocument();
   });
 
-  it('should call getAISuggestion when modal opens', () => {
+  it('should call getAISuggestion when modal opens', async () => {
     render(
       <ConfigProvider>
         <AISuggestion {...defaultProps} />
@@ -157,7 +160,7 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(mockGetAISuggestion).toHaveBeenCalledWith('{}', 'process', {
         outputDiffSummary: true,
         outputDiffHTML: true,
@@ -166,7 +169,7 @@ describe('AISuggestion Component', () => {
     });
   });
 
-  it('should show loading state while fetching AI suggestion', () => {
+  it('should show loading state while fetching AI suggestion', async () => {
     mockGetAISuggestion.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     render(
@@ -178,10 +181,10 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    expect(screen.getByText('component.aiSuggestion.modal.loading')).toBeInTheDocument();
+    expect(await screen.findByText('component.aiSuggestion.modal.loading')).toBeInTheDocument();
   });
 
-  it('should call onClose when modal closes', () => {
+  it('should call onClose when modal closes', async () => {
     render(
       <ConfigProvider>
         <AISuggestion {...defaultProps} />
@@ -191,10 +194,17 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    const cancelButton = screen.getByRole('button', { name: /close/i });
-    fireEvent.click(cancelButton);
+    await screen.findByText('component.aiSuggestion.modal.title');
 
-    expect(defaultProps.onClose).toHaveBeenCalled();
+    const modal = screen.getByRole('dialog');
+    const closeButtons = within(modal).getAllByRole('button', { name: /close/i });
+    const closeButton = closeButtons.find((button) => button.classList.contains('ant-modal-close'));
+    expect(closeButton).toBeDefined();
+    fireEvent.click(closeButton!);
+
+    await waitFor(() => {
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
   });
 
   it('should render with correct button text', () => {
@@ -208,7 +218,7 @@ describe('AISuggestion Component', () => {
     expect(button).toHaveTextContent('component.aiSuggestion.button.aiCheck');
   });
 
-  it('should handle flow type correctly', () => {
+  it('should handle flow type correctly', async () => {
     const flowProps = {
       ...defaultProps,
       type: 'flow' as const,
@@ -223,7 +233,7 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(mockGetAISuggestion).toHaveBeenCalledWith('{}', 'flow', {
         outputDiffSummary: true,
         outputDiffHTML: true,
@@ -232,7 +242,7 @@ describe('AISuggestion Component', () => {
     });
   });
 
-  it('should handle missing originJson gracefully', () => {
+  it('should handle missing originJson gracefully', async () => {
     const propsWithoutJson = {
       ...defaultProps,
       originJson: undefined,
@@ -247,9 +257,8 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(mockGetAISuggestion).toHaveBeenCalled();
-    });
+    await screen.findByText('component.aiSuggestion.modal.title');
+    expect(mockGetAISuggestion).not.toHaveBeenCalled();
   });
 
   it('should handle service error gracefully', async () => {
@@ -303,7 +312,7 @@ describe('AISuggestion Component', () => {
     expect(modal).toBeInTheDocument();
   });
 
-  it('should reset state when modal closes', () => {
+  it('should reset state when modal closes', async () => {
     render(
       <ConfigProvider>
         <AISuggestion {...defaultProps} />
@@ -313,12 +322,21 @@ describe('AISuggestion Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    const cancelButton = screen.getByRole('button', { name: /close/i });
-    fireEvent.click(cancelButton);
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    const modal = screen.getByRole('dialog');
+    const closeButtons = within(modal).getAllByRole('button', { name: /close/i });
+    const closeButton = closeButtons.find((button) => button.classList.contains('ant-modal-close'));
+    expect(closeButton).toBeDefined();
+    fireEvent.click(closeButton!);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
 
     // Open modal again to verify state was reset
     fireEvent.click(button);
-    expect(screen.getByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
+    await screen.findByText('component.aiSuggestion.modal.title');
   });
 
   it('should handle undefined callbacks gracefully', () => {

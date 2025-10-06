@@ -246,7 +246,10 @@ describe('Notification Component', () => {
     const option = screen.getByText('Last 7 Days');
     fireEvent.click(option);
 
-    expect(timeFilter).toHaveValue('7');
+    fireEvent.mouseDown(timeFilter);
+
+    const selectedOption = screen.getByRole('option', { name: 'Last 7 Days' });
+    expect(selectedOption).toHaveAttribute('aria-selected', 'true');
   });
 
   it('should call service functions on mount', async () => {

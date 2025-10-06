@@ -29,8 +29,19 @@ jest.mock('@/services/reviews/api', () => ({
 
 jest.mock('umi', () => ({
   useIntl: () => ({
-    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
-      defaultMessage || id,
+    formatMessage: (
+      { id, defaultMessage }: { id: string; defaultMessage?: string },
+      values?: Record<string, unknown>,
+    ) => {
+      const message = defaultMessage || id;
+      if (!values) {
+        return message;
+      }
+      return Object.keys(values).reduce((acc, key) => {
+        const value = values[key];
+        return acc.replace(new RegExp(`{${key}}`, 'g'), String(value));
+      }, message);
+    },
     locale: 'en',
   }),
 }));
@@ -240,8 +251,17 @@ describe('DataNotification Component', () => {
       </ConfigProvider>,
     );
 
+    const expected = new Date('2023-12-01T10:00:00Z');
+    const expectedString = `${expected.getFullYear()}-${expected.getMonth() + 1}-${expected.getDate()} ${expected
+      .getHours()
+      .toString()
+      .padStart(2, '0')}:${expected
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}:${expected.getSeconds().toString().padStart(2, '0')}`;
+
     await waitFor(() => {
-      expect(screen.getByText('2023-12-1 10:00:00')).toBeInTheDocument();
+      expect(screen.getByText(expectedString)).toBeInTheDocument();
     });
   });
 
@@ -324,16 +344,20 @@ describe('DataNotification Component', () => {
   });
 
   it('should fetch new data when pagination changes', async () => {
+    const paginatedData = {
+      ...mockReviewData,
+      total: 25,
+    };
+    mockGetNotifyReviews.mockResolvedValue(paginatedData);
+
     render(
       <ConfigProvider>
         <DataNotification {...defaultProps} />
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const nextButton = screen.getByTitle('Next Page');
-      fireEvent.click(nextButton);
-    });
+    const nextButton = await screen.findByTitle('Next Page');
+    fireEvent.click(nextButton);
 
     await waitFor(() => {
       expect(mockGetNotifyReviews).toHaveBeenCalledWith({ pageSize: 10, current: 2 }, 'en', 3);
@@ -408,13 +432,11 @@ describe('DataNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const rejectedTag = screen.getByText('Rejected');
-      fireEvent.mouseOver(rejectedTag);
+    const rejectedTag = await screen.findByText('Rejected');
+    fireEvent.mouseOver(rejectedTag);
 
-      waitFor(() => {
-        expect(screen.getByText('Rejected comment')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Rejected comment')).toBeInTheDocument();
     });
   });
 
@@ -424,7 +446,10 @@ describe('DataNotification Component', () => {
       data: [
         {
           ...mockReviewData.data[0],
-          name: '测试流程',
+          name: [
+            { '@xml:lang': 'zh', '#text': '测试流程' },
+            { '@xml:lang': 'en', '#text': 'Test Process' },
+          ],
         },
       ],
       page: 1,

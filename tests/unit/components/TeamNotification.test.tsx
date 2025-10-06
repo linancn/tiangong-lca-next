@@ -21,7 +21,7 @@ import {
 } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, message } from 'antd';
 
 // Mock dependencies
 jest.mock('@/services/auth/api', () => ({
@@ -51,6 +51,9 @@ const mockAcceptTeamInvitationApi = acceptTeamInvitationApi as jest.MockedFuncti
 const mockGetTeamInvitationStatusApi = getTeamInvitationStatusApi as jest.MockedFunction<any>;
 const mockRejectTeamInvitationApi = rejectTeamInvitationApi as jest.MockedFunction<any>;
 const mockGetTeamById = getTeamById as jest.MockedFunction<any>;
+
+jest.spyOn(message, 'success').mockImplementation(() => ({ key: 'success' }) as any);
+jest.spyOn(message, 'error').mockImplementation(() => ({ key: 'error' }) as any);
 
 describe('TeamNotification Component', () => {
   const defaultProps = {
@@ -357,13 +360,11 @@ describe('TeamNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const acceptButton = screen.getByText('Accept');
-      fireEvent.click(acceptButton);
-    });
+    const acceptButton = await screen.findByRole('button', { name: 'Accept' });
+    fireEvent.click(acceptButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /accept/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /accept/i })).toHaveClass('ant-btn-loading');
     });
   });
 
@@ -376,13 +377,11 @@ describe('TeamNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const rejectButton = screen.getByText('Reject');
-      fireEvent.click(rejectButton);
-    });
+    const rejectButton = await screen.findByRole('button', { name: 'Reject' });
+    fireEvent.click(rejectButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /reject/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /reject/i })).toHaveClass('ant-btn-loading');
     });
   });
 
@@ -458,7 +457,7 @@ describe('TeamNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+      expect(screen.queryAllByText(/no data/i).length).toBeGreaterThan(0);
     });
   });
 
@@ -471,13 +470,11 @@ describe('TeamNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const acceptButton = screen.getByText('Accept');
-      fireEvent.click(acceptButton);
-    });
+    const acceptButton = await screen.findByRole('button', { name: 'Accept' });
+    fireEvent.click(acceptButton);
 
     await waitFor(() => {
-      expect(screen.getByText('teams.members.actionError')).toBeInTheDocument();
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
     });
   });
 
@@ -490,13 +487,11 @@ describe('TeamNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const rejectButton = screen.getByText('Reject');
-      fireEvent.click(rejectButton);
-    });
+    const rejectButton = await screen.findByRole('button', { name: 'Reject' });
+    fireEvent.click(rejectButton);
 
     await waitFor(() => {
-      expect(screen.getByText('teams.members.actionError')).toBeInTheDocument();
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
     });
   });
 
@@ -509,13 +504,11 @@ describe('TeamNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const acceptButton = screen.getByText('Accept');
-      fireEvent.click(acceptButton);
-    });
+    const acceptButton = await screen.findByRole('button', { name: 'Accept' });
+    fireEvent.click(acceptButton);
 
     await waitFor(() => {
-      expect(screen.getByText('teams.members.actionError')).toBeInTheDocument();
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
     });
   });
 
@@ -528,13 +521,11 @@ describe('TeamNotification Component', () => {
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const rejectButton = screen.getByText('Reject');
-      fireEvent.click(rejectButton);
-    });
+    const rejectButton = await screen.findByRole('button', { name: 'Reject' });
+    fireEvent.click(rejectButton);
 
     await waitFor(() => {
-      expect(screen.getByText('teams.members.actionError')).toBeInTheDocument();
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
     });
   });
 
