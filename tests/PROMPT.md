@@ -191,6 +191,10 @@ Add or update component tests for **[COMPONENT]** (e.g., `src/components/Contact
    - All tests must pass.  
      **No strict coverage requirement** — aim for realistic completeness.
 
+4. **Known Issues**
+   - Add tests for any discovered bugs or design flaws.
+   - Mark these tests with `it.skip()` or `describe.skip()` and include a `// TODO` comment explaining the issue.
+
 > **Note:** Always check `tests/QUICK_REFERENCE.md` for detailed patterns before starting.
 
 ---
