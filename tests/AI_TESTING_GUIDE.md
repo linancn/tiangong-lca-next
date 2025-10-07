@@ -5,6 +5,7 @@ CRITICAL RULES:
 - This is the ONLY documentation file needed for writing tests
 - All code patterns and examples are included here
 - No need to reference external documentation
+- MUST run "npm run lint" after writing tests - zero errors required before completion
 
 ---
 
@@ -92,7 +93,7 @@ DO:
 - Use fixtures - import test data from tests/helpers/testData.ts
 - Await async operations
 - Use semantic queries (getByRole, getByLabelText)
-- Run tests and linter before completion
+- ALWAYS run linter after writing tests - ALL lint errors must be fixed before completion
 
 DO NOT:
 
@@ -557,7 +558,7 @@ describe('unauthenticated operations', () => {
 
 ### Quality Gates for Unit Tests
 
-After writing tests, execute these steps:
+CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
 # Step 1: Run the tests
@@ -567,7 +568,7 @@ npm test -- tests/unit/services/[module] --no-coverage
 # - Business code issue? Use it.skip() and add TODO
 # - Test code issue? Fix the test
 
-# Step 3: Run linter
+# Step 3: Run linter (MANDATORY - must pass with zero errors)
 npm run lint
 
 # Step 4: Check coverage (optional but recommended)
@@ -577,7 +578,11 @@ npx jest --coverage --collectCoverageFrom="src/services/[module]/api.ts"
 open coverage/lcov-report/src/services/[module]/api.ts.html
 ```
 
-ALL tests must pass before considering the work complete.
+REQUIREMENTS BEFORE COMPLETION:
+
+- ALL tests must pass
+- ALL linter errors must be fixed (npm run lint returns no errors)
+- No skipped tests without TODO comments
 
 ---
 
@@ -935,17 +940,22 @@ it('navigates through paginated results', async () => {
 
 ### Quality Gates for Integration Tests
 
+CRITICAL: Execute ALL steps below. Do not skip any step.
+
 ```bash
 # Step 1: Run the integration tests
 npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-coverage
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 
-# Step 3: Run linter
+# Step 3: Run linter (MANDATORY - must pass with zero errors)
 npm run lint
-
-# Step 4: All tests must pass
 ```
+
+REQUIREMENTS BEFORE COMPLETION:
+
+- ALL tests must pass
+- ALL linter errors must be fixed (npm run lint returns no errors)
 
 ---
 
@@ -1158,20 +1168,25 @@ it('announces changes to screen readers', () => {
 
 ### Quality Gates for Component Tests
 
+CRITICAL: Execute ALL steps below. Do not skip any step.
+
 ```bash
 # Step 1: Run the component tests
 npm test -- tests/unit/components/[Component].test.tsx --no-coverage
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 
-# Step 3: Run linter
+# Step 3: Run linter (MANDATORY - must pass with zero errors)
 npm run lint
 
 # Step 4: Check coverage (optional)
 npx jest --coverage --collectCoverageFrom="src/components/[Component].tsx"
-
-# Step 5: All tests must pass
 ```
+
+REQUIREMENTS BEFORE COMPLETION:
+
+- ALL tests must pass
+- ALL linter errors must be fixed (npm run lint returns no errors)
 
 ---
 
