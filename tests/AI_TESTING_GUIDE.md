@@ -10,18 +10,95 @@ CRITICAL RULES:
 
 ## TABLE OF CONTENTS
 
-1. [Core Testing Principles](#core-testing-principles)
-2. [Test Type Selection](#test-type-selection)
-3. [Unit Test Patterns](#unit-test-patterns)
-4. [Integration Test Patterns](#integration-test-patterns)
-5. [Component Test Patterns](#component-test-patterns)
-6. [Shared Utilities Reference](#shared-utilities-reference)
-7. [Command Reference](#command-reference)
-8. [Troubleshooting](#troubleshooting)
+1. [Project Overview](#project-overview)
+2. [Core Testing Principles](#core-testing-principles)
+3. [Test Type Selection](#test-type-selection)
+4. [Unit Test Patterns](#unit-test-patterns)
+5. [Integration Test Patterns](#integration-test-patterns)
+6. [Component Test Patterns](#component-test-patterns)
+7. [Shared Utilities Reference](#shared-utilities-reference)
+8. [Command Reference](#command-reference)
+9. [Troubleshooting](#troubleshooting)
+
+---
+
+## PROJECT OVERVIEW
+
+### Test Directory Structure
+
+```
+tests/
+├── unit/                    # Unit tests for individual functions/components
+│   ├── services/           # Service layer tests
+│   │   ├── general/        # General utility tests
+│   │   ├── contacts/       # Contact service tests
+│   │   ├── teams/          # Team service tests
+│   │   └── ...             # Other service tests
+│   ├── components/         # Component tests
+│   └── utils/             # Utility function tests
+├── integration/            # Integration tests
+│   ├── api/               # API integration tests
+│   └── pages/             # Page-level integration tests
+├── mocks/                 # Mock data and utilities
+│   ├── services/          # Mocked services
+│   └── data/              # Test data fixtures
+├── helpers/               # Test helper utilities
+│   ├── mockBuilders.ts    # Supabase mock builders
+│   ├── testData.ts        # Shared test data fixtures
+│   ├── mockSetup.ts       # Common mock setup
+│   ├── testUtils.tsx      # React Testing Library utilities
+│   └── factories.ts       # Test data factories
+└── setupTests.jsx         # Global test setup
+```
+
+### File Naming Convention
+
+- Unit tests: `*.test.ts` or `*.test.tsx`
+- Test files mirror the source structure
+- Example: `src/services/teams/api.ts` → `tests/unit/services/teams/api.test.ts`
+
+### Testing Stack
+
+- Jest - Test runner and assertion library
+- React Testing Library - Component testing
+- @testing-library/jest-dom - Custom DOM matchers
+- @testing-library/user-event - User interaction simulation
+
+### Coverage Goals
+
+- Services: 80%+ coverage target
+- Components: 70%+ coverage target
+- Utilities: 90%+ coverage target
 
 ---
 
 ## CORE TESTING PRINCIPLES
+
+### Best Practices Summary
+
+DO:
+
+- Investigate real usage first - search the codebase to understand how code is actually used
+- Use shared helpers - import from tests/helpers/ instead of creating inline mocks
+- Test behavior, not implementation - focus on what the code does, not how it does it
+- Write descriptive test names - "should fetch active teams ordered by rank"
+- Clear mocks - use beforeEach(() => jest.clearAllMocks())
+- Use fixtures - import test data from tests/helpers/testData.ts
+- Await async operations
+- Use semantic queries (getByRole, getByLabelText)
+- Run tests and linter before completion
+
+DO NOT:
+
+- Create inline query builders (use createQueryBuilder from helpers)
+- Create inline test data (use fixtures from testData.ts)
+- Test implementation details (focus on observable behavior)
+- Forget to await async calls
+- Use generic test names like "should work"
+- Skip tests without explanation
+- Test third-party library internals
+- Use query selectors (querySelector, getElementsByClassName)
+- Commit failing tests
 
 ### When Tests Fail - Decision Tree
 
@@ -1283,6 +1360,22 @@ grep -r "import.*from.*components" src/pages/
 
 # List test files
 ls tests/unit/services/*/api.test.ts
+
+# Find tests using a shared helper
+grep -r "createQueryBuilder" tests/unit/
+
+# Find tests using a specific fixture
+grep -r "mockTeam" tests/unit/
+```
+
+### Quick Reference
+
+```bash
+# Common workflow
+npm test -- tests/unit/services/[module] --no-coverage  # Run tests
+npm run lint                                             # Check linting
+npx jest --coverage --collectCoverageFrom="[path]"      # Check coverage
+open coverage/lcov-report/index.html                     # View report
 ```
 
 ---
@@ -1427,36 +1520,6 @@ it('should work', async () => {
   expect(result.data).toEqual(mockData);
 });
 ```
-
----
-
-## BEST PRACTICES SUMMARY
-
-### DO
-
-1. Use shared utilities from `tests/helpers/`
-2. Investigate real usage before writing tests
-3. Clear mocks in `beforeEach()`
-4. Use descriptive test names
-5. Test behavior, not implementation
-6. Use semantic queries (getByRole, getByLabelText)
-7. Await async operations
-8. Use waitFor for async assertions
-9. Add TODO comments for skipped tests
-10. Run tests and linter before completion
-
-### DO NOT
-
-1. Create inline mock builders
-2. Create inline test data
-3. Test implementation details
-4. Use query selectors (querySelector, getElementsByClassName)
-5. Forget to await async calls
-6. Skip tests without explanation
-7. Test third-party library internals
-8. Use vague test names
-9. Mix multiple unrelated assertions in one test
-10. Commit failing tests
 
 ---
 
