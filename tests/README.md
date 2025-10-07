@@ -2,11 +2,10 @@
 
 This directory contains all test files for the Tiangong LCA Next project.
 
-## 📚 Documentation
+## Documentation
 
-- **[PROMPT.md](./PROMPT.md)** - Prompts for AI assistants to generate tests
-- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick reference guide for writing unit tests
-- **README.md** (this file) - Overview and guidelines
+- **[AI_TESTING_GUIDE.md](./AI_TESTING_GUIDE.md)** - Comprehensive testing guide for AI assistants (all patterns, examples, and utilities in one file)
+- **README.md** (this file) - Overview and guidelines for developers
 
 ## 📁 Directory Structure
 
@@ -58,9 +57,8 @@ npm test -- tests/unit/services/ --no-coverage
 
 ### Writing Tests
 
-1. **Check the guides:**
-   - Read [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) for patterns and examples
-   - Use [PROMPT.md](./PROMPT.md) for AI-assisted test generation
+1. **Check the AI Testing Guide:**
+   - Read [AI_TESTING_GUIDE.md](./AI_TESTING_GUIDE.md) for comprehensive patterns, examples, and utilities
 
 2. **Use shared utilities:**
 
@@ -195,10 +193,10 @@ grep -r "mockTeam" tests/unit/
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 - [Testing Best Practices](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-See the [Troubleshooting section in QUICK_REFERENCE.md](./QUICK_REFERENCE.md#troubleshooting) for common issues and solutions.
+See the [Troubleshooting section in AI_TESTING_GUIDE.md](./AI_TESTING_GUIDE.md#troubleshooting) for common issues and solutions.
 
 ---
 
-**Need help?** Check [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) for detailed patterns and examples!
+**Need help?** Check [AI_TESTING_GUIDE.md](./AI_TESTING_GUIDE.md) for detailed patterns and examples!
