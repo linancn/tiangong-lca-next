@@ -9,6 +9,73 @@ CRITICAL RULES:
 
 ---
 
+## QUICK START FOR AI
+
+When asked to write tests, follow this workflow:
+
+### STEP 1: Understand the Task
+
+Parse the user's request to identify:
+
+- What to test: Extract feature name (e.g., "Processes", "Reviews", "Contacts")
+- Test type: Integration test (user workflow) or Unit test (single function)
+- Workflow: What actions? (e.g., "create, edit, review, delete")
+
+### STEP 2: Locate Existing Code (Investigation Phase)
+
+```bash
+# Find the page component
+ls src/pages/[Feature]/
+
+# Find service functions
+grep -r "export.*function" src/services/[feature]/
+
+# Find existing integration tests for reference
+ls tests/integration/[feature]/ 2>/dev/null || echo "No existing tests"
+
+# Check what's already tested
+grep -r "describe.*[Feature]" tests/integration/
+```
+
+### STEP 3: Identify What Already Exists
+
+Before writing new tests:
+
+- Check if similar tests exist: `grep -r "describe.*[Workflow]" tests/integration/`
+- Find similar patterns: Look at tests/integration/manageSystem/ or tests/integration/reviews/
+- Reuse existing mocks from tests/helpers/testData.ts
+
+### STEP 4: Write Tests Following Patterns
+
+Use the appropriate pattern from this guide:
+
+- Integration tests: See [Integration Test Patterns](#integration-test-patterns)
+- Unit tests: See [Unit Test Patterns](#unit-test-patterns)
+- Always use helpers from tests/helpers/
+
+### STEP 5: Execute Quality Gates
+
+```bash
+# Run tests
+npm test -- tests/integration/[feature]/ --no-coverage
+
+# MANDATORY: Run linter
+npm run lint
+
+# Fix any errors, then verify again
+```
+
+### STEP 6: Report Completion
+
+Provide:
+
+- Test file path
+- Number of test cases written
+- Coverage of workflows tested
+- Confirmation that all tests pass and linter has zero errors
+
+---
+
 ## TABLE OF CONTENTS
 
 1. [Project Overview](#project-overview)
@@ -25,6 +92,24 @@ CRITICAL RULES:
 
 ## PROJECT OVERVIEW
 
+### Project Context
+
+This is a Life Cycle Assessment (LCA) web application built with:
+
+- Frontend: React + Ant Design + UmiJS
+- Backend: Supabase (PostgreSQL database + Edge Functions)
+- Authentication: Supabase Auth
+- State Management: UmiJS model
+
+COMMON FEATURES TO TEST:
+
+- Data management: CRUD operations for entities (Processes, Contacts, Sources, etc.)
+- Workflows: Create → Edit → Review → Approve/Reject
+- Permissions: Role-based access (admin, reviewer, member)
+- Pagination: Tables with sorting, filtering, page navigation
+- Forms: Modal/Drawer forms with validation
+- Internationalization: Chinese/English language support
+
 ### Test Directory Structure
 
 ```
@@ -38,8 +123,9 @@ tests/
 │   ├── components/         # Component tests
 │   └── utils/             # Utility function tests
 ├── integration/            # Integration tests
-│   ├── api/               # API integration tests
-│   └── pages/             # Page-level integration tests
+│   ├── manageSystem/      # System management workflows (REFERENCE EXAMPLE)
+│   ├── reviews/           # Review workflows (REFERENCE EXAMPLE)
+│   └── ...                # Other feature workflows
 ├── mocks/                 # Mock data and utilities
 │   ├── services/          # Mocked services
 │   └── data/              # Test data fixtures
@@ -52,9 +138,17 @@ tests/
 └── setupTests.jsx         # Global test setup
 ```
 
+REFERENCE EXAMPLES FOR INTEGRATION TESTS:
+
+- tests/integration/manageSystem/ManageSystemWorkflow.integration.test.tsx
+- tests/integration/reviews/ReviewWorkflow.integration.test.tsx
+
+Use these as templates when writing new integration tests.
+
 ### File Naming Convention
 
 - Unit tests: `*.test.ts` or `*.test.tsx`
+- Integration tests: `*Workflow.integration.test.tsx` or `*[Feature].integration.test.tsx`
 - Test files mirror the source structure
 - Example: `src/services/teams/api.ts` → `tests/unit/services/teams/api.test.ts`
 
@@ -593,20 +687,102 @@ REQUIREMENTS BEFORE COMPLETION:
 Before writing integration tests, investigate the user workflow:
 
 ```bash
-# Find the page component
+# Step 1: Find the page component structure
 ls src/pages/[Feature]/
+# Example output: index.tsx, components/, [FeatureDrawer].tsx
 
-# Find service calls in the workflow
+# Step 2: Identify service functions used in the page
 grep -r "from '@/services" src/pages/[Feature]/
+# Example output: import { getData, createData } from '@/services/[module]/api'
 
-# Find related components
+# Step 3: Find related components
 grep -r "import.*from.*components" src/pages/[Feature]/
+# Example output: import { DataTable } from '@/components/DataTable'
 
-# Examine the page structure
-cat src/pages/[Feature]/index.tsx
+# Step 4: Check existing integration tests for reference
+ls tests/integration/
+# Look for similar features (e.g., manageSystem, reviews)
+
+# Step 5: Examine the page structure to understand workflow
+cat src/pages/[Feature]/index.tsx | head -50
+# Identify: state management, API calls, user interactions
 ```
 
 GOAL: Map out the complete user journey, identify all API calls, understand state transitions.
+
+EXPECTED FINDINGS:
+
+- Main page component path
+- List of service functions called
+- UI components used (tables, forms, modals, tabs)
+- User interactions (buttons, forms, navigation)
+- State management patterns
+
+### Common Patterns in This Project
+
+TYPICAL PAGE STRUCTURE:
+
+```typescript
+// src/pages/[Feature]/index.tsx
+export default () => {
+  const [dataSource, setDataSource] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Initial data load
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Table with pagination
+  <ProTable
+    dataSource={dataSource}
+    columns={columns}
+    pagination={{ current, pageSize }}
+  />
+
+  // Action buttons
+  <Button onClick={handleCreate}>Create</Button>
+
+  // Modal/Drawer for create/edit
+  <Drawer visible={visible} onClose={handleClose}>
+    <Form onFinish={handleSubmit}>
+      {/* Form fields */}
+    </Form>
+  </Drawer>
+};
+```
+
+TYPICAL SERVICE STRUCTURE:
+
+```typescript
+// src/services/[module]/api.ts
+export async function getTableData(params, sorter) {
+  // Fetch with pagination and sorting
+}
+
+export async function createData(data) {
+  // Insert via Supabase or Edge Function
+}
+
+export async function updateData(id, data) {
+  // Update via Edge Function (requires auth)
+}
+
+export async function deleteData(id) {
+  // Delete operation
+}
+```
+
+TYPICAL WORKFLOW TO TEST:
+
+1. Page loads → Show loading state
+2. API fetches data → Display in table
+3. User clicks "Create" → Modal opens
+4. User fills form → Submits
+5. Success message → Table refreshes
+6. User clicks "Edit" → Modal opens with data
+7. User updates → Saves
+8. User clicks "Delete" → Confirmation → Deletes
 
 ### Standard Integration Test Template
 
