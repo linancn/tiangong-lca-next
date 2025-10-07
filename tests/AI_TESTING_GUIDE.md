@@ -64,11 +64,17 @@ tests/
 - @testing-library/jest-dom - Custom DOM matchers
 - @testing-library/user-event - User interaction simulation
 
-### Coverage Goals
+### Coverage Goal
 
-- Services: 80%+ coverage target
-- Components: 70%+ coverage target
-- Utilities: 90%+ coverage target
+TARGET: 100% coverage for all code
+
+Write tests to cover ALL meaningful code paths:
+
+- All service functions
+- All component behaviors
+- All utility functions
+- All error cases
+- All edge cases
 
 ---
 
