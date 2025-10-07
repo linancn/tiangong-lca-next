@@ -167,7 +167,8 @@ function generateReport() {
       relativePath.includes('.umi') ||
       relativePath.includes('typings.d.ts') ||
       relativePath.includes('service-worker') ||
-      relativePath.match(/\.(test|spec)\.(ts|tsx|js|jsx)$/)
+      relativePath.match(/\.(test|spec)\.(ts|tsx|js|jsx)$/) ||
+      relativePath.endsWith('/index.ts')
     ) {
       return;
     }
