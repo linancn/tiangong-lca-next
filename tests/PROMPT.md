@@ -2,6 +2,29 @@
 
 Use these prompts when asking AI assistants to help write tests for the Tiangong LCA Next project.
 
+## 🎯 Core Testing Principles
+
+**When tests fail:**
+
+1. **Diagnose first** — determine if the issue is in:
+   - ❌ Business code (bug/design flaw)
+   - ❌ Test code (incorrect expectations/mocks)
+2. **If business code has issues:**
+   - Mark with `it.skip()` or `describe.skip()`
+   - Add `// TODO: [Issue description]` comment
+   - Document the expected vs actual behavior
+3. **If test code has issues:**
+   - Fix the test immediately
+   - Ensure mocks and expectations match real usage
+
+**Coverage goal:**
+
+- **Aim to verify ALL meaningful paths and interactions**
+- Cover happy paths, error cases, edge cases, and state transitions
+- Test real-world usage patterns found in the codebase
+
+---
+
 ### Unit Test Prompt Template
 
 Add or update unit tests for **[MODULE_PATH]** (e.g., `src/services/contacts/api.ts`).
@@ -22,46 +45,29 @@ Add or update unit tests for **[MODULE_PATH]** (e.g., `src/services/contacts/api
    - Focus on real-world scenarios reflected in actual business logic.
 
 3. **Test Coverage**
-   - ✅ Successful operations (happy paths)
-   - ✅ Error handling (e.g., database or validation errors)
+   - ✅ Happy paths (successful operations)
+   - ✅ Error handling (database errors, validation failures)
    - ✅ Edge cases (null, undefined, empty arrays, boundary values)
    - ✅ Authentication and session handling
    - ✅ Pagination, filtering, and sorting where applicable
+   - **Goal:** Cover ALL meaningful code paths and branches
 
-4. **Known Issues**
-   - Add tests for any discovered bugs or design flaws.
-   - Mark these tests with `it.skip()` or `describe.skip()` and include a `// TODO` comment explaining the issue.
-
-5. **Coverage Check**
-   - Aim to cover all meaningful logic and usage branches **as much as realistically possible**.
-   - To view coverage for this specific module:
-     ```bash
-     npx jest --coverage [MODULE_PATH]
-     ```
-   - If the module is not yet imported by any tests:
-     ```bash
-     npx jest --coverage --collectCoverageFrom="[MODULE_PATH]"
-     ```
-   - To inspect uncovered lines or branches, open the generated HTML report:
-     ```
-     coverage/lcov-report/[MODULE_PATH].html
-     ```
-
-6. **Quality Gates**
-   - Run tests:
+4. **Quality Gates**
+   - Write tests and run:
      ```bash
      npm test -- tests/unit/services/[module] --no-coverage
      ```
-   - (Optional) Run coverage check:
-     ```bash
-     npx jest --coverage [MODULE_PATH]
-     ```
+   - **If tests fail:** Diagnose whether it's a business code issue or test issue (see Core Principles above)
    - Run linter:
      ```bash
      npm run lint
      ```
-   - All tests must pass.  
-     **No strict coverage requirement**, but aim for practical completeness that reflects real-world usage.
+   - Check coverage (optional but recommended):
+     ```bash
+     npx jest --coverage --collectCoverageFrom="[MODULE_PATH]"
+     ```
+   - View detailed coverage report at `coverage/lcov-report/[MODULE_PATH].html`
+   - All tests must pass before completion
 
 #### Example File Header
 
@@ -120,38 +126,26 @@ Add or update integration tests for **[WORKFLOW]** (e.g., _review reassignment w
    - ✅ Role/permission branches, locale toggles, pagination, and drawer behaviors
    - ✅ Error recovery (mock rejections, error messages)
    - ✅ State transitions (tabs, modals, step flows)
+   - **Goal:** Verify ALL meaningful user paths and interactions
 
 4. **Testing Mechanics**
    - Prefer semantic queries (`screen.getByRole`, `screen.findByText`).
    - Wrap async expectations with `await waitFor(...)`.
    - Use helper functions for repeated setup logic.
 
-5. **Known Issues**
-   - For any discovered defects, write a skipped test:
-     ```ts
-     it.skip('should handle [bug scenario]', () => {
-       // TODO: Fix expected behavior once bug is resolved
-     });
-     ```
-
-6. **Quality Gates**
-   - Run tests:
+5. **Quality Gates**
+   - Write tests and run:
      ```bash
      npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-coverage
      ```
+   - **If tests fail:** Diagnose whether it's a business code issue or test issue (see Core Principles above)
    - Run linter:
      ```bash
      npm run lint
      ```
-   - (Optional) Coverage check for related modules:
-     ```bash
-     npx jest --coverage src/services/[relatedModule]/api.ts
-     # If not imported:
-     npx jest --coverage --collectCoverageFrom="src/services/[relatedModule]/api.ts"
-     ```
-   - **No strict coverage requirement** — aim to verify all meaningful paths and interactions.
+   - All tests must pass before completion
 
-> **Note:** Always Check `tests/QUICK_REFERENCE.md` for detailed patterns before starting.
+> **Note:** Always check `tests/QUICK_REFERENCE.md` for detailed patterns before starting.
 
 ---
 
@@ -168,32 +162,27 @@ Add or update component tests for **[COMPONENT]** (e.g., `src/components/Contact
 
 2. **Test Scenarios**
    - ✅ Renders correctly with given props
-   - ✅ Handles user interactions
+   - ✅ Handles user interactions (clicks, input changes)
    - ✅ Conditional rendering and state changes
    - ✅ Event handler callbacks
    - ✅ Loading and error states
+   - **Goal:** Cover ALL user-visible behaviors and state combinations
 
 3. **Quality Gates**
-   - Run component tests:
+   - Write tests and run:
      ```bash
      npm test -- tests/unit/components/[Component] --no-coverage
      ```
+   - **If tests fail:** Diagnose whether it's a business code issue or test issue (see Core Principles above)
    - Run linter:
      ```bash
      npm run lint
      ```
-   - (Optional) Coverage check:
+   - Check coverage (optional but recommended):
      ```bash
-     npx jest --coverage "src/components/[Component].tsx"
-     # If not imported by other tests:
      npx jest --coverage --collectCoverageFrom="src/components/[Component].tsx"
      ```
-   - All tests must pass.  
-     **No strict coverage requirement** — aim for realistic completeness.
-
-4. **Known Issues**
-   - Add tests for any discovered bugs or design flaws.
-   - Mark these tests with `it.skip()` or `describe.skip()` and include a `// TODO` comment explaining the issue.
+   - All tests must pass before completion
 
 > **Note:** Always check `tests/QUICK_REFERENCE.md` for detailed patterns before starting.
 
@@ -233,9 +222,10 @@ ls tests/unit/services/*/api.test.ts
 2. **Use shared helpers** — do not create inline mock builders.
 3. **Follow existing patterns** — review similar test files in the same directory.
 4. **Test behavior, not implementation.**
-5. **Document intent** — comment on complex or business-critical test logic.
-6. **Keep tests focused** — prefer one clear assertion per test.
-7. **Use descriptive names** — make each test’s purpose immediately clear.
+5. **When tests fail** — diagnose root cause (business vs test code) before proceeding.
+6. **Coverage goal** — aim for ALL meaningful paths, not just "enough" coverage.
+7. **Keep tests focused** — prefer one clear assertion per test.
+8. **Use descriptive names** — make each test's purpose immediately clear.
 
 ---
 
