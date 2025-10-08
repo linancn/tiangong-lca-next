@@ -65,8 +65,17 @@ CRITICAL RULES TO PREVENT INFINITE LOOPS:
 ### STEP 5: Execute Quality Gates
 
 ```bash
-# Run tests with timeout protection (auto-kills after 60 seconds)
-timeout 60s npm test -- tests/integration/[feature]/ --no-coverage
+# Run tests with timeout protection (auto-kills after 90 seconds)
+# Using Python subprocess for cross-platform reliability
+python3 - <<'PY'
+import subprocess, sys
+cmd = ["npm", "test", "--", "tests/integration/[feature]/", "--no-coverage"]
+try:
+    completed = subprocess.run(cmd, cwd=".", timeout=90)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
 # MANDATORY: Run linter
 npm run lint
@@ -76,7 +85,14 @@ npm run lint
 
 ⚠️ **IMPORTANT: Test Running Time Monitoring**
 
-The `timeout` command will **automatically stop** tests if they run longer than 60 seconds, preventing infinite loops from blocking your workflow.
+The Python subprocess wrapper will **automatically stop** tests if they run longer than 90 seconds, preventing infinite loops from blocking your workflow.
+
+**Why Python subprocess instead of `timeout` command?**
+
+- ✅ Cross-platform: Works on macOS, Linux, Windows
+- ✅ Consistent behavior: Same timeout mechanism everywhere
+- ✅ Standard library: No extra dependencies needed
+- ✅ Reliable exit codes: Always returns 124 on timeout
 
 If tests are stopped by timeout (exit code 124):
 
@@ -696,7 +712,15 @@ CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
 # Step 1: Run the tests with timeout protection (auto-kills after 30 seconds)
-timeout 30s npm test -- tests/unit/services/[module] --no-coverage
+python3 - <<'PY'
+import subprocess, sys
+cmd = ["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"]
+try:
+    completed = subprocess.run(cmd, cwd=".", timeout=30)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 # - Business code issue? Use it.skip() and add TODO
@@ -712,7 +736,7 @@ npx jest --coverage --collectCoverageFrom="src/services/[module]/api.ts"
 open coverage/lcov-report/src/services/[module]/api.ts.html
 ```
 
-⚠️ **TIME MONITORING**: If timeout kills the process (exit code 124), investigate:
+⚠️ **TIME MONITORING**: If Python subprocess exits with code 124, investigate:
 
 - Add call counter to mocks to detect infinite loops
 - Check if all mocks are properly set up
@@ -1180,7 +1204,15 @@ CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
 # Step 1: Run the integration tests with timeout protection (auto-kills after 90 seconds)
-timeout 90s npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-coverage
+python3 - <<'PY'
+import subprocess, sys
+cmd = ["npm", "test", "--", "tests/integration/[feature]/[Workflow].integration.test.tsx", "--no-coverage"]
+try:
+    completed = subprocess.run(cmd, cwd=".", timeout=90)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 
@@ -1188,7 +1220,7 @@ timeout 90s npm test -- tests/integration/[feature]/[Workflow].integration.test.
 npm run lint
 ```
 
-⚠️ **TIME MONITORING**: If timeout kills the process (exit code 124), this indicates infinite loop!
+⚠️ **TIME MONITORING**: If Python subprocess exits with code 124, this indicates infinite loop!
 
 This indicates "Maximum update depth exceeded" or infinite loop. Common causes:
 
@@ -1430,7 +1462,15 @@ CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
 # Step 1: Run the component tests with timeout protection (auto-kills after 30 seconds)
-timeout 30s npm test -- tests/unit/components/[Component].test.tsx --no-coverage
+python3 - <<'PY'
+import subprocess, sys
+cmd = ["npm", "test", "--", "tests/unit/components/[Component].test.tsx", "--no-coverage"]
+try:
+    completed = subprocess.run(cmd, cwd=".", timeout=30)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 
@@ -1569,24 +1609,76 @@ render(<Component />);
 
 ## COMMAND REFERENCE
 
+### Test Runner Helper Function
+
+For convenience, you can define this bash function (or use the Python one-liner below):
+
+```bash
+# Option 1: Bash function (add to your session or script)
+run_test_with_timeout() {
+    local timeout_seconds=$1
+    shift
+    python3 - <<PY
+import subprocess, sys
+cmd = ["npm", "test", "--"] + "$@".split()
+try:
+    completed = subprocess.run(cmd, cwd=".", timeout=$timeout_seconds)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
+}
+
+# Usage:
+# run_test_with_timeout 30 tests/unit/services/contacts/
+# run_test_with_timeout 90 tests/integration/reviews/
+```
+
 ### Running Tests
 
 ```bash
-# Run all tests (with timeout protection)
-timeout 120s npm test
+# Run all tests (with timeout protection via Python subprocess)
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test"], cwd=".", timeout=120)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
-# Run specific test type
-timeout 60s npm test -- tests/unit/services/
-timeout 90s npm test -- tests/integration/
-timeout 30s npm test -- tests/unit/components/
+# Run specific test type (examples)
+# Unit tests (30s timeout)
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/", "--no-coverage"], cwd=".", timeout=30)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
+
+# Integration tests (90s timeout)
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test", "--", "tests/integration/", "--no-coverage"], cwd=".", timeout=90)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
 # Run specific test file
-timeout 30s npm test -- tests/unit/services/contacts/api.test.ts
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/contacts/api.test.ts", "--no-coverage"], cwd=".", timeout=30)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
-# Run without coverage (faster during development)
-timeout 60s npm test -- tests/unit/services/ --no-coverage
-
-# Watch mode (re-runs tests on file changes)
+# Watch mode (no timeout - for development)
 npm test -- tests/unit/services/teams/ --watch
 
 # Update snapshots
@@ -1595,8 +1687,8 @@ npm test -- -u
 # Verbose output
 npm test -- --verbose
 
-# Note: timeout command exits with code 124 if time limit exceeded
-# This helps catch infinite loops automatically
+# Note: Python subprocess exits with code 124 if timeout occurs
+# This helps catch infinite loops automatically across all platforms
 ```
 
 ### Coverage Commands
@@ -1653,14 +1745,24 @@ grep -r "mockTeam" tests/unit/
 ### Quick Reference
 
 ```bash
-# Common workflow (with timeout protection)
-timeout 60s npm test -- tests/unit/services/[module] --no-coverage  # Run tests
+# Common workflow (with timeout protection via Python subprocess)
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"], cwd=".", timeout=30)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
+
 npm run lint                                                         # Check linting
 npx jest --coverage --collectCoverageFrom="[path]"                  # Check coverage
 open coverage/lcov-report/index.html                                 # View report
 
-# Check timeout exit code
-echo $?  # Returns 124 if timeout killed the process (indicates infinite loop)
+# Check exit code
+echo $?  # Returns 124 if timeout occurred (indicates infinite loop)
+         # Returns 0 if all tests passed
+         # Returns 1 if tests failed
 ```
 
 ---
@@ -1669,25 +1771,46 @@ echo $?  # Returns 124 if timeout killed the process (indicates infinite loop)
 
 ### Problem: Tests running too long (> 30 seconds)
 
-⚠️ **SOLUTION: Use timeout command to auto-kill hanging tests**
+⚠️ **SOLUTION: Use Python subprocess for cross-platform timeout protection**
 
 ```bash
 # Unit tests: 30 second timeout
-timeout 30s npm test -- tests/unit/services/[module] --no-coverage
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"], cwd=".", timeout=30)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
 # Integration tests: 90 second timeout
-timeout 90s npm test -- tests/integration/[feature]/ --no-coverage
+python3 - <<'PY'
+import subprocess, sys
+try:
+    completed = subprocess.run(["npm", "test", "--", "tests/integration/[feature]/", "--no-coverage"], cwd=".", timeout=90)
+    sys.exit(completed.returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
 
-# Check if timeout killed the process
+# Check if timeout occurred
 echo $?  # Exit code 124 = timeout occurred (infinite loop detected)
 ```
+
+**Why Python subprocess?**
+
+- ✅ **Cross-platform**: Works identically on macOS, Linux, Windows
+- ✅ **Reliable**: Standard library, no external dependencies
+- ✅ **Consistent**: Same timeout behavior everywhere
+- ✅ **Simple**: No need to install `gtimeout` on macOS
 
 CAUSE: Infinite loop due to improper mocking or useEffect dependencies.
 
 DIAGNOSIS STEPS (if timeout occurs):
 
 ```bash
-# 1. The timeout command automatically stopped the hanging test
+# 1. The Python subprocess automatically stopped the hanging test
 # 2. Look for the last test name printed before timeout
 # 3. Check that specific test for common issues:
 grep -A 20 "it('test name" tests/[path]/file.test.tsx
