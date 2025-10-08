@@ -63,6 +63,20 @@ npm run test:coverage:report
 npm run test:coverage
 ```
 
+#### Coverage Configuration
+
+Test coverage configuration is defined in `jest.config.cjs`. The following file types are excluded from coverage statistics:
+
+- `.d.ts` type declaration files
+- `.umi` related build files
+- `typings.d.ts` type definition files
+- `service-worker.js` Service Worker files
+- `*.test.{ts,tsx,js,jsx}` and `*.spec.{ts,tsx,js,jsx}` test files
+- `src/components/index.ts`, `src/locales/en-US.ts`, `src/locales/zh-CN.ts` simple re-export files
+- `src/services/**/data.ts` service type definition files
+
+> **Note**: The coverage report script stays consistent with Jest configuration to ensure accurate statistics.
+
 #### Coverage Level Guide
 
 | Icon | Color  | Coverage Range | Description                     |

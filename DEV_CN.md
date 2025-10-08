@@ -63,6 +63,20 @@ npm run test:coverage:report
 npm run test:coverage
 ```
 
+#### 覆盖率配置说明
+
+测试覆盖率的配置在 `jest.config.cjs` 文件中，以下文件类型会被排除在覆盖率统计之外：
+
+- `.d.ts` 类型声明文件
+- `.umi` 相关构建文件
+- `typings.d.ts` 类型定义文件
+- `service-worker.js` Service Worker 文件
+- `*.test.{ts,tsx,js,jsx}` 和 `*.spec.{ts,tsx,js,jsx}` 测试文件
+- `src/components/index.ts`, `src/locales/en-US.ts`, `src/locales/zh-CN.ts` 简单的重导出文件
+- `src/services/**/data.ts` 服务类型定义文件
+
+> **注意**: 覆盖率报告脚本与 Jest 配置保持一致，确保统计的准确性。
+
 #### 覆盖率等级说明
 
 | 图标 | 颜色 | 覆盖率范围 | 说明               |

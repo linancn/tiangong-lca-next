@@ -27,8 +27,16 @@ module.exports = async () => {
       '!src/.umi/**',
       '!src/.umi-production/**',
       '!src/.umi-test/**',
-      '!src/**/index.ts',
       '!src/**/typings.d.ts',
+      '!src/service-worker.js',
+      '!src/**/*.test.{ts,tsx,js,jsx}',
+      '!src/**/*.spec.{ts,tsx,js,jsx}',
+      // Exclude simple re-export index files
+      '!src/components/index.ts',
+      '!src/locales/en-US.ts',
+      '!src/locales/zh-CN.ts',
+      // Exclude type definition files
+      '!src/services/**/data.ts',
     ],
     coverageThreshold: {
       global: {

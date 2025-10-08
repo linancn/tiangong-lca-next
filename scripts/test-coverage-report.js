@@ -162,24 +162,25 @@ function generateReport() {
   allSourceFiles.forEach((file) => {
     const relativePath = path.relative(srcDir, file);
 
-    // 跳过一些文件
+    // Skip files matching jest's collectCoverageFrom exclusions
     if (
       relativePath.includes('.umi') ||
-      relativePath.includes('typings.d.ts') ||
-      relativePath.includes('service-worker') ||
+      relativePath.endsWith('typings.d.ts') ||
+      relativePath === 'service-worker.js' ||
       relativePath.match(/\.(test|spec)\.(ts|tsx|js|jsx)$/) ||
-      relativePath.endsWith('/index.ts')
+      // Skip simple re-export index files (matching jest config)
+      relativePath === 'components/index.ts' ||
+      relativePath === 'locales/en-US.ts' ||
+      relativePath === 'locales/zh-CN.ts' ||
+      // Skip type definition files
+      relativePath.match(/^services\/.*\/data\.ts$/)
     ) {
       return;
     }
 
-    // Try both absolute and relative paths for coverage lookup
-    let coverage = coverageData[file];
-    if (!coverage) {
-      // Try with src/ prefix
-      const srcRelativePath = 'src/' + relativePath;
-      coverage = coverageData[srcRelativePath];
-    }
+    // Look up coverage data using the relative path with src/ prefix
+    const srcRelativePath = 'src/' + relativePath;
+    const coverage = coverageData[srcRelativePath] || coverageData[file];
     const lineCoverage = coverage ? calculateCoverage(coverage.lines) : 0;
 
     const fileInfo = {
