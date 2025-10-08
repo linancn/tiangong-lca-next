@@ -847,12 +847,12 @@ export async function getProcessDetailByIdAndVersion(data: { id: string; version
       .or(orConditions);
 
     return Promise.resolve({
-      data: result,
+      data: result?.data ?? [],
       success: true,
     });
   }
   return Promise.resolve({
-    data: null,
+    data: [],
     success: true,
   });
 }
@@ -971,7 +971,7 @@ export async function getProcessesByIdsAndVersion(ids: string[], version: string
         // classification,
         typeOfDataSet: i.typeOfDataSet ?? '-',
         referenceYear: i['common:referenceYear'] ?? '-',
-        location: location ?? '-',
+        // location: location ?? '-',
         modifiedAt: new Date(i.modified_at),
         teamId: i?.team_id,
       };

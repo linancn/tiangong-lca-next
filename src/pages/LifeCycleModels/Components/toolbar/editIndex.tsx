@@ -829,10 +829,14 @@ const ToolbarEdit: FC<Props> = ({
       return edge;
     });
 
+    const newNodes = nodes.map((node, index: number) => {
+      return { ...node, data: { ...node.data, index: index.toString() } };
+    });
+
     const newData = {
       ...(infoData ?? {}),
       model: {
-        nodes: nodes ?? [],
+        nodes: newNodes ?? [],
         edges: newEdges ?? [],
       },
     };

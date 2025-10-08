@@ -30,17 +30,12 @@ export function genPortLabel(label: string, lang: string, nodeWidth: number) {
 }
 
 export function genLifeCycleModelJsonOrdered(id: string, data: any) {
-  const nodes = data?.model?.nodes?.map((n: any, index: number) => {
-    return {
-      ...n,
-      '@dataSetInternalID': index.toString(),
-    };
-  });
+  const nodes = data?.model?.nodes;
 
   let referenceToReferenceProcess = null;
   const processInstance = nodes?.map((n: any) => {
     if (n?.data?.quantitativeReference === '1') {
-      referenceToReferenceProcess = n?.['@dataSetInternalID'];
+      referenceToReferenceProcess = n?.data?.index;
     }
 
     const sourceEdges = data?.model?.edges?.filter((e: any) => e?.source?.cell === n?.id);
@@ -59,7 +54,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
         const targetNode = nodes?.find((n: any) => n?.id === e?.target?.cell);
         return {
           '@flowUUID': e?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'],
-          '@id': targetNode?.['@dataSetInternalID'],
+          '@id': targetNode?.data?.index,
         };
       });
       return {
@@ -69,7 +64,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
     });
 
     return removeEmptyObjects({
-      '@dataSetInternalID': n?.['@dataSetInternalID'] ?? {},
+      '@dataSetInternalID': n?.data?.index ?? {},
       // '@multiplicationFactor': n?.data?.multiplicationFactor ?? {},
       // scalingFactor: n?.data?.scalingFactor,
       referenceToProcess: {
