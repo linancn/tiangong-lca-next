@@ -100,17 +100,28 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
   const rightPanelRef = React.useRef<HTMLDivElement>(null);
   const getSuggestData = async () => {
-    setLoading(true);
-    const tidasData = createProcess();
-    tidasData.processDataSet = originJson.processDataSet;
+    if (!originJson?.processDataSet) {
+      setAIJson(originJson ?? null);
+      setLoading(false);
+      return;
+    }
 
-    const suggestResult = await getAISuggestion(tidasData.toJSONString(2), type, {
-      outputDiffSummary: true,
-      outputDiffHTML: true,
-      maxRetries: 1,
-    });
-    setAIJson(suggestResult?.data ?? {});
-    setLoading(false);
+    setLoading(true);
+    try {
+      const tidasData = createProcess();
+      tidasData.processDataSet = originJson.processDataSet;
+
+      const suggestResult = await getAISuggestion(tidasData.toJSONString(2), type, {
+        outputDiffSummary: true,
+        outputDiffHTML: true,
+        maxRetries: 1,
+      });
+      setAIJson(suggestResult?.data ?? {});
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

@@ -1,6 +1,11 @@
 /**
  * Tests for life cycle model service API functions
  * Path: src/services/lifeCycleModels/api.ts
+ *
+ * Coverage:
+ * - Table listings & search (used in src/pages/LifeCycleModels/index.tsx)
+ * - Detail fetch & destructive actions (used in src/pages/LifeCycleModels/Components/*)
+ * - Review flows & JSON patching (used in src/pages/Review/Components/.../viewInfo.tsx)
  */
 
 jest.mock('@/pages/LifeCycleModels/lifecyclemodels.json', () => ({}), { virtual: true });
@@ -55,6 +60,7 @@ jest.mock('@/services/ilcd/api', () => ({
 
 const mockCreateProcess = jest.fn();
 const mockDeleteProcess = jest.fn();
+const mockGetProcessDetailByIdsAndVersion = jest.fn();
 const mockGetProcessesByIdsAndVersions = jest.fn();
 const mockUpdateProcess = jest.fn();
 const mockValidateProcessesByIdAndVersion = jest.fn();
@@ -63,6 +69,8 @@ jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   createProcess: (...args: any[]) => mockCreateProcess.apply(null, args),
   deleteProcess: (...args: any[]) => mockDeleteProcess.apply(null, args),
+  getProcessDetailByIdsAndVersion: (...args: any[]) =>
+    mockGetProcessDetailByIdsAndVersion.apply(null, args),
   getProcessesByIdsAndVersions: (...args: any[]) =>
     mockGetProcessesByIdsAndVersions.apply(null, args),
   updateProcess: (...args: any[]) => mockUpdateProcess.apply(null, args),
@@ -112,22 +120,14 @@ jest.mock('@/pages/Utils/review', () => ({
 
 import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
 
-const createQueryBuilder = <T>(resolvedValue: T) => {
-  const builder: any = {
-    select: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    filter: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(resolvedValue),
-    delete: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
-  };
-  return builder;
-};
+import {
+  createMockEdgeFunctionResponse,
+  createMockNoSession,
+  createMockRpcResponse,
+  createMockSession,
+  createQueryBuilder,
+} from '../../../helpers/mockBuilders';
+import { mockFilterCondition, mockPaginationParams } from '../../../helpers/testData';
 
 const waitForMicrotasks = async () =>
   new Promise((resolve) => {
@@ -138,6 +138,7 @@ const sampleModelId = '11111111-1111-1111-1111-111111111111';
 const sampleProcessId = '22222222-2222-2222-2222-222222222222';
 const sampleVersion = '01.00.000';
 const sampleUserId = 'user-0001';
+const sampleAccessToken = 'access-token-0001';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -165,13 +166,7 @@ beforeEach(() => {
   mockControllerAdd.mockReset();
   mockControllerWaitForAll.mockReset();
 
-  mockAuthGetSession.mockResolvedValue({
-    data: {
-      session: {
-        user: { id: sampleUserId },
-      },
-    },
-  });
+  mockAuthGetSession.mockResolvedValue(createMockSession(sampleUserId, sampleAccessToken));
   mockGetTeamIdByUserId.mockResolvedValue('team-default');
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
@@ -296,7 +291,7 @@ describe('getLifeCycleModelTableAll', () => {
   it('returns failure result when my data source lacks active session', async () => {
     const builder = createQueryBuilder({ data: [], count: 0, error: null });
     mockFrom.mockReturnValueOnce(builder);
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
 
     const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
       { current: 1, pageSize: 20 },
@@ -326,6 +321,175 @@ describe('getLifeCycleModelTableAll', () => {
 
     expect(mockGetTeamIdByUserId).toHaveBeenCalled();
     expect(result).toEqual({ data: [], success: true });
+  });
+});
+
+describe('getLifeCycleModelTablePgroongaSearch', () => {
+  it('maps RPC search results when user session is available', async () => {
+    const rpcPayload: any = [
+      {
+        id: sampleModelId,
+        version: sampleVersion,
+        modified_at: '2024-03-03T12:00:00.000Z',
+        team_id: 'team-search',
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: {
+              dataSetInformation: {
+                name: { en: 'Search model' },
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': [{ '#text': 'class-1' }],
+                  },
+                },
+                'common:generalComment': { en: 'Search comment' },
+              },
+            },
+          },
+        },
+        total_count: 15,
+      },
+    ];
+    (rpcPayload as any).total_count = 15;
+    mockRpc.mockResolvedValueOnce(createMockRpcResponse(rpcPayload));
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      mockPaginationParams,
+      'en',
+      'my',
+      'cement',
+      mockFilterCondition,
+      100,
+    );
+
+    expect(mockAuthGetSession).toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels', {
+      query_text: 'cement',
+      filter_condition: mockFilterCondition,
+      page_size: mockPaginationParams.pageSize,
+      page_current: mockPaginationParams.current,
+      data_source: 'my',
+      this_user_id: sampleUserId,
+      state_code: 100,
+    });
+    expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'class-1' }]);
+    expect(mockGenProcessName).toHaveBeenCalledWith({ en: 'Search model' }, 'en');
+    expect(result).toMatchObject({ success: true, total: 15 });
+    expect(result.data[0]).toMatchObject({
+      id: sampleModelId,
+      teamId: 'team-search',
+      generalComment: 'localized-text',
+    });
+  });
+
+  it('returns empty success payload when RPC yields no rows', async () => {
+    mockRpc.mockResolvedValueOnce(createMockRpcResponse([]));
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      mockPaginationParams,
+      'en',
+      'tg',
+      'steel',
+      {},
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('returns raw result when user session is missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      mockPaginationParams,
+      'en',
+      'my',
+      'cement',
+      {},
+      100,
+    );
+
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(result).toEqual({});
+  });
+});
+
+describe('lifeCycleModel_hybrid_search', () => {
+  it('invokes edge function with auth token and maps results', async () => {
+    const hybridData: any = [
+      {
+        id: sampleModelId,
+        version: sampleVersion,
+        modified_at: '2024-03-05T10:00:00.000Z',
+        team_id: 'team-hybrid',
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: {
+              dataSetInformation: {
+                name: { en: 'Hybrid search model' },
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': [{ '#text': 'hybrid-class' }],
+                  },
+                },
+                'common:generalComment': { en: 'Hybrid comment' },
+              },
+            },
+          },
+        },
+      },
+    ];
+    (hybridData as any).total_count = 5;
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse({ data: hybridData }));
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      mockPaginationParams,
+      'en',
+      'tg',
+      'cement',
+      {},
+      100,
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'lifeCycleModel_hybrid_search',
+      expect.objectContaining({
+        headers: { Authorization: `Bearer ${sampleAccessToken}` },
+        body: { query: 'cement', filter: {}, state_code: 100 },
+      }),
+    );
+    expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'hybrid-class' }]);
+    expect(result).toMatchObject({ success: true, total: 5 });
+    expect(result.data[0]).toMatchObject({ id: sampleModelId, teamId: 'team-hybrid' });
+  });
+
+  it('returns empty success when edge function yields no data', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse({ data: [] }));
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      mockPaginationParams,
+      'en',
+      'tg',
+      'steel',
+      {},
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('skips invocation when no active session', async () => {
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      mockPaginationParams,
+      'en',
+      'tg',
+      'cement',
+      {},
+      200,
+    );
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({});
   });
 });
 
@@ -470,6 +634,53 @@ describe('getLifeCycleModelDetail', () => {
   });
 });
 
+describe('deleteLifeCycleModel', () => {
+  it('cleans up related processes before removing the lifecycle model', async () => {
+    const selectResult = {
+      data: [
+        {
+          submodels: [{ id: sampleProcessId }, { id: '55555555-5555-5555-5555-555555555555' }],
+        },
+      ],
+      error: null,
+    };
+    const deleteResponse = { status: 204, error: null };
+    const selectBuilder = createQueryBuilder(selectResult);
+    const deleteBuilder = createQueryBuilder(deleteResponse);
+    mockFrom.mockReturnValueOnce(selectBuilder);
+    mockFrom.mockReturnValueOnce(deleteBuilder);
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(mockFrom).toHaveBeenNthCalledWith(1, 'lifecyclemodels');
+    expect(selectBuilder.select).toHaveBeenCalledWith('id, version, json_tg->submodels');
+    expect(mockDeleteProcess).toHaveBeenCalledTimes(2);
+    expect(mockDeleteProcess).toHaveBeenNthCalledWith(1, sampleProcessId, sampleVersion);
+    expect(mockDeleteProcess).toHaveBeenNthCalledWith(
+      2,
+      '55555555-5555-5555-5555-555555555555',
+      sampleVersion,
+    );
+    expect(deleteBuilder.delete).toHaveBeenCalled();
+    expect(deleteBuilder.eq).toHaveBeenCalledWith('id', sampleModelId);
+    expect(deleteBuilder.eq).toHaveBeenCalledWith('version', sampleVersion);
+    expect(result).toEqual(deleteResponse);
+  });
+
+  it('still removes lifecycle model when no submodels are found', async () => {
+    const selectBuilder = createQueryBuilder({ data: [], error: null });
+    const deleteResponse = { status: 204, error: null };
+    const deleteBuilder = createQueryBuilder(deleteResponse);
+    mockFrom.mockReturnValueOnce(selectBuilder);
+    mockFrom.mockReturnValueOnce(deleteBuilder);
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(mockDeleteProcess).not.toHaveBeenCalled();
+    expect(result).toEqual(deleteResponse);
+  });
+});
+
 describe('createLifeCycleModel', () => {
   it('stores lifecycle model payload with derived json and processes', async () => {
     mockGenLifeCycleModelProcesses.mockResolvedValueOnce([
@@ -498,11 +709,7 @@ describe('createLifeCycleModel', () => {
     const result = await lifeCycleModelsApi.createLifeCycleModel(payload);
     await waitForMicrotasks();
 
-    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(
-      sampleModelId,
-      payload,
-      expect.any(Object),
-    );
+    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(sampleModelId, payload);
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalled();
     expect(insertMock).toHaveBeenCalledWith([
       {
@@ -550,5 +757,299 @@ describe('createLifeCycleModel', () => {
       expect.anything(),
       [],
     );
+  });
+});
+
+describe('updateLifeCycleModel', () => {
+  it('updates lifecycle model json and synchronizes child processes', async () => {
+    const keepFinalId = {
+      nodeId: 'node-keep',
+      processId: 'proc-keep',
+      allocatedExchangeDirection: 'input',
+      allocatedExchangeFlowId: 'flow-keep',
+    };
+    const oldSubmodels = [
+      {
+        id: 'old-secondary-keep',
+        type: 'secondary',
+        finalId: keepFinalId,
+      },
+      {
+        id: 'old-secondary-delete',
+        type: 'secondary',
+        finalId: {
+          nodeId: 'node-delete',
+          processId: 'proc-delete',
+          allocatedExchangeDirection: 'output',
+          allocatedExchangeFlowId: 'flow-delete',
+        },
+      },
+    ];
+    const selectBuilder = createQueryBuilder({
+      data: [
+        {
+          json: { previous: true },
+          submodels: oldSubmodels,
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(selectBuilder);
+
+    const updateResponse = createMockEdgeFunctionResponse({ updated: true });
+    mockFunctionsInvoke.mockResolvedValueOnce(updateResponse);
+
+    const processDataSkeleton = {
+      processDataSet: {
+        processInformation: {
+          dataSetInformation: {},
+          technology: {},
+        },
+        modellingAndValidation: {
+          complianceDeclarations: {},
+          validation: {},
+        },
+        administrativeInformation: {
+          dataEntryBy: {},
+          publicationAndOwnership: {},
+        },
+      },
+    };
+
+    const newProcesses = [
+      {
+        option: 'update',
+        modelInfo: {
+          id: sampleProcessId,
+          finalId: keepFinalId,
+        },
+        data: {
+          ...processDataSkeleton,
+        },
+      },
+      {
+        option: 'create',
+        modelInfo: {
+          id: 'new-process-id',
+          finalId: {
+            nodeId: 'node-new',
+            processId: 'proc-new',
+            allocatedExchangeDirection: 'output',
+            allocatedExchangeFlowId: 'flow-new',
+          },
+        },
+        data: {
+          ...processDataSkeleton,
+        },
+      },
+    ];
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce(newProcesses);
+
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleProcessId,
+          version: sampleVersion,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  identifierOfSubDataSet: 'old-id',
+                  'common:synonyms': [],
+                },
+                technology: {
+                  technologyDescriptionAndIncludedProcesses: 'desc',
+                  technologicalApplicability: 'applicability',
+                  referenceToTechnologyPictogramme: 'pictogram',
+                  referenceToTechnologyFlowDiagrammOrPicture: 'diagram',
+                },
+                time: {},
+                geography: {},
+                mathematicalRelations: {},
+              },
+              modellingAndValidation: {
+                LCIMethodAndAllocation: 'allocation',
+                dataSourcesTreatmentAndRepresentativeness: 'sources',
+                completeness: 'complete',
+                complianceDeclarations: { compliance: 'legacy-compliance' },
+                validation: { review: 'legacy-review' },
+              },
+              administrativeInformation: {
+                dataEntryBy: {
+                  'common:referenceToConvertedOriginalDataSetFrom': 'ref-convert',
+                  'common:referenceToDataSetUseApproval': 'ref-approval',
+                },
+                publicationAndOwnership: {
+                  'common:dateOfLastRevision': '2024-01-01',
+                  'common:workflowAndPublicationStatus': 'status',
+                  'common:referenceToUnchangedRepublication': 'ref-republish',
+                  'common:referenceToRegistrationAuthority': 'ref-registrar',
+                  'common:registrationNumber': 'reg-001',
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const payload = {
+      id: sampleModelId,
+      version: sampleVersion,
+      model: {
+        nodes: [
+          {
+            data: {
+              quantitativeReference: '1',
+              targetAmount: 42,
+            },
+          },
+        ],
+      },
+    };
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel(payload);
+
+    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
+    expect(selectBuilder.select).toHaveBeenCalledWith('id, json, json_tg->submodels');
+    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(sampleModelId, payload);
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+      sampleModelId,
+      42,
+      expect.anything(),
+      oldSubmodels,
+    );
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: `Bearer ${sampleAccessToken}` },
+      body: expect.objectContaining({ id: sampleModelId, version: sampleVersion }),
+      region: expect.any(String),
+    });
+    expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith(
+      newProcesses.map((p) => p.modelInfo.id),
+      sampleVersion,
+    );
+    expect(mockDeleteProcess).toHaveBeenCalledWith('old-secondary-delete', sampleVersion);
+    expect(mockUpdateProcess).toHaveBeenCalledWith(
+      sampleProcessId,
+      sampleVersion,
+      expect.anything(),
+    );
+    expect(mockCreateProcess).toHaveBeenCalledWith('new-process-id', expect.anything());
+    expect(result).toEqual({ updated: true });
+  });
+
+  it('returns undefined when lifecycle model is not found or session missing', async () => {
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [], error: null }));
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('updateLifeCycleModelJsonApi', () => {
+  it('invokes edge function and schedules process updates when session is active', async () => {
+    const scheduledTasks: Array<() => Promise<unknown>> = [];
+    mockControllerAdd.mockImplementation((task: () => Promise<unknown>) => {
+      scheduledTasks.push(task);
+    });
+    mockControllerWaitForAll.mockImplementation(async () => {
+      for (const task of scheduledTasks) {
+        await task();
+      }
+    });
+
+    const edgeResponse = createMockEdgeFunctionResponse({
+      data: [
+        {
+          json_tg: {
+            submodels: [{ id: sampleProcessId }, { id: 'process-999' }],
+          },
+        },
+      ],
+    });
+    mockFunctionsInvoke
+      .mockResolvedValueOnce(edgeResponse)
+      .mockResolvedValueOnce(createMockEdgeFunctionResponse({ success: true }))
+      .mockResolvedValueOnce(createMockEdgeFunctionResponse({ success: true }));
+
+    const processSelectResult = {
+      data: [
+        {
+          json_ordered: {
+            processDataSet: {
+              modellingAndValidation: {
+                complianceDeclarations: { compliance: 'legacy' },
+                validation: { review: 'legacy' },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    };
+    const processBuilder1 = createQueryBuilder(processSelectResult);
+    const processBuilder2 = createQueryBuilder(processSelectResult);
+    mockFrom.mockReturnValueOnce(processBuilder1);
+    mockFrom.mockReturnValueOnce(processBuilder2);
+
+    const payload = {
+      lifeCycleModelDataSet: {
+        modellingAndValidation: {
+          complianceDeclarations: { compliance: 'fresh' },
+          validation: { review: 'fresh' },
+        },
+      },
+    };
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      payload,
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenNthCalledWith(
+      1,
+      'update_data',
+      expect.objectContaining({
+        headers: { Authorization: `Bearer ${sampleAccessToken}` },
+        body: {
+          id: sampleModelId,
+          version: sampleVersion,
+          table: 'lifecyclemodels',
+          data: { json_ordered: payload },
+        },
+      }),
+    );
+    expect(mockControllerAdd).toHaveBeenCalledTimes(2);
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'update_data',
+      expect.objectContaining({
+        body: expect.objectContaining({ table: 'processes' }),
+      }),
+    );
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(3);
+    expect(mockControllerWaitForAll).toHaveBeenCalled();
+    expect(result).toEqual(edgeResponse.data);
+  });
+
+  it('returns undefined when no active session exists', async () => {
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      {},
+    );
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
   });
 });

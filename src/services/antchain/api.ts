@@ -107,7 +107,16 @@ export async function queryCalculationResults(coDatasetId: string, limit?: numbe
   return data;
 }
 
+const FORCE_RUN_ENV_KEY = 'ANTCHAIN_CLI_FORCE_RUN';
+
 const isMainModule = async () => {
+  const override = process.env[FORCE_RUN_ENV_KEY];
+  if (override === 'true') {
+    return true;
+  }
+  if (override === 'false') {
+    return false;
+  }
   try {
     const { fileURLToPath } = await import('url');
     const { argv } = process;
@@ -297,28 +306,28 @@ const runFullWorkflowExample = async () => {
       id: '04650d44-4eb5-4d29-b70c-ce86bfdff684',
       version: '00.00.001',
     };
-    
+
     console.log('Creating calculation instance...');
     const createResult = await createCalculation(params1, params2);
     console.log('Calculation created:', createResult);
-    
+
     if (!createResult.success) {
       throw new Error('Failed to create calculation instance');
     }
-    
+
     const instanceId = createResult.instanceId;
-    
+
     // Step 2: Poll for status until complete
     console.log('Polling for calculation status...');
     let status: any;
     let isComplete = false;
-    
+
     // In a real application, you would implement proper polling with timeout
     // This is a simplified example
     while (!isComplete) {
       status = await queryCalculationStatus(instanceId);
       console.log('Current status:', status);
-      
+
       // This condition needs to be adjusted based on the actual status response
       if (status.status === 'SUCCEEDED') {
         isComplete = true;
@@ -329,18 +338,18 @@ const runFullWorkflowExample = async () => {
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
     }
-    
+
     // Step 3: Retrieve results
     // The coDatasetId would typically come from the status response
     const coDatasetId = status.result?.coDatasetId;
     if (!coDatasetId) {
       throw new Error('No dataset ID found in the status response');
     }
-    
+
     console.log('Retrieving calculation results...');
     const results = await queryCalculationResults(coDatasetId);
     console.log('Final results:', results);
-    
+
     return results;
   } catch (error) {
     console.error('Error in workflow:', error);

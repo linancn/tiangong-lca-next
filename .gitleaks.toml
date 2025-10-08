@@ -8,7 +8,8 @@ paths = [
     '''package-lock.json''',
     '''yarn.lock''',
     '''go.sum''',
-    '''.gitleaks.toml'''
+    '''.gitleaks.toml''',
+    '''tests/'''
 ]
 
 # Common password and key patterns
@@ -80,4 +81,4 @@ regexes = [
     '''example\.com''',
     '''dummy''',
     '''placeholder'''
-] 
+]

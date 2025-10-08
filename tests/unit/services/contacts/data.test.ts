@@ -7,6 +7,12 @@
  */
 
 import type { ContactDataSetObjectKeys, ContactTable, FormContact } from '@/services/contacts/data';
+import { createMockTableResponse } from '../../../helpers/testData';
+import type { Equal, ExpectTrue } from '../../../helpers/typeAssertions';
+
+type ContactDataSetKeys = 'contactInformation' | 'administrativeInformation';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type AssertContactDataSetKeys = ExpectTrue<Equal<ContactDataSetObjectKeys, ContactDataSetKeys>>;
 
 describe('Contacts Data Types (src/services/contacts/data.ts)', () => {
   describe('ContactTable type', () => {
@@ -60,6 +66,28 @@ describe('Contacts Data Types (src/services/contacts/data.ts)', () => {
 
       expect(typeof contactWithStringKey.key).toBe('string');
       expect(typeof contactWithNumberKey.key).toBe('number');
+    });
+
+    it('should integrate with shared table response helper', () => {
+      const contactRow: ContactTable = {
+        key: 'row-key',
+        id: 'contact-42',
+        version: '02.00.000',
+        lang: 'en',
+        shortName: 'Contact 42',
+        name: 'Contact Forty Two',
+        classification: 'Test Classification',
+        email: 'contact42@example.com',
+        modifiedAt: new Date('2024-05-01T10:00:00Z'),
+        teamId: 'team-42',
+      };
+
+      const tableResponse = createMockTableResponse<ContactTable>([contactRow], 1, 2);
+
+      expect(tableResponse.data[0]).toMatchObject({ id: 'contact-42', teamId: 'team-42' });
+      expect(tableResponse.success).toBe(true);
+      expect(tableResponse.total).toBe(1);
+      expect(tableResponse.page).toBe(2);
     });
   });
 
