@@ -184,7 +184,7 @@ beforeEach(() => {
   mockGenProcessName.mockReturnValue('Life Cycle Model Name');
   mockGetUserId.mockResolvedValue(sampleUserId);
   mockGenLifeCycleModelJsonOrdered.mockReturnValue({ lifeCycleModelDataSet: {} });
-  mockGenLifeCycleModelProcesses.mockResolvedValue([]);
+  mockGenLifeCycleModelProcesses.mockResolvedValue({ lifeCycleModelProcesses: [] });
   mockControllerWaitForAll.mockResolvedValue(undefined);
 });
 
@@ -683,12 +683,15 @@ describe('deleteLifeCycleModel', () => {
 
 describe('createLifeCycleModel', () => {
   it('stores lifecycle model payload with derived json and processes', async () => {
-    mockGenLifeCycleModelProcesses.mockResolvedValueOnce([
-      {
-        modelInfo: { id: sampleProcessId },
-        data: { processDataSet: { foo: 'bar' } },
-      },
-    ]);
+    const generatedProcesses = {
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: { id: sampleProcessId },
+          data: { processDataSet: { foo: 'bar' } },
+        },
+      ],
+    };
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce(generatedProcesses);
 
     const insertResult = {
       data: [{ id: sampleModelId, version: sampleVersion }],
@@ -816,7 +819,7 @@ describe('updateLifeCycleModel', () => {
       },
     };
 
-    const newProcesses = [
+    const newProcessList = [
       {
         option: 'update',
         modelInfo: {
@@ -843,7 +846,9 @@ describe('updateLifeCycleModel', () => {
         },
       },
     ];
-    mockGenLifeCycleModelProcesses.mockResolvedValueOnce(newProcesses);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: newProcessList,
+    });
 
     mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({
       data: [
@@ -915,7 +920,7 @@ describe('updateLifeCycleModel', () => {
     expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(sampleModelId, payload);
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
       sampleModelId,
-      42,
+      payload.model.nodes,
       expect.anything(),
       oldSubmodels,
     );
@@ -925,7 +930,7 @@ describe('updateLifeCycleModel', () => {
       region: expect.any(String),
     });
     expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith(
-      newProcesses.map((p) => p.modelInfo.id),
+      newProcessList.map((p) => p.modelInfo.id),
       sampleVersion,
     );
     expect(mockDeleteProcess).toHaveBeenCalledWith('old-secondary-delete', sampleVersion);
