@@ -7,12 +7,11 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { history, useIntl, useModel } from '@umijs/max';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { logout } from '@/services/auth';
 import { getUserRoles } from '@/services/roles/api';
 import { Button, Modal, Spin, theme } from 'antd';
-import { createStyles } from 'antd-style';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
@@ -30,27 +29,10 @@ export const AvatarName = () => {
   return <span className='anticon'>{currentUser?.name}</span>;
 };
 
-const useStyles = createStyles(({ token }) => {
-  return {
-    action: {
-      display: 'flex',
-      height: '48px',
-      marginLeft: 'auto',
-      overflow: 'hidden',
-      alignItems: 'center',
-      padding: '0 8px',
-      cursor: 'pointer',
-      borderRadius: token.borderRadius,
-      '&:hover': {
-        backgroundColor: token.colorBgTextHover,
-      },
-    },
-  };
-});
-
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
   const intl = useIntl();
   const { token } = theme.useToken();
+  const [isLoadingHovered, setIsLoadingHovered] = useState(false);
   // const [isUserInTeam, setIsUserInTeam] = useState(false);
   const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
@@ -95,8 +77,6 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       });
     }
   };
-  const { styles } = useStyles();
-
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const onMenuClick = useCallback(
@@ -190,8 +170,29 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     [setInitialState],
   );
 
+  const loadingContainerStyle = useMemo(
+    () => ({
+      display: 'flex',
+      height: '48px',
+      marginLeft: 'auto',
+      overflow: 'hidden',
+      alignItems: 'center',
+      padding: '0 8px',
+      cursor: 'pointer',
+      borderRadius: token.borderRadius,
+    }),
+    [token.borderRadius],
+  );
+
   const loading = (
-    <span className={styles.action}>
+    <span
+      style={{
+        ...loadingContainerStyle,
+        backgroundColor: isLoadingHovered ? token.colorBgTextHover : undefined,
+      }}
+      onMouseEnter={() => setIsLoadingHovered(true)}
+      onMouseLeave={() => setIsLoadingHovered(false)}
+    >
       <Spin
         size='small'
         style={{
