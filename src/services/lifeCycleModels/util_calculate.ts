@@ -1003,7 +1003,6 @@ const assignFinalProductTypes = (
   up2DownEdges: Up2DownEdge[],
   refProcessNodeId: string,
 ) => {
-  // 初始分类
   allocatedProcesses.forEach((ap: any) => {
     if (ap?.nodeId === refProcessNodeId) {
       ap.finalProductType = 'has';
@@ -1027,7 +1026,6 @@ const assignFinalProductTypes = (
     }
   });
 
-  // 解析 unknown
   let whileCount = 0;
   let whileUnknown = true;
   const unknownCount = allocatedProcesses.filter(
@@ -1425,12 +1423,12 @@ const sumProcessExchange = (processExchanges: any[]) => {
     (e: any) => e?.['@dataSetInternalID'] === finalProcess?.allocatedExchangeId,
   );
 
-  const newProcessExchanges = processExchanges.map((process) => {
-    return calculateProcess(process);
-  });
+  // const newProcessExchanges = processExchanges.map((process) => {
+  //   return calculateProcess(process);
+  // });
 
   let allExchanges: any[] = [];
-  newProcessExchanges.forEach((pes) => {
+  processExchanges.forEach((pes) => {
     allExchanges.push(...(pes?.exchanges ?? []));
   });
 
@@ -1524,7 +1522,7 @@ const sumProcessExchange = (processExchanges: any[]) => {
  */
 export async function genLifeCycleModelProcesses(
   id: string,
-  refTargetAmount: number | null,
+  model: any,
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {
@@ -1535,6 +1533,10 @@ export async function genLifeCycleModelProcesses(
   if (!refProcessNodeId) {
     throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
   }
+
+  const refNode = model?.nodes?.find((i: any) => i?.data?.quantitativeReference === '1');
+
+  const refTargetAmount = refNode?.data?.targetAmount;
 
   const mdProcesses = jsonToList(
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology
@@ -1626,6 +1628,7 @@ export async function genLifeCycleModelProcesses(
   }
 
   const refModelMeanAmount = toAmountNumber(refModelExchange?.refExchange?.meanAmount);
+
   const modelTargetAmount = refTargetAmount ?? refModelMeanAmount;
 
   let refScalingFactor = 1;
@@ -1656,6 +1659,9 @@ export async function genLifeCycleModelProcesses(
   );
 
   const { sumScalingFactorByNodeId } = buildEdgeScaling(processScalingFactors, up2DownEdges);
+
+  // console.log('up2DownEdges', up2DownEdges);
+  // console.log('sumScalingFactorByNodeId', sumScalingFactorByNodeId);
 
   const allocatedProcesses = assignFinalProductTypes(
     allocatedProcess(sumScalingFactorByNodeId),
@@ -1696,7 +1702,17 @@ export async function genLifeCycleModelProcesses(
       if (finalProductGroup?.length > 0) {
         let newSumExchanges: any = [];
 
-        const unconnectedProcessExchanges = finalProductGroup.map((npe: any) => {
+        //先计算每个exchange最终的量
+        const calculatedProcessExchanges = finalProductGroup.map((p) => {
+          return calculateProcess(p);
+        });
+
+        //汇总连接的exchange，判断是否平衡，保留不平衡的exchange
+        // const connectedProcessExchanges = calculatedProcessExchanges.forEach((cpe: any) => {
+        //   console.log('cpe', cpe);
+        // });
+
+        const unconnectedProcessExchanges = calculatedProcessExchanges.map((npe: any) => {
           const nodeId = npe?.nodeId;
           const connectedInputSet = nodeId
             ? (inputFlowsByNodeId.get(nodeId) ?? new Set<string>())
@@ -1720,6 +1736,8 @@ export async function genLifeCycleModelProcesses(
             exchanges: unconnectedExchanges,
           };
         });
+
+        // console.log('unconnectedProcessExchanges', unconnectedProcessExchanges);
 
         if (unconnectedProcessExchanges.length > 0) {
           newSumExchanges = sumProcessExchange(unconnectedProcessExchanges).map(
@@ -2536,5 +2554,5 @@ export async function genLifeCycleModelProcesses(
   lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
     listToJson(newProcessInstance);
 
-  return sumFinalProductGroups.filter((item) => item !== null);
+  return { lifeCycleModelProcesses: sumFinalProductGroups.filter((item) => item !== null) };
 }

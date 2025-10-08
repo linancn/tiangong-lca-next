@@ -847,12 +847,12 @@ export async function getProcessDetailByIdAndVersion(data: { id: string; version
       .or(orConditions);
 
     return Promise.resolve({
-      data: result,
+      data: result?.data ?? [],
       success: true,
     });
   }
   return Promise.resolve({
-    data: null,
+    data: [],
     success: true,
   });
 }

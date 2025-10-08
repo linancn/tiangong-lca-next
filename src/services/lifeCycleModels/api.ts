@@ -101,7 +101,7 @@ export async function createLifeCycleModel(data: any) {
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
   const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
-  const newLifeCycleModelProcesses = await genLifeCycleModelProcesses(
+  const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
     data.id,
     refNode,
     newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet,
@@ -116,7 +116,7 @@ export async function createLifeCycleModel(data: any) {
         json_ordered: newLifeCycleModelJsonOrdered,
         json_tg: {
           xflow: data?.model,
-          submodels: newLifeCycleModelProcesses.map((p) => p.modelInfo),
+          submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
         },
         rule_verification,
       },
@@ -126,8 +126,8 @@ export async function createLifeCycleModel(data: any) {
   if (result.error) {
     console.error(result.error);
   } else {
-    if (newLifeCycleModelProcesses && newLifeCycleModelProcesses.length > 0) {
-      newLifeCycleModelProcesses.forEach(async (n: any) => {
+    if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
+      lifeCycleModelProcesses.forEach(async (n: any) => {
         try {
           await createProcess(n.modelInfo.id, n.data.processDataSet);
         } catch (error) {
@@ -322,13 +322,14 @@ export async function updateLifeCycleModel(data: any) {
 
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0];
+
+    // console.log('data', data);
+
     const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
 
-    const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
-
-    const newLifeCycleModelProcesses = await genLifeCycleModelProcesses(
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
       data.id,
-      refNode?.data?.targetAmount,
+      data?.model?.nodes,
       newLifeCycleModelJsonOrdered,
       jsonToList(oldData.submodels),
     );
@@ -341,7 +342,7 @@ export async function updateLifeCycleModel(data: any) {
       const deleteOldSubmodels = oldSubmodels.filter((o: any) => {
         return (
           o.type === 'secondary' &&
-          !newLifeCycleModelProcesses.some((n: any) => {
+          !lifeCycleModelProcesses.some((n: any) => {
             const newModelInfo = n.modelInfo;
             return (
               o.finalId.nodeId === newModelInfo.finalId.nodeId &&
@@ -366,7 +367,7 @@ export async function updateLifeCycleModel(data: any) {
             json_ordered: newLifeCycleModelJsonOrdered,
             json_tg: {
               xflow: data?.model,
-              submodels: newLifeCycleModelProcesses.map((p) => p.modelInfo),
+              submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
             },
             rule_verification,
           },
@@ -376,7 +377,6 @@ export async function updateLifeCycleModel(data: any) {
       if (updateResult.error) {
         console.error(updateResult.error);
       } else {
-        // 1) 删除旧的子模型：并发执行并等待完成
         const deletionPromises: Promise<any>[] =
           deleteOldSubmodels && deleteOldSubmodels.length > 0
             ? deleteOldSubmodels.map((o: any) =>
@@ -386,15 +386,14 @@ export async function updateLifeCycleModel(data: any) {
               )
             : [];
 
-        // 2) 创建/更新新的子模型：并发执行并等待完成
         let updatePromises: Promise<any>[] = [];
-        if (newLifeCycleModelProcesses && newLifeCycleModelProcesses.length > 0) {
+        if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
           const { data: oldProcesses } = await getProcessDetailByIdsAndVersion(
-            newLifeCycleModelProcesses.map((n: any) => n.modelInfo.id),
+            lifeCycleModelProcesses.map((n: any) => n.modelInfo.id),
             data.version,
           );
 
-          updatePromises = newLifeCycleModelProcesses
+          updatePromises = lifeCycleModelProcesses
             .map((n: any) => {
               return (async () => {
                 try {
@@ -425,7 +424,6 @@ export async function updateLifeCycleModel(data: any) {
             .filter(Boolean) as Promise<any>[];
         }
 
-        // 等待所有删除与更新/创建完成，再返回结果
         await Promise.all([...deletionPromises, ...updatePromises]);
 
         return updateResult?.data;
