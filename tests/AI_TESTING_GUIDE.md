@@ -65,8 +65,8 @@ CRITICAL RULES TO PREVENT INFINITE LOOPS:
 ### STEP 5: Execute Quality Gates
 
 ```bash
-# Run tests
-npm test -- tests/integration/[feature]/ --no-coverage
+# Run tests with timeout protection (auto-kills after 60 seconds)
+timeout 60s npm test -- tests/integration/[feature]/ --no-coverage
 
 # MANDATORY: Run linter
 npm run lint
@@ -76,22 +76,23 @@ npm run lint
 
 ⚠️ **IMPORTANT: Test Running Time Monitoring**
 
-If tests are running for more than **30 seconds** without completing:
+The `timeout` command will **automatically stop** tests if they run longer than 60 seconds, preventing infinite loops from blocking your workflow.
 
-1. **STOP the test immediately** (Ctrl+C in terminal)
-2. This indicates an infinite loop or missing mock
-3. Review the test code for:
+If tests are stopped by timeout (exit code 124):
+
+1. This indicates an infinite loop or missing mock
+2. Review the test code for:
    - Missing mocks in `beforeEach`
    - Mock setup after `render()` call
    - Missing `await` on async operations
-4. Add debug logging to identify the issue:
+3. Add debug logging to identify the issue:
    ```typescript
    getData.mockImplementation(() => {
      console.log('getData called');
      return Promise.resolve({ data: [], error: null });
    });
    ```
-5. Fix the issue and re-run
+4. Fix the issue and re-run with timeout protection
 
 **Expected Test Duration:**
 
@@ -694,8 +695,8 @@ describe('unauthenticated operations', () => {
 CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
-# Step 1: Run the tests
-npm test -- tests/unit/services/[module] --no-coverage
+# Step 1: Run the tests with timeout protection (auto-kills after 30 seconds)
+timeout 30s npm test -- tests/unit/services/[module] --no-coverage
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 # - Business code issue? Use it.skip() and add TODO
@@ -711,7 +712,7 @@ npx jest --coverage --collectCoverageFrom="src/services/[module]/api.ts"
 open coverage/lcov-report/src/services/[module]/api.ts.html
 ```
 
-⚠️ **TIME MONITORING**: If Step 1 runs > 10 seconds, press Ctrl+C and investigate:
+⚠️ **TIME MONITORING**: If timeout kills the process (exit code 124), investigate:
 
 - Add call counter to mocks to detect infinite loops
 - Check if all mocks are properly set up
@@ -1178,8 +1179,8 @@ it('navigates through paginated results', async () => {
 CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
-# Step 1: Run the integration tests
-npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-coverage
+# Step 1: Run the integration tests with timeout protection (auto-kills after 90 seconds)
+timeout 90s npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-coverage
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 
@@ -1187,7 +1188,7 @@ npm test -- tests/integration/[feature]/[Workflow].integration.test.tsx --no-cov
 npm run lint
 ```
 
-⚠️ **TIME MONITORING**: If Step 1 runs > 30 seconds, press Ctrl+C immediately!
+⚠️ **TIME MONITORING**: If timeout kills the process (exit code 124), this indicates infinite loop!
 
 This indicates "Maximum update depth exceeded" or infinite loop. Common causes:
 
@@ -1428,8 +1429,8 @@ it('announces changes to screen readers', () => {
 CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
-# Step 1: Run the component tests
-npm test -- tests/unit/components/[Component].test.tsx --no-coverage
+# Step 1: Run the component tests with timeout protection (auto-kills after 30 seconds)
+timeout 30s npm test -- tests/unit/components/[Component].test.tsx --no-coverage
 
 # Step 2: If tests fail, diagnose (see Core Principles section)
 
@@ -1571,19 +1572,19 @@ render(<Component />);
 ### Running Tests
 
 ```bash
-# Run all tests
-npm test
+# Run all tests (with timeout protection)
+timeout 120s npm test
 
 # Run specific test type
-npm test -- tests/unit/services/
-npm test -- tests/integration/
-npm test -- tests/unit/components/
+timeout 60s npm test -- tests/unit/services/
+timeout 90s npm test -- tests/integration/
+timeout 30s npm test -- tests/unit/components/
 
 # Run specific test file
-npm test -- tests/unit/services/contacts/api.test.ts
+timeout 30s npm test -- tests/unit/services/contacts/api.test.ts
 
 # Run without coverage (faster during development)
-npm test -- tests/unit/services/ --no-coverage
+timeout 60s npm test -- tests/unit/services/ --no-coverage
 
 # Watch mode (re-runs tests on file changes)
 npm test -- tests/unit/services/teams/ --watch
@@ -1593,6 +1594,9 @@ npm test -- -u
 
 # Verbose output
 npm test -- --verbose
+
+# Note: timeout command exits with code 124 if time limit exceeded
+# This helps catch infinite loops automatically
 ```
 
 ### Coverage Commands
@@ -1649,11 +1653,14 @@ grep -r "mockTeam" tests/unit/
 ### Quick Reference
 
 ```bash
-# Common workflow
-npm test -- tests/unit/services/[module] --no-coverage  # Run tests
-npm run lint                                             # Check linting
-npx jest --coverage --collectCoverageFrom="[path]"      # Check coverage
-open coverage/lcov-report/index.html                     # View report
+# Common workflow (with timeout protection)
+timeout 60s npm test -- tests/unit/services/[module] --no-coverage  # Run tests
+npm run lint                                                         # Check linting
+npx jest --coverage --collectCoverageFrom="[path]"                  # Check coverage
+open coverage/lcov-report/index.html                                 # View report
+
+# Check timeout exit code
+echo $?  # Returns 124 if timeout killed the process (indicates infinite loop)
 ```
 
 ---
@@ -1662,17 +1669,27 @@ open coverage/lcov-report/index.html                     # View report
 
 ### Problem: Tests running too long (> 30 seconds)
 
-⚠️ **CRITICAL: STOP TEST IMMEDIATELY (Ctrl+C)**
+⚠️ **SOLUTION: Use timeout command to auto-kill hanging tests**
+
+```bash
+# Unit tests: 30 second timeout
+timeout 30s npm test -- tests/unit/services/[module] --no-coverage
+
+# Integration tests: 90 second timeout
+timeout 90s npm test -- tests/integration/[feature]/ --no-coverage
+
+# Check if timeout killed the process
+echo $?  # Exit code 124 = timeout occurred (infinite loop detected)
+```
 
 CAUSE: Infinite loop due to improper mocking or useEffect dependencies.
 
-DIAGNOSIS STEPS:
+DIAGNOSIS STEPS (if timeout occurs):
 
 ```bash
-# 1. Check which test is hanging
-# The last test name printed before hanging is the culprit
-
-# 2. Look for these patterns in the problematic test:
+# 1. The timeout command automatically stopped the hanging test
+# 2. Look for the last test name printed before timeout
+# 3. Check that specific test for common issues:
 grep -A 20 "it('test name" tests/[path]/file.test.tsx
 ```
 
