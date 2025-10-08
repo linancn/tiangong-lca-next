@@ -33,8 +33,10 @@ export const AvatarName = () => {
         alignItems: 'center',
         height: '100%',
         lineHeight: 'inherit',
+        gap: '8px',
       }}
     >
+      <UserOutlined />
       {currentUser?.name}
     </span>
   );
