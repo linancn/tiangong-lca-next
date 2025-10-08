@@ -26,6 +26,7 @@ export type GlobalHeaderRightProps = {
 export const AvatarName = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
+  const { token } = theme.useToken();
   return (
     <span
       style={{
@@ -34,6 +35,7 @@ export const AvatarName = () => {
         height: '100%',
         lineHeight: 'inherit',
         gap: '8px',
+        color: token.colorText,
       }}
     >
       <UserOutlined />
