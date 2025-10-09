@@ -1526,6 +1526,13 @@ export async function genLifeCycleModelProcesses(
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {
+  // Accept either an array of nodes or a graph-like object with a nodes array.
+  const nodes = Array.isArray(modelNodes)
+    ? modelNodes
+    : Array.isArray(modelNodes?.nodes)
+      ? modelNodes.nodes
+      : [];
+
   const refProcessNodeId =
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
       ?.quantitativeReference?.referenceToReferenceProcess;
@@ -1534,7 +1541,7 @@ export async function genLifeCycleModelProcesses(
     throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
   }
 
-  const refNode = modelNodes?.find((i: any) => i?.data?.quantitativeReference === '1');
+  const refNode = nodes?.find((i: any) => i?.data?.quantitativeReference === '1');
 
   const refTargetAmount = refNode?.data?.targetAmount;
 
