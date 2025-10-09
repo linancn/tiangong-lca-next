@@ -499,7 +499,6 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={() => setDrawerVisible(false)}>
-              x
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
