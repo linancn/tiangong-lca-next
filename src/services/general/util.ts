@@ -285,15 +285,15 @@ export function getLangText(langTexts: any, lang: string) {
   let text = '-';
   try {
     if (Array.isArray(langTexts)) {
-      const filterList = langTexts.filter((i) => i['@xml:lang'] === lang);
+      const filterList = langTexts.filter((i) => i && i['@xml:lang'] && i['@xml:lang'] === lang);
       if (filterList.length > 0) {
         text = filterList[0]['#text'] ?? '-';
       } else {
-        const filterList = langTexts.filter((i) => i['@xml:lang'] === 'en');
+        const filterList = langTexts.filter((i) => i && i['@xml:lang'] && i['@xml:lang'] === 'en');
         if (filterList.length > 0) {
           text = filterList[0]['#text'] ?? '-';
         } else {
-          text = langTexts[0]['#text'] ?? '-';
+          text = langTexts[0]?.['#text'] ?? '-';
         }
       }
     } else {
