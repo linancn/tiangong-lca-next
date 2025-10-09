@@ -100,11 +100,11 @@ export async function createLifeCycleModel(data: any) {
   // };
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
   const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
-  const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
+  // const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
   const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
     data.id,
-    refNode,
-    newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet,
+    data?.model?.nodes,
+    newLifeCycleModelJsonOrdered,
     [],
   );
   const rule_verification = getRuleVerification(schema, newLifeCycleModelJsonOrdered)?.valid;
@@ -322,8 +322,6 @@ export async function updateLifeCycleModel(data: any) {
 
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0];
-
-    // console.log('data', data);
 
     const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
 

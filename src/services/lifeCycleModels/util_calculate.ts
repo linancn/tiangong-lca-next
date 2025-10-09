@@ -1522,7 +1522,7 @@ const sumProcessExchange = (processExchanges: any[]) => {
  */
 export async function genLifeCycleModelProcesses(
   id: string,
-  model: any,
+  modelNodes: any,
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {
@@ -1534,7 +1534,7 @@ export async function genLifeCycleModelProcesses(
     throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
   }
 
-  const refNode = model?.nodes?.find((i: any) => i?.data?.quantitativeReference === '1');
+  const refNode = modelNodes?.find((i: any) => i?.data?.quantitativeReference === '1');
 
   const refTargetAmount = refNode?.data?.targetAmount;
 
@@ -1662,6 +1662,84 @@ export async function genLifeCycleModelProcesses(
 
   // console.log('up2DownEdges', up2DownEdges);
   // console.log('sumScalingFactorByNodeId', sumScalingFactorByNodeId);
+
+  // const calculatedEdges = up2DownEdges.reduce(
+  //   (acc: Map<string, any>, e) => {
+  //     const downstream = sumScalingFactorByNodeId.get(e.downstreamId);
+  //     const upstream = sumScalingFactorByNodeId.get(e.upstreamId);
+  //     if (!downstream || !upstream) return acc;
+
+  //     const inputExchange = downstream.exchanges?.find(
+  //       (ex: any) =>
+  //         String(ex.exchangeDirection ?? '').toUpperCase() === 'INPUT' &&
+  //         ex.referenceToFlowDataSet?.['@refObjectId'] === e.flowUUID,
+  //     );
+
+  //     const outputExchange = upstream.exchanges?.find(
+  //       (ex: any) =>
+  //         String(ex.exchangeDirection ?? '').toUpperCase() === 'OUTPUT' &&
+  //         ex.referenceToFlowDataSet?.['@refObjectId'] === e.flowUUID,
+  //     );
+
+  //     let outputAmount = new BigNumber(0);
+  //     let inputAmount = new BigNumber(0);
+
+  //     if (e.dependence === 'downstream' || e.mainDependence === 'downstream') {
+  //       outputAmount = new BigNumber(outputExchange?.meanAmount ?? 0).times(
+  //         e?.scalingFactor ?? 1,
+  //       );
+  //       inputAmount = new BigNumber(inputExchange?.meanAmount ?? 0).times(
+  //         downstream?.scalingFactor ?? 1,
+  //       );
+  //     } else if (e.dependence === 'upstream' || e.mainDependence === 'upstream') {
+  //       outputAmount = new BigNumber(outputExchange?.meanAmount ?? 0).times(
+  //         upstream?.scalingFactor ?? 1,
+  //       );
+  //       inputAmount = new BigNumber(inputExchange?.meanAmount ?? 0).times(
+  //         e?.scalingFactor ?? 1,
+  //       );
+  //     }
+  //     const outZero = outputAmount.isZero();
+  //     const inZero = inputAmount.isZero();
+  //     let isBalanced = false;
+  //     if (outZero && inZero) {
+  //       isBalanced = true;
+  //     } else if (!outZero && !inZero) {
+  //       const divAmount = outputAmount.div(inputAmount).toNumber();
+  //       isBalanced = divAmount <= 1.000001 && divAmount >= 0.999999;
+  //     } else {
+  //       isBalanced = false;
+  //     }
+
+  //     if (!isBalanced) {
+  //       const diffAmount = outputAmount.minus(inputAmount).toNumber();
+  //       const targetNode = diffAmount > 0 ? upstream : downstream;
+  //       const targetExchange = diffAmount > 0 ? outputExchange : inputExchange;
+  //       if (!targetNode) return acc;
+
+  //       const nodeKey = targetNode?.nodeId ?? targetNode?.['@dataSetInternalID'] ?? '';
+  //       if (!nodeKey) return acc;
+
+  //       const existing = acc.get(nodeKey);
+  //       const baseNode = existing ?? { ...targetNode, exchanges: [] };
+
+  //       baseNode.exchanges = [
+  //         ...(baseNode.exchanges ?? []),
+  //         {
+  //           ...(targetExchange ?? {}),
+  //           diffAmount: Math.abs(diffAmount),
+  //         },
+  //       ];
+
+  //       acc.set(nodeKey, baseNode);
+  //     }
+
+  //     return acc;
+  //   },
+  //   new Map<string, any>()
+  // );
+
+  // console.log('calculatedEdges', calculatedEdges);
 
   const allocatedProcesses = assignFinalProductTypes(
     allocatedProcess(sumScalingFactorByNodeId),

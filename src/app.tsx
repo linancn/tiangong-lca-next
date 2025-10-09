@@ -106,10 +106,23 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       <Notification key='Notification'></Notification>,
     ],
     avatarProps: {
-      src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
-      render: (_, avatarChildren) => {
-        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
+      render: () => {
+        return (
+          <AvatarDropdown>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '48px',
+                padding: '0 12px',
+                cursor: 'pointer',
+              }}
+            >
+              <AvatarName />
+            </div>
+          </AvatarDropdown>
+        );
       },
     },
     waterMarkProps: {

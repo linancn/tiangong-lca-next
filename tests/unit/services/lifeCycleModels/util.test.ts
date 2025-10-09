@@ -182,6 +182,7 @@ const baseModelData = {
       {
         id: 'node-a',
         data: {
+          index: '0',
           id: 'proc-a',
           version: '01.00.000',
           shortDescription: [createLangText('Process A')],
@@ -193,6 +194,7 @@ const baseModelData = {
       {
         id: 'node-b',
         data: {
+          index: '1',
           id: 'proc-b',
           version: '02.00.000',
           shortDescription: [createLangText('Process B')],

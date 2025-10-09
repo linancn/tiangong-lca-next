@@ -277,12 +277,28 @@ describe('genLifeCycleModelProcesses', () => {
       },
     ];
 
-    const result = await genLifeCycleModelProcesses('model-123', 10, data, oldSubmodels);
+    const modelGraph = {
+      nodes: [
+        {
+          data: {
+            quantitativeReference: '1',
+            targetAmount: 10,
+          },
+        },
+      ],
+    };
 
-    expect(result).toHaveLength(2);
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-123',
+      modelGraph,
+      data,
+      oldSubmodels,
+    );
 
-    const primary = result.find((item) => item?.modelInfo?.type === 'primary');
-    const secondary = result.find((item) => item?.modelInfo?.type === 'secondary');
+    expect(lifeCycleModelProcesses).toHaveLength(2);
+
+    const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
+    const secondary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'secondary');
 
     expect(primary).toBeDefined();
     expect(primary?.option).toBe('update');
