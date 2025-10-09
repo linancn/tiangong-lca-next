@@ -433,6 +433,15 @@ const openMembersTab = async () => {
   await reloadMembersTable();
 };
 
+const waitForSystemLoad = async () => {
+  await waitFor(() => {
+    expect(mockGetSystemUserRoleApi).toHaveBeenCalled();
+  });
+  await waitFor(() => {
+    expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+  });
+};
+
 describe('ManageSystem workflows', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -537,6 +546,7 @@ describe('ManageSystem workflows', () => {
 
     renderWithProviders(<ManageSystem />);
 
+    await waitForSystemLoad();
     await openMembersTab();
 
     await waitFor(() => {
@@ -557,7 +567,7 @@ describe('ManageSystem workflows', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(2);
+      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(3);
     });
 
     const adminRow = screen.getByTestId('pro-table-row-admin@example.com');
@@ -568,7 +578,7 @@ describe('ManageSystem workflows', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(3);
+      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(4);
     });
 
     await confirmConfig.onOk?.();
@@ -578,7 +588,7 @@ describe('ManageSystem workflows', () => {
     });
 
     await waitFor(() => {
-      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(4);
+      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(5);
     });
 
     expect(message.success).toHaveBeenCalled();
@@ -604,6 +614,7 @@ describe('ManageSystem workflows', () => {
 
     renderWithProviders(<ManageSystem />);
 
+    await waitForSystemLoad();
     await openMembersTab();
 
     await waitFor(() => {
@@ -644,6 +655,7 @@ describe('ManageSystem workflows', () => {
 
     renderWithProviders(<ManageSystem />);
 
+    await waitForSystemLoad();
     await openMembersTab();
 
     await waitFor(() => {
@@ -703,6 +715,7 @@ describe('ManageSystem workflows', () => {
 
       renderWithProviders(<ManageSystem />);
 
+      await waitForSystemLoad();
       await openMembersTab();
 
       await waitFor(() => {
