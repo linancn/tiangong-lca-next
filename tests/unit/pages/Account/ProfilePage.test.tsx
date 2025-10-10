@@ -441,6 +441,83 @@ describe('Account profile page (unit)', () => {
     mockLogin.mockResolvedValue({ status: 'ok' } as any);
   });
 
+  it('loads and updates basic profile information successfully', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    const emailField = screen.getByLabelText('Email') as HTMLInputElement;
+    expect(emailField.value).toBe('user@example.com');
+    expect(emailField).toBeDisabled();
+
+    const roleField = screen.getByLabelText('Role') as HTMLInputElement;
+    expect(roleField.value).toBe('admin');
+    expect(roleField).toBeDisabled();
+
+    const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
+    expect(nicknameField.value).toBe('Alice');
+
+    await user.clear(nicknameField);
+    await user.type(nicknameField, 'Alice Prime');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));
+    expect(mockSetProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'user@example.com',
+        name: 'Alice Prime',
+        role: 'admin',
+      }),
+    );
+
+    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(mockSetInitialState).toHaveBeenCalledTimes(1);
+
+    const updater = mockSetInitialState.mock.calls[0][0];
+    const updatedState = updater({ currentUser: { name: 'Old Name', locale: 'en-US' } });
+    expect(updatedState.currentUser.name).toBe('Alice Prime');
+    expect(updatedState.currentUser.locale).toBe('en-US');
+  });
+
+  it('handles unexpected errors during profile update gracefully', async () => {
+    mockSetProfile.mockRejectedValueOnce(new Error('network down'));
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
+    await user.clear(nicknameField);
+    await user.type(nicknameField, 'Alice Error');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('An error occurred while updating the profile.'),
+    );
+
+    expect(mockSetProfile).toHaveBeenCalledTimes(1);
+    expect(mockSetInitialState).not.toHaveBeenCalled();
+    expect(message.success).not.toHaveBeenCalled();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+  });
+
   it('generates an API key after validating credentials successfully', async () => {
     const user = userEvent.setup();
 
