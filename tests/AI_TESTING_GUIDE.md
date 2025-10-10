@@ -71,7 +71,7 @@ python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/integration/[feature]/", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=10)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -716,7 +716,7 @@ python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=10)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1208,7 +1208,7 @@ python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/integration/[feature]/[Workflow].integration.test.tsx", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=10)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1466,7 +1466,7 @@ python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/unit/components/[Component].test.tsx", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=10)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1622,7 +1622,7 @@ run_test_with_timeout() {
 import subprocess, sys
 cmd = ["npm", "test", "--"] + "$@".split()
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=$timeout_seconds)
+    completed = subprocess.run(cmd, cwd=".", timeout=$timeout_seconds, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
