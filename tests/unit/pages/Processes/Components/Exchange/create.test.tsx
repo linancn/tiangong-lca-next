@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ProcessExchangeCreate from '@/pages/Processes/Components/Exchange/create';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -275,8 +275,10 @@ describe('ProcessExchangeCreate', () => {
     expect(triggerValuesChange).not.toBeNull();
 
     const currentValues = proFormApi?.getFieldsValue() ?? {};
-    proFormApi?.setFieldsValue({ meanAmount: 10, quantitativeReference: true });
-    triggerValuesChange?.({}, { ...currentValues, meanAmount: 10, quantitativeReference: true });
+    await act(async () => {
+      proFormApi?.setFieldsValue({ meanAmount: 10, quantitativeReference: true });
+      triggerValuesChange?.({}, { ...currentValues, meanAmount: 10, quantitativeReference: true });
+    });
 
     await waitFor(() => {
       expect(proFormApi?.getFieldsValue()).toEqual({
@@ -286,13 +288,15 @@ describe('ProcessExchangeCreate', () => {
       });
     });
 
-    await waitFor(async () => {
+    await act(async () => {
       await proFormApi?.submit();
     });
 
-    expect(onData).toHaveBeenCalledWith(
-      expect.objectContaining({ meanAmount: 10, quantitativeReference: true }),
-    );
+    await waitFor(() => {
+      expect(onData).toHaveBeenCalledWith(
+        expect.objectContaining({ meanAmount: 10, quantitativeReference: true }),
+      );
+    });
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Create exchange' })).not.toBeInTheDocument(),
     );
