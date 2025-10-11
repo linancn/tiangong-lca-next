@@ -1,8 +1,11 @@
+import { contributeLifeCycleModel } from '@/services/lifeCycleModels/api';
 import {
+  contributeProcess,
   getProcessTableAll,
   getProcessTablePgroongaSearch,
   process_hybrid_search,
 } from '@/services/processes/api';
+
 import { Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -15,7 +18,6 @@ import TableFilter from '@/components/TableFilter';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
-import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { ProcessTable } from '@/services/processes/data';
@@ -285,18 +287,12 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          const { error } = await contributeSource(
-                            'processes',
-                            row.id,
-                            row.version,
-                          );
                           if (row.modelData) {
-                            const { error: lifeCycleError } = await contributeSource(
-                              'lifecyclemodels',
+                            const { error: lifeCycleError } = await contributeLifeCycleModel(
                               row.modelData.id,
                               row.modelData.version,
                             );
-                            if (lifeCycleError || error) {
+                            if (lifeCycleError) {
                               console.log(lifeCycleError);
                             } else {
                               message.success(
@@ -307,6 +303,7 @@ const TableList: FC = () => {
                               );
                             }
                           } else {
+                            const { error } = await contributeProcess(row.id, row.version);
                             if (error) {
                               console.log(error);
                             } else {

@@ -1,4 +1,7 @@
 import schema from '@/pages/Processes/processes_schema.json';
+import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { getCurrentUser } from '@/services/auth';
+import { contributeSource, getRefData } from '@/services/general/api';
 import { getLifeCyclesByIds, getSubmodelsByProcessIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -999,4 +1002,140 @@ export async function validateProcessesByIdAndVersion(id: string, version: strin
   //   return true;
   // }
   return false;
+}
+
+export async function contributeProcess(id: string, version: string) {
+  const currentUser = await getCurrentUser();
+  const userid = currentUser?.userid;
+
+  if (!userid) {
+    console.error('Failed to get current user');
+    return { error: true, message: 'Failed to get current user' };
+  }
+
+  const processDetail = await getProcessDetailByIdAndVersion([{ id, version }]);
+  const refs = getAllRefObj(processDetail);
+
+  const needContributeMap = new Map<string, any>();
+  const processedRefsSet = new Set<string>();
+
+  const processRefsRecursively = async (refsList: any[]): Promise<void> => {
+    const uniqueRefsMap = new Map<string, any>();
+    refsList.forEach((ref: any) => {
+      const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
+      if (!processedRefsSet.has(key)) {
+        uniqueRefsMap.set(key, ref);
+        processedRefsSet.add(key);
+      }
+    });
+
+    if (uniqueRefsMap.size === 0) {
+      return;
+    }
+
+    const uniqueRefs = Array.from(uniqueRefsMap.values());
+    const refDataPromises = uniqueRefs.map(async (ref: any) => {
+      const tableName = getRefTableName(ref['@type']);
+
+      if (!tableName) {
+        return null;
+      }
+
+      try {
+        const refData = await getRefData(ref['@refObjectId'], ref['@version'], tableName);
+        return {
+          ref,
+          refData: refData?.data,
+          success: refData?.success,
+        };
+      } catch (error) {
+        console.error('Error fetching ref data:', error);
+        return null;
+      }
+    });
+
+    const refResults = await Promise.all(refDataPromises);
+
+    const nextLevelRefs: any[] = [];
+
+    refResults.forEach((item) => {
+      if (item && item.success && item.refData) {
+        const refKey = `${item.ref['@refObjectId']}:${item.ref['@version']}:${item.ref['@type']}`;
+
+        if (
+          item.refData.stateCode !== 100 &&
+          item.refData.stateCode !== 200 &&
+          item.refData.userId === userid
+        ) {
+          if (!needContributeMap.has(refKey)) {
+            needContributeMap.set(refKey, {
+              id: item.ref['@refObjectId'],
+              version: item.ref['@version'],
+              type: item.ref['@type'],
+              ...item.refData,
+            });
+          }
+        }
+
+        if (item.refData.json) {
+          const subRefs = getAllRefObj(item.refData.json);
+          if (subRefs && subRefs.length > 0) {
+            nextLevelRefs.push(...subRefs);
+          }
+        }
+      }
+    });
+
+    if (nextLevelRefs.length > 0) {
+      await processRefsRecursively(nextLevelRefs);
+    }
+  };
+
+  await processRefsRecursively(refs);
+
+  const result = Array.from(needContributeMap.values());
+  result.push({
+    id: id,
+    version: version,
+    type: 'process data set',
+  });
+
+  const contributePromises = result.map(async (item) => {
+    const tableName = getRefTableName(item.type);
+    if (!tableName) {
+      return {
+        success: false,
+        error: 'Invalid table name',
+        id: item.id,
+        version: item.version,
+      };
+    }
+
+    try {
+      const contributeResult = await contributeSource(tableName, item.id, item.version);
+      return {
+        success: true,
+        data: contributeResult,
+        id: item.id,
+        version: item.version,
+        type: item.type,
+      };
+    } catch (error) {
+      console.error('Error contributing data:', error);
+      return {
+        success: false,
+        error,
+        id: item.id,
+        version: item.version,
+      };
+    }
+  });
+
+  const contributeResults = await Promise.all(contributePromises);
+
+  return {
+    success: true,
+    needContribute: result,
+    contributeResults,
+  };
 }
