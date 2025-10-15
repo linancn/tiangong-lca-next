@@ -509,4 +509,43 @@ describe('Account profile integration workflow', () => {
     expect(updatedState.currentUser.name).toBe('Alice Cooper');
     expect(updatedState.currentUser.locale).toBe('en-US');
   });
+
+  it('surfaces validation feedback when profile update fails', async () => {
+    mockSetProfile.mockResolvedValueOnce({
+      status: 'error',
+      message: 'Profile update failed',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
+    await user.clear(nicknameField);
+    await user.type(nicknameField, 'Alice Wonder');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));
+    expect(mockSetProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Alice Wonder',
+      }),
+    );
+
+    expect(message.error).toHaveBeenCalledWith('Profile update failed');
+    expect(message.success).not.toHaveBeenCalled();
+    expect(mockSetInitialState).not.toHaveBeenCalled();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+  });
 });

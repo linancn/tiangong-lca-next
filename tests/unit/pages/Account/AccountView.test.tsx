@@ -10,7 +10,7 @@
 import AccountView from '@/pages/Account/view';
 import { getUsersByIds } from '@/services/users/api';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -174,5 +174,31 @@ describe('AccountView component', () => {
     await user.click(closeButton);
 
     await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+  });
+
+  it('renders textual trigger and handles missing fields gracefully', async () => {
+    mockGetUsersByIds.mockResolvedValueOnce([{ id: 'user-2' }] as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<AccountView buttonType='text' buttonTypeProp='primary' userId='user-2' />);
+
+    const trigger = screen.getByRole('button', { name: 'View Account' });
+    expect(trigger).toHaveTextContent('View Account');
+
+    await user.click(trigger);
+
+    await waitFor(() => expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-2']));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    expect(screen.getByText('user-2')).toBeInTheDocument();
+
+    const descriptions = screen.getAllByTestId('descriptions');
+    const accountInfo = descriptions[1];
+    const fallbackValues = within(accountInfo).getAllByText('-', { exact: true });
+    expect(fallbackValues).toHaveLength(2);
   });
 });

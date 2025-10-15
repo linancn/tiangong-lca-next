@@ -65,13 +65,13 @@ CRITICAL RULES TO PREVENT INFINITE LOOPS:
 ### STEP 5: Execute Quality Gates
 
 ```bash
-# Run tests with timeout protection (auto-kills after 90 seconds)
+# Run tests with timeout protection (auto-kills after 10 seconds)
 # Using Python subprocess for cross-platform reliability
 python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/integration/[feature]/", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=90)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -85,7 +85,7 @@ npm run lint
 
 ⚠️ **IMPORTANT: Test Running Time Monitoring**
 
-The Python subprocess wrapper will **automatically stop** tests if they run longer than 90 seconds, preventing infinite loops from blocking your workflow.
+The Python subprocess wrapper will **automatically stop** tests if they run longer than 10 seconds, preventing infinite loops from blocking your workflow.
 
 **Why Python subprocess instead of `timeout` command?**
 
@@ -711,12 +711,12 @@ describe('unauthenticated operations', () => {
 CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
-# Step 1: Run the tests with timeout protection (auto-kills after 30 seconds)
+# Step 1: Run the tests with timeout protection (auto-kills after 10 seconds)
 python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=30)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1203,12 +1203,12 @@ it('navigates through paginated results', async () => {
 CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
-# Step 1: Run the integration tests with timeout protection (auto-kills after 90 seconds)
+# Step 1: Run the integration tests with timeout protection (auto-kills after 10 seconds)
 python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/integration/[feature]/[Workflow].integration.test.tsx", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=90)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1461,12 +1461,12 @@ it('announces changes to screen readers', () => {
 CRITICAL: Execute ALL steps below. Do not skip any step.
 
 ```bash
-# Step 1: Run the component tests with timeout protection (auto-kills after 30 seconds)
+# Step 1: Run the component tests with timeout protection (auto-kills after 10 seconds)
 python3 - <<'PY'
 import subprocess, sys
 cmd = ["npm", "test", "--", "tests/unit/components/[Component].test.tsx", "--no-coverage"]
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=30)
+    completed = subprocess.run(cmd, cwd=".", timeout=10, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1622,7 +1622,7 @@ run_test_with_timeout() {
 import subprocess, sys
 cmd = ["npm", "test", "--"] + "$@".split()
 try:
-    completed = subprocess.run(cmd, cwd=".", timeout=$timeout_seconds)
+    completed = subprocess.run(cmd, cwd=".", timeout=$timeout_seconds, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1630,8 +1630,8 @@ PY
 }
 
 # Usage:
-# run_test_with_timeout 30 tests/unit/services/contacts/
-# run_test_with_timeout 90 tests/integration/reviews/
+# run_test_with_timeout 10 tests/unit/services/contacts/
+# run_test_with_timeout 10 tests/integration/reviews/
 ```
 
 ### Running Tests
@@ -1641,28 +1641,28 @@ PY
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test"], cwd=".", timeout=120)
+    completed = subprocess.run(["npm", "test"], cwd=".", timeout=60, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
 PY
 
 # Run specific test type (examples)
-# Unit tests (30s timeout)
+# Unit tests (5s timeout)
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/", "--no-coverage"], cwd=".", timeout=30)
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/", "--no-coverage"], cwd=".", timeout=5, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
 PY
 
-# Integration tests (90s timeout)
+# Integration tests (15s timeout)
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test", "--", "tests/integration/", "--no-coverage"], cwd=".", timeout=90)
+    completed = subprocess.run(["npm", "test", "--", "tests/integration/", "--no-coverage"], cwd=".", timeout=15, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1672,7 +1672,7 @@ PY
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/contacts/api.test.ts", "--no-coverage"], cwd=".", timeout=30)
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/contacts/api.test.ts", "--no-coverage"], cwd=".", timeout=5, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1749,7 +1749,7 @@ grep -r "mockTeam" tests/unit/
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"], cwd=".", timeout=30)
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"], cwd=".", timeout=5, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
@@ -1769,26 +1769,26 @@ echo $?  # Returns 124 if timeout occurred (indicates infinite loop)
 
 ## TROUBLESHOOTING
 
-### Problem: Tests running too long (> 30 seconds)
+### Problem: Tests running too long
 
 ⚠️ **SOLUTION: Use Python subprocess for cross-platform timeout protection**
 
 ```bash
-# Unit tests: 30 second timeout
+# Unit tests: 5 second timeout (单个测试文件应该很快)
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"], cwd=".", timeout=30)
+    completed = subprocess.run(["npm", "test", "--", "tests/unit/services/[module]", "--no-coverage"], cwd=".", timeout=5, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
 PY
 
-# Integration tests: 90 second timeout
+# Integration tests: 15 second timeout (集成测试可能涉及更多交互)
 python3 - <<'PY'
 import subprocess, sys
 try:
-    completed = subprocess.run(["npm", "test", "--", "tests/integration/[feature]/", "--no-coverage"], cwd=".", timeout=90)
+    completed = subprocess.run(["npm", "test", "--", "tests/integration/[feature]/", "--no-coverage"], cwd=".", timeout=15, start_new_session=True)
     sys.exit(completed.returncode)
 except subprocess.TimeoutExpired:
     sys.exit(124)
