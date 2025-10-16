@@ -298,12 +298,12 @@ function buildEdgesAndIndices(
   dbProcessMap: Map<string, DbProcessMapValue>,
 ): {
   up2DownEdges: Up2DownEdge[];
-  edgesByDownstream: Map<string, Up2DownEdge[]>;
-  edgesByUpstream: Map<string, Up2DownEdge[]>;
+  edgesByDownstreamInput: Map<string, Up2DownEdge[]>;
+  edgesByUpstreamOutput: Map<string, Up2DownEdge[]>;
 } {
   const up2DownEdges: Up2DownEdge[] = [];
-  const edgesByDownstream = new Map<string, Up2DownEdge[]>();
-  const edgesByUpstream = new Map<string, Up2DownEdge[]>();
+  const edgesByDownstreamInput = new Map<string, Up2DownEdge[]>();
+  const edgesByUpstreamOutput = new Map<string, Up2DownEdge[]>();
 
   // 1) Build edges from model processes' output exchanges and index them
   for (const mdProcess of mdProcesses as any[]) {
@@ -321,6 +321,7 @@ function buildEdgesAndIndices(
       const downstreamList = jsonToList(o?.downstreamProcess);
       for (const dp of downstreamList) {
         const nowUp2DownEdge: Up2DownEdge = {
+          id: `${mdProcess?.['@dataSetInternalID']}->${dp?.['@id']}:${o?.['@flowUUID']}`,
           flowUUID: o?.['@flowUUID'],
           upstreamId: mdProcess?.['@dataSetInternalID'],
           downstreamId: dp?.['@id'],
@@ -329,15 +330,15 @@ function buildEdgesAndIndices(
         };
         up2DownEdges.push(nowUp2DownEdge);
 
-        if (!edgesByDownstream.has(nowUp2DownEdge.downstreamId)) {
-          edgesByDownstream.set(nowUp2DownEdge.downstreamId, []);
+        if (!edgesByDownstreamInput.has(nowUp2DownEdge.downstreamId)) {
+          edgesByDownstreamInput.set(nowUp2DownEdge.downstreamId, []);
         }
-        edgesByDownstream.get(nowUp2DownEdge.downstreamId)!.push(nowUp2DownEdge);
+        edgesByDownstreamInput.get(nowUp2DownEdge.downstreamId)!.push(nowUp2DownEdge);
 
-        if (!edgesByUpstream.has(nowUp2DownEdge.upstreamId)) {
-          edgesByUpstream.set(nowUp2DownEdge.upstreamId, []);
+        if (!edgesByUpstreamOutput.has(nowUp2DownEdge.upstreamId)) {
+          edgesByUpstreamOutput.set(nowUp2DownEdge.upstreamId, []);
         }
-        edgesByUpstream.get(nowUp2DownEdge.upstreamId)!.push(nowUp2DownEdge);
+        edgesByUpstreamOutput.get(nowUp2DownEdge.upstreamId)!.push(nowUp2DownEdge);
       }
     }
   }
@@ -345,7 +346,7 @@ function buildEdgesAndIndices(
   // 2) For each node, derive main input flow and write back to its input edges
   for (const mdProcess of mdProcesses as any[]) {
     const mdNodeId = mdProcess?.['@dataSetInternalID'];
-    const inputEdges = edgesByDownstream.get(mdNodeId) ?? [];
+    const inputEdges = edgesByDownstreamInput.get(mdNodeId) ?? [];
 
     if (inputEdges.length > 0) {
       const key = dbProcessKey(
@@ -359,7 +360,7 @@ function buildEdgesAndIndices(
     }
   }
 
-  return { up2DownEdges, edgesByDownstream, edgesByUpstream };
+  return { up2DownEdges, edgesByDownstreamInput, edgesByUpstreamOutput };
 }
 
 /**
@@ -509,7 +510,7 @@ function assignEdgeDependence(
 /**
  * zh-CN: 计算下一层缩放系数：next = targetAmount * curSF / baseAmount。
  * - 使用 BigNumber 避免浮点误差；保留防御性回退：当 baseAmount 为 0，或 targetAmount/curSF 任一为 0 时返回 1。
- * - 仍返回 number 以兼容现有调用方。
+ * - 返回 number 以兼容现有调用方。
  *
  * 参数 / Params:
  * - targetAmount: number 作为分子（当前节点对应方向的目标量）。
@@ -524,13 +525,21 @@ function assignEdgeDependence(
  *   baseAmount is 0 or either targetAmount/curSF is 0.
  * - Returns a number for backward compatibility with existing callers.
  */
-const nextScaling = (targetAmount: number, baseAmount: number, curSF: number) => {
-  const base = new BigNumber(baseAmount);
-  const target = new BigNumber(targetAmount);
-  const cur = new BigNumber(curSF);
-  if (base.isZero()) return 1;
-  if (target.isZero() || cur.isZero()) return 1;
-  return target.times(cur).div(base).toNumber();
+const nextScaling = (
+  targetAmount: number,
+  baseAmount: number,
+  curSF: number,
+): {
+  exchangeAmount: number;
+  nextScalingFactor: number;
+} => {
+  if (!baseAmount) return { exchangeAmount: 0, nextScalingFactor: 0 };
+  if (!targetAmount || !curSF) return { exchangeAmount: 0, nextScalingFactor: 0 };
+  const exchangeAmount = new BigNumber(targetAmount).times(curSF);
+  return {
+    exchangeAmount: exchangeAmount.toNumber(),
+    nextScalingFactor: exchangeAmount.div(baseAmount).toNumber(),
+  };
 };
 
 /**
@@ -592,8 +601,8 @@ const calculateScalingFactor = (
   currentDatabaseProcess: DbProcessMapValue,
   dependence: any,
   scalingFactor: number,
-  edgesByDownstream: Map<string, Up2DownEdge[]>,
-  edgesByUpstream: Map<string, Up2DownEdge[]>,
+  edgesByDownstreamInput: Map<string, Up2DownEdge[]>,
+  edgesByUpstreamOutput: Map<string, Up2DownEdge[]>,
   mdProcessMap: Map<string, any>,
   dbProcessMap: Map<string, DbProcessMapValue>,
 ) => {
@@ -612,7 +621,11 @@ const calculateScalingFactor = (
   while (stack.length > 0) {
     const { md, db, dep, sf } = stack.pop() as Frame;
     const nodeId = md?.['@dataSetInternalID'];
-    const currentExs = db?.exchanges ?? [];
+    const scalingExchanges =
+      db?.exchanges?.map((ex: any) => {
+        const amount = new BigNumber(toAmountNumber(ex.meanAmount)).times(sf ?? 1).toNumber();
+        return { ...ex, meanAmount: amount, resultingAmount: amount };
+      }) ?? [];
 
     collectedProcesses.push({
       nodeId: nodeId,
@@ -621,11 +634,12 @@ const calculateScalingFactor = (
       processVersion: db.version,
       quantitativeReferenceFlowIndex: db?.refExchangeMap?.exchangeId,
       scalingFactor: sf,
-      exchanges: currentExs,
+      baseExchanges: db?.exchanges ?? [],
+      exchanges: scalingExchanges,
     });
 
-    const incomingEdges = edgesByDownstream.get(nodeId) ?? [];
-    for (const edge of incomingEdges) {
+    const inputEdges = edgesByDownstreamInput.get(nodeId) ?? [];
+    for (const edge of inputEdges) {
       if (edge?.dependence !== 'downstream') continue;
 
       const upstreamModelProcess = mdProcessMap.get(edge?.upstreamId);
@@ -645,18 +659,30 @@ const calculateScalingFactor = (
 
       const upstreamMeanAmount = toAmountNumber(upstreamOutputExchange?.meanAmount);
       const currentInputMeanAmount = toAmountNumber(currentInputExchange?.meanAmount);
-      const upstreamSF = nextScaling(currentInputMeanAmount, upstreamMeanAmount, sf);
+      const { exchangeAmount, nextScalingFactor } = nextScaling(
+        currentInputMeanAmount,
+        upstreamMeanAmount,
+        sf,
+      );
+
+      edge.exchangeAmount = exchangeAmount;
 
       stack.push({
         md: upstreamModelProcess,
         db: upstreamDatabaseProcess,
-        dep: { direction: 'downstream', nodeId: nodeId, flowUUID: edge?.flowUUID },
-        sf: upstreamSF,
+        dep: {
+          direction: 'downstream',
+          nodeId: nodeId,
+          flowUUID: edge?.flowUUID,
+          edgeId: edge?.id,
+          exchangeAmount: exchangeAmount,
+        },
+        sf: nextScalingFactor,
       });
     }
 
-    const outgoingEdges = edgesByUpstream.get(nodeId) ?? [];
-    for (const edge of outgoingEdges) {
+    const outputEdges = edgesByUpstreamOutput.get(nodeId) ?? [];
+    for (const edge of outputEdges) {
       if (edge?.dependence !== 'upstream') continue;
 
       const downstreamModelProcess = mdProcessMap.get(edge?.downstreamId);
@@ -676,13 +702,25 @@ const calculateScalingFactor = (
 
       const downstreamMeanAmount = toAmountNumber(downstreamInputExchange?.meanAmount);
       const currentOutputMeanAmount = toAmountNumber(currentOutputExchange?.meanAmount);
-      const downstreamSF = nextScaling(currentOutputMeanAmount, downstreamMeanAmount, sf);
+      const { exchangeAmount, nextScalingFactor } = nextScaling(
+        currentOutputMeanAmount,
+        downstreamMeanAmount,
+        sf,
+      );
+
+      edge.exchangeAmount = exchangeAmount;
 
       stack.push({
         md: downstreamModelProcess,
         db: downstreamDatabaseProcess,
-        dep: { direction: 'upstream', nodeId: nodeId, flowUUID: edge?.flowUUID },
-        sf: downstreamSF,
+        dep: {
+          direction: 'upstream',
+          nodeId: nodeId,
+          flowUUID: edge?.flowUUID,
+          edgeId: edge?.id,
+          exchangeAmount: exchangeAmount,
+        },
+        sf: nextScalingFactor,
       });
     }
   }
@@ -723,12 +761,12 @@ const calculateScalingFactor = (
  * - 'downstream|f123|D1|U9'
  * - 'upstream|f456|U9|D1'
  */
-const processScalingFactorKey = (
-  direction: string,
-  flowUUID?: string,
-  dependenceNodeId?: string,
-  nodeId?: string,
-) => `${direction}|${flowUUID ?? ''}|${dependenceNodeId ?? ''}|${nodeId ?? ''}`;
+// const processScalingFactorKey = (
+//   direction: string,
+//   flowUUID?: string,
+//   dependenceNodeId?: string,
+//   nodeId?: string,
+// ) => `${direction}|${flowUUID ?? ''}|${dependenceNodeId ?? ''}|${nodeId ?? ''}`;
 
 /**
  * zh-CN: 使用预构建的索引为单条边计算 scalingFactor（O(1)）。
@@ -772,29 +810,44 @@ const processScalingFactorKey = (
  * - 需与 processScalingFactorKey 的键语义保持一致；
  * - 当字段缺失或键未命中时返回 0，表示对该边无有效缩放贡献。
  */
-const getScalingFactorForEdge = (
-  ud: Up2DownEdge,
-  processScalingFactorMap: Map<string, number>,
-  sumScalingFactorByNodeId: Map<string, any>,
-): number => {
-  if (ud?.dependence === 'downstream') {
-    const k = processScalingFactorKey('downstream', ud?.flowUUID, ud?.downstreamId, ud?.upstreamId);
-    return processScalingFactorMap.get(k) ?? 0;
-  }
-  if (ud?.dependence === 'upstream') {
-    const k = processScalingFactorKey('upstream', ud?.flowUUID, ud?.upstreamId, ud?.downstreamId);
-    return processScalingFactorMap.get(k) ?? 0;
-  }
-  if (ud?.dependence === 'none') {
-    if (ud?.mainDependence === 'downstream') {
-      return sumScalingFactorByNodeId.get(ud?.upstreamId)?.scalingFactor ?? 0;
-    }
-    if (ud?.mainDependence === 'upstream') {
-      return sumScalingFactorByNodeId.get(ud?.downstreamId)?.scalingFactor ?? 0;
-    }
-  }
-  return 0;
-};
+// const getScalingFactorForEdge = (
+//   ud: Up2DownEdge,
+//   processScalingFactorMap: Map<string, number>,
+//   sumAmountMap: Map<string, any>,
+// ): { downScalingFactor: number, upScalingFactor: number, scalingFactor: number, exchangeAmount: number } => {
+//   const dependence = ud?.dependence;
+//   if (dependence !== 'none') {
+//     const downK = processScalingFactorKey('downstream', ud?.flowUUID, ud?.downstreamId, ud?.upstreamId);
+//     const upK = processScalingFactorKey('upstream', ud?.flowUUID, ud?.upstreamId, ud?.downstreamId);
+
+//     const downScalingFactor = processScalingFactorMap.get(downK) ?? 0;
+//     const upScalingFactor = processScalingFactorMap.get(upK) ?? 0;
+
+//     const downNode = sumAmountMap.get(ud?.downstreamId);
+//     const upNode = sumAmountMap.get(ud?.upstreamId);
+
+//     if (dependence === 'downstream') {
+//       const dependenceExchange = downNode?.exchanges?.find((ex: any) => ex?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID && ex?.exchangeDirection.toUpperCase() === 'INPUT');
+//       return { downScalingFactor, upScalingFactor, scalingFactor: downScalingFactor, exchangeAmount: dependenceExchange?.meanAmount ?? 0 };
+//     } else if (dependence === 'upstream') {
+//       const dependenceExchange = upNode?.exchanges?.find((ex: any) => ex?.referenceToFlowDataSet?.['@refObjectId'] === ud?.flowUUID && ex?.exchangeDirection.toUpperCase() === 'OUTPUT');
+//       return { downScalingFactor, upScalingFactor, scalingFactor: upScalingFactor, exchangeAmount: dependenceExchange?.meanAmount ?? 0 };
+//     }
+//   }
+//   else {
+//     const downScalingFactor = sumAmountMap.get(ud?.downstreamId)?.scalingFactor ?? 0;
+//     const upScalingFactor = sumAmountMap.get(ud?.upstreamId)?.scalingFactor ?? 0;
+//     if (ud?.mainDependence === 'downstream') {
+//       return {
+//         downScalingFactor,
+//         upScalingFactor,
+//         scalingFactor: upScalingFactor,
+//         exchangeAmount: sumAmountMap.get(ud?.upstreamId)?.scalingFactor ?? 0
+//       };
+//     }
+//   }
+//   return { downScalingFactor: 0, upScalingFactor: 0, scalingFactor: 0, exchangeAmount: 0 };
+// };
 
 /**
  * zh-CN: 聚合进程缩放系数并为边计算缩放因子（原地修改传入的边）。
@@ -839,29 +892,27 @@ const getScalingFactorForEdge = (
  * 副作用 / Side effects:
  * - 会原地修改传入的边对象（为每条边写入/更新 scalingFactor 字段）。
  */
-const buildEdgeScaling = (
+const sumAmountByNodeId = (
   processScalingFactors: any[],
-  up2DownEdges: Up2DownEdge[],
-): {
-  sumScalingFactorByNodeId: Map<string, any>;
-} => {
-  const processScalingFactorMap = new Map<string, number>();
-  const sumScalingFactorByNodeId = new Map<string, any>();
+  // up2DownEdges: Up2DownEdge[],
+): Map<string, any> => {
+  // const processScalingFactorMap = new Map<string, number>();
+  const sumAmountMap = new Map<string, any>();
 
   for (const psf of processScalingFactors as any[]) {
-    const dir = psf?.dependence?.direction;
-    const flowUUID = psf?.dependence?.flowUUID;
-    const depNodeId = psf?.dependence?.nodeId;
+    // const dir = psf?.dependence?.direction;
+    // const flowUUID = psf?.dependence?.flowUUID;
+    // const depNodeId = psf?.dependence?.nodeId;
     const nodeId = psf?.nodeId;
     const sf = psf?.scalingFactor ?? 0;
 
-    if (dir && flowUUID && depNodeId && nodeId && sf !== 0) {
-      const key = processScalingFactorKey(dir, flowUUID, depNodeId, nodeId);
-      processScalingFactorMap.set(key, (processScalingFactorMap.get(key) ?? 0) + sf);
-    }
+    // if (dir && flowUUID && depNodeId && nodeId && sf !== 0) {
+    //   const key = processScalingFactorKey(dir, flowUUID, depNodeId, nodeId);
+    //   processScalingFactorMap.set(key, (processScalingFactorMap.get(key) ?? 0) + sf);
+    // }
     if (nodeId && sf !== 0) {
-      const sumSF = sumScalingFactorByNodeId.get(nodeId) ?? { ...psf, scalingFactor: 0, count: 0 };
-      sumScalingFactorByNodeId.set(nodeId, {
+      const sumSF = sumAmountMap.get(nodeId) ?? { ...psf, scalingFactor: 0, count: 0 };
+      sumAmountMap.set(nodeId, {
         ...sumSF,
         scalingFactor: (sumSF?.scalingFactor ?? 0) + sf,
         count: (sumSF?.count ?? 0) + 1,
@@ -869,16 +920,90 @@ const buildEdgeScaling = (
     }
   }
 
-  // In-place write scalingFactor onto each edge to avoid array/object churn
-  for (const ud of up2DownEdges) {
-    ud.scalingFactor = getScalingFactorForEdge(
-      ud,
-      processScalingFactorMap,
-      sumScalingFactorByNodeId,
-    );
+  for (const [nodeId, data] of sumAmountMap) {
+    sumAmountMap.set(nodeId, {
+      ...data,
+      exchanges:
+        data?.baseExchanges?.map((ex: any) => {
+          const amount = new BigNumber(toAmountNumber(ex.meanAmount))
+            .times(data?.scalingFactor ?? 1)
+            .toNumber();
+          return { ...ex, meanAmount: amount, resultingAmount: amount };
+        }) ?? [],
+    });
   }
-  return { sumScalingFactorByNodeId };
+
+  // In-place write scalingFactor onto each edge to avoid array/object churn
+  // for (const ud of up2DownEdges) {
+  //   const { downScalingFactor, upScalingFactor } = getScalingFactorForEdge(
+  //     ud,
+  //     processScalingFactorMap,
+  //     sumAmountMap,
+  //   );
+  //   ud.downScalingFactor = downScalingFactor;
+  //   ud.upScalingFactor = upScalingFactor;
+  // }
+  return sumAmountMap;
 };
+
+// const calculateExchangeUsageRate = (sumAmountMap: Map<string, any>, up2DownEdges: any[], edgesByDownstream: Map<string, Up2DownEdge[]>,
+//   edgesByUpstream: Map<string, Up2DownEdge[]>) => {
+//   const mainEdges = up2DownEdges.filter(ud => ud?.dependence !== 'none');
+//   mainEdges.forEach(mainEdge => {
+//     const upNode = sumAmountMap.get(mainEdge?.upstreamId);
+//     const downNode = sumAmountMap.get(mainEdge?.downstreamId);
+//     if (upNode && downNode) {
+//       const mainOutputExchange = upNode?.exchanges?.find((upEx: any) => upEx?.exchangeDirection.toUpperCase() === 'OUTPUT' && upEx?.referenceToFlowDataSet?.['@refObjectId'] === mainEdge?.flowUUID);
+//       const mainInputExchange = downNode?.exchanges?.find((downEx: any) => downEx?.exchangeDirection.toUpperCase() === 'INPUT' && downEx?.referenceToFlowDataSet?.['@refObjectId'] === mainEdge?.flowUUID);
+//       if (mainOutputExchange && mainInputExchange) {
+//         mainOutputExchange.mainUsageAmount = (mainOutputExchange?.mainUsageAmount ?? 0) + (mainInputExchange?.meanAmount ?? 0) * (mainEdge?.scalingFactor ?? 1) / (downNode?.scalingFactor ?? 1);
+//         mainInputExchange.mainUsageAmount = (mainInputExchange?.mainUsageAmount ?? 0) + (mainInputExchange?.meanAmount ?? 0) * (mainEdge?.scalingFactor ?? 1) / (upNode?.scalingFactor ?? 1);
+//       }
+//       console.log('mainExchange2', mainOutputExchange, mainInputExchange);
+//     }
+
+//   });
+
+//   // for (const [nodeId, data] of sumAmountMap) {
+//   //   const inputEdges = edgesByDownstream.get(nodeId) ?? [];
+//   //   const outputEdges = edgesByUpstream.get(nodeId) ?? [];
+//   //   data?.exchanges?.forEach((ex: any) => {
+//   //     if (ex?.exchangeDirection.toUpperCase() === 'INPUT') {
+//   //       const inputEdgesForThisFlow = inputEdges.filter(ie => ie.flowUUID === ex?.referenceToFlowDataSet?.['@refObjectId']);
+//   //       if (inputEdgesForThisFlow.length > 0) {
+//   //         const totalSF = inputEdgesForThisFlow.reduce((sum, ie) => {
+//   //           const upstreamData = sumAmountMap.get(ie?.upstreamId);
+//   //           const exInUpstream = upstreamData?.exchanges?.find((e: any) => e?.exchangeDirection.toUpperCase() === 'OUTPUT' && e?.referenceToFlowDataSet?.['@refObjectId'] === ie?.flowUUID);
+//   //           const amount = exInUpstream?.meanAmount ?? 0;
+//   //           return sum + amount;
+//   //         }, 0);
+//   //         });
+//   //         console.log('inputEdgesForThisFlow', inputEdgesForThisFlow);
+//   //       } else {
+//   //         ex.usageRate = 0;
+//   //       }
+//   //     } else if (ex?.exchangeDirection.toUpperCase() === 'OUTPUT') {
+
+//   //     }
+//   //   });
+
+//   // }
+
+//   console.log('sumAmountMap', sumAmountMap);
+//   return sumAmountMap;
+
+// };
+
+// const splitExchange = (sumAmountMap: Map<string, any>, edges: any[], edgesByDownstream: Map<string, Up2DownEdge[]>,
+//   edgesByUpstream: Map<string, Up2DownEdge[]>) => {
+//   for (const [nodeId, data] of sumAmountMap) {
+//     const inputEdges = edgesByDownstream.get(nodeId) ?? [];
+//     const outputEdges = edgesByUpstream.get(nodeId) ?? [];
+
+//     // console.log('splitExchange', nodeId, data, inputEdges, outputEdges);
+//   }
+//   return sumAmountMap;
+// }
 
 /**
  * zh-CN: 判定某子进程在其下游路径上是否存在“最终产品”交换。
@@ -1302,10 +1427,12 @@ const getFinalProductGroup = (
           const nextFinalProductGroups = getFinalProductGroup(
             nextChildProcess,
             newAllocatedFraction ?? 1,
-            new BigNumber(edge?.scalingFactor ?? 1)
-              .div(nextChildProcess?.scalingFactor ?? 1)
-              .times(scalingPercentage)
-              .toNumber(),
+            //需要后续修改
+            // new BigNumber(edge?.scalingFactor ?? 1)
+            //   .div(nextChildProcess?.scalingFactor ?? 1)
+            //   .times(scalingPercentage)
+            //   .toNumber(),
+            1,
             allocatedProcesses,
             allUp2DownEdges,
           );
@@ -1522,7 +1649,7 @@ const sumProcessExchange = (processExchanges: any[]) => {
  */
 export async function genLifeCycleModelProcesses(
   id: string,
-  modelNodes: any,
+  modelNodes: any[],
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {
@@ -1536,7 +1663,7 @@ export async function genLifeCycleModelProcesses(
 
   const refNode = modelNodes?.find((i: any) => i?.data?.quantitativeReference === '1');
 
-  const refTargetAmount = refNode?.data?.targetAmount;
+  const refTargetAmount = toAmountNumber(refNode?.data?.targetAmount);
 
   const mdProcesses = jsonToList(
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology
@@ -1636,12 +1763,17 @@ export async function genLifeCycleModelProcesses(
   if (refModelMeanAmount !== 0 && modelTargetAmount !== 0) {
     refScalingFactor = new BigNumber(modelTargetAmount).div(refModelMeanAmount).toNumber();
   }
-  const { up2DownEdges, edgesByDownstream, edgesByUpstream } = buildEdgesAndIndices(
+  const { up2DownEdges, edgesByDownstreamInput, edgesByUpstreamOutput } = buildEdgesAndIndices(
     mdProcesses,
     dbProcessMap,
   );
 
-  assignEdgeDependence(up2DownEdges, edgesByDownstream, edgesByUpstream, refProcessNodeId);
+  assignEdgeDependence(
+    up2DownEdges,
+    edgesByDownstreamInput,
+    edgesByUpstreamOutput,
+    refProcessNodeId,
+  );
 
   const processScalingFactors = calculateScalingFactor(
     refMdProcess,
@@ -1650,23 +1782,60 @@ export async function genLifeCycleModelProcesses(
       direction: '',
       nodeId: '',
       flowUUID: '',
+      edgeId: '',
     },
     refScalingFactor,
-    edgesByDownstream,
-    edgesByUpstream,
+    edgesByDownstreamInput,
+    edgesByUpstreamOutput,
     mdProcessMap,
     dbProcessMap,
   );
 
-  const { sumScalingFactorByNodeId } = buildEdgeScaling(processScalingFactors, up2DownEdges);
+  const sumAmountMap = sumAmountByNodeId(processScalingFactors);
 
+  // const noneDependenceEdges = up2DownEdges.filter((e) => e.dependence === 'none');
+  // if (noneDependenceEdges.length > 0) {
+  //   noneDependenceEdges.forEach((e) => {
+  //     console.warn('Found edge with no dependence:', e);
+  //   });
+  // }
+
+  // up2DownEdges.forEach((edge) => {
+  //   const downstream = sumAmountMap.get(edge.downstreamId);
+  //   const upstream = sumAmountMap.get(edge.upstreamId);
+  //   if (!downstream || !upstream) return;
+
+  //   const inputExchange = downstream.exchanges?.find(
+  //     (ex: any) =>
+  //       ex.exchangeDirection?.toUpperCase() === 'INPUT' &&
+  //       ex.referenceToFlowDataSet?.['@refObjectId'] === edge.flowUUID,
+  //   );
+
+  //   const outputExchange = upstream.exchanges?.find(
+  //     (ex: any) =>
+  //       ex.exchangeDirection?.toUpperCase() === 'OUTPUT' &&
+  //       ex.referenceToFlowDataSet?.['@refObjectId'] === edge.flowUUID,
+  //   );
+
+  //   edge.inputAmount = toAmountNumber(inputExchange?.meanAmount) * (downstream?.scalingFactor ?? 1);
+  // });
+
+  // console.log('up2DownEdges', up2DownEdges, 'processScalingFactors', processScalingFactors, 'sumAmountMap', sumAmountMap);
+
+  // return;
+
+  // const exchangeUsageRate = calculateExchangeUsageRate(sumAmountMap, up2DownEdges, edgesByDownstreamInput, edgesByUpstreamOutput);
+
+  // const splitedExchanges = splitExchange(sumAmountMap, up2DownEdges, edgesByDownstreamInput, edgesByUpstreamOutput);
+
+  // console.log('processScalingFactors', processScalingFactors);
   // console.log('up2DownEdges', up2DownEdges);
-  // console.log('sumScalingFactorByNodeId', sumScalingFactorByNodeId);
+  // console.log('sumAmountProcesses', sumAmountMap);
 
   // const calculatedEdges = up2DownEdges.reduce(
   //   (acc: Map<string, any>, e) => {
-  //     const downstream = sumScalingFactorByNodeId.get(e.downstreamId);
-  //     const upstream = sumScalingFactorByNodeId.get(e.upstreamId);
+  //     const downstream = sumAmountMap.get(e.downstreamId);
+  //     const upstream = sumAmountMap.get(e.upstreamId);
   //     if (!downstream || !upstream) return acc;
 
   //     const inputExchange = downstream.exchanges?.find(
@@ -1742,7 +1911,7 @@ export async function genLifeCycleModelProcesses(
   // console.log('calculatedEdges', calculatedEdges);
 
   const allocatedProcesses = assignFinalProductTypes(
-    allocatedProcess(sumScalingFactorByNodeId),
+    allocatedProcess(sumAmountMap),
     up2DownEdges,
     refProcessNodeId,
   );
@@ -2619,9 +2788,7 @@ export async function genLifeCycleModelProcesses(
     return removeEmptyObjects({
       '@dataSetInternalID': mdProcess?.['@dataSetInternalID'] ?? {},
       '@multiplicationFactor':
-        sumScalingFactorByNodeId
-          ?.get(mdProcess?.['@dataSetInternalID'])
-          ?.scalingFactor?.toString() ?? {},
+        sumAmountMap.get(mdProcess?.['@dataSetInternalID'])?.scalingFactor?.toString() ?? {},
       referenceToProcess: mdProcess?.referenceToProcess,
       groups: mdProcess?.groups,
       parameters: mdProcess.parameters,

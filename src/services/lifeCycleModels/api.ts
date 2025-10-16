@@ -103,7 +103,7 @@ export async function createLifeCycleModel(data: any) {
   // const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
   const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
     data.id,
-    data?.model?.nodes,
+    data?.model?.nodes ?? [],
     newLifeCycleModelJsonOrdered,
     [],
   );
@@ -327,7 +327,7 @@ export async function updateLifeCycleModel(data: any) {
 
     const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
       data.id,
-      data?.model?.nodes,
+      data?.model?.nodes ?? [],
       newLifeCycleModelJsonOrdered,
       jsonToList(oldData.submodels),
     );
