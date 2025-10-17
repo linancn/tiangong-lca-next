@@ -26,10 +26,14 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 const mockGetTeamIdByUserId = jest.fn();
+const mockGetRefData = jest.fn();
+const mockContributeSource = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
+  getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
+  contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
 }));
 
 const mockGetILCDLocationByValues = jest.fn();
@@ -72,6 +76,22 @@ jest.mock('@/services/general/util', () => ({
   getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
   getRuleVerification: (...args: any[]) => mockGetRuleVerification.apply(null, args),
   jsonToList: (...args: any[]) => mockJsonToList.apply(null, args),
+}));
+
+const mockGetCurrentUser = jest.fn();
+
+jest.mock('@/services/auth', () => ({
+  __esModule: true,
+  getCurrentUser: (...args: any[]) => mockGetCurrentUser.apply(null, args),
+}));
+
+const mockGetAllRefObj = jest.fn();
+const mockGetRefTableName = jest.fn();
+
+jest.mock('@/pages/Utils/review', () => ({
+  __esModule: true,
+  getAllRefObj: (...args: any[]) => mockGetAllRefObj.apply(null, args),
+  getRefTableName: (...args: any[]) => mockGetRefTableName.apply(null, args),
 }));
 
 const createQueryBuilder = <T>(resolvedValue: T) => {
@@ -940,5 +960,567 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(result).toBeDefined();
+  });
+});
+
+describe('contributeProcess', () => {
+  const testId = 'process-123';
+  const testVersion = '01.00.000';
+  const testUserId = 'user-456';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should successfully contribute process with all reference data', async () => {
+    // Arrange - Mock current user
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    // Mock process detail with references
+    const mockProcessDetail = {
+      processInformation: {
+        dataSetInformation: {
+          referenceToContact: [
+            {
+              '@refObjectId': 'contact-1',
+              '@version': '01.00.000',
+              '@type': 'contact data set',
+            },
+          ],
+        },
+      },
+    };
+
+    // Mock getProcessDetailByIdAndVersion response (returns {data: [...], success: true})
+    const mockBuilder = createQueryBuilder({
+      data: [{ json: mockProcessDetail }],
+      error: null,
+    });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    // Mock getAllRefObj to return references
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+      {
+        '@refObjectId': 'source-1',
+        '@version': '01.00.000',
+        '@type': 'source data set',
+      },
+    ]);
+
+    // Mock getRefTableName
+    // Called during ref processing phase (2 times) and contribution phase (3 times)
+    mockGetRefTableName
+      .mockReturnValueOnce('contacts') // For contact ref processing
+      .mockReturnValueOnce('sources') // For source ref processing
+      .mockReturnValueOnce('contacts') // For contact contribution
+      .mockReturnValueOnce('sources') // For source contribution
+      .mockReturnValueOnce('processes'); // For process contribution
+
+    // Mock getRefData for references
+    mockGetRefData
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'contact-1',
+          version: '01.00.000',
+          stateCode: 10,
+          userId: testUserId,
+          json: {}, // Empty json means no nested refs
+        },
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'source-1',
+          version: '01.00.000',
+          stateCode: 20,
+          userId: testUserId,
+          json: {}, // Empty json means no nested refs
+        },
+      });
+
+    // Mock getAllRefObj for nested calls (should return empty for no nested refs)
+    mockGetAllRefObj
+      .mockReturnValueOnce([
+        {
+          '@refObjectId': 'contact-1',
+          '@version': '01.00.000',
+          '@type': 'contact data set',
+        },
+        {
+          '@refObjectId': 'source-1',
+          '@version': '01.00.000',
+          '@type': 'source data set',
+        },
+      ])
+      .mockReturnValue([]); // No nested refs in subsequent calls
+
+    // Mock contributeSource
+    mockContributeSource
+      .mockResolvedValueOnce({ success: true, message: 'Contact contributed' })
+      .mockResolvedValueOnce({ success: true, message: 'Source contributed' })
+      .mockResolvedValueOnce({ success: true, message: 'Process contributed' });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(mockGetCurrentUser).toHaveBeenCalled();
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(mockGetRefData).toHaveBeenCalledTimes(2);
+    expect(mockGetRefData).toHaveBeenCalledWith('contact-1', '01.00.000', 'contacts');
+    expect(mockGetRefData).toHaveBeenCalledWith('source-1', '01.00.000', 'sources');
+    expect(mockContributeSource).toHaveBeenCalledTimes(3);
+    expect(result.success).toBe(true);
+    expect(result.needContribute).toHaveLength(3);
+    expect(result.contributeResults).toHaveLength(3);
+  });
+
+  it('should handle missing current user', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue(null);
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.error).toBe(true);
+    expect(result.message).toBe('Failed to get current user');
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('should handle user without userid', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: undefined });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.error).toBe(true);
+    expect(result.message).toBe('Failed to get current user');
+  });
+
+  it('should skip references that are already public (stateCode 100)', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {
+      processInformation: {
+        dataSetInformation: {
+          referenceToContact: [
+            {
+              '@refObjectId': 'contact-1',
+              '@version': '01.00.000',
+              '@type': 'contact data set',
+            },
+          ],
+        },
+      },
+    };
+
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+    ]);
+
+    mockGetRefTableName.mockReturnValue('contacts').mockReturnValue('processes');
+
+    // Mock reference with stateCode 100 (public)
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-1',
+        version: '01.00.000',
+        stateCode: 100,
+        userId: testUserId,
+        json: {},
+      },
+    });
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.success).toBe(true);
+    // Only the process itself should be contributed, not the already-public reference
+    expect(result.needContribute).toBeDefined();
+    expect(result.needContribute).toHaveLength(1);
+    expect(result.needContribute![0].type).toBe('process data set');
+  });
+
+  it('should skip references that are team data (stateCode 200)', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+    ]);
+
+    mockGetRefTableName.mockReturnValue('contacts').mockReturnValue('processes');
+
+    // Mock reference with stateCode 200 (team data)
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-1',
+        version: '01.00.000',
+        stateCode: 200,
+        userId: testUserId,
+        json: {},
+      },
+    });
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.needContribute).toBeDefined();
+    expect(result.needContribute).toHaveLength(1);
+    expect(result.needContribute![0].type).toBe('process data set');
+  });
+
+  it('should skip references owned by other users', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+    ]);
+
+    mockGetRefTableName.mockReturnValue('contacts').mockReturnValue('processes');
+
+    // Mock reference owned by different user
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-1',
+        version: '01.00.000',
+        stateCode: 10,
+        userId: 'other-user',
+        json: {},
+      },
+    });
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.needContribute).toBeDefined();
+    expect(result.needContribute).toHaveLength(1);
+    expect(result.needContribute![0].type).toBe('process data set');
+  });
+
+  it('should recursively process nested references', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    // First level reference
+    mockGetAllRefObj
+      .mockReturnValueOnce([
+        {
+          '@refObjectId': 'contact-1',
+          '@version': '01.00.000',
+          '@type': 'contact data set',
+        },
+      ])
+      .mockReturnValueOnce([
+        // Second level reference (nested in contact)
+        {
+          '@refObjectId': 'source-1',
+          '@version': '01.00.000',
+          '@type': 'source data set',
+        },
+      ])
+      .mockReturnValueOnce([]); // No more nested refs
+
+    mockGetRefTableName
+      .mockReturnValueOnce('contacts')
+      .mockReturnValueOnce('sources')
+      .mockReturnValueOnce('processes');
+
+    // Contact with nested source reference
+    mockGetRefData
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'contact-1',
+          version: '01.00.000',
+          stateCode: 10,
+          userId: testUserId,
+          json: {
+            referenceToSource: {
+              '@refObjectId': 'source-1',
+              '@version': '01.00.000',
+              '@type': 'source data set',
+            },
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'source-1',
+          version: '01.00.000',
+          stateCode: 20,
+          userId: testUserId,
+          json: {},
+        },
+      });
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(mockGetRefData).toHaveBeenCalledTimes(2);
+    expect(result.needContribute).toBeDefined();
+    expect(result.needContribute).toHaveLength(3); // contact + source + process
+    expect(result.needContribute!.some((item: any) => item.id === 'contact-1')).toBe(true);
+    expect(result.needContribute!.some((item: any) => item.id === 'source-1')).toBe(true);
+  });
+
+  it('should handle duplicate references (deduplication)', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    // Return same reference twice
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+    ]);
+
+    mockGetRefTableName.mockReturnValue('contacts').mockReturnValue('processes');
+
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-1',
+        version: '01.00.000',
+        stateCode: 10,
+        userId: testUserId,
+        json: {},
+      },
+    });
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    // Should only fetch reference data once (deduplicated)
+    expect(mockGetRefData).toHaveBeenCalledTimes(1);
+    expect(result.needContribute).toHaveLength(2); // contact + process (no duplicates)
+  });
+
+  it('should handle invalid table name', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [{ json: mockProcessDetail }], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'unknown-1',
+        '@version': '01.00.000',
+        '@type': 'unknown type',
+      },
+    ]);
+
+    // Return null for unknown type (skips getRefData)
+    // Then return 'processes' for the process contribution
+    mockGetRefTableName.mockReturnValueOnce(null);
+    mockGetRefTableName.mockReturnValueOnce('processes');
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    // getRefData should not be called because tableName is null for unknown type
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    expect(result.needContribute).toHaveLength(1); // Only process (unknown type was skipped)
+  });
+
+  it('should handle getRefData error gracefully', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+    ]);
+
+    mockGetRefTableName.mockReturnValue('contacts').mockReturnValue('processes');
+
+    // Mock getRefData to throw error
+    mockGetRefData.mockRejectedValue(new Error('Network error'));
+
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.success).toBe(true);
+    // Should continue and only contribute the process itself
+    expect(result.needContribute).toHaveLength(1);
+  });
+
+  it('should handle contributeSource error', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+        '@type': 'contact data set',
+      },
+    ]);
+
+    mockGetRefTableName.mockReturnValue('contacts').mockReturnValue('processes');
+
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-1',
+        version: '01.00.000',
+        stateCode: 10,
+        userId: testUserId,
+        json: {},
+      },
+    });
+
+    // Mock contributeSource to fail for one item
+    mockContributeSource
+      .mockRejectedValueOnce(new Error('Contribution failed'))
+      .mockResolvedValueOnce({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.success).toBe(true);
+    expect(result.contributeResults).toBeDefined();
+    expect(result.contributeResults).toHaveLength(2);
+    expect(result.contributeResults![0].success).toBe(false);
+    expect(result.contributeResults![0].error).toBeDefined();
+    expect(result.contributeResults![1].success).toBe(true);
+  });
+
+  it('should handle invalid table name during contribution', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([]);
+
+    // Return null for process type (edge case)
+    mockGetRefTableName.mockReturnValue(null);
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(result.success).toBe(true);
+    expect(result.contributeResults).toBeDefined();
+    expect(result.contributeResults).toHaveLength(1);
+    expect(result.contributeResults![0].success).toBe(false);
+    expect(result.contributeResults![0].error).toBe('Invalid table name');
+  });
+
+  it('should handle empty reference list', async () => {
+    // Arrange
+    mockGetCurrentUser.mockResolvedValue({ userid: testUserId });
+
+    const mockProcessDetail = {};
+    const mockBuilder = createQueryBuilder({ data: [mockProcessDetail], error: null });
+    mockFrom.mockReturnValue(mockBuilder);
+
+    mockGetAllRefObj.mockReturnValue([]);
+    mockGetRefTableName.mockReturnValue('processes');
+    mockContributeSource.mockResolvedValue({ success: true });
+
+    // Act
+    const result = await processesApi.contributeProcess(testId, testVersion);
+
+    // Assert
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    expect(result.needContribute).toBeDefined();
+    expect(result.needContribute).toHaveLength(1); // Only the process itself
+    expect(result.needContribute![0].id).toBe(testId);
+    expect(result.needContribute![0].version).toBe(testVersion);
+    expect(result.needContribute![0].type).toBe('process data set');
   });
 });
