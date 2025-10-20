@@ -234,9 +234,10 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'Version',
       search: false,
       render: (_, row) => {
+        const version = row.referenceToLCIAMethodDataSet?.['@version'] ?? '-';
         return [
-          <Tooltip key={0} placement='topLeft' title={row.referenceToLCIAMethodDataSet['@version']}>
-            {row.referenceToLCIAMethodDataSet['@version']}
+          <Tooltip key={0} placement='topLeft' title={version}>
+            {version}
           </Tooltip>,
         ];
       },

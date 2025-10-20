@@ -3,10 +3,10 @@ import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
-import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import {
+  contributeLifeCycleModel,
   getLifeCycleModelTableAll,
   getLifeCycleModelTablePgroongaSearch,
   lifeCycleModel_hybrid_search,
@@ -182,11 +182,7 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          const { error } = await contributeSource(
-                            'lifecyclemodels',
-                            row.id,
-                            row.version,
-                          );
+                          const { error } = await contributeLifeCycleModel(row.id, row.version);
                           if (error) {
                             console.log(error);
                           } else {
