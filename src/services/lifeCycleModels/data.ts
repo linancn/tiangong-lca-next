@@ -14,11 +14,7 @@ export type Up2DownEdge = {
   id: string; //upstreamId + '->' + downstreamId + ':' + dependence
   flowUUID: string;
   upstreamId: string;
-  // upstreamProcessId: string;
-  // upstreamProcessVersion: string;
   downstreamId: string;
-  // downstreamProcessId: string;
-  // downstreamProcessVersion: string;
   dependence?: string;
   mainDependence?: string;
   mainScalingFactor?: number;
@@ -28,6 +24,8 @@ export type Up2DownEdge = {
   upScalingFactor?: number;
   scalingFactor?: number;
   exchangeAmount?: number;
+  unbalancedAmount?: number;
+  isBalanced?: boolean;
 };
 
 export type LifeCycleModelDataSetObjectKeys = Exclude<
