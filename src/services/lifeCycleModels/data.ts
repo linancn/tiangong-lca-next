@@ -11,19 +11,21 @@ export type LifeCycleModelTable = {
 };
 
 export type Up2DownEdge = {
+  id: string; //upstreamId + '->' + downstreamId + ':' + dependence
   flowUUID: string;
   upstreamId: string;
-  // upstreamProcessId: string;
-  // upstreamProcessVersion: string;
   downstreamId: string;
-  // downstreamProcessId: string;
-  // downstreamProcessVersion: string;
   dependence?: string;
   mainDependence?: string;
   mainScalingFactor?: number;
   mainOutputFlowUUID: string;
   mainInputFlowUUID: string;
+  downScalingFactor?: number;
+  upScalingFactor?: number;
   scalingFactor?: number;
+  exchangeAmount?: number;
+  unbalancedAmount?: number;
+  isBalanced?: boolean;
 };
 
 export type LifeCycleModelDataSetObjectKeys = Exclude<
