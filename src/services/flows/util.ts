@@ -1,5 +1,5 @@
 import { FormFlow } from '@/services/flows/data';
-import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
+import { createFlow as createTidasFlow, Flow } from '@tiangong-lca/tidas-sdk';
 import {
   classificationToJsonList,
   classificationToStringList,
@@ -36,7 +36,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
         uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
         relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
         dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        ['common:generalComment']: getLangJson(item?.['common:generalComment']),
+        generalComment: getLangJson(item?.generalComment),
       };
     }) ?? [];
   let flowPropertyJson: any = {};
@@ -544,32 +544,34 @@ export function genFlowFromData(data: any): FormFlow {
         },
       },
       flowProperties: {
-        flowProperty: flowPropertyList?.map((item) => {
-          return {
-            '@dataSetInternalID': item?.['@dataSetInternalID'],
-            referenceToFlowPropertyDataSet: {
-              '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
-              '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
-              '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
-              '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
-              'common:shortDescription': getLangList(
-                item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
-              ),
-            },
-            meanValue: item?.['meanValue'],
-            minimumValue: item?.['minimumValue'],
-            maximumValue: item?.['maximumValue'],
-            uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
-            relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
-            dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-            ['common:generalComment']: getLangJson(item?.['common:generalComment']),
-            quantitativeReference:
-              item?.['@dataSetInternalID'] ===
-              data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
-                ? true
-                : false,
-          };
-        }) as any,
+        flowProperty: flowPropertyList?.map(
+          (item): Flow['flowDataSet']['flowProperties']['flowProperty'][number] => {
+            return {
+              '@dataSetInternalID': item?.['@dataSetInternalID'],
+              referenceToFlowPropertyDataSet: {
+                '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
+                '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
+                '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
+                '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
+                'common:shortDescription': getLangList(
+                  item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
+                ),
+              },
+              meanValue: item?.['meanValue'],
+              minimumValue: item?.['minimumValue'],
+              maximumValue: item?.['maximumValue'],
+              uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
+              relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+              dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
+              generalComment: getLangJson(item?.generalComment),
+              quantitativeReference:
+                item?.['@dataSetInternalID'] ===
+                data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
+                  ? true
+                  : false,
+            };
+          },
+        ),
       },
     },
   });
@@ -612,7 +614,7 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
         uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
         relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
         dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        ['common:generalComment']: getLangText(item?.['common:generalComment'], lang),
+        generalComment: getLangText(item?.generalComment, lang),
       });
     });
   }
