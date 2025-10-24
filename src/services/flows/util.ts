@@ -567,7 +567,7 @@ export function genFlowFromData(data: any): FormFlow {
               uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
               relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
               dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-              generalComment: getLangJson(item?.generalComment),
+              generalComment: getLangList(item?.generalComment),
               quantitativeReference:
                 item?.['@dataSetInternalID'] ===
                 data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty
