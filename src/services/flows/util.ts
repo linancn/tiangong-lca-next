@@ -545,7 +545,11 @@ export function genFlowFromData(data: any): FormFlow {
       },
       flowProperties: {
         flowProperty: flowPropertyList?.map(
-          (item): Flow['flowDataSet']['flowProperties']['flowProperty'][number] => {
+          (
+            item,
+          ): Flow['flowDataSet']['flowProperties']['flowProperty'][number] & {
+            quantitativeReference?: boolean;
+          } => {
             return {
               '@dataSetInternalID': item?.['@dataSetInternalID'],
               referenceToFlowPropertyDataSet: {
