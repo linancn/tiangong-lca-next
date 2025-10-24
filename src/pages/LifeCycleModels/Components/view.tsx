@@ -114,6 +114,11 @@ const LifeCycleModelView: FC<Props> = ({
             <Layout>
               <Content>
                 <XFlowGraph
+                  selectOptions={
+                    {
+                      enabled: false,
+                    } as any
+                  }
                   zoomable
                   pannable
                   minScale={0.5}
