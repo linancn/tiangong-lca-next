@@ -290,7 +290,7 @@ describe('genLifeCycleModelProcesses', () => {
 
     const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
       'model-123',
-      modelGraph,
+      modelGraph.nodes,
       data,
       oldSubmodels,
     );

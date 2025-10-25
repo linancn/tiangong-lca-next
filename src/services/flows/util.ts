@@ -599,7 +599,18 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
       dataList = data;
     }
     return dataList?.map((item: any) => {
-      return removeEmptyObjects({
+      const hasNamespacedComment = Object.prototype.hasOwnProperty.call(
+        item ?? {},
+        'common:generalComment',
+      );
+      const hasPlainComment = Object.prototype.hasOwnProperty.call(item ?? {}, 'generalComment');
+      const rawGeneralComment = hasNamespacedComment
+        ? item?.['common:generalComment']
+        : item?.generalComment;
+      const generalCommentText =
+        rawGeneralComment !== undefined ? getLangText(rawGeneralComment, lang) : undefined;
+
+      const baseRow = {
         key: item?.['@dataSetInternalID'] ?? '-',
         dataSetInternalID: item?.['@dataSetInternalID'] ?? '-',
         referenceToFlowPropertyDataSetId:
@@ -618,8 +629,17 @@ export function genFlowPropertyTabTableData(data: any, lang: string) {
         uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
         relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
         dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        generalComment: getLangText(item?.generalComment, lang),
-      });
+      } as Record<string, any>;
+
+      if (generalCommentText !== undefined) {
+        if (hasNamespacedComment) {
+          baseRow['common:generalComment'] = generalCommentText;
+        } else if (hasPlainComment) {
+          baseRow.generalComment = generalCommentText;
+        }
+      }
+
+      return removeEmptyObjects(baseRow);
     });
   }
   return [];
