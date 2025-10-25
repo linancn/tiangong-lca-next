@@ -246,7 +246,7 @@ const PropertyEdit: FC<Props> = ({
               }
             >
               <LangTextItemForm
-                name={['common:generalComment']}
+                name={['generalComment']}
                 label={
                   <FormattedMessage
                     id='pages.flow.view.flowProperties.generalComment'
