@@ -399,6 +399,23 @@ describe('Flow Utility Functions', () => {
       expect(resultZh[0]['common:generalComment']).toBe('中文评论');
     });
 
+    it('should map plain generalComment to a generalComment column', () => {
+      const data = {
+        '@dataSetInternalID': '42',
+        referenceToFlowPropertyDataSet: {
+          '@refObjectId': 'prop-id-42',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Energy content' }],
+        },
+        generalComment: [{ '@xml:lang': 'en', '#text': 'Plain comment' }],
+      };
+
+      const result = genFlowPropertyTabTableData(data, 'en');
+
+      expect(result[0].key).toBe('42');
+      expect(result[0].generalComment).toBe('Plain comment');
+      expect(result[0]['common:generalComment']).toBeUndefined();
+    });
+
     it('should handle uncertainty distribution fields', () => {
       const data = {
         '@dataSetInternalID': '0',

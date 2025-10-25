@@ -51,6 +51,16 @@ const {
   getILCDFlowCategorizationAll: mockGetILCDFlowCategorizationAll,
 } = jest.requireMock('@/services/ilcd/api');
 
+jest.mock('@/services/ilcd/cache', () => ({
+  getCachedLocationData: jest.fn(),
+  getCachedFlowCategorizationAll: jest.fn(),
+}));
+
+const {
+  getCachedLocationData: mockGetCachedLocationData,
+  getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll,
+} = jest.requireMock('@/services/ilcd/cache');
+
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
@@ -194,6 +204,8 @@ beforeEach(() => {
   );
   mockGetRuleVerification.mockReturnValue({ valid: true, errors: [] });
 
+  mockGetCachedLocationData.mockResolvedValue(defaultLocationResponse);
+  mockGetCachedFlowCategorizationAll.mockResolvedValue(defaultClassificationResponse);
   mockGetILCDLocationByValues.mockResolvedValue(defaultLocationResponse);
   mockGetILCDFlowCategorizationAll.mockResolvedValue(defaultClassificationResponse);
 
@@ -323,6 +335,7 @@ describe('getFlowTableAll', () => {
     };
     const query = createQuery(tableResult);
     mockFrom.mockReturnValue(query as any);
+    mockGetCachedLocationData.mockResolvedValue([{ '@value': 'GLO', '#text': 'Global' }]);
     mockGetILCDLocationByValues.mockResolvedValue({
       data: [{ '@value': 'GLO', '#text': 'Global' }],
     });
@@ -336,7 +349,8 @@ describe('getFlowTableAll', () => {
     );
 
     expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('en', ['GLO']);
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['GLO']);
+    expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
     expect(result).toEqual({
       data: [
         {
@@ -360,6 +374,55 @@ describe('getFlowTableAll', () => {
     });
   });
 
+  it('falls back to ILCD lookup when cached locations are empty', async () => {
+    const tableResult = {
+      data: [
+        {
+          id: 'flow-2',
+          version: '01.00.000',
+          modified_at: '2024-01-02T00:00:00Z',
+          team_id: 'team-2',
+          name: {
+            baseName: [{ '@xml:lang': 'en', '#text': 'Steel' }],
+          },
+          typeOfDataSet: 'Product flow',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [{ '#text': 'Products' }],
+            },
+          },
+          'common:synonyms': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+          CASNumber: '1234-56-7',
+          referenceToFlowPropertyDataSet: {
+            '@refObjectId': 'prop-2',
+          },
+          locationOfSupply: 'CN',
+        },
+      ],
+      count: 1,
+      error: null,
+    };
+    const query = createQuery(tableResult);
+    mockFrom.mockReturnValue(query as any);
+
+    mockGetCachedLocationData.mockResolvedValue([]);
+    mockGetILCDLocationByValues.mockResolvedValue({
+      data: [{ '@value': 'CN', '#text': 'China' }],
+    });
+
+    const result = await getFlowTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'descend' },
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['CN']);
+    expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('en', ['CN']);
+    expect(result.data[0].locationOfSupply).toBe('China');
+  });
+
   it('returns failure when personal dataset has no session', async () => {
     mockAuthGetSession.mockResolvedValue({ data: { session: null } });
     const query = createQuery({ data: [], count: 0, error: null });
@@ -368,6 +431,7 @@ describe('getFlowTableAll', () => {
     const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'my', '');
 
     expect(result).toEqual({ data: [], success: false });
+    expect(mockGetCachedLocationData).not.toHaveBeenCalled();
     expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
   });
 });
@@ -412,6 +476,7 @@ describe('getFlowTablePgroongaSearch', () => {
       ],
     };
     mockRpc.mockResolvedValue(rpcResult);
+    mockGetCachedLocationData.mockResolvedValue([{ '@value': 'GLO', '#text': 'Global' }]);
     mockGetILCDLocationByValues.mockResolvedValue({
       data: [{ '@value': 'GLO', '#text': 'Global' }],
     });
@@ -451,6 +516,8 @@ describe('getFlowTablePgroongaSearch', () => {
       success: true,
       total: 2,
     });
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['GLO']);
+    expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
   });
 
   it.failing('should include classification for non-elementary flows', async () => {
@@ -494,6 +561,7 @@ describe('getFlowTablePgroongaSearch', () => {
       ],
     };
     mockRpc.mockResolvedValue(rpcResult);
+    mockGetCachedLocationData.mockResolvedValue([{ '@value': 'CN', '#text': 'China' }]);
     mockGetILCDLocationByValues.mockResolvedValue({
       data: [{ '@value': 'CN', '#text': 'China' }],
     });
@@ -552,6 +620,7 @@ describe('flow_hybrid_search', () => {
       },
     };
     mockFunctionsInvoke.mockResolvedValue(hybridResult as any);
+    mockGetCachedLocationData.mockResolvedValue([{ '@value': 'GLO', '#text': 'Global' }]);
     mockGetILCDLocationByValues.mockResolvedValue({
       data: [{ '@value': 'GLO', '#text': 'Global' }],
     });
@@ -576,6 +645,8 @@ describe('flow_hybrid_search', () => {
         synonyms: 'N2',
       }),
     );
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['GLO']);
+    expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
   });
 
   it.failing('should include total_count from function response', async () => {
