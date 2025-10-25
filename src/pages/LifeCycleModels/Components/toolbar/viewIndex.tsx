@@ -11,7 +11,8 @@ import { genProcessName } from '@/services/processes/util';
 import { ActionType } from '@ant-design/pro-components';
 import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
-import { FC, useEffect, useState } from 'react';
+import type { FC } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 // import ConnectableProcesses from '../connectableProcesses';
 import ModelResult from '../modelResult';
@@ -302,48 +303,41 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     },
     items: [],
   };
-  // useGraphEvent('node:click', (evt) => {
-  //   const node = evt.node;
-  //   const event = evt.e;
 
-  //   if (node.isNode()) {
-  //     if (event && event.target) {
-  //       const target = event.target as HTMLElement;
-  //       const textContent = target.textContent;
+  useGraphEvent('node:click', (evt) => {
+    const node = evt.node;
+    const event = evt.e;
 
-  //       if (textContent) {
-  //         const targetElement = event.target as HTMLElement;
-  //         const parentElement = targetElement.parentElement;
-  //         const grandParentElement = parentElement?.parentElement;
+    if (node.isNode()) {
+      const currentNode = nodes.find((n) => n.id === node.id);
 
-  //         let clickedPortId = null;
-  //         if (grandParentElement) {
-  //           const firstChild = grandParentElement.firstElementChild;
+      const isCtrlOrMetaPressed = event && (event.ctrlKey || event.metaKey);
 
-  //           if (firstChild && firstChild.tagName === 'circle') {
-  //             const portAttr = firstChild.getAttribute('port');
+      if (isCtrlOrMetaPressed) {
+        updateNode(node.id, {
+          selected: !currentNode?.selected,
+        });
+      } else {
+        nodes.forEach((n) => {
+          if (n.id !== node.id && n.selected) {
+            updateNode(n.id ?? '', { selected: false });
+          }
+        });
+        updateNode(node.id, {
+          selected: !currentNode?.selected,
+        });
+      }
+    }
+  });
 
-  //             if (portAttr) {
-  //               clickedPortId = portAttr;
-  //             }
-  //           }
-  //         }
+  useGraphEvent('blank:click', () => {
+    nodes.forEach((n) => {
+      if (n.selected) {
+        updateNode(n.id ?? '', { selected: false });
+      }
+    });
+  });
 
-  //         let matchedPort = null;
-  //         if (clickedPortId) {
-  //           const ports = node.getPorts();
-  //           matchedPort = ports.find((port: any) => port.id === clickedPortId);
-
-  //           if (matchedPort) {
-  //             setConnectableProcessesDrawerVisible(true);
-  //             setConnectableProcessesPortId(clickedPortId);
-  //             setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // });
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     removeEdges([edge.id]);
@@ -457,7 +451,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         setDrawerVisible={setTargetAmountDrawerVisible}
         onData={() => {}}
       />
-      <br />
+      {React.createElement('div', { style: { height: 8 } })}
       {/* <ProcessView
         id={id ?? ''}
         version={version ?? ''}

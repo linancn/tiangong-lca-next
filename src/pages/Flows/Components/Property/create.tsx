@@ -209,7 +209,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
               }
             >
               <LangTextItemForm
-                name={['common:generalComment']}
+                name={['generalComment']}
                 label={
                   <FormattedMessage
                     id='pages.flow.view.flowProperties.generalComment'

@@ -992,7 +992,11 @@ const ToolbarEdit: FC<Props> = ({
     const event = evt.e;
 
     if (node.isNode()) {
-      if (event && event.target) {
+      const currentNode = nodes.find((n) => n.id === node.id);
+      const isClickingPort = event && event.target;
+
+      let clickedPortId: string | null = null;
+      if (isClickingPort) {
         const target = event.target as HTMLElement;
         const textContent = target.textContent;
 
@@ -1001,7 +1005,6 @@ const ToolbarEdit: FC<Props> = ({
           const parentElement = targetElement.parentElement;
           const grandParentElement = parentElement?.parentElement;
 
-          let clickedPortId = null;
           if (grandParentElement) {
             const firstChild = grandParentElement.firstElementChild;
 
@@ -1023,11 +1026,37 @@ const ToolbarEdit: FC<Props> = ({
               setConnectableProcessesDrawerVisible(true);
               setConnectableProcessesPortId(clickedPortId);
               setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion);
+              return;
             }
           }
         }
       }
+
+      const isCtrlOrMetaPressed = event && (event.ctrlKey || event.metaKey);
+
+      if (isCtrlOrMetaPressed) {
+        updateNode(node.id, {
+          selected: !currentNode?.selected,
+        });
+      } else {
+        nodes.forEach((n) => {
+          if (n.id !== node.id && n.selected) {
+            updateNode(n.id ?? '', { selected: false });
+          }
+        });
+        updateNode(node.id, {
+          selected: !currentNode?.selected,
+        });
+      }
     }
+  });
+
+  useGraphEvent('blank:click', () => {
+    nodes.forEach((n) => {
+      if (n.selected) {
+        updateNode(n.id ?? '', { selected: false });
+      }
+    });
   });
 
   useEffect(() => {
