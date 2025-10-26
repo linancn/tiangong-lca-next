@@ -989,12 +989,12 @@ const sumProcessExchange = (processExchanges: any[]) => {
 /**
  * zh-CN: 生成/更新生命周期模型的子模型数据（构建图→依赖→缩放→分配→汇总→LCIA）。
  * en-US: Generate/update submodels for LCA model (graph → dependence → scaling → allocation → sum → LCIA).
- * Params: id: string; modelNodes: any[]; lifeCycleModelJsonOrdered: any; oldSubmodels: any[]
+ * Params: id: string; modelNodes: any[] | null | undefined; lifeCycleModelJsonOrdered: any; oldSubmodels: any[]
  * Returns: Promise<any[]> new/updated submodels
  */
 export async function genLifeCycleModelProcesses(
   id: string,
-  modelNodes: any[],
+  modelNodes: any[] | null | undefined,
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {

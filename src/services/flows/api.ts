@@ -11,8 +11,54 @@ import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getRuleVerification } from '../general/util';
+import { getILCDLocationByValues } from '../ilcd/api';
 import { getCachedFlowCategorizationAll, getCachedLocationData } from '../ilcd/cache';
 import { genFlowJsonOrdered, genFlowName } from './util';
+
+function normalizeLocationData(response: any): any[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+  if (Array.isArray(response?.data)) {
+    return response.data;
+  }
+  return [];
+}
+
+async function fetchLocationLookup(lang: string, locations: Array<string | null | undefined>) {
+  const codes = Array.from(
+    new Set(
+      locations.filter(
+        (code): code is string => typeof code === 'string' && code.trim().length > 0,
+      ),
+    ),
+  );
+
+  if (codes.length === 0) {
+    await getCachedLocationData(lang, []);
+    return [];
+  }
+
+  let locationData = normalizeLocationData(await getCachedLocationData(lang, codes));
+
+  if (locationData.length === 0) {
+    const fallback = await getILCDLocationByValues(lang, codes);
+    locationData = normalizeLocationData(fallback);
+  }
+
+  return locationData;
+}
+
+function resolveLocationOfSupply(
+  code: string | undefined,
+  locationData: Array<Record<string, any>>,
+) {
+  if (!code) {
+    return '-';
+  }
+  const match = locationData.find((item) => item?.['@value'] === code);
+  return match?.['#text'] ?? code;
+}
 
 export async function createFlows(id: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
@@ -164,13 +210,10 @@ export async function getFlowTableAll(
       });
     }
 
-    const locations: string[] = Array.from(
-      new Set(result.data.map((i: any) => i['locationOfSupply'])),
-    );
+    const locations = result.data.map((i: any) => i['locationOfSupply']);
 
-    // Fetch data in parallel using cache
     const [locationData, categorizationData] = await Promise.all([
-      getCachedLocationData(lang, locations),
+      fetchLocationLookup(lang, locations),
       lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
     ]);
 
@@ -196,12 +239,6 @@ export async function getFlowTableAll(
           const classifications = jsonToList(classificationData);
           const classificationZH = genClassificationZH(classifications, thisClass);
 
-          const thisLocation = locationData.find((l: any) => l['@value'] === i['locationOfSupply']);
-          let locationOfSupply = i['locationOfSupply'];
-          if (thisLocation?.['#text']) {
-            locationOfSupply = thisLocation['#text'];
-          }
-
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -211,7 +248,7 @@ export async function getFlowTableAll(
             synonyms: getLangText(i?.['common:synonyms'], lang),
             CASNumber: i?.CASNumber ?? '-',
             refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-            locationOfSupply: locationOfSupply ?? '-',
+            locationOfSupply: resolveLocationOfSupply(i['locationOfSupply'], locationData),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
@@ -226,12 +263,6 @@ export async function getFlowTableAll(
     } else {
       data = result.data.map((i: any) => {
         try {
-          const thisLocation = locationData.find((l: any) => l['@value'] === i['locationOfSupply']);
-          let locationOfSupply = i['locationOfSupply'];
-          if (thisLocation?.['#text']) {
-            locationOfSupply = thisLocation['#text'];
-          }
-
           let classificationData: any = {};
           if (i?.typeOfDataSet === 'Elementary flow') {
             classificationData =
@@ -254,7 +285,7 @@ export async function getFlowTableAll(
             synonyms: getLangText(i['common:synonyms'], lang),
             CASNumber: i.CASNumber ?? '-',
             refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-            locationOfSupply: locationOfSupply,
+            locationOfSupply: resolveLocationOfSupply(i['locationOfSupply'], locationData),
             version: i.version,
             modifiedAt: new Date(i.modified_at),
             teamId: i?.team_id,
@@ -331,17 +362,13 @@ export async function getFlowTablePgroongaSearch(
     }
     const totalCount = result.data[0].total_count;
 
-    const locations: string[] = Array.from(
-      new Set(
+    const [locationData, categorizationData] = await Promise.all([
+      fetchLocationLookup(
+        lang,
         result.data.map(
           (i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
         ),
       ),
-    );
-
-    // Fetch data in parallel using cache
-    const [locationData, categorizationData] = await Promise.all([
-      getCachedLocationData(lang, locations),
       lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
     ]);
 
@@ -372,15 +399,6 @@ export async function getFlowTablePgroongaSearch(
 
           const classificationZH = genClassificationZH(classifications, thisClass);
 
-          const thisLocation = locationData.find(
-            (l: any) =>
-              l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-          );
-          let locationOfSupply = i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply;
-          if (thisLocation?.['#text']) {
-            locationOfSupply = thisLocation['#text'];
-          }
-
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -389,7 +407,10 @@ export async function getFlowTablePgroongaSearch(
             flowType: typeOfDataSet ?? '-',
             classification: classificationToString(classificationZH),
             CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: locationOfSupply ?? '-',
+            locationOfSupply: resolveLocationOfSupply(
+              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+              locationData,
+            ),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
@@ -410,15 +431,6 @@ export async function getFlowTablePgroongaSearch(
               'common:category'
             ],
           );
-          const thisLocation = locationData.find(
-            (l: any) =>
-              l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-          );
-          let locationOfSupply = i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply;
-          if (thisLocation?.['#text']) {
-            locationOfSupply = thisLocation['#text'];
-          }
-
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -427,7 +439,10 @@ export async function getFlowTablePgroongaSearch(
             classification: classificationToString(classifications),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: locationOfSupply ?? '-',
+            locationOfSupply: resolveLocationOfSupply(
+              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+              locationData,
+            ),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
@@ -493,17 +508,13 @@ export async function flow_hybrid_search(
     const resultData = result.data.data;
     const totalCount = resultData.total_count;
 
-    const locations: string[] = Array.from(
-      new Set(
+    const [locationData, categorizationData] = await Promise.all([
+      fetchLocationLookup(
+        lang,
         resultData.map(
           (i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
         ),
       ),
-    );
-
-    // Fetch data in parallel using cache
-    const [locationData, categorizationData] = await Promise.all([
-      getCachedLocationData(lang, locations),
       lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
     ]);
 
@@ -534,15 +545,6 @@ export async function flow_hybrid_search(
 
           const classificationZH = genClassificationZH(classifications, thisClass);
 
-          const thisLocation = locationData.find(
-            (l: any) =>
-              l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-          );
-          let locationOfSupply = i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply;
-          if (thisLocation?.['#text']) {
-            locationOfSupply = thisLocation['#text'];
-          }
-
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -551,7 +553,10 @@ export async function flow_hybrid_search(
             flowType: typeOfDataSet ?? '-',
             classification: classificationToString(classificationZH),
             CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: locationOfSupply ?? '-',
+            locationOfSupply: resolveLocationOfSupply(
+              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+              locationData,
+            ),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
@@ -572,15 +577,6 @@ export async function flow_hybrid_search(
               'common:category'
             ],
           );
-          const thisLocation = locationData.find(
-            (l: any) =>
-              l['@value'] === i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-          );
-          let locationOfSupply = i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply;
-          if (thisLocation?.['#text']) {
-            locationOfSupply = thisLocation['#text'];
-          }
-
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -589,7 +585,10 @@ export async function flow_hybrid_search(
             classification: classificationToString(classifications),
             flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: locationOfSupply ?? '-',
+            locationOfSupply: resolveLocationOfSupply(
+              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+              locationData,
+            ),
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,

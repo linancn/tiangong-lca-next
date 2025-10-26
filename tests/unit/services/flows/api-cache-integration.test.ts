@@ -343,7 +343,7 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
       );
 
       // Assert - Cache called with null location
-      expect(mockGetCachedLocationData).toHaveBeenCalled();
+      expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', []);
       expect(result.data).toHaveLength(1);
     });
 

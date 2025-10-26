@@ -26,6 +26,8 @@ jest.mock('@antv/xflow', () => ({
   useGraphEvent: jest.fn(),
 }));
 
+const { useGraphEvent: mockUseGraphEvent } = jest.requireMock('@antv/xflow');
+
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CopyOutlined: () => <span>copy-icon</span>,
@@ -253,6 +255,7 @@ beforeEach(() => {
   mockRemoveEdges.mockReset();
   mockUpdateEdge.mockReset();
   mockInitData.mockReset();
+  mockUseGraphEvent.mockClear();
   mockGetProcessDetail.mockReset();
   mockGenProcessFromData.mockReset().mockReturnValue({ exchanges: { exchange: [] } });
   mockGraphStoreState = {
@@ -356,5 +359,84 @@ describe('ToolbarEdit', () => {
     expect(mockGetProcessDetail).toHaveBeenCalledWith('proc-1', '1.0');
     expect(mockGetProcessDetail).toHaveBeenCalledWith('proc-2', '1.0');
     expect(mockUpdateNode).toHaveBeenCalled();
+  });
+
+  it('toggles node selection when modifier key is pressed', () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nodeClickCall = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:click',
+    );
+    const nodeClickHandler = nodeClickCall?.[1];
+    expect(typeof nodeClickHandler).toBe('function');
+
+    const fakeNode = {
+      id: 'node-1',
+      isNode: () => true,
+      getPorts: jest.fn(() => []),
+    };
+
+    mockUpdateNode.mockClear();
+    mockGraphStoreState.nodes[0].selected = false;
+    nodeClickHandler({
+      node: fakeNode,
+      e: { ctrlKey: true, target: null },
+    });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+
+    mockUpdateNode.mockClear();
+    mockGraphStoreState.nodes[0].selected = true;
+    nodeClickHandler({
+      node: fakeNode,
+      e: { metaKey: true, target: null },
+    });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+  });
+
+  it('selects only the clicked node when no modifier is pressed', () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nodeClickCall = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:click',
+    );
+    const nodeClickHandler = nodeClickCall?.[1];
+    expect(typeof nodeClickHandler).toBe('function');
+
+    mockUpdateNode.mockClear();
+    mockGraphStoreState.nodes[0].selected = false;
+    mockGraphStoreState.nodes[1].selected = true;
+
+    const fakeNode = {
+      id: 'node-1',
+      isNode: () => true,
+      getPorts: jest.fn(() => []),
+    };
+
+    nodeClickHandler({
+      node: fakeNode,
+      e: { target: null },
+    });
+
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+  });
+
+  it('clears all selections when blank area is clicked', () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const blankClickCall = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'blank:click',
+    );
+    const blankClickHandler = blankClickCall?.[1];
+    expect(typeof blankClickHandler).toBe('function');
+
+    mockUpdateNode.mockClear();
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGraphStoreState.nodes[1].selected = true;
+
+    blankClickHandler();
+
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: false });
   });
 });

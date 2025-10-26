@@ -1,5 +1,10 @@
-/* eslint-disable react/button-has-type */
-import { Dice5, Minimize, Minus, Plus } from 'lucide-react';
+import {
+  AimOutlined,
+  CompressOutlined,
+  ExpandOutlined,
+  MinusOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
 
@@ -69,25 +74,25 @@ const Control = (props: ControlIProps) => {
   const ControlToolMap = {
     [ControlEnum.ZoomIn]: {
       label: <FormattedMessage id='pages.button.model.zoomIn' defaultMessage='Zoom In' />,
-      icon: <Plus size={20} />,
+      icon: <PlusOutlined />,
     },
     [ControlEnum.ZoomOut]: {
       label: <FormattedMessage id='pages.button.model.zoomOut' defaultMessage='Zoom Out' />,
-      icon: <Minus size={20} />,
+      icon: <MinusOutlined />,
     },
     [ControlEnum.ZoomTo]: {
       label: <FormattedMessage id='pages.button.model.zoomTo' defaultMessage='Zoom To' />,
-      icon: <Plus size={20} />,
+      icon: <AimOutlined />,
     },
     [ControlEnum.ZoomToFit]: {
       label: <FormattedMessage id='pages.button.model.zoomToFit' defaultMessage='Zoom To Fit' />,
-      icon: <Minimize />,
+      icon: <CompressOutlined />,
     },
     [ControlEnum.ZoomToOrigin]: {
       label: (
         <FormattedMessage id='pages.button.model.zoomToOrigin' defaultMessage='Zoom To Origin' />
       ),
-      icon: <Dice5 size={20} />,
+      icon: <ExpandOutlined />,
     },
   };
 
