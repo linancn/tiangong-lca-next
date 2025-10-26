@@ -948,6 +948,20 @@ const ToolbarEdit: FC<Props> = ({
     }
   });
 
+  useGraphEvent('edge:click', (evt) => {
+    const currentEdge = edges.find((e) => e.selected === true);
+    if (currentEdge) {
+      if (currentEdge.id === evt.edge.id) return;
+
+      updateEdge(currentEdge.id, {
+        selected: false,
+      });
+    }
+    updateEdge(evt.edge.id, {
+      selected: true,
+    });
+  });
+
   useGraphEvent('node:change:size', (evt) => {
     const node = evt.node;
     const nodeWidth = node.getSize().width;
