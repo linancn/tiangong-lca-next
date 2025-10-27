@@ -101,13 +101,16 @@ graph TD
   DB2 --> G1
   G1 --> G2["up2DownEdges + 两类索引"]
 
-  %% Dependence marking with cycle breaking (order depends on reference direction)
-  G2 --> G3["assignEdgeDependence（按参考方向选择顺序）"]
-  G3 --> G3o["phaseOutput: 下游依赖标注"]
-  G3o --> G3bd["breakDownstreamCycles: 断环"]
-  G3bd --> G3i["phaseInput: 上游依赖标注"]
-  G3i --> G3bu["breakUpstreamCycles: 断环"]
-  G3bu --> G3n["未标注边统一置 none"]
+  %% Dependence marking with alternating frontiers
+  G2 --> G3["assignEdgeDependence（交替前沿扩散）"]
+  G3 --> L1["初始化 frontier = refNode 集合，起始方向=参考交换方向"]
+  L1 --> L2{"frontier 非空？"}
+  L2 -->|是| L3["phaseOutput/phaseInput（依当前方向）"]
+  L3 --> L4["breakCycles（同向断环）"]
+  L4 --> L5["根据触达节点生成 nextFrontier"]
+  L5 --> L6["切换方向 OUTPUT↔INPUT"]
+  L6 --> L2
+  L2 -->|否| G3n["未标注边统一置 none"]
 
   %% Propagate scaling
   C4 --> P1["calculateScalingFactor"]
@@ -276,7 +279,7 @@ graph TD
 - 输入：已构建的边与索引以及参考节点 ID
 - 输出：原地修改 `up2DownEdges`（写入 dependence/mainDependence）
 - 关键点：
-- 标注顺序：参考方向为 OUTPUT 时按“输出阶段 → 下游断环 → 输入阶段 → 上游断环”；参考方向为 INPUT 时顺序反转。
+- 交替扩张：以参考方向为起点，phaseOutput/phaseInput 交替推进，以“前沿(frontier)”在图上扩散，直到没有新增节点；每轮完成后执行对应方向断环（breakDownstreamCycles 或 breakUpstreamCycles）。
 - 标注完成后，仍未被标注的边统一置为 `none`（作为“次组”处理）。
 - 分阶段扩张并记录“被触达节点”，在该批内做去重：同一上游节点多条 downstream 依赖仅保留主输出流；同一下游节点多条 upstream 依赖仅保留主输入流；
 - 下一轮 frontier 只从“仍有未标注边”的节点推进，提高效率。
@@ -286,22 +289,16 @@ graph TD
 ```mermaid
 graph TD
   A[输入: up2DownEdges + 两类索引 + refProcessNodeId]
-  A --> O{参考方向?}
-  O -->|OUTPUT| P1[phaseOutput: 从 refNode 沿下游方向扩张]
-  O -->|INPUT| Q1[phaseInput: 从 refNode 沿上游方向扩张]
-
-  %% OUTPUT 主序
-  P1 --> P2[标注 dependence=downstream]
-  P2 --> P3[同一上游节点仅保留主输出流<br/>其余置 none 并 mainDependence=downstream]
-  P3 --> P4[breakDownstreamCycles: DFS 断环<br/>环上的边置 none, 记录 mainDependence=downstream, isCycle=true]
-  P4 --> Q1
-
-  %% INPUT 次序
-  Q1 --> Q2[标注 dependence=upstream]
-  Q2 --> Q3[同一下游节点仅保留主输入流<br/>其余置 none 并 mainDependence=upstream]
-  Q3 --> Q4[breakUpstreamCycles: DFS 断环<br/>环上的边置 none, 记录 mainDependence=upstream, isCycle=true]
-  Q4 --> R[未被标注的边统一置 none]
-  R --> S[完成]
+  A --> B[初始化 frontier = refNode 集合，方向=参考交换方向]
+  B --> C{frontier 非空?}
+  C -->|是| D[按当前方向扩张: phaseOutput/phaseInput]
+  D --> E[标注 dependence=downstream/upstream]
+  E --> F[同节点同向保留主流, 其余置 none 并记录 mainDependence]
+  F --> G[对应方向断环: breakDownstream/UpstreamCycles]
+  G --> H[生成 nextFrontier（触达节点中仍有未标注边者）]
+  H --> I[切换方向 OUTPUT↔INPUT]
+  I --> C
+  C -->|否| J[未标注边统一置 none → 完成]
 ```
 
 ### calculateScalingFactor(currentModelProcess, currentDatabaseProcess, ...)
