@@ -100,7 +100,17 @@ graph TD
   C3 --> G1["buildEdgesAndIndices"]
   DB2 --> G1
   G1 --> G2["up2DownEdges + indices"]
-  G2 --> G3["assignEdgeDependence"]
+
+  %% Dependence marking with alternating frontiers
+  G2 --> G3["assignEdgeDependence (alternating frontiers)"]
+  G3 --> L1["init frontier = refNode set; start direction = reference exchange direction"]
+  L1 --> L2{"frontier non-empty?"}
+  L2 -->|yes| L3["phaseOutput/phaseInput (follow current direction)"]
+  L3 --> L4["breakCycles (same-direction cycle breaking)"]
+  L4 --> L5["build nextFrontier from touched nodes"]
+  L5 --> L6["switch direction OUTPUT↔INPUT"]
+  L6 --> L2
+  L2 -->|no| G3n["set all remaining unmarked edges to none"]
 
   %% Propagate scaling
   C4 --> P1["calculateScalingFactor"]
@@ -143,12 +153,7 @@ graph TD
   SM5 --> OUT
   SM6 --> OUT
 
-  classDef io fill:#eef,stroke:#99f;
-  classDef proc fill:#efe,stroke:#9c9;
-  classDef data fill:#fff,stroke:#bbb;
-  class A,B,C,D,OUT io;
-  class C3,C4,C5,DB1,DB2,S1,S2,S3,G1,G2,G3,P1,P2,P3,A1,A2,AL1,AL2,R1,CP,FP,FG,CE,SE,SM1,LCIA,SM2,SM3,SM4,SM5,SM6,W1 data;
-  class C1,E1,SM2,SM4 proc;
+
 ```
 
 Notes:
@@ -215,26 +220,26 @@ graph TD
 - Inputs: built edges and indices, and the reference node ID
 - Output: in-place modification of `up2DownEdges` (writing dependence/mainDependence)
 - Key points:
-  - Expand by stages and record "touched nodes"; in each batch deduplicate: for the same upstream node, keep only the main OUTPUT flow as downstream dependence; for the same downstream node, keep only the main INPUT flow as upstream dependence;
-  - The next frontier is only advanced from nodes that still have unmarked edges, for efficiency.
+  - Alternating expansion: start from the reference exchange direction and alternate phaseOutput/phaseInput with a "frontier" until no new nodes are added; after each phase, perform same-direction cycle breaking (breakDownstreamCycles or breakUpstreamCycles).
+  - After marking completes, any still-unmarked edges are set to `none` (treated as the secondary group).
+  - Within each phase, deduplicate by node: for the same upstream node, keep only the main OUTPUT flow as downstream dependence; for the same downstream node, keep only the main INPUT flow as upstream dependence; others are set to `none` with `mainDependence` recorded.
+  - Advance the next frontier only from nodes that still have unmarked edges for efficiency.
 
 Flowchart:
 
 ```mermaid
 graph TD
-  A[Input: up2DownEdges + two indices + refProcessNodeId] --> B[frontier = refNode, direction = OUTPUT]
+  A[Input: up2DownEdges + two indices + refProcessNodeId]
+  A --> B[init frontier = refNode set, direction = reference exchange direction]
   B --> C{frontier non-empty?}
-  C -->|yes| D[Expand in current direction: get related edges]
+  C -->|yes| D[Expand in current direction: phaseOutput/phaseInput]
   D --> E[Mark dependence = downstream/upstream]
-  E --> F[Record touched up/down nodes]
-  F --> G[Multiple edges per node in same direction?]
-  G -->|yes| H[Keep main flow; set others to none; record mainDependence]
-  G -->|no| I[Skip]
-  H --> J[Collect unmarked edges from touched nodes → next frontier]
-  I --> J
-  J --> K[Switch direction OUTPUT<->INPUT]
-  K --> C
-  C -->|no| L[Done]
+  E --> F[Within-node dedupe: keep main flow; others → none and record mainDependence]
+  F --> G[Same-direction cycle breaking: breakDownstream/UpstreamCycles]
+  G --> H[Build nextFrontier from touched nodes · only when nodes still have unmarked edges]
+  H --> I[Switch direction OUTPUT<->INPUT]
+  I --> C
+  C -->|no| J[Set remaining unmarked edges to none → Done]
 ```
 
 ### calculateScalingFactor(currentModelProcess, currentDatabaseProcess, ...)
@@ -365,6 +370,11 @@ graph TD
   - Dependence direction is determined by `dependence` and `mainDependence` together;
   - Include adjacent child processes only when they share the same flow and the direction matches (upstream OUTPUT / downstream INPUT);
   - Accumulate `childAllocatedFraction` as part of subsequent scaling.
+
+Rules supplement:
+
+- Skip edges with `isCycle === true`.
+- When an edge's `dependence === 'none'`, fall back to its `mainDependence` for direction matching (upstream/downstream).
 
 Flowchart:
 

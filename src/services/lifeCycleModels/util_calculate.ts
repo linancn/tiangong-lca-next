@@ -259,8 +259,25 @@ function buildEdgesAndIndices(
 }
 
 /**
- * zh-CN: 从参考节点出发标注边的依赖方向（downstream/upstream），按 direction 控制顺序，包含必要的去重与断环。
- * en-US: Mark edge dependence from the reference node (downstream/upstream) per direction, with basic dedup and cycle breaking.
+ * zh-CN: 从参考节点出发，交替按层扩散并标注边依赖：
+ *  - phaseOutput：沿节点“输入边”向上游扩散，将这些边标注为 downstream；
+ *  - phaseInput：沿节点“输出边”向下游扩散，将这些边标注为 upstream；
+ *  - 两阶段以“前沿(frontier)”交替推进，直到没有新增节点；支持在一条路径上交替向上/向下（例如 A→B→C→D 的“之”字形）。
+ *  - 在每个节点：若同向被标注的边多于一条，则保留主流（主输出/主输入），其余置为 dependence='none' 并记录 mainDependence；
+ *  - 各阶段均进行断环处理：处于回路中的对应方向的边会被置为 dependence='none' 且 isCycle=true；
+ *  - 所有仍未被触达的边，最终统一置为 dependence='none'。
+ *
+ * en-US: Starting from the reference node, alternately expand by layers and mark edge dependence:
+ *  - phaseOutput: walk incoming edges to upstream and mark them as 'downstream';
+ *  - phaseInput: walk outgoing edges to downstream and mark them as 'upstream';
+ *  - The two phases advance by passing the current frontier to the next, repeating until no growth.
+ *    This enables zig-zag reachability along INPUT/OUTPUT (e.g., A→B→C→D).
+ *  - Per node: when multiple edges of the same marked direction exist, keep only the main flow
+ *    (main output/input) and set others to dependence='none' with mainDependence recorded;
+ *  - Each phase breaks cycles: cycle-participating edges for that direction are set to
+ *    dependence='none' and flagged with isCycle=true;
+ *  - Any untouched edges at the end are set to dependence='none'.
+ *
  * Params: up2DownEdges, edgesByDownstream, edgesByUpstream, refProcessNodeId, direction?: 'OUTPUT'|'INPUT'
  * Returns: void
  */
@@ -271,8 +288,11 @@ function assignEdgeDependence(
   refProcessNodeId: string,
   direction: Direction = 'OUTPUT',
 ): void {
-  const phaseOutput = () => {
-    const frontier = new Set<string>([refProcessNodeId]);
+  const phaseOutput = (startFrontier?: Set<string>): Set<string> => {
+    const frontier =
+      startFrontier && startFrontier.size > 0
+        ? new Set<string>(startFrontier)
+        : new Set<string>([refProcessNodeId]);
     const touchedUpNodes = new Set<string>();
     const touchedDownNodesA = new Set<string>();
 
@@ -305,6 +325,8 @@ function assignEdgeDependence(
         }
       }
     }
+
+    return touchedUpNodes;
   };
 
   const breakDownstreamCycles = () => {
@@ -331,8 +353,12 @@ function assignEdgeDependence(
     dfs(refProcessNodeId);
   };
 
-  const phaseInput = () => {
-    const frontier = new Set<string>([refProcessNodeId]);
+  // 从给定前沿（默认为参考节点）开始，沿“输出边”向下标注为 upstream；返回触达的下游节点集合
+  const phaseInput = (startFrontier?: Set<string>): Set<string> => {
+    const frontier =
+      startFrontier && startFrontier.size > 0
+        ? new Set<string>(startFrontier)
+        : new Set<string>([refProcessNodeId]);
     const touchedDownNodes = new Set<string>();
 
     let current = frontier;
@@ -363,6 +389,8 @@ function assignEdgeDependence(
         }
       }
     }
+
+    return touchedDownNodes;
   };
 
   const breakUpstreamCycles = () => {
@@ -390,15 +418,27 @@ function assignEdgeDependence(
   };
 
   if (direction === 'OUTPUT') {
-    phaseOutput();
+    let upFrontier = phaseOutput();
     breakDownstreamCycles();
-    phaseInput();
-    breakUpstreamCycles();
+    let guard = 0;
+    while (upFrontier.size > 0 && guard++ < 1000) {
+      const downFrontier = phaseInput(upFrontier);
+      breakUpstreamCycles();
+      if (downFrontier.size === 0) break;
+      upFrontier = phaseOutput(downFrontier);
+      breakDownstreamCycles();
+    }
   } else {
-    phaseInput();
+    let downFrontier = phaseInput();
     breakUpstreamCycles();
-    phaseOutput();
-    breakDownstreamCycles();
+    let guard = 0;
+    while (downFrontier.size > 0 && guard++ < 1000) {
+      const upFrontier = phaseOutput(downFrontier);
+      breakDownstreamCycles();
+      if (upFrontier.size === 0) break;
+      downFrontier = phaseInput(upFrontier);
+      breakUpstreamCycles();
+    }
   }
 
   for (const e of up2DownEdges as Up2DownEdge[]) {

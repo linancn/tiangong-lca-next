@@ -307,7 +307,7 @@ describe('genLifeCycleModelProcesses', () => {
     const primaryRefExchange = primary?.data?.processDataSet?.exchanges?.exchange?.find(
       (exchange: any) => exchange?.quantitativeReference,
     );
-    expect(primaryRefExchange?.meanAmount).toBe('10');
+    expect(primaryRefExchange?.meanAmount).toBe(10);
 
     expect(secondary).toBeDefined();
     expect(secondary?.option).toBe('update');
@@ -318,7 +318,7 @@ describe('genLifeCycleModelProcesses', () => {
     expect(mockLCIAResultCalculation).toHaveBeenNthCalledWith(
       1,
       expect.arrayContaining([
-        expect.objectContaining({ quantitativeReference: true, meanAmount: '10' }),
+        expect.objectContaining({ quantitativeReference: true, meanAmount: 10 }),
       ]),
     );
     expect(mockLCIAResultCalculation).toHaveBeenNthCalledWith(
