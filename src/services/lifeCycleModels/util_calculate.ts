@@ -288,7 +288,6 @@ function assignEdgeDependence(
   refProcessNodeId: string,
   direction: Direction = 'OUTPUT',
 ): void {
-  // 从给定前沿（默认为参考节点）开始，沿“输入边”向上标注为 downstream；返回触达的上游节点集合
   const phaseOutput = (startFrontier?: Set<string>): Set<string> => {
     const frontier =
       startFrontier && startFrontier.size > 0
@@ -313,7 +312,6 @@ function assignEdgeDependence(
       current = next;
     }
 
-    // 在每个上游节点出边中，若被标记为 downstream 的边超过 1 条，则只保留主输出流，其他改为 none 并记录 mainDependence
     for (const upId of touchedUpNodes) {
       const uds = edgesByUpstream.get(upId);
       if (!uds || uds.length < 2) continue;
@@ -378,7 +376,6 @@ function assignEdgeDependence(
       current = next;
     }
 
-    // 在每个下游节点入边中，若被标记为 upstream 的边超过 1 条，则只保留主输入流，其他改为 none 并记录 mainDependence
     for (const downId of touchedDownNodes) {
       const uds = edgesByDownstream.get(downId);
       if (!uds || uds.length < 2) continue;
@@ -421,7 +418,6 @@ function assignEdgeDependence(
   };
 
   if (direction === 'OUTPUT') {
-    // 先自参考节点向上标注（downstream），再以触达的上游作为前沿，向下标注（upstream），交替扩散直到无新增
     let upFrontier = phaseOutput();
     breakDownstreamCycles();
     let guard = 0;
@@ -433,7 +429,6 @@ function assignEdgeDependence(
       breakDownstreamCycles();
     }
   } else {
-    // INPUT 模式相反：先向下标注（upstream），再以上游/下游交替扩散
     let downFrontier = phaseInput();
     breakUpstreamCycles();
     let guard = 0;
