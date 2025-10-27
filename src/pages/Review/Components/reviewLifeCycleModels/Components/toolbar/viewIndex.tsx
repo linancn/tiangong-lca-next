@@ -1,4 +1,4 @@
-import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
+import { GraphEdge, GraphNode, useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getCommentApi } from '@/services/comments/api';
 import { initVersion } from '@/services/general/data';
@@ -18,7 +18,6 @@ import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
-
 type Props = {
   type: 'edit' | 'view';
   id: string;
@@ -52,8 +51,8 @@ const ToolbarView: FC<Props> = ({
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
 
-  const nodes = useGraphStore((state) => state.nodes);
-  const edges = useGraphStore((state) => state.edges);
+  const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
+  const edges: GraphEdge[] = useGraphStore((state) => state.edges);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
 

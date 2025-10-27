@@ -15,6 +15,7 @@ import type { FC } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 // import ConnectableProcesses from '../connectableProcesses';
+import { GraphEdge, GraphNode } from '@/contexts/graphContext';
 import ModelResult from '../modelResult';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
@@ -45,8 +46,8 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
 
-  const nodes = useGraphStore((state) => state.nodes);
-  const edges = useGraphStore((state) => state.edges);
+  const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
+  const edges: GraphEdge[] = useGraphStore((state) => state.edges);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
 

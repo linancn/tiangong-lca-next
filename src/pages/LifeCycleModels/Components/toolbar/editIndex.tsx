@@ -1,4 +1,4 @@
-import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
+import { GraphEdge, GraphNode, useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import type { refDataType } from '@/pages/Utils/review';
@@ -101,8 +101,8 @@ const ToolbarEdit: FC<Props> = ({
     setThisAction(action);
   }, [action]);
 
-  const nodes = useGraphStore((state) => state.nodes);
-  const edges = useGraphStore((state) => state.edges);
+  const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
+  const edges: GraphEdge[] = useGraphStore((state) => state.edges);
 
   const [nodeCount, setNodeCount] = useState(0);
 

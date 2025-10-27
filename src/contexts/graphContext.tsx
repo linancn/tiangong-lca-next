@@ -17,6 +17,31 @@ interface GraphContextValue {
   syncGraphData: () => void;
 }
 
+export interface GraphNode {
+  id?: string;
+  data?: any;
+  tools?: any;
+  ports?: any;
+  selected?: boolean;
+  size?: { width: number; height: number };
+  width?: number;
+  height?: number;
+  isMyProcess?: boolean;
+  modelData?: any;
+  [key: string]: any;
+}
+
+export interface GraphEdge {
+  id?: string;
+  source?: any;
+  target?: any;
+  data?: any;
+  attrs?: any;
+  labels?: any;
+  selected?: boolean;
+  [key: string]: any;
+}
+
 const GraphContext = createContext<GraphContextValue | null>(null);
 
 export const GraphProvider = ({ children }: { children: ReactNode }) => {
