@@ -1,3 +1,4 @@
+import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
@@ -9,7 +10,6 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { genProcessName } from '@/services/processes/util';
 import { ActionType } from '@ant-design/pro-components';
-import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useState } from 'react';
@@ -48,6 +48,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const removeEdges = useGraphStore((state) => state.removeEdges);
+  const updateEdge = useGraphStore((state) => state.updateEdge);
 
   const [nodeCount, setNodeCount] = useState(0);
 
@@ -336,6 +337,25 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         updateNode(n.id ?? '', { selected: false });
       }
     });
+    edges.forEach((e) => {
+      if (e.selected) {
+        updateEdge(e.id ?? '', { selected: false });
+      }
+    });
+  });
+
+  useGraphEvent('edge:click', (evt) => {
+    const currentEdge = edges.find((e) => e.selected === true);
+    if (currentEdge) {
+      if (currentEdge.id === evt.edge.id) return;
+
+      updateEdge(currentEdge.id, {
+        selected: false,
+      });
+    }
+    updateEdge(evt.edge.id, {
+      selected: true,
+    });
   });
 
   useGraphEvent('edge:added', (evt) => {
@@ -364,10 +384,35 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             ports: {
               ...node.ports,
               groups: ports.groups,
+              items: node?.ports?.items?.map((item: any) => {
+                return {
+                  ...item,
+                  attrs: {
+                    ...item?.attrs,
+                    text: {
+                      ...item?.attrs?.text,
+                      fill:
+                        item?.data?.quantitativeReference ||
+                        (item?.data?.allocations?.allocation?.['@allocatedFraction'] &&
+                          Number(
+                            item?.data?.allocations?.allocation?.['@allocatedFraction']?.split(
+                              '%',
+                            )[0],
+                          ) > 0)
+                          ? token.colorPrimary
+                          : token.colorTextDescription,
+                      'font-weight': item?.data?.quantitativeReference ? 'bold' : 'normal',
+                    },
+                  },
+                };
+              }),
             },
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : '',
-              nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+              nodeTitleTool(
+                node?.size?.width ?? node?.width ?? 350,
+                genProcessName(node?.data?.label, lang) ?? '',
+              ),
               inputFlowTool,
               outputFlowTool,
             ],
@@ -421,7 +466,10 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       updateNode(node.id ?? '', {
         tools: [
           node?.data?.quantitativeReference === '1' ? refTool : '',
-          nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+          nodeTitleTool(
+            node?.size?.width ?? node?.width ?? 350,
+            genProcessName(node?.data?.label, lang) ?? '',
+          ),
           inputFlowTool,
           outputFlowTool,
         ],

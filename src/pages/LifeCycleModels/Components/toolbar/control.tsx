@@ -8,7 +8,7 @@ import {
 import { useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
 
-import { useGraphEvent, useGraphInstance } from '@antv/xflow';
+import { useGraphEvent, useGraphInstance } from '@/contexts/graphContext';
 import { Button, Space, Tooltip } from 'antd';
 import { FormattedMessage } from 'umi';
 // import './styles/index.less';
