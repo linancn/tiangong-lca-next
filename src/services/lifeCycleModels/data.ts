@@ -26,6 +26,7 @@ export type Up2DownEdge = {
   exchangeAmount?: number;
   unbalancedAmount?: number;
   isBalanced?: boolean;
+  isCycle?: boolean;
 };
 
 export type LifeCycleModelDataSetObjectKeys = Exclude<

@@ -90,7 +90,7 @@ graph TD
   C3 --> C5["processKeys(id,version)"]
   C5 --> DB[(Supabase processes)]
   DB --> DB1["dbProcesses"]
-  DB1 --> DB2["dbProcessMap<br/>- exchanges<br/>- refExchangeMap(flowId,direction,exchangeId)<br/>- exIndex(input/output by flowId)"]
+  DB1 --> DB2["dbProcessMap: exchanges / refExchangeMap(flowId, direction, exchangeId) / exIndex"]
 
   %% Scaling factor & graph
   B1 --> S1["modelTargetAmount"]
@@ -99,8 +99,18 @@ graph TD
   S2 --> S3
   C3 --> G1["buildEdgesAndIndices"]
   DB2 --> G1
-  G1 --> G2["up2DownEdges + indices"]
-  G2 --> G3["assignEdgeDependence"]
+  G1 --> G2["up2DownEdges + 两类索引"]
+
+  %% Dependence marking with alternating frontiers
+  G2 --> G3["assignEdgeDependence（交替前沿扩散）"]
+  G3 --> L1["初始化 frontier = refNode 集合，起始方向=参考交换方向"]
+  L1 --> L2{"frontier 非空？"}
+  L2 -->|是| L3["phaseOutput/phaseInput（依当前方向）"]
+  L3 --> L4["breakCycles（同向断环）"]
+  L4 --> L5["根据触达节点生成 nextFrontier"]
+  L5 --> L6["切换方向 OUTPUT↔INPUT"]
+  L6 --> L2
+  L2 -->|否| G3n["未标注边统一置 none"]
 
   %% Propagate scaling
   C4 --> P1["calculateScalingFactor"]
@@ -111,7 +121,7 @@ graph TD
   P2 --> P3["sumAmountByNodeId → sumAmountNodeMap"]
 
   %% Allocation (main/secondary)
-  P3 --> A1["构建 main/secondary supply & demand<br/>key=nodeId:flowId"]
+  P3 --> A1["构建 main/secondary supply & demand（key=nodeId:flowId）"]
   G2 --> A2["mainEdges/secondaryEdges"]
   A1 --> AL1["allocateSupplyToDemand · main"]
   A2 --> AL1
@@ -123,7 +133,7 @@ graph TD
   %% Child processes & final groups
   P3 --> CP["allocatedProcess → childProcesses"]
   CP --> FP["筛选 finalProductType==='has'"]
-  FP --> FG["getFinalProductGroup"]
+  FP --> FG["getFinalProductGroup（none 时按 mainDependence 回退）"]
   FG --> CE["calculateProcess · 缩放 exchanges"]
   CE --> SE["sumProcessExchange · 聚合并标记定量参考"]
 
@@ -142,13 +152,6 @@ graph TD
   SM3 --> OUT["lifeCycleModelProcesses"]
   SM5 --> OUT
   SM6 --> OUT
-
-  classDef io fill:#eef,stroke:#99f;
-  classDef proc fill:#efe,stroke:#9c9;
-  classDef data fill:#fff,stroke:#bbb;
-  class A,B,C,D,OUT io;
-  class C3,C4,C5,DB1,DB2,S1,S2,S3,G1,G2,G3,P1,P2,P3,A1,A2,AL1,AL2,R1,CP,FP,FG,CE,SE,SM1,LCIA,SM2,SM3,SM4,SM5,SM6,W1 data;
-  class C1,E1,SM2,SM4 proc;
 ```
 
 说明：
@@ -181,6 +184,13 @@ graph TD
   - `upstreamId`, `downstreamId`, `flowUUID`, `dependence`, `exchangeAmount`, `isBalanced`, `unbalancedAmount`。
 - 节点聚合项（sumAmountNode）：
   - `nodeId`, `scalingFactor`, `mainConnectExchanges`, `secondaryConnectExchanges`, `noneConnectExchanges`, `remainingExchanges`。
+- 数据库进程映射（DbProcessMapValue，摘要）：
+  - `id`, `version`：进程标识
+  - `exchanges: any[]`：数据库进程的展平交换列表
+  - `refExchangeMap`：定量参考信息
+    - `exchangeId`（参考交换在进程内的 ID）、`flowId`（参考流 ID）、`direction: 'INPUT'|'OUTPUT'`、`refExchange`（原始参考交换对象）
+  - `exIndex`：按 `flowId` 建立的索引
+    - `inputByFlowId: Map<string, any>`、`outputByFlowId: Map<string, any>`
 - 分配结果（allocateSupplyToDemand 返回）：
   - `allocations`: 嵌套字典，`allocations[upKey][downKey] = amount`。
   - `remaining_supply`, `remaining_demand`, `total_delivered`。
@@ -269,27 +279,26 @@ graph TD
 - 输入：已构建的边与索引以及参考节点 ID
 - 输出：原地修改 `up2DownEdges`（写入 dependence/mainDependence）
 - 关键点：
-  - 分阶段扩张并记录“被触达节点”，在该批内做去重：同一上游节点多条 downstream 依赖仅保留主输出流；同一下游节点多条 upstream 依赖仅保留主输入流；
-  - 下一轮 frontier 只从“仍有未标注边”的节点推进，提高效率。
+- 交替扩张：以参考方向为起点，phaseOutput/phaseInput 交替推进，以“前沿(frontier)”在图上扩散，直到没有新增节点；每轮完成后执行对应方向断环（breakDownstreamCycles 或 breakUpstreamCycles）。
+- 标注完成后，仍未被标注的边统一置为 `none`（作为“次组”处理）。
+- 分阶段扩张并记录“被触达节点”，在该批内做去重：同一上游节点多条 downstream 依赖仅保留主输出流；同一下游节点多条 upstream 依赖仅保留主输入流；
+- 下一轮 frontier 只从“仍有未标注边”的节点推进，提高效率。
 
 流程图：
 
 ```mermaid
 graph TD
   A[输入: up2DownEdges + 两类索引 + refProcessNodeId]
-  A --> B[frontier = refNode, direction = OUTPUT]
+  A --> B[初始化 frontier = refNode 集合，方向=参考交换方向]
   B --> C{frontier 非空?}
-  C -->|是| D[在当前方向扩张: 取相关边]
-  D --> E[标记 dependence = downstream/upstream]
-  E --> F[记录触达的 up/down 节点]
-  F --> G{同节点同向多边?}
-  G -->|是| H[保留主流, 其余置 none 并 mainDependence 记录]
-  G -->|否| I[跳过]
-  H --> J[从被触达节点收集仍未标注的边 → next frontier]
-  I --> J
-  J --> K[切换方向 OUTPUT<->INPUT]
-  K --> C
-  C -->|否| L[完成]
+  C -->|是| D[按当前方向扩张: phaseOutput/phaseInput]
+  D --> E[标注 dependence=downstream/upstream]
+  E --> F[同节点同向保留主流, 其余置 none 并记录 mainDependence]
+  F --> G[对应方向断环: breakDownstream/UpstreamCycles]
+  G --> H[生成 nextFrontier（触达节点中仍有未标注边者）]
+  H --> I[切换方向 OUTPUT↔INPUT]
+  I --> C
+  C -->|否| J[未标注边统一置 none → 完成]
 ```
 
 ### calculateScalingFactor(currentModelProcess, currentDatabaseProcess, ...)
@@ -391,6 +400,11 @@ graph TD
   - 仅当相邻子过程包含同一 flow 且方向匹配（上游 OUTPUT / 下游 INPUT）时纳入组；
   - 组内累计 `childAllocatedFraction` 作为后续缩放比例的一部分。
 
+规则补充：
+
+- 跳过 `isCycle === true` 的边；
+- 当边 `dependence==='none'` 时，按其 `mainDependence` 参与方向匹配（upstream/downstream）。
+
 流程图：
 
 ```mermaid
@@ -398,7 +412,14 @@ graph TD
   A[输入: has 子过程 + allocatedProcesses + up2DownEdges]
   A --> B[累计 childAllocatedFraction = 自身×入参]
   B --> C[收集与该节点同 flow 且方向匹配的连接边]
-  C --> D{存在下一子过程?}
+  C --> C1{边 isCycle?}
+  C1 -->|是| C2[跳过该边]
+  C1 -->|否| C3{dependence 为 none?}
+  C3 -->|是| C4[使用 mainDependence 作方向判断]
+  C3 -->|否| C5[按 dependence 作方向判断]
+  C2 --> D{存在下一子过程?}
+  C4 --> D
+  C5 --> D
   D -->|是| E[递归 getFinalProductGroup · nextChild 等]
   D -->|否| F[终止并返回当前组]
   E --> G[合并递归结果为一个组数组]
@@ -571,7 +592,8 @@ graph TD
   - `normalizeRatio` 对接近 0/1 的比例做归一，减少浮点噪声传导；
   - `allocateSupplyToDemand` 若总供或总需不超过容差，直接返回 0 分配并保留原始供需为剩余；
 - 多条连接竞争：`assignEdgeDependence` 保留主流，其余置为 `none` 进入“次组”分配通道；
-- 主组参考对齐：主组生成子模型时，将与参考流/方向匹配的交换量覆盖为 `modelTargetAmount`，确保与模型目标一致。
+- 主组参考对齐：主组生成子模型时，将与参考流/方向匹配的参考交换量覆盖为 `modelTargetAmount`；若参考交换的 `remainingRate` ∈ (0, 1)，则除参考交换外，其余 exchanges 与 LCIA 结果统一按 `1/remainingRate` 放大，以保持主组与模型目标产量一致。
+- 性能与稳定性：实现层面采用 `Set/Map` 降低重复扫描，统一使用 `BigNumber` 做精度计算，并尽量避免不必要的中间数组创建。
 
 ## 方法数据流流程图
 

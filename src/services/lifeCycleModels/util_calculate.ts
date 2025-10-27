@@ -259,118 +259,190 @@ function buildEdgesAndIndices(
 }
 
 /**
- * zh-CN: 以参考节点为起点交替扩张（OUTPUT/INPUT），为边打上 dependence/mainDependence 标记。
- * en-US: Alternate OUTPUT/INPUT expansion from reference node and mark edges with dependence/mainDependence.
- * Params: up2DownEdges, edgesByDownstream, edgesByUpstream, refProcessNodeId: string
- * Mutates: up2DownEdges (dependence/mainDependence)
+ * zh-CN: 从参考节点出发，交替按层扩散并标注边依赖：
+ *  - phaseOutput：沿节点“输入边”向上游扩散，将这些边标注为 downstream；
+ *  - phaseInput：沿节点“输出边”向下游扩散，将这些边标注为 upstream；
+ *  - 两阶段以“前沿(frontier)”交替推进，直到没有新增节点；支持在一条路径上交替向上/向下（例如 A→B→C→D 的“之”字形）。
+ *  - 在每个节点：若同向被标注的边多于一条，则保留主流（主输出/主输入），其余置为 dependence='none' 并记录 mainDependence；
+ *  - 各阶段均进行断环处理：处于回路中的对应方向的边会被置为 dependence='none' 且 isCycle=true；
+ *  - 所有仍未被触达的边，最终统一置为 dependence='none'。
+ *
+ * en-US: Starting from the reference node, alternately expand by layers and mark edge dependence:
+ *  - phaseOutput: walk incoming edges to upstream and mark them as 'downstream';
+ *  - phaseInput: walk outgoing edges to downstream and mark them as 'upstream';
+ *  - The two phases advance by passing the current frontier to the next, repeating until no growth.
+ *    This enables zig-zag reachability along INPUT/OUTPUT (e.g., A→B→C→D).
+ *  - Per node: when multiple edges of the same marked direction exist, keep only the main flow
+ *    (main output/input) and set others to dependence='none' with mainDependence recorded;
+ *  - Each phase breaks cycles: cycle-participating edges for that direction are set to
+ *    dependence='none' and flagged with isCycle=true;
+ *  - Any untouched edges at the end are set to dependence='none'.
+ *
+ * Params: up2DownEdges, edgesByDownstream, edgesByUpstream, refProcessNodeId, direction?: 'OUTPUT'|'INPUT'
+ * Returns: void
  */
 function assignEdgeDependence(
   up2DownEdges: Up2DownEdge[],
   edgesByDownstream: Map<string, Up2DownEdge[]>,
   edgesByUpstream: Map<string, Up2DownEdge[]>,
   refProcessNodeId: string,
+  direction: Direction = 'OUTPUT',
 ): void {
-  // Use a set frontier and incremental bookkeeping to reduce repeated full scans
-  let frontier = new Set<string>([refProcessNodeId]);
-  let direction: Direction = 'OUTPUT';
-  const totalEdges = up2DownEdges.length;
-  let assignedCount = 0;
-
-  while (frontier.size > 0 && assignedCount < totalEdges) {
+  const phaseOutput = (startFrontier?: Set<string>): Set<string> => {
+    const frontier =
+      startFrontier && startFrontier.size > 0
+        ? new Set<string>(startFrontier)
+        : new Set<string>([refProcessNodeId]);
     const touchedUpNodes = new Set<string>();
-    const touchedDownNodes = new Set<string>();
+    const touchedDownNodesA = new Set<string>();
 
-    // 1) Expand fully in current direction, marking newly discovered edges
     let current = frontier;
     while (current.size > 0) {
       const next = new Set<string>();
-      if (direction === 'OUTPUT') {
-        for (const nodeId of current) {
-          const uds = edgesByDownstream.get(nodeId) ?? [];
-          for (const ud of uds) {
-            if (ud?.dependence !== undefined) continue;
-            ud.dependence = 'downstream';
-            assignedCount++;
-            touchedUpNodes.add(ud.upstreamId);
-            next.add(ud.upstreamId);
-          }
-        }
-      } else {
-        for (const nodeId of current) {
-          const uds = edgesByUpstream.get(nodeId) ?? [];
-          for (const ud of uds) {
-            if (ud?.dependence !== undefined) continue;
-            ud.dependence = 'upstream';
-            assignedCount++;
-            touchedDownNodes.add(ud.downstreamId);
-            next.add(ud.downstreamId);
-          }
+      for (const nodeId of current) {
+        touchedDownNodesA.add(nodeId);
+        const uds = edgesByDownstream.get(nodeId) ?? [];
+        for (const ud of uds) {
+          if (ud?.dependence !== undefined) continue;
+          ud.dependence = 'downstream';
+          touchedUpNodes.add(ud.upstreamId);
+          next.add(ud.upstreamId);
         }
       }
       current = next;
     }
 
-    // 2) Deduplicate only for nodes that got new edges this phase
-    if (direction === 'OUTPUT') {
-      for (const upId of touchedUpNodes) {
-        const uds = edgesByUpstream.get(upId);
-        if (!uds || uds.length < 2) continue;
-
-        // Collect edges of interest in one pass to avoid scanning twice
-        const dsEdges: Up2DownEdge[] = [];
-        for (const ud of uds) {
-          if (ud.dependence === 'downstream') dsEdges.push(ud);
-        }
-        if (dsEdges.length > 1) {
-          for (const ud of dsEdges) {
-            if (ud.flowUUID !== ud.mainOutputFlowUUID) {
-              ud.dependence = 'none';
-              ud.mainDependence = 'downstream';
-            }
-          }
-        }
-      }
-    } else {
-      for (const downId of touchedDownNodes) {
-        const uds = edgesByDownstream.get(downId);
-        if (!uds || uds.length < 2) continue;
-
-        const usEdges: Up2DownEdge[] = [];
-        for (const ud of uds) {
-          if (ud.dependence === 'upstream') usEdges.push(ud);
-        }
-        if (usEdges.length > 1) {
-          for (const ud of usEdges) {
-            if (ud.flowUUID !== ud.mainInputFlowUUID) {
-              ud.dependence = 'none';
-              ud.mainDependence = 'upstream';
-            }
+    for (const upId of touchedUpNodes) {
+      const uds = edgesByUpstream.get(upId);
+      if (!uds || uds.length < 2) continue;
+      const dsEdges = uds.filter((e) => e.dependence === 'downstream');
+      if (dsEdges.length > 1) {
+        for (const e of dsEdges) {
+          if (e.flowUUID !== e.mainOutputFlowUUID) {
+            e.dependence = 'none';
+            e.mainDependence = 'downstream';
           }
         }
       }
     }
 
-    // 3) Build next frontier only from touched nodes, looking for edges still undefined
-    const nextFrontier = new Set<string>();
-    if (direction === 'OUTPUT') {
-      for (const upId of touchedUpNodes) {
-        const uds = edgesByUpstream.get(upId) ?? [];
-        for (const ud of uds) {
-          if (ud?.dependence === undefined) nextFrontier.add(ud.upstreamId);
+    return touchedUpNodes;
+  };
+
+  const breakDownstreamCycles = () => {
+    const color = new Map<string, 0 | 1 | 2>(); // 0: unvisited, 1: visiting, 2: done
+
+    const dfs = (nodeId: string) => {
+      color.set(nodeId, 1);
+      const inEdges = edgesByDownstream.get(nodeId) ?? [];
+      for (const e of inEdges) {
+        if (e?.dependence !== 'downstream') continue;
+        const up = e.upstreamId;
+        const state = color.get(up) ?? 0;
+        if (state === 0) {
+          dfs(up);
+        } else if (state === 1) {
+          e.mainDependence = 'downstream';
+          e.dependence = 'none';
+          e.isCycle = true;
         }
       }
-      direction = 'INPUT';
-    } else {
-      for (const downId of touchedDownNodes) {
-        const uds = edgesByDownstream.get(downId) ?? [];
+      color.set(nodeId, 2);
+    };
+
+    dfs(refProcessNodeId);
+  };
+
+  // 从给定前沿（默认为参考节点）开始，沿“输出边”向下标注为 upstream；返回触达的下游节点集合
+  const phaseInput = (startFrontier?: Set<string>): Set<string> => {
+    const frontier =
+      startFrontier && startFrontier.size > 0
+        ? new Set<string>(startFrontier)
+        : new Set<string>([refProcessNodeId]);
+    const touchedDownNodes = new Set<string>();
+
+    let current = frontier;
+    while (current.size > 0) {
+      const next = new Set<string>();
+      for (const nodeId of current) {
+        const uds = edgesByUpstream.get(nodeId) ?? [];
         for (const ud of uds) {
-          if (ud?.dependence === undefined) nextFrontier.add(ud.downstreamId);
+          if (ud?.dependence !== undefined) continue;
+          ud.dependence = 'upstream';
+          touchedDownNodes.add(ud.downstreamId);
+          next.add(ud.downstreamId);
         }
       }
-      direction = 'OUTPUT';
+      current = next;
     }
 
-    frontier = nextFrontier;
+    for (const downId of touchedDownNodes) {
+      const uds = edgesByDownstream.get(downId);
+      if (!uds || uds.length < 2) continue;
+      const usEdges = uds.filter((e) => e.dependence === 'upstream');
+      if (usEdges.length > 1) {
+        for (const e of usEdges) {
+          if (e.flowUUID !== e.mainInputFlowUUID) {
+            e.dependence = 'none';
+            e.mainDependence = 'upstream';
+          }
+        }
+      }
+    }
+
+    return touchedDownNodes;
+  };
+
+  const breakUpstreamCycles = () => {
+    const color = new Map<string, 0 | 1 | 2>(); // 0: unvisited, 1: visiting, 2: done
+
+    const dfs = (nodeId: string) => {
+      color.set(nodeId, 1);
+      const outEdges = edgesByUpstream.get(nodeId) ?? [];
+      for (const e of outEdges) {
+        if (e?.dependence !== 'upstream') continue;
+        const down = e.downstreamId;
+        const state = color.get(down) ?? 0;
+        if (state === 0) {
+          dfs(down);
+        } else if (state === 1) {
+          e.mainDependence = 'upstream';
+          e.dependence = 'none';
+          e.isCycle = true;
+        }
+      }
+      color.set(nodeId, 2);
+    };
+
+    dfs(refProcessNodeId);
+  };
+
+  if (direction === 'OUTPUT') {
+    let upFrontier = phaseOutput();
+    breakDownstreamCycles();
+    let guard = 0;
+    while (upFrontier.size > 0 && guard++ < 1000) {
+      const downFrontier = phaseInput(upFrontier);
+      breakUpstreamCycles();
+      if (downFrontier.size === 0) break;
+      upFrontier = phaseOutput(downFrontier);
+      breakDownstreamCycles();
+    }
+  } else {
+    let downFrontier = phaseInput();
+    breakUpstreamCycles();
+    let guard = 0;
+    while (downFrontier.size > 0 && guard++ < 1000) {
+      const upFrontier = phaseOutput(downFrontier);
+      breakDownstreamCycles();
+      if (upFrontier.size === 0) break;
+      downFrontier = phaseInput(upFrontier);
+      breakUpstreamCycles();
+    }
+  }
+
+  for (const e of up2DownEdges as Up2DownEdge[]) {
+    if (e && e.dependence === undefined) e.dependence = 'none';
   }
 }
 
@@ -782,10 +854,12 @@ const allocatedProcess = (sumAmountNodeMap: Map<string, any>) => {
 };
 
 /**
- * zh-CN: 从候选“最终产品”子进程出发，递归收集同一子产品链条分组。
- * en-US: From a candidate final product child, recursively collect the same subproduct chain.
+ * zh-CN: 从“最终产品”候选出发，按依赖（downstream/upstream；none 时用 mainDependence）与相同 flowUUID 递归收集同一子产品链；跳过 isCycle 边；
+ *       累计 allocatedFraction（相乘），scalingPercentage 透传。
+ * en-US: From a candidate final product, follow dependence (downstream/upstream; fallback to mainDependence when none)
+ *       and the same flowUUID to recursively collect the subproduct chain; skip isCycle edges; accumulate allocatedFraction and pass through scalingPercentage.
  * Params: finalProductProcess, allocatedFraction, scalingPercentage, allocatedProcesses, allUp2DownEdges
- * Returns: any[] groups
+ * Returns: any[] groups（每项含 childAllocatedFraction 与 childScalingPercentage）
  */
 const getFinalProductGroup = (
   finalProductProcess: any,
@@ -816,6 +890,8 @@ const getFinalProductGroup = (
       );
 
     const connectedEdges = allUp2DownEdges.filter((ud: Up2DownEdge) => {
+      if (ud?.isCycle === true) return false;
+
       const dependUp =
         (ud?.dependence === 'none' && ud?.mainDependence === 'upstream') ||
         ud?.dependence === 'upstream';
@@ -1058,6 +1134,7 @@ export async function genLifeCycleModelProcesses(
 
   const refDbProcess = dbProcessMap.get(refProcessKey);
   const refModelExchange = refDbProcess?.refExchangeMap;
+  const refModelExchangeDirection = refModelExchange?.direction;
 
   if (!refDbProcess) {
     throw new Error('Reference process not found in database');
@@ -1082,11 +1159,12 @@ export async function genLifeCycleModelProcesses(
     edgesByDownstreamInput,
     edgesByUpstreamOutput,
     refProcessNodeId,
+    refModelExchangeDirection,
   );
 
   const processScalingFactors = calculateScalingFactor(
     refMdProcess,
-    refDbProcess,
+    refDbProcess!,
     {
       direction: '',
       nodeId: '',
@@ -1115,6 +1193,7 @@ export async function genLifeCycleModelProcesses(
       demand[key] = ex?.meanAmount;
     }
   };
+
   const pushRemainingForGroup = (
     exchanges: any[] | undefined,
     nodeId: string,
@@ -1148,6 +1227,7 @@ export async function genLifeCycleModelProcesses(
       }
     }
   };
+
   const applyAllocationToEdge = (edge: any, allocResult: any) => {
     const upKey = makeFlowKey(edge.upstreamId, edge.flowUUID);
     const downKey = makeFlowKey(edge.downstreamId, edge.flowUUID);
@@ -1310,8 +1390,6 @@ export async function genLifeCycleModelProcesses(
             (e: any, index: number) => {
               return {
                 ...e,
-                meanAmount: e?.meanAmount,
-                resultingAmount: e?.resultingAmount,
                 '@dataSetInternalID': (index + 1).toString(),
               };
             },
@@ -1350,19 +1428,11 @@ export async function genLifeCycleModelProcesses(
           let option: 'create' | 'update' = isPrimaryGroup ? 'update' : 'create';
           let newId = isPrimaryGroup ? id : v4();
 
-          const refFlowId = refModelExchange?.flowId ?? '';
-          const refDirection = String(refModelExchange?.direction ?? '').toUpperCase();
-
           const newExchanges = newSumExchanges.map((e: any) => {
-            const dir = String(e?.exchangeDirection ?? '').toUpperCase();
-            const flowId = e?.referenceToFlowDataSet?.['@refObjectId'];
-            const isRefMatch = isPrimaryGroup && flowId === refFlowId && dir === refDirection;
             return {
               ...e,
               allocatedFraction: undefined,
               allocations: undefined,
-              meanAmount: (isRefMatch ? modelTargetAmount : e?.meanAmount)?.toString(),
-              resultingAmount: (isRefMatch ? modelTargetAmount : e?.resultingAmount)?.toString(),
             };
           });
 
@@ -2082,16 +2152,41 @@ export async function genLifeCycleModelProcesses(
             },
           });
 
-          // if (type === 'primary') {
-          //   console.log('primary newData', newData);
-          // }
-
           return newData;
         }
       }
       return null;
     }),
   );
+
+  const primaryProcess = sumFinalProductGroups.find((p) => p?.modelInfo?.type === 'primary');
+
+  const refPrimaryProcessExchange = primaryProcess?.data?.processDataSet?.exchanges?.exchange?.find(
+    (e: any) => e?.quantitativeReference === true,
+  );
+
+  const refRemainingRate = refPrimaryProcessExchange?.remainingRate ?? 1;
+
+  if (refRemainingRate > 0 && refRemainingRate !== 1) {
+    sumFinalProductGroups?.forEach((process) => {
+      const isPrimaryGroup = process?.modelInfo?.type === 'primary';
+      if (process?.data?.processDataSet?.exchanges?.exchange?.length > 0)
+        process?.data?.processDataSet?.exchanges?.exchange?.forEach((e: any) => {
+          const isRefExchange = isPrimaryGroup && e?.quantitativeReference;
+          const amount = isRefExchange
+            ? modelTargetAmount.toString()
+            : new BigNumber(e?.meanAmount).div(refRemainingRate).toString();
+          e.meanAmount = amount;
+          e.resultingAmount = amount;
+        });
+
+      if (process?.data?.processDataSet?.LCIAResults?.LCIAResult?.length > 0)
+        process?.data?.processDataSet?.LCIAResults?.LCIAResult?.forEach((lcia: any) => {
+          const amount = new BigNumber(lcia?.meanAmount).div(refRemainingRate).toString();
+          lcia.meanAmount = amount;
+        });
+    });
+  }
 
   const newProcessInstance = mdProcesses.map((mdProcess) => {
     return removeEmptyObjects({
