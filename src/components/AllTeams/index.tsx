@@ -33,6 +33,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
   const [isDragged, setIsDragged] = useState<boolean>(false);
+  const draggedDataRef = useRef<TeamTable[]>([]);
   const { token } = theme.useToken();
 
   const handleRemoveTeam = (record: TeamTable) => {
@@ -178,6 +179,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
       return;
     }
 
+    draggedDataRef.current = newDataSource;
     setTableData(newDataSource);
     setIsDragged(true);
   };
@@ -192,7 +194,8 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
 
       const startIndex = (currentPage - 1) * pageSize;
 
-      const updates = tableData.map((team, index) => ({
+      const dataToSave = draggedDataRef.current.length > 0 ? draggedDataRef.current : tableData;
+      const updates = dataToSave.map((team, index) => ({
         id: team.id,
         rank: startIndex + index + 1,
       }));
@@ -212,6 +215,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
           }),
         );
         setIsDragged(false);
+        draggedDataRef.current = [];
         actionRef.current?.reload();
       }
     } catch (err) {

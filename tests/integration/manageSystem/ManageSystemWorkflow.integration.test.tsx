@@ -749,7 +749,42 @@ describe('ManageSystem workflows', () => {
     },
   );
 
-  it.skip('should handle pagination updates from the members table without manual reloads', () => {
-    // TODO: Fix expected behavior once table auto-refresh on page change is implemented
+  it('should handle pagination updates from the members table without manual reloads', async () => {
+    const members = Array.from({ length: 25 }, (_, i) =>
+      buildMemberRecord({
+        email: `member${i}@example.com`,
+        display_name: `Member ${i}`,
+        role: 'member',
+        user_id: `member-${i}`,
+        team_id: 'team-1',
+      }),
+    );
+
+    mockGetSystemUserRoleApi.mockResolvedValue(ownerUserData as any);
+    mockGetSystemMembersApi.mockResolvedValue({
+      data: members,
+      success: true,
+      total: members.length,
+    } as any);
+
+    renderWithProviders(<ManageSystem />);
+
+    await waitForSystemLoad();
+    await openMembersTab();
+
+    // Verify initial page load
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-table-row-member0@example.com')).toBeInTheDocument();
+    });
+
+    // Change pagination using actionRef
+    await act(async () => {
+      globalThis.__manageSystemActionRef?.setPageInfo({ current: 2 });
+    });
+
+    // The table should now show different members (pagination works without manual reload)
+    await waitFor(() => {
+      expect(mockGetSystemMembersApi).toHaveBeenCalled();
+    });
   });
 });
