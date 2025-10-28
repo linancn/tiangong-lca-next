@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useGraphEvent, useGraphInstance } from '@/contexts/graphContext';
 import { Button, Space, Tooltip } from 'antd';
 import { FormattedMessage } from 'umi';
-// import './styles/index.less';
+import './styles/index.less';
 
 export enum ControlEnum {
   ZoomTo = 'zoomTo',
