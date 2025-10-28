@@ -272,7 +272,7 @@ describe('ToolbarEditInfo', () => {
     const ref = React.createRef<any>();
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
-    const result = await ref.current?.handleCheckData([], []);
+    const result = await ref.current?.handleCheckData('checkData', [], []);
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Please add node');
     expect(result).toEqual({ checkResult: false, unReview: [] });
@@ -284,7 +284,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
-    const result = await ref.current?.handleCheckData(nodes, []);
+    const result = await ref.current?.handleCheckData('checkData', nodes, []);
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Please add connection line');
     expect(result).toEqual({ checkResult: false, unReview: [] });
@@ -335,7 +335,7 @@ describe('ToolbarEditInfo', () => {
     ];
     const edges = [{}];
 
-    const result = await ref.current?.handleCheckData(nodes, edges);
+    const result = await ref.current?.handleCheckData('checkData', nodes, edges);
 
     expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0');
     expect(mockGetProcessDetail).toHaveBeenCalledWith('model-1', '1.0');

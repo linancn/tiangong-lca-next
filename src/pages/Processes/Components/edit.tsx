@@ -282,7 +282,7 @@ const ProcessEdit: FC<Props> = ({
     return true;
   };
 
-  const handleCheckData = async (processDetail: any) => {
+  const handleCheckData = async (from: 'review' | 'checkData', processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
     let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
@@ -365,11 +365,11 @@ const ProcessEdit: FC<Props> = ({
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
-      (underReview && underReview.length > 0)
+      (from === 'review' && underReview && underReview.length > 0)
     ) {
       valid = false;
       setSpinning(false);
-      if (underReview && underReview.length > 0) {
+      if (from === 'review' && underReview && underReview.length > 0) {
         message.error(
           intl.formatMessage({
             id: 'pages.process.review.error',
@@ -472,7 +472,7 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    const { checkResult, unReview } = await handleCheckData({
+    const { checkResult, unReview } = await handleCheckData('review', {
       id: updateResult.data[0]?.id,
       version: updateResult.data[0]?.version,
       ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
@@ -675,7 +675,7 @@ const ProcessEdit: FC<Props> = ({
                   return;
                 }
 
-                await handleCheckData({
+                await handleCheckData('checkData', {
                   id: updateResult.data[0]?.id,
                   version: updateResult.data[0]?.version,
                   ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
