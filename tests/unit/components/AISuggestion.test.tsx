@@ -27,6 +27,10 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
     processDataSet: {},
     toJSONString: jest.fn(() => '{}'),
   })),
+  createFlow: jest.fn(() => ({
+    flowDataSet: {},
+    toJSONString: jest.fn(() => '{}'),
+  })),
 }));
 
 jest.mock('umi', () => ({
@@ -222,6 +226,12 @@ describe('AISuggestion Component', () => {
     const flowProps = {
       ...defaultProps,
       type: 'flow' as const,
+      originJson: {
+        flowDataSet: {
+          id: 'test-flow',
+          name: 'Test Flow',
+        },
+      },
     };
 
     render(

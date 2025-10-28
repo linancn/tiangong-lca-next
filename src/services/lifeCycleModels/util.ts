@@ -831,7 +831,7 @@ export function genLifeCycleModelData(data: any, lang: string) {
   return {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {
-        const nodeWidth = node.width;
+        const nodeWidth = node?.size?.width ?? node?.width ?? 350;
         const label = genProcessName(node?.data?.label, lang);
         return {
           ...node,

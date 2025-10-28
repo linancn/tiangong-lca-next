@@ -11,7 +11,7 @@ import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -2087,7 +2087,7 @@ export const ProcessForm: FC<Props> = ({
             onClick={getLCIAResult}
           />,
         ]}
-        dataSource={lciaResults}
+        dataSource={jsonToList(lciaResults)}
         columns={lciaResultColumns}
       />
     ),

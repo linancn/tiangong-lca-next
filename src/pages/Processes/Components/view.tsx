@@ -7,7 +7,7 @@ import SourceSelectDescription from '@/pages/Sources/Components/select/descripti
 import AlignedNumber from '@/components/AlignedNumber';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
@@ -232,8 +232,12 @@ const ProcessView: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.referenceToLCIAMethodDataSet['@version']}>
-            {row.referenceToLCIAMethodDataSet['@version']}
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={row?.referenceToLCIAMethodDataSet?.['@version']}
+          >
+            {row?.referenceToLCIAMethodDataSet?.['@version']}
           </Tooltip>,
         ];
       },
@@ -1621,7 +1625,8 @@ const ProcessView: FC<Props> = ({
       const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
-      setLciaResultDataSource(formData?.LCIAResults?.LCIAResult ?? []);
+      const sourceData = formData?.LCIAResults?.LCIAResult ?? [];
+      setLciaResultDataSource(jsonToList(sourceData));
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>

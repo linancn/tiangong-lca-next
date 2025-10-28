@@ -420,13 +420,10 @@ const mockGraphInstance = {
 
 const mockGraphEvents: Record<string, any> = {};
 
-jest.mock('@antv/xflow', () => {
+jest.mock('@/contexts/graphContext', () => {
   const React = require('react');
 
-  const XFlow = ({ children }: any) => <div data-testid='xflow'>{children}</div>;
-  const XFlowGraph = ({ children }: any) => <div data-testid='xflow-graph'>{children}</div>;
-  const Grid = () => null;
-  const Transform = ({ children }: any) => <>{children}</>;
+  const GraphProvider = ({ children }: any) => <div data-testid='graph-provider'>{children}</div>;
 
   const useGraphStore = (selector: any) => {
     const [, forceRender] = React.useState(0);
@@ -489,10 +486,7 @@ jest.mock('@antv/xflow', () => {
 
   return {
     __esModule: true,
-    XFlow,
-    XFlowGraph,
-    Grid,
-    Transform,
+    GraphProvider,
     useGraphStore,
     useGraphEvent,
     useGraphInstance,
@@ -505,6 +499,11 @@ jest.mock('@antv/xflow', () => {
     },
   };
 });
+
+jest.mock('@/components/X6Graph', () => ({
+  __esModule: true,
+  default: () => <div data-testid='x6-graph'>X6 Graph</div>,
+}));
 
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
@@ -1073,8 +1072,8 @@ jest.mock('@/services/processes/util', () => ({
 let resetGraphStore: () => void;
 
 beforeAll(() => {
-  const xflow = require('@antv/xflow');
-  resetGraphStore = xflow.__resetGraphStore;
+  const graphContext = require('@/contexts/graphContext');
+  resetGraphStore = graphContext.__resetGraphStore;
 });
 
 const renderLifeCycleModels = async () => {
