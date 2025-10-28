@@ -121,13 +121,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
   }, [drawerVisible]);
 
   const handleCheckData: (
+    from: 'review' | 'checkData',
     nodes: any[],
     edges: any[],
   ) => Promise<{
     checkResult: boolean;
     unReview: refDataType[];
     problemNodes?: refDataType[];
-  }> = async (nodes: any[], edges: any[]) => {
+  }> = async (from, nodes: any[], edges: any[]) => {
     if (nodes?.length) {
       const quantitativeReferenceProcress = nodes.find(
         (node) => node?.data?.quantitativeReference === '1',
@@ -236,9 +237,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
-      (underReview && underReview.length > 0)
+      (from === 'review' && underReview && underReview.length > 0)
     ) {
-      if (underReview && underReview.length > 0) {
+      if (from === 'review' && underReview && underReview.length > 0) {
         message.error(
           intl.formatMessage({
             id: 'pages.process.review.error',
