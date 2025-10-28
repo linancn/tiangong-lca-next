@@ -232,8 +232,12 @@ const ProcessView: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.referenceToLCIAMethodDataSet['@version']}>
-            {row.referenceToLCIAMethodDataSet['@version']}
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={row?.referenceToLCIAMethodDataSet?.['@version']}
+          >
+            {row?.referenceToLCIAMethodDataSet?.['@version']}
           </Tooltip>,
         ];
       },
@@ -1621,7 +1625,8 @@ const ProcessView: FC<Props> = ({
       const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
-      setLciaResultDataSource(formData?.LCIAResults?.LCIAResult ?? []);
+      const sourceData = formData?.LCIAResults?.LCIAResult ?? [];
+      setLciaResultDataSource(Array.isArray(sourceData) ? sourceData : [sourceData]);
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>
