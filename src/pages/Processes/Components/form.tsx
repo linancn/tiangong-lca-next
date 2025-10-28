@@ -2087,7 +2087,7 @@ export const ProcessForm: FC<Props> = ({
             onClick={getLCIAResult}
           />,
         ]}
-        dataSource={lciaResults}
+        dataSource={Array.isArray(lciaResults) ? lciaResults : [lciaResults]}
         columns={lciaResultColumns}
       />
     ),
