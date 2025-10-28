@@ -147,11 +147,15 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
   const updateEdge = (edgeId: string, data: any) => {
     if (graphRef.current) {
       const edge = graphRef.current.getCellById(edgeId);
+      let isConnect = false;
       if (edge && edge.isEdge()) {
         // 更新边数据
         if (data.data) {
           const currentData = edge.getData() || {};
           edge.setData({ ...currentData, ...data.data });
+          if (data?.data?.connection) {
+            isConnect = true;
+          }
         }
 
         // 更新属性
@@ -184,14 +188,19 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // 更新本地状态
-        setEdgesState((prev) =>
-          prev.map((e) => {
+        setEdgesState((prev) => {
+          const res = prev.map((e) => {
             if (e.id === edgeId) {
               return { ...e, ...data };
             }
             return e;
-          }),
-        );
+          });
+          if (isConnect) {
+            isConnect = false;
+            return [...res, { ...edge }];
+          }
+          return res;
+        });
       }
     }
   };

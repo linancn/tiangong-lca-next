@@ -954,6 +954,12 @@ const ToolbarEdit: FC<Props> = ({
   });
 
   useGraphEvent('edge:click', (evt) => {
+    nodes.forEach((n) => {
+      if (n.selected) {
+        updateNode(n.id ?? '', { selected: false });
+      }
+    });
+
     const currentEdge = edges.find((e) => e.selected === true);
     if (currentEdge) {
       if (currentEdge.id === evt.edge.id) return;
@@ -962,6 +968,7 @@ const ToolbarEdit: FC<Props> = ({
         selected: false,
       });
     }
+
     updateEdge(evt.edge.id, {
       selected: true,
     });
@@ -1051,6 +1058,12 @@ const ToolbarEdit: FC<Props> = ({
         }
       }
 
+      edges.forEach((e) => {
+        if (e.selected) {
+          updateEdge(e.id ?? '', { selected: false });
+        }
+      });
+
       const isCtrlOrMetaPressed = event && (event.ctrlKey || event.metaKey);
 
       if (isCtrlOrMetaPressed) {
@@ -1074,6 +1087,12 @@ const ToolbarEdit: FC<Props> = ({
     nodes.forEach((n) => {
       if (n.selected) {
         updateNode(n.id ?? '', { selected: false });
+      }
+    });
+
+    edges.forEach((e) => {
+      if (e.selected) {
+        updateEdge(e.id ?? '', { selected: false });
       }
     });
   });
