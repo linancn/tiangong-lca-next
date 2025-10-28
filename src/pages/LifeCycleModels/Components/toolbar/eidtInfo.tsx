@@ -237,7 +237,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
-      (underReview && underReview.length > 0)
+      (from === 'review' && underReview && underReview.length > 0)
     ) {
       if (from === 'review' && underReview && underReview.length > 0) {
         message.error(

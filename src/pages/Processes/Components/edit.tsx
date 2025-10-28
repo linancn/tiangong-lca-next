@@ -365,7 +365,7 @@ const ProcessEdit: FC<Props> = ({
     if (
       (nonExistentRef && nonExistentRef.length > 0) ||
       (unRuleVerification && unRuleVerification.length > 0) ||
-      (underReview && underReview.length > 0)
+      (from === 'review' && underReview && underReview.length > 0)
     ) {
       valid = false;
       setSpinning(false);
