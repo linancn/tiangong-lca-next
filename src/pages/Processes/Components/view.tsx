@@ -7,7 +7,7 @@ import SourceSelectDescription from '@/pages/Sources/Components/select/descripti
 import AlignedNumber from '@/components/AlignedNumber';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
@@ -1626,7 +1626,7 @@ const ProcessView: FC<Props> = ({
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
       const sourceData = formData?.LCIAResults?.LCIAResult ?? [];
-      setLciaResultDataSource(Array.isArray(sourceData) ? sourceData : [sourceData]);
+      setLciaResultDataSource(jsonToList(sourceData));
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>
