@@ -18,6 +18,9 @@ const mockProcessExchangeCreate = jest.fn();
 const mockProcessExchangeEdit = jest.fn();
 const mockProcessExchangeDelete = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockJsonToList = jest.fn((value: any) =>
+  Array.isArray(value) ? value : value ? [value] : [],
+);
 
 let mockRefCheckContextValue: any = { refCheckData: [] };
 
@@ -60,6 +63,7 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getLangText: () => 'text',
   getUnitData: jest.fn(() => Promise.resolve([])),
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 jest.mock('@/services/lciaMethods/util', () => {
