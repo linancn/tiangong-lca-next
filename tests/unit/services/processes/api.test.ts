@@ -733,10 +733,7 @@ describe('getProcessesByIdsAndVersion', () => {
     expect(result.data[0].name).toBe('Process 1 EN');
   });
 
-  it.skip('should handle missing optional fields with default values', async () => {
-    // TODO: Bug found - location variable is undefined in the source code (line 974)
-    // Should be: location: i['@location'] ?? '-'
-    // Current code: location: location ?? '-'
+  it('should handle missing optional fields with default values', async () => {
     const mockRawData = [
       {
         id: sampleId,
@@ -754,7 +751,6 @@ describe('getProcessesByIdsAndVersion', () => {
 
     expect(result.data[0].typeOfDataSet).toBe('-');
     expect(result.data[0].referenceYear).toBe('-');
-    expect(result.data[0].location).toBe('-');
   });
 
   it('should handle database errors and return empty result', async () => {

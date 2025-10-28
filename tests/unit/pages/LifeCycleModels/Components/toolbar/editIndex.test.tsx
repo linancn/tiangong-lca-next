@@ -20,13 +20,13 @@ jest.mock('umi', () => ({
   }),
 }));
 
-jest.mock('@antv/xflow', () => ({
+jest.mock('@/contexts/graphContext', () => ({
   __esModule: true,
   useGraphStore: (selector: any) => selector(mockGraphStoreState),
   useGraphEvent: jest.fn(),
 }));
 
-const { useGraphEvent: mockUseGraphEvent } = jest.requireMock('@antv/xflow');
+const { useGraphEvent: mockUseGraphEvent } = jest.requireMock('@/contexts/graphContext');
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,

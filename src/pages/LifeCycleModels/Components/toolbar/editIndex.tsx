@@ -1,3 +1,4 @@
+import { GraphEdge, GraphNode, useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import type { refDataType } from '@/pages/Utils/review';
@@ -26,7 +27,6 @@ import {
   SaveOutlined,
   SendOutlined,
 } from '@ant-design/icons';
-import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Button, message, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -93,6 +93,7 @@ const ToolbarEdit: FC<Props> = ({
   const removeNodes = useGraphStore((state) => state.removeNodes);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
+  const graph = useGraphStore((state) => state.graph);
   const intl = useIntl();
 
   const editInfoRef = useRef<any>(null);
@@ -100,8 +101,8 @@ const ToolbarEdit: FC<Props> = ({
     setThisAction(action);
   }, [action]);
 
-  const nodes = useGraphStore((state) => state.nodes);
-  const edges = useGraphStore((state) => state.edges);
+  const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
+  const edges: GraphEdge[] = useGraphStore((state) => state.edges);
 
   const [nodeCount, setNodeCount] = useState(0);
 
@@ -694,7 +695,7 @@ const ToolbarEdit: FC<Props> = ({
     setSpinning(true);
     let requestCount = 0;
     nodes.forEach((node) => {
-      const nodeWidth = node?.size?.width ?? nodeTemplate.width;
+      const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width;
       getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '')
         .then(async (result: any) => {
           const newLabel =
@@ -776,7 +777,7 @@ const ToolbarEdit: FC<Props> = ({
             },
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-              nodeTitleTool(node?.width ?? 0, genProcessName(newLabel, lang) ?? ''),
+              nodeTitleTool(nodeWidth, genProcessName(newLabel, lang) ?? ''),
               inputFlowTool,
               outputFlowTool,
             ],
@@ -820,7 +821,11 @@ const ToolbarEdit: FC<Props> = ({
   const saveData = async (setLoadingData = true) => {
     setSpinning(true);
 
-    const newEdges = edges.map((edge) => {
+    // 直接从图中获取最新的节点和边数据
+    const currentNodes = graph ? graph.getNodes().map((node: any) => node.toJSON()) : nodes;
+    const currentEdges = graph ? graph.getEdges().map((edge: any) => edge.toJSON()) : edges;
+
+    const newEdges = currentEdges.map((edge: any) => {
       if (edge.target) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { x, y, ...targetRest } = edge.target as any;
@@ -829,7 +834,7 @@ const ToolbarEdit: FC<Props> = ({
       return edge;
     });
 
-    const newNodes = nodes.map((node, index: number) => {
+    const newNodes = currentNodes.map((node: any, index: number) => {
       return { ...node, data: { ...node.data, index: index.toString() } };
     });
 
@@ -949,6 +954,12 @@ const ToolbarEdit: FC<Props> = ({
   });
 
   useGraphEvent('edge:click', (evt) => {
+    nodes.forEach((n) => {
+      if (n.selected) {
+        updateNode(n.id ?? '', { selected: false });
+      }
+    });
+
     const currentEdge = edges.find((e) => e.selected === true);
     if (currentEdge) {
       if (currentEdge.id === evt.edge.id) return;
@@ -957,6 +968,7 @@ const ToolbarEdit: FC<Props> = ({
         selected: false,
       });
     }
+
     updateEdge(evt.edge.id, {
       selected: true,
     });
@@ -986,19 +998,19 @@ const ToolbarEdit: FC<Props> = ({
       };
     });
 
-    updateNode(node.id, {
-      label: genNodeLabel(label ?? '', lang, nodeWidth),
-      ports: {
-        ...node?.ports,
-        items: newItems,
-      },
-      tools: [
+    node.setAttrByPath('label/text', genNodeLabel(label ?? '', lang, nodeWidth));
+    node.prop('ports/items', newItems);
+
+    node.removeTools();
+
+    setTimeout(() => {
+      node.addTools([
         node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-        nodeTitleTool(nodeWidth ?? 0, label ?? ''),
+        nodeTitleTool(nodeWidth, label ?? ''),
         inputFlowTool,
         outputFlowTool,
-      ],
-    });
+      ]);
+    }, 0);
   });
 
   useGraphEvent('node:click', (evt) => {
@@ -1046,6 +1058,12 @@ const ToolbarEdit: FC<Props> = ({
         }
       }
 
+      edges.forEach((e) => {
+        if (e.selected) {
+          updateEdge(e.id ?? '', { selected: false });
+        }
+      });
+
       const isCtrlOrMetaPressed = event && (event.ctrlKey || event.metaKey);
 
       if (isCtrlOrMetaPressed) {
@@ -1069,6 +1087,12 @@ const ToolbarEdit: FC<Props> = ({
     nodes.forEach((n) => {
       if (n.selected) {
         updateNode(n.id ?? '', { selected: false });
+      }
+    });
+
+    edges.forEach((e) => {
+      if (e.selected) {
+        updateEdge(e.id ?? '', { selected: false });
       }
     });
   });
@@ -1102,7 +1126,7 @@ const ToolbarEdit: FC<Props> = ({
                 ...item?.attrs,
                 text: {
                   ...item?.attrs?.text,
-                  text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.width ?? nodeTemplate.width)}`,
+                  text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width)}`,
                   title: itemTextWithAllocation,
                   fill: getPortTextColor(
                     item?.data?.quantitativeReference,
@@ -1121,7 +1145,10 @@ const ToolbarEdit: FC<Props> = ({
           ports: updatedPorts,
           tools: [
             node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-            nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+            nodeTitleTool(
+              node?.size?.width ?? node?.width ?? nodeTemplate.width,
+              genProcessName(node?.data?.label, lang) ?? '',
+            ),
             inputFlowTool,
             outputFlowTool,
           ],
@@ -1178,7 +1205,7 @@ const ToolbarEdit: FC<Props> = ({
                   ...item?.attrs,
                   text: {
                     ...item?.attrs?.text,
-                    text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.width ?? nodeTemplate.width)}`,
+                    text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width)}`,
                     title: itemTextWithAllocation,
                     fill: getPortTextColor(
                       item?.data?.quantitativeReference,
@@ -1197,7 +1224,10 @@ const ToolbarEdit: FC<Props> = ({
             ports: updatedPorts,
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-              nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+              nodeTitleTool(
+                node?.size?.width ?? node?.width ?? nodeTemplate.width,
+                genProcessName(node?.data?.label, lang) ?? '',
+              ),
               inputFlowTool,
               outputFlowTool,
             ],
@@ -1275,7 +1305,10 @@ const ToolbarEdit: FC<Props> = ({
       updateNode(node.id ?? '', {
         tools: [
           node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-          nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+          nodeTitleTool(
+            node?.size?.width ?? node?.width ?? nodeTemplate.width,
+            genProcessName(node?.data?.label, lang) ?? '',
+          ),
           inputFlowTool,
           outputFlowTool,
         ],
