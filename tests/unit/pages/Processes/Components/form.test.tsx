@@ -60,6 +60,12 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getLangText: () => 'text',
   getUnitData: jest.fn(() => Promise.resolve([])),
+  jsonToList: (value: any) => {
+    if (!value) {
+      return [];
+    }
+    return Array.isArray(value) ? value : [value];
+  },
 }));
 
 jest.mock('@/services/lciaMethods/util', () => {
