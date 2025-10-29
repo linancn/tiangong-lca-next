@@ -41,6 +41,12 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getLangText: () => 'text',
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
+  jsonToList: (value: any) => {
+    if (!value) {
+      return [];
+    }
+    return Array.isArray(value) ? value : [value];
+  },
 }));
 
 jest.mock('@/services/flows/api', () => ({
@@ -239,7 +245,9 @@ describe('ProcessView component', () => {
       expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
     });
 
-    expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    await waitFor(() => {
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
   });
 
   it('changes active tab when user selects new tab', async () => {
