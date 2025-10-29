@@ -89,6 +89,7 @@ const LifeCycleModelView: FC<Props> = ({
         </Button>
       )}
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage id='pages.flow.model.drawer.title.view' defaultMessage='View Model' />

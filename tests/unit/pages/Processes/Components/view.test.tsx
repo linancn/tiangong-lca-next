@@ -243,7 +243,9 @@ describe('ProcessView component', () => {
       expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
     });
 
-    expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    await waitFor(() => {
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
   });
 
   it('changes active tab when user selects new tab', async () => {
