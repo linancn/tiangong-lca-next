@@ -19,6 +19,9 @@ const mockGetFlowStateCode = jest.fn();
 const mockGenProcessFromData = jest.fn();
 const mockGenProcessExchangeTableData = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockJsonToList = jest.fn((value: any) =>
+  Array.isArray(value) ? value : value ? [value] : [],
+);
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -41,12 +44,7 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getLangText: () => 'text',
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
-  jsonToList: (value: any) => {
-    if (!value) {
-      return [];
-    }
-    return Array.isArray(value) ? value : [value];
-  },
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 jest.mock('@/services/flows/api', () => ({
