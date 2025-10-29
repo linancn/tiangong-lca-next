@@ -61,7 +61,6 @@ const X6GraphComponent = ({
       mousewheel: zoomable
         ? {
             enabled: true,
-            modifiers: ['ctrl', 'meta'],
             minScale: minScale,
             maxScale: 1.5,
           }
