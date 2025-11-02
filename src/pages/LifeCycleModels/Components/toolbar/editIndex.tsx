@@ -1521,7 +1521,7 @@ const ToolbarEdit: FC<Props> = ({
           </Tooltip> */}
       <Tooltip
         title={
-          <FormattedMessage id='pages.button.updateReference' defaultMessage='Update reference' />
+          <FormattedMessage id='pages.button.updateReference' defaultMessage='Update Reference' />
         }
         placement='left'
       >
@@ -1588,7 +1588,7 @@ const ToolbarEdit: FC<Props> = ({
         actionType='edit'
       />
       <Tooltip
-        title={<FormattedMessage id='pages.button.check' defaultMessage='Data check' />}
+        title={<FormattedMessage id='pages.button.check' defaultMessage='Data Check' />}
         placement='left'
       >
         <Button
@@ -1601,7 +1601,7 @@ const ToolbarEdit: FC<Props> = ({
       </Tooltip>
       {!hideReviewButton ? (
         <Tooltip
-          title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />}
+          title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />}
           placement='left'
         >
           <Button

@@ -316,7 +316,7 @@ const ContactEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={handleCheckData}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
               onClick={() => {
@@ -325,7 +325,7 @@ const ContactEdit: FC<Props> = ({
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
