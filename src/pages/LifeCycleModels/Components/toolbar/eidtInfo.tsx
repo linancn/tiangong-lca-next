@@ -345,13 +345,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           <Space size={'middle'} className={styles.footer_right}>
             {/* {showReview && (
               <Button onClick={submitReview}>
-                <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
+                <FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />
               </Button>
             )} */}
             {action === 'edit' ? (
               <>
                 {/* <Button onClick={() => handleCheckData()}>
-                  <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+                  <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
                 </Button> */}
 
                 <Button
@@ -361,7 +361,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
                 >
                   <FormattedMessage
                     id='pages.button.updateReference'
-                    defaultMessage='Update reference'
+                    defaultMessage='Update Reference'
                   />
                 </Button>
               </>

@@ -411,7 +411,7 @@ const FlowsEdit: FC<Props> = ({
               originJson={originJson}
             />
             <Button onClick={handleCheckData}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
               onClick={() => {
@@ -420,7 +420,7 @@ const FlowsEdit: FC<Props> = ({
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>

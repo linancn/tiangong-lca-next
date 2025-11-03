@@ -208,7 +208,7 @@ const FlowsSelectForm: FC<Props> = ({
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
           )}
