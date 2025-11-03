@@ -116,15 +116,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['baseName']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -156,15 +165,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['treatmentStandardsRoutes']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -196,15 +214,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['mixAndLocationTypes']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -230,15 +257,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                   defaultMessage='Quantitative product or process properties'
                 />
               }
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['functionalUnitFlowProperties']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
         </Card>
