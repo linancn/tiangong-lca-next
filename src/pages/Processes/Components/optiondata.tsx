@@ -368,11 +368,11 @@ export const processtypeOfDataSetOptions = [
     ),
   },
   {
-    value: 'Unit processes, black box',
+    value: 'Unit process, black box',
     label: (
       <FormattedMessage
-        id='pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessesBlackBox'
-        defaultMessage='Unit processes, black box'
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessBlackBox'
+        defaultMessage='Unit process, black box'
       />
     ),
   },
