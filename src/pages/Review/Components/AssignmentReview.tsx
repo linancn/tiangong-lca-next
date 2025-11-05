@@ -244,7 +244,7 @@ const AssignmentReview = ({
                       />
                     )}
                     <ReviewProcessDetail
-                      hideButton={!!hideReviewButton}
+                      hideButton={true}
                       tabType='review'
                       type='view'
                       actionRef={actionRef}
