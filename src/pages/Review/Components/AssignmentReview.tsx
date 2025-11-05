@@ -22,6 +22,7 @@ type AssignmentReviewProps = {
   tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending';
   actionRef: any;
   actionFrom?: 'reviewMember';
+  hideReviewButton?: boolean;
 };
 
 const AssignmentReview = ({
@@ -29,6 +30,7 @@ const AssignmentReview = ({
   tableType,
   actionRef,
   actionFrom,
+  hideReviewButton = false,
 }: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
@@ -206,15 +208,17 @@ const AssignmentReview = ({
               <Space key={0}>
                 {record.isFromLifeCycle ? (
                   <>
-                    <ReviewLifeCycleModelsDetail
-                      type='edit'
-                      id={record.json?.data?.id}
-                      version={record.json?.data?.version}
-                      lang={lang}
-                      reviewId={record.id}
-                      tabType='review'
-                      actionRef={actionRef}
-                    />
+                    {!hideReviewButton && (
+                      <ReviewLifeCycleModelsDetail
+                        type='edit'
+                        id={record.json?.data?.id}
+                        version={record.json?.data?.version}
+                        lang={lang}
+                        reviewId={record.id}
+                        tabType='review'
+                        actionRef={actionRef}
+                      />
+                    )}
 
                     <ReviewLifeCycleModelsDetail
                       reviewId={record.id}
@@ -228,16 +232,19 @@ const AssignmentReview = ({
                   </>
                 ) : (
                   <>
+                    {!hideReviewButton && (
+                      <ReviewProcessDetail
+                        tabType='review'
+                        type='edit'
+                        actionRef={actionRef}
+                        id={record.json?.data?.id}
+                        version={record.json?.data?.version}
+                        lang={lang}
+                        reviewId={record.id}
+                      />
+                    )}
                     <ReviewProcessDetail
-                      tabType='review'
-                      type='edit'
-                      actionRef={actionRef}
-                      id={record.json?.data?.id}
-                      version={record.json?.data?.version}
-                      lang={lang}
-                      reviewId={record.id}
-                    />
-                    <ReviewProcessDetail
+                      hideButton={!!hideReviewButton}
                       tabType='review'
                       type='view'
                       actionRef={actionRef}
