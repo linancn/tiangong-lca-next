@@ -12,9 +12,10 @@ import {
 } from '@/pages/Utils/review';
 
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
-import { getRefsOfNewVersion, getRuleVerification, updateRefsData } from '@/services/general/util';
+import { getRuleVerification } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';

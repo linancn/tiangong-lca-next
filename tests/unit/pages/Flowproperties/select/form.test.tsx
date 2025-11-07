@@ -195,17 +195,6 @@ jest.mock('@/contexts/refCheckContext', () => {
   };
 });
 
-const updateReferenceContextValue = { referenceValue: 0 };
-jest.mock('@/contexts/updateReferenceContext', () => {
-  const React = require('react');
-  const UpdateReferenceContext = React.createContext(updateReferenceContextValue);
-  return {
-    __esModule: true,
-    UpdateReferenceContext,
-    useUpdateReferenceContext: () => updateReferenceContextValue,
-  };
-});
-
 const formState: Record<string, any> = {};
 
 const setValueAtPath = (path: any[], value: any) => {

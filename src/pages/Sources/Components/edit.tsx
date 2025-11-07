@@ -2,7 +2,7 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/services/general/util';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';

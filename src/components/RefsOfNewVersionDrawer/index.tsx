@@ -1,4 +1,4 @@
-import { getLang, getLangText, RefVersionItem } from '@/services/general/util';
+import { getLang, getLangText } from '@/services/general/util';
 import { ActionType, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space } from 'antd';
 import type { FC } from 'react';
@@ -12,6 +12,15 @@ type Props = {
   onCancel: () => void;
   onKeep: () => void;
   onUpdate: (rows: RefVersionItem[]) => void;
+};
+export type RefVersionItem = {
+  key: string;
+  id: string;
+  type: string;
+  currentVersion: string;
+  newVersion: string;
+  description?: any[];
+  newDescription?: any[];
 };
 
 const RefsOfNewVersionDrawer: FC<Props> = ({
@@ -169,5 +178,4 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
   );
 };
 
-export type { RefVersionItem };
 export default RefsOfNewVersionDrawer;
