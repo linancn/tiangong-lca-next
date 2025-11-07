@@ -1,6 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
@@ -38,7 +37,6 @@ const ContactSelectForm: FC<Props> = ({
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
-  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
@@ -124,12 +122,6 @@ const ContactSelectForm: FC<Props> = ({
       onData();
     });
   };
-
-  useEffect(() => {
-    if (id) {
-      handletContactData(id, version ?? '');
-    }
-  }, [referenceValue]);
 
   useEffect(() => {
     if (parentName) {

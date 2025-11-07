@@ -1,10 +1,11 @@
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { ContactDataSetObjectKeys, FormContact } from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
+import { getRefsOfNewVersion, updateRefsData } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -33,13 +34,17 @@ const ContactEdit: FC<Props> = ({
   setViewDrawerVisible,
   updateErrRef = () => {},
 }) => {
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<FormContact>();
   const [fromData, setFromData] = useState<FormContact>();
   const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
-  const [referenceValue, setReferenceValue] = useState<number>(0);
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
@@ -89,8 +94,33 @@ const ContactEdit: FC<Props> = ({
     });
   };
 
-  const updateReference = async () => {
-    setReferenceValue(referenceValue + 1);
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      formRefEdit.current?.setFieldsValue({ ...res, id });
+    }
   };
 
   useEffect(() => {
@@ -320,7 +350,7 @@ const ContactEdit: FC<Props> = ({
             </Button>
             <Button
               onClick={() => {
-                updateReference();
+                handleUpdateReference();
               }}
             >
               <FormattedMessage
@@ -347,37 +377,43 @@ const ContactEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              onValuesChange={(_, allValues) => {
+                setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormContact);
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              initialValues={initData}
+              onFinish={() => handleSubmit(true)}
+            >
+              <ContactForm
+                lang={lang}
+                activeTabKey={activeTabKey}
                 formRef={formRefEdit}
-                onValuesChange={(_, allValues) => {
-                  setFromData({
-                    ...fromData,
-                    [activeTabKey]: allValues[activeTabKey] ?? {},
-                  } as FormContact);
-                }}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                initialValues={initData}
-                onFinish={() => handleSubmit(true)}
-              >
-                <ContactForm
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  formRef={formRefEdit}
-                  onData={handletFromData}
-                  onTabChange={(key) => onTabChange(key as ContactDataSetObjectKeys)}
-                  showRules={showRules}
-                />
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onData={handletFromData}
+                onTabChange={(key) => onTabChange(key as ContactDataSetObjectKeys)}
+                showRules={showRules}
+              />
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 };

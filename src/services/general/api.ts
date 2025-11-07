@@ -79,6 +79,17 @@ export async function getDataDetail(id: string, version: string, table: string) 
     success: false,
   });
 }
+export async function getDataDetailById(id: string, table: string) {
+  let result: any = {};
+  if (id && id.length === 36) {
+    result = await supabase
+      .from(table)
+      .select('json,version, modified_at,id,state_code,rule_verification,user_id')
+      .eq('id', id);
+    return result;
+  }
+  return null;
+}
 
 export async function getRefData(id: string, version: string, table: string, teamId?: string) {
   if (!table) {
