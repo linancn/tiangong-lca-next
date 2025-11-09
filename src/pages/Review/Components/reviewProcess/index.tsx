@@ -33,6 +33,7 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   type: 'edit' | 'view';
   tabType: 'assigned' | 'review';
+  hideButton?: boolean;
 };
 
 const ReviewProcessDetail: FC<Props> = ({
@@ -43,6 +44,7 @@ const ReviewProcessDetail: FC<Props> = ({
   actionRef,
   type,
   tabType,
+  hideButton = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -298,9 +300,9 @@ const ReviewProcessDetail: FC<Props> = ({
         });
         const allCompliance: any[] = [];
         data.forEach((item: any) => {
-          if (item?.json?.modellingAndValidation.complianceDeclarations.compliance[0]) {
+          if (item?.json?.modellingAndValidation.complianceDeclarations.compliance) {
             allCompliance.push(
-              item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+              ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
             );
           }
         });
@@ -480,7 +482,7 @@ const ReviewProcessDetail: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          tabType === 'assigned' ? (
+          tabType === 'assigned' && !hideButton ? (
             <Space className={styles.footer_right}>
               <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
                 <FormattedMessage
@@ -498,7 +500,7 @@ const ReviewProcessDetail: FC<Props> = ({
                 actionRef={actionRef}
               />
             </Space>
-          ) : tabType === 'review' ? (
+          ) : tabType === 'review' && !hideButton ? (
             <Space className={styles.footer_right}>
               <Button onClick={temporarySave}>
                 <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />

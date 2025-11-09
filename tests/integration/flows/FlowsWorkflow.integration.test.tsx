@@ -323,6 +323,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     const handleGetFieldsValue = React.useCallback(() => values, [values]);
 
+    const handleValidateFields = React.useCallback(async () => values, [values]);
+
     const handleSubmit = React.useCallback(async () => {
       return onFinish?.();
     }, [onFinish]);
@@ -332,6 +334,7 @@ jest.mock('@ant-design/pro-components', () => {
       setFieldsValue: handleSetFieldsValue,
       resetFields: handleResetFields,
       setFieldValue: handleSetFieldValue,
+      validateFields: handleValidateFields,
       submit: handleSubmit,
     }));
 

@@ -282,15 +282,24 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['processDataSet']['processInformation']['dataSetInformation']['name'][
                         'baseName'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -322,15 +331,24 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['processDataSet']['processInformation']['dataSetInformation']['name'][
                         'treatmentStandardsRoutes'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -357,15 +375,24 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['processDataSet']['processInformation']['dataSetInformation']['name'][
                         'mixAndLocationTypes'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -384,6 +411,17 @@ export const ProcessForm: FC<Props> = ({
                 'dataSetInformation',
                 'name',
                 'functionalUnitFlowProperties',
+              ]}
+              rules={[
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
               ]}
               label={
                 <FormattedMessage

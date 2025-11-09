@@ -183,13 +183,13 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       const mockData = [{ id: 'comment-1', content: 'Comment 1', reviewer_id: 'current-user-id' }];
 
       const mockSelect = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const mockEqReviewId = jest.fn().mockReturnThis();
+      const mockEqReviewerId = jest.fn().mockResolvedValue({ data: mockData, error: null });
 
       (mockFrom as jest.Mock).mockReturnValue({
         select: mockSelect.mockReturnValue({
-          eq: mockEq1.mockReturnValue({
-            eq: mockEq2,
+          eq: mockEqReviewId.mockReturnValue({
+            eq: mockEqReviewerId,
           }),
         }),
       });
@@ -198,8 +198,9 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       expect(mockGetUserId).toHaveBeenCalledTimes(1);
       expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockEq1).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(mockEq2).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
+      expect(mockSelect).toHaveBeenCalledWith('*');
+      expect(mockEqReviewId).toHaveBeenCalledWith('review_id', 'review-123');
+      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
       expect(result).toEqual({ data: mockData, error: null });
     });
 
@@ -218,18 +219,19 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       ];
 
       const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const mockEqReviewId = jest.fn().mockResolvedValue({ data: mockData, error: null });
 
       (mockFrom as jest.Mock).mockReturnValue({
         select: mockSelect.mockReturnValue({
-          eq: mockEq,
+          eq: mockEqReviewId,
         }),
       });
 
       const result = await getCommentApi('review-123', 'assigned');
 
       expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockEq).toHaveBeenCalledWith('review_id', 'review-123');
+      expect(mockSelect).toHaveBeenCalledWith('*');
+      expect(mockEqReviewId).toHaveBeenCalledWith('review_id', 'review-123');
       expect(result).toEqual({ data: mockData, error: null });
     });
 
@@ -247,13 +249,13 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       const mockData = [{ review_id: 'review-1' }, { review_id: 'review-2' }];
 
       const mockSelect = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const mockEqReviewerId = jest.fn().mockReturnThis();
+      const mockInState = jest.fn().mockResolvedValue({ data: mockData, error: null });
 
       (mockFrom as jest.Mock).mockReturnValue({
         select: mockSelect.mockReturnValue({
-          eq: mockEq1.mockReturnValue({
-            eq: mockEq2,
+          eq: mockEqReviewerId.mockReturnValue({
+            in: mockInState,
           }),
         }),
       });
@@ -262,20 +264,20 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       expect(mockGetUserId).toHaveBeenCalledTimes(1);
       expect(mockSelect).toHaveBeenCalledWith('review_id');
-      expect(mockEq1).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
-      expect(mockEq2).toHaveBeenCalledWith('state_code', 1);
+      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
+      expect(mockInState).toHaveBeenCalledWith('state_code', [1, 2]);
       expect(result).toEqual({ data: mockData, error: null });
     });
 
     it('fetches reviewed comments for specific user ID', async () => {
       const mockSelect = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockResolvedValue({ data: [], error: null });
+      const mockEqReviewerId = jest.fn().mockReturnThis();
+      const mockInState = jest.fn().mockResolvedValue({ data: [], error: null });
 
       (mockFrom as jest.Mock).mockReturnValue({
         select: mockSelect.mockReturnValue({
-          eq: mockEq1.mockReturnValue({
-            eq: mockEq2,
+          eq: mockEqReviewerId.mockReturnValue({
+            in: mockInState,
           }),
         }),
       });
@@ -283,7 +285,9 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       await getReviewedComment('specific-user-id');
 
       expect(mockGetUserId).not.toHaveBeenCalled();
-      expect(mockEq1).toHaveBeenCalledWith('reviewer_id', 'specific-user-id');
+      expect(mockSelect).toHaveBeenCalledWith('review_id');
+      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'specific-user-id');
+      expect(mockInState).toHaveBeenCalledWith('state_code', [1, 2]);
     });
 
     it('returns error when user ID is not available', async () => {

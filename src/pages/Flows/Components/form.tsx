@@ -261,15 +261,24 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'baseName'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -296,15 +305,24 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'treatmentStandardsRoutes'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -331,15 +349,24 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'mixAndLocationTypes'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -360,15 +387,24 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Quantitative flow properties'
                 />
               }
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'flowProperties'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
         </Card>
