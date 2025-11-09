@@ -21,4 +21,5 @@ export default {
 
   'validator.lang.select': '请选择语言',
   'validator.lang.mustBeEnglish': '英文是必选语言',
+  'validator.lang.mustNotContainSemicolon': '不能输入分号',
 };

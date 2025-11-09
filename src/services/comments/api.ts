@@ -71,7 +71,7 @@ export async function getReviewedComment(user_id?: string) {
     .from('comments')
     .select('review_id')
     .eq('reviewer_id', userId)
-    .eq('state_code', 1);
+    .in('state_code', [1, 2]);
   return result;
 }
 

@@ -153,6 +153,12 @@ const FlowsEdit: FC<Props> = ({
   }, [drawerVisible]);
 
   const handleSubmit = async (autoClose: boolean) => {
+    try {
+      await formRefEdit.current?.validateFields();
+    } catch (err) {
+      console.log('err', err);
+      return;
+    }
     if (autoClose) setSpinning(true);
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const flowProperties = fromData?.flowProperties;

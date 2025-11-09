@@ -299,6 +299,12 @@ const FlowsCreate: FC<CreateProps> = ({
               } as FormFlow);
             }}
             onFinish={async () => {
+              try {
+                await formRefCreate.current?.validateFields();
+              } catch (err) {
+                console.log('err', err);
+                return;
+              }
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const fieldsValue = formRefCreate.current?.getFieldsValue();
               const flowProperties = fromData?.flowProperties;
