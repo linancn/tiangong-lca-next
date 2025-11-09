@@ -684,7 +684,7 @@ const ProcessEdit: FC<Props> = ({
                 });
               }}
             >
-              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <>
               {!hideReviewButton && (
@@ -693,7 +693,7 @@ const ProcessEdit: FC<Props> = ({
                     submitReview();
                   }}
                 >
-                  <FormattedMessage id='pages.button.review' defaultMessage='Submit for review' />
+                  <FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />
                 </Button>
               )}
               <Button
@@ -703,7 +703,7 @@ const ProcessEdit: FC<Props> = ({
               >
                 <FormattedMessage
                   id='pages.button.updateReference'
-                  defaultMessage='Update reference'
+                  defaultMessage='Update Reference'
                 />
               </Button>
             </>
