@@ -56,13 +56,6 @@ jest.mock('@/contexts/refCheckContext', () => ({
   },
 }));
 
-jest.mock('@/contexts/updateReferenceContext', () => ({
-  __esModule: true,
-  UpdateReferenceContext: {
-    Provider: ({ children }: any) => <div>{children}</div>,
-  },
-}));
-
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
   getFlowDetail: jest.fn(() =>

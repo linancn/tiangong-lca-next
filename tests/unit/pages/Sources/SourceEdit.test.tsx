@@ -13,6 +13,38 @@ const toText = (node: any): string => {
   return '';
 };
 
+jest.mock('@supabase/supabase-js', () => {
+  const supabaseQueryBuilder: any = {};
+  supabaseQueryBuilder.select = jest.fn().mockResolvedValue({ data: [], error: null });
+  supabaseQueryBuilder.insert = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.delete = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.update = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.eq = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.in = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.order = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.range = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.limit = jest.fn(() => supabaseQueryBuilder);
+  supabaseQueryBuilder.single = jest.fn().mockResolvedValue({ data: null, error: null });
+
+  const supabaseMock = {
+    from: jest.fn(() => supabaseQueryBuilder),
+    auth: {
+      getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
+    },
+    functions: {
+      invoke: jest.fn().mockResolvedValue({ data: null, error: null }),
+    },
+  };
+
+  return {
+    __esModule: true,
+    createClient: jest.fn(() => supabaseMock),
+    FunctionRegion: {
+      UsEast1: 'us-east-1',
+    },
+  };
+});
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -225,9 +257,20 @@ jest.mock('@ant-design/pro-components', () => {
     );
   };
 
+  const ProTable = ({ dataSource = [], children }: any) => (
+    <div data-testid='pro-table'>
+      {typeof children === 'function'
+        ? children(dataSource)
+        : dataSource.map((row: any) => (
+            <div key={row?.key ?? row?.id ?? String(Math.random())}>{row?.id ?? 'row'}</div>
+          ))}
+    </div>
+  );
+
   return {
     __esModule: true,
     ProForm,
+    ProTable,
     __ProFormContext: ProFormContext,
   };
 });

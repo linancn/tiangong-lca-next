@@ -246,17 +246,6 @@ jest.mock('@/contexts/refCheckContext', () => {
   };
 });
 
-const updateReferenceContextValue = { referenceValue: 0 };
-jest.mock('@/contexts/updateReferenceContext', () => {
-  const React = require('react');
-  const UpdateReferenceContext = React.createContext(updateReferenceContextValue);
-  return {
-    __esModule: true,
-    UpdateReferenceContext,
-    useUpdateReferenceContext: () => updateReferenceContextValue,
-  };
-});
-
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   checkData: jest.fn(),
