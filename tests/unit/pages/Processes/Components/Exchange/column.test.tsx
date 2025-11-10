@@ -66,9 +66,10 @@ describe('getExchangeColumns', () => {
   it('should return configured columns for exchange table', () => {
     const columns = getExchangeColumns('en');
 
-    expect(columns).toHaveLength(10);
+    expect(columns).toHaveLength(11);
     expect(columns[0].dataIndex).toBe('index');
     expect(columns[1].dataIndex).toBe('referenceToFlowDataSet');
+    expect(columns.find((column) => column.dataIndex === 'classification')).toBeTruthy();
     expect(columns[columns.length - 1].dataIndex).toBe('reviewType');
   });
 
