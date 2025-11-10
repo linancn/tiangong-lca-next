@@ -22,6 +22,7 @@ export type ProcessExchangeTable = {
   referenceToFlowDataSetId: string;
   referenceToFlowDataSetVersion: string;
   referenceToFlowDataSet: string;
+  classification: string;
   meanAmount: string;
   resultingAmount: string;
   uncertaintyDistributionType: string;

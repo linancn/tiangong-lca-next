@@ -54,6 +54,18 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       },
     },
     {
+      title: (
+        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
+      ),
+      dataIndex: 'classification',
+      search: false,
+      render: (_, row) => {
+        return row?.classification && row?.classification !== 'undefined'
+          ? row.classification
+          : '-';
+      },
+    },
+    {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'referenceToFlowDataSetVersion',
       sorter: false,
