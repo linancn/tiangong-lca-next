@@ -250,58 +250,36 @@ const Welcome: React.FC = () => {
 
   const currentContent = tidasContent[lang] ?? tidasContent.en;
 
-  const metricDescriptions =
-    lang === 'zh'
-      ? [
-          '覆盖全生命周期过程与清单数据资产',
-          '连接行业部门知识体系，实现领域标准化',
-          '支撑产品全链路碳管理方案',
-          '全球生态共同维护与贡献',
-          '跨职能协同的专业数据团队',
-        ]
-      : [
-          'Lifecycle inventories and unit process datasets',
-          'Domain-aligned knowledge with standardized taxonomies',
-          'Full value-chain product carbon management support',
-          'Co-created by a global community of contributors',
-          'Specialized data teams delivering trusted assets',
-        ];
-
   const metrics = [
     {
       key: 'data1',
       icon: <ShareAltOutlined />,
       title: getLangText(info.data1.title, lang),
       value: info.data1.value,
-      description: metricDescriptions[0],
     },
     {
       key: 'data2',
       icon: <BuildOutlined />,
       title: getLangText(info.data2.title, lang),
       value: info.data2.value,
-      description: metricDescriptions[1],
     },
     {
       key: 'data3',
       icon: <ProductOutlined />,
       title: getLangText(info.data3.title, lang),
       value: info.data3.value,
-      description: metricDescriptions[2],
     },
     {
       key: 'data4',
       icon: <UserOutlined />,
       title: getLangText(info.data4.title, lang),
       value: info.data4.value,
-      description: metricDescriptions[3],
     },
     {
       key: 'data5',
       icon: <TeamOutlined />,
       title: getLangText(info.data5.title, lang),
       value: info.data5.value,
-      description: metricDescriptions[4],
     },
   ];
   const modalSubtitle =
@@ -341,8 +319,8 @@ const Welcome: React.FC = () => {
                 bodyStyle={{ padding: 20 }}
                 style={{ ...cardBorderRadiusStyle, width: '100%' }}
               >
-                <Space direction='vertical' size={12}>
-                  <Space align='center' size={12}>
+                <div className={styles.welcome_metric_content}>
+                  <div className={styles.welcome_metric_header}>
                     <span
                       className={styles.welcome_metric_icon}
                       style={{ color: token.colorPrimary }}
@@ -350,7 +328,7 @@ const Welcome: React.FC = () => {
                       {metric.icon}
                     </span>
                     <Typography.Text strong>{metric.title}</Typography.Text>
-                  </Space>
+                  </div>
                   <Statistic
                     value={metric.value}
                     formatter={formatter}
@@ -360,11 +338,9 @@ const Welcome: React.FC = () => {
                       color: token.colorTextHeading,
                       lineHeight: 1.1,
                     }}
+                    style={{ width: '100%', textAlign: 'center' }}
                   />
-                  <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
-                    {metric.description}
-                  </Typography.Paragraph>
-                </Space>
+                </div>
               </Card>
             </Col>
           ))}
