@@ -327,16 +327,27 @@ const Welcome: React.FC = () => {
                     >
                       {metric.icon}
                     </span>
-                    <Typography.Text strong>{metric.title}</Typography.Text>
+                    <Typography.Text
+                      strong
+                      style={{
+                        color: token.colorPrimary,
+                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {metric.title}
+                    </Typography.Text>
                   </div>
                   <Statistic
                     value={metric.value}
                     formatter={formatter}
                     valueStyle={{
-                      fontSize: '2rem',
-                      fontWeight: 600,
-                      color: token.colorTextHeading,
+                      fontSize: '1.25rem',
+                      fontWeight: 500,
+                      color: token.colorTextSecondary,
                       lineHeight: 1.1,
+                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
                     }}
                     style={{ width: '100%', textAlign: 'center' }}
                   />
