@@ -419,6 +419,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToCommissioner',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -517,10 +518,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.timeStamp'
-                defaultMessage='Time stamp (last saved)'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -548,6 +555,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -574,6 +582,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -596,10 +605,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.administrativeInformation.dataSetVersion'
-                defaultMessage='Data set version'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -612,10 +627,16 @@ export const LifeCycleModelForm: FC<Props> = ({
             <Input />
           </Form.Item>
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.administrativeInformation.permanentDataSetURI'
-                defaultMessage='Permanent data set URI'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                }
+                showError={false}
               />
             }
             name={[
@@ -650,6 +671,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToOwnershipOfDataSet',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -662,10 +684,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           />
           <br />
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.copyright'
-                defaultMessage='Copyright?'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.copyright'
+                    defaultMessage='Copyright?'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
@@ -699,10 +727,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           />
           <br />
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.licenseType'
-                defaultMessage='License type'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.licenseType'
+                    defaultMessage='License type'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}

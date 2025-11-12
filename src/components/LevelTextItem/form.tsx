@@ -1,3 +1,4 @@
+import RequiredMark from '@/components/RequiredMark';
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
 import { Cascader, Form, Input, TreeSelect } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -176,8 +177,14 @@ const LevelTextItemForm: FC<Props> = ({
     <>
       <Form.Item
         hidden={hidden}
+        required={false}
         label={
-          <FormattedMessage id='pages.contact.classification' defaultMessage='Classification' />
+          <RequiredMark
+            showError={false}
+            label={
+              <FormattedMessage id='pages.contact.classification' defaultMessage='Classification' />
+            }
+          />
         }
         name={[...name, 'showValue']}
         rules={rules}

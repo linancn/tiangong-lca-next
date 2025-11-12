@@ -23,9 +23,18 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: any[];
+  showRequiredLabel?: boolean;
 };
 
-const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, rules = [] }) => {
+const UnitgroupsSelectFrom: FC<Props> = ({
+  name,
+  label,
+  lang,
+  formRef,
+  onData,
+  rules = [],
+  showRequiredLabel = false,
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
@@ -136,12 +145,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       size='small'
       style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
-        isRequired ? (
+        isRequired || showRequiredLabel ? (
           <RequiredSelectFormTitle
             label={label}
-            ruleErrorState={ruleErrorState}
-            requiredRules={requiredRules}
-            errRef={errRef}
+            ruleErrorState={isRequired ? ruleErrorState : false}
+            requiredRules={isRequired ? requiredRules : []}
+            errRef={isRequired ? errRef : null}
           />
         ) : (
           <>

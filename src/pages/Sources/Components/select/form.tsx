@@ -23,6 +23,7 @@ type Props = {
   rules?: any[];
   defaultSourceName?: string;
   type?: 'reviewReport';
+  showRequiredLabel?: boolean;
 };
 
 const SourceSelectForm: FC<Props> = ({
@@ -35,6 +36,7 @@ const SourceSelectForm: FC<Props> = ({
   rules = [],
   defaultSourceName,
   type,
+  showRequiredLabel = false,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -181,12 +183,12 @@ const SourceSelectForm: FC<Props> = ({
       size='small'
       style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
-        isRequired ? (
+        isRequired || showRequiredLabel ? (
           <RequiredSelectFormTitle
             label={label}
-            ruleErrorState={ruleErrorState}
-            requiredRules={requiredRules}
-            errRef={errRef}
+            ruleErrorState={isRequired ? ruleErrorState : false}
+            requiredRules={isRequired ? requiredRules : []}
+            errRef={isRequired ? errRef : null}
           />
         ) : (
           <>
@@ -218,6 +220,7 @@ const SourceSelectForm: FC<Props> = ({
         <Form.Item
           label={<FormattedMessage id='pages.source.refObjectId' defaultMessage='Ref object id' />}
           name={[...name, '@refObjectId']}
+          required={false}
           rules={[
             ...notRequiredRules,
             isRequired && {

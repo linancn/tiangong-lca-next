@@ -22,6 +22,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: any;
+  showRequiredLabel?: boolean;
 };
 
 const ContactSelectForm: FC<Props> = ({
@@ -32,6 +33,7 @@ const ContactSelectForm: FC<Props> = ({
   formRef,
   onData,
   rules = [],
+  showRequiredLabel = false,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -142,12 +144,12 @@ const ContactSelectForm: FC<Props> = ({
       size='small'
       style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
-        isRequired ? (
+        isRequired || showRequiredLabel ? (
           <RequiredSelectFormTitle
             label={label}
-            ruleErrorState={ruleErrorState}
-            requiredRules={requiredRules}
-            errRef={errRef}
+            ruleErrorState={isRequired ? ruleErrorState : false}
+            requiredRules={isRequired ? requiredRules : []}
+            errRef={isRequired ? errRef : null}
           />
         ) : (
           <>
@@ -175,6 +177,7 @@ const ContactSelectForm: FC<Props> = ({
     >
       <Space direction='horizontal'>
         <Form.Item
+          required={false}
           label={
             <FormattedMessage
               id='pages.contact.refObjectId'
