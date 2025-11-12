@@ -79,6 +79,7 @@ class MockQuery<T = any> {
     eqArgs: [] as Array<{ field: string; value: any }>,
     inArgs: [] as Array<{ field: string; values: any }>,
     notArgs: [] as Array<any>,
+    orArgs: [] as Array<string>,
   };
 
   constructor(private readonly result: T) {}
@@ -120,6 +121,11 @@ class MockQuery<T = any> {
 
   not(...args: any[]) {
     this.calls.notArgs.push(args);
+    return this;
+  }
+
+  or(filter: string) {
+    this.calls.orArgs.push(filter);
     return this;
   }
 
@@ -807,24 +813,67 @@ describe('getReferenceProperty', () => {
 describe('getFlowStateCodeByIdsAndVersions', () => {
   it('fetches state codes for the given id and version pairs', async () => {
     const ids = ['11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222'];
-    const query = createQuery({
-      data: [{ id: ids[0], version: '01.00.000', state_code: 100 }],
+    const supabaseResponse = {
+      data: [
+        {
+          id: ids[0],
+          version: '01.00.000',
+          state_code: 100,
+          typeOfDataSet: 'Product flow',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [{ '#text': 'Air' }, { '#text': 'Water' }],
+            },
+          },
+          locationOfSupply: 'CN',
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                geography: {
+                  locationOfSupply: 'CN',
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    };
+    const query = createQuery(supabaseResponse);
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+    mockGetILCDLocationByValues.mockResolvedValueOnce({
+      data: [{ '@value': 'CN', '#text': 'China' }],
     });
     mockFrom.mockReturnValue(query as any);
 
-    const result = await getFlowStateCodeByIdsAndVersions([
-      { id: ids[0], version: '01.00.000' },
-      { id: ids[1], version: '01.00.001' },
-    ]);
+    const result = await getFlowStateCodeByIdsAndVersions(
+      [
+        { id: ids[0], version: '01.00.000' },
+        { id: ids[1], version: '01.00.001' },
+      ],
+      'en',
+    );
 
     expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.selectArgs).toEqual(['state_code,id,version']);
-    expect(query.calls.inArgs).toEqual([
-      { field: 'id', values: ids },
-      { field: 'version', values: ['01.00.000', '01.00.001'] },
+    expect(query.calls.selectArgs).toHaveLength(1);
+    expect(query.calls.selectArgs?.[0]).toContain('state_code');
+    expect(query.calls.selectArgs?.[0]).toContain('classificationInformation');
+    expect(query.calls.orArgs).toEqual([
+      `and(id.eq.${ids[0]},version.eq.01.00.000),and(id.eq.${ids[1]},version.eq.01.00.001)`,
     ]);
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['CN']);
+    expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
     expect(result).toEqual({
-      data: [{ id: ids[0], version: '01.00.000', state_code: 100 }],
+      error: null,
+      data: [
+        {
+          key: `${ids[0]}:01.00.000`,
+          id: ids[0],
+          version: '01.00.000',
+          stateCode: 100,
+          classification: 'Air / Water',
+        },
+      ],
     });
   });
 });

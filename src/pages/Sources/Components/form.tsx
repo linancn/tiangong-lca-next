@@ -285,10 +285,16 @@ export const SourceForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.source.edit.administrativeInformation.timeStamp'
-                defaultMessage='Time Stamp'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.source.edit.administrativeInformation.timeStamp'
+                    defaultMessage='Time Stamp'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -316,6 +322,7 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -338,10 +345,16 @@ export const SourceForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.source.edit.administrativeInformation.dataSetVersion'
-                defaultMessage='Data set version'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.source.edit.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -368,6 +381,7 @@ export const SourceForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(

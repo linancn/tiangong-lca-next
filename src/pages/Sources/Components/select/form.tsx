@@ -1,6 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
 import { getSourceDetail } from '@/services/sources/api';
@@ -24,6 +23,7 @@ type Props = {
   rules?: any[];
   defaultSourceName?: string;
   type?: 'reviewReport';
+  showRequiredLabel?: boolean;
 };
 
 const SourceSelectForm: FC<Props> = ({
@@ -36,6 +36,7 @@ const SourceSelectForm: FC<Props> = ({
   rules = [],
   defaultSourceName,
   type,
+  showRequiredLabel = false,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -88,7 +89,6 @@ const SourceSelectForm: FC<Props> = ({
   }, [refCheckContext, refData]);
 
   const { token } = theme.useToken();
-  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const handletSourceData = (rowId: string, rowVersion: string) => {
     getSourceDetail(rowId, rowVersion).then(async (result: any) => {
@@ -122,11 +122,6 @@ const SourceSelectForm: FC<Props> = ({
   };
 
   // const id = formRef.current?.getFieldValue([...name, '@refObjectId']);
-  useEffect(() => {
-    if (id) {
-      handletSourceData(id, version ?? '');
-    }
-  }, [referenceValue]);
 
   const getDefaultValue = () => {
     let referenceToDataSetFormatId = null;
@@ -188,12 +183,12 @@ const SourceSelectForm: FC<Props> = ({
       size='small'
       style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
-        isRequired ? (
+        isRequired || showRequiredLabel ? (
           <RequiredSelectFormTitle
             label={label}
-            ruleErrorState={ruleErrorState}
-            requiredRules={requiredRules}
-            errRef={errRef}
+            ruleErrorState={isRequired ? ruleErrorState : false}
+            requiredRules={isRequired ? requiredRules : []}
+            errRef={isRequired ? errRef : null}
           />
         ) : (
           <>
@@ -225,6 +220,7 @@ const SourceSelectForm: FC<Props> = ({
         <Form.Item
           label={<FormattedMessage id='pages.source.refObjectId' defaultMessage='Ref object id' />}
           name={[...name, '@refObjectId']}
+          required={false}
           rules={[
             ...notRequiredRules,
             isRequired && {

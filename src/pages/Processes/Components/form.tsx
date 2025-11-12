@@ -546,10 +546,16 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.referenceYear'
-                defaultMessage='Reference year'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.referenceYear'
+                    defaultMessage='Reference year'
+                  />
+                }
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
@@ -626,6 +632,7 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
+            showRequiredLable={true}
             rules={
               showRules
                 ? getRules(
@@ -949,10 +956,16 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.modellingAndValidation.typeOfDataSet'
-                defaultMessage='Type of data set'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.typeOfDataSet'
+                    defaultMessage='Type of data set'
+                  />
+                }
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
@@ -1250,6 +1263,7 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1488,6 +1502,7 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -1583,10 +1598,16 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.administrativeInformation.timeStamp'
-                defaultMessage='Time stamp (last saved)'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -1614,6 +1635,7 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1656,6 +1678,7 @@ export const ProcessForm: FC<Props> = ({
               'dataEntryBy',
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1713,10 +1736,16 @@ export const ProcessForm: FC<Props> = ({
           </Form.Item>
 
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.administrativeInformation.dataSetVersion'
-                defaultMessage='Data set version'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -1730,10 +1759,16 @@ export const ProcessForm: FC<Props> = ({
           </Form.Item>
 
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.administrativeInformation.permanentDataSetURI'
-                defaultMessage='Permanent data set URI'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                }
+                showError={false}
               />
             }
             name={[
@@ -1835,6 +1870,7 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1847,10 +1883,16 @@ export const ProcessForm: FC<Props> = ({
           />
           <br />
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.administrativeInformation.copyright'
-                defaultMessage='Copyright?'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.copyright'
+                    defaultMessage='Copyright?'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
@@ -1884,10 +1926,16 @@ export const ProcessForm: FC<Props> = ({
           />
           <br />
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.administrativeInformation.licenseType'
-                defaultMessage='License type'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.licenseType'
+                    defaultMessage='License type'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
@@ -1987,7 +2035,7 @@ export const ProcessForm: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
                           ({ error, data: flowsResp }: any) => {
                             if (!error) {
                               unitRes.forEach((item: any) => {
@@ -1997,7 +2045,8 @@ export const ProcessForm: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.state_code;
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }
@@ -2074,7 +2123,7 @@ export const ProcessForm: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
                           ({ error, data: flowsResp }: any) => {
                             if (!error) {
                               unitRes.forEach((item: any) => {
@@ -2084,7 +2133,8 @@ export const ProcessForm: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.state_code;
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }

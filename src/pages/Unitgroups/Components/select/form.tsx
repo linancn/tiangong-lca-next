@@ -1,7 +1,6 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
 import { jsonToList } from '@/services/general/util';
@@ -24,14 +23,22 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: any[];
+  showRequiredLabel?: boolean;
 };
 
-const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, rules = [] }) => {
+const UnitgroupsSelectFrom: FC<Props> = ({
+  name,
+  label,
+  lang,
+  formRef,
+  onData,
+  rules = [],
+  showRequiredLabel = false,
+}) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
-  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
@@ -112,11 +119,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       validateRefObjectId(formRef, name);
     });
   };
-  useEffect(() => {
-    if (id) {
-      handletUnitgroupsData(id, version ?? '');
-    }
-  }, [referenceValue]);
+
   useEffect(() => {
     // setId(undefined);
     const refObjectId = formRef.current?.getFieldValue([...name, '@refObjectId']);
@@ -142,12 +145,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({ name, label, lang, formRef, onData, r
       size='small'
       style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
-        isRequired ? (
+        isRequired || showRequiredLabel ? (
           <RequiredSelectFormTitle
             label={label}
-            ruleErrorState={ruleErrorState}
-            requiredRules={requiredRules}
-            errRef={errRef}
+            ruleErrorState={isRequired ? ruleErrorState : false}
+            requiredRules={isRequired ? requiredRules : []}
+            errRef={isRequired ? errRef : null}
           />
         ) : (
           <>

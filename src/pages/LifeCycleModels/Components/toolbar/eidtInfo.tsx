@@ -1,4 +1,3 @@
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -15,6 +14,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import type { refDataType } from '@/pages/Utils/review';
 import {
   checkReferences,
@@ -26,6 +26,7 @@ import {
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
 
@@ -40,11 +41,15 @@ type Props = {
   action: string;
 };
 const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, ref) => {
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<any>({});
-  const [referenceValue, setReferenceValue] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
@@ -66,9 +71,35 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     }
   }, [showRules, activeTabKey]);
 
-  const updateReference = async () => {
-    setReferenceValue(referenceValue + 1);
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res });
+    setRefsDrawerVisible(false);
   };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      formRefEdit.current?.setFieldsValue({ ...res });
+    }
+  };
+
   const handletFromData = () => {
     const fieldsValue = formRefEdit.current?.getFieldsValue();
 
@@ -356,7 +387,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
 
                 <Button
                   onClick={() => {
-                    updateReference();
+                    handleUpdateReference();
                   }}
                 >
                   <FormattedMessage
@@ -388,68 +419,74 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={data}
+              onValuesChange={async (_, allValues) => {
+                if (activeTabKey === 'validation') {
+                  await setFromData({
+                    ...fromData,
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      validation: { ...allValues?.modellingAndValidation?.validation },
+                    },
+                  });
+                } else if (activeTabKey === 'complianceDeclarations') {
+                  await setFromData({
+                    ...fromData,
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      complianceDeclarations: {
+                        ...allValues?.modellingAndValidation?.complianceDeclarations,
+                      },
+                    },
+                  });
+                } else {
+                  await setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  });
+                }
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={async () => {
+                // if (!checkResult) {
+                //   await setActiveTabKey(tabName);
+                //   formRefEdit.current?.validateFields();
+                //   return false;
+                // }
+                onData({ ...fromData });
+                formRefEdit.current?.resetFields();
+                setDrawerVisible(false);
+                return true;
+              }}
+            >
+              <LifeCycleModelForm
+                formType={action}
+                lang={lang}
+                activeTabKey={activeTabKey}
                 formRef={formRefEdit}
-                initialValues={data}
-                onValuesChange={async (_, allValues) => {
-                  if (activeTabKey === 'validation') {
-                    await setFromData({
-                      ...fromData,
-                      modellingAndValidation: {
-                        ...fromData?.modellingAndValidation,
-                        validation: { ...allValues?.modellingAndValidation?.validation },
-                      },
-                    });
-                  } else if (activeTabKey === 'complianceDeclarations') {
-                    await setFromData({
-                      ...fromData,
-                      modellingAndValidation: {
-                        ...fromData?.modellingAndValidation,
-                        complianceDeclarations: {
-                          ...allValues?.modellingAndValidation?.complianceDeclarations,
-                        },
-                      },
-                    });
-                  } else {
-                    await setFromData({
-                      ...fromData,
-                      [activeTabKey]: allValues[activeTabKey] ?? {},
-                    });
-                  }
-                }}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                onFinish={async () => {
-                  // if (!checkResult) {
-                  //   await setActiveTabKey(tabName);
-                  //   formRefEdit.current?.validateFields();
-                  //   return false;
-                  // }
-                  onData({ ...fromData });
-                  formRefEdit.current?.resetFields();
-                  setDrawerVisible(false);
-                  return true;
-                }}
-              >
-                <LifeCycleModelForm
-                  formType={action}
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  formRef={formRefEdit}
-                  onTabChange={onTabChange}
-                  onData={handletFromData}
-                  showRules={showRules}
-                />
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onTabChange={onTabChange}
+                onData={handletFromData}
+                showRules={showRules}
+              />
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 });

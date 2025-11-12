@@ -1512,7 +1512,7 @@ const ProcessView: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
                           ({ error, data: flowsResp }: any) => {
                             if (!error) {
                               unitRes.forEach((item: any) => {
@@ -1522,7 +1522,8 @@ const ProcessView: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.state_code;
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }
@@ -1570,7 +1571,7 @@ const ProcessView: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
                           ({ error, data: flowsResp }: any) => {
                             if (!error) {
                               unitRes.forEach((item: any) => {
@@ -1580,7 +1581,8 @@ const ProcessView: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.state_code;
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }

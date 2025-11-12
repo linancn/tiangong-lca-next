@@ -1,6 +1,5 @@
 import AISuggestion from '@/components/AISuggestion';
 import { RefCheckContext } from '@/contexts/refCheckContext';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
@@ -11,6 +10,9 @@ import {
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
+
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRuleVerification } from '@/services/general/util';
@@ -76,7 +78,6 @@ const ProcessEdit: FC<Props> = ({
   // const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
   // const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const intl = useIntl();
-  const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
     refCheckData: [],
@@ -86,6 +87,11 @@ const ProcessEdit: FC<Props> = ({
       refCheckData: [...refCheckData],
     });
   }, [refCheckData]);
+
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
 
   useEffect(() => {
     if (autoOpen && id && version) {
@@ -150,7 +156,7 @@ const ProcessEdit: FC<Props> = ({
     if (fromData?.id) setExchangeDataSource([...data]);
   };
 
-  const updateReference = async () => {
+  const updateExchangeDataSource = async () => {
     const newExchangeDataSource = await Promise.all(
       exchangeDataSource.map(async (item: any) => {
         const refObjectId = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
@@ -178,8 +184,40 @@ const ProcessEdit: FC<Props> = ({
     );
 
     setExchangeDataSource(newExchangeDataSource);
-    setReferenceValue(referenceValue + 1);
   };
+
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    await updateExchangeDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    await updateExchangeDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      await updateExchangeDataSource();
+      formRefEdit.current?.setFieldsValue({ ...res, id });
+    }
+  };
+
   const handleSubmit = async (closeDrawer: boolean) => {
     if (closeDrawer) setSpinning(true);
     const output = exchangeDataSource.filter(
@@ -698,7 +736,7 @@ const ProcessEdit: FC<Props> = ({
               )}
               <Button
                 onClick={() => {
-                  updateReference();
+                  handleUpdateReference();
                 }}
               >
                 <FormattedMessage
@@ -728,66 +766,72 @@ const ProcessEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              onValuesChange={async (_, allValues) => {
+                if (activeTabKey === 'validation') {
+                  await setFromData({
+                    ...fromData,
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      validation: { ...allValues?.modellingAndValidation?.validation },
+                    },
+                  } as FormProcessWithDatas);
+                } else if (activeTabKey === 'complianceDeclarations') {
+                  await setFromData({
+                    ...fromData,
+                    modellingAndValidation: {
+                      ...fromData?.modellingAndValidation,
+                      complianceDeclarations: {
+                        ...allValues?.modellingAndValidation?.complianceDeclarations,
+                      },
+                    },
+                  } as FormProcessWithDatas);
+                } else {
+                  await setFromData({
+                    ...fromData,
+                    [activeTabKey]: allValues[activeTabKey] ?? {},
+                  } as FormProcessWithDatas);
+                }
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={() => handleSubmit(true)}
+            >
+              <ProcessForm
+                lang={lang}
+                activeTabKey={activeTabKey}
                 formRef={formRefEdit}
-                initialValues={initData}
-                onValuesChange={async (_, allValues) => {
-                  if (activeTabKey === 'validation') {
-                    await setFromData({
-                      ...fromData,
-                      modellingAndValidation: {
-                        ...fromData?.modellingAndValidation,
-                        validation: { ...allValues?.modellingAndValidation?.validation },
-                      },
-                    } as FormProcessWithDatas);
-                  } else if (activeTabKey === 'complianceDeclarations') {
-                    await setFromData({
-                      ...fromData,
-                      modellingAndValidation: {
-                        ...fromData?.modellingAndValidation,
-                        complianceDeclarations: {
-                          ...allValues?.modellingAndValidation?.complianceDeclarations,
-                        },
-                      },
-                    } as FormProcessWithDatas);
-                  } else {
-                    await setFromData({
-                      ...fromData,
-                      [activeTabKey]: allValues[activeTabKey] ?? {},
-                    } as FormProcessWithDatas);
-                  }
-                }}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                onFinish={() => handleSubmit(true)}
-              >
-                <ProcessForm
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  formRef={formRefEdit}
-                  onData={handletFromData}
-                  onExchangeData={handletExchangeData}
-                  onExchangeDataCreate={handletExchangeDataCreate}
-                  onTabChange={(key) => onTabChange(key as TabKeysType)}
-                  exchangeDataSource={exchangeDataSource}
-                  actionFrom={actionFrom}
-                  showRules={showRules}
-                  lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
-                  onLciaResults={handleLciaResults}
-                />
-                <Form.Item name='id' hidden>
-                  <Input />
-                </Form.Item>
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onData={handletFromData}
+                onExchangeData={handletExchangeData}
+                onExchangeDataCreate={handletExchangeDataCreate}
+                onTabChange={(key) => onTabChange(key as TabKeysType)}
+                exchangeDataSource={exchangeDataSource}
+                actionFrom={actionFrom}
+                showRules={showRules}
+                lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
+                onLciaResults={handleLciaResults}
+              />
+              <Form.Item name='id' hidden>
+                <Input />
+              </Form.Item>
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 };

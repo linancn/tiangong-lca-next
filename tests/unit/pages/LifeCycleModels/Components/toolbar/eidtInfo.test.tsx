@@ -12,14 +12,6 @@ jest.mock('umi', () => ({
   }),
 }));
 
-jest.mock('@/contexts/updateReferenceContext', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    UpdateReferenceContext: React.createContext({ referenceValue: 0 }),
-  };
-});
-
 jest.mock('@/contexts/refCheckContext', () => {
   const React = require('react');
   const parentContextValue = { refCheckData: [] };
