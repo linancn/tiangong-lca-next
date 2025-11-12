@@ -1,5 +1,5 @@
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
-import { SelectLang as UmiSelectLang } from '@umijs/max';
+import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import { ConfigProvider, theme } from 'antd';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
@@ -15,6 +15,11 @@ export const SelectLang = () => {
 };
 
 export const Question = () => {
+  const intl = useIntl();
+  const docsBaseUrl = 'https://docs.tiangong.earth';
+  const locale = intl?.locale?.toLowerCase() || 'zh';
+  const docsUrl = locale.startsWith('en') ? `${docsBaseUrl}/en` : docsBaseUrl;
+
   return (
     <div
       style={{
@@ -22,7 +27,7 @@ export const Question = () => {
         height: 26,
       }}
       onClick={() => {
-        window.open('https://docs.tiangong.earth');
+        window.open(docsUrl);
       }}
     >
       <QuestionCircleOutlined />

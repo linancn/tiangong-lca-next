@@ -309,7 +309,7 @@ const Welcome: React.FC = () => {
       ? '由全球合作伙伴共建的行业数据网络'
       : 'A global network of lifecycle data partners.';
 
-  const tidasTitle = lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Data Fabric';
+  const tidasTitle = lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture';
   const tidasDescription =
     lang === 'zh'
       ? '以模块化数据包、API 与工具链构建的开放生态，支持跨平台协同与可验证的数据交换。'
@@ -388,7 +388,7 @@ const Welcome: React.FC = () => {
             </Typography.Paragraph>
             <Space size={12} wrap>
               <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
-                {lang === 'zh' ? '查看 TIDAS 数据体系架构' : 'View TIDAS Architecture'}
+                {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
               </Button>
               <Button
                 onClick={(event) => {
@@ -396,7 +396,7 @@ const Welcome: React.FC = () => {
                   setIsDataModalOpen(true);
                 }}
               >
-                {lang === 'zh' ? '浏览数据生态' : 'Explore Data Ecosystem'}
+                {lang === 'zh' ? '天工数据生态' : 'TiangGong Data Ecosystem'}
               </Button>
             </Space>
           </Space>
