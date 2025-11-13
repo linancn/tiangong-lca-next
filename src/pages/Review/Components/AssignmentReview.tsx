@@ -2,12 +2,16 @@ import AccountView from '@/pages/Account/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
-import { getReviewsTableData } from '@/services/reviews/api';
+import {
+  getReviewsTableDataOfReviewAdmin,
+  getReviewsTableDataOfReviewMember,
+} from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Card, Col, Input, Row, Space } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
+import { SortOrder } from 'antd/es/table/interface';
 import { useState } from 'react';
 import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
@@ -277,6 +281,34 @@ const AssignmentReview = ({
     }
   };
 
+  const getReviewsTableData = async (
+    params: {
+      pageSize: number;
+      current: number;
+    },
+    sort: Record<string, SortOrder>,
+  ) => {
+    if (['unassigned', 'assigned'].includes(tableType)) {
+      return getReviewsTableDataOfReviewAdmin(params, sort, tableType, lang);
+    }
+
+    if (['pending', 'reviewed'].includes(tableType)) {
+      return getReviewsTableDataOfReviewMember(
+        params,
+        sort,
+        tableType,
+        lang,
+        actionFrom === 'reviewMember' ? { user_id: userData?.user_id } : undefined,
+      );
+    }
+
+    return Promise.resolve({
+      success: true,
+      data: [],
+      total: 0,
+    });
+  };
+
   return (
     <>
       {!actionFrom && (
@@ -343,13 +375,7 @@ const AssignmentReview = ({
             }
             setTableLoading(true);
             setSelectedRowKeys([]);
-            return await getReviewsTableData(
-              params,
-              sort,
-              tableType,
-              lang,
-              actionFrom === 'reviewMember' ? { user_id: userData?.user_id } : undefined,
-            );
+            return await getReviewsTableData(params, sort);
           } catch (error) {
             console.error(error);
             return {
