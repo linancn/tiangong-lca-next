@@ -398,15 +398,25 @@ const Welcome: React.FC = () => {
                 style={cardBorderRadiusStyle}
               >
                 <Space direction='vertical' size={12}>
-                  <Space align='center' size={12}>
+                  <div className={styles.welcome_section_header}>
                     <span
                       className={styles.welcome_section_icon}
                       style={{ color: token.colorPrimary }}
                     >
                       {sectionIconMap[section.key]}
                     </span>
-                    <Typography.Text strong>{section.heading}</Typography.Text>
-                  </Space>
+                    <Typography.Text
+                      strong
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        lineHeight: '20px',
+                        margin: 0,
+                      }}
+                    >
+                      {section.heading}
+                    </Typography.Text>
+                  </div>
                   <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
                     {section.description}
                   </Typography.Paragraph>
