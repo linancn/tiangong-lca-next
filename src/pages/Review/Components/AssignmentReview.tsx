@@ -288,11 +288,11 @@ const AssignmentReview = ({
     },
     sort: Record<string, SortOrder>,
   ) => {
-    if (['unassigned', 'assigned'].includes(tableType)) {
+    if (tableType === 'unassigned' || tableType === 'assigned') {
       return getReviewsTableDataOfReviewAdmin(params, sort, tableType, lang);
     }
 
-    if (['pending', 'reviewed'].includes(tableType)) {
+    if (tableType === 'pending' || tableType === 'reviewed') {
       return getReviewsTableDataOfReviewMember(
         params,
         sort,

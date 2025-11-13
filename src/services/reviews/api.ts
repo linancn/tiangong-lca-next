@@ -60,7 +60,7 @@ export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
 export async function getReviewsTableDataOfReviewMember(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned' | 'reviewed' | 'pending' | 'rejected',
+  type: 'reviewed' | 'pending',
   lang: string,
   userData?: { user_id: string | undefined },
 ) {
@@ -138,7 +138,7 @@ export async function getReviewsTableDataOfReviewMember(
 export async function getReviewsTableDataOfReviewAdmin(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned' | 'reviewed' | 'pending' | 'rejected',
+  type: 'unassigned' | 'assigned',
   lang: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';

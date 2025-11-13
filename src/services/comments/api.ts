@@ -65,18 +65,22 @@ export async function getReviewedComment(
   params: {
     current?: number;
     pageSize?: number;
-  },
-  sort: Record<string, SortOrder>,
+  } = {},
+  sort: Record<string, SortOrder> = {},
   user_id?: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const normalizedSort = sort ?? {};
+  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
+  const orderBy = normalizedSort[sortBy] ?? 'descend';
 
   const userId = user_id ?? (await getUserId());
 
   if (!userId) {
     return { error: true, data: [] };
   }
+
+  const pageSize = params.pageSize ?? 10;
+  const currentPage = params.current ?? 1;
 
   const result = await supabase
     .from('comments')
@@ -85,10 +89,7 @@ export async function getReviewedComment(
     .in('state_code', [1, 2])
     .filter('reviews.state_code', 'gt', 0)
     .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
+    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
   return result;
 }
 
@@ -96,17 +97,21 @@ export async function getPendingComment(
   params: {
     current?: number;
     pageSize?: number;
-  },
-  sort: Record<string, SortOrder>,
+  } = {},
+  sort: Record<string, SortOrder> = {},
   user_id?: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const normalizedSort = sort ?? {};
+  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
+  const orderBy = normalizedSort[sortBy] ?? 'descend';
   const userId = user_id ?? (await getUserId());
 
   if (!userId) {
     return { error: true, data: [] };
   }
+
+  const pageSize = params.pageSize ?? 10;
+  const currentPage = params.current ?? 1;
 
   const result = await supabase
     .from('comments')
@@ -115,10 +120,7 @@ export async function getPendingComment(
     .eq('state_code', 0)
     .filter('reviews.state_code', 'gt', 0)
     .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
+    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
   return result;
 }
 
