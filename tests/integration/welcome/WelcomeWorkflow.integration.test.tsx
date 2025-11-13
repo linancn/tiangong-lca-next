@@ -52,7 +52,7 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Card = ({ children, cover, onClick, hoverable, ...rest }) => {
+  const Card = ({ children, cover, onClick, hoverable, bodyStyle, className, style, ...rest }) => {
     void hoverable;
     return (
       <div
@@ -60,38 +60,49 @@ jest.mock('antd', () => {
         role={onClick ? 'button' : 'group'}
         tabIndex={onClick ? 0 : undefined}
         onClick={onClick}
+        className={className}
+        style={style}
         {...rest}
       >
         {cover}
-        <div>{children}</div>
+        <div style={bodyStyle ?? undefined}>{children}</div>
       </div>
     );
   };
   Card.Meta = CardMeta;
 
   const Typography = {
-    Link: ({ children, onClick, ...rest }) => (
-      <a
-        href='#'
-        onClick={(event) => {
-          event.preventDefault();
-          onClick?.(event);
-        }}
-        {...rest}
-      >
-        {children}
-      </a>
-    ),
-    Paragraph: ({ children, ...rest }) => (
-      <p data-testid='typography-paragraph' {...rest}>
-        {children}
-      </p>
-    ),
-    Text: ({ children, ...rest }) => (
-      <span data-testid='typography-text' {...rest}>
-        {children}
-      </span>
-    ),
+    Link: ({ children, onClick, href = '#', strong, ...rest }) => {
+      void strong;
+      return (
+        <a
+          href={href}
+          onClick={(event) => {
+            event.preventDefault();
+            onClick?.(event);
+          }}
+          {...rest}
+        >
+          {children}
+        </a>
+      );
+    },
+    Paragraph: ({ children, strong, ...rest }) => {
+      void strong;
+      return (
+        <p data-testid='typography-paragraph' {...rest}>
+          {children}
+        </p>
+      );
+    },
+    Text: ({ children, strong, ...rest }) => {
+      void strong;
+      return (
+        <span data-testid='typography-text' {...rest}>
+          {children}
+        </span>
+      );
+    },
   };
 
   const Row = ({ children, wrap, justify, align, gutter, ...rest }) => {
@@ -134,6 +145,15 @@ jest.mock('antd', () => {
     return <img src={src} alt={alt} data-testid='image' {...rest} />;
   };
 
+  const Button = ({ children, onClick, type: buttonType, ...rest }) => {
+    void buttonType;
+    return (
+      <button type='button' onClick={onClick} {...rest}>
+        {children}
+      </button>
+    );
+  };
+
   const Modal = ({ open, onCancel, children, title, width }) => {
     if (!open) {
       return null;
@@ -152,6 +172,7 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Button,
     Card,
     Col,
     ConfigProvider,

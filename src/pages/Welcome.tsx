@@ -28,12 +28,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
-import Meta from 'antd/es/card/Meta';
 import CountUp from 'react-countup';
 import { FormattedMessage, useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
+  const { Meta } = Card;
 
   const { locale } = useIntl();
   const lang = getLang(locale) as 'en' | 'zh';
@@ -45,6 +45,14 @@ const Welcome: React.FC = () => {
   const [isTeamsLoading, setIsTeamsLoading] = useState(false);
   const [modalWidth, setModalWidth] = useState(720);
   const [isTidasModalOpen, setIsTidasModalOpen] = useState(false);
+
+  const handleOpenDataModal = React.useCallback(
+    (event?: React.MouseEvent<HTMLElement>) => {
+      event?.preventDefault();
+      setIsDataModalOpen(true);
+    },
+    [setIsDataModalOpen],
+  );
 
   const loadTeams = React.useCallback(async () => {
     if (teams || isTeamsLoading) {
@@ -327,17 +335,33 @@ const Welcome: React.FC = () => {
                     >
                       {metric.icon}
                     </span>
-                    <Typography.Text
-                      strong
-                      style={{
-                        color: token.colorPrimary,
-                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {metric.title}
-                    </Typography.Text>
+                    {metric.key === 'data5' ? (
+                      <Typography.Link
+                        strong
+                        href='#'
+                        onClick={handleOpenDataModal}
+                        style={{
+                          color: token.colorPrimary,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Link>
+                    ) : (
+                      <Typography.Text
+                        strong
+                        style={{
+                          color: token.colorPrimary,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Text>
+                    )}
                   </div>
                   <Statistic
                     value={metric.value}
@@ -377,12 +401,7 @@ const Welcome: React.FC = () => {
               <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
                 {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
               </Button>
-              <Button
-                onClick={(event) => {
-                  event.preventDefault();
-                  setIsDataModalOpen(true);
-                }}
-              >
+              <Button onClick={handleOpenDataModal}>
                 {lang === 'zh' ? '天工数据生态' : 'TiangGong Data Ecosystem'}
               </Button>
             </Space>
