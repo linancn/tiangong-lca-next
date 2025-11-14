@@ -1,6 +1,7 @@
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
+  ApartmentOutlined,
   BuildOutlined,
   DeploymentUnitOutlined,
   GlobalOutlined,
@@ -191,12 +192,14 @@ const Welcome: React.FC = () => {
   type SectionKey =
     | 'internationalMethodology'
     | 'ecosystemInteroperability'
-    | 'architectureExtensibility';
+    | 'architectureExtensibility'
+    | 'modelingTraceability';
 
   const sectionIconMap: Record<SectionKey, React.ReactNode> = {
     internationalMethodology: <GlobalOutlined />,
     ecosystemInteroperability: <InteractionOutlined />,
     architectureExtensibility: <DeploymentUnitOutlined />,
+    modelingTraceability: <ApartmentOutlined />,
   };
 
   const tidasContent: Record<
@@ -228,6 +231,12 @@ const Welcome: React.FC = () => {
           description:
             '平台内嵌AI算法以辅助数据的研制与验证。其模块化架构亦支持集成区块链、隐私计算等前沿技术，用以保障企业数据的完整性与保密性。',
         },
+        {
+          heading: '可溯建模',
+          key: 'modelingTraceability',
+          description:
+            '平台面向复杂生产系统提供可溯建模能力，实现过程与模型的双向关联，覆盖多产品、多去向及回流场景，使产品建模路径与分配逻辑清晰可见，一次建模即可生成各产品及副产品结果。',
+        },
       ],
     },
     en: {
@@ -251,6 +260,12 @@ const Welcome: React.FC = () => {
           key: 'architectureExtensibility',
           description:
             'The platform embeds AI algorithms to assist in data modeling and validation. Its modular architecture also supports the integration of cutting-edge technologies like blockchain and privacy-enhancing computation (PEC) to ensure the integrity and confidentiality of enterprise data.',
+        },
+        {
+          heading: 'Modeling & Traceability',
+          key: 'modelingTraceability',
+          description:
+            'Traceable modeling for complex production systems links process datasets and model datasets bidirectionally, covering multi-product, multi-destination, and recycle scenarios so product pathways and allocation logic remain transparent. Model the plant once and output impacts for every product and by-product straight away.',
         },
       ],
     },
