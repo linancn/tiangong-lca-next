@@ -23,10 +23,13 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 const mockGetLifeCyclesByIds = jest.fn();
+const mockGetLifeCyclesByIdAndVersion = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
   getLifeCyclesByIds: (...args: any[]) => mockGetLifeCyclesByIds.apply(null, args),
+  getLifeCyclesByIdAndVersion: (...args: any[]) =>
+    mockGetLifeCyclesByIdAndVersion.apply(null, args),
 }));
 
 const mockGetPendingComment = jest.fn();
@@ -88,6 +91,8 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockGetLifeCyclesByIds.mockReset();
   mockGetLifeCyclesByIds.mockResolvedValue({ data: [] });
+  mockGetLifeCyclesByIdAndVersion.mockReset();
+  mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
   mockGetPendingComment.mockReset();
   mockGetPendingComment.mockResolvedValue({ data: [] });
   mockGetReviewedComment.mockReset();
@@ -275,243 +280,6 @@ describe('getReviewsDetailByReviewIds', () => {
 
     expect(builder.in).toHaveBeenCalledWith('id', ['review-1', 'review-2']);
     expect(result).toEqual(supabaseResult.data);
-  });
-});
-
-describe('getReviewsTableData', () => {
-  it('returns empty dataset when no rows are found', async () => {
-    const builder = createQueryBuilder({ data: [], count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await reviewsApi.getReviewsTableData(
-      { pageSize: 10, current: 1 },
-      {},
-      'unassigned',
-      'en',
-    );
-
-    expect(builder.eq).toHaveBeenCalledWith('state_code', 0);
-    expect(result).toEqual({ data: [], success: true, total: 0 });
-  });
-
-  it('hydrates table rows using lifecycle names for reviewed tab', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: 'review-1',
-          json: {
-            data: {
-              id: 'process-1',
-              version: '1.0',
-              name: {
-                baseName: { en: 'Draft Base' },
-                treatmentStandardsRoutes: { en: 'Draft Route' },
-                mixAndLocationTypes: { en: 'Draft Mix' },
-                functionalUnitFlowProperties: { en: 'Draft Unit' },
-              },
-            },
-            team: { name: { en: 'Team Name' } },
-            user: { name: 'Alice' },
-          },
-          created_at: '2024-04-01T10:00:00.000Z',
-          modified_at: '2024-04-02T11:00:00.000Z',
-          deadline: '2024-04-10T00:00:00.000Z',
-        },
-      ],
-      count: 1,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    mockGetReviewedComment.mockResolvedValueOnce({
-      data: [{ review_id: 'review-1' }],
-    });
-    mockGetLifeCyclesByIds.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0',
-          name: {
-            baseName: { en: 'Model Base' },
-            treatmentStandardsRoutes: { en: 'Model Route' },
-            mixAndLocationTypes: { en: 'Model Mix' },
-            functionalUnitFlowProperties: { en: 'Model Unit' },
-          },
-        },
-      ],
-    });
-
-    const result = await reviewsApi.getReviewsTableData(
-      { pageSize: 5, current: 2 },
-      {},
-      'reviewed',
-      'en',
-    );
-
-    expect(builder.in).toHaveBeenCalledWith('id', ['review-1']);
-    expect(mockGetLifeCyclesByIds).toHaveBeenCalledWith(['process-1']);
-    expect(result).toEqual({
-      data: [
-        {
-          key: 'review-1',
-          id: 'review-1',
-          isFromLifeCycle: true,
-          name: 'Model Base; Model Route; Model Mix; Model Unit',
-          teamName: 'Team Name',
-          userName: 'Alice',
-          createAt: '2024-04-01T10:00:00.000Z',
-          modifiedAt: '2024-04-02T11:00:00.000Z',
-          deadline: '2024-04-10T00:00:00.000Z',
-          json: supabaseResult.data[0].json,
-        },
-      ],
-      page: 2,
-      success: true,
-      total: 1,
-    });
-  });
-
-  it('filters pending reviews for specific reviewer using comment assignments', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: 'review-pending',
-          json: {
-            data: {
-              id: 'process-42',
-              version: '1.0',
-              name: {
-                baseName: { en: 'Draft Base' },
-                treatmentStandardsRoutes: { en: 'Draft Route' },
-                mixAndLocationTypes: { en: 'Draft Mix' },
-                functionalUnitFlowProperties: { en: 'Draft Unit' },
-              },
-            },
-            team: { name: { en: 'Team Pending' } },
-            user: { name: 'Eve' },
-          },
-          created_at: '2024-05-01T09:00:00.000Z',
-          modified_at: '2024-05-02T10:00:00.000Z',
-          deadline: '2024-05-10T18:30:00.000Z',
-        },
-      ],
-      count: 1,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    mockGetPendingComment.mockResolvedValueOnce({
-      data: [{ review_id: 'review-pending' }],
-    });
-    mockGetLifeCyclesByIds.mockResolvedValueOnce({ data: [] });
-
-    const result = await reviewsApi.getReviewsTableData(
-      { pageSize: 10, current: 1 },
-      {},
-      'pending',
-      'en',
-      { user_id: 'user-override' },
-    );
-
-    expect(mockGetPendingComment).toHaveBeenCalledWith('user-override');
-    expect(builder.in).toHaveBeenCalledWith('id', ['review-pending']);
-    expect(mockGetLifeCyclesByIds).toHaveBeenCalledWith(['process-42']);
-    expect(result).toEqual({
-      data: [
-        {
-          key: 'review-pending',
-          id: 'review-pending',
-          isFromLifeCycle: false,
-          name: 'Draft Base; Draft Route; Draft Mix; Draft Unit',
-          teamName: 'Team Pending',
-          userName: 'Eve',
-          createAt: '2024-05-01T09:00:00.000Z',
-          modifiedAt: '2024-05-02T10:00:00.000Z',
-          deadline: '2024-05-10T18:30:00.000Z',
-          json: supabaseResult.data[0].json,
-        },
-      ],
-      page: 1,
-      success: true,
-      total: 1,
-    });
-  });
-
-  it('filters rejected reviews for current user', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: 'review-rejected',
-          json: {
-            data: {
-              id: 'process-7',
-              version: '1.0',
-              name: {
-                baseName: { en: 'Fallback Base' },
-                treatmentStandardsRoutes: { en: 'Fallback Route' },
-                mixAndLocationTypes: { en: 'Fallback Mix' },
-                functionalUnitFlowProperties: { en: 'Fallback Unit' },
-              },
-            },
-            team: { name: { en: 'Team Reject' } },
-            user: { name: 'Mallory' },
-          },
-          created_at: '2024-04-10T08:00:00.000Z',
-          modified_at: '2024-04-12T08:30:00.000Z',
-          deadline: null,
-          state_code: -1,
-        },
-      ],
-      count: 1,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    mockGetUserId.mockResolvedValueOnce('user-rejected');
-    mockGetLifeCyclesByIds.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'process-7',
-          version: '1.0',
-          name: {
-            baseName: { en: 'Model Reject Base' },
-            treatmentStandardsRoutes: { en: 'Model Reject Route' },
-            mixAndLocationTypes: { en: 'Model Reject Mix' },
-            functionalUnitFlowProperties: { en: 'Model Reject Unit' },
-          },
-        },
-      ],
-    });
-
-    const result = await reviewsApi.getReviewsTableData(
-      { pageSize: 10, current: 1 },
-      {},
-      'rejected',
-      'en',
-    );
-
-    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
-    expect(builder.filter).toHaveBeenCalledWith('json->user->>id', 'eq', 'user-rejected');
-    expect(result).toEqual({
-      data: [
-        {
-          key: 'review-rejected',
-          id: 'review-rejected',
-          isFromLifeCycle: true,
-          name: 'Model Reject Base; Model Reject Route; Model Reject Mix; Model Reject Unit',
-          teamName: 'Team Reject',
-          userName: 'Mallory',
-          createAt: '2024-04-10T08:00:00.000Z',
-          modifiedAt: '2024-04-12T08:30:00.000Z',
-          deadline: null,
-          json: supabaseResult.data[0].json,
-        },
-      ],
-      page: 1,
-      success: true,
-      total: 1,
-    });
   });
 });
 

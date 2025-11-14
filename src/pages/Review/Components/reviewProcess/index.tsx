@@ -408,8 +408,8 @@ const ReviewProcessDetail: FC<Props> = ({
       refCheckDataValue.push(
         ...underReview.map((item: any) => {
           return {
-            id: item.id,
-            version: item.version,
+            id: item['@refObjectId'],
+            version: item['@version'],
             ruleVerification: true,
             nonExistent: false,
             stateCode: 20,
