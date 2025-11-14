@@ -863,7 +863,7 @@ describe('Process Utility Functions', () => {
       const result = genProcessFromData(dataWithLCIA);
 
       expect(result.LCIAResults).toBeDefined();
-      expect(result.LCIAResults.LCIAResult).toHaveLength(1);
+      expect(result.LCIAResults?.LCIAResult ?? []).toHaveLength(1);
     });
 
     it('should include all major sections', () => {
