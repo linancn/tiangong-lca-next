@@ -27,17 +27,28 @@
   margin-right: 8px;
 }
 
+@welcome-radius: 8px;
+
 .team_logo_container {
-  width: 200px !important;
-  height: 200px;
-  padding: 40px;
-  margin: 0 auto;
+  width: 100%;
+  height: 140px;
+  padding: 24px;
+  margin: 0 auto 12px;
+  border-radius: @welcome-radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ant-color-fill-quaternary);
+  text-align: center;
 }
 
 .team_logo {
   height: 100%;
   width: auto;
   max-width: 100%;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .__AUTO_CHART__container .__AUTO_CHART__toolbar {
@@ -66,4 +77,70 @@
 
 .intro_card:hover {
   transform: translateY(-4px);
+}
+
+.welcome_page {
+  :global(.ant-pro-page-container-children-content) {
+    padding: 16px 24px 24px;
+  }
+}
+
+.welcome_content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.welcome_card {
+  border-radius: @welcome-radius !important;
+  overflow: hidden;
+}
+
+.welcome_metrics_card,
+.welcome_section_card,
+.welcome_team_card {
+  height: 100%;
+}
+
+.welcome_metric_content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.welcome_metric_header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  width: 100%;
+  text-align: left;
+  gap: 12px;
+}
+
+.welcome_section_header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome_metric_icon,
+.welcome_section_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.welcome_team_card {
+  cursor: pointer;
+}
+
+@media (max-width: 991px) {
+  .welcome_content {
+    gap: 20px;
+  }
 }

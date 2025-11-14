@@ -11,10 +11,9 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import {
+  Button,
   Card,
   Col,
-  Divider,
-  Image,
   Modal,
   Row,
   Space,
@@ -24,28 +23,36 @@ import {
   Typography,
   theme,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
-import Meta from 'antd/es/card/Meta';
 import CountUp from 'react-countup';
 import { FormattedMessage, useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
+  const { Meta } = Card;
 
   const { locale } = useIntl();
   const lang = getLang(locale) as 'en' | 'zh';
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-  const [color3, setColor3] = useState(token.colorPrimary);
 
   const [teams, setTeams] = React.useState<any>(null);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isTeamsLoading, setIsTeamsLoading] = useState(false);
   const [modalWidth, setModalWidth] = useState(720);
+  const [isTidasModalOpen, setIsTidasModalOpen] = useState(false);
+
+  const handleOpenDataModal = React.useCallback(
+    (event?: React.MouseEvent<HTMLElement>) => {
+      event?.preventDefault();
+      setIsDataModalOpen(true);
+    },
+    [setIsDataModalOpen],
+  );
 
   const loadTeams = React.useCallback(async () => {
     if (teams || isTeamsLoading) {
@@ -83,39 +90,31 @@ const Welcome: React.FC = () => {
   }, [isTeamsLoading, teams]);
 
   useEffect(() => {
-    if (isDarkMode) {
-      setColor3('#9e3ffd');
-    } else {
-      setColor3(token.colorPrimary);
-    }
-  }, [isDarkMode]);
-
-  useEffect(() => {
     if (isDataModalOpen) {
       loadTeams();
     }
   }, [isDataModalOpen, loadTeams]);
 
   useEffect(() => {
-    if (!isDataModalOpen) {
+    if (!isDataModalOpen && !isTidasModalOpen) {
       return;
     }
     const resize = () => {
       if (typeof window === 'undefined') {
         return;
       }
-      const maxWidth = 1600;
+      const maxWidth = 1024;
       const horizontalGap = 48;
-      const availableWidth = Math.min(window.innerWidth, maxWidth);
       const preferredWidth = Math.min(Math.max(window.innerWidth - horizontalGap, 0), maxWidth);
-      setModalWidth(preferredWidth > 0 ? preferredWidth : availableWidth);
+      const fallbackWidth = Math.min(window.innerWidth, maxWidth);
+      setModalWidth(preferredWidth > 0 ? preferredWidth : fallbackWidth);
     };
     resize();
     window.addEventListener('resize', resize);
     return () => {
       window.removeEventListener('resize', resize);
     };
-  }, [isDataModalOpen]);
+  }, [isDataModalOpen, isTidasModalOpen]);
 
   const info = {
     data1: {
@@ -195,9 +194,9 @@ const Welcome: React.FC = () => {
     | 'architectureExtensibility';
 
   const sectionIconMap: Record<SectionKey, React.ReactNode> = {
-    internationalMethodology: <GlobalOutlined style={{ marginRight: '0.4em' }} />,
-    ecosystemInteroperability: <InteractionOutlined style={{ marginRight: '0.4em' }} />,
-    architectureExtensibility: <DeploymentUnitOutlined style={{ marginRight: '0.4em' }} />,
+    internationalMethodology: <GlobalOutlined />,
+    ecosystemInteroperability: <InteractionOutlined />,
+    architectureExtensibility: <DeploymentUnitOutlined />,
   };
 
   const tidasContent: Record<
@@ -259,6 +258,48 @@ const Welcome: React.FC = () => {
 
   const currentContent = tidasContent[lang] ?? tidasContent.en;
 
+  const metrics = [
+    {
+      key: 'data1',
+      icon: <ShareAltOutlined />,
+      title: getLangText(info.data1.title, lang),
+      value: info.data1.value,
+    },
+    {
+      key: 'data2',
+      icon: <BuildOutlined />,
+      title: getLangText(info.data2.title, lang),
+      value: info.data2.value,
+    },
+    {
+      key: 'data3',
+      icon: <ProductOutlined />,
+      title: getLangText(info.data3.title, lang),
+      value: info.data3.value,
+    },
+    {
+      key: 'data4',
+      icon: <UserOutlined />,
+      title: getLangText(info.data4.title, lang),
+      value: info.data4.value,
+    },
+    {
+      key: 'data5',
+      icon: <TeamOutlined />,
+      title: getLangText(info.data5.title, lang),
+      value: info.data5.value,
+    },
+  ];
+  const modalSubtitle =
+    lang === 'zh'
+      ? '由全球合作伙伴共建的行业数据网络'
+      : 'A global network of lifecycle data partners.';
+
+  const tidasTitle = lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture';
+  const tidasDescription =
+    lang === 'zh'
+      ? '以模块化数据包、API 与工具链构建的开放生态，支持跨平台协同与可验证的数据交换。'
+      : 'An open ecosystem of modular data packs, APIs, and toolkits enabling collaborative, verifiable exchanges.';
   const tidasImageSrc =
     lang === 'zh'
       ? isDarkMode
@@ -267,287 +308,232 @@ const Welcome: React.FC = () => {
       : isDarkMode
         ? '/images/tidas/TIDAS-en-dark.svg'
         : '/images/tidas/TIDAS-en.svg';
-
   const tidasImageAlt = currentContent.intro;
 
+  const WELCOME_RADIUS = 8;
+
+  const cardBorderRadiusStyle = useMemo(() => ({ borderRadius: WELCOME_RADIUS }), []);
+
+  const modalStyles = useMemo(() => ({ content: { borderRadius: WELCOME_RADIUS } }), []);
+
   return (
-    <PageContainer title={false}>
-      <div
-        style={{
-          backgroundPosition: '100% -30%',
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '274px auto',
-        }}
-      >
-        <Row gutter={16}>
-          <Col span={8}></Col>
-        </Row>
-        <Row gutter={16} wrap={false}>
-          <Col flex='1 0 20%'>
-            <Statistic
-              title={
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '1.2em',
-                    fontWeight: 'bold',
-                    color: color3,
-                  }}
-                >
-                  <ShareAltOutlined style={{ marginRight: '0.4em' }} />
-                  {getLangText(info.data1.title, lang)}
-                </span>
-              }
-              value={info.data1.value}
-              formatter={formatter}
-            />
-          </Col>
-          <Col flex='1 0 20%'>
-            <Statistic
-              title={
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '1.2em',
-                    fontWeight: 'bold',
-                    color: color3,
-                  }}
-                >
-                  <BuildOutlined style={{ marginRight: '0.4em' }} />
-                  {getLangText(info.data2.title, lang)}
-                </span>
-              }
-              value={info.data2.value}
-              formatter={formatter}
-            />
-          </Col>
-          <Col flex='1 0 20%'>
-            <Statistic
-              title={
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '1.2em',
-                    fontWeight: 'bold',
-                    color: color3,
-                  }}
-                >
-                  <ProductOutlined style={{ marginRight: '0.4em' }} />
-                  {getLangText(info.data3.title, lang)}
-                </span>
-              }
-              value={info.data3.value}
-              formatter={formatter}
-            />
-          </Col>
-          <Col flex='1 0 20%'>
-            <Statistic
-              title={
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '1.2em',
-                    fontWeight: 'bold',
-                    color: color3,
-                  }}
-                >
-                  <UserOutlined style={{ marginRight: '0.4em' }} />
-                  {getLangText(info.data4.title, lang)}
-                </span>
-              }
-              value={info.data4.value}
-              formatter={formatter}
-            />
-          </Col>
-          <Col flex='1 0 20%'>
-            <Typography.Link
-              onClick={(event: React.MouseEvent<HTMLElement>) => {
-                event.preventDefault();
-                setIsDataModalOpen(true);
-              }}
-              style={{ display: 'block' }}
-            >
-              <Statistic
-                title={
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      fontSize: '1.2em',
-                      fontWeight: 'bold',
-                      color: color3,
-                    }}
-                  >
-                    <TeamOutlined style={{ marginRight: '0.4em' }} />
-                    {getLangText(info.data5.title, lang)}
-                  </span>
-                }
-                value={info.data5.value}
-                formatter={formatter}
-              />
-            </Typography.Link>
-          </Col>
-        </Row>
-      </div>
-      <Divider />
-      <Row gutter={[24, 24]} align='stretch'>
-        <Col xs={24} lg={11}>
-          <Space direction='vertical' size={24} style={{ width: '100%' }}>
-            <Card
-              className={styles.intro_card}
-              variant='outlined'
-              style={{
-                background: token.colorBgElevated,
-                borderRadius: 16,
-                boxShadow: token.boxShadow,
-              }}
-              styles={{
-                body: {
-                  padding: '20px 24px',
-                },
-              }}
-            >
-              <Typography.Paragraph
-                style={{
-                  fontSize: '1.2em',
-                  lineHeight: 1.7,
-                  margin: 0,
-                  color: token.colorText,
-                }}
+    <PageContainer title={false} className={styles.welcome_page}>
+      <Space direction='vertical' size={24} className={styles.welcome_content}>
+        <Row gutter={[16, 16]} wrap>
+          {metrics.map((metric) => (
+            <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
+              <Card
+                className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
+                bodyStyle={{ padding: 20 }}
+                style={{ ...cardBorderRadiusStyle, width: '100%' }}
               >
-                {currentContent.intro}
-              </Typography.Paragraph>
-            </Card>
-            <Space direction='vertical' size={16} style={{ width: '100%' }}>
-              {currentContent.sections.map((section) => (
-                <Card
-                  key={section.key}
-                  variant='outlined'
-                  style={{
-                    background: token.colorFillSecondary,
-                    borderRadius: 16,
-                    boxShadow: 'none',
-                  }}
-                  styles={{
-                    body: {
-                      padding: '24px 28px',
-                    },
-                  }}
-                >
-                  <Typography.Text
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      fontSize: '1.2em',
-                      fontWeight: 'bold',
-                      color: color3,
-                    }}
-                  >
-                    {sectionIconMap[section.key]}
-                    {section.heading}
-                  </Typography.Text>
-                  <Typography.Paragraph
-                    style={{
-                      margin: '12px 0 0',
+                <div className={styles.welcome_metric_content}>
+                  <div className={styles.welcome_metric_header}>
+                    <span
+                      className={styles.welcome_metric_icon}
+                      style={{ color: token.colorPrimary }}
+                    >
+                      {metric.icon}
+                    </span>
+                    {metric.key === 'data5' ? (
+                      <Typography.Link
+                        strong
+                        href='#'
+                        onClick={handleOpenDataModal}
+                        style={{
+                          color: token.colorPrimary,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Link>
+                    ) : (
+                      <Typography.Text
+                        strong
+                        style={{
+                          color: token.colorPrimary,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Text>
+                    )}
+                  </div>
+                  <Statistic
+                    value={metric.value}
+                    formatter={formatter}
+                    valueStyle={{
+                      fontSize: '1.25rem',
+                      fontWeight: 500,
                       color: token.colorTextSecondary,
+                      lineHeight: 1.1,
+                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
                     }}
-                  >
-                    {section.description}
-                  </Typography.Paragraph>
-                </Card>
-              ))}
+                    style={{ width: '100%', textAlign: 'center' }}
+                  />
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        <Card
+          className={styles.welcome_card}
+          bodyStyle={{ padding: 24 }}
+          style={cardBorderRadiusStyle}
+        >
+          <Space direction='vertical' size={16} style={{ width: '100%' }}>
+            <Typography.Paragraph
+              style={{
+                margin: 0,
+                color: token.colorTextSecondary,
+                fontSize: '1rem',
+                lineHeight: 1.7,
+              }}
+            >
+              {currentContent.intro}
+            </Typography.Paragraph>
+            <Space size={12} wrap>
+              <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
+                {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
+              </Button>
+              <Button onClick={handleOpenDataModal}>
+                {lang === 'zh' ? '天工数据生态' : 'TiangGong Data Ecosystem'}
+              </Button>
             </Space>
           </Space>
-        </Col>
-        <Col
-          xs={0}
-          lg={1}
-          style={{ display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}
-        >
-          <div
-            style={{
-              width: 1,
-              backgroundColor: token.colorSplit,
-              alignSelf: 'stretch',
-            }}
-          />
-        </Col>
-        <Col xs={24} lg={0}>
-          <Divider />
-        </Col>
-        <Col
-          xs={24}
-          lg={11}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingInline: 24,
-          }}
-        >
-          <Image
-            src={tidasImageSrc}
-            alt={tidasImageAlt}
-            preview={false}
-            style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}
-          />
-        </Col>
-      </Row>
+        </Card>
+
+        <Row gutter={[16, 16]} align='stretch'>
+          {currentContent.sections.map((section) => (
+            <Col xs={24} md={12} key={section.key}>
+              <Card
+                className={`${styles.welcome_card} ${styles.welcome_section_card}`}
+                bodyStyle={{ padding: 24 }}
+                style={cardBorderRadiusStyle}
+              >
+                <Space direction='vertical' size={12}>
+                  <div className={styles.welcome_section_header}>
+                    <span
+                      className={styles.welcome_section_icon}
+                      style={{ color: token.colorPrimary }}
+                    >
+                      {sectionIconMap[section.key]}
+                    </span>
+                    <Typography.Text
+                      strong
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        lineHeight: '20px',
+                        margin: 0,
+                      }}
+                    >
+                      {section.heading}
+                    </Typography.Text>
+                  </div>
+                  <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
+                    {section.description}
+                  </Typography.Paragraph>
+                </Space>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </Space>
       <Modal
         open={isDataModalOpen}
         onCancel={() => setIsDataModalOpen(false)}
         footer={null}
         width={modalWidth}
+        destroyOnClose
+        styles={modalStyles}
         title={<FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />}
       >
-        {isTeamsLoading ? (
-          <Row justify='center'>
-            <Spin />
-          </Row>
-        ) : (
-          <Row gutter={16}>
-            {teams?.map((team: any, index: React.Key | null | undefined) => {
-              let logoUrl = '';
-              if (team.json?.previewLightUrl) {
-                logoUrl = isDarkMode ? team.json?.previewDarkUrl : team.json?.previewLightUrl;
-              } else {
-                logoUrl = isDarkMode
-                  ? `/images/dataLogo/${team.json?.darkLogo}`
-                  : `/images/dataLogo/${team.json?.lightLogo}`;
-              }
-              return (
-                <Col span={8} key={index}>
-                  <Card
-                    hoverable
-                    style={{
-                      width: '100%',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      paddingTop: '24px',
-                    }}
-                    cover={
-                      <div className={styles.team_logo_container}>
-                        {logoUrl && <img src={logoUrl} className={styles.team_logo} />}
-                      </div>
-                    }
-                    onClick={() => {
-                      window.location.href = `/tgdata/models?tid=${team.id}`;
-                    }}
-                  >
-                    <Meta
-                      title={getLangText(team.json?.title, lang)}
-                      description={getLangText(team.json?.description, lang)}
-                    />
-                  </Card>
-                </Col>
-              );
-            })}
-          </Row>
-        )}
+        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+          <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
+            {modalSubtitle}
+          </Typography.Paragraph>
+          {isTeamsLoading ? (
+            <Row justify='center' style={{ minHeight: 180 }}>
+              <Spin />
+            </Row>
+          ) : (
+            <Row gutter={[16, 16]}>
+              {teams?.map((team: any, index: number) => {
+                let logoUrl = '';
+                if (team.json?.previewLightUrl) {
+                  logoUrl = isDarkMode ? team.json?.previewDarkUrl : team.json?.previewLightUrl;
+                } else {
+                  logoUrl = isDarkMode
+                    ? `/images/dataLogo/${team.json?.darkLogo}`
+                    : `/images/dataLogo/${team.json?.lightLogo}`;
+                }
+                return (
+                  <Col xs={24} sm={12} lg={8} key={team.id ?? index}>
+                    <Card
+                      hoverable
+                      className={`${styles.welcome_card} ${styles.welcome_team_card}`}
+                      bodyStyle={{ padding: 16 }}
+                      style={cardBorderRadiusStyle}
+                      cover={
+                        <div className={styles.team_logo_container}>
+                          {logoUrl && (
+                            <img
+                              src={logoUrl}
+                              className={styles.team_logo}
+                              alt={getLangText(team.json?.title, lang)}
+                            />
+                          )}
+                        </div>
+                      }
+                      onClick={() => {
+                        window.location.href = `/tgdata/models?tid=${team.id}`;
+                      }}
+                    >
+                      <Meta
+                        title={
+                          <Typography.Text strong>
+                            {getLangText(team.json?.title, lang)}
+                          </Typography.Text>
+                        }
+                        description={
+                          <Typography.Paragraph
+                            style={{ margin: '8px 0 0', color: token.colorTextSecondary }}
+                          >
+                            {getLangText(team.json?.description, lang)}
+                          </Typography.Paragraph>
+                        }
+                      />
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
+          )}
+        </Space>
+      </Modal>
+      <Modal
+        open={isTidasModalOpen}
+        onCancel={() => setIsTidasModalOpen(false)}
+        footer={null}
+        width={modalWidth}
+        destroyOnClose
+        styles={modalStyles}
+        title={tidasTitle}
+      >
+        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+          <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
+            {tidasDescription}
+          </Typography.Paragraph>
+          {isTidasModalOpen && (
+            <img src={tidasImageSrc} alt={tidasImageAlt} style={{ width: '100%' }} />
+          )}
+        </Space>
       </Modal>
     </PageContainer>
   );
