@@ -10,6 +10,12 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 
+type FlowPropertyItem = Flow['flowDataSet']['flowProperties']['flowProperty'] extends infer U
+  ? U extends Array<infer T>
+    ? T
+    : U
+  : never;
+
 export function genFlowJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const flowProperty =
@@ -545,11 +551,7 @@ export function genFlowFromData(data: any): FormFlow {
       },
       flowProperties: {
         flowProperty: flowPropertyList?.map(
-          (
-            item,
-          ): Flow['flowDataSet']['flowProperties']['flowProperty'][number] & {
-            quantitativeReference?: boolean;
-          } => {
+          (item): FlowPropertyItem & { quantitativeReference?: boolean } => {
             return {
               '@dataSetInternalID': item?.['@dataSetInternalID'],
               referenceToFlowPropertyDataSet: {
