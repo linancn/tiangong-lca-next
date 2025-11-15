@@ -1,5 +1,7 @@
 # util_calculate (en-US)
 
+> Agents: This English reference is canonical. Human readers can review `docs/agents/util_calculate_CN.md`; update both files together whenever logic or docs change.
+
 This document organizes the business logic and data flow of `genLifeCycleModelProcesses`, to help understand the overall process of generating/updating submodels for a life cycle model.
 
 ## Function signature and responsibilities

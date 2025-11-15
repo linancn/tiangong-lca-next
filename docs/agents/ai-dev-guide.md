@@ -1,5 +1,7 @@
 # AI Development Spec (Spec Coding) - TianGong LCA Next
 
+> Agents: This English spec is canonical. Human readers can consult `docs/agents/ai-dev-guide_CN.md`; keep both files in sync whenever edits land here.
+
 CRITICAL RULES:
 
 - This file is the authoritative dev spec for AI-driven work. Do not guess or source external docs.
@@ -17,7 +19,7 @@ CRITICAL RULES:
 3. Extend the service layer first: define types in `src/services/<feature>/data.ts`, Supabase calls in `src/services/<feature>/api.ts`, and pure helpers in `src/services/<feature>/util.ts`.
 4. Build or update the page entry in `src/pages/<Feature>/index.tsx`, following existing list-view patterns, then flesh out drawer/modal components inside `src/pages/<Feature>/Components/`.
 5. Prefer shared UI from `src/components` (for example `TableFilter`, `ToolBarButton`, `AllVersionsList`, `ImportData`, `ExportData`, `ContributeData`, `Notification`) before adding new primitives.
-6. Follow `.github/prompts/ai-testing-guide.prompt.md` for validation steps and finish with `npm run lint` (runs ESLint, Prettier check, and `tsc`) plus the relevant `npm test` command.
+6. Follow `docs/agents/ai-testing-guide.md` for validation steps and finish with `npm run lint` (runs ESLint, Prettier check, and `tsc`) plus the relevant `npm test` command.
 
 ---
 
@@ -53,7 +55,7 @@ ProjectSpec "Tiangong LCA Next" {
 
 ```spec
 DirectoryContract {
-  ".github/prompts" -> developer-facing AI instructions (testing & dev spec)
+  "docs/agents" -> developer-facing AI instructions (testing & dev spec)
   "config/routes.ts" -> centralised Umi routing and menu structure
   "src/access.ts" -> runtime access control helpers
   "src/app.tsx" -> Umi runtime config (layout, initialState, layout actions)
@@ -250,7 +252,7 @@ TypingSpec {
 
 ## Quality Gates
 
-- Implement per-feature unit or integration tests that follow `.github/prompts/ai-testing-guide.prompt.md`.
+- Implement per-feature unit or integration tests that follow `docs/agents/ai-testing-guide.md`.
 - Always run `npm run lint` before completion; address ESLint, Prettier, and `tsc` diagnostics.
 - Execute targeted `npm test -- <pattern>` when modifying logic with existing coverage or when adding new suites.
 - For supabase edge-function flows, add mock-based tests under `tests/unit/services` to verify payload shape.

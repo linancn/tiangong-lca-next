@@ -1,5 +1,7 @@
 # AI Testing Guide for Tiangong LCA Next
 
+> Agents: Use this English guide only. `docs/agents/ai-testing-guide_CN.md` is a human-readable mirror that must be kept in sync whenever this file changes.
+
 CRITICAL RULES:
 
 - This is the ONLY documentation file needed for writing tests

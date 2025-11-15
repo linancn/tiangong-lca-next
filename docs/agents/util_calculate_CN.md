@@ -1,4 +1,6 @@
-# util_calculate (zh-CN)
+# util_calculate（中文镜像）
+
+> 说明：英文版 `docs/agents/util_calculate.md` 是唯一面向 AI 的文档；本文件为同步的中文说明，供人类同事查阅。若英文版变更，需同步更新此处。
 
 本文档梳理 `genLifeCycleModelProcesses` 的业务逻辑与数据流，帮助理解生命周期模型子模型生成/更新的整体过程。
 
