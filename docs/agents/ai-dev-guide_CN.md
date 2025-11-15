@@ -5,7 +5,7 @@
 ## 环境与工具
 
 - Node.js **>= 22**（`package.json` 明确要求），先执行 `nvm use 22` 或安装对应版本再 `npm install`。
-- 必备 `.env`：`SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`。缺失时所有 Supabase 请求都会失败，且禁止在代码中硬编码秘钥，统一通过 `src/services/supabase.ts` 加载。
+- 仓库已附带可用的 `.env`（含 `SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`），开箱即可连接 Supabase；仅在需要自定义实例时覆盖，并始终通过 `src/services/supabase.ts` 读取。
 - 未经维护者许可，禁止新增 npm 依赖。
 
 ## 常用命令

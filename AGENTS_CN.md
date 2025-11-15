@@ -25,7 +25,7 @@ npm run build
 ## 代理参考文档
 
 - `docs/agents/ai-dev-guide.md` / `_CN` 镜像：AI 开发规范（路由、服务分层、组件模式）。
-- `docs/agents/ai-testing-guide.md` / `_CN` 镜像：测试规范（流程、模板、mock、超时防护）。
+- `docs/agents/ai-testing-guide.md` / `_CN` 镜像：测试流程/命令速查；详细模式与排查请参阅 `docs/agents/testing-patterns(.md|_CN.md)` 与 `docs/agents/testing-troubleshooting(.md|_CN.md)`。
 - `docs/agents/util_calculate.md` / `_CN` 镜像：`genLifeCycleModelProcesses` 深入说明。
 - `README*.md`、`DEV*.md`：面向人类的上手文档，可互相引用但不要复制粘贴。
 

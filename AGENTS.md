@@ -27,7 +27,7 @@ npm run build
 ## Source-of-Truth Docs for Agents
 
 - `docs/agents/ai-dev-guide.md` – exhaustive development spec (routing rules, service contracts, component patterns); mirror: `docs/agents/ai-dev-guide_CN.md`.
-- `docs/agents/ai-testing-guide.md` – testing-only workflow (unit/integration templates, required mocks, timeout guard); mirror: `docs/agents/ai-testing-guide_CN.md`.
+- `docs/agents/ai-testing-guide.md` – testing workflow checklist + commands; mirrors: `docs/agents/ai-testing-guide_CN.md`, with deep dives in `docs/agents/testing-patterns(.md|_CN.md)` and troubleshooting references in `docs/agents/testing-troubleshooting(.md|_CN.md)`.
 - `docs/agents/util_calculate.md` – deep dive on `genLifeCycleModelProcesses`; mirror: `docs/agents/util_calculate_CN.md`.
 - `README.md`, `README_CN.md`, `DEV*.md` – human-facing onboarding; reference instead of duplicating content here.
 
