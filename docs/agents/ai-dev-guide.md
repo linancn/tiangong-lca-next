@@ -1,270 +1,111 @@
-# AI Development Spec (Spec Coding) - TianGong LCA Next
+# AI Development Spec – Tiangong LCA Next
 
-> Agents: This English spec is canonical. Human readers can consult `docs/agents/ai-dev-guide_CN.md`; keep both files in sync whenever edits land here.
+> Agents: this English file is canonical. Keep `docs/agents/ai-dev-guide_CN.md` in sync whenever you touch this doc, but ignore the mirror while executing tasks.
 
-CRITICAL RULES:
+## Environment & Tooling
 
-- This file is the authoritative dev spec for AI-driven work. Do not guess or source external docs.
-- Implement everything in TypeScript + React 18 function components; do not introduce legacy class components.
-- Route all data access through the Supabase service layer under `src/services/**`; never instantiate raw clients inside page components.
-- All user-facing text must use Umi i18n helpers (`FormattedMessage` / `intl.formatMessage`). No hard-coded literals.
-- Never add new npm packages or dependencies; if something is truly required, pause and request explicit approval from a human maintainer.
+- Node.js **>= 22** (enforced by `package.json`); run `nvm use 22` or install the required runtime before `npm install`.
+- Required `.env` keys: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Without them, Supabase calls will fail. Never hard-code secrets—load them through `src/services/supabase.ts`.
+- No new npm packages unless a human maintainer signs off.
 
----
+## Core Commands
 
-## AI Quick Start Workflow
-
-1. Inspect existing patterns with `rg` or `ls` (for example `rg "getProcessTableAll" -n src`) to identify the closest reference feature.
-2. Confirm routing implications in `config/routes.ts`; mirror new entries under every data-source branch (`/tgdata`, `/codata`, `/mydata`, `/tedata`) when the feature is shared.
-3. Extend the service layer first: define types in `src/services/<feature>/data.ts`, Supabase calls in `src/services/<feature>/api.ts`, and pure helpers in `src/services/<feature>/util.ts`.
-4. Build or update the page entry in `src/pages/<Feature>/index.tsx`, following existing list-view patterns, then flesh out drawer/modal components inside `src/pages/<Feature>/Components/`.
-5. Prefer shared UI from `src/components` (for example `TableFilter`, `ToolBarButton`, `AllVersionsList`, `ImportData`, `ExportData`, `ContributeData`, `Notification`) before adding new primitives.
-6. Follow `docs/agents/ai-testing-guide.md` for validation steps and finish with `npm run lint` (runs ESLint, Prettier check, and `tsc`) plus the relevant `npm test` command.
-
----
-
-## Project Spec
-
-```spec
-ProjectSpec "Tiangong LCA Next" {
-  runtime_stack = ["React 18", "@umijs/max 4", "Ant Design Pro 5", "TypeScript 5.9+"]
-  entry_points = ["src/app.tsx", "config/routes.ts"]
-  data_layer = {
-    client = "@supabase/supabase-js"
-    auth = "Supabase Auth (persistent sessions, auto refresh)"
-    storage = "Supabase Postgres tables (processes, flows, contacts, sources, life_cycle_models, ...)"
-    edge_functions = ["update_data"]
-  }
-  domain_sdk = "@tiangong-lca/tidas-sdk" // shared ILCD data models and helpers
-  testing = {
-    unit = "Jest + @testing-library/react"
-    integration = "tests/integration/** (Playwright-like workflow via Testing Library)"
-  }
-  tooling = {
-    lint = "npm run lint"
-    dev_server = "npm start"
-    build = "npm run build"
-    coverage_report = "npm run test:report"
-  }
-}
+```
+npm install
+npm run start:dev   # dev env, no mock, REACT_APP_ENV=dev
+npm start           # generic dev alias
+npm run lint        # eslint + prettier check + tsc
+npm test -- tests/integration/<feature>/
+npm run test:report
+npm run build
 ```
 
----
+## AI Delivery Workflow
+
+1. Explore with `rg`, `ls`, and existing feature routes to find the closest reference implementation.
+2. Update `config/routes.ts` whenever a shared feature touches `/tgdata`, `/codata`, `/mydata`, `/tedata`; mirror entries across data sources.
+3. Extend the service layer first: define types (`data.ts`), Supabase queries (`api.ts`), and pure helpers (`util.ts`) under `src/services/<feature>/`.
+4. Build the page entry in `src/pages/<Feature>/index.tsx`, then fold drawers/modals into `src/pages/<Feature>/Components/`.
+5. Prefer shared UI from `src/components` (e.g., `TableFilter`, `ToolBarButton`, `ImportData`, `ExportData`, `AllVersionsList`, `ContributeData`, `Notification`).
+6. Validate work using `docs/agents/ai-testing-guide.md`, run `npm run lint`, and execute the most relevant `npm test -- <pattern>`.
+7. For lifecycle-model math (`genLifeCycleModelProcesses`), consult both `docs/agents/util_calculate.md` and `_CN` to keep behavior aligned with documented flows.
+
+## Architecture Snapshot
+
+- **Runtime stack**: React 18, `@umijs/max 4`, Ant Design Pro 5, TypeScript 5.9+.
+- **Entry points**: `src/app.tsx` (layout/runtime config) and `config/routes.ts` (menus & routing).
+- **Data layer**: Supabase Postgres tables, Supabase Auth, storage, and edge function `update_data`; access exclusively via `src/services/**`.
+- **Domain SDK**: `@tiangong-lca/tidas-sdk` for ILCD data models/helpers.
+- **Testing**: Jest + Testing Library (`tests/unit/**`, `tests/integration/**`); coverage via `npm run test:report`.
 
 ## Directory Contract
 
-```spec
-DirectoryContract {
-  "docs/agents" -> developer-facing AI instructions (testing & dev spec)
-  "config/routes.ts" -> centralised Umi routing and menu structure
-  "src/access.ts" -> runtime access control helpers
-  "src/app.tsx" -> Umi runtime config (layout, initialState, layout actions)
-  "src/components/**" -> reusable UI/business widgets; import via "@/components"
-  "src/contexts/**" -> React Context definitions shared across pages
-  "src/pages/<Feature>/" -> feature entry (`index.tsx`) plus drawer/modal components
-  "src/pages/Utils/**" -> shared page-level utilities (reviews, version helpers)
-  "src/services/<feature>/{api,data,util}.ts" -> Supabase interaction, typings, pure transforms
-  "src/style/custom.less" -> global style overrides (scoped where possible)
-  "tests/{unit,integration}/**" -> Jest test suites (see AI Testing Guide)
-  "types/" -> ambient type declarations (augment global namespaces)
-}
-```
-
----
+- `docs/agents/**` – AI-specific specs (replaces `.github/prompts`).
+- `config/routes.ts` – centralized Umi routing/menu definitions.
+- `src/access.ts` – runtime access-control helpers.
+- `src/components/**` – reusable widgets (import via `@/components`).
+- `src/contexts/**` – React contexts for shared state (units, references, etc.).
+- `src/pages/<Feature>/` – page entry (`index.tsx`) plus `Components/` for drawers/modals.
+- `src/pages/Utils/**` – shared utilities for reviews, version helpers, imports.
+- `src/services/<feature>/{api,data,util}.ts` – Supabase queries, typings, pure transforms.
+- `src/style/custom.less` – global style overrides.
+- `tests/{unit,integration}/**` – Jest suites (respect Testing Guide patterns).
+- `types/**` – ambient declarations and shared TypeScript types.
 
 ## Feature Module Blueprint
 
-```spec
-FeatureModuleBlueprint(featureName: PascalCase) {
-  page_entry = "src/pages/${featureName}/index.tsx"
-  data_source = getDataSource(useLocation().pathname) // returns "tg" | "co" | "my" | "te"
-  lang = getLang(useIntl().locale) // "en" | "zh"
+- **Entry**: `src/pages/${Feature}/index.tsx` pulls `dataSource = getDataSource(useLocation().pathname)` (`tg` | `co` | `my` | `te`) and `lang = getLang(useIntl().locale)`.
+- **Table**: Use `ProTable<RowType>` with `actionRef` for reloads; `request` delegates to `<feature>TableAll(params, sort, lang, dataSource, tid, stateCode, extraFilters)`.
+- **Toolbar**: compose `TableFilter` (date/state/type filters), `ToolBarButton` actions, and toggles for `ImportData` / `ExportData` / review drawers.
+- **Columns**: `index` (valueType "index"), `name` with tooltip on `generalComment`, `classification` via `classificationToString`, `version` rendered through `AllVersionsList`, `actions` via `TableDropdown` hooking to drawers or deletions.
+- **Drawers/Modals**: keep width ~720px, manage local state for tabs/forms, and reset forms (`formRef.current?.resetFields()`) on close.
+- **Review flows**: reuse `ReviewDetail` components with proper `processId`, `processVersion`, and `searchTableName` props.
 
-  list_view = ProTable<RowType>() {
-    actionRef: React.useRef<ActionType>()
-    request = async (params, sort) => get<Feature>TableAll(params, sort, lang, dataSource, tid, stateCode, extraFilters)
-    toolbar = [
-      TableFilter (date, state, type filters),
-      ToolBarButton (create, import, export, review entry),
-      ImportData / ExportData drawers (toggle via local state)
-    ]
-    column_patterns = [
-      index column => valueType "index"
-      name => Tooltip with `generalComment`
-      classification => derived via `classificationToString` or fallback "-"
-      version => display + pass to `AllVersionsList`
-      actions => dropdown (`TableDropdown`) to open drawers or trigger `ProcessDelete`
-    ]
-    pagination -> uses ListPagination (current, pageSize, total)
-    onRowClick -> open view drawer; preserve query params id/version when deep linking
-  }
+## Service Layer Playbook
 
-  drawers_and_modals = {
-    createDrawer = Components/create.tsx {
-      formRef: React.useRef<ProFormInstance>()
-      local_state = { activeTabKey, formData, exchangeDataSource, spinning }
-      submit_flow = [
-        validate -> `formRef.current?.validateFields()`
-        transform -> domain util (`genProcessJsonOrdered`, `genProcessFromData`, etc.)
-        call -> `create<Feature>(id, payload)` via service
-        success -> `message.success`, `actionRef.current?.reload()`, close drawer
-      ]
-      copy_or_version = `actionType` prop; preload detail via `get<Feature>Detail(id, version)`
-    }
-    editDrawer = Components/edit.tsx {
-      load -> `get<Feature>Detail`
-      submit -> `update<Feature>(id, version, payload)` (Supabase edge function)
-      reload -> `actionRef.current?.reload()`
-    }
-    viewDrawer = Components/view.tsx -> read-only rendering using shared display components
-    deleteModal = Components/delete.tsx -> confirm, then call service to soft-delete or change `state_code`
-    reviewDrawers = Components/Review/** -> follow Review detail pattern with `ReviewDetail`
-  }
+- CamelCase exports (`getProcessTableAll`, `createProcess`, `updateProcess`). Store shared select strings/constants near the top of the file.
+- List functions: derive `sortBy`/`orderBy`, call `supabase.from(table).select(selectStr, { count: 'exact' }).order(...).range(...)`.
+- Data-source filters:
+  - `tg`: `state_code = 100`, optional `team_id = tid`.
+  - `co`: `state_code = 200`, optional `team_id = tid`.
+  - `my`: enforce auth via `supabase.auth.getSession()`, filter by requesting user, optional `stateCode`.
+  - `te`: fetch `team_id` via `getTeamIdByUserId()` and filter accordingly.
+- Enrich rows via `Promise.all` (e.g., `getILCDLocationByValues`, `getSubmodelsByProcessIds`), map derived fields (`classificationToString`, `genProcessName`, `getLangText`).
+- `create*`: insert ordered JSON plus `rule_verification` results. `update*`: invoke Supabase edge function `update_data` with bearer token and `FunctionRegion.UsEast1`.
+- Keep utilities pure (formatting, classification, calculations) inside `util.ts`; reuse `@tiangong-lca/tidas-sdk` types for IO contracts.
+- Log Supabase errors (`console.error`) and return `{ data: [], success: false, error }` for predictable handling.
 
-  support_files = {
-    form = Components/form.tsx -> renders ProForm fields grouped by tabs
-    optiondata = Components/optiondata.tsx -> exports static Select/Checkbox data arrays
-    util = src/services/<feature>/util.ts -> deterministic helpers (no side effects)
-    data = src/services/<feature>/data.ts -> exports table row & form types (import domain models from SDK)
-  }
-}
-```
+## UI Interaction & Shared Components
 
----
+- Layout lives in `src/app.tsx` (dark-mode toggle, `SelectLang`, `Notification`, `AvatarDropdown`).
+- Messaging: `message.success` / `message.error` with translated strings. Guard async flows with explicit loading state + `Spin`.
+- Tables/forms/drawers/modals rely on Ant Design Pro primitives (`ProTable`, `ProFormText/Select/List`, `Drawer`, `Modal.confirm`).
+- Search/filter widgets: `Input.Search`, `Select`, `Checkbox`, always controlled via React state.
+- Data import/export: `ImportData`, `ExportData`, `ContributeData` components. Reviews: `ReviewDetail` + review form components under `Processes/Components/Review`.
+- Frequently reused helpers: `TableFilter`, `ToolBarButton`, `AllVersions`, `Notification`, `LCIACacheMonitor`, contexts under `src/contexts`, and general helpers in `src/services/general/**`.
 
-## Service Layer Spec
+## Internationalization, State & Typing
 
-```spec
-ServiceLayerSpec {
-  naming = camelCase functions (`getProcessTableAll`, `createProcess`, `updateProcess`)
-  select_fields = define constants (e.g., `const selectStr4Table = "\n  id,\n  ..."`)
+- Locale files: `src/locales/en-US.ts` & `src/locales/zh-CN.ts` (plus per-feature splits). Use `<FormattedMessage id='...' />` in JSX and `intl.formatMessage` in logic.
+- Follow naming convention `pages.<feature>.<scope>`; update both locale files for any new key. Format numbers/dates with `intl` helpers or `formatDateTime`.
+- State management: prefer hooks (`useState`, `useRef`, `useEffect`). Keep `actionRef.current?.reload()` for table refresh and `formRef` for ProForm reset.
+- Use contexts for cross-component state (UnitsContext, RefCheckContext, UpdateReferenceContext). Avoid mutable singletons.
+- Import domain models from `@tiangong-lca/tidas-sdk` where possible; export row/form types from `src/services/<feature>/data.ts`.
+- Validation lives in ProForm `rules` or helper functions (`getRuleVerification`, `percentStringToNumber`, `comparePercentDesc`). IDs come from `uuid.v4`, versions from constants like `initVersion`.
 
-  list_function(params, sort, lang, dataSource, tid, stateCode?, extra?) {
-    sortBy = Object.keys(sort)[0] ?? "modified_at"
-    orderBy = sort[sortBy] ?? "descend"
-    query = supabase.from(tableName)
-      .select(selectStr, { count: "exact" })
-      .order(sortBy, { ascending: orderBy === "ascend" })
-      .range((current - 1) * pageSize, current * pageSize - 1)
+## Quality Gates & Testing
 
-    // dynamic filters
-    if dataSource === "tg" -> query.eq("state_code", 100).eq("team_id", tid) when tid.length > 0
-    if dataSource === "co" -> query.eq("state_code", 200).eq("team_id", tid) when tid.length > 0
-    if dataSource === "my" -> ensure authenticated session via `supabase.auth.getSession()`
-    if dataSource === "te" -> `getTeamIdByUserId()` then `.eq("team_id", teamId)`
-    apply feature-specific filters (stateCode, typeOfDataSet, keyword search)
-
-    result = await query
-    handle errors -> `console.error` (consistent with existing patterns) and return `{ data: [], success: false, error }`
-    postprocess -> fetch reference data via Promise.all (e.g., `getILCDLocationByValues`, `getLifeCyclesByIds`)
-    map rows -> attach derived fields (`classificationToString`, `getProcesstypeOfDataSetOptions`, etc.)
-    return `{ data: mappedRows, success: true, total: result.count ?? 0 }`
-  }
-
-  detail_function(id, version) = supabase.from(table).select("*").eq("id", id).eq("version", version).single()
-  create_function(id, payload) = supabase.from(table).insert([{ id, json_ordered: payload, rule_verification }]).select()
-  update_function(id, version, payload) = supabase.functions.invoke("update_data", {
-    headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-    body: { id, version, table, data: payload },
-    region: FunctionRegion.UsEast1
-  })
-  util_functions = pure data shapers (`genProcessJsonOrdered`, `classificationToString`, `percentStringToNumber`)
-}
-```
-
----
-
-## UI Interaction Spec
-
-```spec
-UIInteractionSpec {
-  layout = configured in `src/app.tsx` (DarkMode toggle, SelectLang, Notification, AvatarDropdown)
-  messaging = use Ant Design `message.success` / `message.error` with translated strings
-  loading = control via `useState<boolean>` flags + `Spin` components where requests are in-flight
-  tables = `@ant-design/pro-components` ProTable with `ProColumns`; define renderers for tooltips, tags, and action dropdowns
-  forms = `@ant-design/pro-components` ProForm variants (`ProFormText`, `ProFormSelect`, `ProFormList`) composed inside feature form components
-  drawers = `Drawer` (for create/edit/view) with width ~720px; close handlers must reset form state and call optional callbacks
-  modals = `Modal.confirm` for destructive actions; never mutate state before promise resolves
-  search_inputs = Ant Design `Input.Search`, `Select`, `Checkbox`; keep controlled state in page component
-  upload_import = `ImportData` component (passes parsed ILCD JSON array into drawer)
-  export = `ExportData` component (calls Supabase or local transform, triggers download)
-  reviews = `ReviewDetail` component for audit trail; supply `searchTableName`, `lang`, and column definitions
-}
-```
-
----
-
-## Shared Resources to Reuse
-
-- `src/components/TableFilter` for flexible filter popovers.
-- `src/components/ToolBarButton` for toolbar actions with icon + text.
-- `src/components/AllVersions` and `src/pages/Utils` helpers for multi-version management.
-- `src/components/ImportData` / `ExportData` / `ContributeData` for ILCD data exchange.
-- `src/components/Notification` and `src/components/LCIACacheMonitor` for global alerts.
-- `src/services/general/{api,data,util}.ts` for cross-cutting helpers (`getTeamIdByUserId`, `getLang`, `classificationToString`, date utilities).
-- React contexts in `src/contexts` (`UnitsContext`, `RefCheckContext`, `UpdateReferenceContext`) when shared state is unavoidable.
-
----
-
-## Internationalization Spec
-
-```spec
-InternationalizationSpec {
-  resource_files = ["src/locales/en-US.ts", "src/locales/zh-CN.ts"]
-  pattern = `<FormattedMessage id="pages.process.location" defaultMessage="Location" />`
-  runtime_strings = `intl.formatMessage({ id: "pages.process.view..." })`
-  add_new_keys = update both locale files; keep the `pages.<feature>.<scope>` naming convention
-  numbers_and_dates = use `intl.formatNumber`, `intl.formatDate`, or helper `formatDateTime`
-  avoid = embedding translated text in constants; instead export id maps
-}
-```
-
----
-
-## State and Context Spec
-
-```spec
-StateAndContextSpec {
-  prefer local component state via React hooks (`useState`, `useRef`, `useEffect`)
-  table refresh = `const actionRef = useRef<ActionType>(); actionRef.current?.reload()`
-  form refs = `useRef<ProFormInstance>()`; reset using `formRef.current?.resetFields()`
-  context usage = wrap complex flows (unit conversion, reference updates) in providers defined in `src/contexts`
-  avoid global singletons or mutable exports; route shared state through context or props
-}
-```
-
----
-
-## Typing and Validation Spec
-
-```spec
-TypingSpec {
-  import domain models from "@tiangong-lca/tidas-sdk" when available (`Process`, `Flow`, `LCIAMethod`)
-  table rows = exported types in `src/services/<feature>/data.ts` (e.g., `ProcessTable`)
-  form types = derive from domain models using mapped types (`FormProcess`)
-  validation = use ProForm `rules` or dedicated helpers; store ILCD schema validations via `getRuleVerification`
-  id generation = use `uuid` (`v4`) for new dataset IDs; persist `version` using constants such as `initVersion`
-  calculations = rely on helpers like `percentStringToNumber`, `comparePercentDesc`, `removeEmptyObjects`
-}
-```
-
----
-
-## Quality Gates
-
-- Implement per-feature unit or integration tests that follow `docs/agents/ai-testing-guide.md`.
-- Always run `npm run lint` before completion; address ESLint, Prettier, and `tsc` diagnostics.
-- Execute targeted `npm test -- <pattern>` when modifying logic with existing coverage or when adding new suites.
-- For supabase edge-function flows, add mock-based tests under `tests/unit/services` to verify payload shape.
-- Keep pull requests small and scoped; note any skipped tests and justify them explicitly.
-
----
+- Every feature change needs matching unit/integration coverage; reuse helpers under `tests/helpers/**`.
+- `npm run lint` must pass (ESLint + Prettier check + `tsc`). Resolve diagnostics before delivering work.
+- Run targeted Jest commands (e.g., `npm test -- tests/integration/<feature>/`) plus any new suites you add.
+- Supabase edge-function payloads demand unit tests in `tests/unit/services/**` to verify invocation shape.
+- Keep diffs scoped; update this doc or other `docs/agents/**` files whenever you change expectations.
 
 ## Reference Patterns
 
-- `src/pages/Processes/index.tsx` — full-featured table with filters, drawers, and Supabase-backed queries.
-- `src/pages/Processes/Components/create.tsx` — canonical create flow with ProForm tabs and Supabase `insert`.
-- `src/pages/LifeCycleModels/Components/edit.tsx` — edit drawer with edge function update.
-- `src/services/processes/api.ts` — complex list function including auxiliary data hydration.
-- `src/services/general/util.ts` — example pure helpers and calculation utilities.
-- `src/app.tsx` — layout configuration, dark-mode toggle, and initial state fetching.
+- `src/pages/Processes/index.tsx` – canonical list + drawer flow.
+- `src/pages/Processes/Components/create.tsx` – ProForm tabbed create drawer.
+- `src/pages/LifeCycleModels/Components/edit.tsx` – edge function edit path.
+- `src/services/processes/api.ts` – complex list queries with enrichment.
+- `src/services/general/util.ts` – pure helpers and calculations.
+- `src/app.tsx` – layout configuration, initial state fetching, and actions.
