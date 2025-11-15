@@ -4,6 +4,7 @@
 
 ## 快速导航
 
+- Node.js **>= 22**：先执行 `nvm use 22` 再安装依赖。仓库已附带可用 `.env`（含 Supabase key），若切换 Supabase 实例再覆盖，并始终通过 `src/services/supabase` 读取。
 - 技术栈：React 18 + @umijs/max 4 + Ant Design Pro 5 + TypeScript，对应入口 `src/app.tsx`、`config/routes.ts`。
 - Service-first：先在 `src/services/<feature>/{data,api,util}.ts` 增补类型/接口/纯函数，再由页面消费。
 - UI 仅使用函数式组件，并优先复用 `src/components/**` 现有能力。
