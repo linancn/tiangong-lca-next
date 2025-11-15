@@ -1215,7 +1215,7 @@ describe('ComponentName', () => {
 });
 ```
 
-### Pattern 1: Basic Rendering
+### Pattern 1: Rendering Basics
 
 ```typescript
 it('renders correctly with given props', () => {
@@ -1436,7 +1436,7 @@ MOST IMPORTANT HELPER - handles Supabase query chaining.
 ```typescript
 import { createQueryBuilder } from '../../helpers/mockBuilders';
 
-// Basic usage
+// Typical usage
 const builder = createQueryBuilder({
   data: [{ id: '1', name: 'Test' }],
   error: null,
