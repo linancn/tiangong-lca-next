@@ -388,8 +388,7 @@ const Welcome: React.FC = () => {
                     formatter={formatter}
                     valueStyle={{
                       fontSize: '1.25rem',
-                      fontWeight: 500,
-                      color: token.colorTextSecondary,
+                      color: token.colorText,
                       lineHeight: 1.1,
                       fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
                     }}
