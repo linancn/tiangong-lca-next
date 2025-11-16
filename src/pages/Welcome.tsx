@@ -127,7 +127,7 @@ const Welcome: React.FC = () => {
         },
         {
           '@xml:lang': 'en',
-          '#text': 'Unit Processs & Inventories',
+          '#text': 'Unit Processes & Inventories',
         },
       ],
     },
@@ -250,7 +250,7 @@ const Welcome: React.FC = () => {
             'The platform integrates internationally recognized LCA methodologies, including ISO, ILCD, GHG Protocol, and national standards. Its calculation processes and data structures strictly adhere to these guidelines to ensure the transparency, comparability, and reproducibility of all analysis results.',
         },
         {
-          heading: 'Open & Interoperability',
+          heading: 'Openness & Interoperability',
           key: 'ecosystemInteroperability',
           description:
             'Based on the unified TIDAS format, the platform offers native compatibility with the eILCD data structure. This allows for seamless data import and export, ensuring usability across other mainstream LCA tools that support the eILCD format.',
@@ -422,7 +422,7 @@ const Welcome: React.FC = () => {
                 {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
               </Button>
               <Button onClick={handleOpenDataModal}>
-                {lang === 'zh' ? '天工数据生态' : 'TiangGong Data Ecosystem'}
+                {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
               </Button>
             </Space>
           </Space>
