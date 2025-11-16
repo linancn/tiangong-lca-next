@@ -241,7 +241,7 @@ const Welcome: React.FC = () => {
     },
     en: {
       intro:
-        'Tiangong LCA Data Platform is an open platform for lifecycle assessment and product carbon management. Based on the TianGong LCA Data System (TIDAS), it is founded on three key principles: standardization, interoperability, and extensibility. Our mission is to achieve four core objectives in carbon data management: regulatory compliance, global interoperability, verifiable results, and robust data security.',
+        'TianGong LCA Data Platform is an open platform for lifecycle assessment and product carbon management. Based on the TianGong LCA Data System (TIDAS), it is founded on three key principles: standardization, interoperability, and extensibility. Our mission is to achieve four core objectives in carbon data management: regulatory compliance, global interoperability, verifiable results, and robust data security.',
       sections: [
         {
           heading: 'Standards & Compliance',
@@ -315,6 +315,11 @@ const Welcome: React.FC = () => {
     lang === 'zh'
       ? '以模块化数据包、API 与工具链构建的开放生态，支持跨平台协同与可验证的数据交换。'
       : 'An open ecosystem of modular data packs, APIs, and toolkits enabling collaborative, verifiable exchanges.';
+  const tidasDocUrl =
+    lang === 'zh'
+      ? 'https://tidas.tiangong.earth/docs/intro'
+      : 'https://tidas.tiangong.earth/en/docs/intro';
+  const tidasReadMoreLabel = lang === 'zh' ? '了解更多' : 'Learn more';
   const tidasImageSrc =
     lang === 'zh'
       ? isDarkMode
@@ -405,7 +410,7 @@ const Welcome: React.FC = () => {
             <Typography.Paragraph
               style={{
                 margin: 0,
-                color: token.colorTextSecondary,
+                color: token.colorText,
                 fontSize: '1rem',
                 lineHeight: 1.7,
               }}
@@ -543,7 +548,15 @@ const Welcome: React.FC = () => {
       >
         <Space direction='vertical' size={16} style={{ width: '100%' }}>
           <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
-            {tidasDescription}
+            {tidasDescription}{' '}
+            <Typography.Link
+              href={tidasDocUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              style={{ fontWeight: 500 }}
+            >
+              {tidasReadMoreLabel}
+            </Typography.Link>
           </Typography.Paragraph>
           {isTidasModalOpen && (
             <img src={tidasImageSrc} alt={tidasImageAlt} style={{ width: '100%' }} />
