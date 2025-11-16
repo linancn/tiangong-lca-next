@@ -444,11 +444,11 @@ const Welcome: React.FC = () => {
                       {sectionIconMap[section.key]}
                     </span>
                     <Typography.Text
-                      strong
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         lineHeight: '20px',
+                        fontSize: '1rem',
                         margin: 0,
                       }}
                     >
