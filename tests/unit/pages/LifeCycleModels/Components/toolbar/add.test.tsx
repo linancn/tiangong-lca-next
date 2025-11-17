@@ -22,6 +22,7 @@ jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CloseOutlined: () => <span>close-icon</span>,
   PlusOutlined: () => <span>plus-icon</span>,
+  QuestionCircleOutlined: () => <span>question-icon</span>,
 }));
 
 jest.mock('@/pages/Processes/Components/create', () => ({
@@ -32,6 +33,11 @@ jest.mock('@/pages/Processes/Components/create', () => ({
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
   default: () => <span>process-view</span>,
+}));
+
+jest.mock('@/components/AISuggestion', () => ({
+  __esModule: true,
+  default: () => <span>ai-suggestion</span>,
 }));
 
 const mockGetProcessTableAll = jest.fn();
@@ -61,6 +67,36 @@ jest.mock('antd', () => {
   );
 
   const Tooltip = ({ children }: any) => <>{children}</>;
+
+  const Typography = {
+    Text: ({ children }: any) => <span>{toText(children)}</span>,
+    Title: ({ children }: any) => <h1>{toText(children)}</h1>,
+  };
+
+  const theme = {
+    defaultAlgorithm: () => ({}),
+    darkAlgorithm: () => ({}),
+    useToken: () => ({
+      token: {
+        colorBgContainer: '#fff',
+        colorFillSecondary: '#eee',
+        colorBorder: '#ddd',
+        colorBorderSecondary: '#ccc',
+        colorSplit: '#bbb',
+        colorSuccessBg: '#f6ffed',
+        colorSuccess: '#52c41a',
+        colorErrorBg: '#fff1f0',
+        colorError: '#f5222d',
+        colorInfoBg: '#e6f7ff',
+        colorInfo: '#1677ff',
+        colorSuccessBorder: '#b7eb8f',
+        colorWarningBg: '#fffbe6',
+        colorWarningBorder: '#ffe58f',
+        colorWarning: '#faad14',
+        colorPrimary: '#1677ff',
+      },
+    }),
+  };
 
   const Drawer = ({ open, title, extra, footer, children, onClose }: any) => {
     if (!open) return null;
@@ -155,10 +191,33 @@ jest.mock('antd', () => {
 
   Input.Search = Search;
 
+  const Form = ({ children, onFinish }: any) => (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onFinish?.({});
+      }}
+    >
+      {children}
+    </form>
+  );
+  Form.Item = ({ children }: any) => <div>{children}</div>;
+  Form.useForm = () => [
+    {
+      setFieldsValue: jest.fn(),
+      validateFields: jest.fn(),
+    },
+  ];
+  Form.List = ({ children }: any) => (
+    <div>{children?.([], { add: jest.fn(), remove: jest.fn() })}</div>
+  );
+
   return {
     __esModule: true,
     Button,
     Tooltip,
+    Typography,
+    theme,
     Drawer,
     Space,
     Row,
@@ -166,6 +225,7 @@ jest.mock('antd', () => {
     Checkbox,
     Card,
     Input,
+    Form,
   };
 });
 
@@ -211,6 +271,11 @@ jest.mock('@ant-design/pro-components', () => {
     ProTable,
   };
 });
+
+jest.mock('@ant-design/pro-table', () => ({
+  __esModule: true,
+  TableDropdown: () => <span>table-dropdown</span>,
+}));
 
 beforeEach(() => {
   latestProTableProps = null;

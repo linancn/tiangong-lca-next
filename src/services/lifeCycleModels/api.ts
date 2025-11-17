@@ -884,6 +884,27 @@ export async function lifeCycleModel_hybrid_search(
 
   return result;
 }
+export async function getLifeCyclesByIdAndVersion(params: { id: string; version: string }[]) {
+  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select(
+      `
+     id,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+    version,
+    modified_at,
+    team_id
+    `,
+    )
+    .or(orConditions);
+
+  return result;
+}
+
 export async function getLifeCyclesByIds(ids: string[]) {
   const result = await supabase
     .from('lifecyclemodels')

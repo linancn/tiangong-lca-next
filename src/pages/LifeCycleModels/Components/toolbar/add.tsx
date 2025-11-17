@@ -1,5 +1,6 @@
 import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
+import { getProcesstypeOfDataSetOptions } from '@/pages/Processes/index';
 import { ListPagination } from '@/services/general/data';
 import {
   getProcessTableAll,
@@ -136,6 +137,20 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'classification',
       sorter: false,
       search: false,
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.process.view.modellingAndValidation.typeOfDataSet'
+          defaultMessage='Type of data set'
+        />
+      ),
+      dataIndex: 'typeOfDataSet',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return getProcesstypeOfDataSetOptions(row.typeOfDataSet);
+      },
     },
     {
       title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,

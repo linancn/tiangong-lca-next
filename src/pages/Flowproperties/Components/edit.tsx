@@ -1,12 +1,13 @@
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { checkData } from '@/pages/Utils/review';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import { FlowPropertyDataSetObjectKeys, FormFlowProperty } from '@/services/flowproperties/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-
 import {
   Button,
   Drawer,
@@ -26,7 +27,6 @@ import {
 } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 
 import { ReffPath, getErrRefTab } from '@/pages/Utils/review';
@@ -56,9 +56,13 @@ const FlowpropertiesEdit: FC<Props> = ({
   const [initData, setInitData] = useState<FormFlowProperty & { id?: string }>();
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const intl = useIntl();
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
+
   const parentRefCheckContext = useRefCheckContext();
 
   const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
@@ -78,8 +82,33 @@ const FlowpropertiesEdit: FC<Props> = ({
   //   }
   // }, [showRules]);
 
-  const updateReference = async () => {
-    setReferenceValue(referenceValue + 1);
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      formRefEdit.current?.setFieldsValue({ ...res, id });
+    }
   };
   const onTabChange = (key: FlowPropertyDataSetObjectKeys) => {
     setActiveTabKey(key);
@@ -345,7 +374,7 @@ const FlowpropertiesEdit: FC<Props> = ({
             </Button>
             <Button
               onClick={() => {
-                updateReference();
+                handleUpdateReference();
               }}
             >
               <FormattedMessage
@@ -374,38 +403,44 @@ const FlowpropertiesEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={() => handleSubmit(true)}
+              onValuesChange={(_, allValues) => {
+                setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormFlowProperty);
+              }}
+            >
+              <FlowpropertyForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                drawerVisible={drawerVisible}
                 formRef={formRefEdit}
-                initialValues={initData}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                onFinish={() => handleSubmit(true)}
-                onValuesChange={(_, allValues) => {
-                  setFromData({
-                    ...fromData,
-                    [activeTabKey]: allValues[activeTabKey] ?? {},
-                  } as FormFlowProperty);
-                }}
-              >
-                <FlowpropertyForm
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  drawerVisible={drawerVisible}
-                  formRef={formRefEdit}
-                  onData={handletFromData}
-                  onTabChange={(key) => onTabChange(key as FlowPropertyDataSetObjectKeys)}
-                  showRules={showRules}
-                />
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onData={handletFromData}
+                onTabChange={(key) => onTabChange(key as FlowPropertyDataSetObjectKeys)}
+                showRules={showRules}
+              />
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 };

@@ -189,6 +189,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@type':
               data?.processInformation?.technology?.referenceToTechnologyPictogramme?.['@type'] ??
               {},
+            '@version':
+              data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
+                '@version'
+              ] ?? {},
             '@refObjectId':
               data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@refObjectId'
@@ -206,6 +210,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@type':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
                 '@type'
+              ] ?? {},
+            '@version':
+              data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                '@version'
               ] ?? {},
             '@refObjectId':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
@@ -839,7 +847,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 'common:shortDescription'
               ],
@@ -995,7 +1003,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 'common:shortDescription'
               ],
@@ -1040,7 +1048,7 @@ export function genProcessFromData(data: any): FormProcess {
             '@version':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),

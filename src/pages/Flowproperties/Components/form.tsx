@@ -192,6 +192,7 @@ export const FlowpropertyForm: FC<Props> = ({
               defaultMessage='Reference unit'
             />
           }
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -245,6 +246,7 @@ export const FlowpropertyForm: FC<Props> = ({
           }
           formRef={formRef}
           onData={onData}
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -257,10 +259,16 @@ export const FlowpropertyForm: FC<Props> = ({
         />
         <br />
         <Form.Item
+          required={false}
           label={
-            <FormattedMessage
-              id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance'
-              defaultMessage='Approval of overall compliance'
+            <RequiredMark
+              showError={false}
+              label={
+                <FormattedMessage
+                  id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance'
+                  defaultMessage='Approval of overall compliance'
+                />
+              }
             />
           }
           name={[
@@ -295,10 +303,16 @@ export const FlowpropertyForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.FlowProperties.view.modellingAndValidation.timeStamp'
-                defaultMessage='Time stamp (last saved)'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.FlowProperties.view.modellingAndValidation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -326,6 +340,7 @@ export const FlowpropertyForm: FC<Props> = ({
             }
             formRef={formRef}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -348,10 +363,16 @@ export const FlowpropertyForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.FlowProperties.view.modellingAndValidation.dataSetVersion'
-                defaultMessage='Data set version'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.FlowProperties.view.modellingAndValidation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -396,6 +417,7 @@ export const FlowpropertyForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(

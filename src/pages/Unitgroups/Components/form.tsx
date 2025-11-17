@@ -286,6 +286,7 @@ export const UnitGroupForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -298,10 +299,16 @@ export const UnitGroupForm: FC<Props> = ({
         />
         <br />
         <Form.Item
+          required={false}
           label={
-            <FormattedMessage
-              id='pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance'
-              defaultMessage='Approval of overall compliance'
+            <RequiredMark
+              showError={false}
+              label={
+                <FormattedMessage
+                  id='pages.unitgroup.edit.modellingAndValidation.approvalOfOverallCompliance'
+                  defaultMessage='Approval of overall compliance'
+                />
+              }
             />
           }
           name={[
@@ -327,10 +334,16 @@ export const UnitGroupForm: FC<Props> = ({
     administrativeInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
         <Form.Item
+          required={false}
           label={
-            <FormattedMessage
-              id='pages.unitgroup.edit.administrativeInformation.timeStamp'
-              defaultMessage='Time stamp (last saved)'
+            <RequiredMark
+              showError={false}
+              label={
+                <FormattedMessage
+                  id='pages.unitgroup.edit.administrativeInformation.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
+                />
+              }
             />
           }
           name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -358,6 +371,7 @@ export const UnitGroupForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -370,10 +384,16 @@ export const UnitGroupForm: FC<Props> = ({
         />
         <br />
         <Form.Item
+          required={false}
           label={
-            <FormattedMessage
-              id='pages.unitgroup.edit.administrativeInformation.dataSetVersion'
-              defaultMessage='Data set version'
+            <RequiredMark
+              showError={false}
+              label={
+                <FormattedMessage
+                  id='pages.unitgroup.edit.administrativeInformation.dataSetVersion'
+                  defaultMessage='Data set version'
+                />
+              }
             />
           }
           name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -400,6 +420,7 @@ export const UnitGroupForm: FC<Props> = ({
             'common:referenceToOwnershipOfDataSet',
           ]}
           onData={onData}
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(

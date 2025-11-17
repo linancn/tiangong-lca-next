@@ -10,7 +10,8 @@
 import React from 'react';
 
 jest.mock('@/services/reviews/api', () => ({
-  getReviewsTableData: jest.fn(),
+  getReviewsTableDataOfReviewAdmin: jest.fn(),
+  getReviewsTableDataOfReviewMember: jest.fn(),
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -306,12 +307,16 @@ jest.mock('@ant-design/pro-components', () => {
 import Review from '@/pages/Review';
 import AssignmentReview from '@/pages/Review/Components/AssignmentReview';
 import ReviewMember from '@/pages/Review/Components/ReviewMember';
-import { getReviewsTableData } from '@/services/reviews/api';
+import {
+  getReviewsTableDataOfReviewAdmin,
+  getReviewsTableDataOfReviewMember,
+} from '@/services/reviews/api';
 import { getReviewUserRoleApi, getUserManageTableData, updateRoleApi } from '@/services/roles/api';
 import { message } from 'antd';
 import { fireEvent, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 
-const mockGetReviewsTableData = jest.mocked(getReviewsTableData);
+const mockGetReviewsTableDataOfReviewAdmin = jest.mocked(getReviewsTableDataOfReviewAdmin);
+const mockGetReviewsTableDataOfReviewMember = jest.mocked(getReviewsTableDataOfReviewMember);
 const mockGetReviewUserRoleApi = jest.mocked(getReviewUserRoleApi);
 const mockGetUserManageTableData = jest.mocked(getUserManageTableData);
 const mockUpdateRoleApi = jest.mocked(updateRoleApi);
@@ -319,7 +324,16 @@ const mockUpdateRoleApi = jest.mocked(updateRoleApi);
 describe('Review workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetReviewsTableData.mockResolvedValue({ data: [], success: true, total: 0 } as any);
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    } as any);
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    } as any);
     mockGetReviewUserRoleApi.mockResolvedValue({
       user_id: 'user-admin',
       role: 'review-admin',
@@ -336,7 +350,7 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(
-        mockGetReviewsTableData.mock.calls.some(
+        mockGetReviewsTableDataOfReviewAdmin.mock.calls.some(
           ([, , type, lang]) => type === 'unassigned' && lang === 'en',
         ),
       ).toBe(true);
@@ -345,9 +359,9 @@ describe('Review workflow integration', () => {
     fireEvent.click(screen.getByTestId('tab-assigned'));
 
     await waitFor(() => {
-      expect(mockGetReviewsTableData.mock.calls.some(([, , type]) => type === 'assigned')).toBe(
-        true,
-      );
+      expect(
+        mockGetReviewsTableDataOfReviewAdmin.mock.calls.some(([, , type]) => type === 'assigned'),
+      ).toBe(true);
     });
   });
 
@@ -361,7 +375,7 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(
-        mockGetReviewsTableData.mock.calls.some(
+        mockGetReviewsTableDataOfReviewMember.mock.calls.some(
           ([, , type, lang]) => type === 'reviewed' && lang === 'en',
         ),
       ).toBe(true);
@@ -386,7 +400,7 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(
-        mockGetReviewsTableData.mock.calls.some(
+        mockGetReviewsTableDataOfReviewMember.mock.calls.some(
           ([, , type, lang, filter]) =>
             type === 'pending' &&
             lang === 'en' &&
@@ -425,7 +439,7 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(
-        mockGetReviewsTableData.mock.calls.some(
+        mockGetReviewsTableDataOfReviewMember.mock.calls.some(
           ([, , type, lang, filter]) =>
             type === 'reviewed' &&
             lang === 'en' &&
@@ -517,7 +531,7 @@ describe('Review workflow integration', () => {
 
       await waitFor(() => {
         expect(
-          mockGetReviewsTableData.mock.calls.some(
+          mockGetReviewsTableDataOfReviewMember.mock.calls.some(
             ([, , type, lang, filter]) =>
               type === 'pending' && lang === 'en' && filter?.user_id === memberRecord.user_id,
           ),

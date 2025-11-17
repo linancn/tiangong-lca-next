@@ -1,6 +1,5 @@
 import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
 import { genContactFromData } from '@/services/contacts/util';
@@ -23,6 +22,7 @@ type Props = {
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: any;
+  showRequiredLabel?: boolean;
 };
 
 const ContactSelectForm: FC<Props> = ({
@@ -33,12 +33,12 @@ const ContactSelectForm: FC<Props> = ({
   formRef,
   onData,
   rules = [],
+  showRequiredLabel = false,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
-  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
@@ -126,12 +126,6 @@ const ContactSelectForm: FC<Props> = ({
   };
 
   useEffect(() => {
-    if (id) {
-      handletContactData(id, version ?? '');
-    }
-  }, [referenceValue]);
-
-  useEffect(() => {
     if (parentName) {
       setId(formRef.current?.getFieldValue([...parentName, ...name, '@refObjectId']));
       setVersion(formRef.current?.getFieldValue([...parentName, ...name, '@version']));
@@ -150,12 +144,12 @@ const ContactSelectForm: FC<Props> = ({
       size='small'
       style={errRef ? { border: `1px solid ${token.colorError}` } : {}}
       title={
-        isRequired ? (
+        isRequired || showRequiredLabel ? (
           <RequiredSelectFormTitle
             label={label}
-            ruleErrorState={ruleErrorState}
-            requiredRules={requiredRules}
-            errRef={errRef}
+            ruleErrorState={isRequired ? ruleErrorState : false}
+            requiredRules={isRequired ? requiredRules : []}
+            errRef={isRequired ? errRef : null}
           />
         ) : (
           <>
@@ -183,6 +177,7 @@ const ContactSelectForm: FC<Props> = ({
     >
       <Space direction='horizontal'>
         <Form.Item
+          required={false}
           label={
             <FormattedMessage
               id='pages.contact.refObjectId'

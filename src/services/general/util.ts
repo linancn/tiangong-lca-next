@@ -2,6 +2,16 @@ import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import { getReferenceUnits } from '@/services/unitgroups/api';
 import { Classification } from './data';
+
+export type RefVersionItem = {
+  key: string;
+  id: string;
+  type: string;
+  currentVersion: string;
+  newVersion: string;
+  description?: any[];
+  newDescription?: any[];
+};
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {

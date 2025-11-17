@@ -46,6 +46,18 @@ const {
 
 const { getUserId: mockGetUserId } = jest.requireMock('@/services/users/api');
 
+const createPagedCommentsQueryBuilder = (resolvedValue: any) => {
+  const builder: any = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
+    filter: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    range: jest.fn().mockResolvedValue(resolvedValue),
+  };
+  return builder;
+};
+
 describe('Comments API service (src/services/comments/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -248,46 +260,37 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       const mockData = [{ review_id: 'review-1' }, { review_id: 'review-2' }];
 
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEqReviewerId = jest.fn().mockReturnThis();
-      const mockInState = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEqReviewerId.mockReturnValue({
-            in: mockInState,
-          }),
-        }),
-      });
+      const supabaseResult = { data: mockData, error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
 
       const result = await getReviewedComment();
 
       expect(mockGetUserId).toHaveBeenCalledTimes(1);
-      expect(mockSelect).toHaveBeenCalledWith('review_id');
-      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
-      expect(mockInState).toHaveBeenCalledWith('state_code', [1, 2]);
-      expect(result).toEqual({ data: mockData, error: null });
+      expect(builder.select).toHaveBeenCalledWith('review_id, reviews!inner(*)', {
+        count: 'exact',
+      });
+      expect(builder.eq).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
+      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2]);
+      expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual(supabaseResult);
     });
 
     it('fetches reviewed comments for specific user ID', async () => {
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEqReviewerId = jest.fn().mockReturnThis();
-      const mockInState = jest.fn().mockResolvedValue({ data: [], error: null });
+      const supabaseResult = { data: [], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
 
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEqReviewerId.mockReturnValue({
-            in: mockInState,
-          }),
-        }),
-      });
-
-      await getReviewedComment('specific-user-id');
+      await getReviewedComment(undefined, undefined, 'specific-user-id');
 
       expect(mockGetUserId).not.toHaveBeenCalled();
-      expect(mockSelect).toHaveBeenCalledWith('review_id');
-      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'specific-user-id');
-      expect(mockInState).toHaveBeenCalledWith('state_code', [1, 2]);
+      expect(builder.eq).toHaveBeenCalledWith('reviewer_id', 'specific-user-id');
+      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2]);
+      expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
     });
 
     it('returns error when user ID is not available', async () => {
@@ -305,22 +308,18 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       const mockData = [{ review_id: 'review-1' }];
 
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEq1.mockReturnValue({
-            eq: mockEq2,
-          }),
-        }),
-      });
+      const supabaseResult = { data: mockData, error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
 
       const result = await getPendingComment();
 
-      expect(mockEq2).toHaveBeenCalledWith('state_code', 0);
-      expect(result).toEqual({ data: mockData, error: null });
+      expect(builder.eq).toHaveBeenNthCalledWith(1, 'reviewer_id', 'current-user-id');
+      expect(builder.eq).toHaveBeenNthCalledWith(2, 'state_code', 0);
+      expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual(supabaseResult);
     });
 
     it('returns error when user ID is not available', async () => {
@@ -339,20 +338,23 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         { review_id: 'review-2', state_code: 1, reviewer_id: 'user-2' },
       ];
 
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockIn = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const mockFilter = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const builder: any = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockReturnThis(),
+        filter: mockFilter,
+      };
 
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          in: mockIn,
-        }),
-      });
+      (mockFrom as jest.Mock).mockReturnValue(builder);
 
       const result = await getUserManageComments();
 
       expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockSelect).toHaveBeenCalledWith('review_id,state_code,reviewer_id');
-      expect(mockIn).toHaveBeenCalledWith('state_code', [0, 1, 2]);
+      expect(builder.select).toHaveBeenCalledWith(
+        'review_id,state_code,reviewer_id,reviews!inner(state_code)',
+      );
+      expect(builder.in).toHaveBeenCalledWith('state_code', [0, 1, 2]);
+      expect(mockFilter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
       expect(result).toEqual({ data: mockData, error: null });
     });
   });

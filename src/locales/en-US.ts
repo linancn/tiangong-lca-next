@@ -5,6 +5,7 @@ import component_allVersions from './en-US/component_allVersions';
 import component_connectableProcesses from './en-US/component_connectableProcesses';
 import component_contributeData from './en-US/component_contributeData';
 import importData from './en-US/component_importData';
+import component_refsOfNewVersionDrawer from './en-US/component_refsOfNewVersionDrawer';
 import component_rejectReview from './en-US/component_rejectReview';
 import globalHeader from './en-US/globalHeader';
 import menu from './en-US/menu';
@@ -62,4 +63,5 @@ export default {
   ...component_rejectReview,
   ...component_connectableProcesses,
   ...component_AISuggestion,
+  ...component_refsOfNewVersionDrawer,
 };

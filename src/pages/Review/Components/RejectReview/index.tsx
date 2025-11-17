@@ -6,7 +6,7 @@ import {
   getAllRefObj,
   getRefTableName,
 } from '@/pages/Utils/review';
-import { getCommentApi } from '@/services/comments/api';
+import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateDateToReviewState } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
@@ -228,6 +228,15 @@ const RejectReview: React.FC<RejectReviewProps> = ({
       const values = await formRef?.current?.validateFields();
       setLoading(true);
       const oldReviews = await getReviewsDetail(reviewId);
+      if (oldReviews?.state_code === 1) {
+        await updateCommentApi(
+          reviewId,
+          {
+            state_code: -1,
+          },
+          'assigned',
+        );
+      }
       const { json: oldReviewJson } = oldReviews ?? {};
       const userId = await getUserId();
       const user = await getUsersByIds([userId]);

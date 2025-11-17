@@ -271,7 +271,7 @@ export function genFlowpropertyFromData(data: any): FormFlowProperty {
             '@uri':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@uri'],
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['common:shortDescription'],
             ),

@@ -5,6 +5,7 @@ import component_allVersions from './zh-CN/component_allVersions';
 import component_connectableProcesses from './zh-CN/component_connectableProcesses';
 import component_contributeData from './zh-CN/component_contributeData';
 import importData from './zh-CN/component_importData';
+import component_refsOfNewVersionDrawer from './zh-CN/component_refsOfNewVersionDrawer';
 import component_rejectReview from './zh-CN/component_rejectReview';
 import globalHeader from './zh-CN/globalHeader';
 import menu from './zh-CN/menu';
@@ -62,4 +63,5 @@ export default {
   ...component_rejectReview,
   ...component_connectableProcesses,
   ...component_AISuggestion,
+  ...component_refsOfNewVersionDrawer,
 };
