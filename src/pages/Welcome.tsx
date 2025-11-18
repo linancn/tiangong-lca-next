@@ -1,6 +1,7 @@
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
+  ApartmentOutlined,
   BuildOutlined,
   DeploymentUnitOutlined,
   GlobalOutlined,
@@ -126,7 +127,7 @@ const Welcome: React.FC = () => {
         },
         {
           '@xml:lang': 'en',
-          '#text': 'Unit Processs & Inventories',
+          '#text': 'Unit Processes & Inventories',
         },
       ],
     },
@@ -191,12 +192,14 @@ const Welcome: React.FC = () => {
   type SectionKey =
     | 'internationalMethodology'
     | 'ecosystemInteroperability'
-    | 'architectureExtensibility';
+    | 'architectureExtensibility'
+    | 'modelingTraceability';
 
   const sectionIconMap: Record<SectionKey, React.ReactNode> = {
     internationalMethodology: <GlobalOutlined />,
     ecosystemInteroperability: <InteractionOutlined />,
     architectureExtensibility: <DeploymentUnitOutlined />,
+    modelingTraceability: <ApartmentOutlined />,
   };
 
   const tidasContent: Record<
@@ -228,20 +231,26 @@ const Welcome: React.FC = () => {
           description:
             '平台内嵌AI算法以辅助数据的研制与验证。其模块化架构亦支持集成区块链、隐私计算等前沿技术，用以保障企业数据的完整性与保密性。',
         },
+        {
+          heading: '可溯建模',
+          key: 'modelingTraceability',
+          description:
+            '平台面向复杂生产系统提供可溯建模能力，实现过程与模型的双向关联，覆盖多产品、多去向及回流场景，使产品建模路径与分配逻辑清晰可见，一次建模即可生成各产品及副产品结果。',
+        },
       ],
     },
     en: {
       intro:
-        'The Tiangong LCA Data Platform is an open platform for lifecycle assessment and product carbon management. Based on the TianGong LCA Data System (TIDAS), it is founded on three key principles: standardization, interoperability, and extensibility. Our mission is to achieve four core objectives in carbon data management: regulatory compliance, global interoperability, verifiable results, and robust data security.',
+        'TianGong LCA Data Platform is an open platform for lifecycle assessment and product carbon management. Based on the TianGong LCA Data System (TIDAS), it is founded on three key principles: standardization, interoperability, and extensibility. Our mission is to achieve four core objectives in carbon data management: regulatory compliance, global interoperability, verifiable results, and robust data security.',
       sections: [
         {
           heading: 'Standards & Compliance',
           key: 'internationalMethodology',
           description:
-            'TThe platform integrates internationally recognized LCA methodologies, including ISO, ILCD, GHG Protocol, and national standards. Its calculation processes and data structures strictly adhere to these guidelines to ensure the transparency, comparability, and reproducibility of all analysis results.',
+            'The platform integrates internationally recognized LCA methodologies, including ISO, ILCD, GHG Protocol, and national standards. Its calculation processes and data structures strictly adhere to these guidelines to ensure the transparency, comparability, and reproducibility of all analysis results.',
         },
         {
-          heading: 'Open & Interoperability',
+          heading: 'Openness & Interoperability',
           key: 'ecosystemInteroperability',
           description:
             'Based on the unified TIDAS format, the platform offers native compatibility with the eILCD data structure. This allows for seamless data import and export, ensuring usability across other mainstream LCA tools that support the eILCD format.',
@@ -251,6 +260,12 @@ const Welcome: React.FC = () => {
           key: 'architectureExtensibility',
           description:
             'The platform embeds AI algorithms to assist in data modeling and validation. Its modular architecture also supports the integration of cutting-edge technologies like blockchain and privacy-enhancing computation (PEC) to ensure the integrity and confidentiality of enterprise data.',
+        },
+        {
+          heading: 'Modeling & Traceability',
+          key: 'modelingTraceability',
+          description:
+            'Traceable modeling for complex production systems links process datasets and model datasets bidirectionally, covering multi-product, multi-destination, and recycle scenarios so product pathways and allocation logic remain transparent. Model the plant once and output impacts for every product and by-product straight away.',
         },
       ],
     },
@@ -300,6 +315,11 @@ const Welcome: React.FC = () => {
     lang === 'zh'
       ? '以模块化数据包、API 与工具链构建的开放生态，支持跨平台协同与可验证的数据交换。'
       : 'An open ecosystem of modular data packs, APIs, and toolkits enabling collaborative, verifiable exchanges.';
+  const tidasDocUrl =
+    lang === 'zh'
+      ? 'https://tidas.tiangong.earth/docs/intro'
+      : 'https://tidas.tiangong.earth/en/docs/intro';
+  const tidasReadMoreLabel = lang === 'zh' ? '了解更多' : 'Learn more';
   const tidasImageSrc =
     lang === 'zh'
       ? isDarkMode
@@ -368,8 +388,7 @@ const Welcome: React.FC = () => {
                     formatter={formatter}
                     valueStyle={{
                       fontSize: '1.25rem',
-                      fontWeight: 500,
-                      color: token.colorTextSecondary,
+                      color: token.colorText,
                       lineHeight: 1.1,
                       fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
                     }}
@@ -390,7 +409,7 @@ const Welcome: React.FC = () => {
             <Typography.Paragraph
               style={{
                 margin: 0,
-                color: token.colorTextSecondary,
+                color: token.colorText,
                 fontSize: '1rem',
                 lineHeight: 1.7,
               }}
@@ -402,7 +421,7 @@ const Welcome: React.FC = () => {
                 {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
               </Button>
               <Button onClick={handleOpenDataModal}>
-                {lang === 'zh' ? '天工数据生态' : 'TiangGong Data Ecosystem'}
+                {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
               </Button>
             </Space>
           </Space>
@@ -425,11 +444,11 @@ const Welcome: React.FC = () => {
                       {sectionIconMap[section.key]}
                     </span>
                     <Typography.Text
-                      strong
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         lineHeight: '20px',
+                        fontSize: '1rem',
                         margin: 0,
                       }}
                     >
@@ -528,7 +547,15 @@ const Welcome: React.FC = () => {
       >
         <Space direction='vertical' size={16} style={{ width: '100%' }}>
           <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
-            {tidasDescription}
+            {tidasDescription}{' '}
+            <Typography.Link
+              href={tidasDocUrl}
+              target='_blank'
+              rel='noopener noreferrer'
+              style={{ fontWeight: 500 }}
+            >
+              {tidasReadMoreLabel}
+            </Typography.Link>
           </Typography.Paragraph>
           {isTidasModalOpen && (
             <img src={tidasImageSrc} alt={tidasImageAlt} style={{ width: '100%' }} />
