@@ -52,7 +52,8 @@ export default {
   'pages.review.selectReviewer.button': '分配审核',
 
   'pages.review.progress.button': '审核进度',
-  'pages.review.progress.drawer.title': '审核进度',
+  'pages.review.progress.editReviewer': '编辑审核员',
+  'pages.review.progress.drawer.title': '编辑审核员',
   'pages.review.progress.table.reviewerName': '姓名',
   'pages.review.progress.table.status': '审核状态',
   'pages.review.progress.table.updateTime': '更新时间',

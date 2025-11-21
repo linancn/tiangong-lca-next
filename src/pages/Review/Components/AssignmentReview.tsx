@@ -155,6 +155,20 @@ const AssignmentReview = ({
           valueType: 'dateTime' as const,
         },
         {
+          title: (
+            <FormattedMessage id='pages.review.progress.button' defaultMessage='Review Progress' />
+          ),
+          dataIndex: 'progress',
+          sorter: false,
+          search: false,
+          render: (_: any, record: ReviewsTable) => {
+            const total = record.comments?.filter((item: any) => item.state_code >= 0).length ?? 0;
+            const reviewed =
+              record.comments?.filter((item: any) => item.state_code === 1).length ?? 0;
+            return [<Space key={0}>{`${reviewed}/${total}`}</Space>];
+          },
+        },
+        {
           title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
           dataIndex: 'actions',
           search: false,
