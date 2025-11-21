@@ -292,7 +292,11 @@ const ReviewProcessDetail: FC<Props> = ({
       const { data, error } = await getCommentApi(reviewId, tabType);
       if (!error && data && data.length) {
         const allReviews: any[] = [];
-        const isSaveReview = data && data.every((item: any) => item.state_code === 1);
+        const isSaveReview =
+          data &&
+          data
+            .filter((item: any) => item.state_code >= 0)
+            .every((item: any) => item.state_code === 1);
         data.forEach((item: any) => {
           if (item?.json?.modellingAndValidation.validation.review[0]) {
             allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
