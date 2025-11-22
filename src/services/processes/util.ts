@@ -14,8 +14,14 @@ import {
 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
+  const exchangeSource = data?.exchanges?.exchange;
+  const exchangeList = Array.isArray(exchangeSource)
+    ? exchangeSource
+    : exchangeSource
+      ? [exchangeSource]
+      : [];
   const exchange =
-    data?.exchanges?.exchange?.map((item: any) => {
+    exchangeList.map((item: any) => {
       if (item?.quantitativeReference) {
         quantitativeReference = {
           '@type': 'Reference flow(s)',

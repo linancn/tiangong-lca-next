@@ -200,7 +200,7 @@ describe('getDataDetail', () => {
     const builder = createQueryBuilder(fallbackPayload);
     mockFrom.mockReturnValueOnce(builder);
 
-    const result = await generalApi.getDataDetail(sampleId, 'latest', 'flows');
+    const result = await generalApi.getDataDetail(sampleId, '', 'flows');
 
     expect(builder.order).toHaveBeenCalledWith('version', { ascending: false });
     expect(builder.range).toHaveBeenCalledWith(0, 0);
@@ -231,7 +231,9 @@ describe('getRefData', () => {
 
     const result = await generalApi.getRefData(sampleId, sampleVersion, 'flows');
 
-    expect(builder.select).toHaveBeenCalledWith('state_code,json,rule_verification,user_id');
+    expect(builder.select).toHaveBeenCalledWith(
+      'state_code,json,rule_verification,user_id,team_id',
+    );
     expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
     expect(result).toEqual({
       data: {
@@ -244,7 +246,7 @@ describe('getRefData', () => {
     });
   });
 
-  test.failing('should request team_id when filtering by team', async () => {
+  it('should request team_id when filtering by team', async () => {
     const primaryPayload = {
       data: [
         {
@@ -588,15 +590,14 @@ describe('Edge Cases and Error Handling', () => {
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
-    // Marked as failing: getDataDetail should validate version format before querying
-    test.failing('should return failure for invalid version format', async () => {
+    it('should return failure for invalid version format', async () => {
       const result = await generalApi.getDataDetail(sampleId, '1.0.0', 'flows');
 
       expect(result.success).toBe(false);
+      expect(mockFrom).not.toHaveBeenCalled();
     });
 
-    // Marked as failing: getDataDetail should handle database query failures gracefully
-    test.failing('should handle empty data array response', async () => {
+    it('should handle empty data array response', async () => {
       const payload = { data: [] };
       const builder = createQueryBuilder(payload);
       mockFrom.mockReturnValueOnce(builder);
@@ -643,8 +644,7 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toEqual({ data: null, success: false });
     });
 
-    // Marked as failing: getRefData should validate ID before querying database
-    test.failing('should handle empty ID', async () => {
+    it('should handle empty ID', async () => {
       const result = await generalApi.getRefData('', sampleVersion, 'flows');
 
       expect(result).toEqual({ data: null, success: false });
@@ -807,8 +807,7 @@ describe('Edge Cases and Error Handling', () => {
   });
 
   describe('contributeSource', () => {
-    // Marked as failing: contributeSource should validate table name before processing
-    test.failing('should handle null tableName', async () => {
+    it('should handle null tableName', async () => {
       mockAuthGetSession.mockResolvedValue({
         data: { session: { user: { id: 'user-1' } } },
       });

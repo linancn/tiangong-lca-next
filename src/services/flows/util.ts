@@ -18,8 +18,14 @@ type FlowPropertyItem = Flow['flowDataSet']['flowProperties']['flowProperty'] ex
 
 export function genFlowJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
+  const flowPropertySource = data?.flowProperties?.flowProperty;
+  const flowPropertyList = Array.isArray(flowPropertySource)
+    ? flowPropertySource
+    : flowPropertySource
+      ? [flowPropertySource]
+      : [];
   const flowProperty =
-    data?.flowProperties?.flowProperty?.map((item: any) => {
+    flowPropertyList.map((item: any) => {
       if (item?.quantitativeReference) {
         quantitativeReference = {
           referenceToReferenceFlowProperty: item?.['@dataSetInternalID'],
@@ -42,7 +48,9 @@ export function genFlowJsonOrdered(id: string, data: any) {
         uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
         relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
         dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        generalComment: getLangJson(item?.generalComment),
+        generalComment: getLangJson(
+          item?.['common:generalComment'] ?? item?.generalComment ?? undefined,
+        ),
       };
     }) ?? [];
   let flowPropertyJson: any = {};
@@ -552,6 +560,12 @@ export function genFlowFromData(data: any): FormFlow {
       flowProperties: {
         flowProperty: flowPropertyList?.map(
           (item): FlowPropertyItem & { quantitativeReference?: boolean } => {
+            const generalCommentSource =
+              Object.prototype.hasOwnProperty.call(item ?? {}, 'common:generalComment') ||
+              Object.prototype.hasOwnProperty.call(item ?? {}, 'generalComment')
+                ? (item?.['common:generalComment'] ?? item?.generalComment)
+                : undefined;
+            const normalizedGeneralComment = getLangList(generalCommentSource);
             return {
               '@dataSetInternalID': item?.['@dataSetInternalID'],
               referenceToFlowPropertyDataSet: {
@@ -569,7 +583,7 @@ export function genFlowFromData(data: any): FormFlow {
               uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
               relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
               dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-              generalComment: getLangList(item?.generalComment),
+              generalComment: normalizedGeneralComment,
               quantitativeReference:
                 item?.['@dataSetInternalID'] ===
                 data?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty

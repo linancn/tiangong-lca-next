@@ -1404,7 +1404,7 @@ describe('Flow Utility Functions', () => {
      *            ? data.flowProperties.flowProperty
      *            : data?.flowProperties?.flowProperty ? [data.flowProperties.flowProperty] : [];
      */
-    it.failing('should handle single flow property object in genFlowJsonOrdered', () => {
+    it('should handle single flow property object in genFlowJsonOrdered', () => {
       const id = 'test-product-flow-id';
       const data = {
         flowProperties: {
@@ -1453,65 +1453,60 @@ describe('Flow Utility Functions', () => {
       expect(result.flowDataSet.flowProperties.flowProperty['@dataSetInternalID']).toBe('0');
     });
 
-    it.failing(
-      'should expose general comments as arrays in genFlowFromData for form compatibility',
-      () => {
-        const generalUtil = jest.requireMock('@/services/general/util');
-        const getLangJsonMock = generalUtil.getLangJson as jest.Mock;
-        const originalImplementation = getLangJsonMock.getMockImplementation?.();
-        getLangJsonMock.mockImplementation((incoming) => {
-          if (!incoming) {
-            return {};
-          }
-          if (Array.isArray(incoming) && incoming.length === 1) {
-            return incoming[0];
-          }
-          return incoming;
-        });
-
-        const data = {
-          flowInformation: {
-            dataSetInformation: {
-              name: {
-                baseName: [{ '@xml:lang': 'en', '#text': 'Steel' }],
-              },
-            },
-          },
-          flowProperties: {
-            flowProperty: [
-              {
-                '@dataSetInternalID': '0',
-                referenceToFlowPropertyDataSet: {
-                  '@refObjectId': 'prop-id-1',
-                },
-                'common:generalComment': [
-                  { '@xml:lang': 'en', '#text': 'Comment used in edit drawer' },
-                ],
-              },
-            ],
-          },
-          modellingAndValidation: {
-            LCIMethod: {
-              typeOfDataSet: 'Elementary flow',
-            },
-          },
-        };
-
-        try {
-          const result = genFlowFromData(data);
-
-          const flowProps = result.flowProperties.flowProperty as unknown as any[];
-          const generalComment = flowProps[0]['common:generalComment'];
-
-          expect(Array.isArray(generalComment)).toBe(true);
-          expect(generalComment[0]['@xml:lang']).toBe('en');
-          expect(generalComment[0]['#text']).toBe('Comment used in edit drawer');
-        } finally {
-          getLangJsonMock.mockImplementation(
-            originalImplementation ?? ((incoming: any) => incoming),
-          );
+    it('should expose general comments as arrays in genFlowFromData for form compatibility', () => {
+      const generalUtil = jest.requireMock('@/services/general/util');
+      const getLangJsonMock = generalUtil.getLangJson as jest.Mock;
+      const originalImplementation = getLangJsonMock.getMockImplementation?.();
+      getLangJsonMock.mockImplementation((incoming) => {
+        if (!incoming) {
+          return {};
         }
-      },
-    );
+        if (Array.isArray(incoming) && incoming.length === 1) {
+          return incoming[0];
+        }
+        return incoming;
+      });
+
+      const data = {
+        flowInformation: {
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Steel' }],
+            },
+          },
+        },
+        flowProperties: {
+          flowProperty: [
+            {
+              '@dataSetInternalID': '0',
+              referenceToFlowPropertyDataSet: {
+                '@refObjectId': 'prop-id-1',
+              },
+              'common:generalComment': [
+                { '@xml:lang': 'en', '#text': 'Comment used in edit drawer' },
+              ],
+            },
+          ],
+        },
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: 'Elementary flow',
+          },
+        },
+      };
+
+      try {
+        const result = genFlowFromData(data);
+
+        const flowProps = result.flowProperties.flowProperty as unknown as any[];
+        const generalComment = flowProps[0].generalComment;
+
+        expect(Array.isArray(generalComment)).toBe(true);
+        expect(generalComment[0]['@xml:lang']).toBe('en');
+        expect(generalComment[0]['#text']).toBe('Comment used in edit drawer');
+      } finally {
+        getLangJsonMock.mockImplementation(originalImplementation ?? ((incoming: any) => incoming));
+      }
+    });
   });
 });

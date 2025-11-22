@@ -376,15 +376,17 @@ export async function unitgroup_hybrid_search(
   if (result.error) {
     console.log('error', result.error);
   }
-  if (result.data?.data) {
-    if (result.data?.data.length === 0) {
+  if (Array.isArray(result.data?.data)) {
+    const resultData = result.data.data;
+    const totalCount = result.data?.total_count ?? 0;
+
+    if (resultData.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
+        total: totalCount,
       });
     }
-    const resultData = result.data.data;
-    const totalCount = resultData.total_count;
 
     let data: any[] = [];
     if (lang === 'zh') {
@@ -462,7 +464,7 @@ export async function unitgroup_hybrid_search(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 

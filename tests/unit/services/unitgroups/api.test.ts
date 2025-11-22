@@ -546,9 +546,7 @@ describe('unitgroup_hybrid_search', () => {
         },
       },
     ];
-    (rows as any).total_count = 3;
-
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: rows } } as any);
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: rows, total_count: 3 } } as any);
 
     const result = await unitgroup_hybrid_search(
       { current: 1, pageSize: 20 },
@@ -587,7 +585,7 @@ describe('unitgroup_hybrid_search', () => {
     });
   });
 
-  it.failing('should include total_count from function response', async () => {
+  it('should include total_count from function response', async () => {
     mockFunctionsInvoke.mockResolvedValueOnce({
       data: {
         data: [

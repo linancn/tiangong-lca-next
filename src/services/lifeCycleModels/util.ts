@@ -875,7 +875,7 @@ export function genEdgeExchangeTableData(data: any, lang: string) {
         sourceOutputFlowGeneralComment: getLangText(item.sourceOutputFlowGeneralComment, lang),
         targetProcessId: item.targetProcessId ?? '-',
         targetInputFlowInternalID: item.targetInputFlowInternalID ?? '-',
-        targetInputFlowId: item.targetOutputFlowId ?? '-',
+        targetInputFlowId: item.targetInputFlowId ?? '-',
         targetInputFlowName: getLangText(item.targetInputFlowName, lang),
         targetInputFlowGeneralComment: getLangText(item.targetInputFlowGeneralComment, lang),
       });

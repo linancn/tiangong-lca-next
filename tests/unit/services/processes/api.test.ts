@@ -198,7 +198,7 @@ describe('updateProcess', () => {
       },
       region: FunctionRegion.UsEast1,
     });
-    expect(result).toEqual({ data: [{ id: sampleId }] });
+    expect(result).toEqual(invokeResult.data);
   });
 
   it('returns undefined when no active session is available', async () => {
@@ -210,7 +210,7 @@ describe('updateProcess', () => {
     expect(result).toBeUndefined();
   });
 
-  test.failing('returns structured error when invocation fails', async () => {
+  it('returns structured error when invocation fails', async () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
@@ -223,7 +223,7 @@ describe('updateProcess', () => {
 
     const result = await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' });
 
-    expect(result).toEqual({ error: { message: 'update failed' } });
+    expect(result).toEqual({ error: failure.error });
   });
 });
 

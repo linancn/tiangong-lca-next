@@ -68,7 +68,7 @@ describe('ContributeData Component', () => {
     expect(button).toBeDisabled();
   });
 
-  it('should show tooltip with correct text', () => {
+  it('should show tooltip with correct text', async () => {
     render(
       <ConfigProvider>
         <ContributeData {...defaultProps} />
@@ -79,7 +79,7 @@ describe('ContributeData Component', () => {
     fireEvent.mouseOver(button);
 
     // Wait for tooltip to appear
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText('Contribute to team')).toBeInTheDocument();
     });
   });

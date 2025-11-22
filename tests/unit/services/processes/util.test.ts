@@ -558,7 +558,7 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet['@version']).toBe('1.1');
     });
 
-    test.failing('should handle single exchange object', () => {
+    it('should handle single exchange object', () => {
       const dataWithSingleExchange = {
         ...mockProcessData,
         exchanges: {

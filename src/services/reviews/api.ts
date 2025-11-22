@@ -19,20 +19,24 @@ export async function addReviewsApi(id: string, data: any) {
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
-  let result: any = {};
   const session = await supabase.auth.getSession();
   const newData =
     data?.state_code && [-1, 2, 1].includes(data.state_code)
       ? { ...data, modified_at: new Date().toISOString() }
       : data;
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_review', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { reviewIds, data: newData },
-      region: FunctionRegion.UsEast1,
-    });
+  if (!session.data.session) {
+    return undefined;
+  }
+  const result = await supabase.functions.invoke('update_review', {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body: { reviewIds, data: newData },
+    region: FunctionRegion.UsEast1,
+  });
+
+  if (result.error) {
+    return { error: result.error };
   }
   return result?.data;
 }

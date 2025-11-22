@@ -526,7 +526,7 @@ describe('getFlowTablePgroongaSearch', () => {
     expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
   });
 
-  it.failing('should include classification for non-elementary flows', async () => {
+  it('should include classification for non-elementary flows', async () => {
     const rpcResult = {
       data: [
         {
@@ -655,7 +655,7 @@ describe('flow_hybrid_search', () => {
     expect(mockGetILCDLocationByValues).not.toHaveBeenCalled();
   });
 
-  it.failing('should include total_count from function response', async () => {
+  it('should include total_count from function response', async () => {
     const hybridResult = {
       data: {
         data: [

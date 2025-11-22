@@ -426,18 +426,22 @@ export async function getFlowTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-          const classifications = jsonToList(
-            dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
-            ],
-          );
+          const typeOfDataSet =
+            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
+          const classificationSource =
+            typeOfDataSet === 'Elementary flow'
+              ? dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                  'common:category'
+                ]
+              : dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
+          const classifications = jsonToList(classificationSource);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(classifications),
-            flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
+            flowType: typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             locationOfSupply: resolveLocationOfSupply(
               i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
@@ -498,15 +502,18 @@ export async function flow_hybrid_search(
   if (result.error) {
     console.log('error', result.error);
   }
-  if (result.data?.data) {
-    if (result.data.data.length === 0) {
+  if (Array.isArray(result.data?.data)) {
+    const resultData = result.data.data;
+    const totalCount = result.data?.total_count ?? 0;
+
+    if (resultData.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
+        total: totalCount,
+        page: params.current ?? 1,
       });
     }
-    const resultData = result.data.data;
-    const totalCount = resultData.total_count;
 
     const [locationData, categorizationData] = await Promise.all([
       fetchLocationLookup(
@@ -572,18 +579,22 @@ export async function flow_hybrid_search(
       data = resultData.map((i: any) => {
         try {
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-          const classifications = jsonToList(
-            dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
-            ],
-          );
+          const typeOfDataSet =
+            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
+          const classificationSource =
+            typeOfDataSet === 'Elementary flow'
+              ? dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                  'common:category'
+                ]
+              : dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
+          const classifications = jsonToList(classificationSource);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(classifications),
-            flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
+            flowType: typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             locationOfSupply: resolveLocationOfSupply(
               i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
@@ -603,7 +614,7 @@ export async function flow_hybrid_search(
     }
     return Promise.resolve({
       data: data,
-      page: 1,
+      page: params.current ?? 1,
       success: true,
       total: totalCount,
     });

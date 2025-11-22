@@ -172,7 +172,7 @@ describe('updateReviewApi', () => {
       },
       region: FunctionRegion.UsEast1,
     });
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual(invokeResult.data);
   });
 
   it('skips invocation when there is no active session', async () => {
@@ -202,7 +202,7 @@ describe('updateReviewApi', () => {
     expect(invocation?.body?.data).toEqual(updatePayload);
   });
 
-  test.failing('returns invoke response envelope so callers can observe errors', async () => {
+  it('propagates invoke errors while preserving payload shape', async () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
@@ -211,14 +211,14 @@ describe('updateReviewApi', () => {
       },
     });
     const invokeResult = {
-      data: [{ id: 'review-3', state_code: 1 }],
-      error: null,
+      data: null,
+      error: { message: 'invoke failed' },
     };
     mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
 
     const response = await reviewsApi.updateReviewApi(['review-3'], { reviewer_id: ['user-9'] });
 
-    expect(response).toEqual(invokeResult);
+    expect(response).toEqual({ error: invokeResult.error });
   });
 });
 
