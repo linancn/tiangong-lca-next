@@ -161,7 +161,10 @@ export async function getReviewsTableDataOfReviewAdmin(
       break;
     }
     case 'assigned': {
-      query = query.eq('state_code', 1);
+      query = query
+        .eq('state_code', 1)
+        .select('*, comments(state_code)')
+        .filter('comments.state_code', 'gte', 0);
       break;
     }
   }
@@ -203,6 +206,7 @@ export async function getReviewsTableDataOfReviewAdmin(
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
         json: i?.json,
+        comments: i?.comments,
       };
     });
 

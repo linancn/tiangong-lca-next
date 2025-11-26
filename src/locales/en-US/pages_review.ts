@@ -53,7 +53,8 @@ export default {
   'pages.review.selectReviewer.button': 'Assign for review',
 
   'pages.review.progress.button': 'Review Progress',
-  'pages.review.progress.drawer.title': 'Review Progress',
+  'pages.review.progress.editReviewer': 'Edit Reviewer',
+  'pages.review.progress.drawer.title': 'Edit Reviewer',
   'pages.review.progress.table.reviewerName': 'Name',
   'pages.review.progress.table.status': 'Review Status',
   'pages.review.progress.table.updateTime': 'Update Time',
