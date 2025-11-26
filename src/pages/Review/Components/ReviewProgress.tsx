@@ -202,6 +202,7 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
           })}
         >
           <Button
+            disabled={record.state_code !== 0}
             type='text'
             size='small'
             danger
@@ -217,7 +218,10 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
     <>
       <Tooltip
         title={
-          <FormattedMessage id='pages.review.progress.button' defaultMessage='Review Progress' />
+          <FormattedMessage
+            id='pages.review.progress.editReviewer'
+            defaultMessage='Edit Reviewer'
+          />
         }
       >
         <Button

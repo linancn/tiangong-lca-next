@@ -17,7 +17,7 @@ export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
   }
 
   const user: Auth.CurrentUser = {
-    name: claims?.user_metadata?.display_name ?? claims?.email,
+    name: claims?.user_metadata?.display_name ? claims?.user_metadata?.display_name : claims?.email,
     userid: claims?.sub,
     teamid: claims?.user_metadata?.team_id,
     email: claims?.email,

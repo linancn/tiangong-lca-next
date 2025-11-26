@@ -84,15 +84,15 @@ const ReviewProcessDetail: FC<Props> = ({
     if (!error && commentData && commentData.length) {
       const allReviews: any[] = [];
       commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.validation?.review[0]) {
-          allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
+        if (item?.json?.modellingAndValidation?.validation?.review) {
+          allReviews.push(...item?.json?.modellingAndValidation.validation.review);
         }
       });
       const allCompliance: any[] = [];
       commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance[0]) {
+        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
           allCompliance.push(
-            item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+            ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
           );
         }
       });
@@ -292,10 +292,14 @@ const ReviewProcessDetail: FC<Props> = ({
       const { data, error } = await getCommentApi(reviewId, tabType);
       if (!error && data && data.length) {
         const allReviews: any[] = [];
-        const isSaveReview = data && data.every((item: any) => item.state_code === 1);
+        const isSaveReview =
+          data &&
+          data
+            .filter((item: any) => item.state_code >= 0)
+            .every((item: any) => item.state_code === 1);
         data.forEach((item: any) => {
-          if (item?.json?.modellingAndValidation.validation.review[0]) {
-            allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
+          if (item?.json?.modellingAndValidation.validation.review) {
+            allReviews.push(...item?.json?.modellingAndValidation.validation.review);
           }
         });
         const allCompliance: any[] = [];
