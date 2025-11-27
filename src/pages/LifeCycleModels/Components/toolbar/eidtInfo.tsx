@@ -270,6 +270,21 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
       (unRuleVerification && unRuleVerification.length > 0) ||
       (from === 'review' && underReview && underReview.length > 0)
     ) {
+      const unRuleVerificationMainProduce = unRuleVerification.find((item: any) => {
+        return (
+          item['@refObjectId'] === data.id &&
+          item['@version'] === data.version &&
+          item['@type'] === 'process data set'
+        );
+      });
+      if (unRuleVerificationMainProduce) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.mainProduceError',
+            defaultMessage: 'Please complete the main product process data in the model results',
+          }),
+        );
+      }
       if (from === 'review' && underReview && underReview.length > 0) {
         message.error(
           intl.formatMessage({
