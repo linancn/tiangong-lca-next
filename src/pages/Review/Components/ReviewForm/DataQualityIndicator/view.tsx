@@ -1,10 +1,10 @@
-import { Col, Descriptions, Row } from 'antd';
-import { FC } from 'react';
-import { FormattedMessage } from 'umi';
 import {
   dataQualityIndicatorNameOptions,
   dataQualityIndicatorValueOptions,
-} from '../../reviewProcess/optiondata';
+} from '@/pages/Processes/Components/optiondata';
+import { Col, Descriptions, Row } from 'antd';
+import { FC } from 'react';
+import { FormattedMessage } from 'umi';
 
 type Props = {
   data: any[];

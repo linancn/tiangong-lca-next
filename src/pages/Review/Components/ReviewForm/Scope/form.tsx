@@ -1,11 +1,11 @@
 import RequiredMark from '@/components/RequiredMark';
+import { methodNameOptions, scopeNameOptions } from '@/pages/Processes/Components/optiondata';
 import schema from '@/pages/Processes/processes_schema.json';
 import { getRules } from '@/pages/Utils';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Row, Select } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import { methodNameOptions, scopeNameOptions } from '../../reviewProcess/optiondata';
 type Props = {
   name: any;
 };

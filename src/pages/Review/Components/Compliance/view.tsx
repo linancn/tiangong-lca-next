@@ -1,8 +1,3 @@
-import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { getLang } from '@/services/general/util';
-import { Card, Descriptions, Space } from 'antd';
-import { FC } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
 import {
   approvalOfOverallComplianceOptions,
   documentationComplianceOptions,
@@ -10,7 +5,12 @@ import {
   nomenclatureComplianceOptions,
   qualityComplianceOptions,
   reviewComplianceOptions,
-} from '../reviewProcess/optiondata';
+} from '@/pages/Processes/Components/optiondata';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getLang } from '@/services/general/util';
+import { Card, Descriptions, Space } from 'antd';
+import { FC } from 'react';
+import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   data: any[];
