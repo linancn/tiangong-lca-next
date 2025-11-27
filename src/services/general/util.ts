@@ -765,7 +765,8 @@ export function getRuleVerification(schema: any, data: any) {
   };
 
   collectRequiredPaths(schema);
-
+  const baseProcessInstancePath =
+    'lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance';
   requiredPaths.forEach(({ path, rule }) => {
     if (path.includes('quantitativeReference')) {
       return;
@@ -787,28 +788,58 @@ export function getRuleVerification(schema: any, data: any) {
         const arrayData = getValueByPath(data, arrayPath);
 
         if (Array.isArray(arrayData) && arrayData.length > 0) {
-          let allValid = true;
-          for (let i = 0; i < arrayData.length; i++) {
-            const itemPath = `${arrayPath}.${i}.${remainingPath}`;
-            let itemValue = getValueByPath(data, itemPath);
+          // If path includes "lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.0.connections.outputExchange.",
+          // only one valid (non-empty) value in the array is enough to be considered valid.
+          if (path.includes(`${baseProcessInstancePath}.0.connections.outputExchange.`)) {
+            let anyValid = false;
+            for (let i = 0; i < arrayData.length; i++) {
+              const itemPath = `${arrayPath}.${i}.${remainingPath}`;
+              let itemValue = getValueByPath(data, itemPath);
 
-            if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
-              itemValue = itemValue.value;
+              if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
+                itemValue = itemValue.value;
+              }
+
+              if (!isEmpty(itemValue)) {
+                anyValid = true;
+                break;
+              }
             }
-
-            if (isEmpty(itemValue)) {
-              allValid = false;
+            if (!anyValid) {
               result.valid = false;
+              // Only push an error for the first item (for UI clarity)
+              const firstItemPath = `${arrayPath}.0.${remainingPath}`;
               result.errors.push({
-                path: itemPath,
+                path: firstItemPath,
                 message: rule.defaultMessage || rule.messageKey,
                 rule: 'required',
               });
             }
-          }
-
-          if (allValid) {
             shouldSkipValidation = true;
+          } else {
+            let allValid = true;
+            for (let i = 0; i < arrayData.length; i++) {
+              const itemPath = `${arrayPath}.${i}.${remainingPath}`;
+              let itemValue = getValueByPath(data, itemPath);
+
+              if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
+                itemValue = itemValue.value;
+              }
+
+              if (isEmpty(itemValue)) {
+                allValid = false;
+                result.valid = false;
+                result.errors.push({
+                  path: itemPath,
+                  message: rule.defaultMessage || rule.messageKey,
+                  rule: 'required',
+                });
+              }
+            }
+
+            if (allValid) {
+              shouldSkipValidation = true;
+            }
           }
         }
       }
@@ -868,8 +899,6 @@ export function getRuleVerification(schema: any, data: any) {
       }
     }
 
-    const baseProcessInstancePath =
-      'lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance';
     if (path.includes(`${baseProcessInstancePath}.0.connections`)) {
       if (!value) {
         let instance = getValueByPath(data, `${baseProcessInstancePath}`);
@@ -908,9 +937,9 @@ export function getRuleVerification(schema: any, data: any) {
     }
   });
 
-  // if (!result.valid) {
-  //   console.log('getRuleVerificationFalse', result);
-  // }
+  if (!result.valid) {
+    console.log('getRuleVerificationFalse', result);
+  }
 
   return result;
 }

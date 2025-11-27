@@ -2,16 +2,6 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
-import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { getCommentApi, updateCommentApi } from '@/services/comments/api';
-import { updateReviewApi } from '@/services/reviews/api';
-import styles from '@/style/custom.less';
-import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
-import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip, message } from 'antd';
-import type { FC } from 'react';
-import { useRef, useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
 import {
   LCIMethodApproachOptions,
   LCIMethodPrincipleOptions,
@@ -23,7 +13,17 @@ import {
   processtypeOfDataSetOptions,
   uncertaintyDistributionTypeOptions,
   workflowAndPublicationStatusOptions,
-} from '../optiondata';
+} from '@/pages/Processes/Components/optiondata';
+import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getCommentApi, updateCommentApi } from '@/services/comments/api';
+import { updateReviewApi } from '@/services/reviews/api';
+import styles from '@/style/custom.less';
+import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
+import { ProForm, ProFormInstance } from '@ant-design/pro-components';
+import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip, message } from 'antd';
+import type { FC } from 'react';
+import { useRef, useState } from 'react';
+import { FormattedMessage, useIntl } from 'umi';
 
 import ComplianceItemForm from '../../../Compliance/form';
 import ComplianceItemView from '../../../Compliance/view';

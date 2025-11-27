@@ -371,6 +371,7 @@ export default {
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
 
+  'pages.process.review.mainProduceError': 'Please complete the main product process data in the model results',
   'pages.process.review.error': 'Referenced data is under review, cannot initiate another review',
 
   'pages.process.validator.allocatedFraction': 'Allocated fraction total of output is greater than 100%. It is',

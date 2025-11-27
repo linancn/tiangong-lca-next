@@ -1,3 +1,11 @@
+import {
+  approvalOfOverallComplianceOptions,
+  documentationComplianceOptions,
+  methodologicalComplianceOptions,
+  nomenclatureComplianceOptions,
+  qualityComplianceOptions,
+  reviewComplianceOptions,
+} from '@/pages/Processes/Components/optiondata';
 import schema from '@/pages/Processes/processes_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
@@ -6,14 +14,6 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import {
-  approvalOfOverallComplianceOptions,
-  documentationComplianceOptions,
-  methodologicalComplianceOptions,
-  nomenclatureComplianceOptions,
-  qualityComplianceOptions,
-  reviewComplianceOptions,
-} from '../reviewProcess/optiondata';
 // const { TextArea } = Input;
 
 type Props = {

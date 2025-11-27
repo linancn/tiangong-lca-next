@@ -32,7 +32,7 @@ import {
   licenseTypeOptions,
   processtypeOfDataSetOptions,
   uncertaintyDistributionTypeOptions,
-} from './optiondata';
+} from '@/pages/Processes/Components/optiondata';
 
 type Props = {
   lang: string;
