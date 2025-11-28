@@ -285,18 +285,18 @@ const ReviewProcessDetail: FC<Props> = ({
     }
     setSpinning(false);
   };
-
+  const isReviewComplete = (data: any) => {
+    return data
+      .filter((item: any) => item.state_code >= 0)
+      .every((item: any) => item.state_code === 1);
+  };
   const onReset = () => {
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const { data, error } = await getCommentApi(reviewId, tabType);
       if (!error && data && data.length) {
         const allReviews: any[] = [];
-        const isSaveReview =
-          data &&
-          data
-            .filter((item: any) => item.state_code >= 0)
-            .every((item: any) => item.state_code === 1);
+        const isSaveReview = isReviewComplete(data);
         data.forEach((item: any) => {
           if (item?.json?.modellingAndValidation.validation.review) {
             allReviews.push(...item?.json?.modellingAndValidation.validation.review);
