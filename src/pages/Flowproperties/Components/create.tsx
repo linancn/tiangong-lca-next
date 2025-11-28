@@ -34,6 +34,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -53,6 +54,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   actionRef,
   lang,
   actionType = 'create',
+  newVersion,
   id,
   version,
   importData,
@@ -89,17 +91,21 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
     setSpinning(true);
     formRefCreate.current?.resetFields();
     getFlowpropertyDetail(id, version).then(async (result: any) => {
-      const fromData0 = await genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+      const dataset = await genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+      if (actionType === 'createVersion' && newVersion) {
+        dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+          newVersion;
+      }
       setInitData({
-        ...fromData0,
+        ...dataset,
         id: id,
       });
       formRefCreate.current?.setFieldsValue({
-        ...fromData0,
+        ...dataset,
         id: id,
       });
       setFromData({
-        ...fromData0,
+        ...dataset,
         id: id,
       });
 

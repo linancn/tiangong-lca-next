@@ -103,16 +103,18 @@ const TableList: FC = () => {
                 team_id
               `}
               id={row.id}
-            >
-              <LifeCycleModelCreate
-                actionType='createVersion'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-              />
-            </AllVersionsList>
+              addVersionComponent={({ newVersion }) => (
+                <LifeCycleModelCreate
+                  newVersion={newVersion}
+                  actionType='createVersion'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  buttonType={'icon'}
+                  actionRef={actionRef}
+                />
+              )}
+            ></AllVersionsList>
           </Space>
         );
       },
