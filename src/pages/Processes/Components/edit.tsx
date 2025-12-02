@@ -384,10 +384,21 @@ const ProcessEdit: FC<Props> = ({
       ),
       allRefs,
     );
+    allRefs.add(`${id}:${version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = path?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
+      let currentProcessUnderReviewVersion = undefined;
+      let currentProcessVersionIsInTg = false;
       let result = problemNodes.map((item: any) => {
+        if (item['@refObjectId'] === id && item['@version'] === version) {
+          if (item.underReviewVersion) {
+            currentProcessUnderReviewVersion = item.underReviewVersion;
+          }
+          if (item.versionIsInTg) {
+            currentProcessVersionIsInTg = true;
+          }
+        }
         return {
           id: item['@refObjectId'],
           version: item['@version'],
@@ -399,6 +410,34 @@ const ProcessEdit: FC<Props> = ({
         };
       });
       setRefCheckData(result);
+      if (currentProcessUnderReviewVersion) {
+        message.error(
+          intl.formatMessage(
+            {
+              id: 'pages.select.versionUnderReview',
+              defaultMessage:
+                'The current dataset already has version ${underReviewVersion} under review. Your version ${version} cannot be submitted.',
+            },
+            {
+              underReviewVersion: currentProcessUnderReviewVersion,
+              currentVersion: version,
+            },
+          ),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview };
+      }
+      if (currentProcessVersionIsInTg) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.select.versionIsInTg',
+            defaultMessage:
+              'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
+          }),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview };
+      }
     } else {
       setRefCheckData([]);
     }
