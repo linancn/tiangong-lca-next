@@ -55,6 +55,7 @@ type Props = {
   onClose?: () => void;
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
+  newVersion?: string;
 };
 
 const ToolbarEdit: FC<Props> = ({
@@ -70,6 +71,7 @@ const ToolbarEdit: FC<Props> = ({
   onClose = () => {},
   hideReviewButton = false,
   updateNodeCb = () => {},
+  newVersion,
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -1179,6 +1181,7 @@ const ToolbarEdit: FC<Props> = ({
       setNodeCount(initNodes.length);
       return;
     }
+
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);
@@ -1187,6 +1190,11 @@ const ToolbarEdit: FC<Props> = ({
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
         setJsonTg(result.data?.json_tg);
+
+        if (actionType === 'createVersion' && newVersion) {
+          fromData.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+            newVersion;
+        }
         setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
@@ -1288,6 +1296,10 @@ const ToolbarEdit: FC<Props> = ({
           },
           publicationAndOwnership: {
             'common:dataSetVersion': initVersion,
+            'common:permanentDataSetURI': intl.formatMessage({
+              id: 'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI.default',
+              defaultMessage: 'Automatically generated',
+            }),
           },
         },
       };
@@ -1481,6 +1493,7 @@ const ToolbarEdit: FC<Props> = ({
       <ToolbarEditInfo
         ref={editInfoRef}
         action={thisAction}
+        actionType={actionType}
         data={infoData}
         onData={updateInfoData}
         lang={lang}

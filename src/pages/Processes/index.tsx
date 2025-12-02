@@ -171,15 +171,17 @@ const TableList: FC = () => {
                 team_id
               `}
               id={row.id}
-            >
-              <ProcessCreate
-                actionType='createVersion'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-              />
-            </AllVersionsList>
+              addVersionComponent={({ newVersion }) => (
+                <ProcessCreate
+                  newVersion={newVersion}
+                  actionType='createVersion'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={actionRef}
+                />
+              )}
+            ></AllVersionsList>
           </Space>
         );
       },

@@ -24,6 +24,7 @@ type Props = {
   onTabChange: (key: string) => void;
   formType?: string;
   showRules?: boolean;
+  actionType?: 'create' | 'copy' | 'createVersion';
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -33,6 +34,7 @@ export const LifeCycleModelForm: FC<Props> = ({
   onTabChange,
   formType,
   showRules = false,
+  actionType,
 }) => {
   const { token } = theme.useToken();
   const [baseNameError, setBaseNameError] = useState(false);
@@ -624,7 +626,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               ]['common:dataSetVersion']['rules'],
             )}
           >
-            <Input />
+            <Input disabled={actionType === 'createVersion'} />
           </Form.Item>
           <Form.Item
             required={false}
@@ -654,7 +656,7 @@ export const LifeCycleModelForm: FC<Props> = ({
                 : []
             }
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
           <ContactSelectForm
             lang={lang}

@@ -22,6 +22,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -42,6 +43,7 @@ const ContactCreate: FC<CreateProps> = ({
   lang,
   actionRef,
   actionType = 'create',
+  newVersion,
   id,
   version,
   importData,
@@ -76,6 +78,10 @@ const ContactCreate: FC<CreateProps> = ({
     setSpinning(true);
     getContactDetail(id, version).then(async (result) => {
       const contactFromData = genContactFromData(result.data?.json?.contactDataSet ?? {});
+      if (actionType === 'createVersion' && newVersion && contactFromData) {
+        contactFromData.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+          newVersion;
+      }
       setInitData(contactFromData);
       formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue({ ...contactFromData });
@@ -119,6 +125,10 @@ const ContactCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': initVersion,
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.contact.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
     };
@@ -251,7 +261,7 @@ const ContactCreate: FC<CreateProps> = ({
             }}
           >
             <ContactForm
-              formType='create'
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

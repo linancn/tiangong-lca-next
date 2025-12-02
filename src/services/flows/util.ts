@@ -253,10 +253,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
         publicationAndOwnership: {
           'common:dataSetVersion':
             data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-          'common:permanentDataSetURI':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
-            ],
+          'common:permanentDataSetURI': `https://lcdn.tiangong.earth/datasetdetail/productFlow.xhtml?uuid=${id}&version=${data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion']}`,
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[

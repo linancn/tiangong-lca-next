@@ -1755,7 +1755,7 @@ export const ProcessForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input disabled={actionFrom === 'modelResult'} />
+            <Input disabled={actionFrom === 'modelResult' || formType === 'createVersion'} />
           </Form.Item>
 
           <Form.Item

@@ -11,6 +11,9 @@ export type RefCheckType = {
   ruleVerification: boolean;
   nonExistent: boolean;
   stateCode?: number;
+  versionUnderReview?: boolean;
+  underReviewVersion?: string;
+  versionIsInTg?: boolean;
 };
 
 type RefCheckContextType = {

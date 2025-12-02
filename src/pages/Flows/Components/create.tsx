@@ -23,6 +23,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -43,6 +44,7 @@ const FlowsCreate: FC<CreateProps> = ({
   lang,
   actionRef,
   actionType = 'create',
+  newVersion,
   id,
   version,
   importData,
@@ -100,14 +102,18 @@ const FlowsCreate: FC<CreateProps> = ({
     if (!id || !version) return;
     setSpinning(true);
     getFlowDetail(id, version).then(async (result: any) => {
-      const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
-      setInitData({ ...fromData0, id: id });
-      setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
-      setFromData({ ...fromData0, id: id });
-      setFlowType(fromData0?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
+      const dataset = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
+      if (actionType === 'createVersion' && newVersion) {
+        dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+          newVersion;
+      }
+      setInitData({ ...dataset, id: id });
+      setPropertyDataSource(dataset?.flowProperties?.flowProperty ?? []);
+      setFromData({ ...dataset, id: id });
+      setFlowType(dataset?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue({
-        ...fromData0,
+        ...dataset,
         id: id,
       });
       setSpinning(false);
@@ -194,6 +200,10 @@ const FlowsCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': '01.01.000',
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.flow.view.administrativeInformation.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
     };
@@ -366,7 +376,7 @@ const FlowsCreate: FC<CreateProps> = ({
               propertyDataSource={propertyDataSource}
               onPropertyData={handletPropertyData}
               onPropertyDataCreate={handletPropertyDataCreate}
-              formType='create'
+              formType={actionType}
             />
           </ProForm>
         </Spin>

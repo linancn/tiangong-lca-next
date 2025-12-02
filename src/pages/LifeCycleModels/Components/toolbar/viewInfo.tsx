@@ -366,7 +366,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
               key={0}
               label={
                 <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                  id='pages.lifeCycleModel.administrativeInformation.permanentDataSetURI'
                   defaultMessage='Permanent data set URI'
                 />
               }

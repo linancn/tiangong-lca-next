@@ -140,15 +140,17 @@ const TableList: FC = () => {
                   team_id
               `}
               id={row.id}
-            >
-              <FlowpropertiesCreate
-                actionType='createVersion'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-              />
-            </AllVersionsList>
+              addVersionComponent={({ newVersion }) => (
+                <FlowpropertiesCreate
+                  newVersion={newVersion}
+                  actionType='createVersion'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={actionRef}
+                />
+              )}
+            ></AllVersionsList>
           </Space>
         );
       },

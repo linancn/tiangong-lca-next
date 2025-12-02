@@ -194,6 +194,7 @@ const mockCheckReferences = jest.fn();
 const mockCheckRequiredFields = jest.fn().mockReturnValue({ checkResult: true, tabName: '' });
 const mockDealModel = jest.fn();
 const mockDealProcress = jest.fn();
+const mockCheckVersions = jest.fn().mockResolvedValue(undefined);
 const mockGetAllRefObj = jest.fn().mockReturnValue([]);
 const mockUpdateReviewsAfterCheckData = jest.fn().mockResolvedValue({});
 const mockUpdateUnReviewToUnderReview = jest.fn().mockResolvedValue({});
@@ -206,6 +207,7 @@ MockReffPath.prototype.findProblemNodes = function () {
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
+  checkVersions: (...args: any[]) => mockCheckVersions(...args),
   checkRequiredFields: (...args: any[]) => mockCheckRequiredFields(...args),
   dealModel: (...args: any[]) => mockDealModel(...args),
   dealProcress: (...args: any[]) => mockDealProcress(...args),
@@ -244,6 +246,7 @@ beforeEach(() => {
   mockCheckRequiredFields.mockReset().mockReturnValue({ checkResult: true, tabName: '' });
   mockDealModel.mockReset();
   mockDealProcress.mockReset();
+  mockCheckVersions.mockReset().mockResolvedValue(undefined);
   mockGetAllRefObj.mockReset().mockReturnValue([]);
   mockGetLifeCycleModelDetail.mockReset();
   mockGetProcessDetail.mockReset();

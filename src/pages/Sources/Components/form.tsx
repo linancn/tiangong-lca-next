@@ -364,7 +364,7 @@ export const SourceForm: FC<Props> = ({
               ]['rules'] ?? [],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'createVersion'} />
           </Form.Item>
           <ContactSelectForm
             label={
@@ -423,7 +423,7 @@ export const SourceForm: FC<Props> = ({
               'common:permanentDataSetURI',
             ]}
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
         </Card>
       </Space>

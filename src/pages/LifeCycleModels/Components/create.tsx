@@ -18,6 +18,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -39,6 +40,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
   lang,
   actionRef,
   actionType,
+  newVersion,
   id,
   version,
   importData,
@@ -196,6 +198,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
             </Layout>
             <Sider width='50px' style={siderStyle}>
               <ToolbarEdit
+                newVersion={newVersion}
                 actionType={actionType}
                 id={id ?? ''}
                 version={version ?? ''}
