@@ -17,6 +17,7 @@ import {
   comparePercentDesc,
   formatDateTime,
   genClassIdList,
+  genClassificationZH,
   genClassJsonZH,
   genClassStr,
   getDataSource,
@@ -866,7 +867,7 @@ describe('General Utility Functions', () => {
     });
   });
 
-  describe('genClassificationZH', () => {
+  describe('genClassJsonZH', () => {
     it('should generate Chinese classification from English', () => {
       const classifications = [
         { '@level': '0', '#text': 'Category A' },
@@ -910,6 +911,40 @@ describe('General Utility Functions', () => {
       const result = genClassJsonZH(classifications, 0, categoryData);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('genClassificationZH', () => {
+    it('should delegate to genClassJsonZH when classifications exist', () => {
+      const classifications = [
+        { '@level': '0', '#text': 'Category A' },
+        { '@level': '1', '#text': 'Subcategory B' },
+      ];
+      const categoryData = [
+        {
+          value: 'Category A',
+          label: '分类 A',
+          children: [
+            {
+              value: 'Subcategory B',
+              label: '子分类 B',
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      const result = genClassificationZH(classifications, categoryData);
+
+      expect(result).toEqual([
+        { '@level': '0', '#text': '分类 A' },
+        { '@level': '1', '#text': '子分类 B' },
+      ]);
+    });
+
+    it('should return empty array when classifications array is empty', () => {
+      const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
+      expect(genClassificationZH([], categoryData as any)).toEqual([]);
     });
   });
 
@@ -1101,6 +1136,162 @@ describe('General Utility Functions', () => {
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(1);
       expect(result.errors[0].path).toContain('items.0.name');
+    });
+
+    it('should validate each flow property entry individually', () => {
+      const schema = {
+        flowDataSet: {
+          flowProperties: {
+            flowProperty: [
+              {
+                amount: {
+                  rules: [
+                    {
+                      required: true,
+                      messageKey: 'validator.required',
+                      defaultMessage: 'Amount is required',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      const data = {
+        flowDataSet: {
+          flowProperties: {
+            flowProperty: [{ amount: '' }, { amount: '' }],
+          },
+        },
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some(
+          (error: { path: string }) =>
+            error.path === 'flowDataSet.flowProperties.flowProperty.0.amount',
+        ),
+      ).toBe(true);
+      expect(
+        result.errors.some(
+          (error: { path: string }) =>
+            error.path === 'flowDataSet.flowProperties.flowProperty.1.amount',
+        ),
+      ).toBe(true);
+    });
+
+    it('should treat process instance output exchanges as satisfied when any connection is valid', () => {
+      const schema = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  {
+                    connections: {
+                      outputExchange: [
+                        {
+                          referenceToProcess: {
+                            rules: [
+                              {
+                                required: true,
+                                messageKey: 'validator.required',
+                                defaultMessage: 'Connection is required',
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const data = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  { connections: { outputExchange: [{ referenceToProcess: '' }] } },
+                  { connections: { outputExchange: [{ referenceToProcess: 'PROC-001' }] } },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should report missing process instance output exchanges when all are empty', () => {
+      const schema = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  {
+                    connections: {
+                      outputExchange: [
+                        {
+                          referenceToProcess: {
+                            rules: [
+                              {
+                                required: true,
+                                messageKey: 'validator.required',
+                                defaultMessage: 'Connection is required',
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const data = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  { connections: { outputExchange: [{ referenceToProcess: '' }] } },
+                  { connections: { outputExchange: [{ referenceToProcess: '' }] } },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const result = getRuleVerification(schema, data);
+
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some(
+          (error: { path: string }) =>
+            error.path ===
+            'lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.0.connections.outputExchange.0.referenceToProcess',
+        ),
+      ).toBe(true);
     });
   });
 });
