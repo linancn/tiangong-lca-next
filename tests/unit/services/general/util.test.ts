@@ -728,7 +728,8 @@ describe('General Utility Functions', () => {
     it('should include timezone offset', () => {
       const date = new Date('2024-01-15T10:30:45Z');
       const result = formatDateTime(date);
-      expect(result).toContain('+');
+      const expectedSign = date.getTimezoneOffset() <= 0 ? '+' : '-';
+      expect(result).toContain(expectedSign);
     });
 
     it('should pad single digits with zero', () => {
