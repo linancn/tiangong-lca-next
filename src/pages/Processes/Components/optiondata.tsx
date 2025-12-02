@@ -371,7 +371,7 @@ export const processtypeOfDataSetOptions = [
     value: 'Unit process, black box',
     label: (
       <FormattedMessage
-        id='pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessBlackBox'
+        id='pages.process.view.modellingAndValidation.typeOfDataSet.unitProcessesBlackBox'
         defaultMessage='Unit process, black box'
       />
     ),
