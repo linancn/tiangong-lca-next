@@ -4,6 +4,7 @@ import type { refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   checkReferences,
+  checkVersions,
   dealProcress,
   getAllRefObj,
   getErrRefTab,
@@ -357,6 +358,7 @@ const ProcessEdit: FC<Props> = ({
     const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
     const unRuleVerification: any[] = [];
     const nonExistentRef: any[] = [];
+    const allRefs = new Set<string>();
 
     dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
 
@@ -380,10 +382,10 @@ const ProcessEdit: FC<Props> = ({
         processDetail?.ruleVerification,
         false,
       ),
+      allRefs,
     );
-
+    await checkVersions(allRefs, path);
     const problemNodes = path?.findProblemNodes() ?? [];
-
     if (problemNodes && problemNodes.length > 0) {
       let result = problemNodes.map((item: any) => {
         return {
@@ -391,13 +393,15 @@ const ProcessEdit: FC<Props> = ({
           version: item['@version'],
           ruleVerification: item.ruleVerification,
           nonExistent: item.nonExistent,
+          versionUnderReview: item.versionUnderReview,
+          underReviewVersion: item.underReviewVersion,
+          versionIsInTg: item.versionIsInTg,
         };
       });
       setRefCheckData(result);
     } else {
       setRefCheckData([]);
     }
-
     // setNonExistentRefData(nonExistentRef);
     // setUnRuleVerificationData(unRuleVerification);
     if (
@@ -419,12 +423,14 @@ const ProcessEdit: FC<Props> = ({
     }
 
     if (processDetail.stateCode >= 20) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.review.submitError',
-          defaultMessage: 'Submit review failed',
-        }),
-      );
+      if (from === 'review') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+      }
       setSpinning(false);
       valid = false;
       // return { checkResult, unReview };
@@ -476,6 +482,8 @@ const ProcessEdit: FC<Props> = ({
               defaultMessage: 'Data check failed!',
             }),
         );
+        setSpinning(false);
+        return { checkResult: false, unReview };
       } else {
         message.error(
           intl.formatMessage({

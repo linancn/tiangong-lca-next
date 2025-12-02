@@ -1,4 +1,9 @@
-import { getRefData, getReviewsOfData, updateDateToReviewState } from '@/services/general/api';
+import {
+  getRefData,
+  getRefDataByIds,
+  getReviewsOfData,
+  updateDateToReviewState,
+} from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { addReviewsApi } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
@@ -142,6 +147,8 @@ export class ReffPath {
   '@refObjectId': string;
   '@version': string;
   '@type': string;
+  versionUnderReview?: boolean;
+  versionIsInTg?: boolean;
   children: ReffPath[] = [];
   ruleVerification: boolean;
   nonExistent: boolean;
@@ -158,6 +165,34 @@ export class ReffPath {
     this.children.push(child);
   }
 
+  set(ref: refDataType, key: string, value: any): void {
+    const visited = new Set<ReffPath>();
+
+    const traverse = (node: ReffPath): boolean => {
+      if (visited.has(node)) return false;
+      visited.add(node);
+
+      if (
+        node['@refObjectId'] === ref['@refObjectId'] &&
+        // node['@version'] === ref['@version'] &&  // If you need to use the version for target matching, please add the code separately instead of uncommenting the existing content.
+        node['@type'] === ref['@type']
+      ) {
+        (node as any)[key] = value;
+        return true;
+      }
+
+      for (const child of node.children) {
+        if (traverse(child)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    traverse(this);
+  }
+
   findProblemNodes(): ReffPathNode[] {
     const result: ReffPath[] = [];
     const visited = new Set<ReffPath>();
@@ -169,7 +204,12 @@ export class ReffPath {
       if (visited.has(node)) return;
       visited.add(node);
 
-      if (node.ruleVerification === false || node.nonExistent === true) {
+      if (
+        node.ruleVerification === false ||
+        node.nonExistent === true ||
+        node?.versionUnderReview === true ||
+        node?.versionIsInTg === true
+      ) {
         const nodeKey = getUniqueKey(node);
         if (!uniqueKeys.has(nodeKey)) {
           result.push(node);
@@ -264,6 +304,117 @@ export const dealModel = (
     });
   }
 };
+
+const isCurrentVersionLessThanReleased = (
+  currentVersion: string,
+  releasedVersion: string,
+): boolean => {
+  if (!currentVersion || !releasedVersion) {
+    return false;
+  }
+
+  const parseVersion = (version: string): number[] => {
+    return version.split('.').map((part) => parseInt(part, 10) || 0);
+  };
+
+  const compareVersions = (v1: number[], v2: number[]): number => {
+    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+      const part1 = v1[i] || 0;
+      const part2 = v2[i] || 0;
+      if (part1 < part2) return -1;
+      if (part1 > part2) return 1;
+    }
+    return 0;
+  };
+
+  const currentParts = parseVersion(currentVersion);
+  const releaseParts = parseVersion(releasedVersion);
+  return compareVersions(currentParts, releaseParts) < 0;
+};
+
+export const checkVersions = async (refs: Set<string>, path?: ReffPath) => {
+  const refsRecord: Record<string, string[]> = {};
+
+  refs.forEach((ref) => {
+    const parts = ref.split(':');
+    if (parts.length >= 3) {
+      const id = parts[0];
+      const type = parts[2];
+
+      if (!refsRecord[type]) {
+        refsRecord[type] = [];
+      }
+      if (!refsRecord[type].includes(id)) {
+        refsRecord[type].push(id);
+      }
+    }
+  });
+
+  for (let tableName of Object.keys(refsRecord)) {
+    const { data: details } = await getRefDataByIds(
+      refsRecord[tableName],
+      getRefTableName(tableName),
+    );
+
+    if (details && details.length > 0) {
+      details.forEach((detail: any) => {
+        if (detail.state_code >= 20 && detail.state_code < 100) {
+          if (path) {
+            path.set(
+              {
+                '@type': tableName,
+                '@refObjectId': detail.id,
+                '@version': detail.version,
+              },
+              'versionUnderReview',
+              true,
+            );
+            path.set(
+              {
+                '@type': tableName,
+                '@refObjectId': detail.id,
+                '@version': detail.version,
+              },
+              'underReviewVersion',
+              detail.version,
+            );
+          }
+        }
+        if (detail.state_code === 100) {
+          // Find all matching refs from refs set
+          const matchingRefs = Array.from(refs).filter((ref) => {
+            const parts = ref.split(':');
+            if (parts.length >= 3) {
+              const refId = parts[0];
+              const refType = parts[2];
+              return refId === detail.id && refType === tableName;
+            }
+            return false;
+          });
+
+          matchingRefs.forEach((matchingRef) => {
+            const refParts = matchingRef.split(':');
+            const refVersion = refParts[1];
+            if (isCurrentVersionLessThanReleased(refVersion, detail.version)) {
+              if (path) {
+                path.set(
+                  {
+                    '@type': tableName,
+                    '@refObjectId': detail.id,
+                    '@version': detail.version,
+                  },
+                  'versionIsInTg',
+                  true,
+                );
+              }
+            }
+          });
+        }
+      });
+    }
+  }
+};
+
 export const checkReferences = async (
   refs: any[],
   refMaps: Map<string, any>,

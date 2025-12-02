@@ -19,6 +19,7 @@ import type { refDataType } from '@/pages/Utils/review';
 import {
   checkReferences,
   checkRequiredFields,
+  checkVersions,
   dealModel,
   dealProcress,
   getAllRefObj,
@@ -205,6 +206,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
     const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const allRefs = new Set<string>();
 
     if (!modelDetail) {
       message.error(
@@ -239,7 +241,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
         modelDetail?.data?.ruleVerification,
         false,
       ),
+      allRefs,
     );
+    await checkVersions(allRefs, path);
     const problemNodes = path?.findProblemNodes();
 
     if (problemNodes && problemNodes.length > 0) {
@@ -249,6 +253,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(({ lang, data, onData, action }, 
           version: item['@version'],
           ruleVerification: item.ruleVerification,
           nonExistent: item.nonExistent,
+          versionUnderReview: item.versionUnderReview,
+          underReviewVersion: item.underReviewVersion,
+          versionIsInTg: item.versionIsInTg,
         };
       });
       setRefCheckData(result);

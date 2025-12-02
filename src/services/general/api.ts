@@ -140,6 +140,22 @@ export async function getRefData(id: string, version: string, table: string, tea
   });
 }
 
+export async function getRefDataByIds(ids: string[], table: string) {
+  if (!table || ids.length === 0) {
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
+  }
+
+  const result = await supabase.from(table).select('state_code,id,version').in('id', ids);
+
+  return Promise.resolve({
+    data: result.data,
+    success: true,
+  });
+}
+
 export async function updateStateCodeApi(
   id: string,
   version: string,

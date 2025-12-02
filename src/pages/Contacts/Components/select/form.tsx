@@ -1,4 +1,4 @@
-import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import RequiredSelectFormTitle, { ErrRefTipMessage } from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
@@ -156,19 +156,7 @@ const ContactSelectForm: FC<Props> = ({
             {label}{' '}
             {errRef && (
               <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
-                {errRef?.ruleVerification === false ? (
-                  <FormattedMessage
-                    id='pages.select.unRuleVerification'
-                    defaultMessage='Data is incomplete'
-                  />
-                ) : errRef?.nonExistent === true ? (
-                  <FormattedMessage
-                    id='pages.select.nonExistentRef'
-                    defaultMessage='Data does not exist'
-                  />
-                ) : (
-                  ''
-                )}
+                <ErrRefTipMessage errRef={errRef} />
               </span>
             )}
           </>
