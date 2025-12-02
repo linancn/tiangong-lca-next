@@ -740,6 +740,9 @@ export async function getFlowStateCodeByIdsAndVersions(
   params: { id: string; version: string }[],
   lang: string,
 ) {
+  if (!params || params.length === 0) {
+    return { error: null, data: [] };
+  }
   const filter = params.map((p) => `and(id.eq.${p.id},version.eq.${p.version})`).join(',');
   const result = await supabase
     .from('flows')

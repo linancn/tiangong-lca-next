@@ -127,6 +127,8 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',
   'pages.lifeCycleModel.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.lifeCycleModel.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.lifeCycleModel.administrativeInformation.copyright': 'Copyright?',
   'pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess': 'Entities or persons with exclusive access to this data set',
   'pages.lifeCycleModel.administrativeInformation.licenseType': 'License type',

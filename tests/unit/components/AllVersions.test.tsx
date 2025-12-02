@@ -77,23 +77,27 @@ jest.mock('@/pages/Unitgroups/Components/view', () => {
 
 const mockGetAllVersions = getAllVersions as jest.MockedFunction<any>;
 const mockGetDataSource = getDataSource as jest.MockedFunction<any>;
+const mockAddVersionComponent = jest.fn(({ newVersion }: { newVersion: string }) => (
+  <div data-testid='children'>Children Content {newVersion}</div>
+));
 
 describe('AllVersionsList Component', () => {
   const defaultProps = {
     searchTableName: 'processes',
     searchColume: 'id',
     id: 'test-id',
-    children: <div data-testid='children'>Children Content</div>,
     columns: [
       { title: 'Name', dataIndex: 'name', key: 'name' },
       { title: 'Version', dataIndex: 'version', key: 'version' },
     ],
     lang: 'en',
     disabled: false,
+    addVersionComponent: mockAddVersionComponent,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAddVersionComponent.mockClear();
     mockGetDataSource.mockReturnValue('test-datasource');
     mockGetAllVersions.mockResolvedValue({
       data: [

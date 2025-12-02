@@ -23,6 +23,7 @@ type Props = {
   importData?: any;
   onClose?: () => void;
   disabled?: boolean;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -43,6 +44,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
   lang,
   actionRef,
   actionType = 'create',
+  newVersion,
   id,
   version,
   importData,
@@ -91,7 +93,12 @@ const UnitGroupCreate: FC<CreateProps> = ({
     if (!id || !version) return;
     setSpinning(true);
     getUnitGroupDetail(id, version).then(async (result: any) => {
-      setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
+      const dataset = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
+      if (actionType === 'createVersion' && newVersion) {
+        dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+          newVersion;
+      }
+      setInitData({ ...dataset, id: id });
       setFromData({
         ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
         id: id,
@@ -293,7 +300,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
           >
             <UnitGroupForm
-              formType={'create'}
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

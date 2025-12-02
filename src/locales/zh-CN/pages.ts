@@ -1,6 +1,8 @@
 export default {
   'pages.select.unRuleVerification': '数据不完整',
   'pages.select.nonExistentRef': '数据不存在',
+  'pages.select.versionUnderReview': '当前数据集已有版本 {underReviewVersion} 处于审核中。你的版本 {currentVersion} 暂不可提交',
+  'pages.select.versionIsInTg': '当前数据集版本号小于已发布的版本号，请在最新发布的版本号基础上进行新增版本的修正更新和提交审核',
   'pages.select.underReview': '数据审核中',
 
   'pages.button.deleteMessage': '您确定要删除此数据吗？',

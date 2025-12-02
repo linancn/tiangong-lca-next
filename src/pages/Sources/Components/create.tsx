@@ -25,6 +25,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -45,6 +46,7 @@ const SourceCreate: FC<CreateProps> = ({
   actionRef,
   lang,
   actionType = 'create',
+  newVersion,
   id,
   version,
   importData,
@@ -167,6 +169,10 @@ const SourceCreate: FC<CreateProps> = ({
     setSpinning(true);
     getSourceDetail(id, version).then(async (result: any) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
+      if (actionType === 'createVersion' && newVersion) {
+        dataSet.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+          newVersion;
+      }
       await initFormDetail(dataSet);
       setSpinning(false);
     });
@@ -223,6 +229,10 @@ const SourceCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': initVersion,
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.source.edit.administrativeInformation.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
     };
@@ -334,7 +344,7 @@ const SourceCreate: FC<CreateProps> = ({
             onFinish={onSubmit}
           >
             <SourceForm
-              formType='create'
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

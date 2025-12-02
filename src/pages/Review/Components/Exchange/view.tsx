@@ -1,17 +1,17 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
+import {
+  DataDerivationTypeStatusOptions,
+  dataSourceTypeOptions,
+  functionTypeOptions,
+} from '@/pages/Processes/Components/optiondata';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import {
-  DataDerivationTypeStatusOptions,
-  dataSourceTypeOptions,
-  functionTypeOptions,
-} from '../reviewProcess/optiondata';
 type Props = {
   id: string;
   data: any;

@@ -369,6 +369,7 @@ export default {
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': '数据集格式',
 
   'pages.process.review.error': '相关引用数据处于审核阶段，不能再发起审核',
+  'pages.process.review.mainProduceError': '请在模型结果中将主产品过程数据补充完整',
 
   'pages.process.validator.allocatedFraction': '输出的分配份额总和大于100%，为',
   'pages.process.validator.UUID.required': '请输入UUID',

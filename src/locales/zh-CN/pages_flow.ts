@@ -29,6 +29,7 @@ export default {
   'pages.flow.view.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.flow.view.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.flow.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.flow.view.administrativeInformation.permanentDataSetURI.default': '自动生成',
   'pages.flow.view.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.flow.view.administrativeInformation.referenceToDataSetFormat': '数据集格式',
   'pages.flow.view.administrativeInformation.timeStamp': '时间戳（最后保存）',

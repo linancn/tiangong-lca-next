@@ -4,6 +4,7 @@ import type { refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   checkReferences,
+  checkVersions,
   dealProcress,
   getAllRefObj,
   getErrRefTab,
@@ -357,6 +358,7 @@ const ProcessEdit: FC<Props> = ({
     const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
     const unRuleVerification: any[] = [];
     const nonExistentRef: any[] = [];
+    const allRefs = new Set<string>();
 
     dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
 
@@ -380,24 +382,65 @@ const ProcessEdit: FC<Props> = ({
         processDetail?.ruleVerification,
         false,
       ),
+      allRefs,
     );
-
+    allRefs.add(`${id}:${version}:process data set`);
+    await checkVersions(allRefs, path);
     const problemNodes = path?.findProblemNodes() ?? [];
-
     if (problemNodes && problemNodes.length > 0) {
+      let currentProcessUnderReviewVersion = undefined;
+      let currentProcessVersionIsInTg = false;
       let result = problemNodes.map((item: any) => {
+        if (item['@refObjectId'] === id && item['@version'] === version) {
+          if (item.underReviewVersion && item.underReviewVersion !== version) {
+            currentProcessUnderReviewVersion = item.underReviewVersion;
+          }
+          if (item.versionIsInTg && item.version !== version) {
+            currentProcessVersionIsInTg = true;
+          }
+        }
         return {
           id: item['@refObjectId'],
           version: item['@version'],
           ruleVerification: item.ruleVerification,
           nonExistent: item.nonExistent,
+          versionUnderReview: item.versionUnderReview,
+          underReviewVersion: item.underReviewVersion,
+          versionIsInTg: item.versionIsInTg,
         };
       });
       setRefCheckData(result);
+      if (currentProcessUnderReviewVersion) {
+        message.error(
+          intl.formatMessage(
+            {
+              id: 'pages.select.versionUnderReview',
+              defaultMessage:
+                'The current dataset already has version ${underReviewVersion} under review. Your version ${version} cannot be submitted.',
+            },
+            {
+              underReviewVersion: currentProcessUnderReviewVersion,
+              currentVersion: version,
+            },
+          ),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview };
+      }
+      if (currentProcessVersionIsInTg) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.select.versionIsInTg',
+            defaultMessage:
+              'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
+          }),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview };
+      }
     } else {
       setRefCheckData([]);
     }
-
     // setNonExistentRefData(nonExistentRef);
     // setUnRuleVerificationData(unRuleVerification);
     if (
@@ -419,12 +462,14 @@ const ProcessEdit: FC<Props> = ({
     }
 
     if (processDetail.stateCode >= 20) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.review.submitError',
-          defaultMessage: 'Submit review failed',
-        }),
-      );
+      if (from === 'review') {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+      }
       setSpinning(false);
       valid = false;
       // return { checkResult, unReview };
@@ -476,6 +521,8 @@ const ProcessEdit: FC<Props> = ({
               defaultMessage: 'Data check failed!',
             }),
         );
+        setSpinning(false);
+        return { checkResult: false, unReview };
       } else {
         message.error(
           intl.formatMessage({
