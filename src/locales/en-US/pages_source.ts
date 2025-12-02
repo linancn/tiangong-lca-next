@@ -48,6 +48,7 @@ export default {
   'pages.source.edit.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.source.edit.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   //source.delete 删除
   'pages.button.deleteMessage.Are you sure you want to delete this data': 'Are you sure you want to delete this data?',

@@ -124,6 +124,8 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData': '数据录入人:',
   'pages.lifeCycleModel.administrativeInformation.publicationAndOwnership': '出版和所有权',
   'pages.lifeCycleModel.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
+  'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI.default': '自动生成',
   'pages.lifeCycleModel.administrativeInformation.copyright': '版权?',
   'pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess': '对该数据集拥有排他性访问权的实体或个人',
   'pages.lifeCycleModel.administrativeInformation.licenseType': '许可类型',

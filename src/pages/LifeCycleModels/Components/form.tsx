@@ -656,7 +656,7 @@ export const LifeCycleModelForm: FC<Props> = ({
                 : []
             }
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
           <ContactSelectForm
             lang={lang}

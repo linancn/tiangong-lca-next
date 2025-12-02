@@ -423,7 +423,7 @@ export const SourceForm: FC<Props> = ({
               'common:permanentDataSetURI',
             ]}
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
         </Card>
       </Space>

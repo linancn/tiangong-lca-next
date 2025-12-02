@@ -146,6 +146,10 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': initVersion,
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
       modellingAndValidation: {

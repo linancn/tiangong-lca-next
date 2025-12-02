@@ -33,6 +33,7 @@ export default {
   'pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI.default': '自动生成',
   'pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup': '参考单位',
   'pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation': '数据集信息',
   'pages.FlowProperties.view.refObjectId': '引用对象标识符',

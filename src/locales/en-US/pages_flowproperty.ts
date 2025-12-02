@@ -32,6 +32,7 @@ export default {
   'pages.FlowProperties.view.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.FlowProperties.view.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.FlowProperties.view.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.FlowProperties.view.flowPropertiesInformation.referenceToReferenceUnitGroup': 'Reference unit',
   'pages.FlowProperties.view.flowPropertiesInformation.dataSetInformation': 'Data set information',
   'pages.FlowProperties.view.refObjectId': 'Ref object id',

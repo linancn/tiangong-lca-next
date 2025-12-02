@@ -152,10 +152,7 @@ export function genContactJsonOrdered(id: string, data: any) {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:permanentDataSetURI':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
-            ],
+          'common:permanentDataSetURI': `https://lcdn.tiangong.earth/datasetdetail/contact.xhtml?uuid=${id}&version=${data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion']}`,
         },
       },
     },

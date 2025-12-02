@@ -229,6 +229,10 @@ const SourceCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': initVersion,
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.source.edit.administrativeInformation.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
     };

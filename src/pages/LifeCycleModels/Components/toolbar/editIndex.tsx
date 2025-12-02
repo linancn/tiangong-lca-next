@@ -1296,6 +1296,10 @@ const ToolbarEdit: FC<Props> = ({
           },
           publicationAndOwnership: {
             'common:dataSetVersion': initVersion,
+            'common:permanentDataSetURI': intl.formatMessage({
+              id: 'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI.default',
+              defaultMessage: 'Automatically generated',
+            }),
           },
         },
       };

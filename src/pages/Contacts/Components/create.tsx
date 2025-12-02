@@ -125,6 +125,10 @@ const ContactCreate: FC<CreateProps> = ({
         },
         publicationAndOwnership: {
           'common:dataSetVersion': initVersion,
+          'common:permanentDataSetURI': intl.formatMessage({
+            id: 'pages.contact.permanentDataSetURI.default',
+            defaultMessage: 'Automatically generated',
+          }),
         },
       },
     };
