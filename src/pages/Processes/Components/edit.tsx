@@ -392,10 +392,10 @@ const ProcessEdit: FC<Props> = ({
       let currentProcessVersionIsInTg = false;
       let result = problemNodes.map((item: any) => {
         if (item['@refObjectId'] === id && item['@version'] === version) {
-          if (item.underReviewVersion) {
+          if (item.underReviewVersion && item.underReviewVersion !== version) {
             currentProcessUnderReviewVersion = item.underReviewVersion;
           }
-          if (item.versionIsInTg) {
+          if (item.versionIsInTg && item.version !== version) {
             currentProcessVersionIsInTg = true;
           }
         }
