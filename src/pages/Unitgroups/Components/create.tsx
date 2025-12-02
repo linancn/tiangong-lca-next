@@ -300,7 +300,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
           >
             <UnitGroupForm
-              formType={'create'}
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

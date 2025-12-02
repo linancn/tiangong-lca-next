@@ -403,7 +403,7 @@ export const UnitGroupForm: FC<Props> = ({
             ]['rules'] ?? [],
           )}
         >
-          <Input />
+          <Input disabled={formType === 'createVersion'} />
         </Form.Item>
         <ContactSelectForm
           lang={lang}

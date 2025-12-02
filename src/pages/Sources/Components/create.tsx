@@ -340,7 +340,7 @@ const SourceCreate: FC<CreateProps> = ({
             onFinish={onSubmit}
           >
             <SourceForm
-              formType='create'
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

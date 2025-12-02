@@ -372,7 +372,7 @@ const FlowsCreate: FC<CreateProps> = ({
               propertyDataSource={propertyDataSource}
               onPropertyData={handletPropertyData}
               onPropertyDataCreate={handletPropertyDataCreate}
-              formType='create'
+              formType={actionType}
             />
           </ProForm>
         </Spin>

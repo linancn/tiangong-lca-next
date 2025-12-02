@@ -411,7 +411,7 @@ export const ContactForm: FC<Props> = ({
                 ]['rules'] ?? [],
               )}
             >
-              <Input />
+              <Input disabled={formType === 'createVersion'} />
             </Form.Item>
             <ContactSelectForm
               label={

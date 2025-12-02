@@ -257,7 +257,7 @@ const ContactCreate: FC<CreateProps> = ({
             }}
           >
             <ContactForm
-              formType='create'
+              formType={actionType}
               lang={lang}
               activeTabKey={activeTabKey}
               formRef={formRefCreate}

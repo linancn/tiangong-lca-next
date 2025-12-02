@@ -1489,6 +1489,7 @@ const ToolbarEdit: FC<Props> = ({
       <ToolbarEditInfo
         ref={editInfoRef}
         action={thisAction}
+        actionType={actionType}
         data={infoData}
         onData={updateInfoData}
         lang={lang}

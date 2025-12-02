@@ -878,7 +878,7 @@ export const FlowForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'createVersion'} />
           </Form.Item>
           {/* <FlowsSelectForm
             name={[

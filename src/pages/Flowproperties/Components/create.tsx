@@ -281,7 +281,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               formRef={formRefCreate}
               onData={handletFromData}
               onTabChange={(key) => onTabChange(key as FlowPropertyDataSetObjectKeys)}
-              formType='create'
+              formType={actionType}
             />
           </ProForm>
         </Spin>

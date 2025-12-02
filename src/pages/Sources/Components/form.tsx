@@ -364,7 +364,7 @@ export const SourceForm: FC<Props> = ({
               ]['rules'] ?? [],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'createVersion'} />
           </Form.Item>
           <ContactSelectForm
             label={
