@@ -785,7 +785,12 @@ export function getErrRefTab(ref: refDataType, data: any): string | null {
   const visited = new WeakSet();
 
   const findRefInObject = (obj: any, path: string[] = []): string | null => {
-    if (!obj || typeof obj !== 'object') {
+    // technology.processes' is not under any tab
+    if (
+      !obj ||
+      typeof obj !== 'object' ||
+      path.join('.').includes('lifeCycleModelInformation.technology.processes')
+    ) {
       return null;
     }
 
@@ -803,7 +808,6 @@ export function getErrRefTab(ref: refDataType, data: any): string | null {
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         const value = obj[key];
-
         if (Array.isArray(value)) {
           for (let i = 0; i < value.length; i++) {
             const result = findRefInObject(value[i], [...path, key]);

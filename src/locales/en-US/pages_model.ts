@@ -293,4 +293,10 @@ export default {
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': 'Please select a node as reference',
   'pages.lifecyclemodel.validator.exchanges.required': 'Please add connection line',
   'pages.lifecyclemodel.validator.exchanges.required.length': 'Please complete the connection line',
+
+  'pages.lifecyclemodel.review.submitSuccess': 'Review submitted successfully',
+  'pages.lifecyclemodel.review.submitError': 'Submit review failed',
+  'pages.lifecyclemodel.review.error': 'Referenced data is under review, cannot initiate another review',
+  'pages.lifecyclemodel.review.mainProduceError': 'Please complete the main product process data in the model results',
+  'pages.lifecyclemodel.checkData.inReview': 'This data set is under review and cannot be validated',
 };

@@ -395,7 +395,7 @@ const ProcessEdit: FC<Props> = ({
           if (item.underReviewVersion && item.underReviewVersion !== version) {
             currentProcessUnderReviewVersion = item.underReviewVersion;
           }
-          if (item.versionIsInTg && item.version !== version) {
+          if (item.versionIsInTg) {
             currentProcessVersionIsInTg = true;
           }
         }

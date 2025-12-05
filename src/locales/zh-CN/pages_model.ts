@@ -289,4 +289,10 @@ export default {
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': '请选择一个节点作为参考',
   'pages.lifecyclemodel.validator.exchanges.required': '请添加连接线',
   'pages.lifecyclemodel.validator.exchanges.required.length': '请将连接线补充完整',
+
+  'pages.lifecyclemodel.review.submitSuccess': '提交审核成功',
+  'pages.lifecyclemodel.review.submitError': '提交审核失败',
+  'pages.lifecyclemodel.review.error': '相关引用数据处于审核阶段，不能再发起审核',
+  'pages.lifecyclemodel.review.mainProduceError': '请在模型结果中将主产品过程数据补充完整',
+  'pages.lifecyclemodel.checkData.inReview': '此数据集正在审核，无法校验',
 };
