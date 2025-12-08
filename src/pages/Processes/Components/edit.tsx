@@ -324,6 +324,16 @@ const ProcessEdit: FC<Props> = ({
   const handleCheckData = async (from: 'review' | 'checkData', processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
+    if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.checkData.inReview',
+          defaultMessage: 'This data set is under review and cannot be validated',
+        }),
+      );
+      setSpinning(false);
+      return { checkResult: false, unReview: [] };
+    }
     let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
     if (!valid) {
       setTimeout(() => {
