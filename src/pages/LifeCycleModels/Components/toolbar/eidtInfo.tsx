@@ -417,6 +417,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
           }),
         );
         setSpinning(false);
+        return { checkResult: true, unReview, problemNodes };
       } else {
         const errTabNames: string[] = [];
         const modelDataset = modelDetail?.data?.json?.lifeCycleModelDataSet;
@@ -495,8 +496,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         setSpinning(false);
         return { checkResult: false, unReview, problemNodes };
       }
-      setSpinning(false);
-      return { checkResult: valid, unReview, problemNodes };
     };
 
     const submitReview = async (unReview: refDataType[]) => {

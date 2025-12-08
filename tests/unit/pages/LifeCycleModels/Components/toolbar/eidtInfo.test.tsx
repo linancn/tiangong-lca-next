@@ -420,13 +420,8 @@ describe('ToolbarEditInfo', () => {
     expect(mockGetUserTeamId).toHaveBeenCalled();
     expect(mockDealModel).toHaveBeenCalled();
     expect(mockDealProcress).toHaveBeenCalled();
-    // 当存在 problemNodes 时，即使 errTabNames 为空，也会显示 "Data check failed!"
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
-    // 注意：代码中处理 submodels 的逻辑被注释掉了（第 419-428 行），
-    // 所以 unReview 可能不包含 submodels，需要根据实际业务逻辑调整
-    expect(result.checkResult).toBe(true);
-    // 由于 dealModel 的 mock 会添加 submodels，但实际代码中被注释掉了，
-    // 所以这里只检查 checkResult，不检查 unReview 的具体内容
+    expect(result.checkResult).toBe(false);
     expect(Array.isArray(result.unReview)).toBe(true);
   });
 });
