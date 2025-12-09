@@ -27,7 +27,8 @@ const selectStr4Table = `
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
     version,
     modified_at,
-    team_id
+    team_id,
+    user_id
   `;
 
 export async function createProcess(id: string, data: any) {
@@ -928,14 +929,14 @@ export async function getProcessExchange(
   });
 }
 
-export async function getProcessesByIdsAndVersions(ids: string[], versions: string[]) {
-  const result = await supabase
-    .from('processes')
-    .select('id,json,version, modified_at,user_id')
-    .in('id', ids)
-    .in('version', versions);
-  return result;
-}
+// export async function getProcessesByIdsAndVersions(ids: string[], versions: string[]) {
+//   const result = await supabase
+//     .from('processes')
+//     .select('id,json,version, modified_at,user_id')
+//     .in('id', ids)
+//     .in('version', versions);
+//   return result;
+// }
 
 export async function getProcessDetailByIdsAndVersion(ids: string[], version: string) {
   if (ids && ids.length > 0) {
@@ -956,30 +957,43 @@ export async function getProcessDetailByIdsAndVersion(ids: string[], version: st
   });
 }
 
-export async function getProcessesByIdsAndVersion(ids: string[], version: string, lang: string) {
-  const result = await supabase
-    .from('processes')
-    .select(selectStr4Table)
-    .eq('version', version)
-    .in('id', ids);
+export async function getProcessesByIdAndVersion(
+  params: { id: string; version: string }[],
+  lang?: string,
+) {
+  if (!params || params.length === 0) {
+    return {
+      data: [],
+      success: true,
+      page: 1,
+      total: 0,
+    };
+  }
+  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+  const result = await supabase.from('processes').select(selectStr4Table).or(orConditions);
 
-  const data: any[] =
-    result?.data?.map((i: any) => {
-      return {
-        key: i.id + ':' + i.version,
-        id: i.id,
-        version: i.version,
-        lang: lang,
-        name: genProcessName(i.name ?? {}, lang),
-        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-        // classification,
-        typeOfDataSet: i.typeOfDataSet ?? '-',
-        referenceYear: i['common:referenceYear'] ?? '-',
-        // location: location ?? '-',
-        modifiedAt: new Date(i.modified_at),
-        teamId: i?.team_id,
-      };
-    }) ?? [];
+  let data: any[] = [];
+  if (lang) {
+    data =
+      result?.data?.map((i: any) => {
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          version: i.version,
+          lang: lang,
+          name: genProcessName(i.name ?? {}, lang),
+          generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+          // classification,
+          typeOfDataSet: i.typeOfDataSet ?? '-',
+          referenceYear: i['common:referenceYear'] ?? '-',
+          // location: location ?? '-',
+          modifiedAt: new Date(i.modified_at),
+          teamId: i?.team_id,
+        };
+      }) ?? [];
+  } else {
+    data = result?.data ?? [];
+  }
 
   return {
     data: data,

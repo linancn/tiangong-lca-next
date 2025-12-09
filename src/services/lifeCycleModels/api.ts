@@ -18,7 +18,7 @@ import {
   createProcess,
   deleteProcess,
   getProcessDetailByIdsAndVersion,
-  getProcessesByIdsAndVersions,
+  getProcessesByIdAndVersion,
   updateProcess,
   validateProcessesByIdAndVersion,
 } from '../processes/api';
@@ -990,29 +990,19 @@ export async function getLifeCycleModelDetail(
     const userId = await getUserId();
     const data = result.data[0];
     if (setIsFromLifeCycle) {
-      let procressIds: string[] = [];
-      let procressVersion: string[] = [];
+      let params: { id: string; version: string }[] = [];
       data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-        procressIds.push(node?.data?.id);
-        procressVersion.push(node?.data?.version);
+        params.push({
+          id: node?.data?.id,
+          version: node?.data?.version,
+        });
       });
-
-      if (procressIds.length > 0) {
-        const [procresses, models] = await Promise.all([
-          getProcessesByIdsAndVersions(procressIds, procressVersion),
-          getSubmodelsByProcessIds(procressIds),
-        ]);
-
+      if (params.length > 0) {
+        const procresses = await getProcessesByIdAndVersion(params);
+        console.log('procresses', procresses);
         data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-          if (models.data && models.data.hasOwnProperty(node.data.id)) {
-            node.modelData = {
-              id: models.data[node.data.id].split('_')[0],
-              version: models.data[node.data.id].split('_')[1],
-            };
-          }
           const procress = procresses?.data?.find(
-            (procress: any) =>
-              procress?.id === node?.data?.id && procress?.version === node?.data?.version,
+            (p: any) => p?.id === node?.data?.id && p?.version === node?.data?.version,
           );
           if (procress?.user_id === userId) {
             node.isMyProcess = true;

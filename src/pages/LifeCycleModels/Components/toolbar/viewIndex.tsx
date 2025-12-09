@@ -1,4 +1,5 @@
 import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
@@ -478,16 +479,34 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     });
   }, [nodeCount]);
 
+  const isRelatedModel = () => {
+    const id = nodes.find((node) => node.selected)?.data?.id;
+    if (jsonTg?.submodels) {
+      const relatedModel = jsonTg.submodels.find((submodel: { id: string }) => submodel.id === id);
+      return relatedModel !== undefined;
+    }
+    return false;
+  };
+
   return (
     <Space direction='vertical' size={'middle'}>
       <ToolbarViewInfo lang={lang} data={infoData} />
-      <ProcessView
-        id={nodes.find((node) => node.selected)?.data?.id ?? ''}
-        version={nodes.find((node) => node.selected)?.data?.version ?? ''}
-        buttonType={'toolIcon'}
-        lang={lang}
-        disabled={!nodes.find((node) => node.selected)}
-      />
+      {isRelatedModel() ? (
+        <LifeCycleModelView
+          id={nodes.find((node) => node.selected)?.data?.id ?? ''}
+          version={nodes.find((node) => node.selected)?.data?.version ?? ''}
+          lang={lang}
+          buttonType={'toolIcon'}
+        />
+      ) : (
+        <ProcessView
+          id={nodes.find((node) => node.selected)?.data?.id ?? ''}
+          version={nodes.find((node) => node.selected)?.data?.version ?? ''}
+          buttonType={'toolIcon'}
+          lang={lang}
+          disabled={!nodes.find((node) => node.selected)}
+        />
+      )}
       <EdgeExhange
         lang={lang}
         disabled={!edges.find((edge) => edge.selected)}

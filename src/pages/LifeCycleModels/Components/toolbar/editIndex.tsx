@@ -1428,15 +1428,18 @@ const ToolbarEdit: FC<Props> = ({
 
   const getShowTool = () => {
     const selectedNode = nodes.find((node) => node.selected);
+    const { submodels } = jsonTg ?? [];
+    const isInSubmodel = submodels?.find(
+      (submodel: { id: string }) => submodel.id === selectedNode?.data?.id,
+    );
 
     if (selectedNode?.isMyProcess) {
-      if (selectedNode?.modelData) {
+      if (isInSubmodel) {
         return (
           <LifeCycleModelEdit
-            id={selectedNode?.modelData?.id ?? ''}
-            version={selectedNode?.modelData?.version ?? ''}
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
             lang={lang}
-            actionRef={undefined}
             buttonType={'toolIcon'}
             disabled={!selectedNode}
             hideReviewButton={true}
@@ -1459,11 +1462,11 @@ const ToolbarEdit: FC<Props> = ({
         );
       }
     } else {
-      if (selectedNode?.modelData) {
+      if (isInSubmodel) {
         return (
           <LifeCycleModelView
-            id={selectedNode?.modelData?.id ?? ''}
-            version={selectedNode?.modelData?.version ?? ''}
+            id={selectedNode?.data?.id ?? ''}
+            version={selectedNode?.data?.version ?? ''}
             lang={lang}
             actionRef={undefined}
             buttonType={'toolIcon'}
