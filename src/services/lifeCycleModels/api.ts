@@ -999,7 +999,6 @@ export async function getLifeCycleModelDetail(
       });
       if (params.length > 0) {
         const procresses = await getProcessesByIdAndVersion(params);
-        console.log('procresses', procresses);
         data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
           const procress = procresses?.data?.find(
             (p: any) => p?.id === node?.data?.id && p?.version === node?.data?.version,

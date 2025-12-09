@@ -61,7 +61,7 @@ jest.mock('@/services/ilcd/api', () => ({
 const mockCreateProcess = jest.fn();
 const mockDeleteProcess = jest.fn();
 const mockGetProcessDetailByIdsAndVersion = jest.fn();
-const mockGetProcessesByIdsAndVersions = jest.fn();
+const mockGetProcessesByIdAndVersion = jest.fn();
 const mockUpdateProcess = jest.fn();
 const mockValidateProcessesByIdAndVersion = jest.fn();
 
@@ -71,8 +71,7 @@ jest.mock('@/services/processes/api', () => ({
   deleteProcess: (...args: any[]) => mockDeleteProcess.apply(null, args),
   getProcessDetailByIdsAndVersion: (...args: any[]) =>
     mockGetProcessDetailByIdsAndVersion.apply(null, args),
-  getProcessesByIdsAndVersions: (...args: any[]) =>
-    mockGetProcessesByIdsAndVersions.apply(null, args),
+  getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion.apply(null, args),
   updateProcess: (...args: any[]) => mockUpdateProcess.apply(null, args),
   validateProcessesByIdAndVersion: (...args: any[]) =>
     mockValidateProcessesByIdAndVersion.apply(null, args),
@@ -156,7 +155,7 @@ beforeEach(() => {
   mockGetILCDClassification.mockReset();
   mockCreateProcess.mockReset();
   mockDeleteProcess.mockReset();
-  mockGetProcessesByIdsAndVersions.mockReset();
+  mockGetProcessesByIdAndVersion.mockReset();
   mockUpdateProcess.mockReset();
   mockValidateProcessesByIdAndVersion.mockReset();
   mockGenProcessName.mockReset();
@@ -178,7 +177,7 @@ beforeEach(() => {
   mockGetILCDClassification.mockResolvedValue({ data: { dictionary: true } });
   mockCreateProcess.mockResolvedValue(undefined);
   mockDeleteProcess.mockResolvedValue(undefined);
-  mockGetProcessesByIdsAndVersions.mockResolvedValue({ data: [] });
+  mockGetProcessesByIdAndVersion.mockResolvedValue({ data: [] });
   mockUpdateProcess.mockResolvedValue(undefined);
   mockValidateProcessesByIdAndVersion.mockResolvedValue(true);
   mockGenProcessName.mockReturnValue('Life Cycle Model Name');
@@ -575,20 +574,9 @@ describe('getLifeCycleModelDetail', () => {
       error: null,
     };
     const builder = createQueryBuilder(supabaseResult);
-    const submodelsBuilder = createQueryBuilder({
-      data: [
-        {
-          id: 'linked-1',
-          version: '05.00.000',
-          submodels: [{ id: sampleProcessId }],
-        },
-      ],
-      error: null,
-    });
     mockFrom.mockReturnValueOnce(builder);
-    mockFrom.mockReturnValueOnce(submodelsBuilder);
 
-    mockGetProcessesByIdsAndVersions.mockResolvedValueOnce({
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
       data: [
         { id: sampleProcessId, version: '02.00.000', user_id: sampleUserId },
         { id: '44444444-4444-4444-4444-444444444444', version: '03.00.000', user_id: 'user-9999' },
@@ -607,11 +595,10 @@ describe('getLifeCycleModelDetail', () => {
     );
     expect(builder.eq).toHaveBeenCalledWith('id', sampleModelId);
     expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
-    expect(mockGetProcessesByIdsAndVersions).toHaveBeenCalledWith(
-      [sampleProcessId, '44444444-4444-4444-4444-444444444444'],
-      ['02.00.000', '03.00.000'],
-    );
-    expect(submodelsBuilder.select).toHaveBeenCalledWith('id, version, json_tg->submodels');
+    expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith([
+      { id: sampleProcessId, version: '02.00.000' },
+      { id: '44444444-4444-4444-4444-444444444444', version: '03.00.000' },
+    ]);
     expect(result.success).toBe(true);
     if (!result.success) {
       throw new Error('expected success response');
@@ -619,7 +606,6 @@ describe('getLifeCycleModelDetail', () => {
     const nodes = result.data.json_tg.xflow.nodes;
     expect(nodes[0]).toMatchObject({
       isMyProcess: true,
-      modelData: { id: 'linked-1', version: '05.00.000' },
     });
     expect(nodes[1]).toMatchObject({ isMyProcess: false });
   });

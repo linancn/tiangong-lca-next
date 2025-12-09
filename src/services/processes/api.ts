@@ -929,15 +929,6 @@ export async function getProcessExchange(
   });
 }
 
-// export async function getProcessesByIdsAndVersions(ids: string[], versions: string[]) {
-//   const result = await supabase
-//     .from('processes')
-//     .select('id,json,version, modified_at,user_id')
-//     .in('id', ids)
-//     .in('version', versions);
-//   return result;
-// }
-
 export async function getProcessDetailByIdsAndVersion(ids: string[], version: string) {
   if (ids && ids.length > 0) {
     const result = await supabase

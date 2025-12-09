@@ -15,7 +15,7 @@
  *
  * Services mocked:
  * - mockGetLifeCycleModelTableAll, mockGetLifeCycleModelDetail, mockCreateLifeCycleModel, mockUpdateLifeCycleModel
- * - mockGetProcessTableAll, mockGetProcessDetailByIdAndVersion, mockGetProcessDetail, mockGetProcessesByIdsAndVersion
+ * - mockGetProcessTableAll, mockGetProcessDetailByIdAndVersion, mockGetProcessDetail, mockGetProcessesByIdAndVersion
  * - getTeamById, getUserTeamId
  */
 
@@ -667,7 +667,7 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => {
     };
 
     const handleModelResult = async () => {
-      const response = await processApi.getProcessesByIdsAndVersion([id], version, 'en');
+      const response = await processApi.getProcessesByIdAndVersion([{ id, version }], 'en');
       setResults(response?.data ?? []);
       setShowResults(true);
     };
@@ -720,9 +720,7 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => {
 
 jest.mock('@/pages/LifeCycleModels/Components/modelResult', () => {
   const React = require('react');
-  const { getProcessesByIdsAndVersion: getProcesses } = jest.requireMock(
-    '@/services/processes/api',
-  );
+  const { getProcessesByIdAndVersion: getProcesses } = jest.requireMock('@/services/processes/api');
 
   const ModelResult = ({ modelId, modelVersion }: any) => {
     const [open, setOpen] = React.useState(false);
@@ -730,7 +728,7 @@ jest.mock('@/pages/LifeCycleModels/Components/modelResult', () => {
 
     const handleOpen = async () => {
       setOpen(true);
-      const result = await getProcesses([modelId], modelVersion, 'en');
+      const result = await getProcesses([{ id: modelId, version: modelVersion }], 'en');
       setRows(result?.data ?? []);
     };
 
@@ -1024,7 +1022,7 @@ const mockGetProcessDetail = jest.fn(async (id: string) =>
     : { data: mockProcessDetail, success: true },
 );
 
-const mockGetProcessesByIdsAndVersion = jest.fn(async () => ({
+const mockGetProcessesByIdAndVersion = jest.fn(async () => ({
   data: [
     {
       key: 'process-one:1.0.0.000',
@@ -1046,7 +1044,7 @@ jest.mock('@/services/processes/api', () => ({
   process_hybrid_search: jest.fn(async () => ({ data: mockProcessTableRows, success: true })),
   getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
   getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
-  getProcessesByIdsAndVersion: (...args: any[]) => mockGetProcessesByIdsAndVersion(...args),
+  getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion(...args),
   getProcessesByIdsAndVersions: jest.fn(),
   getProcessDetailByIdsAndVersion: jest.fn(),
 }));
@@ -1105,7 +1103,7 @@ describe('LifeCycleModels workflows', () => {
     mockUpdateLifeCycleModel.mockResolvedValue({
       data: [{ id: 'model-existing', version: '1.0.0.002' }],
     });
-    mockGetProcessesByIdsAndVersion.mockResolvedValue({
+    mockGetProcessesByIdAndVersion.mockResolvedValue({
       data: [
         {
           key: 'process-one:1.0.0.000',
@@ -1279,7 +1277,7 @@ describe('LifeCycleModels workflows', () => {
     const modelResultButton = rowWithin.getByRole('button', { name: 'Model result' });
     await user.click(modelResultButton);
 
-    await waitFor(() => expect(mockGetProcessesByIdsAndVersion).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalled());
 
     expect(rowWithin.getByText('Process One')).toBeInTheDocument();
   });
