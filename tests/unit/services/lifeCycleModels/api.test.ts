@@ -492,61 +492,8 @@ describe('lifeCycleModel_hybrid_search', () => {
   });
 });
 
-describe('getSubmodelsByProcessIds', () => {
-  it('returns process to lifecycle model mapping', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: sampleModelId,
-          version: sampleVersion,
-          submodels: [{ id: sampleProcessId }, { id: '33333333-3333-3333-3333-333333333333' }],
-        },
-      ],
-      error: null,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await lifeCycleModelsApi.getSubmodelsByProcessIds([
-      sampleProcessId,
-      '33333333-3333-3333-3333-333333333333',
-    ]);
-
-    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
-    expect(builder.select).toHaveBeenCalledWith('id, version, json_tg->submodels');
-    expect(builder.or).toHaveBeenCalledWith(
-      `json_tg->submodels.cs.[{"id":"${sampleProcessId}"}],json_tg->submodels.cs.[{"id":"33333333-3333-3333-3333-333333333333"}]`,
-    );
-    expect(result).toEqual({
-      error: null,
-      data: {
-        [sampleProcessId]: `${sampleModelId}_${sampleVersion}`,
-        '33333333-3333-3333-3333-333333333333': `${sampleModelId}_${sampleVersion}`,
-      },
-    });
-  });
-
-  it('returns error payload when process id list is empty', async () => {
-    const result = await lifeCycleModelsApi.getSubmodelsByProcessIds([]);
-
-    expect(result).toEqual({ error: 'processIds is empty', data: null });
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('surfaces supabase errors', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    const builder = createQueryBuilder({ data: null, error: { message: 'select failed' } });
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await lifeCycleModelsApi.getSubmodelsByProcessIds([sampleProcessId]);
-
-    expect(result).toEqual({ error: { message: 'select failed' }, data: null });
-    expect(consoleSpy).toHaveBeenCalledWith('Error fetching lifecycle models:', {
-      message: 'select failed',
-    });
-    consoleSpy.mockRestore();
-  });
-});
+// getSubmodelsByProcessIds function no longer exists in the API
+// Tests removed as the function has been deprecated
 
 describe('getLifeCycleModelDetail', () => {
   it('enriches nodes with ownership and related model data when requested', async () => {
@@ -712,7 +659,7 @@ describe('createLifeCycleModel', () => {
       },
     ]);
     expect(selectMock).toHaveBeenCalled();
-    expect(mockCreateProcess).toHaveBeenCalledWith(sampleProcessId, { foo: 'bar' });
+    expect(mockCreateProcess).toHaveBeenCalledWith(sampleProcessId, { foo: 'bar' }, sampleModelId);
     expect(result).toBe(insertResult);
   });
 
@@ -924,8 +871,13 @@ describe('updateLifeCycleModel', () => {
       sampleProcessId,
       sampleVersion,
       expect.anything(),
+      sampleModelId,
     );
-    expect(mockCreateProcess).toHaveBeenCalledWith('new-process-id', expect.anything());
+    expect(mockCreateProcess).toHaveBeenCalledWith(
+      'new-process-id',
+      expect.anything(),
+      sampleModelId,
+    );
     expect(result).toEqual({ updated: true });
   });
 

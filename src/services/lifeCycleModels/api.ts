@@ -131,7 +131,7 @@ export async function createLifeCycleModel(data: any) {
     if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
       lifeCycleModelProcesses.forEach(async (n: any) => {
         try {
-          await createProcess(n.modelInfo.id, n.data.processDataSet);
+          await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
         } catch (error) {
           console.error(error);
         }
@@ -409,12 +409,17 @@ export async function updateLifeCycleModel(data: any) {
                       if (oldProcess) {
                         overrideWithOldProcess(n.data, oldProcess.json);
                       }
-                      return updateProcess(n.modelInfo.id, data.version, n.data.processDataSet);
+                      return updateProcess(
+                        n.modelInfo.id,
+                        data.version,
+                        n.data.processDataSet,
+                        data.id,
+                      );
                     } else {
-                      return createProcess(n.modelInfo.id, n.data.processDataSet);
+                      return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                     }
                   } else if (n.option === 'create') {
-                    return createProcess(n.modelInfo.id, n.data.processDataSet);
+                    return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                   }
                 } catch (error) {
                   console.error(error);
@@ -921,43 +926,6 @@ export async function getLifeCyclesByIds(ids: string[]) {
     )
     .in('id', ids);
   return result;
-}
-
-export async function getSubmodelsByProcessIds(processIds: string[]) {
-  if (!processIds || processIds.length === 0) {
-    return { error: 'processIds is empty', data: null };
-  }
-
-  const orConditions = processIds.map(
-    (processId) => `json_tg->submodels.cs.[{"id":"${processId}"}]`,
-  );
-
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select('id, version, json_tg->submodels')
-    .or(orConditions.join(','));
-
-  if (result.error) {
-    console.error('Error fetching lifecycle models:', result.error);
-    return { error: result.error, data: null };
-  }
-
-  const mapping: { [processId: string]: string } = {};
-
-  if (result.data) {
-    result.data.forEach((lifecycleModel) => {
-      const submodels = lifecycleModel.submodels;
-      if (submodels && Array.isArray(submodels)) {
-        submodels.forEach((submodel: any) => {
-          if (submodel && submodel.id && processIds.includes(submodel.id)) {
-            mapping[submodel.id] = `${lifecycleModel.id}_${lifecycleModel.version}`;
-          }
-        });
-      }
-    });
-  }
-
-  return { error: null, data: mapping };
 }
 
 export async function getLifeCycleModelDetail(

@@ -46,12 +46,10 @@ jest.mock('@/services/ilcd/api', () => ({
 }));
 
 const mockGetLifeCyclesByIds = jest.fn();
-const mockGetSubmodelsByProcessIds = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
   getLifeCyclesByIds: (...args: any[]) => mockGetLifeCyclesByIds.apply(null, args),
-  getSubmodelsByProcessIds: (...args: any[]) => mockGetSubmodelsByProcessIds.apply(null, args),
 }));
 
 const mockGenProcessJsonOrdered = jest.fn();
@@ -122,7 +120,6 @@ beforeEach(() => {
   mockGetILCDLocationByValues.mockReset();
   mockGetILCDClassification.mockReset();
   mockGetLifeCyclesByIds.mockReset();
-  mockGetSubmodelsByProcessIds.mockReset();
   mockGenProcessJsonOrdered.mockReset();
   mockGenProcessName.mockReset();
   mockClassificationToString.mockReset();
@@ -142,7 +139,6 @@ beforeEach(() => {
   );
   mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
   mockGetILCDClassification.mockResolvedValue({ data: {} });
-  mockGetSubmodelsByProcessIds.mockResolvedValue({ data: {} });
   mockGetLifeCyclesByIds.mockResolvedValue({ data: [] });
 });
 
@@ -373,9 +369,6 @@ describe('getProcessTableAll', () => {
     mockGetILCDLocationByValues.mockResolvedValueOnce({
       data: [{ '@value': 'CN', '#text': 'China' }],
     });
-    mockGetSubmodelsByProcessIds.mockResolvedValueOnce({
-      data: { [sampleId]: 'model-9_01.00.000' },
-    });
 
     const result = await processesApi.getProcessTableAll(
       { current: 2, pageSize: 5 },
@@ -413,10 +406,7 @@ describe('getProcessTableAll', () => {
           location: 'China',
           modifiedAt: new Date('2024-03-01T12:00:00Z'),
           teamId: 'team-123',
-          modelData: {
-            id: 'model-9',
-            version: '01.00.000',
-          },
+          modelId: undefined,
         },
       ],
       page: 2,

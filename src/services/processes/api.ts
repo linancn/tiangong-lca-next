@@ -2,7 +2,7 @@ import schema from '@/pages/Processes/processes_schema.json';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData } from '@/services/general/api';
-import { getLifeCyclesByIds, getSubmodelsByProcessIds } from '@/services/lifeCycleModels/api';
+import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
@@ -28,21 +28,22 @@ const selectStr4Table = `
     version,
     modified_at,
     team_id,
-    user_id
+    user_id,
+    modelId
   `;
 
-export async function createProcess(id: string, data: any) {
+export async function createProcess(id: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData, rule_verification }])
+    .insert([{ id: id, json_ordered: newData, modelId, rule_verification }])
     .select();
   return result;
 }
 
-export async function updateProcess(id: string, version: string, data: any) {
+export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData)?.valid;
   const session = await supabase.auth.getSession();
@@ -53,7 +54,12 @@ export async function updateProcess(id: string, version: string, data: any) {
     headers: {
       Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
     },
-    body: { id, version, table: 'processes', data: { json_ordered: newData, rule_verification } },
+    body: {
+      id,
+      version,
+      table: 'processes',
+      data: { json_ordered: newData, modelId, rule_verification },
+    },
     region: FunctionRegion.UsEast1,
   });
   if (result.error) {
@@ -154,11 +160,9 @@ export async function getProcessTableAll(
   }
 
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-  const processIds = result.data.map((i: any) => i.id);
-  const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
+  const [locationRes, classificationRes] = await Promise.all([
     getILCDLocationByValues(lang, locations),
     lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
-    getSubmodelsByProcessIds(processIds),
   ]);
   const locationDataArr = locationRes.data || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
@@ -191,25 +195,13 @@ export async function getProcessTableAll(
         location: location ?? '-',
         modifiedAt: new Date(i.modified_at),
         teamId: i?.team_id,
+        modelId: i?.modelId,
       };
     } catch (e) {
       console.error(e);
       return { id: i.id };
     }
   });
-
-  // 生命周期标记
-  if (lifeCycleResult.data) {
-    data.forEach((i) => {
-      if (lifeCycleResult.data.hasOwnProperty(i.id)) {
-        const [modelId, modelVersion] = lifeCycleResult.data[i.id].split('_');
-        i.modelData = {
-          id: modelId,
-          version: modelVersion,
-        };
-      }
-    });
-  }
 
   return {
     data,
