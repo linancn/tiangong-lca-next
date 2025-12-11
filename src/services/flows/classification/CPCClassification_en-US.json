@@ -400,8 +400,8 @@
                       },
                       {
                         "@id": "0163",
-                        "@name": "Maté leaves",
-                        "category": [{ "@id": "01630", "@name": "Maté leaves" }]
+                        "@name": "Mat\u00e9 leaves",
+                        "category": [{ "@id": "01630", "@name": "Mat\u00e9 leaves" }]
                       },
                       {
                         "@id": "0164",
@@ -2837,7 +2837,7 @@
                           },
                           {
                             "@id": "23914",
-                            "@name": "Extracts, essences and concentrates of tea or maté, and preparations with a basis thereof or with a basis of tea or maté"
+                            "@name": "Extracts, essences and concentrates of tea or mat\u00e9, and preparations with a basis thereof or with a basis of tea or mat\u00e9"
                           }
                         ]
                       },
@@ -15478,11 +15478,11 @@
                       },
                       {
                         "@id": "8582",
-                        "@name": "Intermediation services for telecommunication",
+                        "@name": "Intermediation services\u00a0for telecommunication",
                         "category": [
                           {
                             "@id": "85820",
-                            "@name": "Intermediation services for telecommunication"
+                            "@name": "Intermediation services\u00a0for telecommunication"
                           }
                         ]
                       },
