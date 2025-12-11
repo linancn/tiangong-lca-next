@@ -14,14 +14,9 @@ import {
 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
-  const exchangeSource = data?.exchanges?.exchange;
-  const exchangeList = Array.isArray(exchangeSource)
-    ? exchangeSource
-    : exchangeSource
-      ? [exchangeSource]
-      : [];
+  const exchangeList = jsonToList(data?.exchanges?.exchange);
   const exchange =
-    exchangeList.map((item: any) => {
+    exchangeList?.map((item: any) => {
       if (item?.quantitativeReference) {
         quantitativeReference = {
           '@type': 'Reference flow(s)',
@@ -345,24 +340,20 @@ export function genProcessJsonOrdered(id: string, data: any) {
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),
           },
-          referenceToDataSource: {
-            '@type':
+          referenceToDataSource: listToJson(
+            jsonToList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@type'] ?? {},
-            '@refObjectId':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@refObjectId'] ?? {},
-            '@version':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@version'] ?? {},
-            '@uri':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@uri'] ?? {},
-            'common:shortDescription': getLangJson(
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['common:shortDescription'],
-            ),
-          },
+                ?.referenceToDataSource,
+            ).map((ref: any) => {
+              return {
+                '@type': ref?.['@type'] ?? {},
+                '@refObjectId': ref?.['@refObjectId'] ?? {},
+                '@version': ref?.['@version'] ?? {},
+                '@uri': ref?.['@uri'] ?? {},
+                'common:shortDescription': getLangJson(ref?.['common:shortDescription']),
+              };
+            }),
+          ),
           percentageSupplyOrProductionCovered:
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.percentageSupplyOrProductionCovered ?? {},
@@ -853,7 +844,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangList(
+            'common:shortDescription': getLangJson(
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 'common:shortDescription'
               ],
@@ -1009,7 +1000,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangList(
+            'common:shortDescription': getLangJson(
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 'common:shortDescription'
               ],
@@ -1054,29 +1045,23 @@ export function genProcessFromData(data: any): FormProcess {
             '@version':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
-            'common:shortDescription': getLangList(
+            'common:shortDescription': getLangJson(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),
           },
-          referenceToDataSource: {
-            '@type':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@type'] ?? {},
-            '@refObjectId':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@refObjectId'] ?? {},
-            '@version':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@version'] ?? {},
-            '@uri':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@uri'] ?? {},
-            'common:shortDescription': getLangList(
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['common:shortDescription'],
-            ),
-          },
+          referenceToDataSource: jsonToList(
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource,
+          ).map((ref: any) => {
+            return {
+              '@type': ref?.['@type'] ?? {},
+              '@refObjectId': ref?.['@refObjectId'] ?? {},
+              '@version': ref?.['@version'] ?? {},
+              '@uri': ref?.['@uri'] ?? {},
+              'common:shortDescription': getLangList(ref?.['common:shortDescription']),
+            };
+          }),
           percentageSupplyOrProductionCovered:
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.percentageSupplyOrProductionCovered ?? {},

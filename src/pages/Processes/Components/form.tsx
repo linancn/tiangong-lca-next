@@ -17,9 +17,9 @@ import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CalculatorOutlined } from '@ant-design/icons';
+import { CalculatorOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -282,24 +282,15 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={[
-                ...(showRules
+              rules={
+                showRules
                   ? getRules(
                       schema['processDataSet']['processInformation']['dataSetInformation']['name'][
                         'baseName'
                       ]['rules'],
                     )
-                  : []),
-                {
-                  pattern: /^[^;；]*$/,
-                  message: (
-                    <FormattedMessage
-                      id='validator.lang.mustNotContainSemicolon'
-                      defaultMessage='Must not contain semicolon'
-                    />
-                  ),
-                },
-              ]}
+                  : []
+              }
             />
           </Card>
           <br />
@@ -331,24 +322,15 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={[
-                ...(showRules
+              rules={
+                showRules
                   ? getRules(
                       schema['processDataSet']['processInformation']['dataSetInformation']['name'][
                         'treatmentStandardsRoutes'
                       ]['rules'],
                     )
-                  : []),
-                {
-                  pattern: /^[^;；]*$/,
-                  message: (
-                    <FormattedMessage
-                      id='validator.lang.mustNotContainSemicolon'
-                      defaultMessage='Must not contain semicolon'
-                    />
-                  ),
-                },
-              ]}
+                  : []
+              }
             />
           </Card>
           <br />
@@ -375,24 +357,15 @@ export const ProcessForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={[
-                ...(showRules
+              rules={
+                showRules
                   ? getRules(
                       schema['processDataSet']['processInformation']['dataSetInformation']['name'][
                         'mixAndLocationTypes'
                       ]['rules'],
                     )
-                  : []),
-                {
-                  pattern: /^[^;；]*$/,
-                  message: (
-                    <FormattedMessage
-                      id='validator.lang.mustNotContainSemicolon'
-                      defaultMessage='Must not contain semicolon'
-                    />
-                  ),
-                },
-              ]}
+                  : []
+              }
             />
           </Card>
           <br />
@@ -411,17 +384,6 @@ export const ProcessForm: FC<Props> = ({
                 'dataSetInformation',
                 'name',
                 'functionalUnitFlowProperties',
-              ]}
-              rules={[
-                {
-                  pattern: /^[^;；]*$/,
-                  message: (
-                    <FormattedMessage
-                      id='validator.lang.mustNotContainSemicolon'
-                      defaultMessage='Must not contain semicolon'
-                    />
-                  ),
-                },
               ]}
               label={
                 <FormattedMessage
@@ -546,16 +508,10 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                showError={false}
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.referenceYear'
-                    defaultMessage='Reference year'
-                  />
-                }
+              <FormattedMessage
+                id='pages.process.view.processInformation.referenceYear'
+                defaultMessage='Reference year'
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
@@ -632,7 +588,6 @@ export const ProcessForm: FC<Props> = ({
             ]}
             lang={lang}
             onData={onData}
-            showRequiredLable={true}
             rules={
               showRules
                 ? getRules(
@@ -956,16 +911,10 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                showError={false}
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.modellingAndValidation.typeOfDataSet'
-                    defaultMessage='Type of data set'
-                  />
-                }
+              <FormattedMessage
+                id='pages.process.view.modellingAndValidation.typeOfDataSet'
+                defaultMessage='Type of data set'
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
@@ -1248,32 +1197,92 @@ export const ProcessForm: FC<Props> = ({
             onData={onData}
           />
           <br />
-          <SourceSelectForm
+          <Form.List
             name={[
               'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'referenceToDataSource',
             ]}
-            label={
-              <FormattedMessage
-                id='pages.process.view.modellingAndValidation.referenceToDataSource'
-                defaultMessage='Data source(s) used for this data set'
-              />
-            }
-            lang={lang}
-            formRef={formRef}
-            onData={onData}
-            showRequiredLabel={true}
+            initialValue={[{}]}
             rules={
               showRules
-                ? getRules(
-                    schema['processDataSet']['modellingAndValidation'][
-                      'dataSourcesTreatmentAndRepresentativeness'
-                    ]['referenceToDataSource']['@refObjectId']['rules'],
-                  )
+                ? [
+                    {
+                      validator: async (_, value) => {
+                        if (!value || value.length < 1) {
+                          throw new Error();
+                        }
+                      },
+                    },
+                  ]
                 : []
             }
-          />
+          >
+            {(fields, { add, remove }) => (
+              <Space direction='vertical' style={{ width: '100%' }}>
+                {fields.map((field) => (
+                  <div key={field.key} style={{ position: 'relative', marginBottom: 16 }}>
+                    <SourceSelectForm
+                      parentName={[
+                        'modellingAndValidation',
+                        'dataSourcesTreatmentAndRepresentativeness',
+                        'referenceToDataSource',
+                      ]}
+                      name={[field.name]}
+                      label={
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.referenceToDataSource'
+                          defaultMessage='Data source(s) used for this data set'
+                        />
+                      }
+                      lang={lang}
+                      formRef={formRef}
+                      onData={onData}
+                      rules={
+                        showRules
+                          ? getRules(
+                              schema['processDataSet']['modellingAndValidation'][
+                                'dataSourcesTreatmentAndRepresentativeness'
+                              ]['referenceToDataSource']['@refObjectId']['rules'],
+                            )
+                          : []
+                      }
+                    />
+                    {fields.length > 1 && (
+                      <Button
+                        type='text'
+                        shape='circle'
+                        icon={<CloseOutlined />}
+                        onClick={() => {
+                          remove(field.name);
+                          onData();
+                        }}
+                        style={{ position: 'absolute', right: 8, top: 8 }}
+                      />
+                    )}
+                  </div>
+                ))}
+                <Form.Item colon={false} style={{ margin: '8px 0 24px 0' }}>
+                  <Button
+                    type='dashed'
+                    block
+                    onClick={() => {
+                      add({});
+                      onData();
+                    }}
+                    style={{ width: '100%' }}
+                  >
+                    + <FormattedMessage id='pages.button.add' defaultMessage='Add' />{' '}
+                    <FormattedMessage
+                      id='pages.process.view.modellingAndValidation.referenceToDataSource'
+                      defaultMessage='Data source(s) used for this data set'
+                    />{' '}
+                    <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
+                  </Button>
+                </Form.Item>
+              </Space>
+            )}
+          </Form.List>
           <br />
           <Form.Item
             label={
@@ -1502,7 +1511,6 @@ export const ProcessForm: FC<Props> = ({
           lang={lang}
           formRef={formRef}
           onData={onData}
-          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -1598,16 +1606,10 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.administrativeInformation.timeStamp'
-                    defaultMessage='Time stamp (last saved)'
-                  />
-                }
-                showError={false}
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.timeStamp'
+                defaultMessage='Time stamp (last saved)'
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -1635,7 +1637,6 @@ export const ProcessForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
-            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1678,7 +1679,6 @@ export const ProcessForm: FC<Props> = ({
               'dataEntryBy',
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
-            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1736,16 +1736,10 @@ export const ProcessForm: FC<Props> = ({
           </Form.Item>
 
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.administrativeInformation.dataSetVersion'
-                    defaultMessage='Data set version'
-                  />
-                }
-                showError={false}
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.dataSetVersion'
+                defaultMessage='Data set version'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -1755,20 +1749,14 @@ export const ProcessForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input disabled={actionFrom === 'modelResult' || formType === 'createVersion'} />
+            <Input disabled={actionFrom === 'modelResult'} />
           </Form.Item>
 
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.administrativeInformation.permanentDataSetURI'
-                    defaultMessage='Permanent data set URI'
-                  />
-                }
-                showError={false}
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.permanentDataSetURI'
+                defaultMessage='Permanent data set URI'
               />
             }
             name={[
@@ -1870,7 +1858,6 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             formRef={formRef}
             onData={onData}
-            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -1883,16 +1870,10 @@ export const ProcessForm: FC<Props> = ({
           />
           <br />
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.administrativeInformation.copyright'
-                    defaultMessage='Copyright?'
-                  />
-                }
-                showError={false}
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.copyright'
+                defaultMessage='Copyright?'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
@@ -1926,16 +1907,10 @@ export const ProcessForm: FC<Props> = ({
           />
           <br />
           <Form.Item
-            required={false}
             label={
-              <RequiredMark
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.administrativeInformation.licenseType'
-                    defaultMessage='License type'
-                  />
-                }
-                showError={false}
+              <FormattedMessage
+                id='pages.process.view.administrativeInformation.licenseType'
+                defaultMessage='License type'
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}
@@ -2045,8 +2020,7 @@ export const ProcessForm: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.stateCode;
-                                  item['classification'] = flow.classification;
+                                  item.stateCode = flow.state_code;
                                 }
                               });
                             }
@@ -2133,8 +2107,7 @@ export const ProcessForm: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.stateCode;
-                                  item['classification'] = flow.classification;
+                                  item.stateCode = flow.state_code;
                                 }
                               });
                             }
