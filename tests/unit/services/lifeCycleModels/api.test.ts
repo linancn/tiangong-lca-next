@@ -530,11 +530,7 @@ describe('getLifeCycleModelDetail', () => {
       ],
     });
 
-    const result = await lifeCycleModelsApi.getLifeCycleModelDetail(
-      sampleModelId,
-      sampleVersion,
-      true,
-    );
+    const result = await lifeCycleModelsApi.getLifeCycleModelDetail(sampleModelId, sampleVersion);
 
     expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
     expect(builder.select).toHaveBeenCalledWith(
@@ -542,19 +538,19 @@ describe('getLifeCycleModelDetail', () => {
     );
     expect(builder.eq).toHaveBeenCalledWith('id', sampleModelId);
     expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
-    expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith([
-      { id: sampleProcessId, version: '02.00.000' },
-      { id: '44444444-4444-4444-4444-444444444444', version: '03.00.000' },
-    ]);
     expect(result.success).toBe(true);
     if (!result.success) {
       throw new Error('expected success response');
     }
-    const nodes = result.data.json_tg.xflow.nodes;
-    expect(nodes[0]).toMatchObject({
-      isMyProcess: true,
+    expect(result.data).toMatchObject({
+      id: sampleModelId,
+      version: sampleVersion,
+      json: supabaseResult.data[0].json,
+      json_tg: supabaseResult.data[0].json_tg,
+      stateCode: supabaseResult.data[0].state_code,
+      ruleVerification: supabaseResult.data[0].rule_verification,
+      teamId: supabaseResult.data[0].team_id,
     });
-    expect(nodes[1]).toMatchObject({ isMyProcess: false });
   });
 
   it('returns unsuccessful result when record is not found', async () => {

@@ -18,12 +18,10 @@ import {
   createProcess,
   deleteProcess,
   getProcessDetailByIdsAndVersion,
-  getProcessesByIdAndVersion,
   updateProcess,
   validateProcessesByIdAndVersion,
 } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import { getUserId } from '../users/api';
 import { genLifeCycleModelJsonOrdered } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
@@ -931,7 +929,6 @@ export async function getLifeCyclesByIds(ids: string[]) {
 export async function getLifeCycleModelDetail(
   id: string,
   version: string,
-  setIsFromLifeCycle = false,
 ): Promise<
   | {
       data: {
@@ -955,30 +952,7 @@ export async function getLifeCycleModelDetail(
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
-    const userId = await getUserId();
     const data = result.data[0];
-    if (setIsFromLifeCycle) {
-      let params: { id: string; version: string }[] = [];
-      data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-        params.push({
-          id: node?.data?.id,
-          version: node?.data?.version,
-        });
-      });
-      if (params.length > 0) {
-        const procresses = await getProcessesByIdAndVersion(params);
-        data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-          const procress = procresses?.data?.find(
-            (p: any) => p?.id === node?.data?.id && p?.version === node?.data?.version,
-          );
-          if (procress?.user_id === userId) {
-            node.isMyProcess = true;
-          } else {
-            node.isMyProcess = false;
-          }
-        });
-      }
-    }
 
     return Promise.resolve({
       data: {
@@ -1008,7 +982,7 @@ export async function contributeLifeCycleModel(id: string, version: string) {
     return { error: true, message: 'Failed to get current user' };
   }
 
-  const modelDetail = await getLifeCycleModelDetail(id, version, false);
+  const modelDetail = await getLifeCycleModelDetail(id, version);
   const refs = getAllRefObj(modelDetail);
 
   const needContributeMap = new Map<string, any>();

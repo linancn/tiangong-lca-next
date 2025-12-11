@@ -9,9 +9,10 @@ import {
   genLifeCycleModelInfoFromData,
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
+import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { genProcessName } from '@/services/processes/util';
 import { ActionType } from '@ant-design/pro-components';
-import { Space, Spin, theme } from 'antd';
+import { message, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
@@ -39,6 +40,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
+  const [processInstances, setProcessInstances] = useState<any[]>([]);
   // const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
   // const [connectableProcessesPortId, setConnectableProcessesPortId] = useState<any>('');
   // const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState<any>('');
@@ -365,6 +367,20 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     removeEdges([edge.id]);
   });
 
+  const getProcessInstances = async (jsonTg: any) => {
+    let params: { id: string; version: string }[] = [];
+    jsonTg?.xflow?.nodes?.forEach((node: any) => {
+      params.push({
+        id: node?.data?.id,
+        version: node?.data?.version,
+      });
+    });
+    if (params.length > 0) {
+      const procresses = await getProcessesByIdAndVersion(params);
+      setProcessInstances(procresses.data ?? []);
+    }
+  };
+
   useEffect(() => {
     if (!drawerVisible) {
       setJsonTg({});
@@ -373,6 +389,15 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     if (id && version) {
       setSpinning(true);
       getLifeCycleModelDetail(id, version).then(async (result: any) => {
+        if (!result?.data?.id) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.notPublic',
+              defaultMessage: 'Model is not public',
+            }),
+          );
+          return;
+        }
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
@@ -444,8 +469,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         });
 
         setNodeCount(initNodes.length);
-
-        setSpinning(false);
+        getProcessInstances(result.data?.json_tg)
+          .then(() => {})
+          .finally(() => {
+            setSpinning(false);
+          });
       });
     } else {
       const currentDateTime = formatDateTime(new Date());
@@ -479,34 +507,33 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     });
   }, [nodeCount]);
 
-  const isRelatedModel = () => {
-    const id = nodes.find((node) => node.selected)?.data?.id;
-    if (jsonTg?.submodels) {
-      const relatedModel = jsonTg.submodels.find((submodel: { id: string }) => submodel.id === id);
-      return relatedModel !== undefined;
-    }
-    return false;
+  const getShowResult = () => {
+    const selectedNode = nodes.find((node) => node.selected);
+    const processInstance = processInstances.find(
+      (pi) => pi.id === selectedNode?.data?.id && pi.version === selectedNode?.data?.version,
+    );
+    return processInstance?.modelId ? (
+      <LifeCycleModelView
+        id={processInstance.modelId}
+        version={selectedNode?.data?.version ?? ''}
+        lang={lang}
+        buttonType={'toolIcon'}
+      />
+    ) : (
+      <ProcessView
+        id={selectedNode?.data?.id ?? ''}
+        version={selectedNode?.data?.version ?? ''}
+        buttonType={'toolIcon'}
+        lang={lang}
+        disabled={!selectedNode}
+      />
+    );
   };
 
   return (
     <Space direction='vertical' size={'middle'}>
       <ToolbarViewInfo lang={lang} data={infoData} />
-      {isRelatedModel() ? (
-        <LifeCycleModelView
-          id={nodes.find((node) => node.selected)?.data?.id ?? ''}
-          version={nodes.find((node) => node.selected)?.data?.version ?? ''}
-          lang={lang}
-          buttonType={'toolIcon'}
-        />
-      ) : (
-        <ProcessView
-          id={nodes.find((node) => node.selected)?.data?.id ?? ''}
-          version={nodes.find((node) => node.selected)?.data?.version ?? ''}
-          buttonType={'toolIcon'}
-          lang={lang}
-          disabled={!nodes.find((node) => node.selected)}
-        />
-      )}
+      {getShowResult()}
       <EdgeExhange
         lang={lang}
         disabled={!edges.find((edge) => edge.selected)}
