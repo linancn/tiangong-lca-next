@@ -17,9 +17,14 @@ import {
   genNodeLabel,
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
-import { getProcessDetail, getProcessDetailByIdAndVersion } from '@/services/processes/api';
+import {
+  getProcessDetail,
+  getProcessDetailByIdAndVersion,
+  getProcessesByIdAndVersion,
+} from '@/services/processes/api';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
+import { getUserId } from '@/services/users/api';
 import {
   CheckCircleOutlined,
   CopyOutlined,
@@ -97,6 +102,8 @@ const ToolbarEdit: FC<Props> = ({
   const updateEdge = useGraphStore((state) => state.updateEdge);
   const graph = useGraphStore((state) => state.graph);
   const intl = useIntl();
+  const [userId, setUserId] = useState<string>('');
+  const [processInstances, setProcessInstances] = useState<any[]>([]);
 
   const editInfoRef = useRef<any>(null);
   useEffect(() => {
@@ -1099,6 +1106,22 @@ const ToolbarEdit: FC<Props> = ({
     });
   });
 
+  const getProcessInstances = async (jsonTg: any) => {
+    const userId = await getUserId();
+    setUserId(userId);
+    let params: { id: string; version: string }[] = [];
+    jsonTg?.xflow?.nodes?.forEach((node: any) => {
+      params.push({
+        id: node?.data?.id,
+        version: node?.data?.version,
+      });
+    });
+    if (params.length > 0) {
+      const procresses = await getProcessesByIdAndVersion(params);
+      setProcessInstances(procresses.data ?? []);
+    }
+  };
+
   useEffect(() => {
     if (!drawerVisible) {
       onClose();
@@ -1185,7 +1208,16 @@ const ToolbarEdit: FC<Props> = ({
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);
-      getLifeCycleModelDetail(id, version, true).then(async (result: any) => {
+      getLifeCycleModelDetail(id, version).then(async (result: any) => {
+        if (!result?.data?.id) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.notPublic',
+              defaultMessage: 'Model is not public',
+            }),
+          );
+          return;
+        }
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
@@ -1264,7 +1296,11 @@ const ToolbarEdit: FC<Props> = ({
         });
 
         setNodeCount(initNodes.length);
-        setSpinning(false);
+        getProcessInstances(result.data?.json_tg)
+          .then(() => {})
+          .finally(() => {
+            setSpinning(false);
+          });
       });
     } else {
       const currentDateTime = formatDateTime(new Date());
@@ -1426,17 +1462,18 @@ const ToolbarEdit: FC<Props> = ({
     setSpinning(false);
   };
 
-  const getShowTool = () => {
+  const getShowResult = () => {
     const selectedNode = nodes.find((node) => node.selected);
-
-    if (selectedNode?.isMyProcess) {
-      if (selectedNode?.modelData) {
+    const processInstance = processInstances.find(
+      (pi) => pi.id === selectedNode?.data?.id && pi.version === selectedNode?.data?.version,
+    );
+    if (processInstance?.user_id === userId) {
+      if (processInstance?.modelId) {
         return (
           <LifeCycleModelEdit
-            id={selectedNode?.modelData?.id ?? ''}
-            version={selectedNode?.modelData?.version ?? ''}
+            id={processInstance.modelId}
+            version={selectedNode?.data?.version ?? ''}
             lang={lang}
-            actionRef={undefined}
             buttonType={'toolIcon'}
             disabled={!selectedNode}
             hideReviewButton={true}
@@ -1459,11 +1496,11 @@ const ToolbarEdit: FC<Props> = ({
         );
       }
     } else {
-      if (selectedNode?.modelData) {
+      if (processInstance?.modelId) {
         return (
           <LifeCycleModelView
-            id={selectedNode?.modelData?.id ?? ''}
-            version={selectedNode?.modelData?.version ?? ''}
+            id={processInstance.modelId}
+            version={selectedNode?.data?.version ?? ''}
             lang={lang}
             actionRef={undefined}
             buttonType={'toolIcon'}
@@ -1498,7 +1535,7 @@ const ToolbarEdit: FC<Props> = ({
         onData={updateInfoData}
         lang={lang}
       />
-      {getShowTool()}
+      {getShowResult()}
       <EdgeExhange
         lang={lang}
         disabled={!edges.find((edge) => edge.selected)}

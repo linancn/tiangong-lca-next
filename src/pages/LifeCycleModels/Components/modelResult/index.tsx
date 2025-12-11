@@ -1,7 +1,7 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
-import { getProcessesByIdsAndVersion } from '@/services/processes/api';
+import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import { CloseOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -138,7 +138,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.mainProduct' />}
           actionRef={mainProcuctTableRef}
           request={async () => {
-            return getProcessesByIdsAndVersion([modelId], modelVersion, lang);
+            return getProcessesByIdAndVersion([{ id: modelId, version: modelVersion }], lang);
           }}
           columns={columns}
         />
@@ -149,9 +149,10 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
           actionRef={subProcuctTableRef}
           request={async () => {
             const subProducts = submodels.filter((e) => e.id !== modelId);
-            const processIds = subProducts.map((submodel) => submodel.id);
-
-            return getProcessesByIdsAndVersion(processIds, modelVersion, lang);
+            return getProcessesByIdAndVersion(
+              subProducts.map((e) => ({ id: e.id, version: modelVersion })),
+              lang,
+            );
           }}
           columns={columns}
         />

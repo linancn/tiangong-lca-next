@@ -182,10 +182,10 @@ const ToolbarViewInfo: FC<Props> = ({
   const updateReviewDataToPublic = async (modelId: string, modelVersion: string) => {
     const result: any[] = [];
     const teamId = await getUserTeamId();
-    const getReferences = async (refs: any[], checkedIds = new Set<string>()) => {
+    const getReferences = async (refs: any[], checkedKeys = new Set<string>()) => {
       for (const ref of refs) {
-        if (checkedIds.has(ref['@refObjectId'])) continue;
-        checkedIds.add(ref['@refObjectId']);
+        if (checkedKeys.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) continue;
+        checkedKeys.add(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
 
         const refResult = await getRefData(
           ref['@refObjectId'],
@@ -200,7 +200,7 @@ const ToolbarViewInfo: FC<Props> = ({
             result.push(ref);
             const json = refData?.json;
             const subRefs = getAllRefObj(json);
-            await getReferences(subRefs, checkedIds);
+            await getReferences(subRefs, checkedKeys);
           }
           if (ref['@type'] === 'process data set') {
             const { data: sameModelWithProcress } = await getLifeCycleModelDetail(
@@ -209,7 +209,7 @@ const ToolbarViewInfo: FC<Props> = ({
             );
             if (sameModelWithProcress) {
               const modelRefs = getAllRefObj(sameModelWithProcress);
-              await getReferences(modelRefs, checkedIds);
+              await getReferences(modelRefs, checkedKeys);
             }
           }
         }
@@ -259,16 +259,16 @@ const ToolbarViewInfo: FC<Props> = ({
           }
         }
       }
-      const submodels = lifeCycleModel?.json_tg?.submodels;
-      if (submodels) {
-        submodels.forEach((item: any) => {
-          result.push({
-            '@refObjectId': item.id,
-            '@version': modelVersion,
-            '@type': 'process data set',
-          });
-        });
-      }
+      // const submodels = lifeCycleModel?.json_tg?.submodels;
+      // if (submodels) {
+      //   submodels.forEach((item: any) => {
+      //     result.push({
+      //       '@refObjectId': item.id,
+      //       '@version': modelVersion,
+      //       '@type': 'process data set',
+      //     });
+      //   });
+      // }
     }
     for (const item of result) {
       await updateStateCodeApi(

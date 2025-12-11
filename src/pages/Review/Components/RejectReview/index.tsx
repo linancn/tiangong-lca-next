@@ -198,16 +198,16 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     const userTeamId = await getUserTeamId();
     const refsMap = new Map<string, any>();
     await getUnderReviewReferences(refObjs, refsMap, userTeamId, underReview);
-    const submodels = modelDetail?.json_tg?.submodels;
-    if (submodels) {
-      submodels.forEach((item: any) => {
-        underReview.push({
-          '@refObjectId': item.id,
-          '@version': modelDetail?.version,
-          '@type': 'process data set',
-        });
-      });
-    }
+    // const submodels = modelDetail?.json_tg?.submodels;
+    // if (submodels) {
+    //   submodels.forEach((item: any) => {
+    //     underReview.push({
+    //       '@refObjectId': item.id,
+    //       '@version': modelDetail?.version,
+    //       '@type': 'process data set',
+    //     });
+    //   });
+    // }
     await updateUnderReviewToUnReview(underReview);
   };
 
