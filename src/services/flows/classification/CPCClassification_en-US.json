@@ -172,7 +172,10 @@
                       {
                         "@id": "0127",
                         "@name": "Mushrooms and truffles",
-                        "category": [{ "@id": "01270", "@name": "Mushrooms and truffles" }]
+                        "category": [
+                          { "@id": "01271", "@name": "Mushrooms, farmed" },
+                          { "@id": "01272", "@name": "Truffles, farmed" }
+                        ]
                       },
                       {
                         "@id": "0129",
@@ -366,7 +369,7 @@
                       {
                         "@id": "0155",
                         "@name": "Taro",
-                        "category": [{ "@id": "01550", "@name": "Taro " }]
+                        "category": [{ "@id": "01550", "@name": "Taro" }]
                       },
                       {
                         "@id": "0159",
@@ -397,8 +400,8 @@
                       },
                       {
                         "@id": "0163",
-                        "@name": "Maté leaves",
-                        "category": [{ "@id": "01630", "@name": "Maté leaves" }]
+                        "@name": "Mat\u00e9 leaves",
+                        "category": [{ "@id": "01630", "@name": "Mat\u00e9 leaves" }]
                       },
                       {
                         "@id": "0164",
@@ -724,7 +727,11 @@
                         "@id": "0293",
                         "@name": "Edible products of animal origin n.e.c.",
                         "category": [
-                          { "@id": "02930", "@name": "Edible products of animal origin n.e.c." }
+                          { "@id": "02931", "@name": "Edible insects, not live" },
+                          {
+                            "@id": "02939",
+                            "@name": "Other edible products of animal origin n.e.c."
+                          }
                         ]
                       },
                       {
@@ -788,12 +795,13 @@
                           {
                             "@id": "03112",
                             "@name": "Roundwood of coniferous wood, pulpwood and wood for wood-based panels"
-                          }
+                          },
+                          { "@id": "03119", "@name": "Roundwood of coniferous wood, other" }
                         ]
                       },
                       {
                         "@id": "0312",
-                        "@name": "Roundwood of non-coniferous wood ",
+                        "@name": "Roundwood of non-coniferous wood",
                         "category": [
                           {
                             "@id": "03121",
@@ -802,7 +810,8 @@
                           {
                             "@id": "03122",
                             "@name": "Roundwood of non-coniferous wood, pulpwood and wood for wood-based panels"
-                          }
+                          },
+                          { "@id": "03129", "@name": "Roundwood of non-coniferous wood, other" }
                         ]
                       },
                       {
@@ -848,7 +857,7 @@
                           { "@id": "03232", "@name": "Wild edible mushrooms" },
                           { "@id": "03233", "@name": "Wild edible truffles" },
                           { "@id": "03234", "@name": "Wild edible berries" },
-                          { "@id": "03239", "@name": "Other wild edible products n.e.c" }
+                          { "@id": "03239", "@name": "Other wild edible edible products n.e.c" }
                         ]
                       },
                       {
@@ -864,11 +873,12 @@
                       },
                       {
                         "@id": "0325",
-                        "@name": "Vegetable materials of a kind used primarily for plaiting or as stuffing or padding; raw vegetable materials of a kind used primarily for dyeing or tanning; vegetable products n.e.c.",
+                        "@name": "Vegetable materials of a kind used primarily for plaiting or as stuffing or padding; vegetable products n.e.c.",
                         "category": [
+                          { "@id": "03251", "@name": "Cotton linters" },
                           {
-                            "@id": "03250",
-                            "@name": "Vegetable materials of a kind used primarily for plaiting or as stuffing or padding; raw vegetable materials of a kind used primarily for dyeing or tanning; vegetable products n.e.c."
+                            "@id": "03252",
+                            "@name": "Vegetable materials of a kind used primarily for plaiting or as stuffing or padding; other vegetable products except cotton linters"
                           }
                         ]
                       }
@@ -1296,14 +1306,7 @@
                         "@name": "Hard coal",
                         "category": [
                           { "@id": "11011", "@name": "Anthracite" },
-                          {
-                            "@id": "11012",
-                            "@name": "Bituminous Coal",
-                            "category": [
-                              { "@id": "11012.1", "@name": "Coking coal" },
-                              { "@id": "11012.2", "@name": "Other Bituminous Coal" }
-                            ]
-                          }
+                          { "@id": "11012", "@name": "Bituminous Coal" }
                         ]
                       },
                       {
@@ -1320,7 +1323,7 @@
                         "@id": "1103",
                         "@name": "Brown coal",
                         "category": [
-                          { "@id": "11031", "@name": "Sub-bituminous coal " },
+                          { "@id": "11031", "@name": "Sub-bituminous coal" },
                           { "@id": "11032", "@name": "Lignite" }
                         ]
                       },
@@ -1338,10 +1341,7 @@
                         "@id": "1105",
                         "@name": "Peat, whether or not agglomerated",
                         "category": [
-                          {
-                            "@id": "11051",
-                            "@name": "Peat, whether or not agglomerated, excluding briquettes"
-                          },
+                          { "@id": "11051", "@name": "Peat" },
                           { "@id": "11052", "@name": "Peat briquettes" }
                         ]
                       }
@@ -1361,7 +1361,11 @@
                         "@id": "1201",
                         "@name": "Petroleum oils and oils obtained from bituminous minerals, crude",
                         "category": [
-                          { "@id": "12011", "@name": "Crude petroleum" },
+                          {
+                            "@id": "12010",
+                            "@name": "Petroleum oils and oils obtained from bituminous minerals, crude"
+                          },
+                          { "@id": "12011", "@name": "Crude oil" },
                           {
                             "@id": "12012",
                             "@name": "Petroleum oils and oils obtained from bituminous minerals"
@@ -1667,20 +1671,16 @@
                         "@id": "1720",
                         "@name": "Coal gas, water gas, producer gas and similar gases, other than petroleum gases and other gaseous hydrocarbons",
                         "category": [
+                          {
+                            "@id": "17200",
+                            "@name": "Coal gas, water gas, producer gas and similar gases, other than petroleum gases and other gaseous hydrocarbons"
+                          },
                           { "@id": "17201", "@name": "Coke oven gas" },
                           {
                             "@id": "17202",
                             "@name": "Gas works gas (and other manufactured gases for distribution)"
                           },
-                          {
-                            "@id": "17203",
-                            "@name": "Recovered gases",
-                            "category": [
-                              { "@id": "17203.1", "@name": "Blast furnace gas" },
-                              { "@id": "17203.2", "@name": "Basic oxygen steel furnace gas" },
-                              { "@id": "17203.9", "@name": "Other recovered gases" }
-                            ]
-                          }
+                          { "@id": "17203", "@name": "Recovered gases" }
                         ]
                       }
                     ]
@@ -2367,17 +2367,6 @@
                     ]
                   },
                   {
-                    "@id": "218",
-                    "@name": "Cotton linters",
-                    "category": [
-                      {
-                        "@id": "2180",
-                        "@name": "Cotton linters",
-                        "category": [{ "@id": "21800", "@name": "Cotton linters" }]
-                      }
-                    ]
-                  },
-                  {
                     "@id": "219",
                     "@name": "Oil-cake and other residues resulting from the extraction of vegetable fats or oils; flours and meals of oil seeds or oleaginous fruits, except those of mustard; vegetable waxes, except triglycerides; degras; residues resulting from the treatment of fatty substances or animal or vegetable waxes",
                     "category": [
@@ -2848,7 +2837,7 @@
                           },
                           {
                             "@id": "23914",
-                            "@name": "Extracts, essences and concentrates of tea or maté, and preparations with a basis thereof or with a basis of tea or maté"
+                            "@name": "Extracts, essences and concentrates of tea or mat\u00e9, and preparations with a basis thereof or with a basis of tea or mat\u00e9"
                           }
                         ]
                       },
@@ -3007,7 +2996,7 @@
                       },
                       {
                         "@id": "2442",
-                        "@name": "Milk from non-animal origin ",
+                        "@name": "Milk from non-animal origin",
                         "category": [
                           { "@id": "24421", "@name": "Coconut milk" },
                           { "@id": "24422", "@name": "Almond milk" },
@@ -3022,7 +3011,7 @@
                         "@name": "Other non-alcoholic caloric beverages",
                         "category": [
                           { "@id": "24491", "@name": "Non-alcoholic wine" },
-                          { "@id": "24492", "@name": "Non-alcoholic beer " },
+                          { "@id": "24492", "@name": "Non-alcoholic beer" },
                           {
                             "@id": "24499",
                             "@name": "Other non-alcoholic caloric beverages, n.e.c."
@@ -3169,11 +3158,11 @@
                     "category": [
                       {
                         "@id": "2631",
-                        "@name": "Silk yarn and yarn spun from silk waste; silk-worm gut",
+                        "@name": "Silk yarn and yarn spun from silk waste; silk-worn gut",
                         "category": [
                           {
                             "@id": "26310",
-                            "@name": "Silk yarn and yarn spun from silk waste; silk-worm gut"
+                            "@name": "Silk yarn and yarn spun from silk waste; silk-worn gut"
                           }
                         ]
                       },
@@ -4266,11 +4255,11 @@
                         "category": [
                           {
                             "@id": "31101",
-                            "@name": "Wood, sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm, of coniferous wood "
+                            "@name": "Wood, sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm, of coniferous wood"
                           },
                           {
                             "@id": "31102",
-                            "@name": "Wood, sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm, of non-coniferous wood "
+                            "@name": "Wood, sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm, of non-coniferous wood"
                           },
                           {
                             "@id": "31109",
@@ -4320,21 +4309,21 @@
                     "category": [
                       {
                         "@id": "3131",
-                        "@name": "Wood in the rough, weather or not stripped of bark or sapwood, or roughly squared treated with paint, stains, creosote or other preservatives",
+                        "@name": "Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared treated with paint, stains, creosote or other preservatives",
                         "category": [
                           {
                             "@id": "31310",
-                            "@name": "Wood in the rough, weather or not stripped of bark or sapwood, or roughly squared treated with paint, stains, creosote or other preservatives"
+                            "@name": "Wood in the rough, whether or not stripped of bark or sapwood, or roughly squared treated with paint, stains, creosote or other preservatives"
                           }
                         ]
                       },
                       {
                         "@id": "3132",
-                        "@name": "Hoopwood; split poles; piles, pickets and stakes of wood, pointed but not sawn lengthwise; wooden sticks, roughly trimmed but not turned, bent or otherwise worked, suitable for the manufacture of walking-sticks, umbrellas, tool handles or the like; chipwood and the like",
+                        "@name": "Railway or tramway sleepers (cross-ties) of wood, impregnated",
                         "category": [
                           {
                             "@id": "31320",
-                            "@name": "Hoopwood; split poles; piles, pickets and stakes of wood, pointed but not sawn lengthwise; wooden sticks, roughly trimmed but not turned, bent or otherwise worked, suitable for the manufacture of walking-sticks, umbrellas, tool handles or the like; chipwood and the like"
+                            "@name": "Railway or tramway sleepers (cross-ties) of wood, impregnated"
                           }
                         ]
                       },
@@ -4386,7 +4375,7 @@
                           },
                           {
                             "@id": "31423",
-                            "@name": "Veneered panels and similar laminated wood, with at least one outer ply of non-coniferous wood"
+                            "@name": "Veneered panels and similar laminated wood, with at least one outer ply of non-coniferous wood other than tropical"
                           }
                         ]
                       },
@@ -4484,7 +4473,7 @@
                           { "@id": "31624", "@name": "Shingles and shakes made out of wood" },
                           {
                             "@id": "31625",
-                            "@name": "Posts and beams, other than Engineered structural timber products made out of wood"
+                            "@name": "Posts and beams, other than engineered structural timber products made out of wood"
                           },
                           { "@id": "31626", "@name": "Assembled flooring panels made out of wood" },
                           { "@id": "31627", "@name": "Engineered structural timber products" },
@@ -4655,7 +4644,7 @@
                           },
                           {
                             "@id": "32142",
-                            "@name": "Paper and paperboard, creped, crinkled, embossed or perforated n.e.c."
+                            "@name": "Paper and paperboard, creped, crinkled, embossed or perforated"
                           },
                           {
                             "@id": "32143",
@@ -4693,7 +4682,7 @@
                           },
                           {
                             "@id": "32193",
-                            "@name": "Toilet paper, handkerchiefs, towels, serviettes, napkins for babies, tampons, and similar household, sanitary or hospital articles, and articles of apparel, of paper pulp, paper, cellulose wadding or webs of cellulose fibres"
+                            "@name": "Toilet paper; handkerchiefs, cleansing or facial tissues and towels; tablecloths and serviettes, articles of apparel and clothing accessories, of paper pulp, paper, cellulose wadding or webs of cellulose fibres"
                           },
                           {
                             "@id": "32194",
@@ -4810,10 +4799,9 @@
                         "@name": "Maps and hydrographic or similar charts (including wall maps, topographical plans and globes), printed, other than in book-form",
                         "category": [
                           {
-                            "@id": "32511",
-                            "@name": "Maps and hydrographic or similar charts (including wall maps, topographical plans and maps for globes), printed, other than in book-form"
-                          },
-                          { "@id": "32512", "@name": "Globes" }
+                            "@id": "32510",
+                            "@name": "Maps and hydrographic or similar charts of all kinds, including atlases, wall maps, topographical plans and globes, printed other than book form"
+                          }
                         ]
                       },
                       {
@@ -4852,7 +4840,7 @@
                   },
                   {
                     "@id": "326",
-                    "@name": "Stamps, cheque forms, banknotes, stock certificates, brochures and leaflets, advertising material and other printed matter",
+                    "@name": "Stamps, cheque forms, banknotes, stock certificates, advertising material and other printed matter",
                     "category": [
                       {
                         "@id": "3261",
@@ -4934,26 +4922,20 @@
                     "@name": "Coke and semi-coke of coal, of lignite or of peat; retort carbon",
                     "category": [
                       {
-                        "@id": "3310",
-                        "@name": "Coke and semi-coke of coal, of lignite or of peat; retort carbon",
-                        "category": [
-                          {
-                            "@id": "33100",
-                            "@name": "Coke and semi-coke of coal, of lignite or of peat; retort carbon"
-                          }
-                        ]
-                      },
-                      {
                         "@id": "3311",
                         "@name": "Coke and semi-coke of coal, or of lignite; retort carbon",
                         "category": [
                           {
                             "@id": "33110",
-                            "@name": "Coke and semi-coke of coal, or of lignite, retort carbon"
+                            "@name": "Coke and semi-coke of coal, or of lignite; retort carbon"
                           }
                         ]
                       },
-                      { "@id": "3312", "@name": "Coke and semi-coke of peat" }
+                      {
+                        "@id": "3312",
+                        "@name": "Coke and semi-coke of peat",
+                        "category": [{ "@id": "33120", "@name": "Coke and semi-coke of peat" }]
+                      }
                     ]
                   },
                   {
@@ -4966,7 +4948,7 @@
                         "category": [
                           {
                             "@id": "33210",
-                            "@name": "Tar distilled from coal, from lignite, and other mineral tars "
+                            "@name": "Tar distilled from coal, from lignite, and other mineral tars"
                           }
                         ]
                       },
@@ -6720,6 +6702,16 @@
                           { "@id": "38161", "@name": "Parts of furniture made from wood" },
                           { "@id": "38169", "@name": "Parts of furniture not made from wood" }
                         ]
+                      },
+                      {
+                        "@id": "3817",
+                        "@name": "Wooden furniture of a kind used in the bedroom",
+                        "category": [
+                          {
+                            "@id": "38170",
+                            "@name": "Wooden furniture of a kind used in the bedroom"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -7941,7 +7933,11 @@
                             "@id": "41603",
                             "@name": "Bismuth, antimony, manganese, chromium and articles thereof; including waste and scrap of bismuth or manganese"
                           },
-                          { "@id": "41604", "@name": "Cermets and articles thereof" }
+                          { "@id": "41605", "@name": "Cermets and articles thereof" },
+                          {
+                            "@id": "41609",
+                            "@name": "Waste and scrap of tungsten, molybdenum, tantalum, magnesium, cobalt, titanium, zirconium, antinomy, beryllium, chromium, thallium, cadmium"
+                          }
                         ]
                       }
                     ]
@@ -9639,7 +9635,7 @@
                           },
                           {
                             "@id": "46539",
-                            "@name": "Other electric lamps and lighting fittings (including lamps and lighting fittings of a kind used for lighting public open spaces or thorough-fares), except those designed for use solely for LED light sources"
+                            "@name": "Other electric lamps and lighting fittings (including lamps and lighting fittings of a kind used for lighting public open spaces or thorough-fares), not solely for LED light sources"
                           }
                         ]
                       },
@@ -9914,7 +9910,7 @@
                   },
                   {
                     "@id": "475",
-                    "@name": "Disks, tapes, solid-state non-volatile storage devices and other media, not recorded",
+                    "@name": "Discs, tapes, solid-state non-volatile storage devices and other media, not recorded",
                     "category": [
                       {
                         "@id": "4753",
@@ -9952,41 +9948,41 @@
                   },
                   {
                     "@id": "476",
-                    "@name": "Audio, video and other disks, tapes and other physical media, recorded",
+                    "@name": "Audio and video discs, tapes and other physical media, recorded",
                     "category": [
                       {
                         "@id": "4761",
-                        "@name": "Musical audio disks, tapes or other physical media",
+                        "@name": "Musical audio discs, tapes or other physical media",
                         "category": [
                           {
                             "@id": "47610",
-                            "@name": "Musical audio disks, tapes or other physical media"
+                            "@name": "Musical audio discs, tapes or other physical media"
                           }
                         ]
                       },
                       {
                         "@id": "4762",
-                        "@name": "Films and other video content on disks, tape or other physical media",
+                        "@name": "Films and other video content on discs, tape or other physical media",
                         "category": [
                           {
                             "@id": "47620",
-                            "@name": "Films and other video content on disks, tape or other physical media"
+                            "@name": "Films and other video content on discs, tape or other physical media"
                           }
                         ]
                       },
                       {
                         "@id": "4769",
-                        "@name": "Other recorded disks, tapes or other physical media",
+                        "@name": "Other recorded discs, tapes or other physical media",
                         "category": [
                           {
                             "@id": "47691",
-                            "@name": "Audio books on disk, tape or other physical media"
+                            "@name": "Audio books on disc, tape or other physical media"
                           },
                           {
                             "@id": "47692",
-                            "@name": "Text-based disks, tapes or other physical media"
+                            "@name": "Text-based discs, tapes or other physical media"
                           },
-                          { "@id": "47699", "@name": "Other non-musical audio disks and tapes" }
+                          { "@id": "47699", "@name": "Other non-musical audio discs and tapes" }
                         ]
                       }
                     ]
@@ -10033,8 +10029,8 @@
                       },
                       {
                         "@id": "4792",
-                        "@name": "\"Smart cards\"",
-                        "category": [{ "@id": "47920", "@name": "\"Smart cards\"" }]
+                        "@name": "Smart cards",
+                        "category": [{ "@id": "47920", "@name": "Smart cards" }]
                       }
                     ]
                   }
@@ -11172,33 +11168,22 @@
                       },
                       {
                         "@id": "5469",
-                        "@name": "Intermediation services for retail trade of household appliances, articles and equipment",
+                        "@name": "Other installation services",
                         "category": [
-                          {
-                            "@id": "54691",
-                            "@name": "Intermediation services for retail trade of miscellaneous consumer goods"
-                          },
-                          {
-                            "@id": "54699",
-                            "@name": "Intermediation services for retail trade of construction materials and hardware"
-                          }
+                          { "@id": "54691", "@name": "Lift and escalator installation services" },
+                          { "@id": "54699", "@name": "Other installation services n.e.c." }
                         ]
                       }
                     ]
                   },
                   {
                     "@id": "547",
-                    "@name": "Intermediation services for retail trade of chemical and pharmaceutical products",
+                    "@name": "Building completion and finishing services",
                     "category": [
                       {
                         "@id": "5471",
-                        "@name": "Intermediation services for retail trade of machinery, equipment and supplies",
-                        "category": [
-                          {
-                            "@id": "54710",
-                            "@name": "Intermediation services for retail trade of other products"
-                          }
-                        ]
+                        "@name": "Glazing services",
+                        "category": [{ "@id": "54710", "@name": "Glazing services" }]
                       },
                       {
                         "@id": "5472",
@@ -11257,303 +11242,303 @@
             "category": [
               {
                 "@id": "61",
-                "@name": "Wholesale trade services",
+                "@name": "Wholesale trade services, not on a fee or contract basis",
                 "category": [
                   {
-                    "@id": "611",
-                    "@name": "Wholesale trade services, except on a fee or contract basis",
+                    "@id": "610",
+                    "@name": "Wholesale trade services, not on a fee or contract basis",
                     "category": [
                       {
-                        "@id": "6111",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of raw agricultural products and live animals",
+                        "@id": "6101",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of raw agricultural products and live animals",
                         "category": [
                           {
-                            "@id": "61111",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of grains and oilseeds and oleaginous fruits, seeds and animal feed"
+                            "@id": "61011",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of grains and oilseeds and oleaginous fruits, seeds and animal feed"
                           },
                           {
-                            "@id": "61112",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of flowers and plants"
+                            "@id": "61012",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of flowers and plants"
                           },
                           {
-                            "@id": "61113",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of unmanufactured tobacco"
+                            "@id": "61013",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of unmanufactured tobacco"
                           },
                           {
-                            "@id": "61114",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of live animals, including pet animals"
+                            "@id": "61014",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of live animals, including pet animals"
                           },
                           {
-                            "@id": "61115",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of hides, skins and leather"
+                            "@id": "61015",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of hides, skins and leather"
                           },
                           {
-                            "@id": "61119",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of agricultural raw materials n.e.c."
+                            "@id": "61019",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of agricultural raw materials n.e.c."
                           }
                         ]
                       },
                       {
-                        "@id": "6112",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of food, beverages and tobacco",
+                        "@id": "6102",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of food, beverages and tobacco",
                         "category": [
                           {
-                            "@id": "61121",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of fruits and vegetables"
+                            "@id": "61021",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of fruits and vegetables"
                           },
                           {
-                            "@id": "61122",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of dairy products, eggs and edible oils and fats"
+                            "@id": "61022",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of dairy products, eggs and edible oils and fats"
                           },
                           {
-                            "@id": "61123",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of meat, poultry and game"
+                            "@id": "61023",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of meat, poultry and game"
                           },
                           {
-                            "@id": "61124",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of fish and other seafood"
+                            "@id": "61024",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of fish and other seafood"
                           },
                           {
-                            "@id": "61125",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of sugar confectionery and bakery products"
+                            "@id": "61025",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of sugar confectionery and bakery products"
                           },
                           {
-                            "@id": "61126",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of beverages"
+                            "@id": "61026",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of beverages"
                           },
                           {
-                            "@id": "61127",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of coffee, tea and spices"
+                            "@id": "61027",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of coffee, tea and spices"
                           },
                           {
-                            "@id": "61128",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of tobacco products"
+                            "@id": "61028",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of tobacco products"
                           },
                           {
-                            "@id": "61129",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of food products n.e.c."
+                            "@id": "61029",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of food products n.e.c."
                           }
                         ]
                       },
                       {
-                        "@id": "6113",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of textiles, clothing and footwear",
+                        "@id": "6103",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of textiles, clothing and footwear",
                         "category": [
                           {
-                            "@id": "61131",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of yarn and fabrics"
+                            "@id": "61031",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of yarn and fabrics"
                           },
                           {
-                            "@id": "61132",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of household linens, curtains, net curtains and diverse household articles of textile materials"
+                            "@id": "61032",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of household linens, curtains, net curtains and diverse household articles of textile materials"
                           },
                           {
-                            "@id": "61133",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of articles of clothing, articles of fur and clothing accessories"
+                            "@id": "61033",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of articles of clothing, articles of fur and clothing accessories"
                           },
                           {
-                            "@id": "61134",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of footwear"
+                            "@id": "61034",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of footwear"
                           }
                         ]
                       },
                       {
-                        "@id": "6114",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of household appliances, articles and equipment",
+                        "@id": "6104",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of household appliances, articles and equipment",
                         "category": [
                           {
-                            "@id": "61141",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of household furniture"
+                            "@id": "61041",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of household furniture"
                           },
                           {
-                            "@id": "61142",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of radio and television equipment and recorded audio and video disks and tapes"
+                            "@id": "61042",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of radio and television equipment and recorded audio and video disks and tapes"
                           },
                           {
-                            "@id": "61143",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of articles for lighting"
+                            "@id": "61043",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of articles for lighting"
                           },
                           {
-                            "@id": "61144",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of household appliances"
+                            "@id": "61044",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of household appliances"
                           },
                           {
-                            "@id": "61145",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of miscellaneous household utensils, cutlery, crockery, glassware, china and pottery"
+                            "@id": "61045",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of miscellaneous household utensils, cutlery, crockery, glassware, china and pottery"
                           },
                           {
-                            "@id": "61146",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of wickerwork, cork goods, cooper's ware and other wooden ware"
+                            "@id": "61046",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of wickerwork, cork goods, cooper's ware and other wooden ware"
                           }
                         ]
                       },
                       {
-                        "@id": "6115",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of miscellaneous consumer goods",
+                        "@id": "6105",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of miscellaneous consumer goods",
                         "category": [
                           {
-                            "@id": "61151",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of books, newspapers, magazines and stationery"
+                            "@id": "61051",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of books, newspapers, magazines and stationery"
                           },
                           {
-                            "@id": "61152",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of photographic, optical and precision equipment"
+                            "@id": "61052",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of photographic, optical and precision equipment"
                           },
                           {
-                            "@id": "61153",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of games and toys"
+                            "@id": "61053",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of games and toys"
                           },
                           {
-                            "@id": "61154",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of watches, clocks and jewellery"
+                            "@id": "61054",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of watches, clocks and jewellery"
                           },
                           {
-                            "@id": "61155",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of sports goods (incl. bicycles)"
+                            "@id": "61055",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of sports goods (incl. bicycles)"
                           },
                           {
-                            "@id": "61156",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of leather goods and travel accessories"
+                            "@id": "61056",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of leather goods and travel accessories"
                           },
                           {
-                            "@id": "61159",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of miscellaneous consumer goods n.e.c."
+                            "@id": "61059",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of miscellaneous consumer goods n.e.c."
                           }
                         ]
                       },
                       {
-                        "@id": "6116",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of construction materials and hardware",
+                        "@id": "6106",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of construction materials and hardware",
                         "category": [
                           {
-                            "@id": "61161",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of construction materials and flat glass"
+                            "@id": "61061",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of construction materials and flat glass"
                           },
                           {
-                            "@id": "61162",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of fittings, fixtures and ceramic sanitary fixtures"
+                            "@id": "61062",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of fittings, fixtures and ceramic sanitary fixtures"
                           },
                           {
-                            "@id": "61163",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of wallpaper and floor coverings"
+                            "@id": "61063",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of wallpaper and floor coverings"
                           },
                           {
-                            "@id": "61164",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of paints, varnishes and lacquers"
+                            "@id": "61064",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of paints, varnishes and lacquers"
                           },
                           {
-                            "@id": "61165",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of hardware and hand tools"
+                            "@id": "61065",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of hardware and hand tools"
                           }
                         ]
                       },
                       {
-                        "@id": "6117",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of chemical and pharmaceutical products",
+                        "@id": "6107",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of chemical and pharmaceutical products",
                         "category": [
                           {
-                            "@id": "61171",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of basic industrial chemicals and synthetic resins"
+                            "@id": "61071",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of basic industrial chemicals and synthetic resins"
                           },
                           {
-                            "@id": "61172",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of fertilizers and agrochemical products"
+                            "@id": "61072",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of fertilizers and agrochemical products"
                           },
                           {
-                            "@id": "61173",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of pharmaceutical products"
+                            "@id": "61073",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of pharmaceutical products"
                           },
                           {
-                            "@id": "61174",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of medical and orthopaedic goods"
+                            "@id": "61074",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of medical and orthopaedic goods"
                           },
                           {
-                            "@id": "61175",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of perfumery articles, cosmetic articles and toilet soaps"
+                            "@id": "61075",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of perfumery articles, cosmetic articles and toilet soaps"
                           },
                           {
-                            "@id": "61176",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of cleaning materials"
+                            "@id": "61076",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of cleaning materials"
                           }
                         ]
                       },
                       {
-                        "@id": "6118",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of machinery, equipment and supplies",
+                        "@id": "6108",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of machinery, equipment and supplies",
                         "category": [
                           {
-                            "@id": "61181",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of motor vehicles, motorcycles, snowmobiles and related parts and accessories"
+                            "@id": "61081",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of motor vehicles, motorcycles, snowmobiles and related parts and accessories"
                           },
                           {
-                            "@id": "61182",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of other transport equipment, except bicycles"
+                            "@id": "61082",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of other transport equipment, except bicycles"
                           },
                           {
-                            "@id": "61183",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of office machinery and equipment including office furniture"
+                            "@id": "61083",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of office machinery and equipment including office furniture"
                           },
                           {
-                            "@id": "61184",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of computers and packaged software"
+                            "@id": "61084",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of computers and packaged software"
                           },
                           {
-                            "@id": "61185",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of electronic and telecommunications equipment and parts"
+                            "@id": "61085",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of electronic and telecommunications equipment and parts"
                           },
                           {
-                            "@id": "61186",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of agricultural lawn and garden machinery and equipment, including tractors"
+                            "@id": "61086",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of agricultural lawn and garden machinery and equipment, including tractors"
                           },
                           {
-                            "@id": "61187",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of mining, construction and civil engineering machinery and equipment"
+                            "@id": "61087",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of mining, construction and civil engineering machinery and equipment"
                           },
                           {
-                            "@id": "61188",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of other industry-specific machinery and equipment and related operating supplies"
+                            "@id": "61088",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of other industry-specific machinery and equipment and related operating supplies"
                           },
                           {
-                            "@id": "61189",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of other machinery and equipment n.e.c."
+                            "@id": "61089",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of other machinery and equipment n.e.c."
                           }
                         ]
                       },
                       {
-                        "@id": "6119",
-                        "@name": "Wholesale trade services, except on a fee or contract basis, of other products",
+                        "@id": "6109",
+                        "@name": "Wholesale trade services, not on a fee or contract basis, of other products",
                         "category": [
                           {
-                            "@id": "61191",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of solid, liquid and gaseous fuels and related products"
+                            "@id": "61091",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of solid, liquid and gaseous fuels and related products"
                           },
                           {
-                            "@id": "61192",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of metal ores and metal in primary forms"
+                            "@id": "61092",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of metal ores and metal in primary forms"
                           },
                           {
-                            "@id": "61193",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of wood in the rough"
+                            "@id": "61093",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of wood in the rough"
                           },
                           {
-                            "@id": "61194",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of paper and paperboard"
+                            "@id": "61094",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of paper and paperboard"
                           },
                           {
-                            "@id": "61195",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of waste and scrap and materials for recycling"
+                            "@id": "61095",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of waste and scrap and materials for recycling"
                           },
                           {
-                            "@id": "61197",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of electricity"
+                            "@id": "61097",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of electricity"
                           },
                           {
-                            "@id": "61198",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of water"
+                            "@id": "61098",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of water"
                           },
                           {
-                            "@id": "61199",
-                            "@name": "Wholesale trade services, except on a fee or contract basis, of non-metallic minerals and other products n.e.c."
+                            "@id": "61099",
+                            "@name": "Wholesale trade services, not on a fee or contract basis, of non-metallic minerals and other products n.e.c."
                           }
                         ]
                       }
@@ -12677,11 +12662,11 @@
                         "category": [
                           {
                             "@id": "63111",
-                            "@name": "Room or unit accommodation services for visitors, with daily housekeeping services"
+                            "@name": "Room or unit accommodation services for visitors, with on-site reactive services"
                           },
                           {
                             "@id": "63112",
-                            "@name": "Room or unit accommodation services for visitors, without daily housekeeping services"
+                            "@name": "Room or unit accommodation services for visitors, without on-site reactive services"
                           },
                           {
                             "@id": "63113",
@@ -13380,12 +13365,9 @@
                     "category": [
                       {
                         "@id": "6791",
-                        "@name": "Freight transport agency services and other freight transport services",
+                        "@name": "Other freight transport services",
                         "category": [
-                          {
-                            "@id": "67910",
-                            "@name": "Freight transport agency services and other freight transport services"
-                          }
+                          { "@id": "67910", "@name": "Other freight transport services" }
                         ]
                       },
                       {
@@ -13553,7 +13535,7 @@
                             "@name": "Personal non-mortgage loan services for non-business purposes"
                           },
                           { "@id": "71134", "@name": "Credit card loan services" },
-                          { "@id": "71139", "@name": "Other non-business credit-granting services" }
+                          { "@id": "71139", "@name": "Other credit-granting services" }
                         ]
                       },
                       {
@@ -13873,31 +13855,6 @@
                         ]
                       },
                       {
-                        "@id": "7222",
-                        "@name": "Building sales on a fee or contract basis",
-                        "category": [
-                          {
-                            "@id": "72221",
-                            "@name": "Residential building sales on a fee or contract basis, except of time-share ownership properties"
-                          },
-                          {
-                            "@id": "72222",
-                            "@name": "Non-residential building sales on a fee or contract basis"
-                          },
-                          {
-                            "@id": "72223",
-                            "@name": "Sale of time-share properties on a fee or contract basis"
-                          }
-                        ]
-                      },
-                      {
-                        "@id": "7223",
-                        "@name": "Land sales on a fee or contract basis",
-                        "category": [
-                          { "@id": "72230", "@name": "Land sales on a fee or contract basis" }
-                        ]
-                      },
-                      {
                         "@id": "7224",
                         "@name": "Real estate appraisal services on a fee or contract basis",
                         "category": [
@@ -14066,14 +14023,6 @@
                           {
                             "@id": "73290",
                             "@name": "Leasing or rental services concerning other goods n.e.c."
-                          },
-                          {
-                            "@id": "73291",
-                            "@name": "Intermediation services for rental and leasing of cars, motorhomes and trailers"
-                          },
-                          {
-                            "@id": "73292",
-                            "@name": "Intermediation services for rental and leasing of other tangible goods and non-financial intangible assets"
                           }
                         ]
                       }
@@ -14167,7 +14116,7 @@
                     "category": [
                       {
                         "@id": "8111",
-                        "@name": "Research and development services in natural sciences ",
+                        "@name": "Research and development services in natural sciences",
                         "category": [
                           {
                             "@id": "81111",
@@ -14179,7 +14128,7 @@
                           },
                           {
                             "@id": "81113",
-                            "@name": "Research and development services in computer and information services"
+                            "@name": "Research and development services in computer and information sciences"
                           },
                           {
                             "@id": "81114",
@@ -14255,7 +14204,7 @@
                           },
                           {
                             "@id": "81133",
-                            "@name": "Research and development services in development services in nanotechnology"
+                            "@name": "Research and development services in nanotechnology"
                           },
                           {
                             "@id": "81139",
@@ -14319,7 +14268,7 @@
                   },
                   {
                     "@id": "812",
-                    "@name": "Research and experimental development services in social sciences and humanities",
+                    "@name": "Research and development services in social sciences and humanities",
                     "category": [
                       {
                         "@id": "8121",
@@ -14333,7 +14282,7 @@
                             "@id": "81212",
                             "@name": "Research and development services in education"
                           },
-                          { "@id": "81213", "@name": "Basic research services in law" },
+                          { "@id": "81213", "@name": "Research and development services in law" },
                           {
                             "@id": "81214",
                             "@name": "Research and development services in media and communications"
@@ -15280,7 +15229,7 @@
                     "category": [
                       {
                         "@id": "8551",
-                        "@name": "Intermediation services for wholesale trade ",
+                        "@name": "Intermediation services for wholesale trade",
                         "category": [
                           {
                             "@id": "85511",
@@ -15288,7 +15237,7 @@
                           },
                           {
                             "@id": "85512",
-                            "@name": " Intermediation services for wholesale trade of food, beverages and tobacco"
+                            "@name": "Intermediation services for wholesale trade of food, beverages and tobacco"
                           },
                           {
                             "@id": "85513",
@@ -15296,23 +15245,23 @@
                           },
                           {
                             "@id": "85514",
-                            "@name": "Intermediation services for wholesale trade of construction materials and hardware"
+                            "@name": "Intermediation services for wholesale trade of household appliances, articles and equipment"
                           },
                           {
                             "@id": "85515",
-                            "@name": "Intermediation services for wholesale trade of chemical and pharmaceutical products"
+                            "@name": "Intermediation services for wholesale trade of miscellaneous consumer goods"
                           },
                           {
                             "@id": "85516",
-                            "@name": "Intermediation services for wholesale trade of machinery, equipment and supplies"
+                            "@name": "Intermediation services for wholesale trade of construction materials and hardware"
                           },
                           {
                             "@id": "85517",
-                            "@name": "Intermediation services for wholesale trade of other products"
+                            "@name": "Intermediation services for wholesale trade of chemical and pharmaceutical products"
                           },
                           {
                             "@id": "85518",
-                            "@name": "Intermediation services for wholesale trade of raw agricultural products and live animals"
+                            "@name": "Intermediation services for wholesale trade of machinery, equipment and supplies"
                           },
                           {
                             "@id": "85519",
@@ -15322,7 +15271,7 @@
                       },
                       {
                         "@id": "8552",
-                        "@name": "Intermediation services for retail trade ",
+                        "@name": "Intermediation services for retail trade",
                         "category": [
                           {
                             "@id": "85521",
@@ -15361,19 +15310,7 @@
                             "@name": "Intermediation services for retail trade of other products"
                           }
                         ]
-                      },
-                      {
-                        "@id": "8554",
-                        "@name": "Tour operator services",
-                        "category": [{ "@id": "85540", "@name": "Tour operator services" }]
-                      },
-                      {
-                        "@id": "8555",
-                        "@name": "Tourist guide services",
-                        "category": [{ "@id": "85550", "@name": "Tourist guide services" }]
-                      },
-                      { "@id": "85561", "@name": "Tourism promotion services" },
-                      { "@id": "85562", "@name": "Visitor information services" }
+                      }
                     ]
                   },
                   {
@@ -15439,11 +15376,11 @@
                       },
                       {
                         "@id": "8567",
-                        "@name": "Intermediation service for rental and leasing of cars, motorhomes and trailers ",
+                        "@name": "Intermediation service for rental and leasing of cars, motorhomes and trailers",
                         "category": [
                           {
                             "@id": "85670",
-                            "@name": "Intermediation service for rental and leasing of cars, motorhomes and trailers "
+                            "@name": "Intermediation service for rental and leasing of cars, motorhomes and trailers"
                           }
                         ]
                       },
@@ -15453,19 +15390,27 @@
                         "category": [
                           {
                             "@id": "85681",
-                            "@name": "Intermediation services for electricity transmission services "
+                            "@name": "Intermediation services for electricity transmission"
                           },
                           {
                             "@id": "85682",
-                            "@name": "Intermediation services for electricity distribution services "
+                            "@name": "Intermediation services for electricity distribution"
                           },
                           {
                             "@id": "85683",
-                            "@name": "Intermediation services for the distribution services of gas through mains"
+                            "@name": "Intermediation services for the distribution of gas through mains"
                           },
                           {
                             "@id": "85684",
-                            "@name": "Intermediation services for the distribution services of steam, hot water and air-conditioning supply through mains "
+                            "@name": "Intermediation services for the distribution of water through mains"
+                          },
+                          {
+                            "@id": "85685",
+                            "@name": "Intermediation services for the distribution of steam, hot water and air-conditioning supply through mains"
+                          },
+                          {
+                            "@id": "85686",
+                            "@name": "Intermediation services for the distribution of water, except through mains"
                           }
                         ]
                       }
@@ -15475,38 +15420,98 @@
                     "@id": "857",
                     "@name": "Intermediation for community, social and personal services",
                     "category": [
-                      { "@id": "8571", "@name": "Intermediation service for courses and tutors" },
+                      {
+                        "@id": "8571",
+                        "@name": "Intermediation service for courses and tutors",
+                        "category": [
+                          {
+                            "@id": "85710",
+                            "@name": "Intermediation service for courses and tutors"
+                          }
+                        ]
+                      },
                       {
                         "@id": "8572",
-                        "@name": "Intermediation service for medical, dental, and other human health services"
+                        "@name": "Intermediation service for medical, dental, and other human health services",
+                        "category": [
+                          {
+                            "@id": "85720",
+                            "@name": "Intermediation service for medical, dental, and other human health services"
+                          }
+                        ]
                       },
                       {
                         "@id": "8573",
-                        "@name": "Intermediation service for residential care activities"
+                        "@name": "Intermediation service for residential care activities",
+                        "category": [
+                          {
+                            "@id": "85730",
+                            "@name": "Intermediation service for residential care activities"
+                          }
+                        ]
                       },
                       {
                         "@id": "8579",
-                        "@name": "Other intermediation service for personal services"
+                        "@name": "Other intermediation service for personal services",
+                        "category": [
+                          {
+                            "@id": "85790",
+                            "@name": "Other intermediation service for personal services"
+                          }
+                        ]
                       }
                     ]
                   },
                   {
                     "@id": "858",
-                    "@name": "Other intermediation services ",
+                    "@name": "Other intermediation services",
                     "category": [
                       {
                         "@id": "8581",
-                        "@name": "Intermediation services for specialized construction services"
+                        "@name": "Intermediation services for specialized construction services",
+                        "category": [
+                          {
+                            "@id": "85810",
+                            "@name": "Intermediation services for specialized construction services"
+                          }
+                        ]
                       },
-                      { "@id": "8582", "@name": "Intermediation services for telecommunication" },
-                      { "@id": "8583", "@name": "Intermediation service for real estate" },
+                      {
+                        "@id": "8582",
+                        "@name": "Intermediation services\u00a0for telecommunication",
+                        "category": [
+                          {
+                            "@id": "85820",
+                            "@name": "Intermediation services\u00a0for telecommunication"
+                          }
+                        ]
+                      },
+                      {
+                        "@id": "8583",
+                        "@name": "Intermediation service for real estate",
+                        "category": [
+                          { "@id": "85830", "@name": "Intermediation service for real estate" }
+                        ]
+                      },
                       {
                         "@id": "8585",
-                        "@name": "Intermediation service for repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles"
+                        "@name": "Intermediation service for repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles",
+                        "category": [
+                          {
+                            "@id": "85850",
+                            "@name": "Intermediation service for repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles"
+                          }
+                        ]
                       },
                       {
                         "@id": "8589",
-                        "@name": "Intermediation services for business support service activities n.e.c., except financial intermediation"
+                        "@name": "Intermediation services for business support service activities n.e.c., except financial intermediation",
+                        "category": [
+                          {
+                            "@id": "85890",
+                            "@name": "Intermediation services for business support service activities n.e.c., except financial intermediation"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -15516,10 +15521,10 @@
                     "category": [
                       {
                         "@id": "8591",
-                        "@name": "Credit reporting and collection agency services ",
+                        "@name": "Credit reporting and collection agency services",
                         "category": [
-                          { "@id": "85911", "@name": "Credit reporting services " },
-                          { "@id": "85912", "@name": "Collection agency services " }
+                          { "@id": "85911", "@name": "Credit reporting services" },
+                          { "@id": "85912", "@name": "Collection agency services" }
                         ]
                       },
                       {
@@ -15527,16 +15532,16 @@
                         "@name": "Telephone based support services",
                         "category": [
                           { "@id": "85921", "@name": "Telephone call centre services" },
-                          { "@id": "85929", "@name": "Other telephone-based support services " }
+                          { "@id": "85929", "@name": "Other telephone-based support services" }
                         ]
                       },
                       {
                         "@id": "8593",
-                        "@name": "Office administrative services ",
+                        "@name": "Office administrative services",
                         "category": [
-                          { "@id": "85931", "@name": "Combined office administrative services " },
+                          { "@id": "85931", "@name": "Combined office administrative services" },
                           { "@id": "85932", "@name": "Duplicating services" },
-                          { "@id": "85933", "@name": "Mailing services" },
+                          { "@id": "85934", "@name": "Mailing services" },
                           {
                             "@id": "85939",
                             "@name": "Document preparation and other specialized office support services"
@@ -15566,7 +15571,7 @@
                       },
                       {
                         "@id": "8596",
-                        "@name": "Tourist operator and guide services ",
+                        "@name": "Tourist operator and guide services",
                         "category": [
                           { "@id": "85961", "@name": "Tour operator services" },
                           { "@id": "85962", "@name": "Tourist guide services" }
@@ -15688,22 +15693,6 @@
                           {
                             "@id": "86229",
                             "@name": "Other mining services on resources owned by others"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "@id": "863",
-                    "@name": "Support and operation services to electricity, gas and water distribution",
-                    "category": [
-                      {
-                        "@id": "8635",
-                        "@name": "Water distribution services, except through mains (on a fee or contract basis)",
-                        "category": [
-                          {
-                            "@id": "86350",
-                            "@name": "Water distribution services, except through mains (on a fee or contract basis)"
                           }
                         ]
                       }
@@ -15857,10 +15846,6 @@
                           {
                             "@id": "87290",
                             "@name": "Maintenance and repair services of other goods n.e.c."
-                          },
-                          {
-                            "@id": "87291",
-                            "@name": "Intermediation services for repair and maintenance of computers, personal and household goods, and motor vehicles and motorcycles"
                           }
                         ]
                       }
@@ -17935,11 +17920,7 @@
                         "@id": "9799",
                         "@name": "Other miscellaneous services n.e.c.",
                         "category": [
-                          { "@id": "97990", "@name": "Other miscellaneous services n.e.c." },
-                          {
-                            "@id": "97991",
-                            "@name": "Intermediation services for other personal services"
-                          }
+                          { "@id": "97990", "@name": "Other miscellaneous services n.e.c." }
                         ]
                       }
                     ]

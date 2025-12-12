@@ -16,7 +16,7 @@ export default {
   'pages.lifeCycleModel.information.identifierOfSubDataSet': '子数据集标识符',
   'pages.lifeCycleModel.information.synonyms': '同义词',
   'pages.lifeCycleModel.information.time': '时间代表性',
-  'pages.lifeCycleModel.information.generalComment': '概述',
+  'pages.lifeCycleModel.information.generalComment': '数据集一般性说明',
   'pages.lifeCycleModel.information.referenceToExternalDocumentation': '数据集报告、背景信息',
   'pages.lifeCycleModel.information.otherReviewDetails': '后续审查评论',
   'pages.lifeCycleModel.information.technology.referenceToDiagram': '生命周期模型图或屏幕截图',
