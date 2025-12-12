@@ -217,9 +217,11 @@ const FlowsEdit: FC<Props> = ({
           defaultMessage: 'Saved successfully!',
         }),
       );
-      if (autoClose) setDrawerVisible(false);
-      setActiveTabKey('flowInformation');
-      actionRef?.current?.reload();
+      if (autoClose) {
+        setDrawerVisible(false);
+        actionRef?.current?.reload();
+      }
+      // setActiveTabKey('flowInformation');
     } else {
       if (updateResult?.error?.state_code === 100) {
         message.error(

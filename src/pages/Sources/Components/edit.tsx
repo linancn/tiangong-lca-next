@@ -205,9 +205,11 @@ const SourceEdit: FC<Props> = ({
           defaultMessage: 'Saved Successfully!',
         }),
       );
-      if (autoClose) formRefEdit.current?.resetFields();
-      if (autoClose) setDrawerVisible(false);
-      reload();
+      if (autoClose) {
+        formRefEdit.current?.resetFields();
+        setDrawerVisible(false);
+        reload();
+      }
     } else {
       if (result?.error?.state_code === 100) {
         message.error(
