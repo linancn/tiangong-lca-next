@@ -191,9 +191,9 @@ const UnitGroupEdit: FC<Props> = ({
       if (autoClose) {
         setDrawerVisible(false);
         setViewDrawerVisible(false);
+        actionRef?.current?.reload();
       }
-      setActiveTabKey('unitGroupInformation');
-      actionRef?.current?.reload();
+      // setActiveTabKey('unitGroupInformation');
     } else {
       if (updateResult?.error?.state_code === 100) {
         message.error(

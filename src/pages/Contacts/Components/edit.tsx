@@ -156,8 +156,8 @@ const ContactEdit: FC<Props> = ({
       if (autoClose) {
         setDrawerVisible(false);
         setViewDrawerVisible(false);
+        actionRef?.current?.reload();
       }
-      actionRef?.current?.reload();
     } else {
       if (updateResult?.error?.state_code === 100) {
         message.error(
