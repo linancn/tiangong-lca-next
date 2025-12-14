@@ -19,10 +19,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+
+      - name: Detect npm lockfile
+        id: npm_lockfile
+        shell: bash
+        run: |
+          if [[ -f package-lock.json || -f npm-shrinkwrap.json ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install dependencies
         run: npm ci
+        if: steps.npm_lockfile.outputs.present == 'true'
+
+      - name: Install dependencies (no lockfile)
+        run: npm install
+        if: steps.npm_lockfile.outputs.present != 'true'
 
       - name: Lint
         run: npm run lint
