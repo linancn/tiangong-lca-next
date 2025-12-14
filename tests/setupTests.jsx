@@ -83,13 +83,75 @@ if (typeof window !== 'undefined') {
 }
 
 const errorLog = console.error;
+const shouldFailOnActWarning =
+  process.env.CI === 'true' ||
+  process.env.CI === '1' ||
+  process.env.FAIL_ON_ACT_WARNING === 'true' ||
+  process.env.FAIL_ON_ACT_WARNING === '1';
+
+const actWarningRecords = [];
+let actWarningsThisTest = 0;
+
+beforeEach(() => {
+  actWarningsThisTest = 0;
+});
+
+afterEach(() => {
+  if (!shouldFailOnActWarning || actWarningsThisTest === 0) {
+    return;
+  }
+
+  const currentTestName = global.expect?.getState?.().currentTestName;
+  const testLabel = currentTestName ? ` in "${currentTestName}"` : '';
+  const countLabel =
+    actWarningsThisTest === 1
+      ? '1 React act(...) warning'
+      : `${actWarningsThisTest} React act(...) warnings`;
+  throw new Error(
+    `${countLabel} detected${testLabel}. Fix the test by awaiting async UI updates (e.g. await userEvent interactions, await waitFor(...), or use findBy* queries).`,
+  );
+});
+
+afterAll(() => {
+  if (actWarningRecords.length === 0) {
+    return;
+  }
+
+  const sampleLimit = 5;
+  const samples = actWarningRecords
+    .slice(0, sampleLimit)
+    .map(({ testName, message }) => `- ${testName || '<unknown test>'}: ${message}`)
+    .join('\n');
+
+  errorLog(
+    `\n[tests] React act(...) warnings ${shouldFailOnActWarning ? 'detected' : 'suppressed'}: ${
+      actWarningRecords.length
+    }\n${samples}${
+      actWarningRecords.length > sampleLimit
+        ? `\n- ... (${actWarningRecords.length - sampleLimit} more)`
+        : ''
+    }\nSet FAIL_ON_ACT_WARNING=1 to fail locally.\n`,
+  );
+});
+
 Object.defineProperty(global.window.console, 'error', {
   writable: true,
   configurable: true,
   value: (...rest) => {
-    const logStr = rest.join('');
-    if (logStr.includes('Warning: An update to %s inside a test was not wrapped in act(...)')) {
-      return;
+    const logStr = rest.map((item) => (typeof item === 'string' ? item : String(item))).join(' ');
+    const isActWarning =
+      logStr.includes('was not wrapped in act(...)') &&
+      (logStr.includes('inside a test') || logStr.includes('not wrapped in act'));
+
+    if (isActWarning) {
+      actWarningsThisTest += 1;
+
+      const testName = global.expect?.getState?.().currentTestName;
+      actWarningRecords.push({ testName, message: logStr });
+
+      if (!shouldFailOnActWarning) {
+        return;
+      }
     }
 
     errorLog(...rest);
