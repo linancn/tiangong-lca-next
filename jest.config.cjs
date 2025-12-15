@@ -55,8 +55,8 @@ module.exports = async () => {
       '<rootDir>/src/**/*.test.{ts,tsx,js,jsx}',
     ],
     moduleNameMapper: {
-      ...config.moduleNameMapper,
       '^@/tests/(.*)$': '<rootDir>/tests/$1',
+      ...config.moduleNameMapper,
     },
     reporters: ['default', '<rootDir>/tests/reporters/failureSkippedSummaryReporter.js'],
     verbose: !isCI,

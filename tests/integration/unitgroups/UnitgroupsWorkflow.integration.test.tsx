@@ -19,48 +19,22 @@
 import UnitgroupsPage from '@/pages/Unitgroups';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+jest.mock('umi', () => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname: '/mydata/unitgroups', search: '' });
+  return umi.createUmiMock();
+});
 
-const toText = (node: any): string => {
-  if (node === null || node === undefined) return '';
-  if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(toText).join('');
-  if (node?.props?.defaultMessage) return node.props.defaultMessage;
-  if (node?.props?.id) return node.props.id;
-  if (node?.props?.children) return toText(node.props.children);
-  return '';
-};
-
-const mockUseLocation = jest.fn(() => ({
-  pathname: '/mydata/unitgroups',
-  search: '',
-}));
-
-const mockIntl = {
-  locale: 'en-US',
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-};
-
-jest.mock('umi', () => ({
-  __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  useIntl: () => mockIntl,
-  useLocation: () => mockUseLocation(),
-  getLocale: () => 'en-US',
-}));
+const { setUmiLocation } = require('@/tests/mocks/umi');
 
 jest.mock('uuid', () => ({
   __esModule: true,
   v4: jest.fn(() => 'generated-unit-group-id'),
 }));
 
-jest.mock('@ant-design/icons', () => ({
-  __esModule: true,
-  CloseOutlined: () => <span data-testid='icon-close' />,
-  CopyOutlined: () => <span data-testid='icon-copy' />,
-  DeleteOutlined: () => <span data-testid='icon-delete' />,
-  FormOutlined: () => <span data-testid='icon-edit' />,
-  PlusOutlined: () => <span data-testid='icon-plus' />,
-}));
+jest.mock('@ant-design/icons', () =>
+  require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
+);
 
 jest.mock('@/components/AlignedNumber', () => ({
   __esModule: true,
@@ -75,7 +49,7 @@ jest.mock('@/components/ToolBarButton', () => {
     default: ({ icon, tooltip, onClick }: any) => (
       <button type='button' onClick={onClick}>
         {icon}
-        {toText(tooltip) || 'Tool button'}
+        {require('../../helpers/nodeToText').toText(tooltip) || 'Tool button'}
       </button>
     ),
   };
@@ -289,387 +263,13 @@ jest.mock('@/services/unitgroups/api', () => ({
   getUnitGroupDetail: jest.fn(),
 }));
 
-jest.mock('@ant-design/pro-table', () => ({
-  __esModule: true,
-  TableDropdown: ({ menus = [] }: any) => (
-    <div>
-      {menus.map((menu: any) => (
-        <div key={menu.key}>{toText(menu.name)}</div>
-      ))}
-    </div>
-  ),
-}));
+jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
 
-jest.mock('antd', () => {
-  const React = require('react');
+jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
-  const message = {
-    success: jest.fn(),
-    error: jest.fn(),
-    info: jest.fn(),
-    warning: jest.fn(),
-    loading: jest.fn(),
-  };
-
-  const ConfigProvider = ({ children }: any) => <div>{children}</div>;
-
-  const Button = React.forwardRef((props: any, ref: any) => {
-    const { children, onClick, disabled, icon, ...rest } = props ?? {};
-    return (
-      <button
-        type='button'
-        ref={ref}
-        onClick={disabled ? undefined : onClick}
-        disabled={disabled}
-        {...rest}
-      >
-        {icon}
-        {children}
-      </button>
-    );
-  });
-  Button.displayName = 'MockButton';
-
-  const Input = React.forwardRef(
-    ({ value = '', onChange, placeholder, type = 'text', ...rest }: any, ref: any) => (
-      <input
-        ref={ref}
-        type={type}
-        value={value}
-        onChange={(event) => onChange?.(event)}
-        placeholder={placeholder}
-        {...rest}
-      />
-    ),
-  );
-  Input.displayName = 'MockInput';
-
-  const InputSearch = ({ placeholder, onSearch, value = '' }: any) => {
-    const React = require('react');
-    const [keyword, setKeyword] = React.useState(value);
-    return (
-      <div>
-        <input
-          value={keyword}
-          placeholder={placeholder}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <button type='button' onClick={() => onSearch?.(keyword)}>
-          Search
-        </button>
-      </div>
-    );
-  };
-  Input.Search = InputSearch;
-
-  const Select = ({ value = '', onChange, options = [], children, ...rest }: any) => (
-    <select
-      value={value ?? ''}
-      onChange={(event) =>
-        onChange?.(event.target.value, { target: { value: event.target.value } })
-      }
-      {...rest}
-    >
-      {options.map((option: any) => (
-        <option key={option.value ?? option} value={option.value ?? option}>
-          {option.label ?? option.value ?? option}
-        </option>
-      ))}
-      {children}
-    </select>
-  );
-
-  const Checkbox = ({ checked = false, onChange, children }: any) => (
-    <label>
-      <input
-        type='checkbox'
-        checked={checked}
-        onChange={(event) => onChange?.({ target: { checked: event.target.checked } })}
-      />
-      {children}
-    </label>
-  );
-
-  const Switch = ({ checked = false, onChange }: any) => (
-    <label>
-      <input
-        type='checkbox'
-        checked={checked}
-        onChange={(event) => onChange?.(event.target.checked)}
-      />
-    </label>
-  );
-
-  const Tooltip = ({ title, children }: any) => {
-    const label = toText(title);
-    if (React.isValidElement(children)) {
-      return React.cloneElement(children, {
-        'aria-label': children.props['aria-label'] ?? label,
-        title: children.props.title ?? label,
-      });
-    }
-    return (
-      <span title={label} aria-label={label}>
-        {children}
-      </span>
-    );
-  };
-
-  const Card = ({ children, title, tabList = [], activeTabKey, onTabChange }: any) => (
-    <div>
-      {title ? <div>{toText(title)}</div> : null}
-      {tabList.length > 0 ? (
-        <div>
-          {tabList.map((tab: any) => (
-            <button
-              key={tab.key}
-              type='button'
-              onClick={() => onTabChange?.(tab.key)}
-              aria-pressed={tab.key === activeTabKey}
-            >
-              {toText(tab.tab)}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      <div>{children}</div>
-    </div>
-  );
-
-  const Row = ({ children }: any) => <div>{children}</div>;
-  const Col = ({ children }: any) => <div>{children}</div>;
-  const Space = ({ children }: any) => <div>{children}</div>;
-
-  const Drawer = ({ open, onClose, title, extra, footer, children }: any) => {
-    if (!open) return null;
-    const label = toText(title) || 'drawer';
-    return (
-      <div role='dialog' aria-label={label}>
-        <div>{extra}</div>
-        <div>{children}</div>
-        <div>{footer}</div>
-        <button type='button' onClick={onClose}>
-          Close
-        </button>
-      </div>
-    );
-  };
-
-  const Modal = ({ open, onOk, onCancel, title, children }: any) => {
-    if (!open) return null;
-    return (
-      <div role='dialog' aria-label={toText(title) || 'modal'}>
-        <div>{children}</div>
-        <button type='button' onClick={onCancel}>
-          Cancel
-        </button>
-        <button type='button' onClick={onOk}>
-          Confirm
-        </button>
-      </div>
-    );
-  };
-
-  const Spin = ({ spinning, children }: any) =>
-    spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
-
-  const theme = {
-    useToken: () => ({
-      token: {
-        colorPrimary: '#1677ff',
-        red: '#ff4d4f',
-        fontSize: 16,
-      },
-    }),
-  };
-
-  const Form = ({ children }: any) => <form>{children}</form>;
-  Form.Item = ({ children }: any) => <div>{children}</div>;
-
-  return {
-    __esModule: true,
-    Button,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Drawer,
-    Input,
-    Modal,
-    Row,
-    Select,
-    Space,
-    Spin,
-    Switch,
-    Tooltip,
-    message,
-    theme,
-  };
-});
-
-jest.mock('@ant-design/pro-components', () => {
-  const React = require('react');
-
-  const setNestedValue = (source: any, path: any[], value: any) => {
-    const next = { ...source };
-    let cursor = next;
-    for (let index = 0; index < path.length - 1; index += 1) {
-      const key = path[index];
-      cursor[key] = cursor[key] ? { ...cursor[key] } : {};
-      cursor = cursor[key];
-    }
-    cursor[path[path.length - 1]] = value;
-    return next;
-  };
-
-  const ProFormContextValue = React.createContext<any>({
-    values: {},
-    setFieldValue: () => {},
-  });
-
-  const ProForm = ({ formRef, initialValues = {}, onFinish, onValuesChange, children }: any) => {
-    const [values, setValues] = React.useState<any>(initialValues ?? {});
-
-    const updateValues = React.useCallback(
-      (updater: (prev: any) => any) => {
-        setValues((prev: any) => {
-          const next = updater(prev);
-          onValuesChange?.({}, next);
-          return next;
-        });
-      },
-      [onValuesChange],
-    );
-
-    const setFieldValue = React.useCallback(
-      (path: any[], value: any) => {
-        updateValues((prev: any) => setNestedValue(prev, path, value));
-      },
-      [updateValues],
-    );
-
-    React.useEffect(() => {
-      if (!formRef) return;
-      formRef.current = {
-        submit: async () => {
-          await onFinish?.();
-          return true;
-        },
-        setFieldsValue: (next: any) => {
-          setValues((prev: any) => ({ ...prev, ...next }));
-        },
-        resetFields: () => {
-          setValues(initialValues ?? {});
-        },
-        getFieldsValue: () => ({ ...values }),
-        setFieldValue,
-      };
-    }, [formRef, initialValues, onFinish, setFieldValue, values]);
-
-    return (
-      <ProFormContextValue.Provider value={{ values, setFieldValue }}>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void onFinish?.();
-          }}
-        >
-          {typeof children === 'function' ? children(values) : children}
-        </form>
-      </ProFormContextValue.Provider>
-    );
-  };
-
-  const ProTable = ({ request, actionRef, columns = [], toolBarRender, headerTitle }: any) => {
-    const React = require('react');
-    const [rows, setRows] = React.useState<any[]>([]);
-
-    const requestRef = React.useRef(request);
-
-    const runRequest = React.useCallback(
-      async (override: any = {}) => {
-        const result = await requestRef.current?.(
-          { current: 1, pageSize: 10, ...override },
-          {},
-          {},
-        );
-        setRows(result?.data ?? []);
-        return result;
-      },
-      [requestRef],
-    );
-
-    React.useEffect(() => {
-      requestRef.current = request;
-      void runRequest();
-    }, [request, runRequest]);
-
-    React.useEffect(() => {
-      if (actionRef) {
-        actionRef.current = {
-          reload: () => runRequest(),
-          setPageInfo: (info: any) => runRequest(info),
-        };
-      }
-      return () => {
-        if (actionRef) {
-          actionRef.current = undefined;
-        }
-      };
-    }, [actionRef, runRequest]);
-
-    const resolvedHeader = typeof headerTitle === 'function' ? headerTitle() : toText(headerTitle);
-
-    return (
-      <div data-testid='pro-table'>
-        <div>{resolvedHeader}</div>
-        <div data-testid='pro-table-toolbar'>
-          {toolBarRender
-            ? toolBarRender()?.map((node: any, index: number) => <span key={index}>{node}</span>)
-            : null}
-        </div>
-        <table>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={row?.id ?? rowIndex}>
-                {columns.map((column: any, columnIndex: number) => {
-                  const rendered =
-                    typeof column.render === 'function'
-                      ? column.render(row[column.dataIndex], row, rowIndex)
-                      : row[column.dataIndex];
-                  if (React.isValidElement(rendered)) {
-                    return <td key={columnIndex}>{rendered}</td>;
-                  }
-                  if (Array.isArray(rendered)) {
-                    return <td key={columnIndex}>{rendered}</td>;
-                  }
-                  if (rendered === null || rendered === undefined) {
-                    return <td key={columnIndex}></td>;
-                  }
-                  return (
-                    <td key={columnIndex}>
-                      {typeof rendered === 'object' ? String(rendered) : rendered}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  const PageContainer = ({ children }: any) => <div>{children}</div>;
-
-  return {
-    __esModule: true,
-    ActionType: {},
-    PageContainer,
-    ProForm,
-    ProTable,
-  };
-});
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);
 
 const { message } = jest.requireMock('antd');
 const {
@@ -693,17 +293,14 @@ const baseUnitGroupRow = {
   refUnitName: 'kWh',
   refUnitGeneralComment: 'Kilowatt hour',
   version: '1.0',
-  modifiedAt: new Date('2023-09-01T00:00:00Z'),
+  modifiedAt: '2023-09-01T00:00:00Z',
   teamId: null,
 };
 
 describe('Unitgroups Workflow Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseLocation.mockReturnValue({
-      pathname: '/mydata/unitgroups',
-      search: '',
-    });
+    setUmiLocation({ pathname: '/mydata/unitgroups', search: '' });
     getUnitGroupTableAll.mockResolvedValue({
       data: [baseUnitGroupRow],
       success: true,
@@ -768,6 +365,15 @@ describe('Unitgroups Workflow Integration', () => {
     const user = userEvent.setup();
 
     renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('state-filter')).not.toBeDisabled();
+    });
+    const { proComponentsMocks } = require('@/tests/mocks/proComponents');
+    await waitFor(() => {
+      expect(proComponentsMocks.lastProTableAction).not.toBeNull();
+    });
+    await proComponentsMocks.lastProTableAction?.reload();
 
     await waitFor(() => {
       expect(getUnitGroupTableAll).toHaveBeenCalledTimes(1);

@@ -21,20 +21,11 @@ jest.mock('@/components/AllTeams', () => {
   };
 });
 
-jest.mock('@ant-design/icons', () => ({
-  CrownOutlined: () => <span data-testid='icon-crown' />,
-  DeleteOutlined: () => <span data-testid='icon-delete' />,
-  PlusOutlined: () => <span data-testid='icon-plus' />,
-  UserOutlined: () => <span data-testid='icon-user' />,
-}));
+jest.mock('@ant-design/icons', () =>
+  require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
+);
 
-jest.mock('@umijs/max', () => ({
-  FormattedMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
-  useIntl: () => ({
-    locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
-  }),
-}));
+jest.mock('@umijs/max', () => require('@/tests/mocks/umijsMax').createUmijsMaxMock());
 
 jest.mock('antd', () => {
   const React = require('react');
@@ -260,111 +251,9 @@ jest.mock('antd', () => {
   };
 });
 
-jest.mock('@ant-design/pro-components', () => {
-  const React = require('react');
-
-  const ProTable = ({
-    request,
-    actionRef,
-    columns = [],
-    rowKey = 'id',
-    toolBarRender,
-    headerTitle,
-  }) => {
-    const [rows, setRows] = React.useState([]);
-    const paramsRef = React.useRef({ current: 1, pageSize: 10 });
-    const requestRef = React.useRef(request);
-
-    const runRequest = React.useCallback(async (override = {}) => {
-      paramsRef.current = { ...paramsRef.current, ...override };
-      const result = await requestRef.current?.(paramsRef.current, {});
-      setRows(result?.data ?? []);
-      return result;
-    }, []);
-
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    React.useEffect(() => {
-      const handlers = {
-        reload: () => runRequest(),
-        setPageInfo: (info) => runRequest(info ?? {}),
-      };
-      if (actionRef) {
-        actionRef.current = handlers;
-      }
-      globalThis.__manageSystemActionRef = handlers;
-      return () => {
-        if (globalThis.__manageSystemActionRef === handlers) {
-          delete globalThis.__manageSystemActionRef;
-        }
-      };
-    }, [actionRef, runRequest]);
-
-    React.useEffect(() => {
-      void runRequest();
-    }, []);
-
-    const renderContent = (content, keyPrefix) => {
-      if (Array.isArray(content)) {
-        return content.map((item, index) => (
-          <React.Fragment key={`${keyPrefix}-${index}`}>{item}</React.Fragment>
-        ));
-      }
-      return content;
-    };
-
-    const header = typeof headerTitle === 'function' ? headerTitle() : headerTitle;
-    const toolbar = toolBarRender?.() ?? [];
-
-    return (
-      <div data-testid='pro-table'>
-        <div data-testid='pro-table-header'>{header}</div>
-        <div data-testid='pro-table-toolbar'>
-          {(Array.isArray(toolbar) ? toolbar : [toolbar]).map((node, index) => (
-            <React.Fragment key={`toolbar-${index}`}>{node}</React.Fragment>
-          ))}
-        </div>
-        {rows.map((row, rowIndex) => {
-          const identifier = rowKey && row[rowKey] ? row[rowKey] : rowIndex;
-          return (
-            <div data-testid={`pro-table-row-${identifier}`} key={`row-${identifier}`}>
-              {(columns ?? []).map((column, columnIndex) => {
-                const { dataIndex } = column;
-                const value = dataIndex ? row[dataIndex] : undefined;
-                const rendered = column.render
-                  ? column.render(value, row, rowIndex)
-                  : (value ?? column.title ?? null);
-                return (
-                  <div
-                    key={`cell-${columnIndex}`}
-                    data-testid={`pro-table-cell-${dataIndex ?? columnIndex}-${identifier}`}
-                  >
-                    {renderContent(rendered, `render-${columnIndex}`)}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const PageContainer = ({ title, children }) => (
-    <div data-testid='page-container'>
-      <div data-testid='page-container-title'>{title}</div>
-      <div>{children}</div>
-    </div>
-  );
-
-  return {
-    __esModule: true,
-    ProTable,
-    PageContainer,
-  };
-});
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);
 
 jest.mock('@/services/roles/api', () => ({
   getSystemMembersApi: jest.fn(),
@@ -382,6 +271,7 @@ import {
   getSystemUserRoleApi,
   updateRoleApi,
 } from '@/services/roles/api';
+import { proComponentsMocks } from '@/tests/mocks/proComponents';
 import { Modal, message } from 'antd';
 import { mockRole, mockUser } from '../../helpers/testData';
 import {
@@ -421,10 +311,10 @@ const resetMessages = () => {
 
 const reloadMembersTable = async () => {
   await waitFor(() => {
-    expect(globalThis.__manageSystemActionRef?.reload).toBeInstanceOf(Function);
+    expect(proComponentsMocks.lastProTableAction?.reload).toBeInstanceOf(Function);
   });
   await act(async () => {
-    await globalThis.__manageSystemActionRef.reload();
+    await proComponentsMocks.lastProTableAction?.reload();
   });
 };
 
@@ -779,7 +669,7 @@ describe('ManageSystem workflows', () => {
 
     // Change pagination using actionRef
     await act(async () => {
-      globalThis.__manageSystemActionRef?.setPageInfo({ current: 2 });
+      await proComponentsMocks.lastProTableAction?.setPageInfo({ current: 2 });
     });
 
     // The table should now show different members (pagination works without manual reload)

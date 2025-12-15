@@ -28,448 +28,41 @@ import SourcesPage from '@/pages/Sources';
 import userEvent from '@testing-library/user-event';
 import { createMockTableResponse } from '../../helpers/testData';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
-
-const toText = (node: any): string => {
-  if (node === null || node === undefined) {
-    return '';
-  }
-  if (typeof node === 'string' || typeof node === 'number') {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(toText).join('');
-  }
-  if (node?.props?.defaultMessage) {
-    return node.props.defaultMessage;
-  }
-  if (node?.props?.id) {
-    return node.props.id;
-  }
-  if (node?.props?.children) {
-    return toText(node.props.children);
-  }
-  return '';
-};
-
-const locationState = {
-  pathname: '/mydata/sources',
-  search: '',
-};
-
-const mockUseLocation = jest.fn(() => locationState);
-
-const mockIntl = {
-  locale: 'en-US',
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-};
-
-jest.mock('umi', () => ({
-  __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  useIntl: () => mockIntl,
-  useLocation: () => mockUseLocation(),
-}));
+jest.mock('umi', () => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname: '/mydata/sources', search: '' });
+  return umi.createUmiMock();
+});
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'uuid-new-source'),
 }));
 
-jest.mock('@ant-design/icons', () => ({
-  __esModule: true,
-  CloseOutlined: () => <span>close</span>,
-  CopyOutlined: () => <span>copy</span>,
-  DeleteOutlined: () => <span>delete</span>,
-  FormOutlined: () => <span>edit</span>,
-  PlusOutlined: () => <span>plus</span>,
-}));
+jest.mock('@ant-design/icons', () =>
+  require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
+);
 
-jest.mock('antd', () => {
-  const React = require('react');
-
-  const message = {
-    success: jest.fn(),
-    error: jest.fn(),
-    info: jest.fn(),
-    warning: jest.fn(),
-    loading: jest.fn(),
-  };
-
-  const Button = React.forwardRef(
-    (
-      { children, onClick, icon, disabled, type = 'button', ...rest }: any,
-      ref: React.Ref<HTMLButtonElement>,
-    ) => (
-      <button
-        ref={ref}
-        type='button'
-        onClick={disabled ? undefined : onClick}
-        disabled={disabled}
-        data-button-type={type}
-        {...rest}
-      >
-        {icon}
-        {children}
-      </button>
-    ),
-  );
-  Button.displayName = 'MockButton';
-
-  const Input = React.forwardRef(
-    (
-      { value = '', onChange, placeholder, type = 'text', ...rest }: any,
-      ref: React.Ref<HTMLInputElement>,
-    ) => (
-      <input
-        ref={ref}
-        type={type}
-        value={value}
-        onChange={(event) => onChange?.(event)}
-        placeholder={placeholder}
-        {...rest}
-      />
-    ),
-  );
-  Input.displayName = 'MockInput';
-
-  const InputSearch = ({ placeholder, onSearch }: any) => {
-    const React = require('react');
-    const [keyword, setKeyword] = React.useState('');
-    return (
-      <div data-testid='search-input'>
-        <input
-          value={keyword}
-          placeholder={placeholder}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <button type='button' onClick={() => onSearch?.(keyword)}>
-          Search
-        </button>
-      </div>
-    );
-  };
-  Input.Search = InputSearch;
-
-  const Checkbox = ({ checked = false, onChange, children }: any) => (
-    <label>
-      <input
-        type='checkbox'
-        checked={checked}
-        onChange={(event) => onChange?.({ target: { checked: event.target.checked } })}
-      />
-      {children}
-    </label>
-  );
-
-  const Tooltip = ({ title, children }: any) => {
-    const label = toText(title);
-    if (React.isValidElement(children)) {
-      return React.cloneElement(children, {
-        'aria-label': children.props['aria-label'] ?? label,
-        title: children.props.title ?? label,
-      });
-    }
-    return <span title={label}>{children}</span>;
-  };
-
-  const Space = ({ children }: any) => <div>{children}</div>;
-
-  const Card = ({ title, extra, children }: any) => (
-    <section>
-      <header>{toText(title)}</header>
-      <div>{extra}</div>
-      <div>{children}</div>
-    </section>
-  );
-
-  const Row = ({ children }: any) => <div>{children}</div>;
-  const Col = ({ children }: any) => <div>{children}</div>;
-
-  const Drawer = ({ open, onClose, title, extra, footer, children }: any) => {
-    if (!open) return null;
-    const label = toText(title) || 'drawer';
-    return (
-      <div role='dialog' aria-label={label}>
-        <div>{extra}</div>
-        <div>{children}</div>
-        <div>{footer}</div>
-        <button type='button' onClick={onClose}>
-          Close
-        </button>
-      </div>
-    );
-  };
-
-  const Modal = ({ open, title, onOk, onCancel, children }: any) => {
-    if (!open) return null;
-    const label = toText(title) || 'modal';
-    return (
-      <div role='dialog' aria-label={label}>
-        <div>{children}</div>
-        <button type='button' onClick={onOk}>
-          Confirm
-        </button>
-        <button type='button' onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
-    );
-  };
-
-  const Spin = ({ spinning, children }: any) => (spinning ? <div>Loading...</div> : children);
-
-  const theme = {
-    useToken: () => ({
-      token: {
-        colorPrimary: '#1677ff',
-        colorTextDescription: '#8c8c8c',
-      },
-    }),
-  };
-
-  const ConfigProvider = ({ children }: any) => <>{children}</>;
-
-  return {
-    __esModule: true,
-    Button,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Drawer,
-    Input,
-    Modal,
-    Row,
-    Space,
-    Spin,
-    Tooltip,
-    message,
-    theme,
-  };
-});
+jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
 const antdMessageMock = jest.requireMock('antd').message as Record<string, jest.Mock>;
 const getMockAntdMessage = () => antdMessageMock;
 
-jest.mock('@ant-design/pro-components', () => {
-  const React = require('react');
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);
 
-  const ProFormContext = React.createContext<any>(null);
-
-  const deepMerge = (target: any, source: any): any => {
-    const base = Array.isArray(target) ? [...target] : { ...(target ?? {}) };
-    Object.entries(source ?? {}).forEach(([key, value]) => {
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        base[key] = deepMerge(base[key], value);
-      } else {
-        base[key] = value;
-      }
-    });
-    return base;
-  };
-
-  const setDeepValue = (object: any, path: any[], value: any) => {
-    if (!path.length) return;
-    const [head, ...rest] = path;
-    if (rest.length === 0) {
-      object[head] = value;
-      return;
-    }
-    if (!object[head] || typeof object[head] !== 'object') {
-      object[head] = {};
-    }
-    setDeepValue(object[head], rest, value);
-  };
-
-  const buildNestedValue = (path: any[], value: any): any => {
-    if (!path.length) {
-      return value;
-    }
-    const [head, ...rest] = path;
-    if (!rest.length) {
-      return { [head]: value };
-    }
-    return { [head]: buildNestedValue(rest, value) };
-  };
-
-  const ProForm = ({ formRef, initialValues = {}, onValuesChange, onFinish, children }: any) => {
-    const initialRef = React.useRef(initialValues);
-    const [values, setValues] = React.useState<any>(initialValues ?? {});
-    const pendingChangeRef = React.useRef<any>(null);
-
-    const handleSetFieldValue = React.useCallback((pathInput: any, nextValue: any) => {
-      const path = Array.isArray(pathInput) ? pathInput : [pathInput];
-      setValues((previous: any) => {
-        const draft = JSON.parse(JSON.stringify(previous ?? {}));
-        setDeepValue(draft, path, nextValue);
-        const changed = buildNestedValue(path, nextValue);
-        pendingChangeRef.current = { changed, nextValues: draft };
-        return draft;
-      });
-    }, []);
-
-    const handleSetFieldsValue = React.useCallback((next: any = {}) => {
-      setValues((previous: any) => {
-        const merged = deepMerge(previous, next);
-        pendingChangeRef.current = { changed: next, nextValues: merged };
-        return merged;
-      });
-    }, []);
-
-    const handleResetFields = React.useCallback(() => {
-      setValues(initialRef.current ?? {});
-    }, []);
-
-    const handleGetFieldsValue = React.useCallback(() => values, [values]);
-
-    const handleSubmit = React.useCallback(async () => {
-      return onFinish?.();
-    }, [onFinish]);
-
-    React.useImperativeHandle(formRef, () => ({
-      getFieldsValue: handleGetFieldsValue,
-      setFieldsValue: handleSetFieldsValue,
-      resetFields: handleResetFields,
-      setFieldValue: handleSetFieldValue,
-      submit: handleSubmit,
-      validateFields: async () => values,
-    }));
-
-    React.useEffect(() => {
-      if (pendingChangeRef.current) {
-        const { changed, nextValues } = pendingChangeRef.current;
-        pendingChangeRef.current = null;
-        onValuesChange?.(changed, nextValues);
-      }
-    }, [values, onValuesChange]);
-
-    const contextValue = React.useMemo(
-      () => ({
-        values,
-        setFieldValue: handleSetFieldValue,
-        setFieldsValue: handleSetFieldsValue,
-      }),
-      [values, handleSetFieldValue, handleSetFieldsValue],
-    );
-
-    return (
-      <ProFormContext.Provider value={contextValue}>
-        <form
-          data-testid='pro-form'
-          onSubmit={(event) => {
-            event.preventDefault();
-            void onFinish?.();
-          }}
-        >
-          {typeof children === 'function' ? children(values) : children}
-        </form>
-      </ProFormContext.Provider>
-    );
-  };
-
-  const ProTable = ({ request, actionRef, columns = [], toolBarRender, headerTitle }: any) => {
-    const React = require('react');
-    const [rows, setRows] = React.useState<any[]>([]);
-
-    const requestRef = React.useRef(request);
-    const paramsRef = React.useRef<{ current: number; pageSize: number }>({
-      current: 1,
-      pageSize: 10,
-    });
-
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    const runRequest = React.useCallback(async (override: any = {}) => {
-      paramsRef.current = { ...paramsRef.current, ...override };
-      const result = await requestRef.current?.(paramsRef.current, {});
-      setRows(result?.data ?? []);
-      return result;
-    }, []);
-
-    const scheduleRun = React.useCallback(
-      (override: any = {}) =>
-        new Promise((resolve) => {
-          setTimeout(async () => {
-            const result = await runRequest(override);
-            resolve(result);
-          }, 0);
-        }),
-      [runRequest],
-    );
-
-    React.useEffect(() => {
-      if (actionRef) {
-        actionRef.current = {
-          reload: () => scheduleRun(),
-          setPageInfo: (info: any) => scheduleRun(info),
-        };
-      }
-      return () => {
-        if (actionRef) {
-          actionRef.current = undefined;
-        }
-      };
-    }, [actionRef, scheduleRun]);
-
-    React.useEffect(() => {
-      void runRequest();
-    }, [runRequest]);
-
-    const resolvedHeader = typeof headerTitle === 'function' ? headerTitle() : toText(headerTitle);
-
-    return (
-      <div data-testid='pro-table'>
-        <div data-testid='pro-table-header'>{resolvedHeader}</div>
-        <div data-testid='pro-table-toolbar'>{toolBarRender?.()}</div>
-        <table>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={row?.id ?? rowIndex} data-testid={`pro-table-row-${row?.id ?? rowIndex}`}>
-                {columns.map((column: any, columnIndex: number) => {
-                  const cell = column.render
-                    ? column.render(row[column.dataIndex], row, rowIndex)
-                    : row[column.dataIndex];
-                  return <td key={columnIndex}>{cell}</td>;
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  const PageContainer = ({ children }: any) => <div>{children}</div>;
-
-  return {
-    __esModule: true,
-    ActionType: {},
-    PageContainer,
-    ProForm,
-    ProTable,
-    __ProFormContext: ProFormContext,
-  };
-});
-
-jest.mock('@ant-design/pro-table', () => ({
-  __esModule: true,
-  TableDropdown: ({ menus = [] }: any) => (
-    <div>
-      {menus.map((menu: any) => (
-        <div key={menu.key}>{toText(menu.name)}</div>
-      ))}
-    </div>
-  ),
-}));
+jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
 
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
-  default: ({ tooltip, onClick }: any) => (
-    <button type='button' onClick={onClick}>
-      {toText(tooltip) || 'button'}
-    </button>
-  ),
+  default: ({ tooltip, onClick }: any) => {
+    const { toText } = require('../../helpers/nodeToText');
+    return (
+      <button type='button' onClick={onClick}>
+        {toText(tooltip) || 'button'}
+      </button>
+    );
+  },
 }));
 
 jest.mock('@/components/TableFilter', () => ({
@@ -890,7 +483,8 @@ describe('Sources workflow', () => {
     await waitFor(() => expect(screen.getByText('New Source')).toBeInTheDocument());
 
     // Edit
-    const newSourceRow = screen.getByTestId(`pro-table-row-${createdSource.id}`);
+    const createdRowKey = `${createdSource.id}-${createdSource.version}`;
+    const newSourceRow = screen.getByTestId(`pro-table-row-${createdRowKey}`);
     const editButton = within(newSourceRow).getByRole('button', { name: 'Edit' });
     await user.click(editButton);
 
@@ -931,7 +525,7 @@ describe('Sources workflow', () => {
     await waitFor(() => expect(screen.getByText('Updated Source')).toBeInTheDocument());
 
     // Delete
-    const updatedRow = screen.getByTestId(`pro-table-row-${createdSource.id}`);
+    const updatedRow = screen.getByTestId(`pro-table-row-${createdRowKey}`);
     const deleteButton = within(updatedRow).getByRole('button', { name: 'Delete' });
     await user.click(deleteButton);
 

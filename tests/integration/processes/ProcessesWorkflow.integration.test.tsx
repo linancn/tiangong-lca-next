@@ -25,233 +25,28 @@ import ProcessesPage from '@/pages/Processes';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
-const locationState = {
-  pathname: '/mydata/processes',
-  search: '',
+const setTestLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
 };
 
-const mockUseLocation = jest.fn(() => locationState);
-
-jest.mock('umi', () => ({
-  __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
-  useIntl: () => ({
-    locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
-  }),
-  useLocation: () => mockUseLocation(),
-}));
-
-jest.mock('@ant-design/icons', () => ({
-  PlusOutlined: () => <span data-testid='icon-plus' />,
-  CopyOutlined: () => <span data-testid='icon-copy' />,
-  CloseOutlined: () => <span data-testid='icon-close' />,
-}));
-
-jest.mock('antd', () => {
-  const React = require('react');
-
-  const message = {
-    success: jest.fn(),
-    error: jest.fn(),
-    info: jest.fn(),
-    warning: jest.fn(),
-    loading: jest.fn(),
-  };
-
-  const Card = ({ children }) => <div data-testid='card'>{children}</div>;
-  const ConfigProvider = ({ children }) => <>{children}</>;
-  const Row = ({ children }) => <div data-testid='row'>{children}</div>;
-  const Col = ({ children }) => <div data-testid='col'>{children}</div>;
-  const Space = ({ children }) => <div data-testid='space'>{children}</div>;
-  const Tooltip = ({ children }) => <>{children}</>;
-
-  const Checkbox = ({ onChange, children }) => (
-    <label>
-      <input
-        type='checkbox'
-        onChange={(event) => onChange?.({ target: { checked: event.target.checked } })}
-      />
-      {children}
-    </label>
-  );
-
-  const Select = ({ defaultValue = 'all', onChange, children }) => {
-    const [value, setValue] = React.useState(defaultValue);
-
-    return (
-      <select
-        data-testid='type-filter'
-        value={value}
-        onChange={(event) => {
-          const nextValue = event.target.value;
-          setValue(nextValue);
-          onChange?.(nextValue);
-        }}
-      >
-        {children}
-      </select>
-    );
-  };
-  Select.Option = ({ value, children }) => <option value={value}>{children}</option>;
-
-  const Input = ({ value = '', onChange, ...rest }) => (
-    <input value={value} onChange={(event) => onChange?.(event)} {...rest} />
-  );
-  const InputSearch = ({ placeholder, onSearch }) => {
-    const [value, setValue] = React.useState('');
-
-    return (
-      <div data-testid='search-wrapper'>
-        <input
-          placeholder={placeholder}
-          value={value}
-          data-testid='search-input'
-          onChange={(event) => setValue(event.target.value)}
-        />
-        <button type='button' onClick={() => onSearch?.(value)}>
-          Search
-        </button>
-      </div>
-    );
-  };
-  Input.Search = InputSearch;
-
-  const theme = {
-    useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
-  };
-
-  return {
-    __esModule: true,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Input,
-    Row,
-    Select,
-    Space,
-    Tooltip,
-    message,
-    theme,
-  };
+jest.mock('umi', () => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname: '/mydata/processes', search: '' });
+  return umi.createUmiMock();
 });
 
-jest.mock('@ant-design/pro-components', () => {
-  const React = require('react');
+jest.mock('@ant-design/icons', () =>
+  require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
+);
 
-  const ProTable = ({
-    request,
-    actionRef,
-    columns = [],
-    toolBarRender,
-    rowKey = 'id',
-    headerTitle,
-  }) => {
-    const [rows, setRows] = React.useState([]);
-    const requestRef = React.useRef(request);
-    const paramsRef = React.useRef({ current: 1, pageSize: 10 });
+jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
-    const runRequest = React.useCallback(async (override = {}) => {
-      paramsRef.current = { ...paramsRef.current, ...override };
-      const result = await requestRef.current?.(paramsRef.current, {});
-      setRows(result?.data ?? []);
-      return result;
-    }, []);
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);
 
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    React.useEffect(() => {
-      const handlers = {
-        reload: () => runRequest(),
-        setPageInfo: (info) => runRequest(info ?? {}),
-      };
-      if (actionRef) {
-        actionRef.current = handlers;
-      }
-      return () => {
-        if (actionRef) {
-          actionRef.current = undefined;
-        }
-      };
-    }, [actionRef, runRequest]);
-
-    React.useEffect(() => {
-      void runRequest();
-    }, [runRequest]);
-
-    const renderNode = (node, keyPrefix) => {
-      if (Array.isArray(node)) {
-        return node.map((item, index) => (
-          <React.Fragment key={`${keyPrefix}-${index}`}>{item}</React.Fragment>
-        ));
-      }
-      return node;
-    };
-
-    const toolbarContent = toolBarRender?.() ?? [];
-    const header = typeof headerTitle === 'function' ? headerTitle() : headerTitle;
-
-    return (
-      <div data-testid='pro-table'>
-        <div data-testid='pro-table-header'>{header}</div>
-        <div data-testid='pro-table-toolbar'>
-          {(Array.isArray(toolbarContent) ? toolbarContent : [toolbarContent]).map(
-            (item, index) => (
-              <React.Fragment key={`toolbar-${index}`}>{item}</React.Fragment>
-            ),
-          )}
-        </div>
-        {rows.map((row, rowIndex) => {
-          const identifier = rowKey && row[rowKey] ? row[rowKey] : rowIndex;
-          return (
-            <div key={`row-${identifier}`} data-testid={`pro-table-row-${identifier}`}>
-              {columns.map((column, columnIndex) => {
-                const value = column.dataIndex ? row[column.dataIndex] : undefined;
-                const rendered = column.render
-                  ? column.render(value, row, rowIndex)
-                  : (value ?? column.title ?? null);
-                return (
-                  <div
-                    key={`cell-${columnIndex}`}
-                    data-testid={`pro-table-cell-${column.dataIndex ?? columnIndex}-${identifier}`}
-                  >
-                    {renderNode(rendered, `render-${columnIndex}`)}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const PageContainer = ({ header = {}, children }) => (
-    <div data-testid='page-container'>
-      <div data-testid='page-container-title'>{header?.title}</div>
-      {children}
-    </div>
-  );
-
-  return {
-    __esModule: true,
-    ProTable,
-    PageContainer,
-  };
-});
-
-jest.mock('@ant-design/pro-table', () => ({
-  TableDropdown: ({ menus = [] }) => (
-    <div data-testid='table-dropdown'>
-      {menus.map((menu) => (
-        <div key={menu.key}>{menu.name}</div>
-      ))}
-    </div>
-  ),
-}));
+jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
@@ -468,10 +263,9 @@ const { getProcessTableAll, getProcessTablePgroongaSearch, process_hybrid_search
 const { getTeamById } = jest.requireMock('@/services/teams/api');
 const { message } = jest.requireMock('antd');
 
-const setLocation = (pathWithSearch) => {
+const setLocation = (pathWithSearch: string) => {
   const [path, search = ''] = pathWithSearch.split('?');
-  locationState.pathname = path;
-  locationState.search = search ? `?${search}` : '';
+  setTestLocation(path, search);
 };
 
 const baseRow = {
@@ -491,7 +285,6 @@ describe('Processes workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     setLocation('/mydata/processes?tid=team-1');
-    mockUseLocation.mockImplementation(() => ({ ...locationState }));
     getTeamById.mockResolvedValue({
       data: [
         {
@@ -559,7 +352,6 @@ describe('Processes workflow integration', () => {
     renderResult.unmount();
 
     setLocation('/mydata/processes?tid=team-1&id=process-2&version=02.00.000');
-    mockUseLocation.mockImplementation(() => ({ ...locationState }));
 
     const updatedRow = {
       ...baseRow,

@@ -23,358 +23,27 @@ import LifeCycleModelsPage from '@/pages/LifeCycleModels';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 
-const mockUseLocation = jest.fn(() => ({
-  pathname: '/mydata/lifecyclemodels',
-  search: '',
-}));
-
-const mockIntl = {
-  locale: 'en-US',
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-};
-
-jest.mock('umi', () => ({
-  __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  useIntl: () => mockIntl,
-  useLocation: () => mockUseLocation(),
-}));
+jest.mock('umi', () => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname: '/mydata/lifecyclemodels', search: '' });
+  return umi.createUmiMock();
+});
 
 jest.mock('@/style/custom.less', () => ({}));
 
-const mockToText = (node: any): string => {
-  if (node === null || node === undefined) {
-    return '';
-  }
-  if (typeof node === 'string' || typeof node === 'number') {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(mockToText).join('');
-  }
-  if (node?.props?.defaultMessage) {
-    return node.props.defaultMessage;
-  }
-  if (node?.props?.id) {
-    return node.props.id;
-  }
-  if (node?.props?.children) {
-    return mockToText(node.props.children);
-  }
-  return '';
-};
-
-jest.mock('antd', () => {
-  const React = require('react');
-  const message = {
-    success: jest.fn(),
-    error: jest.fn(),
-    warning: jest.fn(),
-    info: jest.fn(),
-    loading: jest.fn(),
-  };
-
-  const Button = React.forwardRef(
-    (
-      { children, onClick, disabled, icon, style, ...rest }: any,
-      ref: React.Ref<HTMLButtonElement>,
-    ) => (
-      <button
-        ref={ref}
-        type='button'
-        onClick={disabled ? undefined : onClick}
-        disabled={disabled}
-        style={style}
-        {...rest}
-      >
-        {icon}
-        {children}
-      </button>
-    ),
-  );
-  Button.displayName = 'MockButton';
-
-  const Tooltip = ({ title, children }: any) => {
-    const label = mockToText(title);
-    if (React.isValidElement(children)) {
-      return React.cloneElement(children, {
-        'aria-label': children.props['aria-label'] ?? label,
-        title: children.props.title ?? label,
-      });
-    }
-    return <span title={label}>{children}</span>;
-  };
-
-  const Card = ({ children, tabList, activeTabKey, onTabChange }: any) => {
-    if (tabList && tabList.length) {
-      return (
-        <div data-testid='mock-card'>
-          <div data-testid='mock-card-tabs'>
-            {tabList.map((tab: any) => (
-              <button
-                key={tab.key}
-                type='button'
-                onClick={() => onTabChange?.(tab.key)}
-                aria-pressed={tab.key === activeTabKey}
-              >
-                {mockToText(tab.tab)}
-              </button>
-            ))}
-          </div>
-          <div>{children}</div>
-        </div>
-      );
-    }
-    return <div>{children}</div>;
-  };
-
-  const Row = ({ children }: any) => <div>{children}</div>;
-  const Col = ({ children }: any) => <div>{children}</div>;
-  const Space = ({ children, direction = 'horizontal' }: any) => (
-    <div data-direction={direction}>{children}</div>
-  );
-
-  const Checkbox = ({ onChange, children }: any) => (
-    <label>
-      <input
-        type='checkbox'
-        onChange={(event) => onChange?.({ target: { checked: event.target.checked } })}
-      />
-      {children}
-    </label>
-  );
-
-  const Input = ({ value = '', onChange, placeholder, ...rest }: any) => (
-    <input
-      value={value}
-      onChange={(event) => onChange?.(event)}
-      placeholder={placeholder}
-      {...rest}
-    />
-  );
-  const InputSearch = ({ placeholder, onSearch }: any) => {
-    const React = require('react');
-    const [keyword, setKeyword] = React.useState('');
-    return (
-      <div data-testid='search-wrapper'>
-        <input
-          value={keyword}
-          placeholder={placeholder}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <button type='button' onClick={() => onSearch?.(keyword)}>
-          Search
-        </button>
-      </div>
-    );
-  };
-  Input.Search = InputSearch;
-
-  const Drawer = ({ open, children, title, extra, footer, onClose, width, ...rest }: any) => {
-    if (!open) return null;
-    return (
-      <div role='dialog' aria-label={mockToText(title)} data-width={width} {...rest}>
-        <div>{extra}</div>
-        <div>{children}</div>
-        <div>{footer}</div>
-        <button type='button' onClick={onClose}>
-          Close
-        </button>
-      </div>
-    );
-  };
-
-  const Layout = ({ children }: any) => <div>{children}</div>;
-  Layout.Sider = ({ children }: any) => <aside>{children}</aside>;
-  Layout.Content = ({ children }: any) => <section>{children}</section>;
-
-  const theme = {
-    useToken: () => ({
-      token: {
-        colorPrimary: '#1677ff',
-        colorBgBase: '#ffffff',
-        colorBgContainer: '#ffffff',
-        colorBorder: '#d9d9d9',
-        colorTextBase: '#000000',
-        colorError: '#ff4d4f',
-        colorTextDescription: '#8c8c8c',
-      },
-    }),
-  };
-
-  const Spin = ({ spinning }: any) => (spinning ? <div>Loading...</div> : null);
-
-  const ConfigProvider = ({ children }: any) => <>{children}</>;
-
-  const Typography = {
-    Text: ({ children }: any) => <span>{children}</span>,
-    Title: ({ children }: any) => <h1>{children}</h1>,
-  };
-
-  return {
-    __esModule: true,
-    Button,
-    Tooltip,
-    Card,
-    Row,
-    Col,
-    Space,
-    Checkbox,
-    Input,
-    Drawer,
-    Layout,
-    Spin,
-    ConfigProvider,
-    message,
-    theme,
-    Typography,
-  };
-});
+jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
 const getMockAntdMessage = () => jest.requireMock('antd').message as Record<string, jest.Mock>;
 
-jest.mock('@ant-design/icons', () => ({
-  __esModule: true,
-  PlusOutlined: () => <span>plus</span>,
-  CopyOutlined: () => <span>copy</span>,
-  CloseOutlined: () => <span>close</span>,
-  ProductOutlined: () => <span>product</span>,
-  CheckCircleOutlined: () => <span>check</span>,
-  SaveOutlined: () => <span>save</span>,
-  SendOutlined: () => <span>send</span>,
-  DeleteOutlined: () => <span>delete</span>,
-  FormOutlined: () => <span>edit</span>,
-}));
+jest.mock('@ant-design/icons', () =>
+  require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
+);
 
-jest.mock('@ant-design/pro-table', () => ({
-  __esModule: true,
-  TableDropdown: ({ menus }: any) => (
-    <div>
-      {(menus ?? []).map((menu: any) => (
-        <div key={menu.key}>{menu.name}</div>
-      ))}
-    </div>
-  ),
-}));
+jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
 
-jest.mock('@ant-design/pro-components', () => {
-  const React = require('react');
-
-  const MockProTable = ({
-    request,
-    actionRef,
-    columns = [],
-    toolBarRender,
-    rowSelection,
-    headerTitle,
-  }: any) => {
-    const [rows, setRows] = React.useState<any[]>([]);
-    const requestRef = React.useRef(request);
-    const paramsRef = React.useRef({ current: 1, pageSize: 10 });
-
-    const runRequest = React.useCallback(async (override: any = {}) => {
-      paramsRef.current = { ...paramsRef.current, ...override };
-      const result = await requestRef.current?.(paramsRef.current, {});
-      setRows(result?.data ?? []);
-      return result;
-    }, []);
-
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    React.useEffect(() => {
-      const handlers = {
-        reload: () => runRequest(),
-        setPageInfo: (info: any) => runRequest(info ?? {}),
-      };
-      if (actionRef) {
-        actionRef.current = handlers;
-      }
-      return () => {
-        if (actionRef) {
-          actionRef.current = undefined;
-        }
-      };
-    }, [actionRef, runRequest]);
-
-    React.useEffect(() => {
-      void runRequest();
-    }, [runRequest]);
-
-    const renderCell = (column: any, row: any, index: number) => {
-      if (typeof column.render === 'function') {
-        return column.render(row[column.dataIndex], row, index);
-      }
-      const cellValue = row[column.dataIndex];
-      if (cellValue instanceof Date) {
-        return cellValue.toISOString();
-      }
-      if (typeof cellValue === 'object' && cellValue !== null) {
-        return JSON.stringify(cellValue);
-      }
-      return cellValue;
-    };
-
-    const renderToolbar = toolBarRender?.() ?? [];
-
-    const resolvedColumns = Array.isArray(columns) ? columns : [];
-    const dataKey = typeof rowSelection?.rowKey === 'string' ? rowSelection.rowKey : 'key';
-
-    return (
-      <div data-testid='pro-table'>
-        <div data-testid='pro-table-header'>
-          {typeof headerTitle === 'function' ? headerTitle() : headerTitle}
-        </div>
-        <div data-testid='pro-table-toolbar'>{renderToolbar}</div>
-        <table>
-          <tbody>
-            {rows.map((row, rowIndex) => {
-              const key = row[dataKey] ?? row.key ?? row.id ?? rowIndex;
-              const isSelected = rowSelection?.selectedRowKeys?.includes(key);
-              return (
-                <tr key={key}>
-                  {rowSelection ? (
-                    <td>
-                      <input
-                        type='checkbox'
-                        aria-label={`select-${key}`}
-                        checked={isSelected}
-                        onChange={(event) => {
-                          const checked = event.target.checked;
-                          const previous = rowSelection.selectedRowKeys ?? [];
-                          const nextKeys = checked
-                            ? Array.from(new Set([...previous, key]))
-                            : previous.filter((existingKey: any) => existingKey !== key);
-                          rowSelection.onChange?.(
-                            nextKeys,
-                            rows.filter((item) =>
-                              nextKeys.includes(item[dataKey] ?? item.key ?? item.id),
-                            ),
-                          );
-                        }}
-                      />
-                    </td>
-                  ) : null}
-                  {resolvedColumns.map((column, columnIndex) => (
-                    <td key={columnIndex}>{renderCell(column, row, rowIndex)}</td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  return {
-    __esModule: true,
-    PageContainer: ({ children }: any) => <div>{children}</div>,
-    ProTable: MockProTable,
-    ActionType: {},
-  };
-});
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);
 
 const mockGraphStoreState = { nodes: [], edges: [] };
 const mockGraphListeners = new Set<() => void>();
@@ -509,7 +178,7 @@ jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
   default: ({ tooltip, onClick }: any) => (
     <button type='button' onClick={onClick}>
-      {mockToText(tooltip)}
+      {require('../../helpers/nodeToText').toText(tooltip)}
     </button>
   ),
 }));
@@ -1031,7 +700,7 @@ const mockGetProcessesByIdsAndVersion = jest.fn(async () => ({
       id: 'process-one',
       version: '1.0.0.000',
       name: 'Process One',
-      modifiedAt: new Date('2023-01-01T00:00:00Z'),
+      modifiedAt: '2023-01-01T00:00:00Z',
       generalComment: 'comment',
     },
   ],
@@ -1112,7 +781,7 @@ describe('LifeCycleModels workflows', () => {
           id: 'process-one',
           version: '1.0.0.000',
           name: 'Process One',
-          modifiedAt: new Date('2023-01-01T00:00:00Z'),
+          modifiedAt: '2023-01-01T00:00:00Z',
           generalComment: 'comment',
         },
       ],
@@ -1155,7 +824,7 @@ describe('LifeCycleModels workflows', () => {
           id: 'model-existing',
           name: 'Existing Model',
           version: '1.0.0.001',
-          modifiedAt: new Date('2023-01-02T00:00:00Z'),
+          modifiedAt: '2023-01-02T00:00:00Z',
           generalComment: 'existing',
           classification: '-',
           teamId: null,
@@ -1220,7 +889,7 @@ describe('LifeCycleModels workflows', () => {
           id: 'model-existing',
           name: 'Existing Model',
           version: '1.0.0.001',
-          modifiedAt: new Date('2023-01-02T00:00:00Z'),
+          modifiedAt: '2023-01-02T00:00:00Z',
           generalComment: 'existing',
           classification: '-',
           teamId: null,
