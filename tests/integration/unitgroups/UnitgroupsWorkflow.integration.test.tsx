@@ -16,6 +16,7 @@
  */
 
 import UnitgroupsPage from '@/pages/Unitgroups';
+import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 jest.mock('umi', () => {
@@ -372,7 +373,9 @@ describe('Unitgroups Workflow Integration', () => {
     await waitFor(() => {
       expect(proComponentsMocks.lastProTableAction).not.toBeNull();
     });
-    await proComponentsMocks.lastProTableAction?.reload();
+    await act(async () => {
+      await proComponentsMocks.lastProTableAction?.reload();
+    });
 
     await waitFor(() => {
       expect(getUnitGroupTableAll).toHaveBeenCalledTimes(1);

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ReviewDetail from '@/pages/Processes/Components/ReviewDetail';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -115,7 +115,10 @@ describe('ReviewDetail component', () => {
     expect(screen.getByRole('dialog', { name: 'Review Logs' })).toBeInTheDocument();
     expect(mockLastRequest).toBeInstanceOf(Function);
 
-    const result = await mockLastRequest?.({});
+    let result;
+    await act(async () => {
+      result = await mockLastRequest?.({});
+    });
 
     expect(mockGetReviewsByProcess).toHaveBeenCalledWith('process-1', '1.0.0');
     expect(result).toEqual(expect.objectContaining({ success: true }));
@@ -133,7 +136,10 @@ describe('ReviewDetail component', () => {
     render(<ReviewDetail {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
 
-    const result = await mockLastRequest?.({});
+    let result;
+    await act(async () => {
+      result = await mockLastRequest?.({});
+    });
 
     expect(result).toEqual(
       expect.objectContaining({
@@ -149,7 +155,10 @@ describe('ReviewDetail component', () => {
     render(<ReviewDetail {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
 
-    const result = await mockLastRequest?.({});
+    let result;
+    await act(async () => {
+      result = await mockLastRequest?.({});
+    });
 
     expect(result).toEqual(
       expect.objectContaining({

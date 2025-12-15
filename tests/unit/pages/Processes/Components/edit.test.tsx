@@ -302,8 +302,10 @@ describe('ProcessEdit component', () => {
     expect(latestProcessFormProps).toBeTruthy();
 
     const currentValues = proFormApi?.getFieldsValue() ?? {};
-    proFormApi?.setFieldsValue({ processInformation: { name: 'Updated name' } });
-    triggerValuesChange?.({}, { ...currentValues, processInformation: { name: 'Updated name' } });
+    await act(async () => {
+      proFormApi?.setFieldsValue({ processInformation: { name: 'Updated name' } });
+      triggerValuesChange?.({}, { ...currentValues, processInformation: { name: 'Updated name' } });
+    });
 
     await act(async () => {
       await proFormApi?.submit();

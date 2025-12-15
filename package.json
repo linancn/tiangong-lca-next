@@ -35,7 +35,7 @@
     "start:no-mock": "cross-env MOCK=none UMI_ENV=dev max dev",
     "start:pre": "cross-env REACT_APP_ENV=pre UMI_ENV=dev max dev",
     "start:test": "cross-env REACT_APP_ENV=test MOCK=none UMI_ENV=dev max dev",
-    "test": "node scripts/test-runner.cjs",
+    "test": "cross-env CI=true npm run test:ci",
     "test:unit": "jest tests/unit src --testTimeout=20000",
     "test:integration": "jest tests/integration --runInBand --testTimeout=20000",
     "test:ci": "node scripts/test-runner.cjs",
