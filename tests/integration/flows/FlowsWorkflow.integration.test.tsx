@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Flows create workflow integration tests covering classification and property association.
  * Scope:
@@ -223,14 +222,14 @@ jest.mock('@/pages/Flows/Components/form', () => {
 });
 
 const mockGetFlowTableAll = jest.fn(async () => ({
-  data: [],
+  data: [] as any[],
   success: true,
   total: 0,
-}));
+})) as jest.Mock<any, any[]>;
 
 const mockCreateFlows = jest.fn(async () => ({
   data: [{ id: 'flow-created', version: '1.0.0.001' }],
-}));
+})) as jest.Mock<any, any[]>;
 
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
@@ -243,15 +242,15 @@ jest.mock('@/services/flows/api', () => ({
   deleteFlows: jest.fn(),
 }));
 
-const mockGetDataSource = jest.fn(() => 'my');
-const mockGetLang = jest.fn(() => 'en');
+const mockGetDataSource = jest.fn(() => 'my') as jest.Mock<any, any[]>;
+const mockGetLang = jest.fn(() => 'en') as jest.Mock<any, any[]>;
 const mockGetLangText = jest.fn((value: any) => {
   if (typeof value === 'string') return value;
   if (value?.en) return value.en;
   return '';
-});
-const mockGetDataTitle = jest.fn(() => 'My Data');
-const mockFormatDateTime = jest.fn(() => '2024-01-01T00:00:00Z');
+}) as jest.Mock<any, any[]>;
+const mockGetDataTitle = jest.fn(() => 'My Data') as jest.Mock<any, any[]>;
+const mockFormatDateTime = jest.fn(() => '2024-01-01T00:00:00Z') as jest.Mock<any, any[]>;
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,

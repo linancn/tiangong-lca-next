@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Manage System workflow integration tests
  * User paths covered:
@@ -10,7 +9,7 @@
 
 jest.mock('@/components/AllTeams', () => {
   const React = require('react');
-  const AllTeamsMock = ({ tableType, systemUserRole }) => (
+  const AllTeamsMock = ({ tableType, systemUserRole }: any) => (
     <div data-testid='all-teams'>
       all-teams::{tableType}::{systemUserRole ?? 'unknown'}
     </div>
@@ -30,7 +29,7 @@ jest.mock('@umijs/max', () => require('@/tests/mocks/umijsMax').createUmijsMaxMo
 jest.mock('antd', () => {
   const React = require('react');
 
-  const toText = (node) => {
+  const toText = (node: any): string => {
     if (node === null || node === undefined) {
       return '';
     }
@@ -60,33 +59,33 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
-  const FormContext = React.createContext(null);
+  const FormContext = React.createContext(null as any);
 
-  const Form = React.forwardRef(({ children }, ref) => {
-    const [values, setValues] = React.useState({});
-    const rulesRef = React.useRef({});
+  const Form = React.forwardRef(({ children }: any, ref: any) => {
+    const [values, setValues] = React.useState({} as Record<string, any>);
+    const rulesRef = React.useRef({} as Record<string, any[]>);
 
-    const registerRules = React.useCallback((name, rules = []) => {
+    const registerRules = React.useCallback((name: string, rules: any[] = []) => {
       rulesRef.current[name] = rules;
     }, []);
 
-    const setFieldValue = React.useCallback((name, value) => {
-      setValues((previous) => ({ ...previous, [name]: value }));
+    const setFieldValue = React.useCallback((name: string, value: any) => {
+      setValues((previous: Record<string, any>) => ({ ...previous, [name]: value }));
     }, []);
 
     const resetFields = React.useCallback(() => {
       setValues({});
     }, []);
 
-    const setFieldsValue = React.useCallback((fields = {}) => {
-      setValues((previous) => ({ ...previous, ...fields }));
+    const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
+      setValues((previous: Record<string, any>) => ({ ...previous, ...fields }));
     }, []);
 
     const validateFields = React.useCallback(async () => {
-      const errors = [];
-      Object.entries(rulesRef.current).forEach(([field, rules]) => {
+      const errors: any[] = [];
+      Object.entries(rulesRef.current as Record<string, any[]>).forEach(([field, rules]) => {
         const value = values[field];
-        (rules ?? []).forEach((rule) => {
+        (rules ?? ([] as any[])).forEach((rule: any) => {
           const messageText = toText(rule.message) || 'Validation failed';
           if (rule.required && (value === undefined || value === null || value === '')) {
             errors.push({ name: [field], errors: [messageText] });
@@ -100,7 +99,7 @@ jest.mock('antd', () => {
         });
       });
       if (errors.length) {
-        const error = new Error('Validation failed');
+        const error: any = new Error('Validation failed');
         error.errorFields = errors;
         throw error;
       }
@@ -126,7 +125,7 @@ jest.mock('antd', () => {
   });
   Form.displayName = 'MockForm';
 
-  const FormItem = ({ name, rules = [], children, label }) => {
+  const FormItem = ({ name, rules = [], children, label }: any) => {
     const context = React.useContext(FormContext);
 
     React.useEffect(() => {
@@ -136,7 +135,7 @@ jest.mock('antd', () => {
     const value = context?.values?.[name] ?? '';
     const inputId = `${name}-input`;
 
-    const handleChange = (event) => {
+    const handleChange = (event: any) => {
       const nextValue = event?.target?.value ?? '';
       context?.setFieldValue?.(name, nextValue);
       if (children?.props?.onChange) {
@@ -161,12 +160,12 @@ jest.mock('antd', () => {
 
   Form.Item = FormItem;
 
-  const Input = React.forwardRef(({ value = '', onChange, ...rest }, ref) => (
+  const Input = React.forwardRef(({ value = '', onChange, ...rest }: any, ref: any) => (
     <input ref={ref} value={value} onChange={(event) => onChange?.(event)} {...rest} />
   ));
   Input.displayName = 'MockInput';
 
-  const Button = React.forwardRef((props, ref) => {
+  const Button = React.forwardRef((props: any, ref: any) => {
     const { children, onClick, disabled, type = 'button', icon, ...rest } = props ?? {};
     return (
       <button
@@ -184,9 +183,9 @@ jest.mock('antd', () => {
   });
   Button.displayName = 'MockButton';
 
-  const Tabs = ({ items = [], activeKey, onChange }) => (
+  const Tabs = ({ items = [], activeKey, onChange }: any) => (
     <div data-testid='tabs'>
-      {items.map((item) => (
+      {items.map((item: any) => (
         <div key={item.key}>
           <button type='button' onClick={() => onChange?.(item.key)}>
             {item.label}
@@ -197,15 +196,15 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Spin = ({ spinning, children }) => (
+  const Spin = ({ spinning, children }: any) => (
     <div data-testid='spin' data-spinning={spinning ? 'true' : 'false'}>
       {children}
     </div>
   );
 
-  const ConfigProvider = ({ children }) => <>{children}</>;
+  const ConfigProvider = ({ children }: any) => <>{children}</>;
 
-  const Tooltip = ({ title, children }) => {
+  const Tooltip = ({ title, children }: any) => {
     const label = toText(title);
     const child = React.Children.only(children);
     return React.cloneElement(child, {
@@ -214,9 +213,9 @@ jest.mock('antd', () => {
     });
   };
 
-  const Flex = ({ children }) => <div data-testid='flex'>{children}</div>;
+  const Flex = ({ children }: any) => <div data-testid='flex'>{children}</div>;
 
-  const ModalComponent = ({ open, onCancel, onOk, children }) =>
+  const ModalComponent = ({ open, onCancel, onOk, children }: any) =>
     open ? (
       <div data-testid='modal'>
         <div>{children}</div>
@@ -229,7 +228,7 @@ jest.mock('antd', () => {
       </div>
     ) : null;
 
-  const modalConfirm = jest.fn((config) => config);
+  const modalConfirm = jest.fn((config: any) => config);
 
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
@@ -271,7 +270,6 @@ import {
   getSystemUserRoleApi,
   updateRoleApi,
 } from '@/services/roles/api';
-import { proComponentsMocks } from '@/tests/mocks/proComponents';
 import { Modal, message } from 'antd';
 import { mockRole, mockUser } from '../../helpers/testData';
 import {
@@ -282,14 +280,15 @@ import {
   waitFor,
   within,
 } from '../../helpers/testUtils';
+import { proComponentsMocks } from '../../mocks/proComponents';
 
-const mockGetSystemUserRoleApi = getSystemUserRoleApi;
-const mockGetSystemMembersApi = getSystemMembersApi;
-const mockUpdateRoleApi = updateRoleApi;
-const mockDelRoleApi = delRoleApi;
-const mockAddSystemMemberApi = addSystemMemberApi;
+const mockGetSystemUserRoleApi = jest.mocked(getSystemUserRoleApi);
+const mockGetSystemMembersApi = jest.mocked(getSystemMembersApi);
+const mockUpdateRoleApi = jest.mocked(updateRoleApi);
+const mockDelRoleApi = jest.mocked(delRoleApi);
+const mockAddSystemMemberApi = jest.mocked(addSystemMemberApi);
 
-const buildMemberRecord = (overrides = {}) => ({
+const buildMemberRecord = (overrides: any = {}) => ({
   email: overrides.email ?? mockUser.email,
   display_name: overrides.display_name ?? mockUser.display_name,
   role: overrides.role ?? mockRole.role,
@@ -302,11 +301,9 @@ const ownerUserData = { user_id: 'owner-1', role: 'owner' };
 const memberUserData = { user_id: 'member-1', role: 'member' };
 
 const resetMessages = () => {
-  Object.values(message).forEach((fn) => {
-    if (typeof fn === 'function' && 'mockClear' in fn) {
-      fn.mockClear();
-    }
-  });
+  (Object.values(message as unknown as Record<string, any>) as any[]).forEach((fn) =>
+    fn?.mockClear?.(),
+  );
 };
 
 const reloadMembersTable = async () => {
@@ -447,7 +444,8 @@ describe('ManageSystem workflows', () => {
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
 
     expect(Modal.confirm).toHaveBeenCalled();
-    const confirmConfig = (Modal.confirm as jest.Mock).mock.calls.at(-1)?.[0];
+    const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     expect(confirmConfig).toBeDefined();
 
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
@@ -568,7 +566,8 @@ describe('ManageSystem workflows', () => {
 
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
 
-    const confirmConfig = (Modal.confirm as jest.Mock).mock.calls.at(-1)?.[0];
+    const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     await confirmConfig.onOk?.();
 
     await waitFor(() => {

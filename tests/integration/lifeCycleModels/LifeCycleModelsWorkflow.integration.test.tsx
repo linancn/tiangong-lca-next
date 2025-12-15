@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Integration tests for the LifeCycleModels workflows.
  * Paths exercised:
@@ -45,7 +44,7 @@ jest.mock('@ant-design/pro-components', () =>
   require('@/tests/mocks/proComponents').createProComponentsMock(),
 );
 
-const mockGraphStoreState = { nodes: [], edges: [] };
+const mockGraphStoreState: { nodes: any[]; edges: any[] } = { nodes: [], edges: [] };
 const mockGraphListeners = new Set<() => void>();
 
 const notifyMockGraphListeners = () => {
@@ -98,7 +97,7 @@ jest.mock('@/contexts/graphContext', () => {
     const [, forceRender] = React.useState(0);
 
     React.useEffect(() => {
-      const listener = () => forceRender((count) => count + 1);
+      const listener = () => forceRender((count: number) => count + 1);
       mockGraphListeners.add(listener);
       return () => {
         mockGraphListeners.delete(listener);
@@ -241,7 +240,7 @@ jest.mock('@/pages/LifeCycleModels/Components/create', () => {
 
   const LifeCycleModelCreate = ({ actionRef, importData }: any) => {
     const [open, setOpen] = React.useState(false);
-    const [nodes, setNodes] = React.useState<any[]>([]);
+    const [nodes, setNodes] = React.useState([] as any[]);
 
     React.useEffect(() => {
       if (Array.isArray(importData) && importData.length > 0) {
@@ -315,8 +314,8 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => {
 
   const LifeCycleModelEdit = ({ id, version, actionRef }: any) => {
     const [open, setOpen] = React.useState(false);
-    const [nodes, setNodes] = React.useState<any[]>([]);
-    const [results, setResults] = React.useState<any[]>([]);
+    const [nodes, setNodes] = React.useState([] as any[]);
+    const [results, setResults] = React.useState([] as any[]);
     const [showResults, setShowResults] = React.useState(false);
 
     React.useEffect(() => {
@@ -351,7 +350,7 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => {
             <button
               type='button'
               onClick={() =>
-                setNodes((previous) => [
+                setNodes((previous: any[]) => [
                   ...previous,
                   {
                     id: `added-${previous.length}`,
@@ -395,7 +394,7 @@ jest.mock('@/pages/LifeCycleModels/Components/modelResult', () => {
 
   const ModelResult = ({ modelId, modelVersion }: any) => {
     const [open, setOpen] = React.useState(false);
-    const [rows, setRows] = React.useState<any[]>([]);
+    const [rows, setRows] = React.useState([] as any[]);
 
     const handleOpen = async () => {
       setOpen(true);
@@ -512,14 +511,14 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect', ()
   default: () => <div>io-port-select</div>,
 }));
 
-const mockGetDataSource = jest.fn(() => 'my');
-const mockGetLang = jest.fn(() => 'en');
+const mockGetDataSource = jest.fn(() => 'my') as jest.Mock<any, any[]>;
+const mockGetLang = jest.fn(() => 'en') as jest.Mock<any, any[]>;
 const mockGetLangText = jest.fn((value: any) => {
   if (!value) return '';
   if (typeof value === 'string') return value;
   return value.en ?? 'text';
-});
-const mockGetDataTitle = jest.fn(() => 'My Data');
+}) as jest.Mock<any, any[]>;
+const mockGetDataTitle = jest.fn(() => 'My Data') as jest.Mock<any, any[]>;
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
@@ -529,7 +528,7 @@ jest.mock('@/services/general/util', () => ({
   getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
 }));
 
-const mockGetTeamById = jest.fn(async () => ({ data: [] }));
+const mockGetTeamById = jest.fn(async () => ({ data: [] as any[] })) as jest.Mock<any, any[]>;
 
 jest.mock('@/services/teams/api', () => ({
   __esModule: true,
@@ -542,7 +541,7 @@ jest.mock('@/services/general/api', () => ({
   getRefData: jest.fn(async () => ({ data: {} })),
 }));
 
-const mockGetUserTeamId = jest.fn(async () => 'team-1');
+const mockGetUserTeamId = jest.fn(async () => 'team-1') as jest.Mock<any, any[]>;
 
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
@@ -551,36 +550,36 @@ jest.mock('@/services/roles/api', () => ({
 
 const mockCreateLifeCycleModel = jest.fn(async () => ({
   data: [{ id: 'model-created', version: '1.0.0.001' }],
-}));
+})) as jest.Mock<any, any[]>;
 
 const mockUpdateLifeCycleModel = jest.fn(async () => ({
   data: [{ id: 'model-existing', version: '1.0.0.002' }],
-}));
+})) as jest.Mock<any, any[]>;
 
 const mockGetLifeCycleModelDetail = jest.fn(async () => ({
   data: {
     json: { lifeCycleModelDataSet: {} },
     json_tg: { nodes: [], edges: [] },
   },
-}));
+})) as jest.Mock<any, any[]>;
 
 const mockGetLifeCycleModelTableAll = jest.fn(async () => ({
-  data: [],
+  data: [] as any[],
   success: true,
   total: 0,
-}));
+})) as jest.Mock<any, any[]>;
 
 const mockGetLifeCycleModelTablePgroongaSearch = jest.fn(async () => ({
-  data: [],
+  data: [] as any[],
   success: true,
   total: 0,
-}));
+})) as jest.Mock<any, any[]>;
 
 const mockLifeCycleModelHybridSearch = jest.fn(async () => ({
-  data: [],
+  data: [] as any[],
   success: true,
   total: 0,
-}));
+})) as jest.Mock<any, any[]>;
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
@@ -710,12 +709,15 @@ const mockGetProcessesByIdsAndVersion = jest.fn(async () => ({
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
-  getProcessTableAll: (...args: any[]) => mockGetProcessTableAll(...args),
-  getProcessTablePgroongaSearch: (...args: any[]) => mockGetProcessTablePgroongaSearch(...args),
+  getProcessTableAll: (...args: any[]) => (mockGetProcessTableAll as any)(...args),
+  getProcessTablePgroongaSearch: (...args: any[]) =>
+    (mockGetProcessTablePgroongaSearch as any)(...args),
   process_hybrid_search: jest.fn(async () => ({ data: mockProcessTableRows, success: true })),
-  getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
-  getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
-  getProcessesByIdsAndVersion: (...args: any[]) => mockGetProcessesByIdsAndVersion(...args),
+  getProcessDetailByIdAndVersion: (...args: any[]) =>
+    (mockGetProcessDetailByIdAndVersion as any)(...args),
+  getProcessDetail: (...args: any[]) => (mockGetProcessDetail as any)(...args),
+  getProcessesByIdsAndVersion: (...args: any[]) =>
+    (mockGetProcessesByIdsAndVersion as any)(...args),
   getProcessesByIdsAndVersions: jest.fn(),
   getProcessDetailByIdsAndVersion: jest.fn(),
 }));

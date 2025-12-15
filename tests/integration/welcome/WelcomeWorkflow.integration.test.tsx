@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Welcome workflow integration tests
  * User paths covered:
@@ -12,7 +11,7 @@ jest.mock('umi', () => require('@/tests/mocks/umi').createUmiMock());
 
 jest.mock('react-countup', () => ({
   __esModule: true,
-  default: ({ end }) => <span data-testid='countup-value'>{end}</span>,
+  default: ({ end }: { end: number }) => <span data-testid='countup-value'>{end}</span>,
 }));
 
 jest.mock('@ant-design/pro-components', () =>
@@ -36,23 +35,64 @@ import userEvent from '@testing-library/user-event';
 import { mockTeam } from '../../helpers/testData';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 
-const mockGetTeams = getTeams as jest.Mock;
-const mockGetThumbFileUrls = getThumbFileUrls as jest.Mock;
+type TeamLangText = { '@xml:lang': string; '#text': string };
+type TeamJson = {
+  title: TeamLangText[];
+  description?: string | TeamLangText[];
+  lightLogo?: string;
+  darkLogo?: string;
+  previewLightUrl?: string;
+  previewDarkUrl?: string;
+  [key: string]: unknown;
+};
 
-const buildTeam = (overrides = {}) => ({
-  ...mockTeam,
-  json: {
-    ...mockTeam.json,
-    lightLogo: '../sys-files/light.svg',
-    darkLogo: '../sys-files/dark.svg',
-    description: [
-      { '@xml:lang': 'en', '#text': 'Test team description' },
-      { '@xml:lang': 'zh', '#text': '测试团队描述' },
-    ],
-    ...overrides.json,
-  },
-  ...overrides,
-});
+type TeamRecord = {
+  id: string;
+  json: TeamJson;
+  rank?: number;
+  is_public?: boolean;
+  created_at?: string;
+  user_id?: string;
+  ownerEmail?: string;
+  [key: string]: unknown;
+};
+
+type GetTeamsResult = { data: TeamRecord[]; success: boolean };
+type GetTeamsMock = jest.Mock<Promise<GetTeamsResult>, []>;
+
+type ThumbFileUrl = {
+  status: string;
+  thumbUrl?: string;
+  uid?: string;
+  name?: string;
+  url?: string;
+};
+type GetThumbFileUrlsMock = jest.Mock<Promise<ThumbFileUrl[]>, [fileList: unknown]>;
+
+const mockGetTeams = getTeams as unknown as GetTeamsMock;
+const mockGetThumbFileUrls = getThumbFileUrls as unknown as GetThumbFileUrlsMock;
+
+const baseTeamJson: Partial<TeamJson> = {
+  lightLogo: '../sys-files/light.svg',
+  darkLogo: '../sys-files/dark.svg',
+  description: [
+    { '@xml:lang': 'en', '#text': 'Test team description' },
+    { '@xml:lang': 'zh', '#text': '测试团队描述' },
+  ],
+};
+
+const buildTeam = (overrides: Partial<TeamRecord> = {}): TeamRecord => {
+  const base = mockTeam as unknown as TeamRecord;
+  return {
+    ...base,
+    ...overrides,
+    json: {
+      ...base.json,
+      ...baseTeamJson,
+      ...(overrides.json ?? {}),
+    },
+  };
+};
 
 const flushTeamsLoading = () => waitFor(() => expect(mockGetTeams).toHaveBeenCalled());
 
@@ -60,16 +100,21 @@ describe('WelcomeWorkflow integration', () => {
   const originalLocation = window.location;
 
   beforeAll(() => {
-    delete (window as any).location;
-    (window as any).location = {
-      href: 'http://localhost/',
-      assign: jest.fn(),
-      replace: jest.fn(),
-    };
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: 'http://localhost/',
+        assign: jest.fn(),
+        replace: jest.fn(),
+      } as unknown as Location,
+      writable: true,
+    });
   });
 
   afterAll(() => {
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+    });
   });
 
   beforeEach(() => {

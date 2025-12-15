@@ -5,10 +5,37 @@
  * used in the application.
  */
 
+export type XmlLangText = {
+  '@xml:lang': string;
+  '#text': string;
+};
+
+export type MultilingualText = XmlLangText[];
+
+export type TeamJson = {
+  title: MultilingualText;
+  description?: string | MultilingualText;
+  lightLogo?: string;
+  darkLogo?: string;
+  previewLightUrl?: string;
+  previewDarkUrl?: string;
+  [key: string]: unknown;
+};
+
+export type TeamRecord = {
+  id: string;
+  json: TeamJson;
+  rank: number;
+  is_public: boolean;
+  created_at: string;
+  user_id: string;
+  ownerEmail: string;
+};
+
 /**
  * Mock team data
  */
-export const mockTeam = {
+export const mockTeam: TeamRecord = {
   id: 'team-123',
   json: {
     title: [

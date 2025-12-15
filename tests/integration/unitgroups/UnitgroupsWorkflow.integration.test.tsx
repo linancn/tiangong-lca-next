@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Unitgroups CRUD + unit management workflow integration test.
  * Covers src/pages/Unitgroups/index.tsx with focus on:

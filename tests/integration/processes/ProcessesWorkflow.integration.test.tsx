@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Integration tests for the Processes workflow.
  * Paths exercised:
@@ -50,12 +49,12 @@ jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').creat
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ children }) => <div data-testid='all-versions'>{children}</div>,
+  default: ({ children }: any) => <div data-testid='all-versions'>{children}</div>,
 }));
 
 jest.mock('@/components/ContributeData', () => ({
   __esModule: true,
-  default: ({ onOk, disabled }) => (
+  default: ({ onOk, disabled }: any) => (
     <button type='button' data-testid='contribute' disabled={disabled} onClick={() => onOk?.()}>
       Contribute
     </button>
@@ -64,7 +63,7 @@ jest.mock('@/components/ContributeData', () => ({
 
 jest.mock('@/components/ExportData', () => ({
   __esModule: true,
-  default: ({ id, version }) => (
+  default: ({ id, version }: any) => (
     <button type='button' data-testid={`export-${id}-${version}`}>
       Export
     </button>
@@ -73,7 +72,7 @@ jest.mock('@/components/ExportData', () => ({
 
 jest.mock('@/components/ImportData', () => ({
   __esModule: true,
-  default: ({ onJsonData }) => (
+  default: ({ onJsonData }: any) => (
     <button
       type='button'
       data-testid='import-data'
@@ -98,7 +97,7 @@ jest.mock('@/components/ImportData', () => ({
 
 jest.mock('@/components/TableFilter', () => ({
   __esModule: true,
-  default: ({ onChange }) => (
+  default: ({ onChange }: any) => (
     <button type='button' data-testid='table-filter' onClick={() => onChange?.('published')}>
       Filter Published
     </button>
@@ -107,7 +106,7 @@ jest.mock('@/components/TableFilter', () => ({
 
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
-  default: ({ id, version }) => (
+  default: ({ id, version }: any) => (
     <button type='button' data-testid={`view-${id}-${version}`}>
       View {id}
     </button>
@@ -116,7 +115,7 @@ jest.mock('@/pages/Processes/Components/view', () => ({
 
 jest.mock('@/pages/Processes/Components/delete', () => ({
   __esModule: true,
-  default: ({ id, version }) => (
+  default: ({ id, version }: any) => (
     <button type='button' data-testid={`delete-${id}-${version}`}>
       Delete {id}
     </button>
@@ -125,11 +124,11 @@ jest.mock('@/pages/Processes/Components/delete', () => ({
 
 jest.mock('@/pages/Processes/Components/ReviewDetail', () => {
   const React = require('react');
-  const ReviewDetailMock = ({ processId, processVersion }) => {
+  const ReviewDetailMock = ({ processId, processVersion }: any) => {
     const [open, setOpen] = React.useState(false);
     return (
       <div>
-        <button type='button' onClick={() => setOpen((prev) => !prev)}>
+        <button type='button' onClick={() => setOpen((prev: boolean) => !prev)}>
           View review {processId}
         </button>
         {open ? <div data-testid='review-panel'>{`${processId}@${processVersion}`}</div> : null}
@@ -146,11 +145,11 @@ jest.mock('@/pages/Processes/Components/create', () => {
   const React = require('react');
   const { message } = require('antd');
 
-  const ProcessCreateMock = ({ actionRef, importData = [], actionType = 'create' }) => {
+  const ProcessCreateMock = ({ actionRef, importData = [], actionType = 'create' }: any) => {
     const [open, setOpen] = React.useState(false);
     const importCount = Array.isArray(importData) ? importData.length : 0;
 
-    const labels = {
+    const labels: Record<string, { trigger: string; submit: string }> = {
       create: {
         trigger: 'Create Process',
         submit: 'Submit Process',
@@ -206,8 +205,10 @@ jest.mock('@/pages/Processes/Components/edit', () => {
     version,
     actionRef,
     autoOpen = false,
-    setViewDrawerVisible = () => {},
-  }) => {
+    setViewDrawerVisible = (visible: boolean) => {
+      void visible;
+    },
+  }: any) => {
     const [open, setOpen] = React.useState(autoOpen);
 
     const close = () => {

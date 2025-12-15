@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Integration tests for the review workflow components
  * Paths under test:
@@ -23,7 +22,7 @@ jest.mock('@/services/roles/api', () => ({
 
 jest.mock('@/pages/Review/Components/RejectReview', () => ({
   __esModule: true,
-  default: ({ reviewId }) => (
+  default: ({ reviewId }: any) => (
     <button type='button' data-testid={`reject-review-${reviewId}`}>
       Reject
     </button>
@@ -32,53 +31,53 @@ jest.mock('@/pages/Review/Components/RejectReview', () => ({
 
 jest.mock('@/pages/Review/Components/reviewLifeCycleModels', () => ({
   __esModule: true,
-  default: ({ reviewId }) => <span data-testid={`lcm-${reviewId}`}>LCM</span>,
+  default: ({ reviewId }: any) => <span data-testid={`lcm-${reviewId}`}>LCM</span>,
 }));
 
 jest.mock('@/pages/Review/Components/reviewProcess', () => ({
   __esModule: true,
-  default: ({ reviewId }) => <span data-testid={`process-${reviewId}`}>Process</span>,
+  default: ({ reviewId }: any) => <span data-testid={`process-${reviewId}`}>Process</span>,
 }));
 
 jest.mock('@/pages/Review/Components/ReviewProgress', () => ({
   __esModule: true,
-  default: ({ reviewId }) => <span data-testid={`progress-${reviewId}`}>Progress</span>,
+  default: ({ reviewId }: any) => <span data-testid={`progress-${reviewId}`}>Progress</span>,
 }));
 
 jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
   __esModule: true,
-  default: ({ reviewIds = [] }) => (
+  default: ({ reviewIds = [] }: any) => (
     <div data-testid={`select-reviewer-${reviewIds.length}`}>SelectReviewer</div>
   ),
 }));
 
 jest.mock('@/pages/Account/view', () => ({
   __esModule: true,
-  default: ({ userId }) => <span data-testid={`account-${userId}`}>Account</span>,
+  default: ({ userId }: any) => <span data-testid={`account-${userId}`}>Account</span>,
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
   __esModule: true,
-  default: ({ id }) => <span data-testid={`lcm-view-${id}`}>LCMView</span>,
+  default: ({ id }: any) => <span data-testid={`lcm-view-${id}`}>LCMView</span>,
 }));
 
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
-  default: ({ id }) => <span data-testid={`process-view-${id}`}>ProcessView</span>,
+  default: ({ id }: any) => <span data-testid={`process-view-${id}`}>ProcessView</span>,
 }));
 
 jest.mock('@/pages/Review/Components/AddMemberModal', () => ({
   __esModule: true,
-  default: ({ open }) => (open ? <div data-testid='add-member-modal' /> : null),
+  default: ({ open }: any) => (open ? <div data-testid='add-member-modal' /> : null),
 }));
 
 jest.mock('@umijs/max', () => ({
-  FormattedMessage: ({ defaultMessage, id }) => (
+  FormattedMessage: ({ defaultMessage, id }: any) => (
     <span data-testid={`fmt-${id}`}>{defaultMessage ?? id}</span>
   ),
   useIntl: () => ({
     locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
 }));
 
@@ -99,7 +98,7 @@ jest.mock('antd', () => {
     warning: jest.fn(),
     loading: jest.fn(),
   };
-  const ModalComponent = ({ open, onCancel, onOk, children }) =>
+  const ModalComponent = ({ open, onCancel, onOk, children }: any) =>
     open ? (
       <div data-testid='modal'>
         <div>{children}</div>
@@ -112,14 +111,14 @@ jest.mock('antd', () => {
       </div>
     ) : null;
   ModalComponent.confirm = jest.fn();
-  const Drawer = ({ open, children, extra }) =>
+  const Drawer = ({ open, children, extra }: any) =>
     open ? (
       <div data-testid='drawer'>
         <div>{extra}</div>
         {children}
       </div>
     ) : null;
-  const Button = React.forwardRef((props, ref) => {
+  const Button = React.forwardRef((props: any, ref: any) => {
     const { onClick, children, disabled, icon, loading: _loading, ...rest } = props ?? {};
     void _loading;
     return (
@@ -129,9 +128,9 @@ jest.mock('antd', () => {
       </button>
     );
   });
-  const Tabs = ({ items, activeKey, onChange }) => (
+  const Tabs = ({ items, activeKey, onChange }: any) => (
     <div data-testid='tabs'>
-      {(items ?? []).map((item) => (
+      {(items ?? []).map((item: any) => (
         <div key={item.key}>
           <button
             type='button'
@@ -145,19 +144,19 @@ jest.mock('antd', () => {
       ))}
     </div>
   );
-  const Spin = ({ spinning, children }) => (
+  const Spin = ({ spinning, children }: any) => (
     <div data-testid='spin' data-spinning={spinning ? 'true' : 'false'}>
       {children}
     </div>
   );
-  const ConfigProvider = ({ children }) => <>{children}</>;
-  const Card = ({ children }) => <div data-testid='card'>{children}</div>;
-  const Row = ({ children }) => <div data-testid='row'>{children}</div>;
-  const Col = ({ children }) => <div data-testid='col'>{children}</div>;
-  const Space = ({ children }) => <div data-testid='space'>{children}</div>;
-  const Tooltip = ({ children }) => <>{children}</>;
-  const Flex = ({ children }) => <div data-testid='flex'>{children}</div>;
-  const Input = ({ value, onChange, ...rest }) => (
+  const ConfigProvider = ({ children }: any) => <>{children}</>;
+  const Card = ({ children }: any) => <div data-testid='card'>{children}</div>;
+  const Row = ({ children }: any) => <div data-testid='row'>{children}</div>;
+  const Col = ({ children }: any) => <div data-testid='col'>{children}</div>;
+  const Space = ({ children }: any) => <div data-testid='space'>{children}</div>;
+  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Flex = ({ children }: any) => <div data-testid='flex'>{children}</div>;
+  const Input = ({ value, onChange, ...rest }: any) => (
     <input
       data-testid='input'
       value={value ?? ''}
@@ -165,7 +164,7 @@ jest.mock('antd', () => {
       {...rest}
     />
   );
-  Input.Search = ({ onSearch, placeholder }) => (
+  Input.Search = ({ onSearch, placeholder }: any) => (
     <div data-testid='input-search'>
       <input placeholder={placeholder} data-testid='search-input' />
       <button type='button' onClick={() => onSearch?.('')}>
@@ -203,20 +202,20 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     request,
     actionRef,
-    columns = [],
+    columns = [] as any[],
     rowKey = 'id',
     pagination,
     toolBarRender,
     headerTitle,
-  }) => {
-    const [rows, setRows] = React.useState([]);
+  }: any) => {
+    const [rows, setRows] = React.useState([] as any[]);
     const paramsRef = React.useRef({
       current: pagination?.current ?? 1,
       pageSize: pagination?.pageSize ?? 10,
     });
     const requestRef = React.useRef(request);
 
-    const runRequest = React.useCallback(async (override = {}) => {
+    const runRequest = React.useCallback(async (override: any = {}) => {
       paramsRef.current = { ...paramsRef.current, ...override };
       const result = await requestRef.current?.(paramsRef.current, {});
       setRows(result?.data ?? []);
@@ -237,12 +236,12 @@ jest.mock('@ant-design/pro-components', () => {
       if (actionRef) {
         actionRef.current = {
           reload: () => runRequest(),
-          setPageInfo: (info) => runRequest(info ?? {}),
+          setPageInfo: (info: any) => runRequest(info ?? {}),
         };
       }
     }, [actionRef, runRequest]);
 
-    const renderContent = (content, keyPrefix) => {
+    const renderContent = (content: any, keyPrefix: string) => {
       if (Array.isArray(content)) {
         return content.map((item, index) => (
           <React.Fragment key={`${keyPrefix}-${index}`}>{item}</React.Fragment>
@@ -264,11 +263,11 @@ jest.mock('@ant-design/pro-components', () => {
               ))
             : toolbar}
         </div>
-        {rows.map((row, rowIndex) => {
+        {rows.map((row: any, rowIndex: number) => {
           const rowIdentifier = rowKey && row[rowKey] ? row[rowKey] : rowIndex;
           return (
             <div data-testid={`pro-table-row-${rowIdentifier}`} key={`row-${rowIdentifier}`}>
-              {(columns ?? []).map((column, columnIndex) => {
+              {(columns ?? []).map((column: any, columnIndex: number) => {
                 const dataIndex = column.dataIndex;
                 const value = dataIndex ? row[dataIndex] : undefined;
                 const rendered = column.render
@@ -290,7 +289,7 @@ jest.mock('@ant-design/pro-components', () => {
     );
   };
 
-  const PageContainer = ({ title, children }) => (
+  const PageContainer = ({ title, children }: any) => (
     <div data-testid='page-container'>
       <div data-testid='page-container-title'>{title}</div>
       <div>{children}</div>

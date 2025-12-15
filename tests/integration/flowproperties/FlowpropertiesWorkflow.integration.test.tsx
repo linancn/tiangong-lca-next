@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Flowproperties CRUD workflow integration test.
  * Covers page at: src/pages/Flowproperties/index.tsx
@@ -135,16 +134,16 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
 
 const mockCreateFlowproperties = jest.fn(async () => ({
   data: [{ id: 'fp-created', version: '1.0.0' }],
-}));
+})) as jest.Mock<any, any[]>;
 const mockUpdateFlowproperties = jest.fn(async () => [
   { rule_verification: true, nonExistent: false },
-]);
-const mockDeleteFlowproperties = jest.fn(async () => ({ status: 204 }));
+]) as jest.Mock<any, any[]>;
+const mockDeleteFlowproperties = jest.fn(async () => ({ status: 204 })) as jest.Mock<any, any[]>;
 const mockGetFlowpropertyTableAll = jest.fn(async () => ({
-  data: [],
+  data: [] as any[],
   success: true,
   total: 0,
-}));
+})) as jest.Mock<any, any[]>;
 
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
@@ -164,7 +163,10 @@ jest.mock('@/services/flowproperties/api', () => ({
   getFlowpropertyTablePgroongaSearch: jest.fn(),
 }));
 
-const mockGenFlowpropertyFromData = jest.fn(async (payload: any) => payload ?? {});
+const mockGenFlowpropertyFromData = jest.fn(async (payload: any) => payload ?? {}) as jest.Mock<
+  any,
+  any[]
+>;
 
 jest.mock('@/services/flowproperties/util', () => ({
   __esModule: true,
@@ -172,8 +174,8 @@ jest.mock('@/services/flowproperties/util', () => ({
   genFlowpropertyJsonOrdered: jest.fn((id: string, data: any) => ({ id, ...data })),
 }));
 
-const mockGetDataSource = jest.fn(() => 'my');
-const mockGetLang = jest.fn(() => 'en');
+const mockGetDataSource = jest.fn(() => 'my') as jest.Mock<any, any[]>;
+const mockGetLang = jest.fn(() => 'en') as jest.Mock<any, any[]>;
 const mockGetLangText = jest.fn((value: any) => {
   if (typeof value === 'string') return value;
   if (Array.isArray(value)) {
@@ -182,9 +184,9 @@ const mockGetLangText = jest.fn((value: any) => {
   }
   if (value?.en) return value.en;
   return value?.['#text'] ?? '';
-});
-const mockGetDataTitle = jest.fn(() => 'My Data');
-const mockFormatDateTime = jest.fn(() => '2024-01-01T00:00:00Z');
+}) as jest.Mock<any, any[]>;
+const mockGetDataTitle = jest.fn(() => 'My Data') as jest.Mock<any, any[]>;
+const mockFormatDateTime = jest.fn(() => '2024-01-01T00:00:00Z') as jest.Mock<any, any[]>;
 const mockGetUnitData = jest.fn(async (_type: string, rows: any[]) =>
   rows.map((row) => ({
     ...row,
@@ -194,7 +196,7 @@ const mockGetUnitData = jest.fn(async (_type: string, rows: any[]) =>
       refUnitName: 'kg',
     },
   })),
-);
+) as jest.Mock<any, any[]>;
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,

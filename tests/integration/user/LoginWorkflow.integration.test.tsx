@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Integration tests for the login/register workflow.
  * Paths under test:
@@ -13,10 +12,10 @@
 
 import Login from '@/pages/User/Login';
 import { login, signUp } from '@/services/auth';
-import { antdMocks } from '@/tests/mocks/antd';
-import { umiMocks } from '@/tests/mocks/umi';
-import { umijsMaxMocks } from '@/tests/mocks/umijsMax';
 import { fireEvent, renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
+import { antdMocks } from '../../mocks/antd';
+import { umiMocks } from '../../mocks/umi';
+import { umijsMaxMocks } from '../../mocks/umijsMax';
 
 jest.mock('@/services/auth', () => ({
   login: jest.fn(),
@@ -58,8 +57,25 @@ const mockHistoryPush = umiMocks.historyPush;
 const mockFetchUserInfo = umijsMaxMocks.fetchUserInfo;
 const mockSetInitialState = umijsMaxMocks.setInitialState;
 
-const mockLogin = login;
-const mockSignUp = signUp;
+type AuthResponse = {
+  status: 'ok' | 'error' | 'existed';
+  type?: string;
+  currentAuthority?: string;
+  message?: string;
+};
+
+type LoginBody = {
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  autoLogin: boolean;
+  type: 'login' | 'register';
+};
+
+type LoginMock = jest.Mock<Promise<AuthResponse>, [body: LoginBody]>;
+
+const mockLogin = login as unknown as LoginMock;
+const mockSignUp = signUp as unknown as LoginMock;
 
 describe('Login workflow integration', () => {
   beforeEach(() => {
@@ -67,7 +83,9 @@ describe('Login workflow integration', () => {
     mockHistoryPush.mockClear();
     mockFetchUserInfo.mockReset();
     mockSetInitialState.mockReset();
-    Object.values(mockMessageApi).forEach((fn) => fn.mockClear?.());
+    (Object.values(mockMessageApi) as Array<{ mockClear?: () => void }>).forEach((fn) =>
+      fn.mockClear?.(),
+    );
   });
 
   it('logs in successfully and redirects to the home page', async () => {

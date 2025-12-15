@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Integration tests for review authentication states
  * Paths under test:
@@ -9,16 +8,16 @@ import Review from '@/pages/Review';
 import { getReviewUserRoleApi } from '@/services/roles/api';
 import { fireEvent, renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
-const assignmentReloads = {};
+const assignmentReloads: Record<string, jest.Mock> = {};
 
 jest.mock('@umijs/max', () => ({
-  FormattedMessage: ({ id, defaultMessage }) => (
+  FormattedMessage: ({ id, defaultMessage }: any) => (
     <span data-testid={`fmt-${id}`}>{defaultMessage ?? id}</span>
   ),
 }));
 
 jest.mock('@ant-design/pro-components', () => ({
-  PageContainer: ({ title, children }) => (
+  PageContainer: ({ title, children }: any) => (
     <div data-testid='page-container'>
       <div data-testid='page-title'>{title}</div>
       <div>{children}</div>
@@ -29,15 +28,15 @@ jest.mock('@ant-design/pro-components', () => ({
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Spin = ({ spinning, children }) => (
+  const Spin = ({ spinning, children }: any) => (
     <div data-testid='spin' data-spinning={spinning ? 'true' : 'false'}>
       {children}
     </div>
   );
 
-  const Tabs = ({ items = [], activeKey, onChange }) => (
+  const Tabs = ({ items = [], activeKey, onChange }: any) => (
     <div data-testid='tabs'>
-      {(items ?? []).map((item) => (
+      {(items ?? []).map((item: any) => (
         <div key={item.key} data-testid={`tab-wrapper-${item.key}`}>
           <button
             type='button'
@@ -54,7 +53,7 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const ConfigProvider = ({ children }) => <>{children}</>;
+  const ConfigProvider = ({ children }: any) => <>{children}</>;
   const message = {
     success: jest.fn(),
     error: jest.fn(),
@@ -74,7 +73,7 @@ jest.mock('antd', () => {
 jest.mock('@/pages/Review/Components/AssignmentReview', () => {
   const React = require('react');
 
-  const AssignmentReviewMock = ({ actionRef, tableType, userData }) => {
+  const AssignmentReviewMock = ({ actionRef, tableType, userData }: any) => {
     const reloadRef = React.useRef(null);
     if (!reloadRef.current) {
       reloadRef.current = jest.fn();
@@ -99,7 +98,7 @@ jest.mock('@/pages/Review/Components/AssignmentReview', () => {
 
 jest.mock('@/pages/Review/Components/ReviewMember', () => ({
   __esModule: true,
-  default: ({ userData }) => (
+  default: ({ userData }: any) => (
     <div data-testid='review-member-view'>{userData?.role ?? 'unknown'}</div>
   ),
 }));

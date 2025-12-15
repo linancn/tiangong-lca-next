@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Sources management workflow integration tests.
  * Coverage:

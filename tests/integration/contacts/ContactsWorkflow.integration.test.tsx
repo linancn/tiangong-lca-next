@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Contacts management workflow integration tests.
  * Coverage:
