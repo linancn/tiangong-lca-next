@@ -9,7 +9,10 @@ const isCI = process.env.CI === 'true' || process.env.CI === '1';
 function runJest(args) {
   const result = spawnSync(process.execPath, [jestBin, ...args], {
     stdio: 'inherit',
-    env: process.env,
+    env: {
+      ...process.env,
+      TZ: process.env.TZ || 'UTC',
+    },
   });
 
   if (result.error) {

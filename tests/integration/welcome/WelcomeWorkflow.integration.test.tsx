@@ -125,11 +125,14 @@ jest.mock('antd', () => {
 
   const Divider = (props) => <hr data-testid='divider' {...props} />;
 
-  const Space = ({ children, ...rest }) => (
-    <div data-testid='space' {...rest}>
-      {children}
-    </div>
-  );
+  const Space = ({ children, wrap, ...rest }) => {
+    void wrap;
+    return (
+      <div data-testid='space' {...rest}>
+        {children}
+      </div>
+    );
+  };
 
   const Spin = () => <div data-testid='spin'>loading</div>;
 

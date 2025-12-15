@@ -1,6 +1,7 @@
 const { configUmiAlias, createConfig } = require('@umijs/max/test');
 
 module.exports = async () => {
+  const isCI = process.env.CI === 'true' || process.env.CI === '1';
   const config = await configUmiAlias({
     ...createConfig({
       target: 'browser',
@@ -9,6 +10,8 @@ module.exports = async () => {
 
   return {
     ...config,
+    clearMocks: true,
+    openHandlesTimeout: 5000,
     testEnvironmentOptions: {
       ...(config?.testEnvironmentOptions || {}),
       url: 'http://localhost:8000',
@@ -56,6 +59,6 @@ module.exports = async () => {
       '^@/tests/(.*)$': '<rootDir>/tests/$1',
     },
     reporters: ['default', '<rootDir>/tests/reporters/failureSkippedSummaryReporter.js'],
-    verbose: true,
+    verbose: !isCI,
   };
 };

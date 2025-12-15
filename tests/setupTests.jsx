@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
 import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
 import React from 'react';
 import { TextDecoder, TextEncoder } from 'util';
@@ -27,18 +28,17 @@ if (typeof global.TransformStream === 'undefined') {
   global.TransformStream = TransformStream;
 }
 
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-
-global.localStorage = localStorageMock;
+if (typeof window !== 'undefined' && window.localStorage) {
+  Object.defineProperty(global, 'localStorage', {
+    configurable: true,
+    writable: true,
+    value: window.localStorage,
+  });
+}
 
 Object.defineProperty(URL, 'createObjectURL', {
   writable: true,
-  value: jest.fn(),
+  value: jest.fn(() => 'blob:mock-url'),
 });
 
 class Worker {
@@ -61,22 +61,15 @@ if (typeof window !== 'undefined') {
     Object.defineProperty(global.window, 'matchMedia', {
       writable: true,
       configurable: true,
-      value: jest.fn(() => ({
+      value: jest.fn().mockImplementation((query) => ({
         matches: false,
+        media: query,
+        onchange: null,
         addListener: jest.fn(),
         removeListener: jest.fn(),
-      })),
-    });
-  }
-
-  if (!window.matchMedia) {
-    Object.defineProperty(global.window, 'matchMedia', {
-      writable: true,
-      configurable: true,
-      value: jest.fn((query) => ({
-        matches: query.includes('max-width'),
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
       })),
     });
   }
@@ -97,6 +90,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
+  jest.useRealTimers();
+
   if (!shouldFailOnActWarning || actWarningsThisTest === 0) {
     return;
   }
