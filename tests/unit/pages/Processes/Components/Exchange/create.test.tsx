@@ -311,7 +311,9 @@ describe('ProcessExchangeCreate', () => {
     fireEvent.click(meanAmountInput);
 
     expect(mockUnitConvertState.visible).toBe(true);
-    mockUnitConvertState.onOk?.('123');
+    await act(async () => {
+      mockUnitConvertState.onOk?.('123');
+    });
 
     await waitFor(() => {
       expect(proFormApi?.getFieldValue('meanAmount')).toBe('123');

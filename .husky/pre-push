@@ -7,4 +7,4 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
   nvm use 22 >/dev/null
 fi
 
-npm run lint-staged
+npm run lint && npm test

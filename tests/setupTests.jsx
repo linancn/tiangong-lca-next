@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
 import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
 import React from 'react';
 import { TextDecoder, TextEncoder } from 'util';
@@ -27,18 +28,17 @@ if (typeof global.TransformStream === 'undefined') {
   global.TransformStream = TransformStream;
 }
 
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-
-global.localStorage = localStorageMock;
+if (typeof window !== 'undefined' && window.localStorage) {
+  Object.defineProperty(global, 'localStorage', {
+    configurable: true,
+    writable: true,
+    value: window.localStorage,
+  });
+}
 
 Object.defineProperty(URL, 'createObjectURL', {
   writable: true,
-  value: jest.fn(),
+  value: jest.fn(() => 'blob:mock-url'),
 });
 
 class Worker {
@@ -61,35 +61,93 @@ if (typeof window !== 'undefined') {
     Object.defineProperty(global.window, 'matchMedia', {
       writable: true,
       configurable: true,
-      value: jest.fn(() => ({
+      value: jest.fn().mockImplementation((query) => ({
         matches: false,
+        media: query,
+        onchange: null,
         addListener: jest.fn(),
         removeListener: jest.fn(),
-      })),
-    });
-  }
-
-  if (!window.matchMedia) {
-    Object.defineProperty(global.window, 'matchMedia', {
-      writable: true,
-      configurable: true,
-      value: jest.fn((query) => ({
-        matches: query.includes('max-width'),
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
       })),
     });
   }
 }
 
 const errorLog = console.error;
+const shouldFailOnActWarning =
+  process.env.CI === 'true' ||
+  process.env.CI === '1' ||
+  process.env.FAIL_ON_ACT_WARNING === 'true' ||
+  process.env.FAIL_ON_ACT_WARNING === '1';
+
+const actWarningRecords = [];
+let actWarningsThisTest = 0;
+
+beforeEach(() => {
+  actWarningsThisTest = 0;
+});
+
+afterEach(() => {
+  cleanup();
+  jest.useRealTimers();
+
+  if (!shouldFailOnActWarning || actWarningsThisTest === 0) {
+    return;
+  }
+
+  const currentTestName = global.expect?.getState?.().currentTestName;
+  const testLabel = currentTestName ? ` in "${currentTestName}"` : '';
+  const countLabel =
+    actWarningsThisTest === 1
+      ? '1 React act(...) warning'
+      : `${actWarningsThisTest} React act(...) warnings`;
+  throw new Error(
+    `${countLabel} detected${testLabel}. Fix the test by awaiting async UI updates (e.g. await userEvent interactions, await waitFor(...), or use findBy* queries).`,
+  );
+});
+
+afterAll(() => {
+  if (actWarningRecords.length === 0) {
+    return;
+  }
+
+  const sampleLimit = 5;
+  const samples = actWarningRecords
+    .slice(0, sampleLimit)
+    .map(({ testName, message }) => `- ${testName || '<unknown test>'}: ${message}`)
+    .join('\n');
+
+  errorLog(
+    `\n[tests] React act(...) warnings ${shouldFailOnActWarning ? 'detected' : 'suppressed'}: ${
+      actWarningRecords.length
+    }\n${samples}${
+      actWarningRecords.length > sampleLimit
+        ? `\n- ... (${actWarningRecords.length - sampleLimit} more)`
+        : ''
+    }\nSet FAIL_ON_ACT_WARNING=1 to fail locally.\n`,
+  );
+});
+
 Object.defineProperty(global.window.console, 'error', {
   writable: true,
   configurable: true,
   value: (...rest) => {
-    const logStr = rest.join('');
-    if (logStr.includes('Warning: An update to %s inside a test was not wrapped in act(...)')) {
-      return;
+    const logStr = rest.map((item) => (typeof item === 'string' ? item : String(item))).join(' ');
+    const isActWarning =
+      logStr.includes('was not wrapped in act(...)') &&
+      (logStr.includes('inside a test') || logStr.includes('not wrapped in act'));
+
+    if (isActWarning) {
+      actWarningsThisTest += 1;
+
+      const testName = global.expect?.getState?.().currentTestName;
+      actWarningRecords.push({ testName, message: logStr });
+
+      if (!shouldFailOnActWarning) {
+        return;
+      }
     }
 
     errorLog(...rest);

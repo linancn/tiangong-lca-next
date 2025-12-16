@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Teams management workflow integration tests
  * Covered paths:
@@ -148,18 +147,18 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
-  const FormContext = React.createContext<any>(null);
+  const FormContext = React.createContext(null as any);
 
   const Form = React.forwardRef(({ children, initialValues = {} }: any, ref: any) => {
-    const [values, setValues] = React.useState<Record<string, any>>(initialValues);
-    const rulesRef = React.useRef<Record<string, any[]>>({});
+    const [values, setValues] = React.useState(initialValues as Record<string, any>);
+    const rulesRef = React.useRef({} as Record<string, any[]>);
 
     const registerRules = React.useCallback((name: string, rules: any[] = []) => {
       rulesRef.current[name] = rules;
     }, []);
 
     const setFieldValue = React.useCallback((name: string, value: any) => {
-      setValues((previous) => ({
+      setValues((previous: Record<string, any>) => ({
         ...previous,
         [name]: value,
       }));
@@ -170,7 +169,7 @@ jest.mock('antd', () => {
     }, [initialValues]);
 
     const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
-      setValues((previous) => ({
+      setValues((previous: Record<string, any>) => ({
         ...previous,
         ...fields,
       }));
@@ -179,9 +178,9 @@ jest.mock('antd', () => {
     const validateFields = React.useCallback(async () => {
       const errors: any[] = [];
 
-      Object.entries(rulesRef.current).forEach(([field, rules]) => {
+      Object.entries(rulesRef.current as Record<string, any[]>).forEach(([field, rules]) => {
         const value = values[field];
-        (rules ?? []).forEach((rule) => {
+        (rules ?? ([] as any[])).forEach((rule: any) => {
           const messageText = toText(rule.message) || 'Validation failed';
           if (rule.required && (value === undefined || value === null || value === '')) {
             errors.push({ name: [field], errors: [messageText] });
@@ -196,7 +195,7 @@ jest.mock('antd', () => {
       });
 
       if (errors.length) {
-        const error = new Error('Validation failed');
+        const error: any = new Error('Validation failed');
         error.errorFields = errors;
         throw error;
       }
@@ -461,7 +460,7 @@ jest.mock('@ant-design/pro-components', () => {
     toolBarRender,
     headerTitle,
   }: any) => {
-    const [rows, setRows] = React.useState<any[]>([]);
+    const [rows, setRows] = React.useState([] as any[]);
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef({ current: 1, pageSize: 10 });
 
@@ -487,10 +486,10 @@ jest.mock('@ant-design/pro-components', () => {
       if (actionRef) {
         actionRef.current = handlers;
       }
-      globalThis.__teamsActionRef = handlers;
+      (globalThis as any).__teamsActionRef = handlers;
       return () => {
-        if (globalThis.__teamsActionRef === handlers) {
-          delete globalThis.__teamsActionRef;
+        if ((globalThis as any).__teamsActionRef === handlers) {
+          delete (globalThis as any).__teamsActionRef;
         }
       };
     }, [actionRef, runRequest]);
@@ -520,7 +519,7 @@ jest.mock('@ant-design/pro-components', () => {
             <React.Fragment key={`toolbar-${index}`}>{node}</React.Fragment>
           ))}
         </div>
-        {rows.map((row, rowIndex) => {
+        {rows.map((row: any, rowIndex: number) => {
           const identifier = rowKey && row[rowKey] ? row[rowKey] : rowIndex;
           return (
             <div data-testid={`pro-table-row-${identifier}`} key={`row-${identifier}`}>
@@ -547,7 +546,7 @@ jest.mock('@ant-design/pro-components', () => {
   };
 
   const ProForm = ({ formRef, onFinish, submitter, children, disabled }: any) => {
-    const internalFormRef = React.useRef<any>(null);
+    const internalFormRef = React.useRef(null as any);
 
     React.useEffect(() => {
       if (formRef) {
@@ -852,7 +851,8 @@ describe('Teams management workflows', () => {
     });
 
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
-    const confirmConfig = (Modal.confirm as jest.Mock).mock.calls.at(-1)?.[0];
+    const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     await act(async () => {
       await confirmConfig.onOk?.();
     });

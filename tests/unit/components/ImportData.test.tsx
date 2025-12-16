@@ -4,7 +4,7 @@
  */
 
 import ImportData from '@/components/ImportData';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 type ImportDataProps = {
   onJsonData: (data: unknown) => void;
@@ -207,7 +207,9 @@ describe('ImportData Component', () => {
       type: 'application/json',
     });
 
-    latestDraggerProps?.beforeUpload?.(file as any);
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
 
     await waitFor(() => {
       expect(latestDraggerProps?.fileList).toHaveLength(1);
@@ -232,13 +234,17 @@ describe('ImportData Component', () => {
 
     const file = new File(['{}'], 'data.json', { type: 'application/json' });
 
-    latestDraggerProps?.beforeUpload?.(file as any);
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
 
     await waitFor(() => {
       expect(latestDraggerProps?.fileList).toHaveLength(1);
     });
 
-    latestDraggerProps?.onRemove?.();
+    await act(async () => {
+      latestDraggerProps?.onRemove?.();
+    });
 
     await waitFor(() => {
       expect(latestDraggerProps?.fileList).toHaveLength(0);
@@ -252,7 +258,9 @@ describe('ImportData Component', () => {
 
     const file = new File(['not json'], 'invalid.json', { type: 'application/json' });
 
-    latestDraggerProps?.beforeUpload?.(file as any);
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
 
     await waitFor(() => {
       expect(latestDraggerProps?.fileList).toHaveLength(1);
@@ -276,7 +284,9 @@ describe('ImportData Component', () => {
 
     const file = new File(['{}'], 'read-error.json', { type: 'application/json' });
 
-    latestDraggerProps?.beforeUpload?.(file as any);
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
 
     await waitFor(() => {
       expect(latestDraggerProps?.fileList).toHaveLength(1);

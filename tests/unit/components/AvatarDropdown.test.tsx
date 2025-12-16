@@ -232,7 +232,7 @@ describe('AvatarDropdown', () => {
     mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'admin' });
   });
 
-  it('shows a loading indicator when user information is not ready', () => {
+  it('shows a loading indicator when user information is not ready', async () => {
     const setInitialState = jest.fn();
     mockUseModel.mockImplementation((model: string) => {
       if (model === '@@initialState') {
@@ -245,6 +245,10 @@ describe('AvatarDropdown', () => {
 
     expect(screen.getByRole('status', { name: /loading user menu/i })).toBeInTheDocument();
     expect(mockHistoryPush).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(mockedGetSystemUserRoleApi).toHaveBeenCalled();
+    });
   });
 
   it('renders menu items for privileged users and handles navigation and logout', async () => {

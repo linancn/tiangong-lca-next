@@ -5,6 +5,37 @@
  * query patterns used across the test suite.
  */
 
+export type SupabaseQueryResultLike<T> = T;
+
+type ChainableMethod<TResolved, Args extends unknown[]> = jest.Mock<
+  SupabaseQueryBuilderMock<TResolved>,
+  Args
+>;
+
+type SingleMethod<TResolved> = jest.Mock<Promise<TResolved>, []>;
+
+export type SupabaseQueryBuilderMock<TResolved> = PromiseLike<TResolved> & {
+  select: ChainableMethod<TResolved, [columns?: string, options?: unknown]>;
+  order: ChainableMethod<TResolved, [column: string, options?: { ascending?: boolean } | unknown]>;
+  range: ChainableMethod<TResolved, [from: number, to: number]>;
+  eq: ChainableMethod<TResolved, [column: string, value: unknown]>;
+  neq: ChainableMethod<TResolved, [column: string, value: unknown]>;
+  filter: ChainableMethod<TResolved, [column: string, operator: string, value: unknown]>;
+  gte: ChainableMethod<TResolved, [column: string, value: unknown]>;
+  lte: ChainableMethod<TResolved, [column: string, value: unknown]>;
+  gt: ChainableMethod<TResolved, [column: string, value: unknown]>;
+  lt: ChainableMethod<TResolved, [column: string, value: unknown]>;
+  limit: ChainableMethod<TResolved, [count: number]>;
+  or: ChainableMethod<TResolved, [filters: string, options?: unknown]>;
+  ilike: ChainableMethod<TResolved, [column: string, pattern: string]>;
+  single: SingleMethod<TResolved>;
+  insert: ChainableMethod<TResolved, [values: unknown, options?: unknown]>;
+  update: ChainableMethod<TResolved, [values: unknown, options?: unknown]>;
+  delete: ChainableMethod<TResolved, []>;
+  upsert: ChainableMethod<TResolved, [values: unknown, options?: unknown]>;
+  in: ChainableMethod<TResolved, [column: string, values: readonly unknown[]]>;
+};
+
 /**
  * Creates a chainable Supabase query builder mock
  *
@@ -22,30 +53,36 @@
  * supabase.from('table').select('*').eq('id', '123').order('name')
  */
 export const createQueryBuilder = <T>(resolvedValue: T) => {
-  const builder: any = {
-    select: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    neq: jest.fn().mockReturnThis(),
-    filter: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    lte: jest.fn().mockReturnThis(),
-    gt: jest.fn().mockReturnThis(),
-    lt: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    ilike: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(resolvedValue),
-    insert: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    upsert: jest.fn().mockReturnThis(),
-    then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
-  };
+  const builder = {} as SupabaseQueryBuilderMock<T>;
 
-  // Add 'in' method separately to avoid TypeScript reserved keyword issues
-  builder.in = jest.fn().mockReturnThis();
+  const chain = <Args extends unknown[]>(): ChainableMethod<T, Args> =>
+    jest.fn<SupabaseQueryBuilderMock<T>, Args>((...args) => {
+      void args;
+      return builder;
+    });
+
+  builder.select = chain<[columns?: string, options?: unknown]>();
+  builder.order = chain<[column: string, options?: { ascending?: boolean } | unknown]>();
+  builder.range = chain<[from: number, to: number]>();
+  builder.eq = chain<[column: string, value: unknown]>();
+  builder.neq = chain<[column: string, value: unknown]>();
+  builder.filter = chain<[column: string, operator: string, value: unknown]>();
+  builder.gte = chain<[column: string, value: unknown]>();
+  builder.lte = chain<[column: string, value: unknown]>();
+  builder.gt = chain<[column: string, value: unknown]>();
+  builder.lt = chain<[column: string, value: unknown]>();
+  builder.limit = chain<[count: number]>();
+  builder.or = chain<[filters: string, options?: unknown]>();
+  builder.ilike = chain<[column: string, pattern: string]>();
+  builder.single = jest.fn(async () => resolvedValue);
+  builder.insert = chain<[values: unknown, options?: unknown]>();
+  builder.update = chain<[values: unknown, options?: unknown]>();
+  builder.delete = chain<[]>();
+  builder.upsert = chain<[values: unknown, options?: unknown]>();
+  builder.in = chain<[column: string, values: readonly unknown[]]>();
+
+  builder.then = ((onfulfilled, onrejected) =>
+    Promise.resolve(resolvedValue).then(onfulfilled, onrejected)) as PromiseLike<T>['then'];
 
   return builder;
 };
