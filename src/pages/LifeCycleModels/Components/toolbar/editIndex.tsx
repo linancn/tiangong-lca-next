@@ -1467,7 +1467,7 @@ const ToolbarEdit: FC<Props> = ({
     const processInstance = processInstances.find(
       (pi) => pi.id === selectedNode?.data?.id && pi.version === selectedNode?.data?.version,
     );
-    if (processInstance?.user_id === userId) {
+    if (processInstance?.userId === userId) {
       if (processInstance?.modelId) {
         return (
           <LifeCycleModelEdit

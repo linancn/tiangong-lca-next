@@ -29,7 +29,7 @@ const selectStr4Table = `
     modified_at,
     team_id,
     user_id,
-    modelId
+    model_id
   `;
 
 export async function createProcess(id: string, data: any, modelId?: string) {
@@ -38,7 +38,7 @@ export async function createProcess(id: string, data: any, modelId?: string) {
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData, modelId, rule_verification }])
+    .insert([{ id: id, json_ordered: newData, model_id: modelId, rule_verification }])
     .select();
   return result;
 }
@@ -58,7 +58,7 @@ export async function updateProcess(id: string, version: string, data: any, mode
       id,
       version,
       table: 'processes',
-      data: { json_ordered: newData, modelId, rule_verification },
+      data: { json_ordered: newData, model_id: modelId, rule_verification },
     },
     region: FunctionRegion.UsEast1,
   });
@@ -195,7 +195,7 @@ export async function getProcessTableAll(
         location: location ?? '-',
         modifiedAt: new Date(i.modified_at),
         teamId: i?.team_id,
-        modelId: i?.modelId,
+        modelId: i?.model_id,
       };
     } catch (e) {
       console.error(e);
@@ -972,10 +972,26 @@ export async function getProcessesByIdAndVersion(
           // location: location ?? '-',
           modifiedAt: new Date(i.modified_at),
           teamId: i?.team_id,
+          modelId: i?.model_id,
         };
       }) ?? [];
   } else {
-    data = result?.data ?? [];
+    data =
+      result?.data?.map((i: any) => {
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          version: i.version,
+          lang: lang,
+          name: i.name,
+          typeOfDataSet: i.typeOfDataSet ?? '-',
+          referenceYear: i['common:referenceYear'] ?? '-',
+          modifiedAt: new Date(i.modified_at),
+          teamId: i?.team_id,
+          modelId: i?.model_id,
+          userId: i?.user_id,
+        };
+      }) ?? [];
   }
 
   return {
