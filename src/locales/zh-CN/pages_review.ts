@@ -3,6 +3,7 @@ export default {
 
   'pages.review.tabs.unassigned': '待分配任务',
   'pages.review.tabs.assigned': '已分配任务',
+  'pages.review.tabs.rejectedTask': '已驳回任务',
   'pages.review.tabs.reviewed': '已审核',
   'pages.review.tabs.pending': '待审核',
   'pages.review.tabs.rejected': '已驳回',

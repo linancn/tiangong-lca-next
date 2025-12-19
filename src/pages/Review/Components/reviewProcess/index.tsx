@@ -32,7 +32,7 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   type: 'edit' | 'view';
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   hideButton?: boolean;
 };
 
@@ -431,7 +431,7 @@ const ReviewProcessDetail: FC<Props> = ({
             ...result.data.json.processDataSet.modellingAndValidation,
             complianceDeclarations: {
               compliance:
-                tabType === 'review'
+                tabType === 'review' || tabType === 'reviewer-rejected'
                   ? [...(allCompliance.length ? allCompliance : [{}])]
                   : Array.isArray(_compliance)
                     ? [..._compliance, ...allCompliance]
@@ -441,7 +441,7 @@ const ReviewProcessDetail: FC<Props> = ({
             },
             validation: {
               review:
-                tabType === 'review'
+                tabType === 'review' || tabType === 'reviewer-rejected'
                   ? [
                       ...(allReviews.length
                         ? allReviews
