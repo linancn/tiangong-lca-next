@@ -14,7 +14,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   reviewId: string;
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review'|'reviewer-rejected' | 'admin-rejected';
 };
 const ReviewLifeCycleModelsDetail: FC<Props> = ({
   id,

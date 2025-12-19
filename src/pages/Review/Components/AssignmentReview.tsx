@@ -303,7 +303,7 @@ const AssignmentReview = ({
                 {record.isFromLifeCycle ? (
                   <ReviewLifeCycleModelsDetail
                     reviewId={record.id}
-                    tabType='review'
+                    tabType={tableType}
                     type='view'
                     id={record.json?.data?.id}
                     version={record.json?.data?.version}
@@ -313,7 +313,7 @@ const AssignmentReview = ({
                 ) : (
                   <ReviewProcessDetail
                     hideButton={true}
-                    tabType='review'
+                    tabType={tableType}
                     type='view'
                     actionRef={actionRef}
                     id={record.json?.data?.id}

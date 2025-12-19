@@ -86,7 +86,7 @@ export async function getReviewsTableDataOfReviewMember(
       break;
     }
     case 'reviewer-rejected': {
-      const userId = userData?.user_id;
+      const userId = userData?.user_id  ?? (await getUserId());
       if (userId) {
         commentResult = await getRejectedComment(params, sort, userId);
       }
