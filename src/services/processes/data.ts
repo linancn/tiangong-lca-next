@@ -11,7 +11,7 @@ export type ProcessTable = {
   location: string;
   modifiedAt: Date;
   teamId: string;
-  modelData?: { id: string; version: string };
+  modelId: string;
   typeOfDataSet: string;
 };
 

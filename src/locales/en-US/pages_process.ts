@@ -371,9 +371,6 @@ export default {
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
 
-  'pages.process.review.mainProduceError': 'Please complete the main product process data in the model results',
-  'pages.process.review.error': 'Referenced data is under review, cannot initiate another review',
-
   'pages.process.validator.allocatedFraction': 'Allocated fraction total of output is greater than 100%. It is',
   'pages.process.validator.UUID.required': 'Please input UUID',
   'pages.process.validator.baseName.required': 'Please input base name',
@@ -426,4 +423,6 @@ export default {
   'pages.process.review.verify.success.tip': 'Data verification successful',
   'pages.process.review.unRuleVerification.tip': 'The following referenced data is incomplete, please complete it:',
   'pages.process.review.nonExistentRefData.tip': 'The following data does not exist, please check:',
+  'pages.process.review.error': 'Referenced data is under review, cannot initiate another review',
+  'pages.process.checkData.inReview': 'This data set is under review and cannot be validated',
 };

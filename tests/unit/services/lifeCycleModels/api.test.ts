@@ -61,7 +61,7 @@ jest.mock('@/services/ilcd/api', () => ({
 const mockCreateProcess = jest.fn();
 const mockDeleteProcess = jest.fn();
 const mockGetProcessDetailByIdsAndVersion = jest.fn();
-const mockGetProcessesByIdsAndVersions = jest.fn();
+const mockGetProcessesByIdAndVersion = jest.fn();
 const mockUpdateProcess = jest.fn();
 const mockValidateProcessesByIdAndVersion = jest.fn();
 
@@ -71,8 +71,7 @@ jest.mock('@/services/processes/api', () => ({
   deleteProcess: (...args: any[]) => mockDeleteProcess.apply(null, args),
   getProcessDetailByIdsAndVersion: (...args: any[]) =>
     mockGetProcessDetailByIdsAndVersion.apply(null, args),
-  getProcessesByIdsAndVersions: (...args: any[]) =>
-    mockGetProcessesByIdsAndVersions.apply(null, args),
+  getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion.apply(null, args),
   updateProcess: (...args: any[]) => mockUpdateProcess.apply(null, args),
   validateProcessesByIdAndVersion: (...args: any[]) =>
     mockValidateProcessesByIdAndVersion.apply(null, args),
@@ -156,7 +155,7 @@ beforeEach(() => {
   mockGetILCDClassification.mockReset();
   mockCreateProcess.mockReset();
   mockDeleteProcess.mockReset();
-  mockGetProcessesByIdsAndVersions.mockReset();
+  mockGetProcessesByIdAndVersion.mockReset();
   mockUpdateProcess.mockReset();
   mockValidateProcessesByIdAndVersion.mockReset();
   mockGenProcessName.mockReset();
@@ -178,7 +177,7 @@ beforeEach(() => {
   mockGetILCDClassification.mockResolvedValue({ data: { dictionary: true } });
   mockCreateProcess.mockResolvedValue(undefined);
   mockDeleteProcess.mockResolvedValue(undefined);
-  mockGetProcessesByIdsAndVersions.mockResolvedValue({ data: [] });
+  mockGetProcessesByIdAndVersion.mockResolvedValue({ data: [] });
   mockUpdateProcess.mockResolvedValue(undefined);
   mockValidateProcessesByIdAndVersion.mockResolvedValue(true);
   mockGenProcessName.mockReturnValue('Life Cycle Model Name');
@@ -493,61 +492,8 @@ describe('lifeCycleModel_hybrid_search', () => {
   });
 });
 
-describe('getSubmodelsByProcessIds', () => {
-  it('returns process to lifecycle model mapping', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: sampleModelId,
-          version: sampleVersion,
-          submodels: [{ id: sampleProcessId }, { id: '33333333-3333-3333-3333-333333333333' }],
-        },
-      ],
-      error: null,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await lifeCycleModelsApi.getSubmodelsByProcessIds([
-      sampleProcessId,
-      '33333333-3333-3333-3333-333333333333',
-    ]);
-
-    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
-    expect(builder.select).toHaveBeenCalledWith('id, version, json_tg->submodels');
-    expect(builder.or).toHaveBeenCalledWith(
-      `json_tg->submodels.cs.[{"id":"${sampleProcessId}"}],json_tg->submodels.cs.[{"id":"33333333-3333-3333-3333-333333333333"}]`,
-    );
-    expect(result).toEqual({
-      error: null,
-      data: {
-        [sampleProcessId]: `${sampleModelId}_${sampleVersion}`,
-        '33333333-3333-3333-3333-333333333333': `${sampleModelId}_${sampleVersion}`,
-      },
-    });
-  });
-
-  it('returns error payload when process id list is empty', async () => {
-    const result = await lifeCycleModelsApi.getSubmodelsByProcessIds([]);
-
-    expect(result).toEqual({ error: 'processIds is empty', data: null });
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('surfaces supabase errors', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    const builder = createQueryBuilder({ data: null, error: { message: 'select failed' } });
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await lifeCycleModelsApi.getSubmodelsByProcessIds([sampleProcessId]);
-
-    expect(result).toEqual({ error: { message: 'select failed' }, data: null });
-    expect(consoleSpy).toHaveBeenCalledWith('Error fetching lifecycle models:', {
-      message: 'select failed',
-    });
-    consoleSpy.mockRestore();
-  });
-});
+// getSubmodelsByProcessIds function no longer exists in the API
+// Tests removed as the function has been deprecated
 
 describe('getLifeCycleModelDetail', () => {
   it('enriches nodes with ownership and related model data when requested', async () => {
@@ -575,31 +521,16 @@ describe('getLifeCycleModelDetail', () => {
       error: null,
     };
     const builder = createQueryBuilder(supabaseResult);
-    const submodelsBuilder = createQueryBuilder({
-      data: [
-        {
-          id: 'linked-1',
-          version: '05.00.000',
-          submodels: [{ id: sampleProcessId }],
-        },
-      ],
-      error: null,
-    });
     mockFrom.mockReturnValueOnce(builder);
-    mockFrom.mockReturnValueOnce(submodelsBuilder);
 
-    mockGetProcessesByIdsAndVersions.mockResolvedValueOnce({
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
       data: [
         { id: sampleProcessId, version: '02.00.000', user_id: sampleUserId },
         { id: '44444444-4444-4444-4444-444444444444', version: '03.00.000', user_id: 'user-9999' },
       ],
     });
 
-    const result = await lifeCycleModelsApi.getLifeCycleModelDetail(
-      sampleModelId,
-      sampleVersion,
-      true,
-    );
+    const result = await lifeCycleModelsApi.getLifeCycleModelDetail(sampleModelId, sampleVersion);
 
     expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
     expect(builder.select).toHaveBeenCalledWith(
@@ -607,21 +538,19 @@ describe('getLifeCycleModelDetail', () => {
     );
     expect(builder.eq).toHaveBeenCalledWith('id', sampleModelId);
     expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
-    expect(mockGetProcessesByIdsAndVersions).toHaveBeenCalledWith(
-      [sampleProcessId, '44444444-4444-4444-4444-444444444444'],
-      ['02.00.000', '03.00.000'],
-    );
-    expect(submodelsBuilder.select).toHaveBeenCalledWith('id, version, json_tg->submodels');
     expect(result.success).toBe(true);
     if (!result.success) {
       throw new Error('expected success response');
     }
-    const nodes = result.data.json_tg.xflow.nodes;
-    expect(nodes[0]).toMatchObject({
-      isMyProcess: true,
-      modelData: { id: 'linked-1', version: '05.00.000' },
+    expect(result.data).toMatchObject({
+      id: sampleModelId,
+      version: sampleVersion,
+      json: supabaseResult.data[0].json,
+      json_tg: supabaseResult.data[0].json_tg,
+      stateCode: supabaseResult.data[0].state_code,
+      ruleVerification: supabaseResult.data[0].rule_verification,
+      teamId: supabaseResult.data[0].team_id,
     });
-    expect(nodes[1]).toMatchObject({ isMyProcess: false });
   });
 
   it('returns unsuccessful result when record is not found', async () => {
@@ -726,7 +655,7 @@ describe('createLifeCycleModel', () => {
       },
     ]);
     expect(selectMock).toHaveBeenCalled();
-    expect(mockCreateProcess).toHaveBeenCalledWith(sampleProcessId, { foo: 'bar' });
+    expect(mockCreateProcess).toHaveBeenCalledWith(sampleProcessId, { foo: 'bar' }, sampleModelId);
     expect(result).toBe(insertResult);
   });
 
@@ -938,8 +867,13 @@ describe('updateLifeCycleModel', () => {
       sampleProcessId,
       sampleVersion,
       expect.anything(),
+      sampleModelId,
     );
-    expect(mockCreateProcess).toHaveBeenCalledWith('new-process-id', expect.anything());
+    expect(mockCreateProcess).toHaveBeenCalledWith(
+      'new-process-id',
+      expect.anything(),
+      sampleModelId,
+    );
     expect(result).toEqual({ updated: true });
   });
 

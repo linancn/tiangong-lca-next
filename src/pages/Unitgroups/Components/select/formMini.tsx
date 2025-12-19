@@ -60,8 +60,8 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
               formRef.current?.setFieldValue([...name, 'refUnitGroup'], {
                 shortDescription: jsonToList(res1?.data?.refUnitGroupShortDescription),
                 refUnit: {
-                  name: res2.data?.refUnitName ?? '',
-                  generalComment: jsonToList(res2.data?.refUnitGeneralComment),
+                  name: res2?.data?.refUnitName ?? '',
+                  generalComment: jsonToList(res2?.data?.refUnitGeneralComment),
                 },
               });
             }

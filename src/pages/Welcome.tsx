@@ -91,9 +91,9 @@ const Welcome: React.FC = () => {
   }, [isTeamsLoading, teams]);
 
   useEffect(() => {
-    if (isDataModalOpen) {
-      loadTeams();
-    }
+    // if (isDataModalOpen) {
+    loadTeams();
+    // }
   }, [isDataModalOpen, loadTeams]);
 
   useEffect(() => {
@@ -302,7 +302,7 @@ const Welcome: React.FC = () => {
       key: 'data5',
       icon: <TeamOutlined />,
       title: getLangText(info.data5.title, lang),
-      value: info.data5.value,
+      value: teams ? teams.length : info.data5.value,
     },
   ];
   const modalSubtitle =

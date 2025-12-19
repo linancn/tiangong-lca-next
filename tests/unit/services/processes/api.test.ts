@@ -46,12 +46,10 @@ jest.mock('@/services/ilcd/api', () => ({
 }));
 
 const mockGetLifeCyclesByIds = jest.fn();
-const mockGetSubmodelsByProcessIds = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
   getLifeCyclesByIds: (...args: any[]) => mockGetLifeCyclesByIds.apply(null, args),
-  getSubmodelsByProcessIds: (...args: any[]) => mockGetSubmodelsByProcessIds.apply(null, args),
 }));
 
 const mockGenProcessJsonOrdered = jest.fn();
@@ -122,7 +120,6 @@ beforeEach(() => {
   mockGetILCDLocationByValues.mockReset();
   mockGetILCDClassification.mockReset();
   mockGetLifeCyclesByIds.mockReset();
-  mockGetSubmodelsByProcessIds.mockReset();
   mockGenProcessJsonOrdered.mockReset();
   mockGenProcessName.mockReset();
   mockClassificationToString.mockReset();
@@ -142,7 +139,6 @@ beforeEach(() => {
   );
   mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
   mockGetILCDClassification.mockResolvedValue({ data: {} });
-  mockGetSubmodelsByProcessIds.mockResolvedValue({ data: {} });
   mockGetLifeCyclesByIds.mockResolvedValue({ data: [] });
 });
 
@@ -373,9 +369,6 @@ describe('getProcessTableAll', () => {
     mockGetILCDLocationByValues.mockResolvedValueOnce({
       data: [{ '@value': 'CN', '#text': 'China' }],
     });
-    mockGetSubmodelsByProcessIds.mockResolvedValueOnce({
-      data: { [sampleId]: 'model-9_01.00.000' },
-    });
 
     const result = await processesApi.getProcessTableAll(
       { current: 2, pageSize: 5 },
@@ -413,10 +406,7 @@ describe('getProcessTableAll', () => {
           location: 'China',
           modifiedAt: new Date('2024-03-01T12:00:00Z'),
           teamId: 'team-123',
-          modelData: {
-            id: 'model-9',
-            version: '01.00.000',
-          },
+          modelId: undefined,
         },
       ],
       page: 2,
@@ -606,31 +596,63 @@ describe('getProcessDetailByIdAndVersion', () => {
   });
 });
 
-describe('getProcessesByIdsAndVersions', () => {
-  it('should fetch multiple processes by ids and versions', async () => {
-    const mockData = [
-      { id: sampleId, version: sampleVersion, json: { name: 'Process 1' } },
-      { id: 'id2', version: 'v2', json: { name: 'Process 2' } },
+describe('getProcessesByIdAndVersion', () => {
+  it('should fetch processes by id/version pairs with language formatting', async () => {
+    const mockRawData = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        name: [{ '@xml:lang': 'en', '#text': 'Process 1 EN' }],
+        'common:generalComment': [{ '@xml:lang': 'en', '#text': 'Comment EN' }],
+        typeOfDataSet: 'Unit process, black box',
+        'common:referenceYear': '2024',
+        modified_at: '2024-01-01T00:00:00Z',
+        team_id: 'team-123',
+      },
     ];
-    const builder = createQueryBuilder({ data: mockData, error: null });
+    const builder = createQueryBuilder({ data: mockRawData, error: null });
     mockFrom.mockReturnValue(builder);
+    mockGenProcessName.mockReturnValueOnce('Process 1 EN');
+    mockGetLangText.mockReturnValueOnce('Comment EN');
 
-    const result = await processesApi.getProcessesByIdsAndVersions(
-      [sampleId, 'id2'],
-      [sampleVersion, 'v2'],
+    const result = await processesApi.getProcessesByIdAndVersion(
+      [{ id: sampleId, version: sampleVersion }],
+      'en',
     );
 
     expect(mockFrom).toHaveBeenCalledWith('processes');
-    expect(result).toEqual({ data: mockData, error: null });
+    expect(builder.select).toHaveBeenCalled();
+    expect(builder.or).toHaveBeenCalled();
+    expect(mockGenProcessName).toHaveBeenCalledWith(mockRawData[0].name, 'en');
+    expect(mockGetLangText).toHaveBeenCalledWith(mockRawData[0]['common:generalComment'], 'en');
+    expect(result.success).toBe(true);
+    expect(result.page).toBe(1);
+    expect(result.total).toBe(1);
+    expect(result.data[0].id).toBe(sampleId);
+    expect(result.data[0].version).toBe(sampleVersion);
+    expect(result.data[0].name).toBe('Process 1 EN');
   });
 
-  it('should return empty array when no ids provided', async () => {
-    const builder = createQueryBuilder({ data: [], error: null });
+  it('should return empty result when params are empty', async () => {
+    const result = await processesApi.getProcessesByIdAndVersion([], 'en');
+
+    expect(result).toEqual({ data: [], success: true, page: 1, total: 0 });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('should handle database errors and still return empty list', async () => {
+    const builder = createQueryBuilder({ data: null, error: { message: 'DB error' } });
     mockFrom.mockReturnValue(builder);
 
-    const result = await processesApi.getProcessesByIdsAndVersions([], []);
+    const result = await processesApi.getProcessesByIdAndVersion(
+      [{ id: sampleId, version: sampleVersion }],
+      'en',
+    );
 
-    expect(result).toEqual({ data: [], error: null });
+    expect(result.success).toBe(true);
+    expect(result.page).toBe(1);
+    expect(result.total).toBe(0);
+    expect(result.data).toEqual([]);
   });
 });
 
@@ -688,93 +710,6 @@ describe('getProcessDetailByIdsAndVersion', () => {
       data: [],
       success: true,
     });
-  });
-});
-
-describe('getProcessesByIdsAndVersion', () => {
-  it('should fetch and format processes by ids and version with language', async () => {
-    const mockRawData = [
-      {
-        id: sampleId,
-        version: sampleVersion,
-        name: [
-          { '@xml:lang': 'en', '#text': 'Process 1 EN' },
-          { '@xml:lang': 'zh', '#text': '过程 1' },
-        ],
-        'common:generalComment': [
-          { '@xml:lang': 'en', '#text': 'Comment EN' },
-          { '@xml:lang': 'zh', '#text': '注释' },
-        ],
-        typeOfDataSet: 'Unit process, black box',
-        'common:referenceYear': '2024',
-        '@location': 'CN',
-        modified_at: '2024-01-01T00:00:00Z',
-        team_id: 'team-123',
-      },
-    ];
-    const builder = createQueryBuilder({ data: mockRawData, error: null });
-    mockFrom.mockReturnValue(builder);
-    mockGenProcessName.mockReturnValueOnce('Process 1 EN');
-    mockGetLangText.mockReturnValueOnce('Comment EN');
-
-    const result = await processesApi.getProcessesByIdsAndVersion([sampleId], sampleVersion, 'en');
-
-    expect(mockFrom).toHaveBeenCalledWith('processes');
-    expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
-    expect(builder.in).toHaveBeenCalledWith('id', [sampleId]);
-    expect(mockGenProcessName).toHaveBeenCalledWith(mockRawData[0].name, 'en');
-    expect(mockGetLangText).toHaveBeenCalledWith(mockRawData[0]['common:generalComment'], 'en');
-    expect(result.success).toBe(true);
-    expect(result.page).toBe(1);
-    expect(result.total).toBe(1);
-    expect(result.data).toHaveLength(1);
-    expect(result.data[0].id).toBe(sampleId);
-    expect(result.data[0].version).toBe(sampleVersion);
-    expect(result.data[0].name).toBe('Process 1 EN');
-  });
-
-  it('should handle missing optional fields with default values', async () => {
-    const mockRawData = [
-      {
-        id: sampleId,
-        version: sampleVersion,
-        name: {},
-        modified_at: '2024-01-01T00:00:00Z',
-      },
-    ];
-    const builder = createQueryBuilder({ data: mockRawData, error: null });
-    mockFrom.mockReturnValue(builder);
-    mockGenProcessName.mockReturnValueOnce('');
-    mockGetLangText.mockReturnValueOnce('');
-
-    const result = await processesApi.getProcessesByIdsAndVersion([sampleId], sampleVersion, 'zh');
-
-    expect(result.data[0].typeOfDataSet).toBe('-');
-    expect(result.data[0].referenceYear).toBe('-');
-  });
-
-  it('should handle database errors and return empty result', async () => {
-    const builder = createQueryBuilder({ data: null, error: { message: 'DB error' } });
-    mockFrom.mockReturnValue(builder);
-
-    const result = await processesApi.getProcessesByIdsAndVersion([sampleId], sampleVersion, 'en');
-
-    expect(result.success).toBe(true);
-    expect(result.page).toBe(1);
-    expect(result.total).toBe(0);
-    expect(result.data).toEqual([]);
-  });
-
-  it('should handle empty ids array', async () => {
-    const builder = createQueryBuilder({ data: [], error: null });
-    mockFrom.mockReturnValue(builder);
-
-    const result = await processesApi.getProcessesByIdsAndVersion([], sampleVersion, 'en');
-
-    expect(result.success).toBe(true);
-    expect(result.page).toBe(1);
-    expect(result.total).toBe(0);
-    expect(result.data).toEqual([]);
   });
 });
 

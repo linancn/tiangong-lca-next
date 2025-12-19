@@ -2,7 +2,7 @@ import schema from '@/pages/Processes/processes_schema.json';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData } from '@/services/general/api';
-import { getLifeCyclesByIds, getSubmodelsByProcessIds } from '@/services/lifeCycleModels/api';
+import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
@@ -27,21 +27,23 @@ const selectStr4Table = `
     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
     version,
     modified_at,
-    team_id
+    team_id,
+    user_id,
+    model_id
   `;
 
-export async function createProcess(id: string, data: any) {
+export async function createProcess(id: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData)?.valid;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
-    .insert([{ id: id, json_ordered: newData, rule_verification }])
+    .insert([{ id: id, json_ordered: newData, model_id: modelId, rule_verification }])
     .select();
   return result;
 }
 
-export async function updateProcess(id: string, version: string, data: any) {
+export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
   const rule_verification = getRuleVerification(schema, newData)?.valid;
   const session = await supabase.auth.getSession();
@@ -52,7 +54,12 @@ export async function updateProcess(id: string, version: string, data: any) {
     headers: {
       Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
     },
-    body: { id, version, table: 'processes', data: { json_ordered: newData, rule_verification } },
+    body: {
+      id,
+      version,
+      table: 'processes',
+      data: { json_ordered: newData, model_id: modelId, rule_verification },
+    },
     region: FunctionRegion.UsEast1,
   });
   if (result.error) {
@@ -153,11 +160,9 @@ export async function getProcessTableAll(
   }
 
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-  const processIds = result.data.map((i: any) => i.id);
-  const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
+  const [locationRes, classificationRes] = await Promise.all([
     getILCDLocationByValues(lang, locations),
     lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
-    getSubmodelsByProcessIds(processIds),
   ]);
   const locationDataArr = locationRes.data || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
@@ -190,25 +195,13 @@ export async function getProcessTableAll(
         location: location ?? '-',
         modifiedAt: new Date(i.modified_at),
         teamId: i?.team_id,
+        modelId: i?.model_id,
       };
     } catch (e) {
       console.error(e);
       return { id: i.id };
     }
   });
-
-  // 生命周期标记
-  if (lifeCycleResult.data) {
-    data.forEach((i) => {
-      if (lifeCycleResult.data.hasOwnProperty(i.id)) {
-        const [modelId, modelVersion] = lifeCycleResult.data[i.id].split('_');
-        i.modelData = {
-          id: modelId,
-          version: modelVersion,
-        };
-      }
-    });
-  }
 
   return {
     data,
@@ -928,15 +921,6 @@ export async function getProcessExchange(
   });
 }
 
-export async function getProcessesByIdsAndVersions(ids: string[], versions: string[]) {
-  const result = await supabase
-    .from('processes')
-    .select('id,json,version, modified_at,user_id')
-    .in('id', ids)
-    .in('version', versions);
-  return result;
-}
-
 export async function getProcessDetailByIdsAndVersion(ids: string[], version: string) {
   if (ids && ids.length > 0) {
     const result = await supabase
@@ -956,30 +940,59 @@ export async function getProcessDetailByIdsAndVersion(ids: string[], version: st
   });
 }
 
-export async function getProcessesByIdsAndVersion(ids: string[], version: string, lang: string) {
-  const result = await supabase
-    .from('processes')
-    .select(selectStr4Table)
-    .eq('version', version)
-    .in('id', ids);
+export async function getProcessesByIdAndVersion(
+  params: { id: string; version: string }[],
+  lang?: string,
+) {
+  if (!params || params.length === 0) {
+    return {
+      data: [],
+      success: true,
+      page: 1,
+      total: 0,
+    };
+  }
+  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+  const result = await supabase.from('processes').select(selectStr4Table).or(orConditions);
 
-  const data: any[] =
-    result?.data?.map((i: any) => {
-      return {
-        key: i.id + ':' + i.version,
-        id: i.id,
-        version: i.version,
-        lang: lang,
-        name: genProcessName(i.name ?? {}, lang),
-        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-        // classification,
-        typeOfDataSet: i.typeOfDataSet ?? '-',
-        referenceYear: i['common:referenceYear'] ?? '-',
-        // location: location ?? '-',
-        modifiedAt: new Date(i.modified_at),
-        teamId: i?.team_id,
-      };
-    }) ?? [];
+  let data: any[] = [];
+  if (lang) {
+    data =
+      result?.data?.map((i: any) => {
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          version: i.version,
+          lang: lang,
+          name: genProcessName(i.name ?? {}, lang),
+          generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+          // classification,
+          typeOfDataSet: i.typeOfDataSet ?? '-',
+          referenceYear: i['common:referenceYear'] ?? '-',
+          // location: location ?? '-',
+          modifiedAt: new Date(i.modified_at),
+          teamId: i?.team_id,
+          modelId: i?.model_id,
+        };
+      }) ?? [];
+  } else {
+    data =
+      result?.data?.map((i: any) => {
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          version: i.version,
+          lang: lang,
+          name: i.name,
+          typeOfDataSet: i.typeOfDataSet ?? '-',
+          referenceYear: i['common:referenceYear'] ?? '-',
+          modifiedAt: new Date(i.modified_at),
+          teamId: i?.team_id,
+          modelId: i?.model_id,
+          userId: i?.user_id,
+        };
+      }) ?? [];
+  }
 
   return {
     data: data,
