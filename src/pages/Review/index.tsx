@@ -85,7 +85,7 @@ const Review = () => {
           },
           {
             key: 'rejected',
-            label: <FormattedMessage id='pages.review.tabs.rejected' />,
+            label: <FormattedMessage id='pages.review.tabs.rejectedTask' />,
             children: (
               <AssignmentReview
                 actionRef={rejectedTableRef}
