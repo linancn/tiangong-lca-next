@@ -347,8 +347,9 @@ const AssignmentReview = ({
       case 'pending':
         return <FormattedMessage id='pages.review.tabs.pending' defaultMessage='Pending Review' />;
       case 'reviewer-rejected':
-      case 'admin-rejected':
         return <FormattedMessage id='pages.review.tabs.rejected' defaultMessage='Rejected' />;
+      case 'admin-rejected':
+        return <FormattedMessage id='pages.review.tabs.rejectedTask' defaultMessage='Rejected' />;
       default:
     }
   };
