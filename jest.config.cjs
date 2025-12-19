@@ -22,7 +22,6 @@ module.exports = async () => {
     ],
     globals: {
       ...config.globals,
-      localStorage: null,
     },
     collectCoverageFrom: [
       'src/**/*.{ts,tsx,js,jsx}',
