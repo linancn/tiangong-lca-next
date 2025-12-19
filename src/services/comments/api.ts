@@ -20,7 +20,7 @@ export async function updateCommentByreviewerApi(reviewId: string, reviewerId: s
 export async function updateCommentApi(
   reviewId: string,
   data: any,
-  tabType: 'assigned' | 'review'|'reviewer-rejected' | 'admin-rejected',
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected',
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -39,23 +39,23 @@ export async function updateCommentApi(
   return result?.data;
 }
 
-export async function getCommentApi(reviewId: string, actionType: 'assigned' | 'review' |'reviewer-rejected' | 'admin-rejected') {
-  if (['review','reviewer-rejected','admin-rejected'].includes(actionType)) {
+export async function getCommentApi(
+  reviewId: string,
+  actionType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected',
+) {
+  if (['review', 'reviewer-rejected', 'admin-rejected'].includes(actionType)) {
     const userId = await getUserId();
 
     if (!userId) {
       return { error: true, data: [] };
     }
-    let query = supabase
-    .from('comments')
-    .select('*')
-    .eq('review_id', reviewId)
+    let query = supabase.from('comments').select('*').eq('review_id', reviewId);
 
-    if(actionType==='admin-rejected'){
+    if (actionType === 'admin-rejected') {
       const { data, error } = await query;
       return { data, error };
     }
-    if(actionType==='review'||actionType==='reviewer-rejected'){
+    if (actionType === 'review' || actionType === 'reviewer-rejected') {
       query = query.eq('reviewer_id', userId);
       const { data, error } = await query;
       return { data, error };

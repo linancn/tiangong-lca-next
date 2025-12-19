@@ -24,7 +24,7 @@ type Props = {
   version: string;
   lang: string;
   reviewId: string;
-  tabType: 'assigned' | 'review'|'reviewer-rejected' | 'admin-rejected';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   drawerVisible: boolean;
   actionRef?: any;
 };
@@ -405,7 +405,7 @@ const ToolbarView: FC<Props> = ({
               ...result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation,
               complianceDeclarations: {
                 compliance:
-                  tabType === 'review'|| tabType === 'reviewer-rejected'
+                  tabType === 'review' || tabType === 'reviewer-rejected'
                     ? [...(allCompliance.length ? allCompliance : [{}])]
                     : Array.isArray(_compliance)
                       ? [..._compliance, ...allCompliance]
@@ -415,7 +415,7 @@ const ToolbarView: FC<Props> = ({
               },
               validation: {
                 review:
-                  tabType === 'review'|| tabType === 'reviewer-rejected'
+                  tabType === 'review' || tabType === 'reviewer-rejected'
                     ? [
                         ...(allReviews.length
                           ? allReviews

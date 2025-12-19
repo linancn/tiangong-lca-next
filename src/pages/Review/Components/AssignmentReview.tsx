@@ -23,7 +23,13 @@ const { Search } = Input;
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
-  tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending' | 'reviewer-rejected' | 'admin-rejected';
+  tableType:
+    | 'unassigned'
+    | 'assigned'
+    | 'reviewed'
+    | 'pending'
+    | 'reviewer-rejected'
+    | 'admin-rejected';
   actionRef: any;
   actionFrom?: 'reviewMember';
   hideReviewButton?: boolean;

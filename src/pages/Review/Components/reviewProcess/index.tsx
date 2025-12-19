@@ -32,7 +32,7 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   type: 'edit' | 'view';
-  tabType: 'assigned' | 'review'|'reviewer-rejected' | 'admin-rejected';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   hideButton?: boolean;
 };
 

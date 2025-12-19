@@ -2,7 +2,7 @@ import { getLifeCyclesByIdAndVersion, getLifeCyclesByIds } from '@/services/life
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { getPendingComment, getReviewedComment, getRejectedComment } from '../comments/api';
+import { getPendingComment, getRejectedComment, getReviewedComment } from '../comments/api';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
 
@@ -86,7 +86,7 @@ export async function getReviewsTableDataOfReviewMember(
       break;
     }
     case 'reviewer-rejected': {
-      const userId = userData?.user_id  ?? (await getUserId());
+      const userId = userData?.user_id ?? (await getUserId());
       if (userId) {
         commentResult = await getRejectedComment(params, sort, userId);
       }
