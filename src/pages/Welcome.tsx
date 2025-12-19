@@ -42,6 +42,7 @@ const Welcome: React.FC = () => {
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
   const [teams, setTeams] = React.useState<any>(null);
+  const [teamsCount,setTeamsCount] = React.useState<number>(0)
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isTeamsLoading, setIsTeamsLoading] = useState(false);
   const [modalWidth, setModalWidth] = useState(720);
@@ -90,10 +91,17 @@ const Welcome: React.FC = () => {
     }
   }, [isTeamsLoading, teams]);
 
+  const getTeamCount = async ()=>{
+    const res = await getTeams();
+    setTeamsCount(res?.data?.length??0)
+  }
+
   useEffect(() => {
-    // if (isDataModalOpen) {
+    if (isDataModalOpen) {
     loadTeams();
-    // }
+    }else{
+      getTeamCount()
+    }
   }, [isDataModalOpen, loadTeams]);
 
   useEffect(() => {
@@ -302,7 +310,7 @@ const Welcome: React.FC = () => {
       key: 'data5',
       icon: <TeamOutlined />,
       title: getLangText(info.data5.title, lang),
-      value: teams ? teams.length : info.data5.value,
+      value: teamsCount,
     },
   ];
   const modalSubtitle =
