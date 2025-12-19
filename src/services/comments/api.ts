@@ -124,6 +124,37 @@ export async function getPendingComment(
   return result;
 }
 
+export async function getRejectedComment(
+  params: {
+    current?: number;
+    pageSize?: number;
+  } = {},
+  sort: Record<string, SortOrder> = {},
+  user_id?: string,
+) {
+  const normalizedSort = sort ?? {};
+  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
+  const orderBy = normalizedSort[sortBy] ?? 'descend';
+  const userId = user_id ?? (await getUserId());
+
+  if (!userId) {
+    return { error: true, data: [] };
+  }
+
+  const pageSize = params.pageSize ?? 10;
+  const currentPage = params.current ?? 1;
+
+  const result = await supabase
+    .from('comments')
+    .select('review_id, reviews!inner(*)', { count: 'exact' })
+    .eq('reviewer_id', userId)
+    .eq('state_code', -1)
+    .eq('reviews.state_code', -1)
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
+  return result;
+}
+
 export async function getUserManageComments() {
   const result = await supabase
     .from('comments')

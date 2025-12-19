@@ -15,6 +15,7 @@ const Review = () => {
   const assignedTableRef = useRef<any>();
   const reviewedTableRef = useRef<any>();
   const pendingTableRef = useRef<any>();
+  const rejectedTableRef = useRef<any>();
 
   const checkUserAuth = async () => {
     setLoading(true);
@@ -48,6 +49,9 @@ const Review = () => {
       case 'pending':
         pendingTableRef?.current?.reload();
         break;
+      case 'rejected':
+        rejectedTableRef?.current?.reload();
+        break;
       case 'members':
         actionRef?.current?.reload();
         break;
@@ -80,6 +84,17 @@ const Review = () => {
             ),
           },
           {
+            key: 'rejected',
+            label: <FormattedMessage id='pages.review.tabs.rejected' />,
+            children: (
+              <AssignmentReview
+                actionRef={rejectedTableRef}
+                tableType='admin-rejected'
+                userData={userData}
+              />
+            ),
+          },
+          {
             key: 'members',
             label: <FormattedMessage id='pages.review.tabs.members' />,
             children: <ReviewMember userData={userData} />,
@@ -104,6 +119,17 @@ const Review = () => {
               <AssignmentReview
                 actionRef={pendingTableRef}
                 tableType='pending'
+                userData={userData}
+              />
+            ),
+          },
+          {
+            key: 'rejected',
+            label: <FormattedMessage id='pages.review.tabs.rejected' />,
+            children: (
+              <AssignmentReview
+                actionRef={rejectedTableRef}
+                tableType='reviewer-rejected'
                 userData={userData}
               />
             ),

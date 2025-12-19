@@ -2,7 +2,7 @@ import { getLifeCyclesByIdAndVersion, getLifeCyclesByIds } from '@/services/life
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { getPendingComment, getReviewedComment } from '../comments/api';
+import { getPendingComment, getReviewedComment, getRejectedComment } from '../comments/api';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
 
@@ -64,7 +64,7 @@ export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
 export async function getReviewsTableDataOfReviewMember(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'reviewed' | 'pending',
+  type: 'reviewed' | 'pending' | 'reviewer-rejected',
   lang: string,
   userData?: { user_id: string | undefined },
 ) {
@@ -82,6 +82,13 @@ export async function getReviewsTableDataOfReviewMember(
       const userId = userData?.user_id ?? (await getUserId());
       if (userId) {
         commentResult = await getPendingComment(params, sort, userId);
+      }
+      break;
+    }
+    case 'reviewer-rejected': {
+      const userId = userData?.user_id;
+      if (userId) {
+        commentResult = await getRejectedComment(params, sort, userId);
       }
       break;
     }
@@ -142,7 +149,7 @@ export async function getReviewsTableDataOfReviewMember(
 export async function getReviewsTableDataOfReviewAdmin(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned',
+  type: 'unassigned' | 'assigned' | 'admin-rejected',
   lang: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -165,6 +172,10 @@ export async function getReviewsTableDataOfReviewAdmin(
         .eq('state_code', 1)
         .select('*, comments(state_code)')
         .filter('comments.state_code', 'gte', 0);
+      break;
+    }
+    case 'admin-rejected': {
+      query = query.eq('state_code', -1);
       break;
     }
   }
