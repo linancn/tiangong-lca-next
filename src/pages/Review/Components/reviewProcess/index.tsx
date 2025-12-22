@@ -4,6 +4,7 @@ import {
   ConcurrencyController,
   getAllRefObj,
   getRefTableName,
+  getRejectedComments,
   refDataType,
   ReffPath,
   updateUnReviewToUnderReview,
@@ -56,6 +57,7 @@ const ReviewProcessDetail: FC<Props> = ({
   const intl = useIntl();
   const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [rejectedComments, setRejectedComments] = useState<any>([]);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -461,6 +463,11 @@ const ReviewProcessDetail: FC<Props> = ({
         }
       }
 
+      // Get the rejected comments
+      if (result?.data?.stateCode < 100) {
+        const rejectedCommentsRes = await getRejectedComments(id, version);
+        setRejectedComments(rejectedCommentsRes);
+      }
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({ ...dataSet, id: id });
       setFromData({ ...dataSet, id: id });
@@ -686,6 +693,7 @@ const ReviewProcessDetail: FC<Props> = ({
               }}
             >
               <TabsDetail
+                rejectedComments={rejectedComments}
                 initData={initData}
                 lang={lang}
                 activeTabKey={activeTabKey}

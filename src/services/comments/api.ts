@@ -178,3 +178,12 @@ export async function getReviewerIdsByReviewId(reviewId: string) {
     .eq('review_id', reviewId);
   return data;
 }
+
+export async function getRejectedCommentsByReviewIds(reviewIds: string[]) {
+  const result = await supabase
+    .from('comments')
+    .select('json')
+    .in('review_id', reviewIds)
+    .eq('state_code', -1);
+  return result;
+}

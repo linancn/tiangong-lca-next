@@ -156,6 +156,7 @@ jest.mock('@/pages/Utils/review', () => ({
     add: jest.fn(async (fn: any) => fn()),
     waitForAll: jest.fn(() => Promise.resolve()),
   })),
+  getRejectedComments: jest.fn(() => Promise.resolve([])),
 }));
 
 const mockGetCommentApi = jest.fn();

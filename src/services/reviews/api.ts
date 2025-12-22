@@ -244,6 +244,16 @@ export async function getReviewsByProcess(processId: string, processVersion: str
   return result;
 }
 
+export async function getRejectReviewsByProcess(processId: string, processVersion: string) {
+  const result = await supabase
+    .from('reviews')
+    .select('id')
+    .filter('json->data->>id', 'eq', processId)
+    .filter('json->data->>version', 'eq', processVersion)
+    .eq('state_code', -1);
+  return result;
+}
+
 export async function getNotifyReviews(
   params: { pageSize: number; current: number },
   lang: string,
