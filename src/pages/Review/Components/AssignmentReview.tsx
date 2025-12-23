@@ -23,7 +23,13 @@ const { Search } = Input;
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
-  tableType: 'unassigned' | 'assigned' | 'reviewed' | 'pending';
+  tableType:
+    | 'unassigned'
+    | 'assigned'
+    | 'reviewed'
+    | 'pending'
+    | 'reviewer-rejected'
+    | 'admin-rejected';
   actionRef: any;
   actionFrom?: 'reviewMember';
   hideReviewButton?: boolean;
@@ -281,6 +287,55 @@ const AssignmentReview = ({
     );
   }
 
+  if (tableType === 'reviewer-rejected' || tableType === 'admin-rejected') {
+    columns.push(
+      ...[
+        {
+          title: (
+            <FormattedMessage id='pages.review.table.column.deadline' defaultMessage='Deadline' />
+          ),
+          dataIndex: 'deadline',
+          sorter: false,
+          search: false,
+          valueType: 'dateTime' as const,
+        },
+        {
+          title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+          dataIndex: 'actions',
+          search: false,
+          render: (_: any, record: ReviewsTable) => {
+            return [
+              <Space key={0}>
+                {record.isFromLifeCycle ? (
+                  <ReviewLifeCycleModelsDetail
+                    reviewId={record.id}
+                    tabType={tableType}
+                    type='view'
+                    id={record.json?.data?.id}
+                    version={record.json?.data?.version}
+                    lang={lang}
+                    actionRef={actionRef}
+                  />
+                ) : (
+                  <ReviewProcessDetail
+                    hideButton={true}
+                    tabType={tableType}
+                    type='view'
+                    actionRef={actionRef}
+                    id={record.json?.data?.id}
+                    version={record.json?.data?.version}
+                    lang={lang}
+                    reviewId={record.id}
+                  />
+                )}
+              </Space>,
+            ];
+          },
+        },
+      ],
+    );
+  }
+
   const getSubTitle = () => {
     switch (tableType) {
       case 'unassigned':
@@ -291,6 +346,10 @@ const AssignmentReview = ({
         return <FormattedMessage id='pages.review.tabs.reviewed' defaultMessage='Reviewed' />;
       case 'pending':
         return <FormattedMessage id='pages.review.tabs.pending' defaultMessage='Pending Review' />;
+      case 'reviewer-rejected':
+        return <FormattedMessage id='pages.review.tabs.rejected' defaultMessage='Rejected' />;
+      case 'admin-rejected':
+        return <FormattedMessage id='pages.review.tabs.rejectedTask' defaultMessage='Rejected' />;
       default:
     }
   };
@@ -302,11 +361,11 @@ const AssignmentReview = ({
     },
     sort: Record<string, SortOrder>,
   ) => {
-    if (tableType === 'unassigned' || tableType === 'assigned') {
+    if (tableType === 'unassigned' || tableType === 'assigned' || tableType === 'admin-rejected') {
       return getReviewsTableDataOfReviewAdmin(params, sort, tableType, lang);
     }
 
-    if (tableType === 'pending' || tableType === 'reviewed') {
+    if (tableType === 'pending' || tableType === 'reviewed' || tableType === 'reviewer-rejected') {
       return getReviewsTableDataOfReviewMember(
         params,
         sort,

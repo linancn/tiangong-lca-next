@@ -53,7 +53,7 @@ type Props = {
   data: any;
   type: 'edit' | 'view';
   reviewId: string;
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   actionRef?: any;
   approveReviewDisabled: boolean;
   modelId: string;
