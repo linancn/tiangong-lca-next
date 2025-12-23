@@ -217,7 +217,6 @@ const ReviewProcessDetail: FC<Props> = ({
     };
     return updateJson;
   };
-
   const temporarySave = async () => {
     try {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -301,7 +300,7 @@ const ReviewProcessDetail: FC<Props> = ({
         const isSaveReview = isReviewComplete(data);
         const allCompliance: any[] = [];
         data.forEach((item: any) => {
-          if (item?.json?.modellingAndValidation.validation.review) {
+          if (item?.json?.modellingAndValidation?.validation?.review) {
             allReviews.push(...item?.json?.modellingAndValidation.validation.review);
           }
           // No review data has been saved yet.
@@ -414,7 +413,7 @@ const ReviewProcessDetail: FC<Props> = ({
               ],
             );
           }
-          if (item?.json?.modellingAndValidation.complianceDeclarations.compliance) {
+          if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
             allCompliance.push(
               ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
             );
@@ -445,14 +444,14 @@ const ReviewProcessDetail: FC<Props> = ({
               review:
                 tabType === 'review' || tabType === 'reviewer-rejected'
                   ? [
-                      ...(allReviews.length
-                        ? allReviews
-                        : [
-                            {
-                              'common:scope': [{ '@name': undefined }],
-                            },
-                          ]),
-                    ]
+                    ...(allReviews.length
+                      ? allReviews
+                      : [
+                        {
+                          'common:scope': [{ '@name': undefined }],
+                        },
+                      ]),
+                  ]
                   : Array.isArray(_review)
                     ? [..._review, ...allReviews]
                     : _review
@@ -558,6 +557,49 @@ const ReviewProcessDetail: FC<Props> = ({
     }
   };
 
+  const handleReject = async (reason:string) => {
+    try {
+      setSpinning(true);
+      const { data: commentData } = await getCommentApi(reviewId, tabType);
+      const comment = commentData?commentData[0]:null;
+      if (commentData) {
+        const updateJson = {
+          ...comment.json,
+          comment: {
+            message: reason,
+          },
+        };
+        const { error } = await updateCommentApi(
+          comment.review_id,
+          {
+            json: updateJson,
+            state_code: -3,
+          },
+          tabType,
+        );
+        if (!error) {
+          message.success(
+            intl.formatMessage({
+              id: 'component.rejectReview.success',
+              defaultMessage: 'Rejected successfully!',
+            }),
+          );
+          setDrawerVisible(false);
+          actionRef?.current?.reload();
+        }
+      }
+    } catch (error) {
+      message.error(
+        intl.formatMessage({
+          id: 'component.rejectReview.error',
+          defaultMessage: 'Failed to reject, please try again!',
+        }),
+      );
+    } finally {
+      setSpinning(false);
+    }
+  }
+
   return (
     <>
       {type === 'edit' ? (
@@ -621,6 +663,16 @@ const ReviewProcessDetail: FC<Props> = ({
             </Space>
           ) : tabType === 'review' && !hideButton ? (
             <Space className={styles.footer_right}>
+              <RejectReview
+                buttonType='text'
+                isModel={false}
+                dataId={id}
+                dataVersion={version}
+                reviewId={reviewId}
+                key={1}
+                actionRef={actionRef}
+                onOk={handleReject}
+              />
               <Button onClick={temporarySave}>
                 <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
               </Button>

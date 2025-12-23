@@ -380,13 +380,13 @@ const ToolbarView: FC<Props> = ({
           const isSaveReview = data && data.every((item: any) => item.state_code === 1);
           const allReviews: any[] = [];
           data.forEach((item: any) => {
-            if (item?.json?.modellingAndValidation.validation.review) {
+            if (item?.json?.modellingAndValidation?.validation?.review) {
               allReviews.push(...item?.json?.modellingAndValidation.validation.review);
             }
           });
           const allCompliance: any[] = [];
           data.forEach((item: any) => {
-            if (item?.json?.modellingAndValidation.complianceDeclarations.compliance) {
+            if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
               allCompliance.push(
                 ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
               );

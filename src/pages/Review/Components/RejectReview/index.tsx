@@ -25,6 +25,7 @@ interface RejectReviewProps {
   isModel: boolean;
   actionRef: any;
   buttonType?: 'icon' | 'text';
+  onOk?: (reason: string) => void | Promise<void>;
 }
 
 const RejectReview: React.FC<RejectReviewProps> = ({
@@ -34,6 +35,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   isModel,
   actionRef,
   buttonType = 'icon',
+  onOk,
 }) => {
   const formRef = useRef<FormInstance>(null);
   const [open, setOpen] = useState(false);
@@ -226,6 +228,11 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   const handleOk = async () => {
     try {
       const values = await formRef?.current?.validateFields();
+      if (onOk) {
+        await onOk(values.reason);
+        setOpen(false);
+        return;
+      }
       setLoading(true);
       const oldReviews = await getReviewsDetail(reviewId);
       if (oldReviews?.state_code === 1) {
