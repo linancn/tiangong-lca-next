@@ -2021,6 +2021,7 @@ export const ProcessForm: FC<Props> = ({
                                 );
                                 if (flow) {
                                   item.stateCode = flow.state_code;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }
@@ -2108,6 +2109,7 @@ export const ProcessForm: FC<Props> = ({
                                 );
                                 if (flow) {
                                   item.stateCode = flow.state_code;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }
