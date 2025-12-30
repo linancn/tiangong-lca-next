@@ -72,7 +72,8 @@ jest.mock('antd', () => {
 
   const Space = ({ children, className }: any) => <div className={className}>{children}</div>;
 
-  const Spin = ({ children, spinning }: any) => (spinning ? <div data-testid='spin'>Loading...</div> : <>{children}</>);
+  const Spin = ({ children, spinning }: any) =>
+    spinning ? <div data-testid='spin'>Loading...</div> : <>{children}</>;
 
   const Modal = {
     confirm: jest.fn((config: any) => {
