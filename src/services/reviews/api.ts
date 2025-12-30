@@ -96,7 +96,7 @@ export async function getReviewsTableDataOfReviewMember(
   if (commentResult.error || !commentResult.data || !commentResult.data.length) {
     return Promise.resolve({
       data: [],
-      success: false,
+      success: true,
       total: 0,
     });
   } else {
@@ -230,7 +230,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   }
   return Promise.resolve({
     data: [],
-    success: false,
+    success: true,
     total: 0,
   });
 }

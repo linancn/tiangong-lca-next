@@ -227,13 +227,13 @@ const RejectReview: React.FC<RejectReviewProps> = ({
 
   const handleOk = async () => {
     try {
+      setLoading(true);
       const values = await formRef?.current?.validateFields();
       if (onOk) {
         await onOk(values.reason);
         setOpen(false);
         return;
       }
-      setLoading(true);
       const oldReviews = await getReviewsDetail(reviewId);
       if (oldReviews?.state_code === 1) {
         await updateCommentApi(

@@ -202,7 +202,14 @@ const AssignmentReview = ({
                     reviewId={record.id}
                   />
                 )}
-                <ReviewProgress reviewId={record.id} />
+                <ReviewProgress
+                  actionRef={actionRef}
+                  tabType={tableType}
+                  reviewId={record.id}
+                  dataId={record.json?.data?.id}
+                  dataVersion={record.json?.data?.version}
+                  actionType={record.isFromLifeCycle ? 'model' : 'process'}
+                />
               </Space>,
             ];
           },

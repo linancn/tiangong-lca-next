@@ -93,7 +93,7 @@ export async function getReviewedComment(
     .from('comments')
     .select('review_id, reviews!inner(*)', { count: 'exact' })
     .eq('reviewer_id', userId)
-    .in('state_code', [1, 2,-3])
+    .in('state_code', [1, 2, -3])
     .filter('reviews.state_code', 'gt', 0)
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);

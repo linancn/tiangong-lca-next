@@ -56,13 +56,13 @@ jest.mock('antd', () => {
 
   const FormComponent = React.forwardRef((props: any, ref: any) => {
     const { children } = props;
-    const api = {
+    const apiRef = React.useRef({
       validateFields: jest.fn(() => Promise.resolve({})),
       resetFields: jest.fn(),
       setFieldsValue: jest.fn(),
-    };
-    formApi = api;
-    React.useImperativeHandle(ref, () => api, []);
+    });
+    formApi = apiRef.current;
+    React.useImperativeHandle(ref, () => apiRef.current, []);
     return <form data-testid='form'>{children}</form>;
   });
 
@@ -220,7 +220,10 @@ describe('RejectReview component', () => {
     );
 
   it('submits rejection and updates related references', async () => {
-    mockGetReviewsDetail.mockResolvedValue({ json: { logs: [] } });
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
     mockGetUserId.mockResolvedValue('user-1');
     mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer', email: 'a@b.com' }]);
     mockUpdateReviewApi.mockResolvedValue({ error: null });
@@ -232,6 +235,7 @@ describe('RejectReview component', () => {
     mockUpdateUnderReviewToUnReview.mockResolvedValue(undefined);
     mockGetUserTeamId.mockResolvedValue('team-1');
     mockDealProcress.mockImplementation(() => undefined);
+    mockGetCommentApi.mockResolvedValue({ data: [], error: null });
 
     renderComponent();
 
@@ -255,8 +259,8 @@ describe('RejectReview component', () => {
         }),
       }),
     );
-    expect(mockDealProcress).toHaveBeenCalled();
-    expect(formApi.resetFields).toHaveBeenCalled();
+    await waitFor(() => expect(mockDealProcress).toHaveBeenCalled());
+    await waitFor(() => expect(formApi.resetFields).toHaveBeenCalled());
     await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
     await waitFor(() => expect(message.success).toHaveBeenCalled());
     expect(message.success.mock.calls[0][0]).toBe('Rejected successfully!');
