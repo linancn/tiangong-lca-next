@@ -12,6 +12,8 @@ import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
+
+import { getRejectedComments, mergeCommentsToData } from '@/pages/Utils/review';
 import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -21,14 +23,13 @@ import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
-import ReviewItemView from './Review/view';
-
 import {
   completenessElementaryFlowsTypeOptions,
   completenessElementaryFlowsValueOptions,
   completenessProductModelOptions,
   uncertaintyDistributionTypeOptions,
 } from './optiondata';
+import ReviewItemView from './Review/view';
 
 import { getExchangeColumns } from './Exchange/column';
 import {
@@ -1619,12 +1620,16 @@ const ProcessView: FC<Props> = ({
     ),
   };
 
-  const onView = () => {
+  const onView = async () => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
+      if (result?.data?.stateCode < 100) {
+        const rejectedCommentsRes = await getRejectedComments(id, version);
+        mergeCommentsToData(rejectedCommentsRes, formData);
+      }
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
       const sourceData = formData?.LCIAResults?.LCIAResult ?? [];

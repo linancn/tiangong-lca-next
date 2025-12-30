@@ -96,7 +96,7 @@ export async function getReviewsTableDataOfReviewMember(
   if (commentResult.error || !commentResult.data || !commentResult.data.length) {
     return Promise.resolve({
       data: [],
-      success: false,
+      success: true,
       total: 0,
     });
   } else {
@@ -230,7 +230,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   }
   return Promise.resolve({
     data: [],
-    success: false,
+    success: true,
     total: 0,
   });
 }
@@ -241,6 +241,16 @@ export async function getReviewsByProcess(processId: string, processVersion: str
     .select('*')
     .filter('json->data->>id', 'eq', processId)
     .filter('json->data->>version', 'eq', processVersion);
+  return result;
+}
+
+export async function getRejectReviewsByProcess(processId: string, processVersion: string) {
+  const result = await supabase
+    .from('reviews')
+    .select('id')
+    .filter('json->data->>id', 'eq', processId)
+    .filter('json->data->>version', 'eq', processVersion)
+    .eq('state_code', -1);
   return result;
 }
 

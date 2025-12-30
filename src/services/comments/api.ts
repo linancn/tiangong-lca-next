@@ -93,7 +93,7 @@ export async function getReviewedComment(
     .from('comments')
     .select('review_id, reviews!inner(*)', { count: 'exact' })
     .eq('reviewer_id', userId)
-    .in('state_code', [1, 2])
+    .in('state_code', [1, 2, -3])
     .filter('reviews.state_code', 'gt', 0)
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
@@ -177,4 +177,13 @@ export async function getReviewerIdsByReviewId(reviewId: string) {
     .select('state_code,reviewer_id')
     .eq('review_id', reviewId);
   return data;
+}
+
+export async function getRejectedCommentsByReviewIds(reviewIds: string[]) {
+  const result = await supabase
+    .from('comments')
+    .select('json')
+    .in('review_id', reviewIds)
+    .eq('state_code', -1);
+  return result;
 }

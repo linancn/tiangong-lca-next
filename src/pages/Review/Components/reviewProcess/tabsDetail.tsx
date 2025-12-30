@@ -45,6 +45,7 @@ type Props = {
   formType?: string;
   initData: any;
   type: 'edit' | 'view';
+  rejectedComments?: Record<string, any>[];
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -98,6 +99,7 @@ export const TabsDetail: FC<Props> = ({
   exchangeDataSource,
   initData,
   type,
+  rejectedComments,
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
@@ -1647,25 +1649,63 @@ export const TabsDetail: FC<Props> = ({
     ),
   };
 
+  const getValidationReview = () => {
+    const result: any[] = [];
+    if (!rejectedComments || rejectedComments.length === 0) {
+      return result;
+    }
+    rejectedComments.forEach((comment) => {
+      const review = comment?.modellingAndValidation?.validation?.review;
+      if (review) {
+        result.push(...(Array.isArray(review) ? review : [review]));
+      }
+    });
+    return result;
+  };
+
+  const getValidationCompliance = () => {
+    const result: any[] = [];
+    if (!rejectedComments || rejectedComments.length === 0) {
+      return result;
+    }
+    rejectedComments.forEach((comment) => {
+      const compliance = comment?.modellingAndValidation?.complianceDeclarations?.compliance;
+      if (compliance) {
+        result.push(...(Array.isArray(compliance) ? compliance : [compliance]));
+      }
+    });
+    return result;
+  };
+
   const tabContent: { [key: string]: JSX.Element } =
     type === 'edit'
       ? {
           ...defaultTabContent,
           validation: (
-            <ReveiwItemForm
-              name={['modellingAndValidation', 'validation', 'review']}
-              lang={lang}
-              formRef={formRef}
-              onData={onData}
-            />
+            <>
+              <ReveiwItemForm
+                name={['modellingAndValidation', 'validation', 'review']}
+                lang={lang}
+                formRef={formRef}
+                onData={onData}
+              />
+              {rejectedComments && rejectedComments.length > 0 && (
+                <ReviewItemView data={getValidationReview()} />
+              )}
+            </>
           ),
           complianceDeclarations: (
-            <ComplianceItemForm
-              name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
-              lang={lang}
-              formRef={formRef}
-              onData={onData}
-            />
+            <>
+              <ComplianceItemForm
+                name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
+                lang={lang}
+                formRef={formRef}
+                onData={onData}
+              />
+              {rejectedComments && rejectedComments.length > 0 && (
+                <ComplianceItemView data={getValidationCompliance()} />
+              )}
+            </>
           ),
         }
       : {

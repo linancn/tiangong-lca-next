@@ -33,6 +33,11 @@ jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
   default: () => <div data-testid='select-reviewer-stub' />,
 }));
 
+jest.mock('@/pages/Review/Components/RejectReview', () => ({
+  __esModule: true,
+  default: () => <div data-testid='reject-review-stub' />,
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -65,6 +70,10 @@ jest.mock('antd', () => {
 
   const Tag = ({ children }: any) => <span data-testid='tag'>{children}</span>;
 
+  const Space = ({ children, className }: any) => <div className={className}>{children}</div>;
+
+  const Spin = ({ children, spinning }: any) => (spinning ? <div data-testid='spin'>Loading...</div> : <>{children}</>);
+
   const Modal = {
     confirm: jest.fn((config: any) => {
       config?.onOk?.();
@@ -73,6 +82,9 @@ jest.mock('antd', () => {
       };
     }),
   };
+
+  const Input: any = (props: any) => <input {...props} />;
+  Input.TextArea = (props: any) => <textarea {...props} />;
 
   const message = {
     success: jest.fn(),
@@ -90,7 +102,10 @@ jest.mock('antd', () => {
     __esModule: true,
     Button,
     Drawer,
+    Input,
     Modal,
+    Space,
+    Spin,
     Tag,
     Tooltip,
     message,
@@ -170,11 +185,13 @@ jest.mock('@ant-design/pro-components', () => ({
 }));
 
 const mockGetCommentApi = jest.fn();
+const mockUpdateCommentApi = jest.fn();
 const mockUpdateCommentByreviewerApi = jest.fn();
 
 jest.mock('@/services/comments/api', () => ({
   __esModule: true,
   getCommentApi: (...args: any[]) => mockGetCommentApi(...args),
+  updateCommentApi: (...args: any[]) => mockUpdateCommentApi(...args),
   updateCommentByreviewerApi: (...args: any[]) => mockUpdateCommentByreviewerApi(...args),
 }));
 
@@ -190,6 +207,62 @@ const mockGetUsersByIds = jest.fn();
 jest.mock('@/services/users/api', () => ({
   __esModule: true,
   getUsersByIds: (...args: any[]) => mockGetUsersByIds(...args),
+}));
+
+jest.mock('@/pages/Review/Components/reviewProcess', () => ({
+  __esModule: true,
+  getNewReviewJson: jest.fn(() => Promise.resolve({})),
+}));
+
+const mockGetRefData = jest.fn();
+const mockUpdateStateCodeApi = jest.fn();
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  getRefData: (...args: any[]) => mockGetRefData(...args),
+  updateStateCodeApi: (...args: any[]) => mockUpdateStateCodeApi(...args),
+}));
+
+const mockGetLifeCycleModelDetail = jest.fn();
+const mockUpdateLifeCycleModelJsonApi = jest.fn();
+
+jest.mock('@/services/lifeCycleModels/api', () => ({
+  __esModule: true,
+  getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
+  updateLifeCycleModelJsonApi: (...args: any[]) => mockUpdateLifeCycleModelJsonApi(...args),
+}));
+
+const mockGetProcessDetail = jest.fn();
+const mockUpdateProcessApi = jest.fn();
+
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
+  updateProcessApi: (...args: any[]) => mockUpdateProcessApi(...args),
+}));
+
+const mockGetUserTeamId = jest.fn();
+
+jest.mock('@/services/roles/api', () => ({
+  __esModule: true,
+  getUserTeamId: (...args: any[]) => mockGetUserTeamId(...args),
+}));
+
+jest.mock('@/pages/Utils/review', () => ({
+  __esModule: true,
+  ConcurrencyController: jest.fn().mockImplementation(() => ({
+    add: jest.fn(),
+    waitForAll: jest.fn(() => Promise.resolve()),
+  })),
+  getAllRefObj: jest.fn(() => []),
+  getRefTableName: jest.fn(() => 'processes'),
+}));
+
+jest.mock('@/style/custom.less', () => ({
+  __esModule: true,
+  default: {
+    footer_right: 'footer_right',
+  },
 }));
 
 const { message, Modal } = require('antd');
@@ -209,8 +282,16 @@ describe('ReviewProgress component', () => {
       ],
     });
     mockGetUsersByIds.mockResolvedValue([{ id: 'user-2', display_name: 'Reviewer Two' }]);
+    mockUpdateCommentApi.mockResolvedValue({ error: null });
     mockUpdateCommentByreviewerApi.mockResolvedValue({ error: null });
     mockUpdateReviewApi.mockResolvedValue({ data: [{}] });
+    mockGetRefData.mockResolvedValue({ success: true, data: { stateCode: 100 } });
+    mockUpdateStateCodeApi.mockResolvedValue({ error: null });
+    mockGetLifeCycleModelDetail.mockResolvedValue({ success: true, data: { stateCode: 100 } });
+    mockUpdateLifeCycleModelJsonApi.mockResolvedValue({ data: {} });
+    mockGetProcessDetail.mockResolvedValue({ success: true, data: { stateCode: 100 } });
+    mockUpdateProcessApi.mockResolvedValue({ error: null });
+    mockGetUserTeamId.mockResolvedValue('team-1');
     message.success.mockReset();
     Modal.confirm.mockClear();
   });
