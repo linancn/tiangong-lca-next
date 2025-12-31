@@ -105,12 +105,8 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
           label={<FormattedMessage id='pages.process.unitConvert.result' defaultMessage='Result' />}
         >
           <Space.Compact style={{ width: '100%' }}>
-            <Input
-              value={result}
-              disabled
-              data-testid='unit-convert-result'
-            />
-            <Input disabled value={targetUnit} style={{width: 'fit-content' }} />
+            <Input value={result} disabled data-testid='unit-convert-result' />
+            <Input disabled value={targetUnit} style={{ width: 'fit-content' }} />
           </Space.Compact>
         </Form.Item>
       </Form>
