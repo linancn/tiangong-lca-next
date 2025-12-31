@@ -338,6 +338,38 @@ export async function getNotifyReviews(
   });
 }
 
+export async function getNotifyReviewsCount(timeFilter: number = 3, lastViewTime?: number) {
+  const userId = await getUserId();
+
+  if (!userId) {
+    return Promise.resolve({
+      success: false,
+      total: 0,
+    });
+  }
+
+  let query = supabase
+    .from('reviews')
+    .select('*', { count: 'exact', head: true })
+    .filter('json->user->>id', 'eq', userId)
+    .in('state_code', [1, -1, 2]);
+
+  if (lastViewTime && lastViewTime > 0) {
+    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
+  } else if (timeFilter > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
+    query = query.gte('modified_at', cutoffDate.toISOString());
+  }
+
+  const { count, error } = await query;
+
+  return Promise.resolve({
+    success: !error,
+    total: count ?? 0,
+  });
+}
+
 export async function getLatestReviewOfMine() {
   const userId = await getUserId();
 

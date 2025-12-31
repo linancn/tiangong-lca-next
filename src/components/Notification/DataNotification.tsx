@@ -1,4 +1,3 @@
-import { updateDataNotificationTime } from '@/services/auth/api';
 import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
 import { Button, Space, Table, Tag, Tooltip, theme } from 'antd';
@@ -21,13 +20,10 @@ interface DataNotificationItem {
 
 interface DataNotificationProps {
   timeFilter: number;
-  removeItemFromDotTabs: (item: 'team' | 'data') => void;
+  onDataLoaded?: () => Promise<void>;
 }
 
-const DataNotification: React.FC<DataNotificationProps> = ({
-  timeFilter,
-  removeItemFromDotTabs,
-}) => {
+const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataLoaded }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataNotificationItem[]>([]);
   const [pagination, setPagination] = useState({
@@ -49,8 +45,6 @@ const DataNotification: React.FC<DataNotificationProps> = ({
       if (!reviewsRes.success) {
         return;
       }
-      await updateDataNotificationTime();
-      removeItemFromDotTabs('data');
       const rejectedData =
         reviewsRes.data?.map((item: ReviewsTable) => ({
           key: item.id,
@@ -71,6 +65,10 @@ const DataNotification: React.FC<DataNotificationProps> = ({
         pageSize,
         total: reviewsRes.total || 0,
       });
+      // Call callback after data is loaded (only on initial load, not pagination)
+      if (page === 1 && onDataLoaded) {
+        await onDataLoaded();
+      }
     } catch (error) {
       console.error('获取数据通知失败:', error);
     } finally {
