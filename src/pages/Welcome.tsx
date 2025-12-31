@@ -352,7 +352,7 @@ const Welcome: React.FC = () => {
             <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
               <Card
                 className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
-                bodyStyle={{ padding: 20 }}
+                styles={{ body: { padding: 20 } }}
                 style={{ ...cardBorderRadiusStyle, width: '100%' }}
               >
                 <div className={styles.welcome_metric_content}>
@@ -410,7 +410,7 @@ const Welcome: React.FC = () => {
 
         <Card
           className={styles.welcome_card}
-          bodyStyle={{ padding: 24 }}
+          styles={{ body: { padding: 24 } }}
           style={cardBorderRadiusStyle}
         >
           <Space direction='vertical' size={16} style={{ width: '100%' }}>
@@ -440,7 +440,7 @@ const Welcome: React.FC = () => {
             <Col xs={24} md={12} key={section.key}>
               <Card
                 className={`${styles.welcome_card} ${styles.welcome_section_card}`}
-                bodyStyle={{ padding: 24 }}
+                styles={{ body: { padding: 24 } }}
                 style={cardBorderRadiusStyle}
               >
                 <Space direction='vertical' size={12}>
@@ -477,7 +477,7 @@ const Welcome: React.FC = () => {
         onCancel={() => setIsDataModalOpen(false)}
         footer={null}
         width={modalWidth}
-        destroyOnClose
+        destroyOnHidden
         styles={modalStyles}
         title={<FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />}
       >
@@ -505,7 +505,7 @@ const Welcome: React.FC = () => {
                     <Card
                       hoverable
                       className={`${styles.welcome_card} ${styles.welcome_team_card}`}
-                      bodyStyle={{ padding: 16 }}
+                      styles={{ body: { padding: 16 } }}
                       style={cardBorderRadiusStyle}
                       cover={
                         <div className={styles.team_logo_container}>
@@ -549,7 +549,7 @@ const Welcome: React.FC = () => {
         onCancel={() => setIsTidasModalOpen(false)}
         footer={null}
         width={modalWidth}
-        destroyOnClose
+        destroyOnHidden
         styles={modalStyles}
         title={tidasTitle}
       >

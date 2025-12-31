@@ -1,5 +1,5 @@
 import { FormattedMessage } from '@umijs/max';
-import { Form, Input, Modal, Select } from 'antd';
+import { Form, Input, Modal, Select, Space } from 'antd';
 import BigNumber from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 
@@ -104,12 +104,14 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
         <Form.Item
           label={<FormattedMessage id='pages.process.unitConvert.result' defaultMessage='Result' />}
         >
-          <Input
-            addonAfter={targetUnit}
-            value={result}
-            disabled
-            data-testid='unit-convert-result'
-          />
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              value={result}
+              disabled
+              data-testid='unit-convert-result'
+            />
+            <Input disabled value={targetUnit} style={{width: 'fit-content' }} />
+          </Space.Compact>
         </Form.Item>
       </Form>
     </Modal>
