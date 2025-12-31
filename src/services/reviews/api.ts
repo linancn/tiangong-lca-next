@@ -96,7 +96,7 @@ export async function getReviewsTableDataOfReviewMember(
   if (commentResult.error || !commentResult.data || !commentResult.data.length) {
     return Promise.resolve({
       data: [],
-      success: false,
+      success: true,
       total: 0,
     });
   } else {
@@ -230,7 +230,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   }
   return Promise.resolve({
     data: [],
-    success: false,
+    success: true,
     total: 0,
   });
 }
@@ -241,6 +241,16 @@ export async function getReviewsByProcess(processId: string, processVersion: str
     .select('*')
     .filter('json->data->>id', 'eq', processId)
     .filter('json->data->>version', 'eq', processVersion);
+  return result;
+}
+
+export async function getRejectReviewsByProcess(processId: string, processVersion: string) {
+  const result = await supabase
+    .from('reviews')
+    .select('id')
+    .filter('json->data->>id', 'eq', processId)
+    .filter('json->data->>version', 'eq', processVersion)
+    .eq('state_code', -1);
   return result;
 }
 
@@ -325,6 +335,38 @@ export async function getNotifyReviews(
     data: [],
     success: false,
     total: 0,
+  });
+}
+
+export async function getNotifyReviewsCount(timeFilter: number = 3, lastViewTime?: number) {
+  const userId = await getUserId();
+
+  if (!userId) {
+    return Promise.resolve({
+      success: false,
+      total: 0,
+    });
+  }
+
+  let query = supabase
+    .from('reviews')
+    .select('*', { count: 'exact', head: true })
+    .filter('json->user->>id', 'eq', userId)
+    .in('state_code', [1, -1, 2]);
+
+  if (lastViewTime && lastViewTime > 0) {
+    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
+  } else if (timeFilter > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
+    query = query.gte('modified_at', cutoffDate.toISOString());
+  }
+
+  const { count, error } = await query;
+
+  return Promise.resolve({
+    success: !error,
+    total: count ?? 0,
   });
 }
 

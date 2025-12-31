@@ -1,4 +1,3 @@
-import { updateTeamNotificationTime } from '@/services/auth/api';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
@@ -22,13 +21,10 @@ interface TeamNotificationItem {
 
 interface TeamNotificationProps {
   timeFilter: number;
-  removeItemFromDotTabs: (item: 'team' | 'data') => void;
+  onDataLoaded?: () => Promise<void>;
 }
 
-const TeamNotification: React.FC<TeamNotificationProps> = ({
-  timeFilter,
-  removeItemFromDotTabs,
-}) => {
+const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataLoaded }) => {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [data, setData] = useState<TeamNotificationItem[]>([]);
@@ -41,8 +37,6 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({
       const res = await getTeamInvitationStatusApi(timeFilter);
 
       if (res.success && res.data) {
-        await updateTeamNotificationTime();
-        removeItemFromDotTabs('team');
         const teamData = await getTeamById(res.data.team_id);
         if (teamData.success && teamData.data?.[0]) {
           const teamTitle = teamData.data[0]?.json?.title;
@@ -67,6 +61,10 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({
         }
       } else {
         setData([]);
+      }
+      // Call callback after data is loaded
+      if (onDataLoaded) {
+        await onDataLoaded();
       }
     } catch (error) {
       console.error(error);

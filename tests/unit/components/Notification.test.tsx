@@ -12,23 +12,26 @@
  */
 
 import Notification from '@/components/Notification';
-import { getCurrentUser } from '@/services/auth';
-import { getLatestReviewOfMine } from '@/services/reviews/api';
-import { getLatestRolesOfMine } from '@/services/roles/api';
+import { getCurrentUser, getFreshUserMetadata } from '@/services/auth';
+import { getLatestReviewOfMine, getNotifyReviewsCount } from '@/services/reviews/api';
+import { getLatestRolesOfMine, getTeamInvitationCountApi } from '@/services/roles/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
 jest.mock('@/services/auth', () => ({
   getCurrentUser: jest.fn(),
+  getFreshUserMetadata: jest.fn(),
 }));
 
 jest.mock('@/services/reviews/api', () => ({
   getLatestReviewOfMine: jest.fn(),
+  getNotifyReviewsCount: jest.fn(),
 }));
 
 jest.mock('@/services/roles/api', () => ({
   getLatestRolesOfMine: jest.fn(),
+  getTeamInvitationCountApi: jest.fn(),
 }));
 
 jest.mock('umi', () => ({
@@ -53,8 +56,11 @@ jest.mock('@/components/Notification/TeamNotification', () => {
 });
 
 const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<any>;
+const mockGetFreshUserMetadata = getFreshUserMetadata as jest.MockedFunction<any>;
 const mockGetLatestReviewOfMine = getLatestReviewOfMine as jest.MockedFunction<any>;
 const mockGetLatestRolesOfMine = getLatestRolesOfMine as jest.MockedFunction<any>;
+const mockGetNotifyReviewsCount = getNotifyReviewsCount as jest.MockedFunction<any>;
+const mockGetTeamInvitationCountApi = getTeamInvitationCountApi as jest.MockedFunction<any>;
 
 describe('Notification Component', () => {
   beforeEach(() => {
@@ -67,43 +73,32 @@ describe('Notification Component', () => {
       update_data_notification_time: 0,
     });
 
+    mockGetFreshUserMetadata.mockResolvedValue({
+      userid: 'user-1',
+      update_team_notification_time: 0,
+      update_data_notification_time: 0,
+    });
+
     mockGetLatestReviewOfMine.mockResolvedValue([]);
     mockGetLatestRolesOfMine.mockResolvedValue(null);
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
   });
 
-  it('should render correctly', () => {
+  it('should render correctly', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     expect(icon).toBeInTheDocument();
   });
 
   it('should show badge dot when there are notifications', async () => {
-    const mockUser = {
-      id: 'user-1',
-      update_team_notification_time: 1000,
-      update_data_notification_time: 1000,
-    };
-
-    const mockReview = [
-      {
-        id: 'review-1',
-        modified_at: '2023-12-01T10:00:00Z',
-      },
-    ];
-
-    const mockRole = {
-      id: 'role-1',
-      modified_at: '2023-12-01T11:00:00Z',
-    };
-
-    mockGetCurrentUser.mockResolvedValue(mockUser);
-    mockGetLatestReviewOfMine.mockResolvedValue(mockReview);
-    mockGetLatestRolesOfMine.mockResolvedValue(mockRole);
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 1 });
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 1 });
 
     render(
       <ConfigProvider>
@@ -118,15 +113,8 @@ describe('Notification Component', () => {
   });
 
   it('should not show badge dot when there are no notifications', async () => {
-    const mockUser = {
-      id: 'user-1',
-      update_team_notification_time: Date.now(),
-      update_data_notification_time: Date.now(),
-    };
-
-    mockGetCurrentUser.mockResolvedValue(mockUser);
-    mockGetLatestReviewOfMine.mockResolvedValue([]);
-    mockGetLatestRolesOfMine.mockResolvedValue(null);
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
 
     render(
       <ConfigProvider>
@@ -140,74 +128,79 @@ describe('Notification Component', () => {
     });
   });
 
-  it('should open modal when icon is clicked', () => {
+  it('should open modal when icon is clicked', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     expect(screen.getByText('Notifications')).toBeInTheDocument();
   });
 
-  it('should close modal when cancel button is clicked', () => {
+  it('should close modal when cancel button is clicked', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
-    expect(screen.getByText('Notifications')).toBeInTheDocument();
+    // Verify modal is open
+    const modal = screen.getByRole('dialog');
+    expect(modal).toBeInTheDocument();
 
     const cancelButton = screen.getByRole('button', { name: /close/i });
     fireEvent.click(cancelButton);
 
-    waitFor(() => {
-      expect(screen.queryByText('Notifications')).not.toBeInTheDocument();
+    // After closing, modal should be hidden
+    await waitFor(() => {
+      const modalAfterClose = screen.queryByRole('dialog');
+      // Modal might still be in DOM but should be hidden, or removed entirely
+      expect(modalAfterClose).toBeFalsy();
     });
   });
 
-  it('should render both notification tabs', () => {
+  it('should render both notification tabs', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     expect(screen.getByText('Team Notifications')).toBeInTheDocument();
     expect(screen.getByText('Data Notifications')).toBeInTheDocument();
   });
 
-  it('should render team notification by default', () => {
+  it('should render team notification by default', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     expect(screen.getByTestId('team-notification')).toBeInTheDocument();
   });
 
-  it('should switch to data notification tab when clicked', () => {
+  it('should switch to data notification tab when clicked', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     const dataTab = screen.getByText('Data Notifications');
@@ -216,28 +209,28 @@ describe('Notification Component', () => {
     expect(screen.getByTestId('data-notification')).toBeInTheDocument();
   });
 
-  it('should render time filter select', () => {
+  it('should render time filter select', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     const timeFilter = screen.getByRole('combobox');
     expect(timeFilter).toBeInTheDocument();
   });
 
-  it('should change time filter when select value changes', () => {
+  it('should change time filter when select value changes', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     const timeFilter = screen.getByRole('combobox');
@@ -260,26 +253,15 @@ describe('Notification Component', () => {
     );
 
     await waitFor(() => {
-      expect(mockGetCurrentUser).toHaveBeenCalled();
-      expect(mockGetLatestReviewOfMine).toHaveBeenCalled();
-      expect(mockGetLatestRolesOfMine).toHaveBeenCalled();
+      expect(mockGetFreshUserMetadata).toHaveBeenCalled();
+      expect(mockGetNotifyReviewsCount).toHaveBeenCalled();
+      expect(mockGetTeamInvitationCountApi).toHaveBeenCalled();
     });
   });
 
   it('should show badge dot on team tab when team notification exists', async () => {
-    const mockUser = {
-      id: 'user-1',
-      update_team_notification_time: 1000,
-      update_data_notification_time: Date.now(),
-    };
-
-    const mockRole = {
-      id: 'role-1',
-      modified_at: '2023-12-01T11:00:00Z',
-    };
-
-    mockGetCurrentUser.mockResolvedValue(mockUser);
-    mockGetLatestRolesOfMine.mockResolvedValue(mockRole);
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 1 });
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
 
     render(
       <ConfigProvider>
@@ -287,7 +269,7 @@ describe('Notification Component', () => {
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     await waitFor(() => {
@@ -298,21 +280,8 @@ describe('Notification Component', () => {
   });
 
   it('should show badge dot on data tab when data notification exists', async () => {
-    const mockUser = {
-      id: 'user-1',
-      update_team_notification_time: Date.now(),
-      update_data_notification_time: 1000,
-    };
-
-    const mockReview = [
-      {
-        id: 'review-1',
-        modified_at: '2023-12-01T10:00:00Z',
-      },
-    ];
-
-    mockGetCurrentUser.mockResolvedValue(mockUser);
-    mockGetLatestReviewOfMine.mockResolvedValue(mockReview);
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 1 });
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
 
     render(
       <ConfigProvider>
@@ -320,7 +289,7 @@ describe('Notification Component', () => {
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     await waitFor(() => {
@@ -330,25 +299,25 @@ describe('Notification Component', () => {
     });
   });
 
-  it('should have correct icon attributes', () => {
+  it('should have correct icon attributes', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     expect(icon).toHaveStyle({ fontSize: '16px', opacity: '0.5', cursor: 'pointer' });
   });
 
-  it('should render modal with correct width', () => {
+  it('should render modal with correct width', async () => {
     render(
       <ConfigProvider>
         <Notification />
       </ConfigProvider>,
     );
 
-    const icon = screen.getByRole('img', { hidden: true });
+    const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
     const modal = screen.getByRole('dialog');

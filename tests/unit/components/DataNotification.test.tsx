@@ -13,16 +13,11 @@
  */
 
 import DataNotification from '@/components/Notification/DataNotification';
-import { updateDataNotificationTime } from '@/services/auth/api';
 import { getNotifyReviews } from '@/services/reviews/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
-jest.mock('@/services/auth/api', () => ({
-  updateDataNotificationTime: jest.fn(),
-}));
-
 jest.mock('@/services/reviews/api', () => ({
   getNotifyReviews: jest.fn(),
 }));
@@ -46,13 +41,13 @@ jest.mock('umi', () => ({
   }),
 }));
 
-const mockUpdateDataNotificationTime = updateDataNotificationTime as jest.MockedFunction<any>;
 const mockGetNotifyReviews = getNotifyReviews as jest.MockedFunction<any>;
 
 describe('DataNotification Component', () => {
+  const onDataLoadedMock = jest.fn();
   const defaultProps = {
     timeFilter: 3,
-    removeItemFromDotTabs: jest.fn(),
+    onDataLoaded: onDataLoadedMock,
   };
 
   const mockReviewData = {
@@ -94,7 +89,7 @@ describe('DataNotification Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetNotifyReviews.mockResolvedValue(mockReviewData);
-    mockUpdateDataNotificationTime.mockResolvedValue({ error: null });
+    onDataLoadedMock.mockResolvedValue(undefined);
   });
 
   it('should render correctly with given props', async () => {
@@ -364,7 +359,7 @@ describe('DataNotification Component', () => {
     });
   });
 
-  it('should call updateDataNotificationTime after successful fetch', async () => {
+  it('should call onDataLoaded after successful fetch', async () => {
     render(
       <ConfigProvider>
         <DataNotification {...defaultProps} />
@@ -372,19 +367,7 @@ describe('DataNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(mockUpdateDataNotificationTime).toHaveBeenCalled();
-    });
-  });
-
-  it('should call removeItemFromDotTabs after successful fetch', async () => {
-    render(
-      <ConfigProvider>
-        <DataNotification {...defaultProps} />
-      </ConfigProvider>,
-    );
-
-    await waitFor(() => {
-      expect(defaultProps.removeItemFromDotTabs).toHaveBeenCalledWith('data');
+      expect(onDataLoadedMock).toHaveBeenCalled();
     });
   });
 
@@ -420,8 +403,7 @@ describe('DataNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(mockUpdateDataNotificationTime).not.toHaveBeenCalled();
-      expect(defaultProps.removeItemFromDotTabs).not.toHaveBeenCalled();
+      expect(onDataLoadedMock).not.toHaveBeenCalled();
     });
   });
 

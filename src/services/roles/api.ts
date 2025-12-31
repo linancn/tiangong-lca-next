@@ -125,6 +125,48 @@ export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
   }
 }
 
+export async function getTeamInvitationCountApi(timeFilter: number = 3, lastViewTime?: number) {
+  const userId = await getUserId();
+  if (!userId?.length) {
+    return {
+      success: false,
+      data: [],
+      total: 0,
+    };
+  }
+
+  let query = supabase
+    .from('roles')
+    .select('*', { count: 'exact' })
+    .eq('user_id', userId)
+    .in('role', ['is_invited'])
+    .neq('team_id', '00000000-0000-0000-0000-000000000000')
+    .order('modified_at', { ascending: false });
+
+  if (lastViewTime && lastViewTime > 0) {
+    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
+  } else if (timeFilter > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
+    query = query.gte('modified_at', cutoffDate.toISOString());
+  }
+
+  const { data: roleResult, error: roleError, count } = await query;
+
+  if (roleError) {
+    return {
+      success: false,
+      data: [],
+      total: 0,
+    };
+  }
+  return {
+    success: true,
+    data: roleResult ?? [],
+    total: count ?? 0,
+  };
+}
+
 export async function createTeamMessage(id: string, data: any, rank: number, is_public: boolean) {
   const session = await supabase.auth.getSession();
   await supabase

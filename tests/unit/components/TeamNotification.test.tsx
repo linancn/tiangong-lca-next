@@ -13,7 +13,6 @@
  */
 
 import TeamNotification from '@/components/Notification/TeamNotification';
-import { updateTeamNotificationTime } from '@/services/auth/api';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
@@ -24,9 +23,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider, message } from 'antd';
 
 // Mock dependencies
-jest.mock('@/services/auth/api', () => ({
-  updateTeamNotificationTime: jest.fn(),
-}));
 
 jest.mock('@/services/roles/api', () => ({
   acceptTeamInvitationApi: jest.fn(),
@@ -46,7 +42,6 @@ jest.mock('umi', () => ({
   }),
 }));
 
-const mockUpdateTeamNotificationTime = updateTeamNotificationTime as jest.MockedFunction<any>;
 const mockAcceptTeamInvitationApi = acceptTeamInvitationApi as jest.MockedFunction<any>;
 const mockGetTeamInvitationStatusApi = getTeamInvitationStatusApi as jest.MockedFunction<any>;
 const mockRejectTeamInvitationApi = rejectTeamInvitationApi as jest.MockedFunction<any>;
@@ -56,9 +51,10 @@ jest.spyOn(message, 'success').mockImplementation(() => ({ key: 'success' }) as 
 jest.spyOn(message, 'error').mockImplementation(() => ({ key: 'error' }) as any);
 
 describe('TeamNotification Component', () => {
+  const onDataLoadedMock = jest.fn();
   const defaultProps = {
     timeFilter: 3,
-    removeItemFromDotTabs: jest.fn(),
+    onDataLoaded: onDataLoadedMock,
   };
 
   const mockInvitationData = {
@@ -88,7 +84,7 @@ describe('TeamNotification Component', () => {
     jest.clearAllMocks();
     mockGetTeamInvitationStatusApi.mockResolvedValue(mockInvitationData);
     mockGetTeamById.mockResolvedValue(mockTeamData);
-    mockUpdateTeamNotificationTime.mockResolvedValue({ error: null });
+    onDataLoadedMock.mockResolvedValue(undefined);
     mockAcceptTeamInvitationApi.mockResolvedValue({ success: true, error: null });
     mockRejectTeamInvitationApi.mockResolvedValue({ success: true, error: null });
   });
@@ -385,7 +381,7 @@ describe('TeamNotification Component', () => {
     });
   });
 
-  it('should call updateTeamNotificationTime after successful fetch', async () => {
+  it('should call onDataLoaded after successful fetch', async () => {
     render(
       <ConfigProvider>
         <TeamNotification {...defaultProps} />
@@ -393,19 +389,7 @@ describe('TeamNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(mockUpdateTeamNotificationTime).toHaveBeenCalled();
-    });
-  });
-
-  it('should call removeItemFromDotTabs after successful fetch', async () => {
-    render(
-      <ConfigProvider>
-        <TeamNotification {...defaultProps} />
-      </ConfigProvider>,
-    );
-
-    await waitFor(() => {
-      expect(defaultProps.removeItemFromDotTabs).toHaveBeenCalledWith('team');
+      expect(onDataLoadedMock).toHaveBeenCalled();
     });
   });
 
@@ -439,8 +423,7 @@ describe('TeamNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(mockUpdateTeamNotificationTime).not.toHaveBeenCalled();
-      expect(defaultProps.removeItemFromDotTabs).not.toHaveBeenCalled();
+      expect(onDataLoadedMock).toHaveBeenCalled();
     });
   });
 
