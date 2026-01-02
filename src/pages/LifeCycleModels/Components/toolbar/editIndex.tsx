@@ -464,24 +464,71 @@ const ToolbarEdit: FC<Props> = ({
         stroke: token.colorPrimary,
       },
     },
-    // labels: [{
-    //   position: 0.5,
-    //   attrs: {
-    //     body: {
-    //       stroke: token.colorBorder,
-    //       strokeWidth: 1,
-    //       fill: token.colorBgBase,
-    //       rx: 6,
-    //       ry: 6,
-    //     },
-    //     label: {
-    //       text: '1',
-    //       fill: token.colorTextBase,
-    //     },
-    //   },
-    // },
-    // ],
     // tools: ['edge-editor'],
+  };
+
+  const getEdgeLabel = (unbalancedAmount: number, exchangeAmount: number) => {
+    if (unbalancedAmount === undefined || unbalancedAmount === null) {
+      return {};
+    }
+    let text = '';
+    let output = 0;
+    let input = 0;
+    if (unbalancedAmount > 0) {
+      text = 'O';
+      output = exchangeAmount + unbalancedAmount;
+      input = exchangeAmount;
+    } else if (unbalancedAmount < 0) {
+      text = 'I';
+      output = exchangeAmount;
+      input = exchangeAmount - unbalancedAmount;
+    } else {
+      text = 'B';
+      output = exchangeAmount;
+      input = exchangeAmount;
+    }
+    return {
+      markup: [
+        {
+          tagName: 'rect',
+          selector: 'labelBody',
+        },
+        {
+          tagName: 'text',
+          selector: 'labelText',
+        },
+      ],
+      attrs: {
+        labelText: {
+          text: text,
+          fill: token.colorText,
+          textAnchor: 'middle',
+          textVerticalAnchor: 'middle',
+        },
+        labelBody: {
+          ref: 'labelText',
+          refX: -8,
+          refY: -5,
+          refWidth: '100%',
+          refHeight: '100%',
+          refWidth2: 16,
+          refHeight2: 10,
+          stroke: token.colorPrimary,
+          fill: token.colorBgBase,
+          strokeWidth: 2,
+          rx: 5,
+          ry: 5,
+          title: `(OUTPUT: ${output}) - (INPUT: ${input}) = ${unbalancedAmount}`,
+        },
+      },
+      position: {
+        distance: 0.5,
+        args: {
+          keepGradient: true,
+          ensureLegibility: true,
+        },
+      },
+    };
   };
 
   const saveCallback = useCallback(() => {
@@ -1131,11 +1178,12 @@ const ToolbarEdit: FC<Props> = ({
       setJsonTg({});
       return;
     }
+
     if (importData && importData.length > 0) {
       const formData = genLifeCycleModelInfoFromData(importData[0].lifeCycleModelDataSet);
       setInfoData(formData);
       const model = genLifeCycleModelData(importData[0]?.json_tg ?? {}, lang);
-      let initNodes = (model?.nodes ?? []).map((node: any) => {
+      const initNodes = (model?.nodes ?? []).map((node: any) => {
         const updatedPorts = {
           ...node.ports,
           groups: ports.groups,
@@ -1184,8 +1232,13 @@ const ToolbarEdit: FC<Props> = ({
           if (edge.target) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { x, y, ...targetRest } = edge.target as any;
+            const label = getEdgeLabel(
+              edge?.data?.connection?.unbalancedAmount,
+              edge?.data?.connection?.exchangeAmount,
+            );
             return {
               ...edge,
+              labels: [label],
               attrs: {
                 line: {
                   stroke: token.colorPrimary,
@@ -1196,6 +1249,7 @@ const ToolbarEdit: FC<Props> = ({
           }
           return edge;
         }) ?? [];
+
       modelData({
         nodes: initNodes,
         edges: initEdges,
@@ -1229,7 +1283,7 @@ const ToolbarEdit: FC<Props> = ({
         }
         setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        let initNodes = (model?.nodes ?? []).map((node: any) => {
+        const initNodes = (model?.nodes ?? []).map((node: any) => {
           const updatedPorts = {
             ...node.ports,
             groups: ports.groups,
@@ -1278,8 +1332,13 @@ const ToolbarEdit: FC<Props> = ({
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { x, y, ...targetRest } = edge.target as any;
+              const label = getEdgeLabel(
+                edge?.data?.connection?.unbalancedAmount,
+                edge?.data?.connection?.exchangeAmount,
+              );
               return {
                 ...edge,
+                labels: [label],
                 attrs: {
                   line: {
                     stroke: token.colorPrimary,
