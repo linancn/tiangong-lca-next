@@ -46,6 +46,7 @@ import TargetAmount from './editTargetAmount';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelect from './Exchange/ioPortSelect';
+import { getEdgeLabel } from './utils/edge';
 
 type Props = {
   id: string;
@@ -467,70 +468,6 @@ const ToolbarEdit: FC<Props> = ({
     // tools: ['edge-editor'],
   };
 
-  const getEdgeLabel = (unbalancedAmount: number, exchangeAmount: number) => {
-    if (unbalancedAmount === undefined || unbalancedAmount === null) {
-      return {};
-    }
-    let text = '';
-    let output = 0;
-    let input = 0;
-    if (unbalancedAmount > 0) {
-      text = 'O';
-      output = exchangeAmount + unbalancedAmount;
-      input = exchangeAmount;
-    } else if (unbalancedAmount < 0) {
-      text = 'I';
-      output = exchangeAmount;
-      input = exchangeAmount - unbalancedAmount;
-    } else {
-      text = 'B';
-      output = exchangeAmount;
-      input = exchangeAmount;
-    }
-    return {
-      markup: [
-        {
-          tagName: 'rect',
-          selector: 'labelBody',
-        },
-        {
-          tagName: 'text',
-          selector: 'labelText',
-        },
-      ],
-      attrs: {
-        labelText: {
-          text: text,
-          fill: token.colorText,
-          textAnchor: 'middle',
-          textVerticalAnchor: 'middle',
-        },
-        labelBody: {
-          ref: 'labelText',
-          refX: -8,
-          refY: -5,
-          refWidth: '100%',
-          refHeight: '100%',
-          refWidth2: 16,
-          refHeight2: 10,
-          stroke: token.colorPrimary,
-          fill: token.colorBgBase,
-          strokeWidth: 2,
-          rx: 5,
-          ry: 5,
-          title: `(OUTPUT: ${output}) - (INPUT: ${input}) = ${unbalancedAmount}`,
-        },
-      },
-      position: {
-        distance: 0.5,
-        args: {
-          keepGradient: true,
-          ensureLegibility: true,
-        },
-      },
-    };
-  };
-
   const saveCallback = useCallback(() => {
     setIsSave(true);
   }, [isSave, setIsSave]);
@@ -852,7 +789,7 @@ const ToolbarEdit: FC<Props> = ({
     });
   };
 
-  const deleteCell = () => {
+  const deleteCell = async () => {
     const selectedNodes = nodes.filter((node) => node.selected);
     if (selectedNodes.length > 0) {
       selectedNodes.forEach(async (node) => {
@@ -861,15 +798,25 @@ const ToolbarEdit: FC<Props> = ({
             (edge.source as any)?.cell === node.id || (edge.target as any)?.cell === node.id,
         );
         await removeEdges(selectedEdges.map((e) => e.id ?? ''));
-        if (node.data?.quantitativeReference === '1') {
-        }
+        // if (node.data?.quantitativeReference === '1') {
+        // }
         await removeNodes([node.id ?? '']);
         setNodeCount(nodeCount - 1);
+        edges.forEach((e) => {
+          if (e?.labels?.length > 0) {
+            updateEdge(e.id ?? '', { labels: [] });
+          }
+        });
       });
     } else {
       const selectedEdges = edges.filter((edge) => edge.selected);
       if (selectedEdges.length > 0) {
-        removeEdges(selectedEdges.map((e) => e.id ?? ''));
+        await removeEdges(selectedEdges.map((e) => e.id ?? ''));
+        edges.forEach((e) => {
+          if (e?.labels?.length > 0) {
+            updateEdge(e.id ?? '', { labels: [] });
+          }
+        });
       }
     }
   };
@@ -914,6 +861,17 @@ const ToolbarEdit: FC<Props> = ({
         );
         setThisId(result.data?.[0]?.id);
         setThisVersion(result.data?.[0]?.version);
+
+        const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
+        savedEdges.forEach((edge: any) => {
+          const label = getEdgeLabel(
+            token,
+            edge?.data?.connection?.unbalancedAmount,
+            edge?.data?.connection?.exchangeAmount,
+          );
+          updateEdge(edge.id, { labels: [label] });
+        });
+
         saveCallback();
       } else {
         if (result?.error?.state_code === 100) {
@@ -948,6 +906,17 @@ const ToolbarEdit: FC<Props> = ({
         setThisAction('edit');
         setThisId(result.data?.[0]?.id);
         setThisVersion(result.data?.[0]?.version);
+
+        const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
+        savedEdges.forEach((edge: any) => {
+          const label = getEdgeLabel(
+            token,
+            edge?.data?.connection?.unbalancedAmount,
+            edge?.data?.connection?.exchangeAmount,
+          );
+          updateEdge(edge.id, { labels: [label] });
+        });
+
         saveCallback();
       } else {
         message.error(result.error.message);
@@ -960,6 +929,11 @@ const ToolbarEdit: FC<Props> = ({
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     updateEdge(edge.id, edgeTemplate);
+    edges.forEach((e) => {
+      if (e?.labels?.length > 0) {
+        updateEdge(e.id ?? '', { labels: [] });
+      }
+    });
   });
 
   useGraphEvent('edge:connected', (evt) => {
@@ -1233,6 +1207,7 @@ const ToolbarEdit: FC<Props> = ({
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { x, y, ...targetRest } = edge.target as any;
             const label = getEdgeLabel(
+              token,
               edge?.data?.connection?.unbalancedAmount,
               edge?.data?.connection?.exchangeAmount,
             );
@@ -1333,6 +1308,7 @@ const ToolbarEdit: FC<Props> = ({
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { x, y, ...targetRest } = edge.target as any;
               const label = getEdgeLabel(
+                token,
                 edge?.data?.connection?.unbalancedAmount,
                 edge?.data?.connection?.exchangeAmount,
               );
