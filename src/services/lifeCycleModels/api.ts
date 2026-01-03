@@ -101,12 +101,33 @@ export async function createLifeCycleModel(data: any) {
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
   const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   // const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
-  const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+  const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
     newLifeCycleModelJsonOrdered,
     [],
   );
+
+  const edges = (data?.model?.edges ?? []).map((e: any) => {
+    const up2DownEdge = up2DownEdges.find(
+      (edge) =>
+        edge?.upstreamNodeId === e?.source?.cell && edge?.downstreamNodeId === e?.target?.cell,
+    );
+    return {
+      ...e,
+      labels: [],
+      data: {
+        ...e.data,
+        connection: {
+          ...e.data?.connection,
+          isBalanced: up2DownEdge?.isBalanced,
+          unbalancedAmount: up2DownEdge?.unbalancedAmount,
+          exchangeAmount: up2DownEdge?.exchangeAmount,
+        },
+      },
+    };
+  });
+
   const rule_verification = getRuleVerification(schema, newLifeCycleModelJsonOrdered)?.valid;
   const result = await supabase
     .from('lifecyclemodels')
@@ -115,7 +136,7 @@ export async function createLifeCycleModel(data: any) {
         id: data.id,
         json_ordered: newLifeCycleModelJsonOrdered,
         json_tg: {
-          xflow: data?.model,
+          xflow: { edges, nodes: data?.model?.nodes ?? [] },
           submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
         },
         rule_verification,
