@@ -44,7 +44,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
       EDGEONE_OUTPUT_DIR: dist
-      EDGEONE_PROJECT_NAME: tiangong-lca-next
+      EDGEONE_PROJECT_NAME: tiangong-lca-next-upload
 
     steps:
       - name: Checkout repository
