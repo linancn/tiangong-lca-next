@@ -15,8 +15,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from '@/pages/Processes/Components/optiondata';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { getCommentApi, updateCommentApi } from '@/services/comments/api';
-import { updateReviewApi } from '@/services/reviews/api';
+import { updateCommentApi } from '@/services/comments/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -36,16 +35,9 @@ import {
   ReffPath,
   checkReferences,
   getAllRefObj,
-  getRefTableName,
   refDataType,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
-import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import {
-  getLifeCycleModelDetail,
-  updateLifeCycleModelJsonApi,
-} from '@/services/lifeCycleModels/api';
-import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
@@ -53,11 +45,8 @@ type Props = {
   data: any;
   type: 'edit' | 'view';
   reviewId: string;
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   actionRef?: any;
-  approveReviewDisabled: boolean;
-  modelId: string;
-  modelVersion: string;
 };
 
 const getWorkflowAndPublicationStatusOptions = (value: string) => {
@@ -103,17 +92,7 @@ const getCopyrightOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ToolbarViewInfo: FC<Props> = ({
-  lang,
-  data,
-  type,
-  reviewId,
-  tabType,
-  actionRef,
-  approveReviewDisabled,
-  modelId,
-  modelVersion,
-}) => {
+const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actionRef }) => {
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
@@ -122,188 +101,6 @@ const ToolbarViewInfo: FC<Props> = ({
   const formRef = useRef<ProFormInstance>();
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
-  };
-
-  const updateLifeCycleModelJson = async (lifeCycleModel: any) => {
-    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-    if (!error && commentData && commentData.length) {
-      const allReviews: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.validation?.review) {
-          allReviews.push(...item?.json?.modellingAndValidation.validation.review);
-        }
-      });
-      const allCompliance: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
-          allCompliance.push(
-            ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
-          );
-        }
-      });
-
-      const _review =
-        lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
-      const _compliance =
-        lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
-          ?.compliance;
-      const json = {
-        ...lifeCycleModel?.json,
-      };
-      json.lifeCycleModelDataSet.modellingAndValidation = {
-        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation,
-        validation: {
-          ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review)
-            ? [..._review, ...allReviews]
-            : _review
-              ? [_review, ...allReviews]
-              : [...allReviews],
-        },
-        complianceDeclarations: {
-          ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation
-            ?.complianceDeclarations,
-          compliance: Array.isArray(_compliance)
-            ? [..._compliance, ...allCompliance]
-            : _compliance
-              ? [_compliance, ...allCompliance]
-              : [...allCompliance],
-        },
-      };
-      const { data: newLifeCycleModel } = await updateLifeCycleModelJsonApi(
-        modelId,
-        modelVersion,
-        json,
-      );
-      return newLifeCycleModel;
-    }
-  };
-
-  const updateReviewDataToPublic = async (modelId: string, modelVersion: string) => {
-    const result: any[] = [];
-    const teamId = await getUserTeamId();
-    const getReferences = async (refs: any[], checkedKeys = new Set<string>()) => {
-      for (const ref of refs) {
-        if (checkedKeys.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) continue;
-        checkedKeys.add(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
-
-        const refResult = await getRefData(
-          ref['@refObjectId'],
-          ref['@version'],
-          getRefTableName(ref['@type']),
-          teamId,
-        );
-
-        if (refResult.success && refResult?.data) {
-          const refData = refResult?.data;
-          if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-            result.push(ref);
-            const json = refData?.json;
-            const subRefs = getAllRefObj(json);
-            await getReferences(subRefs, checkedKeys);
-          }
-          if (ref['@type'] === 'process data set') {
-            const { data: sameModelWithProcress } = await getLifeCycleModelDetail(
-              ref['@refObjectId'],
-              ref['@version'],
-            );
-            if (sameModelWithProcress) {
-              const modelRefs = getAllRefObj(sameModelWithProcress);
-              await getReferences(modelRefs, checkedKeys);
-            }
-          }
-        }
-      }
-    };
-
-    const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
-    if (success) {
-      const newLifeCycleModel = await updateLifeCycleModelJson(lifeCycleModel);
-      if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
-        result.push({
-          '@refObjectId': modelId,
-          '@version': modelVersion,
-          '@type': 'lifeCycleModel data set',
-        });
-      }
-      const { data: sameProcressWithModel } = await getProcessDetail(modelId, modelVersion);
-      if (sameProcressWithModel) {
-        if (sameProcressWithModel?.stateCode !== 100 && sameProcressWithModel?.stateCode !== 200) {
-          result.push({
-            '@refObjectId': sameProcressWithModel?.id,
-            '@version': sameProcressWithModel?.version,
-            '@type': 'process data set',
-          });
-        }
-      }
-
-      const modelRefs = getAllRefObj(newLifeCycleModel);
-      if (modelRefs.length) {
-        await getReferences(modelRefs);
-        const procressRefs = modelRefs.filter((item) => item['@type'] === 'process data set');
-        for (const procress of procressRefs) {
-          const { data: sameModeWithProcress, success } = await getLifeCycleModelDetail(
-            procress['@refObjectId'],
-            procress['@version'],
-          );
-          if (
-            success &&
-            sameModeWithProcress?.stateCode !== 100 &&
-            sameModeWithProcress?.stateCode !== 200
-          ) {
-            result.push({
-              '@refObjectId': sameModeWithProcress?.id,
-              '@version': sameModeWithProcress?.version,
-              '@type': 'lifeCycleModel data set',
-            });
-          }
-        }
-      }
-      // const submodels = lifeCycleModel?.json_tg?.submodels;
-      // if (submodels) {
-      //   submodels.forEach((item: any) => {
-      //     result.push({
-      //       '@refObjectId': item.id,
-      //       '@version': modelVersion,
-      //       '@type': 'process data set',
-      //     });
-      //   });
-      // }
-    }
-    for (const item of result) {
-      await updateStateCodeApi(
-        item['@refObjectId'],
-        item['@version'],
-        getRefTableName(item['@type']),
-        100,
-      );
-    }
-  };
-
-  const approveReview = async () => {
-    setSpinning(true);
-    const { error } = await updateCommentApi(
-      reviewId,
-      {
-        state_code: 2,
-      },
-      tabType,
-    );
-
-    const { error: error2 } = await updateReviewApi([reviewId], {
-      state_code: 2,
-    });
-    await updateReviewDataToPublic(modelId, modelVersion);
-    if (!error && !error2) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.ReviewProcessDetail.assigned.success',
-          defaultMessage: 'Review approved successfully',
-        }),
-      );
-      actionRef?.current?.reload();
-    }
-    setSpinning(false);
   };
 
   const tabList = [
@@ -1910,16 +1707,7 @@ const ToolbarViewInfo: FC<Props> = ({
           setDrawerVisible(false);
         }}
         footer={
-          tabType === 'assigned' ? (
-            <Space className={styles.footer_right}>
-              <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
-                <FormattedMessage
-                  id='pages.review.ReviewProcessDetail.assigned.save'
-                  defaultMessage='Approve Review'
-                />
-              </Button>
-            </Space>
-          ) : tabType === 'review' ? (
+          tabType === 'review' ? (
             <Space size={'middle'} className={styles.footer_right}>
               <Button onClick={() => setDrawerVisible(false)}>
                 <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />

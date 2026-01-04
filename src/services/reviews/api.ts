@@ -2,7 +2,7 @@ import { getLifeCyclesByIdAndVersion, getLifeCyclesByIds } from '@/services/life
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { getPendingComment, getReviewedComment } from '../comments/api';
+import { getPendingComment, getRejectedComment, getReviewedComment } from '../comments/api';
 import { getLangText } from '../general/util';
 import { genProcessName } from '../processes/util';
 
@@ -64,7 +64,7 @@ export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
 export async function getReviewsTableDataOfReviewMember(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'reviewed' | 'pending',
+  type: 'reviewed' | 'pending' | 'reviewer-rejected',
   lang: string,
   userData?: { user_id: string | undefined },
 ) {
@@ -85,11 +85,18 @@ export async function getReviewsTableDataOfReviewMember(
       }
       break;
     }
+    case 'reviewer-rejected': {
+      const userId = userData?.user_id ?? (await getUserId());
+      if (userId) {
+        commentResult = await getRejectedComment(params, sort, userId);
+      }
+      break;
+    }
   }
   if (commentResult.error || !commentResult.data || !commentResult.data.length) {
     return Promise.resolve({
       data: [],
-      success: false,
+      success: true,
       total: 0,
     });
   } else {
@@ -142,7 +149,7 @@ export async function getReviewsTableDataOfReviewMember(
 export async function getReviewsTableDataOfReviewAdmin(
   params: { pageSize: number; current: number },
   sort: any,
-  type: 'unassigned' | 'assigned',
+  type: 'unassigned' | 'assigned' | 'admin-rejected',
   lang: string,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -165,6 +172,10 @@ export async function getReviewsTableDataOfReviewAdmin(
         .eq('state_code', 1)
         .select('*, comments(state_code)')
         .filter('comments.state_code', 'gte', 0);
+      break;
+    }
+    case 'admin-rejected': {
+      query = query.eq('state_code', -1);
       break;
     }
   }
@@ -219,7 +230,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   }
   return Promise.resolve({
     data: [],
-    success: false,
+    success: true,
     total: 0,
   });
 }
@@ -230,6 +241,16 @@ export async function getReviewsByProcess(processId: string, processVersion: str
     .select('*')
     .filter('json->data->>id', 'eq', processId)
     .filter('json->data->>version', 'eq', processVersion);
+  return result;
+}
+
+export async function getRejectReviewsByProcess(processId: string, processVersion: string) {
+  const result = await supabase
+    .from('reviews')
+    .select('id')
+    .filter('json->data->>id', 'eq', processId)
+    .filter('json->data->>version', 'eq', processVersion)
+    .eq('state_code', -1);
   return result;
 }
 
@@ -314,6 +335,38 @@ export async function getNotifyReviews(
     data: [],
     success: false,
     total: 0,
+  });
+}
+
+export async function getNotifyReviewsCount(timeFilter: number = 3, lastViewTime?: number) {
+  const userId = await getUserId();
+
+  if (!userId) {
+    return Promise.resolve({
+      success: false,
+      total: 0,
+    });
+  }
+
+  let query = supabase
+    .from('reviews')
+    .select('*', { count: 'exact', head: true })
+    .filter('json->user->>id', 'eq', userId)
+    .in('state_code', [1, -1, 2]);
+
+  if (lastViewTime && lastViewTime > 0) {
+    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
+  } else if (timeFilter > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
+    query = query.gte('modified_at', cutoffDate.toISOString());
+  }
+
+  const { count, error } = await query;
+
+  return Promise.resolve({
+    success: !error,
+    total: count ?? 0,
   });
 }
 

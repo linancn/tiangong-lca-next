@@ -156,6 +156,7 @@ jest.mock('@/pages/Utils/review', () => ({
     add: jest.fn(async (fn: any) => fn()),
     waitForAll: jest.fn(() => Promise.resolve()),
   })),
+  getRejectedComments: jest.fn(() => Promise.resolve([])),
 }));
 
 const mockGetCommentApi = jest.fn();
@@ -289,28 +290,6 @@ describe('ReviewProcessDetail component', () => {
         {...props}
       />,
     );
-
-  it('approves review and updates backend services', async () => {
-    renderComponent({ type: 'edit', tabType: 'assigned' });
-
-    const [openButton] = screen.getAllByRole('button');
-    fireEvent.click(openButton);
-
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-    const approveButton = await screen.findByRole('button', { name: /Approve Review/i });
-    expect(approveButton).not.toBeDisabled();
-
-    fireEvent.click(approveButton);
-
-    await waitFor(() => expect(mockUpdateCommentApi).toHaveBeenCalled());
-    expect(mockUpdateReviewApi).toHaveBeenCalledWith(
-      ['review-1'],
-      expect.objectContaining({ state_code: 2 }),
-    );
-    await waitFor(() =>
-      expect(message.success).toHaveBeenCalledWith('Review approved successfully'),
-    );
-  });
 
   it('submits review form when reviewer saves', async () => {
     mockCheckReferences.mockResolvedValue({

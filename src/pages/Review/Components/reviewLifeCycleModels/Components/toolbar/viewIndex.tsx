@@ -24,7 +24,7 @@ type Props = {
   version: string;
   lang: string;
   reviewId: string;
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   drawerVisible: boolean;
   actionRef?: any;
 };
@@ -46,7 +46,6 @@ const ToolbarView: FC<Props> = ({
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
-  const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
@@ -377,24 +376,20 @@ const ToolbarView: FC<Props> = ({
         const { data, error } = await getCommentApi(reviewId, tabType);
 
         if (!error && data && data.length) {
-          const isSaveReview = data && data.every((item: any) => item.state_code === 1);
           const allReviews: any[] = [];
           data.forEach((item: any) => {
-            if (item?.json?.modellingAndValidation.validation.review) {
+            if (item?.json?.modellingAndValidation?.validation?.review) {
               allReviews.push(...item?.json?.modellingAndValidation.validation.review);
             }
           });
           const allCompliance: any[] = [];
           data.forEach((item: any) => {
-            if (item?.json?.modellingAndValidation.complianceDeclarations.compliance) {
+            if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
               allCompliance.push(
                 ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
               );
             }
           });
-          setApproveReviewDisabled(
-            !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
-          );
           if (result?.data?.json?.lifeCycleModelDataSet) {
             const _compliance =
               result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation
@@ -405,7 +400,7 @@ const ToolbarView: FC<Props> = ({
               ...result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation,
               complianceDeclarations: {
                 compliance:
-                  tabType === 'review'
+                  tabType === 'review' || tabType === 'reviewer-rejected'
                     ? [...(allCompliance.length ? allCompliance : [{}])]
                     : Array.isArray(_compliance)
                       ? [..._compliance, ...allCompliance]
@@ -415,7 +410,7 @@ const ToolbarView: FC<Props> = ({
               },
               validation: {
                 review:
-                  tabType === 'review'
+                  tabType === 'review' || tabType === 'reviewer-rejected'
                     ? [
                         ...(allReviews.length
                           ? allReviews
@@ -542,15 +537,12 @@ const ToolbarView: FC<Props> = ({
   return (
     <Space direction='vertical' size={'middle'}>
       <ToolbarViewInfo
-        approveReviewDisabled={approveReviewDisabled}
         actionRef={actionRef}
         type={type}
         lang={lang}
         data={infoData}
         reviewId={reviewId}
         tabType={tabType}
-        modelId={id}
-        modelVersion={version}
       />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}

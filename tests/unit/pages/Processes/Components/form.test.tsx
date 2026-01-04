@@ -29,6 +29,12 @@ jest.mock('umi', () => ({
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
 }));
 
+jest.mock('@ant-design/icons', () => ({
+  __esModule: true,
+  CalculatorOutlined: () => <span data-testid='icon-calculator' />,
+  CloseOutlined: () => <span data-testid='icon-close' />,
+}));
+
 jest.mock('@/contexts/refCheckContext', () => ({
   __esModule: true,
   useRefCheckContext: () => mockRefCheckContextValue,
@@ -240,6 +246,14 @@ jest.mock('antd', () => {
 
   const FormComponent = ({ children }: any) => <form>{children}</form>;
   FormComponent.Item = ({ children }: any) => <div>{children}</div>;
+  FormComponent.List = ({ children }: any) => {
+    const fields = [{ key: 0, name: 0 }];
+    const operations = {
+      add: jest.fn(),
+      remove: jest.fn(),
+    };
+    return children(fields, operations);
+  };
 
   const Input = ({ onChange, value, 'data-testid': dataTestId }: any) => (
     <input

@@ -271,7 +271,7 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         count: 'exact',
       });
       expect(builder.eq).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
-      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2]);
+      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2, -3]);
       expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
       expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
       expect(builder.range).toHaveBeenCalledWith(0, 9);
@@ -287,7 +287,7 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       expect(mockGetUserId).not.toHaveBeenCalled();
       expect(builder.eq).toHaveBeenCalledWith('reviewer_id', 'specific-user-id');
-      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2]);
+      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2, -3]);
       expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
       expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
       expect(builder.range).toHaveBeenCalledWith(0, 9);

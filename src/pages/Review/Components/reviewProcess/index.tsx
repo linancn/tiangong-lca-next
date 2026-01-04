@@ -1,16 +1,14 @@
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
 import {
   checkReferences,
-  ConcurrencyController,
   getAllRefObj,
-  getRefTableName,
+  getRejectedComments,
   refDataType,
   ReffPath,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
 import { getCommentApi, updateCommentApi } from '@/services/comments/api';
-import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
+import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
@@ -32,8 +30,29 @@ type Props = {
   lang: string;
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   type: 'edit' | 'view';
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   hideButton?: boolean;
+};
+
+export const getNewReviewJson = async (action: string, reviewId: string) => {
+  const userId = await getUserId();
+  const user = await getUsersByIds([userId]);
+  const reviewDetail = await getReviewsDetail(reviewId);
+  const updateJson = {
+    ...reviewDetail?.json,
+    logs: [
+      ...(reviewDetail?.json.logs ?? []),
+      {
+        action,
+        time: new Date(),
+        user: {
+          id: userId,
+          display_name: user?.[0]?.display_name,
+        },
+      },
+    ],
+  };
+  return updateJson;
 };
 
 const ReviewProcessDetail: FC<Props> = ({
@@ -54,8 +73,8 @@ const ReviewProcessDetail: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
-  const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [rejectedComments, setRejectedComments] = useState<any>([]);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -79,143 +98,6 @@ const ReviewProcessDetail: FC<Props> = ({
     setActiveTabKey('processInformation');
   };
 
-  const updateProcessJson = async (process: any) => {
-    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-    if (!error && commentData && commentData.length) {
-      const allReviews: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.validation?.review) {
-          allReviews.push(...item?.json?.modellingAndValidation.validation.review);
-        }
-      });
-      const allCompliance: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
-          allCompliance.push(
-            ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
-          );
-        }
-      });
-
-      const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
-      const _compliance =
-        process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
-      const json = {
-        ...process?.json,
-      };
-      json.processDataSet.modellingAndValidation = {
-        ...process?.json?.processDataSet?.modellingAndValidation,
-        validation: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review)
-            ? [..._review, ...allReviews]
-            : _review
-              ? [_review, ...allReviews]
-              : [...allReviews],
-        },
-        complianceDeclarations: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
-          compliance: Array.isArray(_compliance)
-            ? [..._compliance, ...allCompliance]
-            : _compliance
-              ? [_compliance, ...allCompliance]
-              : [...allCompliance],
-        },
-      };
-      await updateProcessApi(id, version, { json_ordered: json });
-    }
-  };
-
-  const updateReviewDataToPublic = async (id: string, version: string) => {
-    const result = [];
-    const controller = new ConcurrencyController(5);
-    const { data: process, success } = await getProcessDetail(id, version);
-    if (success) {
-      await updateProcessJson(process);
-      if (process?.stateCode !== 100 && process?.stateCode !== 200) {
-        result.push({
-          '@refObjectId': process?.id,
-          '@version': process?.version,
-          '@type': 'process data set',
-        });
-      }
-
-      const refs = getAllRefObj(process?.json);
-      if (refs.length) {
-        const teamId = await getUserTeamId();
-        const getReferences = (
-          refs: any[],
-          checkedIds = new Set<string>(),
-          requestKeysSet?: Set<string>,
-        ) => {
-          const requestKeys = requestKeysSet || new Set<string>();
-          for (const ref of refs) {
-            if (checkedIds.has(ref['@refObjectId'])) continue;
-            checkedIds.add(ref['@refObjectId']);
-
-            const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
-            if (!requestKeys.has(key)) {
-              requestKeys.add(key);
-              controller.add(async () => {
-                const refResult = await getRefData(
-                  ref['@refObjectId'],
-                  ref['@version'],
-                  getRefTableName(ref['@type']),
-                  teamId,
-                );
-
-                if (refResult.success) {
-                  const refData = refResult?.data;
-                  if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-                    result.push(ref);
-                  }
-                  const json = refData?.json;
-                  const subRefs = getAllRefObj(json);
-                  if (subRefs.length) {
-                    getReferences(subRefs, checkedIds, requestKeys);
-                  }
-                }
-              });
-            }
-          }
-        };
-        getReferences(refs);
-        await controller.waitForAll();
-      }
-    }
-    for (const item of result) {
-      controller.add(async () => {
-        await updateStateCodeApi(
-          item['@refObjectId'] ?? '',
-          item['@version'] ?? '',
-          getRefTableName(item['@type'] ?? ''),
-          100,
-        );
-      });
-    }
-    await controller.waitForAll();
-  };
-  const getNewReviewJson = async (action: string) => {
-    const userId = await getUserId();
-    const user = await getUsersByIds([userId]);
-    const reviewDetail = await getReviewsDetail(reviewId);
-    const updateJson = {
-      ...reviewDetail?.json,
-      logs: [
-        ...(reviewDetail?.json.logs ?? []),
-        {
-          action,
-          time: new Date(),
-          user: {
-            id: userId,
-            display_name: user?.[0]?.display_name,
-          },
-        },
-      ],
-    };
-    return updateJson;
-  };
-
   const temporarySave = async () => {
     try {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -229,7 +111,7 @@ const ReviewProcessDetail: FC<Props> = ({
       setSpinning(true);
       const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
       if (!error) {
-        const newReviewJson = await getNewReviewJson('submit_comments_temporary');
+        const newReviewJson = await getNewReviewJson('submit_comments_temporary', reviewId);
         const result = await updateReviewApi([reviewId], {
           json: newReviewJson,
         });
@@ -255,51 +137,15 @@ const ReviewProcessDetail: FC<Props> = ({
     }
   };
 
-  const approveReview = async () => {
-    setSpinning(true);
-    const { error } = await updateCommentApi(
-      reviewId,
-      {
-        state_code: 2,
-      },
-      tabType,
-    );
-
-    const newReviewJson = await getNewReviewJson('approved');
-    const { error: error2 } = await updateReviewApi([reviewId], {
-      state_code: 2,
-      json: newReviewJson,
-    });
-
-    await updateReviewDataToPublic(id, version);
-
-    if (!error && !error2) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.ReviewProcessDetail.assigned.success',
-          defaultMessage: 'Review approved successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      actionRef?.current?.reload();
-    }
-    setSpinning(false);
-  };
-  const isReviewComplete = (data: any) => {
-    return data
-      .filter((item: any) => item.state_code >= 0)
-      .every((item: any) => item.state_code === 1);
-  };
   const onReset = () => {
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const { data, error } = await getCommentApi(reviewId, tabType);
       if (!error && data && data.length) {
         const allReviews: any[] = [];
-        const isSaveReview = isReviewComplete(data);
         const allCompliance: any[] = [];
         data.forEach((item: any) => {
-          if (item?.json?.modellingAndValidation.validation.review) {
+          if (item?.json?.modellingAndValidation?.validation?.review) {
             allReviews.push(...item?.json?.modellingAndValidation.validation.review);
           }
           // No review data has been saved yet.
@@ -412,15 +258,12 @@ const ReviewProcessDetail: FC<Props> = ({
               ],
             );
           }
-          if (item?.json?.modellingAndValidation.complianceDeclarations.compliance) {
+          if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
             allCompliance.push(
               ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
             );
           }
         });
-        setApproveReviewDisabled(
-          !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
-        );
         if (result?.data?.json?.processDataSet) {
           const _compliance =
             result.data.json.processDataSet?.modellingAndValidation?.complianceDeclarations
@@ -431,7 +274,7 @@ const ReviewProcessDetail: FC<Props> = ({
             ...result.data.json.processDataSet.modellingAndValidation,
             complianceDeclarations: {
               compliance:
-                tabType === 'review'
+                tabType === 'review' || tabType === 'reviewer-rejected'
                   ? [...(allCompliance.length ? allCompliance : [{}])]
                   : Array.isArray(_compliance)
                     ? [..._compliance, ...allCompliance]
@@ -441,7 +284,7 @@ const ReviewProcessDetail: FC<Props> = ({
             },
             validation: {
               review:
-                tabType === 'review'
+                tabType === 'review' || tabType === 'reviewer-rejected'
                   ? [
                       ...(allReviews.length
                         ? allReviews
@@ -461,6 +304,11 @@ const ReviewProcessDetail: FC<Props> = ({
         }
       }
 
+      // Get the rejected comments
+      if (result?.data?.stateCode < 100) {
+        const rejectedCommentsRes = await getRejectedComments(id, version);
+        setRejectedComments(rejectedCommentsRes);
+      }
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({ ...dataSet, id: id });
       setFromData({ ...dataSet, id: id });
@@ -551,6 +399,49 @@ const ReviewProcessDetail: FC<Props> = ({
     }
   };
 
+  const handleReject = async (reason: string) => {
+    try {
+      setSpinning(true);
+      const { data: commentData } = await getCommentApi(reviewId, tabType);
+      const comment = commentData ? commentData[0] : null;
+      if (commentData) {
+        const updateJson = {
+          ...comment.json,
+          comment: {
+            message: reason,
+          },
+        };
+        const { error } = await updateCommentApi(
+          comment.review_id,
+          {
+            json: updateJson,
+            state_code: -3,
+          },
+          tabType,
+        );
+        if (!error) {
+          message.success(
+            intl.formatMessage({
+              id: 'component.rejectReview.success',
+              defaultMessage: 'Rejected successfully!',
+            }),
+          );
+          setDrawerVisible(false);
+          actionRef?.current?.reload();
+        }
+      }
+    } catch (error) {
+      message.error(
+        intl.formatMessage({
+          id: 'component.rejectReview.error',
+          defaultMessage: 'Failed to reject, please try again!',
+        }),
+      );
+    } finally {
+      setSpinning(false);
+    }
+  };
+
   return (
     <>
       {type === 'edit' ? (
@@ -594,26 +485,18 @@ const ReviewProcessDetail: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          tabType === 'assigned' && !hideButton ? (
+          tabType === 'review' && !hideButton ? (
             <Space className={styles.footer_right}>
-              <Button disabled={approveReviewDisabled} type='primary' onClick={approveReview}>
-                <FormattedMessage
-                  id='pages.review.ReviewProcessDetail.assigned.save'
-                  defaultMessage='Approve Review'
-                />
-              </Button>
               <RejectReview
                 buttonType='text'
                 isModel={false}
                 dataId={id}
                 dataVersion={version}
                 reviewId={reviewId}
-                key={0}
+                key={1}
                 actionRef={actionRef}
+                onOk={handleReject}
               />
-            </Space>
-          ) : tabType === 'review' && !hideButton ? (
-            <Space className={styles.footer_right}>
               <Button onClick={temporarySave}>
                 <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
               </Button>
@@ -660,7 +543,7 @@ const ReviewProcessDetail: FC<Props> = ({
                     tabType,
                   );
                   if (!error) {
-                    const newReviewJson = await getNewReviewJson('submit_comments');
+                    const newReviewJson = await getNewReviewJson('submit_comments', reviewId);
                     const result = await updateReviewApi([reviewId], {
                       json: newReviewJson,
                     });
@@ -686,6 +569,7 @@ const ReviewProcessDetail: FC<Props> = ({
               }}
             >
               <TabsDetail
+                rejectedComments={rejectedComments}
                 initData={initData}
                 lang={lang}
                 activeTabKey={activeTabKey}

@@ -46,6 +46,7 @@ import TargetAmount from './editTargetAmount';
 import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelect from './Exchange/ioPortSelect';
+import { getEdgeLabel } from './utils/edge';
 
 type Props = {
   id: string;
@@ -464,23 +465,6 @@ const ToolbarEdit: FC<Props> = ({
         stroke: token.colorPrimary,
       },
     },
-    // labels: [{
-    //   position: 0.5,
-    //   attrs: {
-    //     body: {
-    //       stroke: token.colorBorder,
-    //       strokeWidth: 1,
-    //       fill: token.colorBgBase,
-    //       rx: 6,
-    //       ry: 6,
-    //     },
-    //     label: {
-    //       text: '1',
-    //       fill: token.colorTextBase,
-    //     },
-    //   },
-    // },
-    // ],
     // tools: ['edge-editor'],
   };
 
@@ -805,7 +789,7 @@ const ToolbarEdit: FC<Props> = ({
     });
   };
 
-  const deleteCell = () => {
+  const deleteCell = async () => {
     const selectedNodes = nodes.filter((node) => node.selected);
     if (selectedNodes.length > 0) {
       selectedNodes.forEach(async (node) => {
@@ -814,15 +798,25 @@ const ToolbarEdit: FC<Props> = ({
             (edge.source as any)?.cell === node.id || (edge.target as any)?.cell === node.id,
         );
         await removeEdges(selectedEdges.map((e) => e.id ?? ''));
-        if (node.data?.quantitativeReference === '1') {
-        }
+        // if (node.data?.quantitativeReference === '1') {
+        // }
         await removeNodes([node.id ?? '']);
         setNodeCount(nodeCount - 1);
+        edges.forEach((e) => {
+          if (e?.labels?.length > 0) {
+            updateEdge(e.id ?? '', { labels: [] });
+          }
+        });
       });
     } else {
       const selectedEdges = edges.filter((edge) => edge.selected);
       if (selectedEdges.length > 0) {
-        removeEdges(selectedEdges.map((e) => e.id ?? ''));
+        await removeEdges(selectedEdges.map((e) => e.id ?? ''));
+        edges.forEach((e) => {
+          if (e?.labels?.length > 0) {
+            updateEdge(e.id ?? '', { labels: [] });
+          }
+        });
       }
     }
   };
@@ -867,6 +861,17 @@ const ToolbarEdit: FC<Props> = ({
         );
         setThisId(result.data?.[0]?.id);
         setThisVersion(result.data?.[0]?.version);
+
+        const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
+        savedEdges.forEach((edge: any) => {
+          const label = getEdgeLabel(
+            token,
+            edge?.data?.connection?.unbalancedAmount,
+            edge?.data?.connection?.exchangeAmount,
+          );
+          updateEdge(edge.id, { labels: [label] });
+        });
+
         saveCallback();
       } else {
         if (result?.error?.state_code === 100) {
@@ -901,6 +906,17 @@ const ToolbarEdit: FC<Props> = ({
         setThisAction('edit');
         setThisId(result.data?.[0]?.id);
         setThisVersion(result.data?.[0]?.version);
+
+        const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
+        savedEdges.forEach((edge: any) => {
+          const label = getEdgeLabel(
+            token,
+            edge?.data?.connection?.unbalancedAmount,
+            edge?.data?.connection?.exchangeAmount,
+          );
+          updateEdge(edge.id, { labels: [label] });
+        });
+
         saveCallback();
       } else {
         message.error(result.error.message);
@@ -913,6 +929,11 @@ const ToolbarEdit: FC<Props> = ({
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     updateEdge(edge.id, edgeTemplate);
+    edges.forEach((e) => {
+      if (e?.labels?.length > 0) {
+        updateEdge(e.id ?? '', { labels: [] });
+      }
+    });
   });
 
   useGraphEvent('edge:connected', (evt) => {
@@ -1131,11 +1152,12 @@ const ToolbarEdit: FC<Props> = ({
       setJsonTg({});
       return;
     }
+
     if (importData && importData.length > 0) {
       const formData = genLifeCycleModelInfoFromData(importData[0].lifeCycleModelDataSet);
       setInfoData(formData);
       const model = genLifeCycleModelData(importData[0]?.json_tg ?? {}, lang);
-      let initNodes = (model?.nodes ?? []).map((node: any) => {
+      const initNodes = (model?.nodes ?? []).map((node: any) => {
         const updatedPorts = {
           ...node.ports,
           groups: ports.groups,
@@ -1184,8 +1206,14 @@ const ToolbarEdit: FC<Props> = ({
           if (edge.target) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { x, y, ...targetRest } = edge.target as any;
+            const label = getEdgeLabel(
+              token,
+              edge?.data?.connection?.unbalancedAmount,
+              edge?.data?.connection?.exchangeAmount,
+            );
             return {
               ...edge,
+              labels: [label],
               attrs: {
                 line: {
                   stroke: token.colorPrimary,
@@ -1196,6 +1224,7 @@ const ToolbarEdit: FC<Props> = ({
           }
           return edge;
         }) ?? [];
+
       modelData({
         nodes: initNodes,
         edges: initEdges,
@@ -1229,7 +1258,7 @@ const ToolbarEdit: FC<Props> = ({
         }
         setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        let initNodes = (model?.nodes ?? []).map((node: any) => {
+        const initNodes = (model?.nodes ?? []).map((node: any) => {
           const updatedPorts = {
             ...node.ports,
             groups: ports.groups,
@@ -1278,8 +1307,14 @@ const ToolbarEdit: FC<Props> = ({
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { x, y, ...targetRest } = edge.target as any;
+              const label = getEdgeLabel(
+                token,
+                edge?.data?.connection?.unbalancedAmount,
+                edge?.data?.connection?.exchangeAmount,
+              );
               return {
                 ...edge,
+                labels: [label],
                 attrs: {
                   line: {
                     stroke: token.colorPrimary,
