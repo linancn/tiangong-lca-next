@@ -358,11 +358,11 @@ const RejectReview: React.FC<RejectReviewProps> = ({
                 ),
               },
               {
-                max: 500,
+                max: 1000,
                 message: (
                   <FormattedMessage
                     id='component.rejectReview.reason.maxLength'
-                    defaultMessage='Reject reason cannot exceed 500 characters!'
+                    defaultMessage='Reject reason cannot exceed 1000 characters!'
                   />
                 ),
               },
@@ -376,7 +376,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
                   'Please provide detailed reasons for rejection so that the submitter can understand what needs to be modified...',
               })}
               showCount
-              maxLength={500}
+              maxLength={1000}
             />
           </Form.Item>
         </Form>
