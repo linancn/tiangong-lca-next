@@ -324,7 +324,7 @@ const ProcessEdit: FC<Props> = ({
   const handleCheckData = async (from: 'review' | 'checkData', processDetail: any) => {
     setSpinning(true);
     setShowRules(true);
-    if (processDetail.stateCode >= 20 && processDetail.stateCode < 100) {
+    if (processDetail.stateCode >= 20 && processDetail.stateCode < 100 && from === 'checkData') {
       message.error(
         intl.formatMessage({
           id: 'pages.process.checkData.inReview',
@@ -396,7 +396,7 @@ const ProcessEdit: FC<Props> = ({
     );
     allRefs.add(`${id}:${version}:process data set`);
     await checkVersions(allRefs, path);
-    const problemNodes = path?.findProblemNodes() ?? [];
+    const problemNodes = path?.findProblemNodes(from) ?? [];
     if (problemNodes && problemNodes.length > 0) {
       let currentProcessUnderReviewVersion = undefined;
       let currentProcessVersionIsInTg = false;

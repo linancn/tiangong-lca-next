@@ -1,4 +1,5 @@
 import { getLang, getLangText } from '@/services/general/util';
+import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space } from 'antd';
 import type { FC } from 'react';
@@ -42,6 +43,8 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
       destroyOnClose
       width={800}
       open={open}
+      closable={false}
+      extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onCancel} />}
       title={
         <FormattedMessage
           id={'component.refsOfNewVersionDrawer.title'}

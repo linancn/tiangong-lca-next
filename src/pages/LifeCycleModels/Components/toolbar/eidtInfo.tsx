@@ -262,7 +262,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       if (sameProcressWithModel) allRefs.add(`${data.id}:${data.version}:process data set`);
       await checkVersions(allRefs, path);
 
-      const problemNodes = path?.findProblemNodes() ?? [];
+      const problemNodes = path?.findProblemNodes(from) ?? [];
       if (problemNodes && problemNodes.length > 0) {
         let underReviewVersionProcessAndModel: RefCheckType[] = [];
         let versionIsInTgProcessAndModel: RefCheckType[] = [];
