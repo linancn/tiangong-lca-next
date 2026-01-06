@@ -1124,7 +1124,7 @@ export const workflowAndPublicationStatusOptions = [
 
 export const copyrightOptions = [
   {
-    value: 'Yes',
+    value: 'true',
     label: (
       <FormattedMessage
         id='pages.process.view.administrativeInformation.copyright.yes'
@@ -1133,7 +1133,7 @@ export const copyrightOptions = [
     ),
   },
   {
-    value: 'No',
+    value: 'false',
     label: (
       <FormattedMessage
         id='pages.process.view.administrativeInformation.copyright.no'

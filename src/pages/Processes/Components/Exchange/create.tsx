@@ -66,8 +66,9 @@ const ProcessExchangeCreate: FC<Props> = ({
   useEffect(() => {
     if (!drawerVisible) return;
     formRefCreate.current?.resetFields();
-    const initData = { exchangeDirection: direction.toLowerCase() };
-    setAsInput(direction.toLowerCase() === 'input');
+    const directionValue = direction.charAt(0).toUpperCase() + direction.slice(1).toLowerCase();
+    const initData = { exchangeDirection: directionValue };
+    setAsInput(directionValue.toLowerCase() === 'input');
     formRefCreate.current?.setFieldsValue(initData);
     setFromData(initData);
   }, [drawerVisible]);
@@ -176,11 +177,11 @@ const ProcessExchangeCreate: FC<Props> = ({
                 // placeholder="Select a direction"
                 optionFilterProp='direction'
                 options={[
-                  { value: 'input', label: 'Input' },
-                  { value: 'output', label: 'Output' },
+                  { value: 'Input', label: 'Input' },
+                  { value: 'Output', label: 'Output' },
                 ]}
                 onChange={(value) => {
-                  setAsInput(value === 'input');
+                  setAsInput(value.toLowerCase() === 'input');
                 }}
               />
             </Form.Item>
