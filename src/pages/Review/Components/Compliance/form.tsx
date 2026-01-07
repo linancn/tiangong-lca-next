@@ -1,11 +1,3 @@
-import schema from '@/pages/Processes/processes_schema.json';
-import SourceSelectForm from '@/pages/Sources/Components/select/form';
-import { getRules } from '@/pages/Utils';
-import { CloseOutlined } from '@ant-design/icons';
-import { ProFormInstance } from '@ant-design/pro-components';
-import { Card, Col, Form, Row, Select, Space } from 'antd';
-import { FC } from 'react';
-import { FormattedMessage } from 'umi';
 import {
   approvalOfOverallComplianceOptions,
   documentationComplianceOptions,
@@ -13,7 +5,15 @@ import {
   nomenclatureComplianceOptions,
   qualityComplianceOptions,
   reviewComplianceOptions,
-} from '../reviewProcess/optiondata';
+} from '@/pages/Processes/Components/optiondata';
+import schema from '@/pages/Processes/processes_schema.json';
+import SourceSelectForm from '@/pages/Sources/Components/select/form';
+import { getRules } from '@/pages/Utils';
+import { CloseOutlined } from '@ant-design/icons';
+import { ProFormInstance } from '@ant-design/pro-components';
+import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
+import { FC } from 'react';
+import { FormattedMessage } from 'umi';
 // const { TextArea } = Input;
 
 type Props = {
@@ -189,6 +189,25 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                 </Space>
               </Row>
             ))}
+            <Button
+              type='dashed'
+              onClick={() =>
+                subOpt.add({
+                  'common:approvalOfOverallCompliance': 'Fully compliant',
+                  'common:nomenclatureCompliance': 'Fully compliant',
+                  'common:methodologicalCompliance': 'Fully compliant',
+                  'common:reviewCompliance': 'Fully compliant',
+                  'common:documentationCompliance': 'Fully compliant',
+                  'common:qualityCompliance': 'Fully compliant',
+                  'common:referenceToComplianceSystem': {},
+                })
+              }
+              block
+            >
+              + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
+              <FormattedMessage id='pages.process.validation.review' defaultMessage='Review' />{' '}
+              <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
+            </Button>
           </div>
         )}
       </Form.List>

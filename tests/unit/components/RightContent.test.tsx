@@ -43,6 +43,9 @@ jest.mock('@umijs/max', () => ({
       language selector
     </div>
   ),
+  useIntl: () => ({
+    locale: 'zh-CN',
+  }),
 }));
 
 const mockWindowOpen = jest.fn();

@@ -19,6 +19,9 @@ const mockGetFlowStateCode = jest.fn();
 const mockGenProcessFromData = jest.fn();
 const mockGenProcessExchangeTableData = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockJsonToList = jest.fn((value: any) =>
+  Array.isArray(value) ? value : value ? [value] : [],
+);
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -41,6 +44,7 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getLangText: () => 'text',
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 jest.mock('@/services/flows/api', () => ({
@@ -239,7 +243,9 @@ describe('ProcessView component', () => {
       expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
     });
 
-    expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    await waitFor(() => {
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
   });
 
   it('changes active tab when user selects new tab', async () => {

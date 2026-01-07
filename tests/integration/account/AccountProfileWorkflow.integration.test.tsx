@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Account profile workflow integration tests.
  *
@@ -90,11 +89,11 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
-  const FormContext = React.createContext<any>(null);
+  const FormContext = React.createContext(null as any);
 
   const Form = React.forwardRef(({ children, initialValues = {} }: any, ref: any) => {
-    const [values, setValues] = React.useState<Record<string, any>>(initialValues ?? {});
-    const rulesRef = React.useRef<Record<string, any[]>>({});
+    const [values, setValues] = React.useState((initialValues ?? {}) as Record<string, any>);
+    const rulesRef = React.useRef({} as Record<string, any[]>);
 
     const registerRules = React.useCallback((name: string, rules: any[] = []) => {
       if (!name) return;
@@ -103,7 +102,7 @@ jest.mock('antd', () => {
 
     const setFieldValue = React.useCallback((name: string, value: any) => {
       if (!name) return;
-      setValues((previous) => ({ ...previous, [name]: value }));
+      setValues((previous: Record<string, any>) => ({ ...previous, [name]: value }));
     }, []);
 
     const resetFields = React.useCallback(() => {
@@ -111,7 +110,7 @@ jest.mock('antd', () => {
     }, [initialValues]);
 
     const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
-      setValues((previous) => ({ ...previous, ...fields }));
+      setValues((previous: Record<string, any>) => ({ ...previous, ...fields }));
     }, []);
 
     const getFieldValue = React.useCallback(
@@ -121,9 +120,9 @@ jest.mock('antd', () => {
 
     const validateFields = React.useCallback(async () => {
       const errors: any[] = [];
-      Object.entries(rulesRef.current).forEach(([field, rules]) => {
+      Object.entries(rulesRef.current as Record<string, any[]>).forEach(([field, rules]) => {
         const value = values[field];
-        (rules ?? []).forEach((rule) => {
+        (rules ?? ([] as any[])).forEach((rule: any) => {
           const messageText = toText(rule?.message) || 'Validation failed';
           if (
             rule?.required &&
@@ -350,7 +349,7 @@ jest.mock('@ant-design/pro-components', () => {
   };
 
   const ProForm = ({ formRef, onFinish, submitter, children }: any) => {
-    const internalFormRef = React.useRef<any>(null);
+    const internalFormRef = React.useRef(null as any);
 
     React.useEffect(() => {
       if (formRef) {

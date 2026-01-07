@@ -324,6 +324,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
         onClose={() => setDrawerVisible(false)}
       >
         <AssignmentReview
+          hideReviewButton={true}
           actionRef={actionRef}
           actionFrom={'reviewMember'}
           tableType={drawerTabType}

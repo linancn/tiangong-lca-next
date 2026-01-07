@@ -1,7 +1,8 @@
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
@@ -37,6 +38,11 @@ const SourceEdit: FC<Props> = ({
   setViewDrawerVisible,
   updateErrRef = () => {},
 }) => {
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
+
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
@@ -47,7 +53,6 @@ const SourceEdit: FC<Props> = ({
   const [fileList0, setFileList0] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
   const [loadFiles, setLoadFiles] = useState<any[]>([]);
-  const [referenceValue, setReferenceValue] = useState(0);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
@@ -67,8 +72,33 @@ const SourceEdit: FC<Props> = ({
   //   }
   // }, [showRules]);
 
-  const updateReference = async () => {
-    setReferenceValue(referenceValue + 1);
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      formRefEdit.current?.setFieldsValue({ ...res, id });
+    }
   };
   const handletFromData = () => {
     if (fromData)
@@ -175,9 +205,11 @@ const SourceEdit: FC<Props> = ({
           defaultMessage: 'Saved Successfully!',
         }),
       );
-      if (autoClose) formRefEdit.current?.resetFields();
-      if (autoClose) setDrawerVisible(false);
-      reload();
+      if (autoClose) {
+        formRefEdit.current?.resetFields();
+        setDrawerVisible(false);
+        reload();
+      }
     } else {
       if (result?.error?.state_code === 100) {
         message.error(
@@ -372,16 +404,16 @@ const SourceEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={handleCheckData}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
               onClick={() => {
-                updateReference();
+                handleUpdateReference();
               }}
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
@@ -403,41 +435,47 @@ const SourceEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormSource);
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={() => handleSubmit(true)}
+            >
+              <SourceForm
+                lang={lang}
+                activeTabKey={activeTabKey}
                 formRef={formRefEdit}
-                initialValues={initData}
-                onValuesChange={(_, allValues) => {
-                  setFromData({
-                    ...fromData,
-                    [activeTabKey]: allValues[activeTabKey] ?? {},
-                  } as FormSource);
-                }}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                onFinish={() => handleSubmit(true)}
-              >
-                <SourceForm
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  formRef={formRefEdit}
-                  onData={handletFromData}
-                  onTabChange={(key) => onTabChange(key as SourceDataSetObjectKeys)}
-                  loadFiles={loadFiles}
-                  setLoadFiles={setLoadFiles}
-                  fileList={fileList}
-                  setFileList={setFileList}
-                  showRules={showRules}
-                />
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onData={handletFromData}
+                onTabChange={(key) => onTabChange(key as SourceDataSetObjectKeys)}
+                loadFiles={loadFiles}
+                setLoadFiles={setLoadFiles}
+                fileList={fileList}
+                setFileList={setFileList}
+                showRules={showRules}
+              />
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 };

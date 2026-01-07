@@ -194,10 +194,7 @@ export function genFlowpropertyJsonOrdered(id: string, data: any) {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:permanentDataSetURI':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
-            ],
+          'common:permanentDataSetURI': `https://lcdn.tiangong.earth/datasetdetail/flowproperty.xhtml?uuid=${id}&version=${data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion']}`,
         },
       },
     },
@@ -271,7 +268,7 @@ export function genFlowpropertyFromData(data: any): FormFlowProperty {
             '@uri':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['@uri'],
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataSource?.['common:shortDescription'],
             ),

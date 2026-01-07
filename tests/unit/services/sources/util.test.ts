@@ -253,7 +253,8 @@ describe('Source Utility Functions', () => {
                 '@version': '00.09.000',
                 'common:shortDescription': { '@xml:lang': 'en', '#text': 'Previous version' },
               },
-              'common:permanentDataSetURI': '../sources/source-id-123.xml',
+              'common:permanentDataSetURI':
+                'https://lcdn.tiangong.earth/datasetdetail/source.xhtml?uuid=source-id-123&version=01.00.000',
             },
           },
         },

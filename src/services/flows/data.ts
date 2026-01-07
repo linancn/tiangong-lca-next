@@ -24,11 +24,19 @@ export type FlowpropertyTabTable = {
   id: string;
   version: string;
   dataSetInternalID: string;
-  meanValue: string;
+  meanValue?: string;
   referenceToFlowPropertyDataSetId: string;
   referenceToFlowPropertyDataSetVersion: string;
   referenceToFlowPropertyDataSet: string;
   quantitativeReference: boolean;
+  location?: string;
+  minimumValue?: string;
+  maximumValue?: string;
+  uncertaintyDistributionType?: string;
+  relativeStandardDeviation95In?: string;
+  dataDerivationTypeStatus?: string;
+  generalComment?: string;
+  'common:generalComment'?: string;
   refUnitRes?: any;
 };
 

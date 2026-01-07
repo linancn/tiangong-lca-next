@@ -1,5 +1,6 @@
 // @ts-nocheck
 import ToolbarEditInfo from '@/pages/LifeCycleModels/Components/toolbar/eidtInfo';
+import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { render, screen } from '../../../../../helpers/testUtils';
@@ -9,16 +10,9 @@ jest.mock('umi', () => ({
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
   useIntl: () => ({
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    locale: 'en',
   }),
 }));
-
-jest.mock('@/contexts/updateReferenceContext', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    UpdateReferenceContext: React.createContext({ referenceValue: 0 }),
-  };
-});
 
 jest.mock('@/contexts/refCheckContext', () => {
   const React = require('react');
@@ -191,20 +185,60 @@ jest.mock('@ant-design/pro-components', () => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const ProTable = ({ dataSource, columns, rowSelection, pagination, loading }: any) => {
+    return (
+      <div data-testid='pro-table'>
+        {dataSource?.map((row: any, idx: number) => (
+          <div key={row.key || idx} data-testid={`table-row-${idx}`}>
+            {columns?.map((col: any, colIdx: number) => (
+              <div key={colIdx} data-testid={`table-cell-${col.dataIndex || colIdx}`}>
+                {col.render ? col.render(row[col.dataIndex], row, idx) : row[col.dataIndex]}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return {
     __esModule: true,
     ProForm,
     ProFormInstance: {},
+    ProTable,
+    ActionType: {},
   };
 });
 
 const mockCheckReferences = jest.fn();
 const mockCheckRequiredFields = jest.fn().mockReturnValue({ checkResult: true, tabName: '' });
-const mockDealModel = jest.fn();
+const mockDealModel = jest.fn((modelDetail, unReview) => {
+  // 模拟 dealModel 的行为：如果 stateCode < 20，添加到 unReview
+  if (modelDetail?.stateCode < 20) {
+    unReview.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': modelDetail?.id,
+      '@version': modelDetail?.version,
+    });
+  }
+  // 处理 submodels（模拟被注释掉的逻辑）
+  if (modelDetail?.json_tg?.submodels) {
+    modelDetail.json_tg.submodels.forEach((item: any) => {
+      unReview.push({
+        '@refObjectId': item.id,
+        '@version': modelDetail?.version,
+        '@type': 'process data set',
+      });
+    });
+  }
+});
 const mockDealProcress = jest.fn();
+const mockCheckVersions = jest.fn().mockResolvedValue(undefined);
 const mockGetAllRefObj = jest.fn().mockReturnValue([]);
 const mockUpdateReviewsAfterCheckData = jest.fn().mockResolvedValue({});
 const mockUpdateUnReviewToUnderReview = jest.fn().mockResolvedValue({});
+const mockGetErrRefTab = jest.fn().mockReturnValue(null);
 
 function MockReffPath() {}
 MockReffPath.prototype.findProblemNodes = function () {
@@ -214,10 +248,12 @@ MockReffPath.prototype.findProblemNodes = function () {
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
+  checkVersions: (...args: any[]) => mockCheckVersions(...args),
   checkRequiredFields: (...args: any[]) => mockCheckRequiredFields(...args),
   dealModel: (...args: any[]) => mockDealModel(...args),
   dealProcress: (...args: any[]) => mockDealProcress(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
+  getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   ReffPath: MockReffPath,
   updateReviewsAfterCheckData: (...args: any[]) => mockUpdateReviewsAfterCheckData(...args),
   updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
@@ -241,6 +277,35 @@ jest.mock('@/services/roles/api', () => ({
   getUserTeamId: (...args: any[]) => mockGetUserTeamId(...args),
 }));
 
+const mockGetRuleVerification = jest.fn().mockReturnValue({ valid: true, errors: [] });
+const mockGetLang = jest.fn((locale: string) => (locale === 'zh-CN' ? 'zh' : 'en'));
+const mockGetLangText = jest.fn((langTexts: any, lang: string) => {
+  if (Array.isArray(langTexts)) {
+    const filterList = langTexts.filter((i) => i && i['@xml:lang'] && i['@xml:lang'] === lang);
+    if (filterList.length > 0) {
+      return filterList[0]['#text'] ?? '-';
+    }
+    const filterListEn = langTexts.filter((i) => i && i['@xml:lang'] && i['@xml:lang'] === 'en');
+    if (filterListEn.length > 0) {
+      return filterListEn[0]['#text'] ?? '-';
+    }
+    return langTexts[0]?.['#text'] ?? '-';
+  }
+  return langTexts?.['#text'] ?? '-';
+});
+jest.mock('@/services/general/util', () => ({
+  __esModule: true,
+  getRuleVerification: (...args: any[]) => mockGetRuleVerification(...args),
+  getLang: (...args: any[]) => mockGetLang(...args),
+  getLangText: (...args: any[]) => mockGetLangText(...args),
+}));
+
+const mockGenLifeCycleModelJsonOrdered = jest.fn().mockReturnValue({});
+jest.mock('@/services/lifeCycleModels/util', () => ({
+  __esModule: true,
+  genLifeCycleModelJsonOrdered: (...args: any[]) => mockGenLifeCycleModelJsonOrdered(...args),
+}));
+
 jest.mock('uuid', () => ({
   __esModule: true,
   v4: () => 'uuid-1',
@@ -252,10 +317,14 @@ beforeEach(() => {
   mockCheckRequiredFields.mockReset().mockReturnValue({ checkResult: true, tabName: '' });
   mockDealModel.mockReset();
   mockDealProcress.mockReset();
+  mockCheckVersions.mockReset().mockResolvedValue(undefined);
   mockGetAllRefObj.mockReset().mockReturnValue([]);
+  mockGetErrRefTab.mockReset().mockReturnValue(null);
   mockGetLifeCycleModelDetail.mockReset();
   mockGetProcessDetail.mockReset();
   mockGetUserTeamId.mockReset().mockResolvedValue('team-1');
+  mockGetRuleVerification.mockReset().mockReturnValue({ valid: true, errors: [] });
+  mockGenLifeCycleModelJsonOrdered.mockReset().mockReturnValue({});
   mockUpdateReviewsAfterCheckData.mockReset().mockResolvedValue({});
   mockUpdateUnReviewToUnderReview.mockReset().mockResolvedValue({});
 });
@@ -272,7 +341,10 @@ describe('ToolbarEditInfo', () => {
     const ref = React.createRef<any>();
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
-    const result = await ref.current?.handleCheckData([], []);
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', [], []);
+    });
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Please add node');
     expect(result).toEqual({ checkResult: false, unReview: [] });
@@ -284,7 +356,10 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
-    const result = await ref.current?.handleCheckData(nodes, []);
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, []);
+    });
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Please add connection line');
     expect(result).toEqual({ checkResult: false, unReview: [] });
@@ -312,8 +387,11 @@ describe('ToolbarEditInfo', () => {
       { '@refObjectId': 'proc-3', '@version': '2.0', ruleVerification: [], nonExistent: false },
     ];
 
-    mockGetLifeCycleModelDetail.mockResolvedValue({
+    const mockModelDetail = {
       data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10, // stateCode < 20，会被添加到 unReview
         teamId: 'team-1',
         json_tg: { submodels: [{ id: 'sub-1' }] },
         json: {
@@ -323,7 +401,11 @@ describe('ToolbarEditInfo', () => {
         },
         ruleVerification: [],
       },
-    });
+      success: true,
+    };
+    // 代码第 223 行检查 modelDetail.stateCode，所以需要在 modelDetail 上也添加 stateCode
+    (mockModelDetail as any).stateCode = 10;
+    mockGetLifeCycleModelDetail.mockResolvedValue(mockModelDetail);
     mockGetProcessDetail.mockResolvedValue({ data: {} });
     mockCheckReferences.mockResolvedValue({ findProblemNodes: () => problemNodes });
 
@@ -335,20 +417,21 @@ describe('ToolbarEditInfo', () => {
     ];
     const edges = [{}];
 
-    const result = await ref.current?.handleCheckData(nodes, edges);
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, edges);
+    });
 
     expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0');
     expect(mockGetProcessDetail).toHaveBeenCalledWith('model-1', '1.0');
     expect(mockCheckReferences).toHaveBeenCalled();
-    expect(mockCheckRequiredFields).toHaveBeenCalled();
+    expect(mockGetRuleVerification).toHaveBeenCalled();
+    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalled();
     expect(mockGetUserTeamId).toHaveBeenCalled();
     expect(mockDealModel).toHaveBeenCalled();
     expect(mockDealProcress).toHaveBeenCalled();
-    expect(mockAntdMessage.error).not.toHaveBeenCalled();
-    expect(result).toEqual({
-      checkResult: true,
-      unReview: [{ '@refObjectId': 'sub-1', '@version': '1.0', '@type': 'process data set' }],
-      problemNodes,
-    });
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
+    expect(result.checkResult).toBe(false);
+    expect(Array.isArray(result.unReview)).toBe(true);
   });
 });

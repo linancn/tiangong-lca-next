@@ -5,6 +5,7 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
@@ -31,7 +32,7 @@ import {
   licenseTypeOptions,
   processtypeOfDataSetOptions,
   uncertaintyDistributionTypeOptions,
-} from './optiondata';
+} from '@/pages/Processes/Components/optiondata';
 
 type Props = {
   lang: string;
@@ -44,6 +45,7 @@ type Props = {
   formType?: string;
   initData: any;
   type: 'edit' | 'view';
+  rejectedComments?: Record<string, any>[];
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -97,6 +99,7 @@ export const TabsDetail: FC<Props> = ({
   exchangeDataSource,
   initData,
   type,
+  rejectedComments,
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
@@ -265,6 +268,34 @@ export const TabsDetail: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
+      },
+    },
+    {
+      title: (
+        <FormattedMessage id='pages.process.exchange.reviewType' defaultMessage='Review type' />
+      ),
+      dataIndex: 'reviewType',
+      sorter: false,
+      search: false,
+      width: 80,
+      render: (_, row) => {
+        return (
+          <>
+            {row?.stateCode === 100 || row?.stateCode === 200 ? (
+              <FormattedMessage
+                id='pages.process.exchange.reviewType.reviewed'
+                defaultMessage='Reviewed'
+              />
+            ) : typeof row?.stateCode === 'number' ? (
+              <FormattedMessage
+                id='pages.process.exchange.reviewType.unreviewed'
+                defaultMessage='Unreviewed'
+              />
+            ) : (
+              '-'
+            )}
+          </>
+        );
       },
     },
     {
@@ -1517,11 +1548,34 @@ export const TabsDetail: FC<Props> = ({
                       params,
                     ).then((res: any) => {
                       return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        return {
-                          ...res,
-                          data: unitRes,
-                          success: true,
-                        };
+                        const flows = exchangeDataSource.map((item: any) => {
+                          return {
+                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
+                            version: item?.referenceToFlowDataSet?.['@version'],
+                          };
+                        });
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
+                          ({ error, data: flowsResp }: any) => {
+                            if (!error) {
+                              unitRes.forEach((item: any) => {
+                                const flow = flowsResp.find(
+                                  (flow: any) =>
+                                    flow.id === item?.referenceToFlowDataSetId &&
+                                    flow.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification;
+                                }
+                              });
+                            }
+                            return {
+                              ...res,
+                              data: unitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}
@@ -1554,11 +1608,34 @@ export const TabsDetail: FC<Props> = ({
                       params,
                     ).then((res: any) => {
                       return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        return {
-                          ...res,
-                          data: unitRes,
-                          success: true,
-                        };
+                        const flows = exchangeDataSource.map((item: any) => {
+                          return {
+                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
+                            version: item?.referenceToFlowDataSet?.['@version'],
+                          };
+                        });
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
+                          ({ error, data: flowsResp }: any) => {
+                            if (!error) {
+                              unitRes.forEach((item: any) => {
+                                const flow = flowsResp.find(
+                                  (flow: any) =>
+                                    flow.id === item?.referenceToFlowDataSetId &&
+                                    flow.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification;
+                                }
+                              });
+                            }
+                            return {
+                              ...res,
+                              data: unitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}
@@ -1572,25 +1649,63 @@ export const TabsDetail: FC<Props> = ({
     ),
   };
 
+  const getValidationReview = () => {
+    const result: any[] = [];
+    if (!rejectedComments || rejectedComments.length === 0) {
+      return result;
+    }
+    rejectedComments.forEach((comment) => {
+      const review = comment?.modellingAndValidation?.validation?.review;
+      if (review) {
+        result.push(...(Array.isArray(review) ? review : [review]));
+      }
+    });
+    return result;
+  };
+
+  const getValidationCompliance = () => {
+    const result: any[] = [];
+    if (!rejectedComments || rejectedComments.length === 0) {
+      return result;
+    }
+    rejectedComments.forEach((comment) => {
+      const compliance = comment?.modellingAndValidation?.complianceDeclarations?.compliance;
+      if (compliance) {
+        result.push(...(Array.isArray(compliance) ? compliance : [compliance]));
+      }
+    });
+    return result;
+  };
+
   const tabContent: { [key: string]: JSX.Element } =
     type === 'edit'
       ? {
           ...defaultTabContent,
           validation: (
-            <ReveiwItemForm
-              name={['modellingAndValidation', 'validation', 'review']}
-              lang={lang}
-              formRef={formRef}
-              onData={onData}
-            />
+            <>
+              <ReveiwItemForm
+                name={['modellingAndValidation', 'validation', 'review']}
+                lang={lang}
+                formRef={formRef}
+                onData={onData}
+              />
+              {rejectedComments && rejectedComments.length > 0 && (
+                <ReviewItemView data={getValidationReview()} />
+              )}
+            </>
           ),
           complianceDeclarations: (
-            <ComplianceItemForm
-              name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
-              lang={lang}
-              formRef={formRef}
-              onData={onData}
-            />
+            <>
+              <ComplianceItemForm
+                name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
+                lang={lang}
+                formRef={formRef}
+                onData={onData}
+              />
+              {rejectedComments && rejectedComments.length > 0 && (
+                <ComplianceItemView data={getValidationCompliance()} />
+              )}
+            </>
           ),
         }
       : {

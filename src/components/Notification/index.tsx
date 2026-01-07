@@ -1,6 +1,10 @@
-import { getCurrentUser } from '@/services/auth';
-import { getLatestReviewOfMine } from '@/services/reviews/api';
-import { getLatestRolesOfMine } from '@/services/roles/api';
+import {
+  getFreshUserMetadata,
+  updateDataNotificationTime,
+  updateTeamNotificationTime,
+} from '@/services/auth';
+import { getNotifyReviewsCount } from '@/services/reviews/api';
+import { getTeamInvitationCountApi } from '@/services/roles/api';
 import { MessageOutlined } from '@ant-design/icons';
 import { Badge, Modal, Select, Space, Tabs, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -37,66 +41,112 @@ const TIME_FILTER_OPTIONS = (intl: any) => [
 ];
 
 const Notification: React.FC = () => {
-  const [showDot, setShowDot] = useState<boolean>(false);
-  const [showDotTabs, setShowDotTabs] = useState<('team' | 'data')[]>([]);
+  const [unreadCounts, setUnreadCounts] = useState<{
+    total: number;
+    team: number;
+    data: number;
+  }>({
+    total: 0,
+    team: 0,
+    data: 0,
+  });
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [timeFilter, setTimeFilter] = useState<number>(3);
+  // Track which tabs have had their notification time updated (to avoid duplicate updates)
+  const [tabsViewed, setTabsViewed] = useState<{ team: boolean; data: boolean }>({
+    team: false,
+    data: false,
+  });
   const { token } = theme.useToken();
   const intl = useIntl();
 
-  const removeItemFromDotTabs = (item: 'team' | 'data') => {
-    setShowDotTabs((prev) => prev.filter((i) => i !== item));
-  };
+  const updateUnreadCounts = async () => {
+    // Get fresh user metadata from database (not from cached JWT claims)
+    const user = await getFreshUserMetadata();
+    const lastTeamViewTime = user?.update_team_notification_time ?? 0;
+    const lastDataViewTime = user?.update_data_notification_time ?? 0;
 
-  const updateShowTabs = async () => {
-    const user = await getCurrentUser();
-    const update_team_notification_time = user?.update_team_notification_time ?? 0;
-    const update_data_notification_time = user?.update_data_notification_time ?? 0;
+    // Get data notification count (only count records newer than last view time)
+    const dataCountRes = await getNotifyReviewsCount(3, lastDataViewTime);
+    const dataCount = dataCountRes.success ? dataCountRes.total : 0;
 
-    const data = await getLatestReviewOfMine();
-    const latestReview = data?.[0];
-    const latestRoles = await getLatestRolesOfMine();
+    // Get team notification count (only count records newer than last view time)
+    const teamCountRes = await getTeamInvitationCountApi(3, lastTeamViewTime);
+    const teamCount = teamCountRes.success ? teamCountRes.total : 0;
 
-    if (update_data_notification_time && latestReview && latestReview.modified_at) {
-      const reviewTime = new Date(latestReview.modified_at).getTime();
-      if (reviewTime > update_data_notification_time) {
-        setShowDotTabs((prev) => [...prev, 'data']);
-      }
-    }
-
-    if (update_team_notification_time && latestRoles && latestRoles.modified_at) {
-      const rolesTime = new Date(latestRoles.modified_at).getTime();
-      if (rolesTime > update_team_notification_time) {
-        setShowDotTabs((prev) => [...prev, 'team']);
-      }
-    }
+    // Update all counts
+    setUnreadCounts({
+      total: dataCount + teamCount,
+      data: dataCount,
+      team: teamCount,
+    });
   };
 
   useEffect(() => {
-    setShowDot(showDotTabs.length > 0);
-  }, [showDotTabs]);
-
-  useEffect(() => {
-    updateShowTabs();
+    updateUnreadCounts();
   }, []);
 
   const handleIconClick = () => {
     setModalVisible(true);
+    // Reset viewed state when opening modal
+    setTabsViewed({ team: false, data: false });
   };
 
   const handleModalClose = () => {
     setModalVisible(false);
   };
 
+  // Callback when team notification data is loaded
+  const handleTeamDataLoaded = async () => {
+    if (!tabsViewed.team) {
+      await updateTeamNotificationTime();
+      setTabsViewed((prev) => ({ ...prev, team: true }));
+      setUnreadCounts((prev) => ({
+        ...prev,
+        team: 0,
+        total: prev.data, // total = data count (team is now 0)
+      }));
+    }
+  };
+
+  // Callback when data notification data is loaded
+  const handleDataDataLoaded = async () => {
+    if (!tabsViewed.data) {
+      await updateDataNotificationTime();
+      setTabsViewed((prev) => ({ ...prev, data: true }));
+      setUnreadCounts((prev) => ({
+        ...prev,
+        data: 0,
+        total: prev.team, // total = team count (data is now 0)
+      }));
+    }
+  };
+
   const handleTimeFilterChange = (value: number) => {
     setTimeFilter(value);
+  };
+
+  const badgeStyles = {
+    backgroundColor: '#ff4d4f',
+    borderRadius: '7px',
+    minWidth: '14px',
+    height: '14px',
+    lineHeight: '14px',
+    padding: '0 4px',
+    fontSize: '9px',
   };
 
   const items = [
     {
       key: 'team',
       label: (
-        <Badge dot={showDotTabs.includes('team')} offset={[5, 0]} size='small'>
+        <Badge
+          count={unreadCounts.team}
+          offset={[5, 0]}
+          size='small'
+          showZero={false}
+          style={badgeStyles}
+        >
           <span>
             {intl.formatMessage({
               id: 'notification.tabs.team',
@@ -105,14 +155,18 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: (
-        <TeamNotification timeFilter={timeFilter} removeItemFromDotTabs={removeItemFromDotTabs} />
-      ),
+      children: <TeamNotification timeFilter={timeFilter} onDataLoaded={handleTeamDataLoaded} />,
     },
     {
       key: 'data',
       label: (
-        <Badge dot={showDotTabs.includes('data')} offset={[5, 0]} size='small'>
+        <Badge
+          count={unreadCounts.data}
+          offset={[5, 0]}
+          size='small'
+          showZero={false}
+          style={badgeStyles}
+        >
           <span>
             {intl.formatMessage({
               id: 'notification.tabs.data',
@@ -121,15 +175,19 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: (
-        <DataNotification timeFilter={timeFilter} removeItemFromDotTabs={removeItemFromDotTabs} />
-      ),
+      children: <DataNotification timeFilter={timeFilter} onDataLoaded={handleDataDataLoaded} />,
     },
   ];
 
   return (
     <>
-      <Badge dot={showDot} offset={[-5, 6]} size='small'>
+      <Badge
+        count={unreadCounts.total}
+        offset={[-5, 6]}
+        size='small'
+        showZero={false}
+        style={badgeStyles}
+      >
         <MessageOutlined
           style={{ fontSize: 16, opacity: 0.5, cursor: 'pointer' }}
           onClick={handleIconClick}

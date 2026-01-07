@@ -33,95 +33,126 @@ export async function exportDataApi(tableName: string, id: string, version: stri
   return result;
 }
 
+const VERSION_PATTERN = /^\d{2}\.\d{2}\.\d{3}$/;
+
 export async function getDataDetail(id: string, version: string, table: string) {
+  const hasValidId = typeof id === 'string' && id.length === 36;
+  const normalizedVersion = typeof version === 'string' ? version.trim() : '';
+  const hasVersion = normalizedVersion.length > 0;
+  const isVersionFormatValid = !hasVersion || VERSION_PATTERN.test(normalizedVersion);
+
+  if (!hasValidId || !table || (hasVersion && !isVersionFormatValid)) {
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
+  }
+
+  const query = supabase
+    .from(table)
+    .select('json,version, modified_at,id,state_code,rule_verification,user_id')
+    .eq('id', id);
+
+  let result: any;
+  if (hasVersion) {
+    result = await query.eq('version', normalizedVersion);
+  } else {
+    result = await query.order('version', { ascending: false }).range(0, 0);
+  }
+
+  if (!result?.data || result.data.length === 0) {
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
+  }
+
+  const data = result.data[0];
+  return Promise.resolve({
+    data: {
+      id,
+      version: data.version,
+      json: data.json,
+      modifiedAt: data?.modified_at,
+      stateCode: data?.state_code,
+      ruleVerification: data?.rule_verification,
+      userId: data?.user_id,
+    },
+    success: true,
+  });
+}
+export async function getDataDetailById(id: string, table: string) {
   let result: any = {};
   if (id && id.length === 36) {
-    if (version && version.length === 9) {
-      result = await supabase
-        .from(table)
-        .select('json,version, modified_at,id,state_code,rule_verification,user_id')
-        .eq('id', id)
-        .eq('version', version);
-      if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from(table)
-          .select('json,version, modified_at,id,state_code,rule_verification,user_id')
-          .eq('id', id)
-          .order('version', { ascending: false })
-          .range(0, 0);
-      }
-    } else {
-      result = await supabase
-        .from(table)
-        .select('json,version, modified_at,id,state_code,rule_verification,user_id')
-        .eq('id', id)
-        .order('version', { ascending: false })
-        .range(0, 0);
-    }
-    if (result?.data && result.data.length > 0) {
-      const data = result.data[0];
-      return Promise.resolve({
-        data: {
-          id: id,
-          version: data.version,
-          json: data.json,
-          modifiedAt: data?.modified_at,
-          stateCode: data?.state_code,
-          ruleVerification: data?.rule_verification,
-          userId: data?.user_id,
-        },
-        success: true,
-      });
-    }
+    result = await supabase
+      .from(table)
+      .select('json,version, modified_at,id,state_code,rule_verification,user_id')
+      .eq('id', id);
+    return result;
   }
+  return null;
+}
+
+export async function getRefData(id: string, version: string, table: string, teamId?: string) {
+  if (!table || !id || id.length !== 36) {
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
+  }
+
+  let query = supabase
+    .from(table)
+    .select('state_code,json,rule_verification,user_id,team_id')
+    .eq('id', id);
+
+  let result: any = {};
+
+  if (version && version.length === 9) {
+    result = await query.eq('version', version);
+    if (!result?.data || result.data.length === 0) {
+      result = await query.order('version', { ascending: false }).range(0, 0);
+    }
+  } else {
+    result = await query.order('version', { ascending: false }).range(0, 0);
+  }
+
+  if (result?.data && result.data.length > 0) {
+    let data = result.data[0];
+    const teamData = result.data.filter((item: any) => item.team_id === teamId);
+    if (teamId !== '00000000-0000-0000-0000-000000000000' && teamData && teamData.length > 0) {
+      data = teamData[0];
+    }
+    return Promise.resolve({
+      data: {
+        stateCode: data?.state_code,
+        json: data?.json,
+        ruleVerification: data?.rule_verification,
+        userId: data?.user_id,
+      },
+      success: true,
+    });
+  }
+
   return Promise.resolve({
     data: null,
     success: false,
   });
 }
 
-export async function getRefData(id: string, version: string, table: string, teamId?: string) {
-  if (!table) {
+export async function getRefDataByIds(ids: string[], table: string) {
+  if (!table || ids.length === 0) {
     return Promise.resolve({
       data: null,
       success: false,
     });
   }
-  // const session = await supabase.auth.getSession();
-  let query = supabase.from(table).select('state_code,json,rule_verification,user_id').eq('id', id);
-  // .eq('user_id', session?.data?.session?.user?.id);
 
-  let result: any = {};
+  const result = await supabase.from(table).select('state_code,id,version').in('id', ids);
 
-  if (id && id.length === 36) {
-    if (version && version.length === 9) {
-      result = await query.eq('version', version);
-      if (result.data === null || result.data.length === 0) {
-        result = await query.order('version', { ascending: false }).range(0, 0);
-      }
-    } else {
-      result = await query.order('version', { ascending: false }).range(0, 0);
-    }
-    if (result?.data && result.data.length > 0) {
-      let data = result.data[0];
-      const teamData = result.data.filter((item: any) => item.team_id === teamId);
-      if (teamId !== '00000000-0000-0000-0000-000000000000' && teamData && teamData.length > 0) {
-        data = teamData[0];
-      }
-      return Promise.resolve({
-        data: {
-          stateCode: data?.state_code,
-          json: data?.json,
-          ruleVerification: data?.rule_verification,
-          userId: data?.user_id,
-        },
-        success: true,
-      });
-    }
-  }
   return Promise.resolve({
-    data: null,
-    success: false,
+    data: result.data,
+    success: true,
   });
 }
 
@@ -199,6 +230,12 @@ export async function getTeamIdByUserId() {
 }
 
 export async function contributeSource(tableName: string, id: string, version: string) {
+  if (!tableName) {
+    return {
+      error: true,
+      message: 'Contribute failed',
+    };
+  }
   const teamId = await getTeamIdByUserId();
   if (teamId) {
     let result: any = {};

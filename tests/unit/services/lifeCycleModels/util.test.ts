@@ -389,7 +389,7 @@ describe('genEdgeExchangeTableData', () => {
     expect(result[0].targetInputFlowGeneralComment).toBe('-');
   });
 
-  test.failing('should keep provided targetInputFlowId instead of defaulting to "-"', () => {
+  it('should keep provided targetInputFlowId instead of defaulting to "-"', () => {
     const data = [
       {
         id: 'edge-1',

@@ -43,6 +43,7 @@ export default {
   'pages.contact.dataSetVersion': 'Data set version',
   'pages.contact.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.contact.permanentDataSetURI': 'Permanent data set URI',
+  'pages.contact.permanentDataSetURI.default': 'Automatically generated',
   'pages.contact.referenceToOwnershipOfDataSet': 'Owner of data set',
   'pages.contact.referenceToLogo': 'Logo of organisation or source',
 

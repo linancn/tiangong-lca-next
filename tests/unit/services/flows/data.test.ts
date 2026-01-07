@@ -178,13 +178,11 @@ describe('Flows Data Types (src/services/flows/data.ts)', () => {
   });
 
   describe('Known issues', () => {
-    it.skip('should align FlowpropertyTabTable with generated tab data', () => {
-      // TODO: genFlowPropertyTabTableData returns objects with fields like `key`, `location`,
-      // and `refUnitGroup` that are missing from FlowpropertyTabTable. Update the type or
-      // the generator to keep them in sync, then enable this test.
+    it('should align FlowpropertyTabTable with generated tab data', () => {
+      // genFlowPropertyTabTableData returns objects with fields that should match FlowpropertyTabTable type
       const sample = {
         flowProperty: {
-          '@dataSetInternalID': 1,
+          '@dataSetInternalID': '1',
           referenceToFlowPropertyDataSet: {
             '@refObjectId': 'flowprop-123',
             '@version': '01.00.000',
@@ -192,14 +190,44 @@ describe('Flows Data Types (src/services/flows/data.ts)', () => {
             '@uri': '../flowproperties/flowprop-123.xml',
             'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Mass' }],
           },
-          meanValue: 1.23,
+          meanValue: '1.23',
           quantitativeReference: true,
+          minimumValue: '1.0',
+          maximumValue: '1.5',
+          uncertaintyDistributionType: 'log-normal',
+          relativeStandardDeviation95In: '0.1',
+          dataDerivationTypeStatus: 'Measured',
+          locationOfSupply: 'GLO',
+          'common:generalComment': [{ '@xml:lang': 'en', '#text': 'Test comment' }],
         },
       };
 
-      const rows = genFlowPropertyTabTableData(sample, 'en');
+      const rows = genFlowPropertyTabTableData(sample.flowProperty, 'en');
       expect(Array.isArray(rows)).toBe(true);
-      // expect(rows[0]).toMatchObject({ meanValue: 1.23 } satisfies FlowpropertyTabTable);
+      expect(rows).toHaveLength(1);
+
+      const row = rows[0];
+      // Verify all fields that FlowpropertyTabTable type should have
+      expect(row).toHaveProperty('key');
+      expect(row).toHaveProperty('dataSetInternalID');
+      expect(row).toHaveProperty('referenceToFlowPropertyDataSetId');
+      expect(row).toHaveProperty('referenceToFlowPropertyDataSetVersion');
+      expect(row).toHaveProperty('referenceToFlowPropertyDataSet');
+      expect(row).toHaveProperty('meanValue');
+      expect(row).toHaveProperty('quantitativeReference');
+      expect(row).toHaveProperty('location');
+      expect(row).toHaveProperty('minimumValue');
+      expect(row).toHaveProperty('maximumValue');
+      expect(row).toHaveProperty('uncertaintyDistributionType');
+      expect(row).toHaveProperty('relativeStandardDeviation95In');
+      expect(row).toHaveProperty('dataDerivationTypeStatus');
+      expect(row).toHaveProperty('common:generalComment');
+
+      // Verify values
+      expect(row.key).toBe('1');
+      expect(row.meanValue).toBe('1.23');
+      expect(row.quantitativeReference).toBe(true);
+      expect(row.location).toBe('GLO');
     });
   });
 });

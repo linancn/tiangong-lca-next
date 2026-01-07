@@ -414,8 +414,7 @@ describe('AllTeams component', () => {
     expect(payload.map(({ rank }) => rank)).toEqual([11, 12]);
   });
 
-  it.skip('preserves dragged order when saving ranks', async () => {
-    // TODO: update handleSaveRanks to use the post-drag table order when calling updateSort.
+  it('preserves dragged order when saving ranks', async () => {
     renderAllTeams();
 
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });

@@ -1,6 +1,7 @@
+import X6GraphComponent from '@/components/X6Graph';
+import { GraphProvider } from '@/contexts/graphContext';
 import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Grid, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -13,7 +14,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   reviewId: string;
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
 };
 const ReviewLifeCycleModelsDetail: FC<Props> = ({
   id,
@@ -97,11 +98,14 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
           setDrawerVisible(false);
         }}
       >
-        <XFlow>
+        <GraphProvider>
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph
+                <X6GraphComponent
+                  selectOptions={{
+                    enabled: true,
+                  }}
                   zoomable
                   pannable
                   minScale={0.5}
@@ -113,12 +117,11 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
                       name: 'rounded',
                     },
                   }}
-                />
-                <Grid
-                  type='dot'
-                  options={{
+                  gridOptions={{
+                    type: 'dot',
                     color: '#595959',
                     thickness: 1,
+                    visible: true,
                   }}
                 />
               </Content>
@@ -136,7 +139,7 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
               />
             </Sider>
           </Layout>
-        </XFlow>
+        </GraphProvider>
       </Drawer>
     </>
   );

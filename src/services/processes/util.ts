@@ -14,8 +14,9 @@ import {
 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
+  const exchangeList = jsonToList(data?.exchanges?.exchange);
   const exchange =
-    data?.exchanges?.exchange?.map((item: any) => {
+    exchangeList?.map((item: any) => {
       if (item?.quantitativeReference) {
         quantitativeReference = {
           '@type': 'Reference flow(s)',
@@ -189,6 +190,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@type':
               data?.processInformation?.technology?.referenceToTechnologyPictogramme?.['@type'] ??
               {},
+            '@version':
+              data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
+                '@version'
+              ] ?? {},
             '@refObjectId':
               data?.processInformation?.technology?.referenceToTechnologyPictogramme?.[
                 '@refObjectId'
@@ -206,6 +211,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@type':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
                 '@type'
+              ] ?? {},
+            '@version':
+              data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
+                '@version'
               ] ?? {},
             '@refObjectId':
               data?.processInformation?.technology?.referenceToTechnologyFlowDiagrammOrPicture?.[
@@ -331,24 +340,20 @@ export function genProcessJsonOrdered(id: string, data: any) {
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),
           },
-          referenceToDataSource: {
-            '@type':
+          referenceToDataSource: listToJson(
+            jsonToList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@type'] ?? {},
-            '@refObjectId':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@refObjectId'] ?? {},
-            '@version':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@version'] ?? {},
-            '@uri':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@uri'] ?? {},
-            'common:shortDescription': getLangJson(
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['common:shortDescription'],
-            ),
-          },
+                ?.referenceToDataSource,
+            ).map((ref: any) => {
+              return {
+                '@type': ref?.['@type'] ?? {},
+                '@refObjectId': ref?.['@refObjectId'] ?? {},
+                '@version': ref?.['@version'] ?? {},
+                '@uri': ref?.['@uri'] ?? {},
+                'common:shortDescription': getLangJson(ref?.['common:shortDescription']),
+              };
+            }),
+          ),
           percentageSupplyOrProductionCovered:
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.percentageSupplyOrProductionCovered ?? {},
@@ -1045,24 +1050,18 @@ export function genProcessFromData(data: any): FormProcess {
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),
           },
-          referenceToDataSource: {
-            '@type':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@type'] ?? {},
-            '@refObjectId':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@refObjectId'] ?? {},
-            '@version':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@version'] ?? {},
-            '@uri':
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['@uri'] ?? {},
-            'common:shortDescription': getLangList(
-              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.referenceToDataSource?.['common:shortDescription'],
-            ),
-          },
+          referenceToDataSource: jsonToList(
+            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+              ?.referenceToDataSource,
+          ).map((ref: any) => {
+            return {
+              '@type': ref?.['@type'] ?? {},
+              '@refObjectId': ref?.['@refObjectId'] ?? {},
+              '@version': ref?.['@version'] ?? {},
+              '@uri': ref?.['@uri'] ?? {},
+              'common:shortDescription': getLangList(ref?.['common:shortDescription']),
+            };
+          }),
           percentageSupplyOrProductionCovered:
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.percentageSupplyOrProductionCovered ?? {},

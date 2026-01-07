@@ -171,15 +171,17 @@ const TableList: FC = () => {
                 team_id
               `}
               id={row.id}
-            >
-              <ProcessCreate
-                actionType='createVersion'
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                actionRef={actionRef}
-              />
-            </AllVersionsList>
+              addVersionComponent={({ newVersion }) => (
+                <ProcessCreate
+                  newVersion={newVersion}
+                  actionType='createVersion'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={actionRef}
+                />
+              )}
+            ></AllVersionsList>
           </Space>
         );
       },
@@ -199,10 +201,10 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {row.modelData ? (
+              {row.modelId ? (
                 <LifeCycleModelView
-                  id={row.modelData.id}
-                  version={row.modelData.version}
+                  id={row.modelId}
+                  version={row.version}
                   lang={lang}
                   buttonType={'icon'}
                   actionRef={actionRef}
@@ -218,10 +220,10 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
-              {row.modelData ? (
+              {row.modelId ? (
                 <LifeCycleModelEdit
-                  id={row.modelData.id}
-                  version={row.modelData.version}
+                  id={row.modelId}
+                  version={row.version}
                   lang={lang}
                   actionRef={actionRef}
                   buttonType={'icon'}
@@ -261,11 +263,11 @@ const TableList: FC = () => {
                     key: 'copy',
                     name: (
                       <>
-                        {row.modelData ? (
+                        {row.modelId ? (
                           <LifeCycleModelCreate
                             actionType='copy'
-                            id={row.modelData.id}
-                            version={row.modelData.version}
+                            id={row.modelId}
+                            version={row.version}
                             lang={lang}
                             actionRef={actionRef}
                             buttonType={'icon'}
@@ -287,10 +289,10 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          if (row.modelData) {
+                          if (row.modelId) {
                             const { error: lifeCycleError } = await contributeLifeCycleModel(
-                              row.modelData.id,
-                              row.modelData.version,
+                              row.modelId,
+                              row.version,
                             );
                             if (lifeCycleError) {
                               console.log(lifeCycleError);

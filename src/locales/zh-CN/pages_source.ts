@@ -47,6 +47,7 @@ export default {
   'pages.source.edit.administrativeInformation.dataSetVersion': '数据集版本',
   'pages.source.edit.administrativeInformation.referenceToPrecedingDataSetVersion': '数据集前一版本',
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
+  'pages.source.edit.administrativeInformation.permanentDataSetURI.default': '自动生成',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
   //source.delete 删除
   'pages.button.deleteMessage.Are you sure you want to delete this data': '您确认要删除此数据吗？',

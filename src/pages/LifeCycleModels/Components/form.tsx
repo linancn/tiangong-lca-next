@@ -24,6 +24,7 @@ type Props = {
   onTabChange: (key: string) => void;
   formType?: string;
   showRules?: boolean;
+  actionType?: 'create' | 'copy' | 'createVersion';
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -33,6 +34,7 @@ export const LifeCycleModelForm: FC<Props> = ({
   onTabChange,
   formType,
   showRules = false,
+  actionType,
 }) => {
   const { token } = theme.useToken();
   const [baseNameError, setBaseNameError] = useState(false);
@@ -116,15 +118,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['baseName']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -156,15 +167,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['treatmentStandardsRoutes']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -196,15 +216,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['mixAndLocationTypes']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -230,15 +259,24 @@ export const LifeCycleModelForm: FC<Props> = ({
                   defaultMessage='Quantitative product or process properties'
                 />
               }
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['lifeCycleModelDataSet']['lifeCycleModelInformation'][
                         'dataSetInformation'
                       ]['name']['functionalUnitFlowProperties']['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
         </Card>
@@ -383,6 +421,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToCommissioner',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -481,10 +520,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.timeStamp'
-                defaultMessage='Time stamp (last saved)'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -512,6 +557,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -538,6 +584,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToPersonOrEntityEnteringTheData',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -560,10 +607,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.administrativeInformation.dataSetVersion'
-                defaultMessage='Data set version'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -573,13 +626,19 @@ export const LifeCycleModelForm: FC<Props> = ({
               ]['common:dataSetVersion']['rules'],
             )}
           >
-            <Input />
+            <Input disabled={actionType === 'createVersion'} />
           </Form.Item>
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.administrativeInformation.permanentDataSetURI'
-                defaultMessage='Permanent data set URI'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                }
+                showError={false}
               />
             }
             name={[
@@ -597,7 +656,7 @@ export const LifeCycleModelForm: FC<Props> = ({
                 : []
             }
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
           <ContactSelectForm
             lang={lang}
@@ -614,6 +673,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               'common:referenceToOwnershipOfDataSet',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -626,10 +686,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           />
           <br />
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.copyright'
-                defaultMessage='Copyright?'
+              <RequiredMark
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.copyright'
+                    defaultMessage='Copyright?'
+                  />
+                }
+                showError={false}
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:copyright']}
@@ -663,10 +729,16 @@ export const LifeCycleModelForm: FC<Props> = ({
           />
           <br />
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.administrativeInformation.licenseType'
-                defaultMessage='License type'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.licenseType'
+                    defaultMessage='License type'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:licenseType']}

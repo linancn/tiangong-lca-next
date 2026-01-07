@@ -127,6 +127,8 @@ export default {
   'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:',
   'pages.lifeCycleModel.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.lifeCycleModel.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
+  'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.lifeCycleModel.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.lifeCycleModel.administrativeInformation.copyright': 'Copyright?',
   'pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess': 'Entities or persons with exclusive access to this data set',
   'pages.lifeCycleModel.administrativeInformation.licenseType': 'License type',
@@ -291,4 +293,11 @@ export default {
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': 'Please select a node as reference',
   'pages.lifecyclemodel.validator.exchanges.required': 'Please add connection line',
   'pages.lifecyclemodel.validator.exchanges.required.length': 'Please complete the connection line',
+
+  'pages.lifecyclemodel.review.submitSuccess': 'Review submitted successfully',
+  'pages.lifecyclemodel.review.submitError': 'Submit review failed',
+  'pages.lifecyclemodel.review.error': 'Referenced data is under review, cannot initiate another review',
+  'pages.lifecyclemodel.review.mainProduceError': 'Please complete the main product process data in the model results',
+  'pages.lifecyclemodel.checkData.inReview': 'This data set is under review and cannot be validated',
+  'pages.lifecyclemodel.notPublic': 'Model is not public',
 };

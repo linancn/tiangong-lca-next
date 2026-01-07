@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Manage System workflow integration tests
  * User paths covered:
@@ -10,7 +9,7 @@
 
 jest.mock('@/components/AllTeams', () => {
   const React = require('react');
-  const AllTeamsMock = ({ tableType, systemUserRole }) => (
+  const AllTeamsMock = ({ tableType, systemUserRole }: any) => (
     <div data-testid='all-teams'>
       all-teams::{tableType}::{systemUserRole ?? 'unknown'}
     </div>
@@ -21,25 +20,16 @@ jest.mock('@/components/AllTeams', () => {
   };
 });
 
-jest.mock('@ant-design/icons', () => ({
-  CrownOutlined: () => <span data-testid='icon-crown' />,
-  DeleteOutlined: () => <span data-testid='icon-delete' />,
-  PlusOutlined: () => <span data-testid='icon-plus' />,
-  UserOutlined: () => <span data-testid='icon-user' />,
-}));
+jest.mock('@ant-design/icons', () =>
+  require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
+);
 
-jest.mock('@umijs/max', () => ({
-  FormattedMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
-  useIntl: () => ({
-    locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }) => defaultMessage ?? id,
-  }),
-}));
+jest.mock('@umijs/max', () => require('@/tests/mocks/umijsMax').createUmijsMaxMock());
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const toText = (node) => {
+  const toText = (node: any): string => {
     if (node === null || node === undefined) {
       return '';
     }
@@ -69,33 +59,33 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
-  const FormContext = React.createContext(null);
+  const FormContext = React.createContext(null as any);
 
-  const Form = React.forwardRef(({ children }, ref) => {
-    const [values, setValues] = React.useState({});
-    const rulesRef = React.useRef({});
+  const Form = React.forwardRef(({ children }: any, ref: any) => {
+    const [values, setValues] = React.useState({} as Record<string, any>);
+    const rulesRef = React.useRef({} as Record<string, any[]>);
 
-    const registerRules = React.useCallback((name, rules = []) => {
+    const registerRules = React.useCallback((name: string, rules: any[] = []) => {
       rulesRef.current[name] = rules;
     }, []);
 
-    const setFieldValue = React.useCallback((name, value) => {
-      setValues((previous) => ({ ...previous, [name]: value }));
+    const setFieldValue = React.useCallback((name: string, value: any) => {
+      setValues((previous: Record<string, any>) => ({ ...previous, [name]: value }));
     }, []);
 
     const resetFields = React.useCallback(() => {
       setValues({});
     }, []);
 
-    const setFieldsValue = React.useCallback((fields = {}) => {
-      setValues((previous) => ({ ...previous, ...fields }));
+    const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
+      setValues((previous: Record<string, any>) => ({ ...previous, ...fields }));
     }, []);
 
     const validateFields = React.useCallback(async () => {
-      const errors = [];
-      Object.entries(rulesRef.current).forEach(([field, rules]) => {
+      const errors: any[] = [];
+      Object.entries(rulesRef.current as Record<string, any[]>).forEach(([field, rules]) => {
         const value = values[field];
-        (rules ?? []).forEach((rule) => {
+        (rules ?? ([] as any[])).forEach((rule: any) => {
           const messageText = toText(rule.message) || 'Validation failed';
           if (rule.required && (value === undefined || value === null || value === '')) {
             errors.push({ name: [field], errors: [messageText] });
@@ -109,7 +99,7 @@ jest.mock('antd', () => {
         });
       });
       if (errors.length) {
-        const error = new Error('Validation failed');
+        const error: any = new Error('Validation failed');
         error.errorFields = errors;
         throw error;
       }
@@ -135,7 +125,7 @@ jest.mock('antd', () => {
   });
   Form.displayName = 'MockForm';
 
-  const FormItem = ({ name, rules = [], children, label }) => {
+  const FormItem = ({ name, rules = [], children, label }: any) => {
     const context = React.useContext(FormContext);
 
     React.useEffect(() => {
@@ -145,7 +135,7 @@ jest.mock('antd', () => {
     const value = context?.values?.[name] ?? '';
     const inputId = `${name}-input`;
 
-    const handleChange = (event) => {
+    const handleChange = (event: any) => {
       const nextValue = event?.target?.value ?? '';
       context?.setFieldValue?.(name, nextValue);
       if (children?.props?.onChange) {
@@ -170,12 +160,12 @@ jest.mock('antd', () => {
 
   Form.Item = FormItem;
 
-  const Input = React.forwardRef(({ value = '', onChange, ...rest }, ref) => (
+  const Input = React.forwardRef(({ value = '', onChange, ...rest }: any, ref: any) => (
     <input ref={ref} value={value} onChange={(event) => onChange?.(event)} {...rest} />
   ));
   Input.displayName = 'MockInput';
 
-  const Button = React.forwardRef((props, ref) => {
+  const Button = React.forwardRef((props: any, ref: any) => {
     const { children, onClick, disabled, type = 'button', icon, ...rest } = props ?? {};
     return (
       <button
@@ -193,9 +183,9 @@ jest.mock('antd', () => {
   });
   Button.displayName = 'MockButton';
 
-  const Tabs = ({ items = [], activeKey, onChange }) => (
+  const Tabs = ({ items = [], activeKey, onChange }: any) => (
     <div data-testid='tabs'>
-      {items.map((item) => (
+      {items.map((item: any) => (
         <div key={item.key}>
           <button type='button' onClick={() => onChange?.(item.key)}>
             {item.label}
@@ -206,15 +196,15 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Spin = ({ spinning, children }) => (
+  const Spin = ({ spinning, children }: any) => (
     <div data-testid='spin' data-spinning={spinning ? 'true' : 'false'}>
       {children}
     </div>
   );
 
-  const ConfigProvider = ({ children }) => <>{children}</>;
+  const ConfigProvider = ({ children }: any) => <>{children}</>;
 
-  const Tooltip = ({ title, children }) => {
+  const Tooltip = ({ title, children }: any) => {
     const label = toText(title);
     const child = React.Children.only(children);
     return React.cloneElement(child, {
@@ -223,9 +213,9 @@ jest.mock('antd', () => {
     });
   };
 
-  const Flex = ({ children }) => <div data-testid='flex'>{children}</div>;
+  const Flex = ({ children }: any) => <div data-testid='flex'>{children}</div>;
 
-  const ModalComponent = ({ open, onCancel, onOk, children }) =>
+  const ModalComponent = ({ open, onCancel, onOk, children }: any) =>
     open ? (
       <div data-testid='modal'>
         <div>{children}</div>
@@ -238,7 +228,7 @@ jest.mock('antd', () => {
       </div>
     ) : null;
 
-  const modalConfirm = jest.fn((config) => config);
+  const modalConfirm = jest.fn((config: any) => config);
 
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
@@ -260,111 +250,9 @@ jest.mock('antd', () => {
   };
 });
 
-jest.mock('@ant-design/pro-components', () => {
-  const React = require('react');
-
-  const ProTable = ({
-    request,
-    actionRef,
-    columns = [],
-    rowKey = 'id',
-    toolBarRender,
-    headerTitle,
-  }) => {
-    const [rows, setRows] = React.useState([]);
-    const paramsRef = React.useRef({ current: 1, pageSize: 10 });
-    const requestRef = React.useRef(request);
-
-    const runRequest = React.useCallback(async (override = {}) => {
-      paramsRef.current = { ...paramsRef.current, ...override };
-      const result = await requestRef.current?.(paramsRef.current, {});
-      setRows(result?.data ?? []);
-      return result;
-    }, []);
-
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    React.useEffect(() => {
-      const handlers = {
-        reload: () => runRequest(),
-        setPageInfo: (info) => runRequest(info ?? {}),
-      };
-      if (actionRef) {
-        actionRef.current = handlers;
-      }
-      globalThis.__manageSystemActionRef = handlers;
-      return () => {
-        if (globalThis.__manageSystemActionRef === handlers) {
-          delete globalThis.__manageSystemActionRef;
-        }
-      };
-    }, [actionRef, runRequest]);
-
-    React.useEffect(() => {
-      void runRequest();
-    }, []);
-
-    const renderContent = (content, keyPrefix) => {
-      if (Array.isArray(content)) {
-        return content.map((item, index) => (
-          <React.Fragment key={`${keyPrefix}-${index}`}>{item}</React.Fragment>
-        ));
-      }
-      return content;
-    };
-
-    const header = typeof headerTitle === 'function' ? headerTitle() : headerTitle;
-    const toolbar = toolBarRender?.() ?? [];
-
-    return (
-      <div data-testid='pro-table'>
-        <div data-testid='pro-table-header'>{header}</div>
-        <div data-testid='pro-table-toolbar'>
-          {(Array.isArray(toolbar) ? toolbar : [toolbar]).map((node, index) => (
-            <React.Fragment key={`toolbar-${index}`}>{node}</React.Fragment>
-          ))}
-        </div>
-        {rows.map((row, rowIndex) => {
-          const identifier = rowKey && row[rowKey] ? row[rowKey] : rowIndex;
-          return (
-            <div data-testid={`pro-table-row-${identifier}`} key={`row-${identifier}`}>
-              {(columns ?? []).map((column, columnIndex) => {
-                const { dataIndex } = column;
-                const value = dataIndex ? row[dataIndex] : undefined;
-                const rendered = column.render
-                  ? column.render(value, row, rowIndex)
-                  : (value ?? column.title ?? null);
-                return (
-                  <div
-                    key={`cell-${columnIndex}`}
-                    data-testid={`pro-table-cell-${dataIndex ?? columnIndex}-${identifier}`}
-                  >
-                    {renderContent(rendered, `render-${columnIndex}`)}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const PageContainer = ({ title, children }) => (
-    <div data-testid='page-container'>
-      <div data-testid='page-container-title'>{title}</div>
-      <div>{children}</div>
-    </div>
-  );
-
-  return {
-    __esModule: true,
-    ProTable,
-    PageContainer,
-  };
-});
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);
 
 jest.mock('@/services/roles/api', () => ({
   getSystemMembersApi: jest.fn(),
@@ -392,14 +280,15 @@ import {
   waitFor,
   within,
 } from '../../helpers/testUtils';
+import { proComponentsMocks } from '../../mocks/proComponents';
 
-const mockGetSystemUserRoleApi = getSystemUserRoleApi;
-const mockGetSystemMembersApi = getSystemMembersApi;
-const mockUpdateRoleApi = updateRoleApi;
-const mockDelRoleApi = delRoleApi;
-const mockAddSystemMemberApi = addSystemMemberApi;
+const mockGetSystemUserRoleApi = jest.mocked(getSystemUserRoleApi);
+const mockGetSystemMembersApi = jest.mocked(getSystemMembersApi);
+const mockUpdateRoleApi = jest.mocked(updateRoleApi);
+const mockDelRoleApi = jest.mocked(delRoleApi);
+const mockAddSystemMemberApi = jest.mocked(addSystemMemberApi);
 
-const buildMemberRecord = (overrides = {}) => ({
+const buildMemberRecord = (overrides: any = {}) => ({
   email: overrides.email ?? mockUser.email,
   display_name: overrides.display_name ?? mockUser.display_name,
   role: overrides.role ?? mockRole.role,
@@ -412,19 +301,17 @@ const ownerUserData = { user_id: 'owner-1', role: 'owner' };
 const memberUserData = { user_id: 'member-1', role: 'member' };
 
 const resetMessages = () => {
-  Object.values(message).forEach((fn) => {
-    if (typeof fn === 'function' && 'mockClear' in fn) {
-      fn.mockClear();
-    }
-  });
+  (Object.values(message as unknown as Record<string, any>) as any[]).forEach((fn) =>
+    fn?.mockClear?.(),
+  );
 };
 
 const reloadMembersTable = async () => {
   await waitFor(() => {
-    expect(globalThis.__manageSystemActionRef?.reload).toBeInstanceOf(Function);
+    expect(proComponentsMocks.lastProTableAction?.reload).toBeInstanceOf(Function);
   });
   await act(async () => {
-    await globalThis.__manageSystemActionRef.reload();
+    await proComponentsMocks.lastProTableAction?.reload();
   });
 };
 
@@ -557,7 +444,8 @@ describe('ManageSystem workflows', () => {
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
 
     expect(Modal.confirm).toHaveBeenCalled();
-    const confirmConfig = (Modal.confirm as jest.Mock).mock.calls.at(-1)?.[0];
+    const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     expect(confirmConfig).toBeDefined();
 
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
@@ -678,7 +566,8 @@ describe('ManageSystem workflows', () => {
 
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
 
-    const confirmConfig = (Modal.confirm as jest.Mock).mock.calls.at(-1)?.[0];
+    const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     await confirmConfig.onOk?.();
 
     await waitFor(() => {
@@ -749,7 +638,42 @@ describe('ManageSystem workflows', () => {
     },
   );
 
-  it.skip('should handle pagination updates from the members table without manual reloads', () => {
-    // TODO: Fix expected behavior once table auto-refresh on page change is implemented
+  it('should handle pagination updates from the members table without manual reloads', async () => {
+    const members = Array.from({ length: 25 }, (_, i) =>
+      buildMemberRecord({
+        email: `member${i}@example.com`,
+        display_name: `Member ${i}`,
+        role: 'member',
+        user_id: `member-${i}`,
+        team_id: 'team-1',
+      }),
+    );
+
+    mockGetSystemUserRoleApi.mockResolvedValue(ownerUserData as any);
+    mockGetSystemMembersApi.mockResolvedValue({
+      data: members,
+      success: true,
+      total: members.length,
+    } as any);
+
+    renderWithProviders(<ManageSystem />);
+
+    await waitForSystemLoad();
+    await openMembersTab();
+
+    // Verify initial page load
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-table-row-member0@example.com')).toBeInTheDocument();
+    });
+
+    // Change pagination using actionRef
+    await act(async () => {
+      await proComponentsMocks.lastProTableAction?.setPageInfo({ current: 2 });
+    });
+
+    // The table should now show different members (pagination works without manual reload)
+    await waitFor(() => {
+      expect(mockGetSystemMembersApi).toHaveBeenCalled();
+    });
   });
 });

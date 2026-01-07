@@ -368,8 +368,6 @@ export default {
 
   'pages.flow.process.administrativeInformation.referenceToDataSetFormat': '数据集格式',
 
-  'pages.process.review.error': '相关引用数据处于审核阶段，不能再发起审核',
-
   'pages.process.validator.allocatedFraction': '输出的分配份额总和大于100%，为',
   'pages.process.validator.UUID.required': '请输入UUID',
   'pages.process.validator.baseName.required': '请输入基础名称',
@@ -422,5 +420,6 @@ export default {
   'pages.process.review.verify.success.tip': '数据校验成功',
   'pages.process.review.unRuleVerification.tip': '以下引用数据不完整，请补充完整:',
   'pages.process.review.nonExistentRefData.tip': '以下数据不存在，请检查:',
-  'pages.process.review..tip': '以下数据不存在，请检查:',
+  'pages.process.review.error': '相关引用数据处于审核阶段，不能再发起审核',
+  'pages.process.checkData.inReview': '此数据集正在审核，无法校验',
 };

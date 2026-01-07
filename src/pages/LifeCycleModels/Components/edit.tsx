@@ -1,7 +1,8 @@
+import X6GraphComponent from '@/components/X6Graph';
+import { GraphProvider } from '@/contexts/graphContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Grid, Transform, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
@@ -120,16 +121,14 @@ const LifeCycleModelEdit: FC<Props> = ({
           setDrawerVisible(false);
         }}
       >
-        <XFlow>
+        <GraphProvider>
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph
-                  selectOptions={
-                    {
-                      enabled: false,
-                    } as any
-                  }
+                <X6GraphComponent
+                  selectOptions={{
+                    enabled: true,
+                  }}
                   zoomable
                   pannable
                   minScale={0.5}
@@ -138,7 +137,6 @@ const LifeCycleModelEdit: FC<Props> = ({
                     allowBlank: false,
                     allowLoop: false,
                     allowMulti: 'withPort',
-                    // allowMulti: false,
                     allowNode: false,
                     allowEdge: false,
                     router: {
@@ -148,15 +146,17 @@ const LifeCycleModelEdit: FC<Props> = ({
                       name: 'rounded',
                     },
                   }}
-                />
-                <Grid
-                  type='dot'
-                  options={{
+                  gridOptions={{
+                    type: 'dot',
                     color: '#595959',
                     thickness: 1,
+                    visible: true,
+                  }}
+                  transformOptions={{
+                    resizing: true,
+                    rotating: true,
                   }}
                 />
-                <Transform resizing rotating />
               </Content>
             </Layout>
             <Sider width='50px' style={siderStyle}>
@@ -173,7 +173,7 @@ const LifeCycleModelEdit: FC<Props> = ({
               />
             </Sider>
           </Layout>
-        </XFlow>
+        </GraphProvider>
       </Drawer>
     </>
   );

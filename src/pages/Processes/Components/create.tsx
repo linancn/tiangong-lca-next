@@ -28,6 +28,7 @@ type Props = {
   version?: string;
   importData?: any;
   onClose?: () => void;
+  newVersion?: string;
 };
 
 // When type is 'copy' or 'createVersion', id and version are required parameters
@@ -48,6 +49,7 @@ const ProcessCreate: FC<CreateProps> = ({
   lang,
   actionRef,
   actionType = 'create',
+  newVersion,
   id,
   version,
   importData,
@@ -116,6 +118,10 @@ const ProcessCreate: FC<CreateProps> = ({
     setSpinning(true);
     getProcessDetail(id, version).then(async (result: any) => {
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
+      if (actionType === 'createVersion' && newVersion) {
+        dataSet.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+          newVersion;
+      }
       setInitData({ ...dataSet, id: id });
       setFromData({ ...dataSet, id: id });
       setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);

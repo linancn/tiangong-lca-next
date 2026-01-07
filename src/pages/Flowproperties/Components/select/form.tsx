@@ -1,6 +1,5 @@
-import RequiredSelectFormTitle from '@/components/RequiredSelectFormTitle';
+import RequiredSelectFormTitle, { ErrRefTipMessage } from '@/components/RequiredSelectFormTitle';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import { useUpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
@@ -41,7 +40,6 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
-  const { referenceValue } = useUpdateReferenceContext() as { referenceValue: number };
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const [refData, setRefData] = useState<any>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
@@ -110,11 +108,6 @@ const FlowpropertiesSelectForm: FC<Props> = ({
       onData();
     });
   };
-  useEffect(() => {
-    if (id) {
-      handletFlowpropertyData(id, version ?? '');
-    }
-  }, [referenceValue]);
 
   useEffect(() => {
     setId(undefined);
@@ -144,19 +137,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             {label}{' '}
             {errRef && (
               <span style={{ color: token.colorError, marginLeft: '5px', fontWeight: 'normal' }}>
-                {errRef?.ruleVerification === false ? (
-                  <FormattedMessage
-                    id='pages.select.unRuleVerification'
-                    defaultMessage='Data is incomplete'
-                  />
-                ) : errRef?.nonExistent === true ? (
-                  <FormattedMessage
-                    id='pages.select.nonExistentRef'
-                    defaultMessage='Data does not exist'
-                  />
-                ) : (
-                  ''
-                )}
+                <ErrRefTipMessage errRef={errRef} />
               </span>
             )}
           </>
@@ -213,7 +194,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
           )}

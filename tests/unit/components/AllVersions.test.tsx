@@ -77,23 +77,27 @@ jest.mock('@/pages/Unitgroups/Components/view', () => {
 
 const mockGetAllVersions = getAllVersions as jest.MockedFunction<any>;
 const mockGetDataSource = getDataSource as jest.MockedFunction<any>;
+const mockAddVersionComponent = jest.fn(({ newVersion }: { newVersion: string }) => (
+  <div data-testid='children'>Children Content {newVersion}</div>
+));
 
 describe('AllVersionsList Component', () => {
   const defaultProps = {
     searchTableName: 'processes',
     searchColume: 'id',
     id: 'test-id',
-    children: <div data-testid='children'>Children Content</div>,
     columns: [
       { title: 'Name', dataIndex: 'name', key: 'name' },
       { title: 'Version', dataIndex: 'version', key: 'version' },
     ],
     lang: 'en',
     disabled: false,
+    addVersionComponent: mockAddVersionComponent,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAddVersionComponent.mockClear();
     mockGetDataSource.mockReturnValue('test-datasource');
     mockGetAllVersions.mockResolvedValue({
       data: [
@@ -128,7 +132,7 @@ describe('AllVersionsList Component', () => {
     expect(button).toBeDisabled();
   });
 
-  it('should show tooltip with correct text', () => {
+  it('should show tooltip with correct text', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} />
@@ -138,7 +142,7 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.mouseOver(button);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText('All version')).toBeInTheDocument();
     });
   });
@@ -157,7 +161,7 @@ describe('AllVersionsList Component', () => {
     expect(screen.getByTestId('children')).toBeInTheDocument();
   });
 
-  it('should close drawer when close button is clicked', () => {
+  it('should close drawer when close button is clicked', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} />
@@ -168,14 +172,14 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(button);
 
     // Drawer should be open
-    expect(screen.getByText('All version')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeVisible();
 
     const closeButton = screen.getByRole('button', { name: /close/i });
     fireEvent.click(closeButton);
 
-    // Drawer should be closed
-    waitFor(() => {
-      expect(screen.queryByText('All version')).not.toBeInTheDocument();
+    // Drawer should be hidden
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { hidden: true })).not.toBeVisible();
     });
   });
 
@@ -219,7 +223,7 @@ describe('AllVersionsList Component', () => {
     expect(button).toHaveClass('ant-btn-sm');
   });
 
-  it('should render ProcessView for processes table', () => {
+  it('should render ProcessView for processes table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='processes' />
@@ -229,12 +233,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('process-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('process-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render FlowView for flows table', () => {
+  it('should render FlowView for flows table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='flows' />
@@ -244,12 +247,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('flow-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('flow-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render LifeCycleModelView for lifecyclemodels table', () => {
+  it('should render LifeCycleModelView for lifecyclemodels table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='lifecyclemodels' />
@@ -259,12 +261,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('lifecyclemodel-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('lifecyclemodel-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render FlowpropertyView for flowproperties table', () => {
+  it('should render FlowpropertyView for flowproperties table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='flowproperties' />
@@ -274,12 +275,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('flowproperty-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('flowproperty-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render UnitGroupView for unitgroups table', () => {
+  it('should render UnitGroupView for unitgroups table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='unitgroups' />
@@ -289,12 +289,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('unitgroup-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('unitgroup-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render SourceView for sources table', () => {
+  it('should render SourceView for sources table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='sources' />
@@ -304,12 +303,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('source-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('source-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render ContactView for contacts table', () => {
+  it('should render ContactView for contacts table', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='contacts' />
@@ -319,12 +317,11 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
-      expect(screen.getByTestId('contact-view')).toBeInTheDocument();
-    });
+    const views = await screen.findAllByTestId('contact-view');
+    expect(views.length).toBeGreaterThan(0);
   });
 
-  it('should render null for unknown table type', () => {
+  it('should render null for unknown table type', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} searchTableName='unknown' />
@@ -334,14 +331,14 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.queryByTestId('process-view')).not.toBeInTheDocument();
       expect(screen.queryByTestId('flow-view')).not.toBeInTheDocument();
       expect(screen.queryByTestId('lifecyclemodel-view')).not.toBeInTheDocument();
     });
   });
 
-  it('should call getAllVersions with correct parameters', () => {
+  it('should call getAllVersions with correct parameters', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} />
@@ -351,7 +348,7 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(mockGetAllVersions).toHaveBeenCalledWith(
         'id',
         'processes',
@@ -360,14 +357,14 @@ describe('AllVersionsList Component', () => {
           pageSize: 10,
           current: 1,
         }),
-        undefined,
+        expect.any(Object),
         'en',
         'test-datasource',
       );
     });
   });
 
-  it('should render children content in toolbar', () => {
+  it('should render children content in toolbar', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} />
@@ -377,7 +374,7 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByTestId('children')).toBeInTheDocument();
     });
   });

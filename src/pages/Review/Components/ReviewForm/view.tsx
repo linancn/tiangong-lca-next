@@ -1,11 +1,11 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import { reviewTypeOptions } from '@/pages/Processes/Components/optiondata';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getLang } from '@/services/general/util';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { reviewTypeOptions } from '../reviewProcess/optiondata';
 
 import DataQualityIndicatorItemView from './DataQualityIndicator/view';
 import ScopeItemView from './Scope/view';

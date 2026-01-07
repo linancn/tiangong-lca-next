@@ -467,7 +467,9 @@ describe('LangTextItemForm', () => {
     await user.selectOptions(select, 'en');
 
     const currentValues = formRef.current.getFieldValue(['translations']);
-    formRef.current.setFieldValue(['translations'], currentValues);
+    await act(async () => {
+      formRef.current.setFieldValue(['translations'], currentValues);
+    });
 
     await waitFor(() => {
       expect(setRuleErrorState).toHaveBeenLastCalledWith(false);
@@ -485,7 +487,9 @@ describe('LangTextItemForm', () => {
     await user.selectOptions(select, 'zh');
 
     const currentValues = formRef.current.getFieldValue(['translations']);
-    formRef.current.setFieldValue(['translations'], currentValues);
+    await act(async () => {
+      formRef.current.setFieldValue(['translations'], currentValues);
+    });
 
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('English is a required language!');

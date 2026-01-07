@@ -231,15 +231,19 @@ describe('ProcessCreate component', () => {
     expect(screen.getByRole('dialog', { name: 'Create process' })).toBeInTheDocument();
     expect(latestProcessFormProps).toBeTruthy();
 
-    latestProcessFormProps.onExchangeDataCreate({
-      '@dataSetInternalID': '0',
-      exchangeDirection: 'OUTPUT',
-      quantitativeReference: true,
+    await act(async () => {
+      latestProcessFormProps.onExchangeDataCreate({
+        '@dataSetInternalID': '0',
+        exchangeDirection: 'OUTPUT',
+        quantitativeReference: true,
+      });
     });
 
     const currentValues = proFormApi?.getFieldsValue() ?? {};
-    proFormApi?.setFieldsValue({ processInformation: { name: 'New process' } });
-    triggerValuesChange?.({}, { ...currentValues, processInformation: { name: 'New process' } });
+    await act(async () => {
+      proFormApi?.setFieldsValue({ processInformation: { name: 'New process' } });
+      triggerValuesChange?.({}, { ...currentValues, processInformation: { name: 'New process' } });
+    });
 
     await act(async () => {
       await proFormApi?.submit();
@@ -267,11 +271,13 @@ describe('ProcessCreate component', () => {
     });
 
     const currentValues = proFormApi?.getFieldsValue() ?? {};
-    proFormApi?.setFieldsValue({ processInformation: { name: 'Invalid process' } });
-    triggerValuesChange?.(
-      {},
-      { ...currentValues, processInformation: { name: 'Invalid process' } },
-    );
+    await act(async () => {
+      proFormApi?.setFieldsValue({ processInformation: { name: 'Invalid process' } });
+      triggerValuesChange?.(
+        {},
+        { ...currentValues, processInformation: { name: 'Invalid process' } },
+      );
+    });
 
     await act(async () => {
       await proFormApi?.submit();

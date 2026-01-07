@@ -272,16 +272,7 @@
               },
               "connections": {
                 "outputExchange": {
-                  "@dominant": {
-                    "value": "str",
-                    "rules": [
-                      {
-                        "required": true,
-                        "messageKey": "pages.lifecyclemodel.validator.dominant.required",
-                        "defaultMessage": "Please input dominant exchange"
-                      }
-                    ]
-                  },
+                  "@dominant": "str",
                   "@flowUUID": {
                     "value": "str",
                     "rules": [

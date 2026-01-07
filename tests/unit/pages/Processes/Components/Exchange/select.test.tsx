@@ -221,10 +221,12 @@ describe('ExchangeSelect', () => {
     );
   });
 
-  it('disables submit button when selections are missing', () => {
+  it('disables submit button when selections are missing', async () => {
     render(<ExchangeSelect {...baseProps} sourceRowKeys={[]} targetRowKeys={[]} />);
 
     fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
 
     const submitButton = screen.getByRole('button', { name: 'Submit' });
     expect(submitButton).toBeDisabled();

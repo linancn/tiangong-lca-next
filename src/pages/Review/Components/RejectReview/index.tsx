@@ -6,7 +6,7 @@ import {
   getAllRefObj,
   getRefTableName,
 } from '@/pages/Utils/review';
-import { getCommentApi } from '@/services/comments/api';
+import { getCommentApi, updateCommentApi } from '@/services/comments/api';
 import { getRefData, updateDateToReviewState } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { getProcessDetail } from '@/services/processes/api';
@@ -25,6 +25,7 @@ interface RejectReviewProps {
   isModel: boolean;
   actionRef: any;
   buttonType?: 'icon' | 'text';
+  onOk?: (reason: string) => void | Promise<void>;
 }
 
 const RejectReview: React.FC<RejectReviewProps> = ({
@@ -34,6 +35,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   isModel,
   actionRef,
   buttonType = 'icon',
+  onOk,
 }) => {
   const formRef = useRef<FormInstance>(null);
   const [open, setOpen] = useState(false);
@@ -198,16 +200,16 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     const userTeamId = await getUserTeamId();
     const refsMap = new Map<string, any>();
     await getUnderReviewReferences(refObjs, refsMap, userTeamId, underReview);
-    const submodels = modelDetail?.json_tg?.submodels;
-    if (submodels) {
-      submodels.forEach((item: any) => {
-        underReview.push({
-          '@refObjectId': item.id,
-          '@version': modelDetail?.version,
-          '@type': 'process data set',
-        });
-      });
-    }
+    // const submodels = modelDetail?.json_tg?.submodels;
+    // if (submodels) {
+    //   submodels.forEach((item: any) => {
+    //     underReview.push({
+    //       '@refObjectId': item.id,
+    //       '@version': modelDetail?.version,
+    //       '@type': 'process data set',
+    //     });
+    //   });
+    // }
     await updateUnderReviewToUnReview(underReview);
   };
 
@@ -225,9 +227,23 @@ const RejectReview: React.FC<RejectReviewProps> = ({
 
   const handleOk = async () => {
     try {
-      const values = await formRef?.current?.validateFields();
       setLoading(true);
+      const values = await formRef?.current?.validateFields();
+      if (onOk) {
+        await onOk(values.reason);
+        setOpen(false);
+        return;
+      }
       const oldReviews = await getReviewsDetail(reviewId);
+      if (oldReviews?.state_code === 1) {
+        await updateCommentApi(
+          reviewId,
+          {
+            state_code: -1,
+          },
+          'assigned',
+        );
+      }
       const { json: oldReviewJson } = oldReviews ?? {};
       const userId = await getUserId();
       const user = await getUsersByIds([userId]);

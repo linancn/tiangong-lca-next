@@ -18,4 +18,5 @@ export default {
 
   'validator.lang.select': 'Please select a language',
   'validator.lang.mustBeEnglish': 'English is a required language',
+  'validator.lang.mustNotContainSemicolon': 'Must not contain semicolon',
 };

@@ -1,7 +1,8 @@
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { FormUnitGroup, UnitGroupDataSetObjectKeys, UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
@@ -13,6 +14,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { UnitGroupForm } from './form';
+
 type Props = {
   id: string;
   version: string;
@@ -31,6 +33,11 @@ const UnitGroupEdit: FC<Props> = ({
   setViewDrawerVisible,
   updateErrRef = () => {},
 }) => {
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
+
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] =
@@ -51,9 +58,34 @@ const UnitGroupEdit: FC<Props> = ({
     });
   }, [refCheckData, parentRefCheckContext]);
   const intl = useIntl();
-  const [referenceValue, setReferenceValue] = useState(0);
-  const updateReference = async () => {
-    setReferenceValue(referenceValue + 1);
+
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      formRefEdit.current?.setFieldsValue({ ...res, id });
+    }
   };
 
   // useEffect(() => {
@@ -159,9 +191,9 @@ const UnitGroupEdit: FC<Props> = ({
       if (autoClose) {
         setDrawerVisible(false);
         setViewDrawerVisible(false);
+        actionRef?.current?.reload();
       }
-      setActiveTabKey('unitGroupInformation');
-      actionRef?.current?.reload();
+      // setActiveTabKey('unitGroupInformation');
     } else {
       if (updateResult?.error?.state_code === 100) {
         message.error(
@@ -358,16 +390,16 @@ const UnitGroupEdit: FC<Props> = ({
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <Button onClick={handleCheckData}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
               onClick={() => {
-                updateReference();
+                handleUpdateReference();
               }}
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
             <Button
@@ -393,40 +425,46 @@ const UnitGroupEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              onValuesChange={(_, allValues) => {
+                setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormUnitGroup);
+              }}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={() => handleSubmit(true)}
+            >
+              <UnitGroupForm
+                lang={lang}
+                activeTabKey={activeTabKey}
                 formRef={formRefEdit}
-                initialValues={initData}
-                onValuesChange={(_, allValues) => {
-                  setFromData({
-                    ...fromData,
-                    [activeTabKey]: allValues[activeTabKey] ?? {},
-                  } as FormUnitGroup);
-                }}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                onFinish={() => handleSubmit(true)}
-              >
-                <UnitGroupForm
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  formRef={formRefEdit}
-                  onData={handletFromData}
-                  onUnitData={handletUnitData}
-                  onUnitDataCreate={handletUnitDataCreate}
-                  onTabChange={(key) => onTabChange(key as UnitGroupDataSetObjectKeys)}
-                  unitDataSource={unitDataSource}
-                  showRules={showRules}
-                />
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onData={handletFromData}
+                onUnitData={handletUnitData}
+                onUnitDataCreate={handletUnitDataCreate}
+                onTabChange={(key) => onTabChange(key as UnitGroupDataSetObjectKeys)}
+                unitDataSource={unitDataSource}
+                showRules={showRules}
+              />
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 };

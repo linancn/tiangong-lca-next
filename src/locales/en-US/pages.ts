@@ -1,6 +1,10 @@
 export default {
   'pages.select.unRuleVerification': 'Data is incomplete',
   'pages.select.nonExistentRef': 'Data does not exist',
+  'pages.select.versionUnderReview': 'The current dataset already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted.',
+  'pages.select.versionUnderReview.lifecycleModel': 'The model dataset {id} already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted.',
+  'pages.select.versionUnderReview.process': 'The process dataset {id} already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted.',
+  'pages.select.versionIsInTg': 'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
   'pages.select.underReview': 'Data is under review',
 
   'pages.layouts.userLayout.title': '',

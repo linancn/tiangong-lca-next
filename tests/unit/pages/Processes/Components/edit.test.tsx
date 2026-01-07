@@ -56,13 +56,6 @@ jest.mock('@/contexts/refCheckContext', () => ({
   },
 }));
 
-jest.mock('@/contexts/updateReferenceContext', () => ({
-  __esModule: true,
-  UpdateReferenceContext: {
-    Provider: ({ children }: any) => <div>{children}</div>,
-  },
-}));
-
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
   getFlowDetail: jest.fn(() =>
@@ -309,8 +302,10 @@ describe('ProcessEdit component', () => {
     expect(latestProcessFormProps).toBeTruthy();
 
     const currentValues = proFormApi?.getFieldsValue() ?? {};
-    proFormApi?.setFieldsValue({ processInformation: { name: 'Updated name' } });
-    triggerValuesChange?.({}, { ...currentValues, processInformation: { name: 'Updated name' } });
+    await act(async () => {
+      proFormApi?.setFieldsValue({ processInformation: { name: 'Updated name' } });
+      triggerValuesChange?.({}, { ...currentValues, processInformation: { name: 'Updated name' } });
+    });
 
     await act(async () => {
       await proFormApi?.submit();

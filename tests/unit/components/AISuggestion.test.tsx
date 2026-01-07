@@ -15,6 +15,7 @@
 import AISuggestion from '@/components/AISuggestion';
 import { getAISuggestion } from '@/services/general/api';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -25,6 +26,10 @@ jest.mock('@/services/general/api', () => ({
 jest.mock('@tiangong-lca/tidas-sdk', () => ({
   createProcess: jest.fn(() => ({
     processDataSet: {},
+    toJSONString: jest.fn(() => '{}'),
+  })),
+  createFlow: jest.fn(() => ({
+    flowDataSet: {},
     toJSONString: jest.fn(() => '{}'),
   })),
 }));
@@ -101,17 +106,18 @@ describe('AISuggestion Component', () => {
     expect(button).toBeDisabled();
   });
 
-  it('should open modal when button is clicked', () => {
+  it('should open modal when button is clicked', async () => {
     render(
       <ConfigProvider>
         <AISuggestion {...defaultProps} />
       </ConfigProvider>,
     );
 
+    const user = userEvent.setup();
     const button = screen.getByRole('button');
-    fireEvent.click(button);
+    await user.click(button);
 
-    expect(screen.getByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
+    expect(await screen.findByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
   });
 
   it('should close modal when cancel button is clicked', async () => {
@@ -222,6 +228,12 @@ describe('AISuggestion Component', () => {
     const flowProps = {
       ...defaultProps,
       type: 'flow' as const,
+      originJson: {
+        flowDataSet: {
+          id: 'test-flow',
+          name: 'Test Flow',
+        },
+      },
     };
 
     render(
@@ -298,17 +310,18 @@ describe('AISuggestion Component', () => {
     });
   });
 
-  it('should render modal with correct width', () => {
+  it('should render modal with correct width', async () => {
     render(
       <ConfigProvider>
         <AISuggestion {...defaultProps} />
       </ConfigProvider>,
     );
 
+    const user = userEvent.setup();
     const button = screen.getByRole('button');
-    fireEvent.click(button);
+    await user.click(button);
 
-    const modal = screen.getByRole('dialog');
+    const modal = await screen.findByRole('dialog');
     expect(modal).toBeInTheDocument();
   });
 
@@ -339,7 +352,7 @@ describe('AISuggestion Component', () => {
     await screen.findByText('component.aiSuggestion.modal.title');
   });
 
-  it('should handle undefined callbacks gracefully', () => {
+  it('should handle undefined callbacks gracefully', async () => {
     const propsWithoutCallbacks = {
       ...defaultProps,
       onAcceptChange: undefined,
@@ -354,10 +367,11 @@ describe('AISuggestion Component', () => {
       </ConfigProvider>,
     );
 
+    const user = userEvent.setup();
     const button = screen.getByRole('button');
-    fireEvent.click(button);
+    await user.click(button);
 
-    expect(screen.getByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
+    expect(await screen.findByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
   });
 
   it('should render with correct button attributes', () => {

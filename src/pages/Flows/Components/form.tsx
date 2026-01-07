@@ -261,15 +261,24 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setBaseNameError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'baseName'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -296,15 +305,24 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setTreatmentStandardsRoutesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'treatmentStandardsRoutes'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -331,15 +349,24 @@ export const FlowForm: FC<Props> = ({
                 />
               }
               setRuleErrorState={setMixAndLocationTypesError}
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'mixAndLocationTypes'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
           <br />
@@ -360,15 +387,24 @@ export const FlowForm: FC<Props> = ({
                   defaultMessage='Quantitative flow properties'
                 />
               }
-              rules={
-                showRules
+              rules={[
+                ...(showRules
                   ? getRules(
                       schema['flowDataSet']['flowInformation']['dataSetInformation']['name'][
                         'flowProperties'
                       ]['rules'],
                     )
-                  : []
-              }
+                  : []),
+                {
+                  pattern: /^[^;；]*$/,
+                  message: (
+                    <FormattedMessage
+                      id='validator.lang.mustNotContainSemicolon'
+                      defaultMessage='Must not contain semicolon'
+                    />
+                  ),
+                },
+              ]}
             />
           </Card>
         </Card>
@@ -403,10 +439,16 @@ export const FlowForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.modellingAndValidation.typeOfDataSet'
-                defaultMessage='Type of flow'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.modellingAndValidation.typeOfDataSet'
+                    defaultMessage='Type of flow'
+                  />
+                }
               />
             }
             name={['modellingAndValidation', 'LCIMethod', 'typeOfDataSet']}
@@ -681,6 +723,7 @@ export const FlowForm: FC<Props> = ({
             'common:referenceToComplianceSystem',
           ]}
           onData={onData}
+          showRequiredLabel={true}
           rules={
             showRules
               ? getRules(
@@ -693,10 +736,16 @@ export const FlowForm: FC<Props> = ({
         />
         <br />
         <Form.Item
+          required={false}
           label={
-            <FormattedMessage
-              id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance'
-              defaultMessage='Approval of overall compliance'
+            <RequiredMark
+              showError={false}
+              label={
+                <FormattedMessage
+                  id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance'
+                  defaultMessage='Approval of overall compliance'
+                />
+              }
             />
           }
           name={[
@@ -732,10 +781,16 @@ export const FlowForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.administrativeInformation.timeStamp'
-                defaultMessage='Time stamp (last saved)'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:timeStamp']}
@@ -762,6 +817,7 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['administrativeInformation', 'dataEntryBy', 'common:referenceToDataSetFormat']}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -803,10 +859,16 @@ export const FlowForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.flow.view.administrativeInformation.dataSetVersion'
-                defaultMessage='Data set version'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                }
               />
             }
             name={['administrativeInformation', 'publicationAndOwnership', 'common:dataSetVersion']}
@@ -816,7 +878,7 @@ export const FlowForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'createVersion'} />
           </Form.Item>
           {/* <FlowsSelectForm
             name={[
@@ -851,6 +913,7 @@ export const FlowForm: FC<Props> = ({
               'common:referenceToOwnershipOfDataSet',
             ]}
             onData={onData}
+            showRequiredLabel={true}
             rules={
               showRules
                 ? getRules(
@@ -875,7 +938,7 @@ export const FlowForm: FC<Props> = ({
               'common:permanentDataSetURI',
             ]}
           >
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
         </Card>
       </Space>

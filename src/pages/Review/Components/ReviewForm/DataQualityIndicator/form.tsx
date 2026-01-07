@@ -1,11 +1,11 @@
+import {
+  dataQualityIndicatorNameOptions,
+  dataQualityIndicatorValueOptions,
+} from '@/pages/Processes/Components/optiondata';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Row, Select } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import {
-  dataQualityIndicatorNameOptions,
-  dataQualityIndicatorValueOptions,
-} from '../../reviewProcess/optiondata';
 
 type Props = {
   name: any;

@@ -6,6 +6,7 @@ import {
   checkReferences,
   checkRequiredFields,
   checkReviewReport,
+  checkVersions,
   dealModel,
   dealProcress,
   getAllRefObj,
@@ -16,6 +17,7 @@ import {
 } from '@/pages/Utils/review';
 
 const mockGetRefData = jest.fn();
+const mockGetRefDataByIds = jest.fn();
 const mockGetReviewsOfData = jest.fn();
 const mockUpdateDateToReviewState = jest.fn();
 const mockUpdateStateCodeApi = jest.fn();
@@ -23,6 +25,7 @@ const mockUpdateStateCodeApi = jest.fn();
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getRefData: (...args: any[]) => mockGetRefData(...args),
+  getRefDataByIds: (...args: any[]) => mockGetRefDataByIds(...args),
   getReviewsOfData: (...args: any[]) => mockGetReviewsOfData(...args),
   updateDateToReviewState: (...args: any[]) => mockUpdateDateToReviewState(...args),
   updateStateCodeApi: (...args: any[]) => mockUpdateStateCodeApi(...args),
@@ -69,6 +72,7 @@ describe('review utilities', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetRefData.mockReset();
+    mockGetRefDataByIds.mockReset();
     mockGetReviewsOfData.mockReset();
     mockUpdateDateToReviewState.mockReset();
     mockUpdateStateCodeApi.mockReset();
@@ -301,6 +305,66 @@ describe('review utilities', () => {
     expect(nonExistent).toHaveLength(1);
   });
 
+  it('marks versions under review and in TG on reference path via checkVersions', async () => {
+    const path = new ReffPath(
+      {
+        '@refObjectId': 'proc-1',
+        '@version': '01',
+        '@type': 'process data set',
+      },
+      true,
+      false,
+    );
+
+    const child = new ReffPath(
+      {
+        '@refObjectId': 'flow-1',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
+
+    path.addChild(child);
+
+    mockGetRefDataByIds.mockImplementation(async (ids: string[], tableName: string) => {
+      if (tableName === 'processes') {
+        return {
+          data: [
+            {
+              id: 'proc-1',
+              version: '01',
+              state_code: 30,
+            },
+          ],
+        };
+      }
+      if (tableName === 'flows') {
+        return {
+          data: [
+            {
+              id: 'flow-1',
+              version: '02',
+              state_code: 100,
+            },
+          ],
+        };
+      }
+      return { data: [] };
+    });
+
+    await checkVersions(new Set(['proc-1:01:process data set', 'flow-1:01:flow data set']), path);
+
+    expect(mockGetRefDataByIds).toHaveBeenCalledTimes(2);
+    expect(mockGetRefDataByIds).toHaveBeenCalledWith(['proc-1'], 'processes');
+    expect(mockGetRefDataByIds).toHaveBeenCalledWith(['flow-1'], 'flows');
+
+    expect((path as any).versionUnderReview).toBe(true);
+    expect((path as any).underReviewVersion).toBe('01');
+    expect((child as any).versionIsInTg).toBe(true);
+  });
+
   it('checks data wrapper using checkReferences', async () => {
     mockGetRefData.mockImplementation(async (id: string) => {
       if (id === 'flow-3') {
@@ -331,6 +395,7 @@ describe('review utilities', () => {
       }
       return { success: false, data: null };
     });
+    mockGetLifeCycleModelDetail.mockResolvedValue({ success: false, data: null });
 
     const unRuleVerification: any[] = [];
     const nonExistent: any[] = [];

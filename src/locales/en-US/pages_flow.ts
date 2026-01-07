@@ -29,6 +29,7 @@ export default {
   'pages.flow.view.administrativeInformation.dataSetVersion': 'Data set version',
   'pages.flow.view.administrativeInformation.referenceToPrecedingDataSetVersion': 'Preceding data set version',
   'pages.flow.view.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
+  'pages.flow.view.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.flow.view.administrativeInformation.publicationAndOwnership': 'Publication and ownership',
   'pages.flow.view.administrativeInformation.referenceToDataSetFormat': 'Data set format(s)',
   'pages.flow.view.administrativeInformation.timeStamp': 'Time stamp (last saved)',

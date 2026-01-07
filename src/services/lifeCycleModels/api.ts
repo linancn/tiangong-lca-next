@@ -18,12 +18,10 @@ import {
   createProcess,
   deleteProcess,
   getProcessDetailByIdsAndVersion,
-  getProcessesByIdsAndVersions,
   updateProcess,
   validateProcessesByIdAndVersion,
 } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import { getUserId } from '../users/api';
 import { genLifeCycleModelJsonOrdered } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
@@ -103,12 +101,33 @@ export async function createLifeCycleModel(data: any) {
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
   const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   // const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
-  const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+  const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
     newLifeCycleModelJsonOrdered,
     [],
   );
+
+  const edges = (data?.model?.edges ?? []).map((e: any) => {
+    const up2DownEdge = up2DownEdges.find(
+      (edge) =>
+        edge?.upstreamNodeId === e?.source?.cell && edge?.downstreamNodeId === e?.target?.cell,
+    );
+    return {
+      ...e,
+      labels: [],
+      data: {
+        ...e.data,
+        connection: {
+          ...e.data?.connection,
+          isBalanced: up2DownEdge?.isBalanced,
+          unbalancedAmount: up2DownEdge?.unbalancedAmount,
+          exchangeAmount: up2DownEdge?.exchangeAmount,
+        },
+      },
+    };
+  });
+
   const rule_verification = getRuleVerification(schema, newLifeCycleModelJsonOrdered)?.valid;
   const result = await supabase
     .from('lifecyclemodels')
@@ -117,7 +136,7 @@ export async function createLifeCycleModel(data: any) {
         id: data.id,
         json_ordered: newLifeCycleModelJsonOrdered,
         json_tg: {
-          xflow: data?.model,
+          xflow: { edges, nodes: data?.model?.nodes ?? [] },
           submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
         },
         rule_verification,
@@ -131,7 +150,7 @@ export async function createLifeCycleModel(data: any) {
     if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
       lifeCycleModelProcesses.forEach(async (n: any) => {
         try {
-          await createProcess(n.modelInfo.id, n.data.processDataSet);
+          await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
         } catch (error) {
           console.error(error);
         }
@@ -327,12 +346,32 @@ export async function updateLifeCycleModel(data: any) {
 
     const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
 
-    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+    const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
       data.id,
       data?.model?.nodes ?? [],
       newLifeCycleModelJsonOrdered,
       jsonToList(oldData.submodels),
     );
+
+    const edges = (data?.model?.edges ?? []).map((e: any) => {
+      const up2DownEdge = up2DownEdges.find(
+        (edge) =>
+          edge?.upstreamNodeId === e?.source?.cell && edge?.downstreamNodeId === e?.target?.cell,
+      );
+      return {
+        ...e,
+        labels: [],
+        data: {
+          ...e.data,
+          connection: {
+            ...e.data?.connection,
+            isBalanced: up2DownEdge?.isBalanced,
+            unbalancedAmount: up2DownEdge?.unbalancedAmount,
+            exchangeAmount: up2DownEdge?.exchangeAmount,
+          },
+        },
+      };
+    });
 
     const rule_verification = await getRuleVerification(schema, newLifeCycleModelJsonOrdered)
       ?.valid;
@@ -366,7 +405,7 @@ export async function updateLifeCycleModel(data: any) {
           data: {
             json_ordered: newLifeCycleModelJsonOrdered,
             json_tg: {
-              xflow: data?.model,
+              xflow: { edges, nodes: data?.model?.nodes ?? [] },
               submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
             },
             rule_verification,
@@ -409,12 +448,17 @@ export async function updateLifeCycleModel(data: any) {
                       if (oldProcess) {
                         overrideWithOldProcess(n.data, oldProcess.json);
                       }
-                      return updateProcess(n.modelInfo.id, data.version, n.data.processDataSet);
+                      return updateProcess(
+                        n.modelInfo.id,
+                        data.version,
+                        n.data.processDataSet,
+                        data.id,
+                      );
                     } else {
-                      return createProcess(n.modelInfo.id, n.data.processDataSet);
+                      return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                     }
                   } else if (n.option === 'create') {
-                    return createProcess(n.modelInfo.id, n.data.processDataSet);
+                    return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                   }
                 } catch (error) {
                   console.error(error);
@@ -884,6 +928,27 @@ export async function lifeCycleModel_hybrid_search(
 
   return result;
 }
+export async function getLifeCyclesByIdAndVersion(params: { id: string; version: string }[]) {
+  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+
+  const result = await supabase
+    .from('lifecyclemodels')
+    .select(
+      `
+     id,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
+    version,
+    modified_at,
+    team_id
+    `,
+    )
+    .or(orConditions);
+
+  return result;
+}
+
 export async function getLifeCyclesByIds(ids: string[]) {
   const result = await supabase
     .from('lifecyclemodels')
@@ -902,47 +967,9 @@ export async function getLifeCyclesByIds(ids: string[]) {
   return result;
 }
 
-export async function getSubmodelsByProcessIds(processIds: string[]) {
-  if (!processIds || processIds.length === 0) {
-    return { error: 'processIds is empty', data: null };
-  }
-
-  const orConditions = processIds.map(
-    (processId) => `json_tg->submodels.cs.[{"id":"${processId}"}]`,
-  );
-
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select('id, version, json_tg->submodels')
-    .or(orConditions.join(','));
-
-  if (result.error) {
-    console.error('Error fetching lifecycle models:', result.error);
-    return { error: result.error, data: null };
-  }
-
-  const mapping: { [processId: string]: string } = {};
-
-  if (result.data) {
-    result.data.forEach((lifecycleModel) => {
-      const submodels = lifecycleModel.submodels;
-      if (submodels && Array.isArray(submodels)) {
-        submodels.forEach((submodel: any) => {
-          if (submodel && submodel.id && processIds.includes(submodel.id)) {
-            mapping[submodel.id] = `${lifecycleModel.id}_${lifecycleModel.version}`;
-          }
-        });
-      }
-    });
-  }
-
-  return { error: null, data: mapping };
-}
-
 export async function getLifeCycleModelDetail(
   id: string,
   version: string,
-  setIsFromLifeCycle = false,
 ): Promise<
   | {
       data: {
@@ -966,41 +993,7 @@ export async function getLifeCycleModelDetail(
     .eq('id', id)
     .eq('version', version);
   if (result.data && result.data.length > 0) {
-    const userId = await getUserId();
     const data = result.data[0];
-    if (setIsFromLifeCycle) {
-      let procressIds: string[] = [];
-      let procressVersion: string[] = [];
-      data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-        procressIds.push(node?.data?.id);
-        procressVersion.push(node?.data?.version);
-      });
-
-      if (procressIds.length > 0) {
-        const [procresses, models] = await Promise.all([
-          getProcessesByIdsAndVersions(procressIds, procressVersion),
-          getSubmodelsByProcessIds(procressIds),
-        ]);
-
-        data?.json_tg?.xflow?.nodes?.forEach((node: any) => {
-          if (models.data && models.data.hasOwnProperty(node.data.id)) {
-            node.modelData = {
-              id: models.data[node.data.id].split('_')[0],
-              version: models.data[node.data.id].split('_')[1],
-            };
-          }
-          const procress = procresses?.data?.find(
-            (procress: any) =>
-              procress?.id === node?.data?.id && procress?.version === node?.data?.version,
-          );
-          if (procress?.user_id === userId) {
-            node.isMyProcess = true;
-          } else {
-            node.isMyProcess = false;
-          }
-        });
-      }
-    }
 
     return Promise.resolve({
       data: {
@@ -1030,7 +1023,7 @@ export async function contributeLifeCycleModel(id: string, version: string) {
     return { error: true, message: 'Failed to get current user' };
   }
 
-  const modelDetail = await getLifeCycleModelDetail(id, version, false);
+  const modelDetail = await getLifeCycleModelDetail(id, version);
   const refs = getAllRefObj(modelDetail);
 
   const needContributeMap = new Map<string, any>();

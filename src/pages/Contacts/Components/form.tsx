@@ -328,10 +328,16 @@ export const ContactForm: FC<Props> = ({
             }
           >
             <Form.Item
+              required={false}
               label={
-                <FormattedMessage
-                  id='pages.contact.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
+                <RequiredMark
+                  showError={false}
+                  label={
+                    <FormattedMessage
+                      id='pages.contact.timeStamp'
+                      defaultMessage='Time stamp (last saved)'
+                    />
+                  }
                 />
               }
               rules={
@@ -355,6 +361,7 @@ export const ContactForm: FC<Props> = ({
                   defaultMessage='Data set format(s)'
                 />
               }
+              showRequiredLabel={true}
               rules={
                 showRules
                   ? getRules(
@@ -381,10 +388,16 @@ export const ContactForm: FC<Props> = ({
             }
           >
             <Form.Item
+              required={false}
               label={
-                <FormattedMessage
-                  id='pages.contact.dataSetVersion'
-                  defaultMessage='Data set version'
+                <RequiredMark
+                  showError={false}
+                  label={
+                    <FormattedMessage
+                      id='pages.contact.dataSetVersion'
+                      defaultMessage='Data set version'
+                    />
+                  }
                 />
               }
               name={[
@@ -398,7 +411,7 @@ export const ContactForm: FC<Props> = ({
                 ]['rules'] ?? [],
               )}
             >
-              <Input />
+              <Input disabled={formType === 'createVersion'} />
             </Form.Item>
             <ContactSelectForm
               label={
@@ -407,6 +420,7 @@ export const ContactForm: FC<Props> = ({
                   defaultMessage='Owner of data set'
                 />
               }
+              showRequiredLabel={true}
               rules={
                 showRules
                   ? getRules(
@@ -456,7 +470,7 @@ export const ContactForm: FC<Props> = ({
                 'common:permanentDataSetURI',
               ]}
             >
-              <Input />
+              <Input disabled={true} />
             </Form.Item>
           </Card>
         </Space>

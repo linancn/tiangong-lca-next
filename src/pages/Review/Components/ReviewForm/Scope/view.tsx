@@ -1,7 +1,7 @@
+import { methodNameOptions, scopeNameOptions } from '@/pages/Processes/Components/optiondata';
 import { Col, Descriptions, Row } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
-import { methodNameOptions, scopeNameOptions } from '../../reviewProcess/optiondata';
 
 type Props = {
   data: any[];

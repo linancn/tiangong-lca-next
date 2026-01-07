@@ -426,18 +426,22 @@ export async function getFlowTablePgroongaSearch(
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-          const classifications = jsonToList(
-            dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
-            ],
-          );
+          const typeOfDataSet =
+            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
+          const classificationSource =
+            typeOfDataSet === 'Elementary flow'
+              ? dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                  'common:category'
+                ]
+              : dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
+          const classifications = jsonToList(classificationSource);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(classifications),
-            flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
+            flowType: typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             locationOfSupply: resolveLocationOfSupply(
               i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
@@ -498,15 +502,18 @@ export async function flow_hybrid_search(
   if (result.error) {
     console.log('error', result.error);
   }
-  if (result.data?.data) {
-    if (result.data.data.length === 0) {
+  if (Array.isArray(result.data?.data)) {
+    const resultData = result.data.data;
+    const totalCount = result.data?.total_count ?? 0;
+
+    if (resultData.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
+        total: totalCount,
+        page: params.current ?? 1,
       });
     }
-    const resultData = result.data.data;
-    const totalCount = resultData.total_count;
 
     const [locationData, categorizationData] = await Promise.all([
       fetchLocationLookup(
@@ -572,18 +579,22 @@ export async function flow_hybrid_search(
       data = resultData.map((i: any) => {
         try {
           const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-          const classifications = jsonToList(
-            dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
-            ],
-          );
+          const typeOfDataSet =
+            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
+          const classificationSource =
+            typeOfDataSet === 'Elementary flow'
+              ? dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+                  'common:category'
+                ]
+              : dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
+          const classifications = jsonToList(classificationSource);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
             name: genFlowName(dataInfo?.name ?? {}, lang),
             synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
             classification: classificationToString(classifications),
-            flowType: i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-',
+            flowType: typeOfDataSet ?? '-',
             CASNumber: dataInfo?.CASNumber ?? '-',
             locationOfSupply: resolveLocationOfSupply(
               i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
@@ -603,7 +614,7 @@ export async function flow_hybrid_search(
     }
     return Promise.resolve({
       data: data,
-      page: 1,
+      page: params.current ?? 1,
       success: true,
       total: totalCount,
     });
@@ -725,17 +736,114 @@ export async function getReferenceProperty(id: string, version: string) {
     });
   }
 }
-export async function getFlowStateCodeByIdsAndVersions(params: { id: string; version: string }[]) {
-  const res = await supabase
+export async function getFlowStateCodeByIdsAndVersions(
+  params: { id: string; version: string }[],
+  lang: string,
+) {
+  if (!params || params.length === 0) {
+    return { error: null, data: [] };
+  }
+  const filter = params.map((p) => `and(id.eq.${p.id},version.eq.${p.version})`).join(',');
+  const result = await supabase
     .from('flows')
-    .select('state_code,id,version')
-    .in(
-      'id',
-      params.map((item) => item.id),
+    .select(
+      `
+      state_code,
+      id,
+      version,
+      json->flowDataSet->flowInformation->dataSetInformation->name,
+      json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
+      json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
+      json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+      json->flowDataSet->flowInformation->geography->>locationOfSupply,
+      json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
+      json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
+      modified_at,
+      team_id
+      `,
     )
-    .in(
-      'version',
-      params.map((item) => item.version),
-    );
-  return res;
+    .or(filter);
+
+  if (!result || !result.data || !result.data.length) {
+    return { error: result.error, data: [] };
+  }
+  const locations = result.data.map((i: any) => i['locationOfSupply']);
+
+  const [locationData, categorizationData] = await Promise.all([
+    fetchLocationLookup(lang, locations),
+    lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+  ]);
+
+  let data: any[] = [];
+
+  if (lang === 'zh' && categorizationData) {
+    data = result.data.map((i: any) => {
+      try {
+        let classificationData: any = {};
+        let thisClass: any[] = [];
+        if (i?.typeOfDataSet === 'Elementary flow') {
+          classificationData =
+            i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+              'common:category'
+            ];
+          thisClass = categorizationData?.categoryElementaryFlow;
+        } else {
+          classificationData =
+            i?.classificationInformation?.['common:classification']?.['common:class'];
+          thisClass = categorizationData?.category;
+        }
+
+        const classifications = jsonToList(classificationData);
+        const classificationZH = genClassificationZH(classifications, thisClass);
+
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          version: i.version,
+          stateCode: i.state_code,
+          classification: classificationToString(classificationZH),
+          locationOfSupply: resolveLocationOfSupply(
+            i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+            locationData,
+          ),
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
+  } else {
+    data = result.data.map((i: any) => {
+      try {
+        let classificationData: any = {};
+        if (i?.typeOfDataSet === 'Elementary flow') {
+          classificationData =
+            i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+              'common:category'
+            ];
+        } else {
+          classificationData =
+            i?.classificationInformation?.['common:classification']?.['common:class'];
+        }
+
+        const classifications = jsonToList(classificationData);
+
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          version: i.version,
+          stateCode: i.state_code,
+          classification: classificationToString(classifications),
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
+  }
+  return { error: null, data };
 }

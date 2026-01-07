@@ -1,3 +1,5 @@
+import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
+import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
@@ -7,18 +9,20 @@ import {
   genLifeCycleModelInfoFromData,
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
+import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { genProcessName } from '@/services/processes/util';
 import { ActionType } from '@ant-design/pro-components';
-import { useGraphEvent, useGraphStore } from '@antv/xflow';
-import { Space, Spin, theme } from 'antd';
+import { message, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 // import ConnectableProcesses from '../connectableProcesses';
+import { GraphEdge, GraphNode } from '@/contexts/graphContext';
 import ModelResult from '../modelResult';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
+import { getEdgeLabel } from './utils/edge';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
 type Props = {
@@ -37,6 +41,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
+  const [processInstances, setProcessInstances] = useState<any[]>([]);
   // const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
   // const [connectableProcessesPortId, setConnectableProcessesPortId] = useState<any>('');
   // const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState<any>('');
@@ -45,9 +50,10 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
 
-  const nodes = useGraphStore((state) => state.nodes);
-  const edges = useGraphStore((state) => state.edges);
+  const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
+  const edges: GraphEdge[] = useGraphStore((state) => state.edges);
   const removeEdges = useGraphStore((state) => state.removeEdges);
+  const updateEdge = useGraphStore((state) => state.updateEdge);
 
   const [nodeCount, setNodeCount] = useState(0);
 
@@ -336,12 +342,45 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         updateNode(n.id ?? '', { selected: false });
       }
     });
+    edges.forEach((e) => {
+      if (e.selected) {
+        updateEdge(e.id ?? '', { selected: false });
+      }
+    });
+  });
+
+  useGraphEvent('edge:click', (evt) => {
+    const currentEdge = edges.find((e) => e.selected === true);
+    if (currentEdge) {
+      if (currentEdge.id === evt.edge.id) return;
+
+      updateEdge(currentEdge.id, {
+        selected: false,
+      });
+    }
+    updateEdge(evt.edge.id, {
+      selected: true,
+    });
   });
 
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     removeEdges([edge.id]);
   });
+
+  const getProcessInstances = async (jsonTg: any) => {
+    let params: { id: string; version: string }[] = [];
+    jsonTg?.xflow?.nodes?.forEach((node: any) => {
+      params.push({
+        id: node?.data?.id,
+        version: node?.data?.version,
+      });
+    });
+    if (params.length > 0) {
+      const procresses = await getProcessesByIdAndVersion(params);
+      setProcessInstances(procresses.data ?? []);
+    }
+  };
 
   useEffect(() => {
     if (!drawerVisible) {
@@ -351,23 +390,57 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     if (id && version) {
       setSpinning(true);
       getLifeCycleModelDetail(id, version).then(async (result: any) => {
+        if (!result?.data?.id) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.notPublic',
+              defaultMessage: 'Model is not public',
+            }),
+          );
+          return;
+        }
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
         setInfoData({ ...fromData, id: id });
         setJsonTg(result.data?.json_tg);
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        let initNodes = (model?.nodes ?? []).map((node: any) => {
+        const initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,
             attrs: nodeAttrs,
             ports: {
               ...node.ports,
               groups: ports.groups,
+              items: node?.ports?.items?.map((item: any) => {
+                return {
+                  ...item,
+                  attrs: {
+                    ...item?.attrs,
+                    text: {
+                      ...item?.attrs?.text,
+                      fill:
+                        item?.data?.quantitativeReference ||
+                        (item?.data?.allocations?.allocation?.['@allocatedFraction'] &&
+                          Number(
+                            item?.data?.allocations?.allocation?.['@allocatedFraction']?.split(
+                              '%',
+                            )[0],
+                          ) > 0)
+                          ? token.colorPrimary
+                          : token.colorTextDescription,
+                      'font-weight': item?.data?.quantitativeReference ? 'bold' : 'normal',
+                    },
+                  },
+                };
+              }),
             },
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : '',
-              nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+              nodeTitleTool(
+                node?.size?.width ?? node?.width ?? 350,
+                genProcessName(node?.data?.label, lang) ?? '',
+              ),
               inputFlowTool,
               outputFlowTool,
             ],
@@ -379,6 +452,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { x, y, ...targetRest } = edge.target as any;
+              const label = getEdgeLabel(
+                token,
+                edge?.data?.connection?.unbalancedAmount,
+                edge?.data?.connection?.exchangeAmount,
+              );
               return {
                 ...edge,
                 attrs: {
@@ -386,6 +464,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                     stroke: token.colorPrimary,
                   },
                 },
+                labels: [label],
                 target: targetRest,
               };
             }
@@ -397,8 +476,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         });
 
         setNodeCount(initNodes.length);
-
-        setSpinning(false);
+        getProcessInstances(result.data?.json_tg)
+          .then(() => {})
+          .finally(() => {
+            setSpinning(false);
+          });
       });
     } else {
       const currentDateTime = formatDateTime(new Date());
@@ -421,7 +503,10 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       updateNode(node.id ?? '', {
         tools: [
           node?.data?.quantitativeReference === '1' ? refTool : '',
-          nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+          nodeTitleTool(
+            node?.size?.width ?? node?.width ?? 350,
+            genProcessName(node?.data?.label, lang) ?? '',
+          ),
           inputFlowTool,
           outputFlowTool,
         ],
@@ -429,16 +514,33 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     });
   }, [nodeCount]);
 
+  const getShowResult = () => {
+    const selectedNode = nodes.find((node) => node.selected);
+    const processInstance = processInstances.find(
+      (pi) => pi.id === selectedNode?.data?.id && pi.version === selectedNode?.data?.version,
+    );
+    return processInstance?.modelId ? (
+      <LifeCycleModelView
+        id={processInstance.modelId}
+        version={selectedNode?.data?.version ?? ''}
+        lang={lang}
+        buttonType={'toolIcon'}
+      />
+    ) : (
+      <ProcessView
+        id={selectedNode?.data?.id ?? ''}
+        version={selectedNode?.data?.version ?? ''}
+        buttonType={'toolIcon'}
+        lang={lang}
+        disabled={!selectedNode}
+      />
+    );
+  };
+
   return (
     <Space direction='vertical' size={'middle'}>
       <ToolbarViewInfo lang={lang} data={infoData} />
-      <ProcessView
-        id={nodes.find((node) => node.selected)?.data?.id ?? ''}
-        version={nodes.find((node) => node.selected)?.data?.version ?? ''}
-        buttonType={'toolIcon'}
-        lang={lang}
-        disabled={!nodes.find((node) => node.selected)}
-      />
+      {getShowResult()}
       <EdgeExhange
         lang={lang}
         disabled={!edges.find((edge) => edge.selected)}

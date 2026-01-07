@@ -17,7 +17,7 @@ export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
   }
 
   const user: Auth.CurrentUser = {
-    name: claims?.user_metadata?.display_name ?? claims?.email,
+    name: claims?.user_metadata?.display_name ? claims?.user_metadata?.display_name : claims?.email,
     userid: claims?.sub,
     teamid: claims?.user_metadata?.team_id,
     email: claims?.email,
@@ -123,5 +123,29 @@ export async function updateDataNotificationTime() {
   });
   return {
     error,
+  };
+}
+
+/**
+ * Get fresh user metadata from database (not from cached JWT claims)
+ * @returns Fresh user metadata or null
+ */
+export async function getFreshUserMetadata(): Promise<Auth.CurrentUser | null> {
+  // Use getUser() which fetches fresh data from the database
+  const { data: userData, error } = await supabase.auth.getUser();
+
+  if (error || !userData?.user) {
+    return null;
+  }
+
+  const user = userData.user;
+  return {
+    // name: user?.user_metadata?.display_name ?? user?.email ?? '',
+    // userid: user?.id ?? '',
+    // teamid: user?.user_metadata?.team_id,
+    // email: user?.email ?? '',
+    // role: user?.user_metadata?.role,
+    update_data_notification_time: user?.user_metadata?.update_data_notification_time,
+    update_team_notification_time: user?.user_metadata?.update_team_notification_time,
   };
 }

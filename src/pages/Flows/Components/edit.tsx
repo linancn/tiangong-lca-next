@@ -1,8 +1,9 @@
 import AISuggestion from '@/components/AISuggestion';
+import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import { UpdateReferenceContext } from '@/contexts/updateReferenceContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
@@ -34,6 +35,10 @@ const FlowsEdit: FC<Props> = ({
   lang,
   updateErrRef = () => {},
 }) => {
+  const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
+  const [refsLoading, setRefsLoading] = useState(false);
+  const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
+  const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
@@ -46,7 +51,6 @@ const FlowsEdit: FC<Props> = ({
   const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
-  const [referenceValue, setReferenceValue] = useState(0);
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const parentRefCheckContext = useRefCheckContext();
   const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
@@ -66,7 +70,7 @@ const FlowsEdit: FC<Props> = ({
   //   }
   // }, [showRules]);
 
-  const updateReference = async () => {
+  const updatePropertyDataSource = async () => {
     propertyDataSource.forEach(async (property: any, index: number) => {
       if (property?.referenceToFlowPropertyDataSet) {
         const { data: flowPropertyData, success } = await getFlowpropertyDetail(
@@ -85,9 +89,39 @@ const FlowsEdit: FC<Props> = ({
         }
       }
     });
-    setReferenceValue(referenceValue + 1);
   };
 
+  const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
+    const res = updateRefsData(fromData, newRefs, true);
+    setFromData(res);
+    await updatePropertyDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleKeepVersion = async () => {
+    const res = updateRefsData(fromData, refsOldList, false);
+    setFromData(res);
+    await updatePropertyDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+    setRefsDrawerVisible(false);
+  };
+
+  const handleUpdateReference = async () => {
+    setRefsLoading(true);
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    setRefsNewList(newRefs);
+    setRefsOldList(oldRefs);
+    setRefsLoading(false);
+    if (newRefs && newRefs.length) {
+      setRefsDrawerVisible(true);
+    } else {
+      const res = updateRefsData(fromData, oldRefs, false);
+      setFromData(res);
+      await updatePropertyDataSource();
+      formRefEdit.current?.setFieldsValue({ ...res, id });
+    }
+  };
   const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
@@ -153,6 +187,12 @@ const FlowsEdit: FC<Props> = ({
   }, [drawerVisible]);
 
   const handleSubmit = async (autoClose: boolean) => {
+    try {
+      await formRefEdit.current?.validateFields();
+    } catch (err) {
+      console.log('err', err);
+      return;
+    }
     if (autoClose) setSpinning(true);
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const flowProperties = fromData?.flowProperties;
@@ -177,9 +217,11 @@ const FlowsEdit: FC<Props> = ({
           defaultMessage: 'Saved successfully!',
         }),
       );
-      if (autoClose) setDrawerVisible(false);
-      setActiveTabKey('flowInformation');
-      actionRef?.current?.reload();
+      if (autoClose) {
+        setDrawerVisible(false);
+        actionRef?.current?.reload();
+      }
+      // setActiveTabKey('flowInformation');
     } else {
       if (updateResult?.error?.state_code === 100) {
         message.error(
@@ -411,16 +453,16 @@ const FlowsEdit: FC<Props> = ({
               originJson={originJson}
             />
             <Button onClick={handleCheckData}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data check' />
+              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
               onClick={() => {
-                updateReference();
+                handleUpdateReference();
               }}
             >
               <FormattedMessage
                 id='pages.button.updateReference'
-                defaultMessage='Update reference'
+                defaultMessage='Update Reference'
               />
             </Button>
             <Button onClick={() => setDrawerVisible(false)}>
@@ -444,42 +486,48 @@ const FlowsEdit: FC<Props> = ({
         }
       >
         <Spin spinning={spinning}>
-          <UpdateReferenceContext.Provider value={{ referenceValue }}>
-            <RefCheckContext.Provider value={refCheckContextValue}>
-              <ProForm
+          <RefCheckContext.Provider value={refCheckContextValue}>
+            <ProForm
+              formRef={formRefEdit}
+              initialValues={initData}
+              submitter={{
+                render: () => {
+                  return [];
+                },
+              }}
+              onFinish={() => handleSubmit(true)}
+              onValuesChange={(_, allValues) => {
+                setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormFlow);
+              }}
+            >
+              <FlowForm
+                lang={lang}
+                activeTabKey={activeTabKey}
+                drawerVisible={drawerVisible}
                 formRef={formRefEdit}
-                initialValues={initData}
-                submitter={{
-                  render: () => {
-                    return [];
-                  },
-                }}
-                onFinish={() => handleSubmit(true)}
-                onValuesChange={(_, allValues) => {
-                  setFromData({
-                    ...fromData,
-                    [activeTabKey]: allValues[activeTabKey] ?? {},
-                  } as FormFlow);
-                }}
-              >
-                <FlowForm
-                  lang={lang}
-                  activeTabKey={activeTabKey}
-                  drawerVisible={drawerVisible}
-                  formRef={formRefEdit}
-                  onData={handletFromData}
-                  flowType={flowType}
-                  onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
-                  propertyDataSource={propertyDataSource}
-                  onPropertyData={handletPropertyData}
-                  onPropertyDataCreate={handletPropertyDataCreate}
-                  showRules={showRules}
-                />
-              </ProForm>
-            </RefCheckContext.Provider>
-          </UpdateReferenceContext.Provider>
+                onData={handletFromData}
+                flowType={flowType}
+                onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
+                propertyDataSource={propertyDataSource}
+                onPropertyData={handletPropertyData}
+                onPropertyDataCreate={handletPropertyDataCreate}
+                showRules={showRules}
+              />
+            </ProForm>
+          </RefCheckContext.Provider>
         </Spin>
       </Drawer>
+      <RefsOfNewVersionDrawer
+        open={refsDrawerVisible}
+        loading={refsLoading}
+        dataSource={refsNewList}
+        onCancel={() => setRefsDrawerVisible(false)}
+        onKeep={handleKeepVersion}
+        onUpdate={handleUpdateRefsVersion}
+      />
     </>
   );
 };

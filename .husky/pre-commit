@@ -1,7 +1,9 @@
+#!/bin/sh
+
 export NVM_DIR="$HOME/.nvm"
 if [ -s "$NVM_DIR/nvm.sh" ]; then
   . "$NVM_DIR/nvm.sh"
-  nvm use 22
+  nvm use 22 >/dev/null
 fi
 
 npm run lint-staged

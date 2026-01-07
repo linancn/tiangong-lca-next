@@ -398,10 +398,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
         publicationAndOwnership: {
           'common:dataSetVersion':
             data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'],
-          'common:permanentDataSetURI':
-            data?.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
-            ],
+          'common:permanentDataSetURI': `https://lcdn.tiangong.earth/datasetdetail/lifecyclemodel.xhtml?uuid=${id}&version=${data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion']}`,
           'common:referenceToOwnershipOfDataSet': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
@@ -831,7 +828,7 @@ export function genLifeCycleModelData(data: any, lang: string) {
   return {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {
-        const nodeWidth = node.width;
+        const nodeWidth = node?.size?.width ?? node?.width ?? 350;
         const label = genProcessName(node?.data?.label, lang);
         return {
           ...node,
@@ -875,7 +872,7 @@ export function genEdgeExchangeTableData(data: any, lang: string) {
         sourceOutputFlowGeneralComment: getLangText(item.sourceOutputFlowGeneralComment, lang),
         targetProcessId: item.targetProcessId ?? '-',
         targetInputFlowInternalID: item.targetInputFlowInternalID ?? '-',
-        targetInputFlowId: item.targetOutputFlowId ?? '-',
+        targetInputFlowId: item.targetInputFlowId ?? '-',
         targetInputFlowName: getLangText(item.targetInputFlowName, lang),
         targetInputFlowGeneralComment: getLangText(item.targetInputFlowGeneralComment, lang),
       });

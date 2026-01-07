@@ -1,6 +1,6 @@
 import { getAISuggestion } from '@/services/general/api';
 import { CheckOutlined, CloseOutlined, CopyOutlined, UndoOutlined } from '@ant-design/icons';
-import { createProcess } from '@tiangong-lca/tidas-sdk';
+import { createFlow, createProcess } from '@tiangong-lca/tidas-sdk';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -99,8 +99,27 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
   const rightPanelRef = React.useRef<HTMLDivElement>(null);
+
+  const getTidasData = () => {
+    switch (type) {
+      case 'process': {
+        const data = createProcess();
+        data.processDataSet = originJson.processDataSet;
+        return data;
+      }
+      case 'flow': {
+        const data = createFlow();
+        data.flowDataSet = originJson.flowDataSet;
+        return data;
+      }
+      default:
+        return null;
+    }
+  };
+
   const getSuggestData = async () => {
-    if (!originJson?.processDataSet) {
+    const datasetName = `${type}DataSet`;
+    if (!originJson?.[datasetName]) {
       setAIJson(originJson ?? null);
       setLoading(false);
       return;
@@ -108,8 +127,11 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
 
     setLoading(true);
     try {
-      const tidasData = createProcess();
-      tidasData.processDataSet = originJson.processDataSet;
+      const tidasData = getTidasData();
+      if (!tidasData) {
+        setLoading(false);
+        return;
+      }
 
       const suggestResult = await getAISuggestion(tidasData.toJSONString(2), type, {
         outputDiffSummary: true,

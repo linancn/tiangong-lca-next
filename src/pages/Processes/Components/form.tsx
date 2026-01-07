@@ -11,15 +11,15 @@ import { useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import LCIAResultCalculation from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CalculatorOutlined } from '@ant-design/icons';
+import { CalculatorOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -1197,31 +1197,92 @@ export const ProcessForm: FC<Props> = ({
             onData={onData}
           />
           <br />
-          <SourceSelectForm
+          <Form.List
             name={[
               'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
               'referenceToDataSource',
             ]}
-            label={
-              <FormattedMessage
-                id='pages.process.view.modellingAndValidation.referenceToDataSource'
-                defaultMessage='Data source(s) used for this data set'
-              />
-            }
-            lang={lang}
-            formRef={formRef}
-            onData={onData}
+            initialValue={[{}]}
             rules={
               showRules
-                ? getRules(
-                    schema['processDataSet']['modellingAndValidation'][
-                      'dataSourcesTreatmentAndRepresentativeness'
-                    ]['referenceToDataSource']['@refObjectId']['rules'],
-                  )
+                ? [
+                    {
+                      validator: async (_, value) => {
+                        if (!value || value.length < 1) {
+                          throw new Error();
+                        }
+                      },
+                    },
+                  ]
                 : []
             }
-          />
+          >
+            {(fields, { add, remove }) => (
+              <Space direction='vertical' style={{ width: '100%' }}>
+                {fields.map((field) => (
+                  <div key={field.key} style={{ position: 'relative', marginBottom: 16 }}>
+                    <SourceSelectForm
+                      parentName={[
+                        'modellingAndValidation',
+                        'dataSourcesTreatmentAndRepresentativeness',
+                        'referenceToDataSource',
+                      ]}
+                      name={[field.name]}
+                      label={
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.referenceToDataSource'
+                          defaultMessage='Data source(s) used for this data set'
+                        />
+                      }
+                      lang={lang}
+                      formRef={formRef}
+                      onData={onData}
+                      rules={
+                        showRules
+                          ? getRules(
+                              schema['processDataSet']['modellingAndValidation'][
+                                'dataSourcesTreatmentAndRepresentativeness'
+                              ]['referenceToDataSource']['@refObjectId']['rules'],
+                            )
+                          : []
+                      }
+                    />
+                    {fields.length > 1 && (
+                      <Button
+                        type='text'
+                        shape='circle'
+                        icon={<CloseOutlined />}
+                        onClick={() => {
+                          remove(field.name);
+                          onData();
+                        }}
+                        style={{ position: 'absolute', right: 8, top: 8 }}
+                      />
+                    )}
+                  </div>
+                ))}
+                <Form.Item colon={false} style={{ margin: '8px 0 24px 0' }}>
+                  <Button
+                    type='dashed'
+                    block
+                    onClick={() => {
+                      add({});
+                      onData();
+                    }}
+                    style={{ width: '100%' }}
+                  >
+                    + <FormattedMessage id='pages.button.add' defaultMessage='Add' />{' '}
+                    <FormattedMessage
+                      id='pages.process.view.modellingAndValidation.referenceToDataSource'
+                      defaultMessage='Data source(s) used for this data set'
+                    />{' '}
+                    <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
+                  </Button>
+                </Form.Item>
+              </Space>
+            )}
+          </Form.List>
           <br />
           <Form.Item
             label={
@@ -1949,7 +2010,7 @@ export const ProcessForm: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
                           ({ error, data: flowsResp }: any) => {
                             if (!error) {
                               unitRes.forEach((item: any) => {
@@ -1960,6 +2021,7 @@ export const ProcessForm: FC<Props> = ({
                                 );
                                 if (flow) {
                                   item.stateCode = flow.state_code;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }
@@ -2036,7 +2098,7 @@ export const ProcessForm: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
                           ({ error, data: flowsResp }: any) => {
                             if (!error) {
                               unitRes.forEach((item: any) => {
@@ -2047,6 +2109,7 @@ export const ProcessForm: FC<Props> = ({
                                 );
                                 if (flow) {
                                   item.stateCode = flow.state_code;
+                                  item['classification'] = flow.classification;
                                 }
                               });
                             }
@@ -2087,7 +2150,7 @@ export const ProcessForm: FC<Props> = ({
             onClick={getLCIAResult}
           />,
         ]}
-        dataSource={lciaResults}
+        dataSource={jsonToList(lciaResults)}
         columns={lciaResultColumns}
       />
     ),

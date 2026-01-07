@@ -11,7 +11,7 @@ export type ProcessTable = {
   location: string;
   modifiedAt: Date;
   teamId: string;
-  modelData?: { id: string; version: string };
+  modelId: string;
   typeOfDataSet: string;
 };
 
@@ -22,6 +22,7 @@ export type ProcessExchangeTable = {
   referenceToFlowDataSetId: string;
   referenceToFlowDataSetVersion: string;
   referenceToFlowDataSet: string;
+  classification: string;
   meanAmount: string;
   resultingAmount: string;
   uncertaintyDistributionType: string;

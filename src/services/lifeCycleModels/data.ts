@@ -14,7 +14,9 @@ export type Up2DownEdge = {
   id: string; //upstreamId + '->' + downstreamId + ':' + dependence
   flowUUID: string;
   upstreamId: string;
+  upstreamNodeId?: string;
   downstreamId: string;
+  downstreamNodeId?: string;
   dependence?: string;
   mainDependence?: string;
   mainScalingFactor?: number;

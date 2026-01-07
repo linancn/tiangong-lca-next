@@ -1,3 +1,4 @@
+import { GraphEdge, GraphNode, useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getCommentApi } from '@/services/comments/api';
 import { initVersion } from '@/services/general/data';
@@ -9,7 +10,6 @@ import {
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
 import { genProcessName } from '@/services/processes/util';
-import { useGraphEvent, useGraphStore } from '@antv/xflow';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { useIntl } from 'umi';
@@ -18,14 +18,13 @@ import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
-
 type Props = {
   type: 'edit' | 'view';
   id: string;
   version: string;
   lang: string;
   reviewId: string;
-  tabType: 'assigned' | 'review';
+  tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   drawerVisible: boolean;
   actionRef?: any;
 };
@@ -47,14 +46,14 @@ const ToolbarView: FC<Props> = ({
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
   const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
-  const [approveReviewDisabled, setApproveReviewDisabled] = useState(true);
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
 
-  const nodes = useGraphStore((state) => state.nodes);
-  const edges = useGraphStore((state) => state.edges);
+  const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
+  const edges: GraphEdge[] = useGraphStore((state) => state.edges);
   const removeEdges = useGraphStore((state) => state.removeEdges);
+  const updateEdge = useGraphStore((state) => state.updateEdge);
 
   const [nodeCount, setNodeCount] = useState(0);
 
@@ -311,6 +310,59 @@ const ToolbarView: FC<Props> = ({
     items: [],
   };
 
+  useGraphEvent('node:click', (evt) => {
+    const node = evt.node;
+    const event = evt.e;
+
+    if (node.isNode()) {
+      const currentNode = nodes.find((n) => n.id === node.id);
+
+      const isCtrlOrMetaPressed = event && (event.ctrlKey || event.metaKey);
+
+      if (isCtrlOrMetaPressed) {
+        updateNode(node.id, {
+          selected: !currentNode?.selected,
+        });
+      } else {
+        nodes.forEach((n) => {
+          if (n.id !== node.id && n.selected) {
+            updateNode(n.id ?? '', { selected: false });
+          }
+        });
+        updateNode(node.id, {
+          selected: !currentNode?.selected,
+        });
+      }
+    }
+  });
+
+  useGraphEvent('blank:click', () => {
+    nodes.forEach((n) => {
+      if (n.selected) {
+        updateNode(n.id ?? '', { selected: false });
+      }
+    });
+    edges.forEach((e) => {
+      if (e.selected) {
+        updateEdge(e.id ?? '', { selected: false });
+      }
+    });
+  });
+
+  useGraphEvent('edge:click', (evt) => {
+    const currentEdge = edges.find((e) => e.selected === true);
+    if (currentEdge) {
+      if (currentEdge.id === evt.edge.id) return;
+
+      updateEdge(currentEdge.id, {
+        selected: false,
+      });
+    }
+    updateEdge(evt.edge.id, {
+      selected: true,
+    });
+  });
+
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     removeEdges([edge.id]);
@@ -324,24 +376,20 @@ const ToolbarView: FC<Props> = ({
         const { data, error } = await getCommentApi(reviewId, tabType);
 
         if (!error && data && data.length) {
-          const isSaveReview = data && data.every((item: any) => item.state_code === 1);
           const allReviews: any[] = [];
           data.forEach((item: any) => {
-            if (item?.json?.modellingAndValidation.validation.review[0]) {
-              allReviews.push(item?.json?.modellingAndValidation.validation.review[0]);
+            if (item?.json?.modellingAndValidation?.validation?.review) {
+              allReviews.push(...item?.json?.modellingAndValidation.validation.review);
             }
           });
           const allCompliance: any[] = [];
           data.forEach((item: any) => {
-            if (item?.json?.modellingAndValidation.complianceDeclarations.compliance[0]) {
+            if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
               allCompliance.push(
-                item?.json?.modellingAndValidation.complianceDeclarations.compliance[0],
+                ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
               );
             }
           });
-          setApproveReviewDisabled(
-            !isSaveReview || allReviews.length === 0 || allCompliance.length === 0,
-          );
           if (result?.data?.json?.lifeCycleModelDataSet) {
             const _compliance =
               result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation
@@ -352,7 +400,7 @@ const ToolbarView: FC<Props> = ({
               ...result?.data?.json?.lifeCycleModelDataSet?.modellingAndValidation,
               complianceDeclarations: {
                 compliance:
-                  tabType === 'review'
+                  tabType === 'review' || tabType === 'reviewer-rejected'
                     ? [...(allCompliance.length ? allCompliance : [{}])]
                     : Array.isArray(_compliance)
                       ? [..._compliance, ...allCompliance]
@@ -362,7 +410,7 @@ const ToolbarView: FC<Props> = ({
               },
               validation: {
                 review:
-                  tabType === 'review'
+                  tabType === 'review' || tabType === 'reviewer-rejected'
                     ? [
                         ...(allReviews.length
                           ? allReviews
@@ -393,10 +441,35 @@ const ToolbarView: FC<Props> = ({
             ports: {
               ...node.ports,
               groups: ports.groups,
+              items: node?.ports?.items?.map((item: any) => {
+                return {
+                  ...item,
+                  attrs: {
+                    ...item?.attrs,
+                    text: {
+                      ...item?.attrs?.text,
+                      fill:
+                        item?.data?.quantitativeReference ||
+                        (item?.data?.allocations?.allocation?.['@allocatedFraction'] &&
+                          Number(
+                            item?.data?.allocations?.allocation?.['@allocatedFraction']?.split(
+                              '%',
+                            )[0],
+                          ) > 0)
+                          ? token.colorPrimary
+                          : token.colorTextDescription,
+                      'font-weight': item?.data?.quantitativeReference ? 'bold' : 'normal',
+                    },
+                  },
+                };
+              }),
             },
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : '',
-              nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+              nodeTitleTool(
+                node?.size?.width ?? node?.width ?? 350,
+                genProcessName(node?.data?.label, lang) ?? '',
+              ),
               inputFlowTool,
               outputFlowTool,
             ],
@@ -450,7 +523,10 @@ const ToolbarView: FC<Props> = ({
       updateNode(node.id ?? '', {
         tools: [
           node?.data?.quantitativeReference === '1' ? refTool : '',
-          nodeTitleTool(node?.width ?? 0, genProcessName(node?.data?.label, lang) ?? ''),
+          nodeTitleTool(
+            node?.size?.width ?? node?.width ?? 350,
+            genProcessName(node?.data?.label, lang) ?? '',
+          ),
           inputFlowTool,
           outputFlowTool,
         ],
@@ -461,15 +537,12 @@ const ToolbarView: FC<Props> = ({
   return (
     <Space direction='vertical' size={'middle'}>
       <ToolbarViewInfo
-        approveReviewDisabled={approveReviewDisabled}
         actionRef={actionRef}
         type={type}
         lang={lang}
         data={infoData}
         reviewId={reviewId}
         tabType={tabType}
-        modelId={id}
-        modelVersion={version}
       />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}

@@ -198,6 +198,7 @@ function buildEdgesAndIndices(
   // 1) Build edges from model processes' output exchanges and index them
   for (const mdProcess of mdProcesses as any[]) {
     const upstreamId = mdProcess?.['@dataSetInternalID'];
+    const upstreamNodeId = mdProcess?.nodeId;
     const mdProcessOutputExchanges = jsonToList(mdProcess?.connections?.outputExchange);
     const refTo = mdProcess?.['referenceToProcess'] as any;
     const dbKey = dbProcessKey(refTo?.['@refObjectId'], refTo?.['@version']);
@@ -208,14 +209,26 @@ function buildEdgesAndIndices(
 
     for (const o of mdProcessOutputExchanges) {
       const flowUUID = o?.['@flowUUID'];
-      const downstreamList = jsonToList(o?.downstreamProcess);
+      const downstreamList = jsonToList(o?.downstreamProcess)?.map((d: any) => {
+        const downstreamNode = mdProcesses.find(
+          (p: any) => p?.['@dataSetInternalID'] === d?.['@id'],
+        );
+        return {
+          ...d,
+          nodeId: downstreamNode?.nodeId,
+        };
+      });
+
       for (const dp of downstreamList) {
         const downstreamId = dp?.['@id'];
+        const downstreamNodeId = dp?.nodeId;
         const edge: Up2DownEdge = {
           id: `${upstreamId}->${downstreamId}:${flowUUID}`,
           flowUUID,
           upstreamId,
+          upstreamNodeId,
           downstreamId,
+          downstreamNodeId,
           mainOutputFlowUUID,
           mainInputFlowUUID: '',
         };
@@ -1053,7 +1066,15 @@ export async function genLifeCycleModelProcesses(
   const mdProcesses = jsonToList(
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology
       ?.processes?.processInstance,
-  );
+  ).map((p: any) => {
+    let node = modelNodes?.find((i: any) => i?.data?.index === p?.['@dataSetInternalID']);
+    if (!node)
+      node = modelNodes?.find((i: any) => i?.['@dataSetInternalID'] === p?.['@dataSetInternalID']);
+    return {
+      ...p,
+      nodeId: node?.id,
+    };
+  });
 
   const mdProcessMap = new Map<string, any>();
   for (const p of mdProcesses as any[]) {
@@ -1354,6 +1375,7 @@ export async function genLifeCycleModelProcesses(
 
   const inputFlowsByNodeId = new Map<string, Set<string>>();
   const outputFlowsByNodeId = new Map<string, Set<string>>();
+
   for (const ud of up2DownEdges as Up2DownEdge[]) {
     if (!ud) continue;
     if (ud.downstreamId && ud.flowUUID) {
@@ -2203,5 +2225,8 @@ export async function genLifeCycleModelProcesses(
   lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
     listToJson(newProcessInstance);
 
-  return { lifeCycleModelProcesses: sumFinalProductGroups.filter((item) => item !== null) };
+  return {
+    lifeCycleModelProcesses: sumFinalProductGroups.filter((item) => item !== null),
+    up2DownEdges: up2DownEdges,
+  };
 }

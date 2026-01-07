@@ -558,7 +558,7 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet['@version']).toBe('1.1');
     });
 
-    test.failing('should handle single exchange object', () => {
+    it('should handle single exchange object', () => {
       const dataWithSingleExchange = {
         ...mockProcessData,
         exchanges: {
@@ -863,7 +863,7 @@ describe('Process Utility Functions', () => {
       const result = genProcessFromData(dataWithLCIA);
 
       expect(result.LCIAResults).toBeDefined();
-      expect(result.LCIAResults.LCIAResult).toHaveLength(1);
+      expect(result.LCIAResults?.LCIAResult ?? []).toHaveLength(1);
     });
 
     it('should include all major sections', () => {

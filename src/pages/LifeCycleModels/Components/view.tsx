@@ -1,6 +1,7 @@
+import X6GraphComponent from '@/components/X6Graph';
+import { GraphProvider } from '@/contexts/graphContext';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Grid, XFlow, XFlowGraph } from '@antv/xflow';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
@@ -88,6 +89,7 @@ const LifeCycleModelView: FC<Props> = ({
         </Button>
       )}
       <Drawer
+        destroyOnClose={true}
         getContainer={() => document.body}
         title={
           <FormattedMessage id='pages.flow.model.drawer.title.view' defaultMessage='View Model' />
@@ -109,16 +111,14 @@ const LifeCycleModelView: FC<Props> = ({
           setDrawerVisible(false);
         }}
       >
-        <XFlow>
+        <GraphProvider>
           <Layout style={layoutStyle}>
             <Layout>
               <Content>
-                <XFlowGraph
-                  selectOptions={
-                    {
-                      enabled: false,
-                    } as any
-                  }
+                <X6GraphComponent
+                  selectOptions={{
+                    enabled: true,
+                  }}
                   zoomable
                   pannable
                   minScale={0.5}
@@ -130,12 +130,11 @@ const LifeCycleModelView: FC<Props> = ({
                       name: 'rounded',
                     },
                   }}
-                />
-                <Grid
-                  type='dot'
-                  options={{
+                  gridOptions={{
+                    type: 'dot',
                     color: '#595959',
                     thickness: 1,
+                    visible: true,
                   }}
                 />
               </Content>
@@ -150,7 +149,7 @@ const LifeCycleModelView: FC<Props> = ({
               />
             </Sider>
           </Layout>
-        </XFlow>
+        </GraphProvider>
       </Drawer>
     </>
   );
