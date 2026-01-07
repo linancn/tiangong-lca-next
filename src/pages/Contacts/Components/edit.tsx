@@ -5,10 +5,11 @@ import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { ContactDataSetObjectKeys, FormContact } from '@/services/contacts/data';
-import { genContactFromData } from '@/services/contacts/util';
+import { genContactFromData, genContactJsonOrdered } from '@/services/contacts/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
+import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -256,57 +257,57 @@ const ContactEdit: FC<Props> = ({
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    formRefEdit.current
-      ?.validateFields()
-      .then(() => {})
-      .catch((err: any) => {
-        const errorFields = err?.errorFields ?? [];
-        errorFields.forEach((item: any) => {
-          const tabName = item?.name[0];
-          if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-        });
-      })
-      .finally(() => {
-        if (
-          unRuleVerificationData.length === 0 &&
-          nonExistentRefData.length === 0 &&
-          errTabNames.length === 0 &&
-          problemNodes.length === 0
-        ) {
-          message.success(
-            intl.formatMessage({
-              id: 'pages.button.check.success',
-              defaultMessage: 'Data check successfully!',
-            }),
-          );
-        } else {
-          if (errTabNames && errTabNames.length > 0) {
-            message.error(
-              errTabNames
-                .map((tab: any) =>
-                  intl.formatMessage({
-                    id: `pages.contact.${tab}`,
-                    defaultMessage: tab,
-                  }),
-                )
-                .join('，') +
-                '：' +
-                intl.formatMessage({
-                  id: 'pages.button.check.error',
-                  defaultMessage: 'Data check failed!',
-                }),
-            );
-          } else {
-            message.error(
-              intl.formatMessage({
-                id: 'pages.button.check.error',
-                defaultMessage: 'Data check failed!',
-              }),
-            );
-          }
-        }
-      });
 
+    const tidasContact = createTidasContact(genContactJsonOrdered(id, fromData));
+    const validateResult = tidasContact.validateEnhanced();
+    const issues = validateResult.success ? [] : validateResult.error.issues;
+    if (issues.length) {
+      issues.forEach((err) => {
+        const tabName = err.path[1];
+        if (tabName && !errTabNames.includes(tabName as string))
+          errTabNames.push(tabName as string);
+      });
+      formRefEdit.current?.validateFields();
+    }
+    if (
+      unRuleVerificationData.length === 0 &&
+      nonExistentRefData.length === 0 &&
+      errTabNames.length === 0 &&
+      problemNodes.length === 0 &&
+      issues.length === 0
+    ) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.check.success',
+          defaultMessage: 'Data check successfully!',
+        }),
+      );
+    } else {
+      if (errTabNames && errTabNames.length > 0) {
+        message.error(
+          errTabNames
+            .map((tab: any) =>
+              intl.formatMessage({
+                id: `pages.contact.${tab}`,
+                defaultMessage: tab,
+              }),
+            )
+            .join('，') +
+            '：' +
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+        );
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.check.error',
+            defaultMessage: 'Data check failed!',
+          }),
+        );
+      }
+    }
     setSpinning(false);
   };
 

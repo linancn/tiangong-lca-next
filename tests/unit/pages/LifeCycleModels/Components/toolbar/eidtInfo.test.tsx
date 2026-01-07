@@ -311,6 +311,13 @@ jest.mock('uuid', () => ({
   v4: () => 'uuid-1',
 }));
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createLifeCycleModel: jest.fn(() => ({
+    validateEnhanced: jest.fn(() => ({ success: true, error: { issues: [] } })),
+  })),
+}));
+
 beforeEach(() => {
   Object.values(mockAntdMessage).forEach((fn) => fn.mockReset());
   mockCheckReferences.mockReset();
