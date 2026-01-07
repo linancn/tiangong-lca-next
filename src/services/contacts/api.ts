@@ -1,14 +1,13 @@
-import schema from '@/pages/Contacts/contacts_schema.json';
 import { FunctionRegion } from '@supabase/supabase-js';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
-  getRuleVerification,
   jsonToList,
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
+import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
 import { getILCDClassification } from '../ilcd/api';
@@ -16,7 +15,7 @@ import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const rule_verification = createTidasContact(newData).validateEnhanced().success;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('contacts')
@@ -27,7 +26,7 @@ export async function createContact(id: string, data: any) {
 
 export async function updateContact(id: string, version: string, data: any) {
   const newData = genContactJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const rule_verification = createTidasContact(newData).validateEnhanced().success;
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {

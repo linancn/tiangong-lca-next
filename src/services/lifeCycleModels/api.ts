@@ -1,16 +1,15 @@
-import schema from '@/pages/LifeCycleModels/lifecyclemodels.json';
 import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
-  getRuleVerification,
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
@@ -128,7 +127,9 @@ export async function createLifeCycleModel(data: any) {
     };
   });
 
-  const rule_verification = getRuleVerification(schema, newLifeCycleModelJsonOrdered)?.valid;
+  const rule_verification = createTidasLifeCycleModel(
+    newLifeCycleModelJsonOrdered,
+  ).validateEnhanced().success;
   const result = await supabase
     .from('lifecyclemodels')
     .insert([
@@ -373,8 +374,9 @@ export async function updateLifeCycleModel(data: any) {
       };
     });
 
-    const rule_verification = await getRuleVerification(schema, newLifeCycleModelJsonOrdered)
-      ?.valid;
+    const rule_verification = await createTidasLifeCycleModel(
+      newLifeCycleModelJsonOrdered,
+    ).validateEnhanced().success;
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       const oldSubmodels: any[] = jsonToList(oldData.submodels);

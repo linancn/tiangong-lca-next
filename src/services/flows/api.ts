@@ -5,16 +5,14 @@ import {
   jsonToList,
 } from '../general/util';
 
-import schema from '@/pages/Flows/flows_schema.json';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
-import { getRuleVerification } from '../general/util';
 import { getILCDLocationByValues } from '../ilcd/api';
 import { getCachedFlowCategorizationAll, getCachedLocationData } from '../ilcd/cache';
 import { genFlowJsonOrdered, genFlowName } from './util';
-
 function normalizeLocationData(response: any): any[] {
   if (Array.isArray(response)) {
     return response;
@@ -62,7 +60,7 @@ function resolveLocationOfSupply(
 
 export async function createFlows(id: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const rule_verification = createTidasFlow(newData).validateEnhanced().success;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('flows')
@@ -73,7 +71,7 @@ export async function createFlows(id: string, data: any) {
 
 export async function updateFlows(id: string, version: string, data: any) {
   const newData = genFlowJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const rule_verification = createTidasFlow(newData).validateEnhanced().success;
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
