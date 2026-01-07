@@ -6,6 +6,13 @@
 import * as processesApi from '@/services/processes/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createProcess: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
@@ -152,11 +159,11 @@ describe('createProcess', () => {
     const result = await processesApi.createProcess(sampleId, { raw: true });
 
     expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, { raw: true });
-    expect(mockGetRuleVerification).toHaveBeenCalled();
     expect(insertMock).toHaveBeenCalledWith([
       {
         id: sampleId,
         json_ordered: { ordered: true },
+        model_id: undefined,
         rule_verification: true,
       },
     ]);
@@ -167,7 +174,6 @@ describe('createProcess', () => {
 
 describe('updateProcess', () => {
   it('invokes update function with ordered payload when session exists', async () => {
-    mockGetRuleVerification.mockReturnValueOnce({ valid: false });
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
@@ -189,7 +195,8 @@ describe('updateProcess', () => {
         table: 'processes',
         data: {
           json_ordered: { ordered: true },
-          rule_verification: false,
+          model_id: undefined,
+          rule_verification: true,
         },
       },
       region: FunctionRegion.UsEast1,

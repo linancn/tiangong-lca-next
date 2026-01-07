@@ -10,6 +10,11 @@
  * - getFlowpropertyTablePgroongaSearch: Full-text search for flow properties
  */
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createFlowProperty: jest.fn(),
+}));
+
 import {
   createFlowproperties,
   deleteFlowproperties,
@@ -44,7 +49,6 @@ jest.mock('@/services/flowproperties/util', () => ({
 }));
 
 jest.mock('@/services/general/util', () => ({
-  getRuleVerification: jest.fn(),
   classificationToString: jest.fn(),
   genClassificationZH: jest.fn(),
   getLangText: jest.fn(),
@@ -63,7 +67,6 @@ jest.mock('@/services/general/api', () => ({
 const { supabase } = jest.requireMock('@/services/supabase');
 const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperties/util');
 const {
-  getRuleVerification,
   getLangText,
   classificationToString,
   jsonToList,
@@ -71,6 +74,7 @@ const {
 } = jest.requireMock('@/services/general/util');
 const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
+const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
   const mockSession = createMockSession('user-123', 'test-token');
@@ -78,6 +82,10 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    // Setup default SDK mock behavior
+    mockCreateFlowProperty.mockReturnValue({
+      validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+    });
   });
 
   describe('createFlowproperties', () => {
@@ -86,9 +94,12 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const mockData = { flowPropertiesInformation: {} };
       const mockOrderedData = { ordered: true };
       const mockResult = { data: [{ id: mockId }], error: null };
+      const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
 
       genFlowpropertyJsonOrdered.mockReturnValue(mockOrderedData);
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateFlowProperty.mockReturnValue({
+        validateEnhanced: mockValidateEnhanced,
+      });
 
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockResolvedValue(mockResult);
@@ -102,7 +113,8 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const result = await createFlowproperties(mockId, mockData);
 
       expect(genFlowpropertyJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
-      expect(getRuleVerification).toHaveBeenCalled();
+      expect(mockCreateFlowProperty).toHaveBeenCalledWith(mockOrderedData);
+      expect(mockValidateEnhanced).toHaveBeenCalled();
       expect(supabase.from).toHaveBeenCalledWith('flowproperties');
       expect(mockInsert).toHaveBeenCalledWith([
         {
@@ -115,8 +127,11 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
     });
 
     it('should handle validation failure', async () => {
+      const mockValidateEnhanced = jest.fn().mockReturnValue({ success: false });
       genFlowpropertyJsonOrdered.mockReturnValue({});
-      getRuleVerification.mockReturnValue({ valid: false });
+      mockCreateFlowProperty.mockReturnValue({
+        validateEnhanced: mockValidateEnhanced,
+      });
 
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockResolvedValue({ data: [], error: null });
@@ -146,9 +161,12 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const mockData = { flowPropertiesInformation: {} };
       const mockOrderedData = { ordered: true };
       const mockFunctionResult = { data: { success: true }, error: null };
+      const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
 
       genFlowpropertyJsonOrdered.mockReturnValue(mockOrderedData);
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateFlowProperty.mockReturnValue({
+        validateEnhanced: mockValidateEnhanced,
+      });
       supabase.functions.invoke.mockResolvedValue(mockFunctionResult);
 
       const result = await updateFlowproperties(mockId, mockVersion, mockData);
@@ -175,7 +193,9 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
     it('should handle edge function error', async () => {
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       genFlowpropertyJsonOrdered.mockReturnValue({});
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateFlowProperty.mockReturnValue({
+        validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+      });
 
       const mockError = { message: 'Update failed' };
       supabase.functions.invoke.mockResolvedValue({ data: null, error: mockError });

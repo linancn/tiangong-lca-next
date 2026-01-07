@@ -3,6 +3,14 @@
  */
 import '@testing-library/jest-dom';
 
+// Mock TIDAS SDK
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createContact: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 // Mock dependencies
 jest.mock('@/services/supabase');
 jest.mock('@/services/general/api');
@@ -91,7 +99,6 @@ describe('Contacts API Service', () => {
       const result = await createContact('contact-123', testData);
 
       expect(genContactJsonOrdered).toHaveBeenCalledWith('contact-123', testData);
-      expect(getRuleVerification).toHaveBeenCalled();
       expect(mockFrom).toHaveBeenCalledWith('contacts');
       expect(mockInsert).toHaveBeenCalledWith([
         {

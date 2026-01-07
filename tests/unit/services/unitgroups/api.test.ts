@@ -16,6 +16,13 @@ import {
 } from '@/services/unitgroups/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createUnitGroup: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 jest.mock('@/services/unitgroups/util', () => ({
   genUnitGroupJsonOrdered: jest.fn(),
 }));
@@ -204,18 +211,16 @@ describe('createUnitGroup', () => {
     const query = createQuery(insertResult);
     mockFrom.mockReturnValueOnce(query as any);
     mockGenUnitGroupJsonOrdered.mockReturnValueOnce({ data: 'ordered' });
-    mockGetRuleVerification.mockReturnValueOnce({ valid: false });
 
     const result = await createUnitGroup('ug-1', { name: 'Unit Group' });
 
     expect(mockGenUnitGroupJsonOrdered).toHaveBeenCalledWith('ug-1', { name: 'Unit Group' });
-    expect(mockGetRuleVerification).toHaveBeenCalledWith(expect.any(Object), { data: 'ordered' });
     expect(mockFrom).toHaveBeenCalledWith('unitgroups');
     expect(query.calls.insertArgs).toEqual([
       {
         id: 'ug-1',
         json_ordered: { data: 'ordered' },
-        rule_verification: false,
+        rule_verification: true,
       },
     ]);
     expect(query.calls.selectArgs).toEqual([]);
