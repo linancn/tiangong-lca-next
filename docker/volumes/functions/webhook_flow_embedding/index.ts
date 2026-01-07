@@ -48,8 +48,17 @@ Deno.serve(async (req) => {
 
     // console.log(`${table} ${record.id} ${record.version} summary ${type} request`);
 
-    const systemPrompt =
-      'Summarize the following LCA flow dataset from JSON. Extract only the fields explicitly present in the JSON (e.g., name, classification, synonyms, general comment, CAS number, etc.). Write one concise, factual English paragraph under 500 tokens. Do not invent, infer, or add any information not provided in the JSON. Output only the summary text.';
+    const systemPrompt = `From the given life cycle assessment ILCD flow JSON, write one continuous English paragraph (<500 tokens) suitable for embedding and retrieval. The paragraph must strictly follow the natural language template below. Fill in values only if explicitly available. Do not add, remove, or reorder sentences. If a field has no value, omit the entire sentence where it belongs, not just the placeholder. When joining multiple qualifiers from name.treatmentStandardsRoutes or name.mixAndLocationTypes, separate them with commas, not semicolons. If the classification path or names already contain semicolons as part of the original text, keep them, but never add additional semicolons when combining values. The output must contain only English text — translate all non-English words or characters into English. Never include Chinese, Japanese, or other non-English text. Always output as a single continuous paragraph in English only and without mechanical punctuation, never a list or key-value format.
+
+Template:
+<name.baseName [plus any qualifiers from name.treatmentStandardsRoutes and name.mixAndLocationTypes, joined with commas as non-geographic tags]> is classified under <classification path highest→lowest, using classificationInformation.elementaryFlowCategorization for elementary flows or classificationInformation.classification for product or waste flows>. [If common:synonyms exists] It is also known as <common:synonyms>, with identifiers such as CAS number <CAS> and EC number <EC> if available. This dataset is of type <typeOfDataSet> and includes the following general comment: <generalComment>. The reference flow property is <referenceFlowProperty.name> with a mean value of <referenceFlowProperty.meanValue>. It follows the compliance system <complianceSystem> with approval status <approvalStatus>. The dataset is provided in version <version> and was last updated on <timeStamp>, with ownership or publisher described as <ownership/publisher>. (<UUID>)
+
+Additional rules:
+Must include name.baseName, translated to English if necessary.
+Preserve any codes or IDs verbatim.
+Exclude all URIs or schema references.
+Never interpret mixAndLocationTypes as geography (treat them only as non-geographic tags).
+Do not infer or invent values.`;
     const modelInput = `${systemPrompt}\nJSON:\n${JSON.stringify(jsonData)}`;
 
     const { text } = await openaiChat(modelInput, { stream: false });

@@ -1,4 +1,3 @@
-// Setup type definitions for built-in Supabase Runtime APIs
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -7,7 +6,6 @@ import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseClient as supabase } from '../_shared/supabase_client.ts';
-
 const openai_api_key = Deno.env.get('OPENAI_API_KEY') ?? '';
 const openai_chat_model = Deno.env.get('OPENAI_CHAT_MODEL') ?? '';
 
@@ -15,7 +13,6 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
-
   const redis = await getRedisClient();
 
   const authResult = await authenticateRequest(req, {
@@ -80,9 +77,9 @@ Deno.serve(async (req) => {
     [
       'system',
       `Field: Life Cycle Assessment (LCA)
-Task: Transform description of processes into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.`,
+Task: Transform description of lifecycle models into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.`,
     ],
-    ['human', 'Process description: {input}'],
+    ['human', 'Lifecycle model description: {input}'],
   ]);
 
   const chain = prompt.pipe(modelWithStructuredOutput);
@@ -106,11 +103,19 @@ Task: Transform description of processes into three specific queries: SemanticQu
   const filterCondition =
     filter !== undefined ? (typeof filter === 'string' ? filter : JSON.stringify(filter)) : {};
 
-  const { data, error } = await supabase.rpc('hybrid_search_processes', {
+  const requestBody = {
     query_text: queryFulltextString,
     query_embedding: vectorStr,
     filter_condition: filterCondition,
-  });
+  };
+
+  // console.log('LLM structured res:', JSON.stringify(res, null, 2));
+  // console.log('combinedFulltextQueries:', combinedFulltextQueries);
+  // console.log('queryFulltextString.len:', queryFulltextString.length);
+  // console.log('semanticQueryEn:', semanticQueryEn);
+  // console.log('requestBody:', JSON.stringify(requestBody, null, 2));
+
+  const { data, error } = await supabase.rpc('hybrid_search_lifecyclemodels', requestBody);
 
   if (error) {
     console.error('Hybrid search error:', error);
