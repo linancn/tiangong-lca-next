@@ -284,7 +284,7 @@ describe('ProcessExchangeCreate', () => {
       expect(proFormApi?.getFieldsValue()).toEqual({
         meanAmount: 10,
         quantitativeReference: true,
-        exchangeDirection: 'output',
+        exchangeDirection: 'Output',
       });
     });
 

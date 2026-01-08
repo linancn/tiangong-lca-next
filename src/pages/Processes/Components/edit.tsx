@@ -16,7 +16,6 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
-import { getRuleVerification } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';
@@ -25,13 +24,13 @@ import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
+import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import BigNumber from 'bignumber.js';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
-import schema from '../processes_schema.json';
 import { ProcessForm } from './form';
 
 type TabKeysType = ProcessDataSetObjectKeys | 'validation' | 'complianceDeclarations';
@@ -334,7 +333,18 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: false, unReview: [] };
     }
-    let { valid, errors } = getRuleVerification(schema, genProcessJsonOrdered(id, processDetail));
+    const tidasProcess = createTidasProcess(genProcessJsonOrdered(id, processDetail));
+    const validateResult = tidasProcess.validateEnhanced();
+    const issues = validateResult.success
+      ? []
+      : validateResult.error.issues.filter(
+          (item) =>
+            !item.path.includes('validation') &&
+            !item.path.includes('complianceDeclarations') &&
+            !item.path.includes('quantitativeReference'),
+        );
+
+    let valid = issues.length === 0;
     if (!valid) {
       setTimeout(() => {
         formRefEdit.current?.validateFields();
@@ -350,6 +360,8 @@ const ProcessEdit: FC<Props> = ({
         );
         valid = false;
         await setActiveTabKey('exchanges');
+        setSpinning(false);
+        return { checkResult: false, unReview: [] };
       } else if (
         exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
       ) {
@@ -361,6 +373,8 @@ const ProcessEdit: FC<Props> = ({
         );
         valid = false;
         await setActiveTabKey('exchanges');
+        setSpinning(false);
+        return { checkResult: false, unReview: [] };
       }
     }
 
@@ -499,9 +513,10 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
     } else {
       const errTabNames: string[] = [];
-      errors.forEach((err: any) => {
-        const tabName = err?.path?.split('.')[1];
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      issues.forEach((err) => {
+        const tabName = err.path[1];
+        if (tabName && !errTabNames.includes(tabName as string))
+          errTabNames.push(tabName as string);
       });
       nonExistentRef.forEach((item: any) => {
         const tabName = getErrRefTab(item, processDetail);

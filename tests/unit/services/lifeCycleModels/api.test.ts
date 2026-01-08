@@ -10,6 +10,13 @@
 
 jest.mock('@/pages/LifeCycleModels/lifecyclemodels.json', () => ({}), { virtual: true });
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createLifeCycleModel: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();

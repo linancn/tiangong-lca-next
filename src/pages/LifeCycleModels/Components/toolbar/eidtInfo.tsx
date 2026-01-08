@@ -30,13 +30,13 @@ import {
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
 import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
-import { getRuleVerification } from '@/services/general/util';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { genLifeCycleModelJsonOrdered } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
+import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { v4 } from 'uuid';
-import schema from '../../lifecyclemodels.json';
+
 type Props = {
   lang: string;
   data: any;
@@ -201,10 +201,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       }
 
       setShowRules(true);
-      let { valid, errors } = getRuleVerification(
-        schema,
-        genLifeCycleModelJsonOrdered(data.id, data ?? fromData),
-      );
 
       const userTeamId = await getUserTeamId();
 
@@ -225,6 +221,22 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         setSpinning(false);
         return { checkResult: false, unReview };
       }
+      const tidasLifeCycleModel = createTidasLifeCycleModel(
+        genLifeCycleModelJsonOrdered(data.id, {
+          ...modelDetail.data.json.lifeCycleModelDataSet,
+          model: { ...modelDetail.data.json_tg.xflow },
+        }),
+      );
+      const validateResult = tidasLifeCycleModel.validateEnhanced();
+      const issues = validateResult.success
+        ? []
+        : validateResult.error.issues.filter(
+            (item) =>
+              !item.path.includes('validation') &&
+              !item.path.includes('complianceDeclarations') &&
+              !item.path.includes('quantitativeReference'),
+          );
+      let valid = issues.length === 0;
       dealModel(modelDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const { data: sameProcressWithModel } = await getProcessDetail(data.id, data.version);
@@ -408,7 +420,8 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         valid &&
         nonExistentRef?.length === 0 &&
         unRuleVerification.length === 0 &&
-        problemNodes?.length === 0
+        problemNodes?.length === 0 &&
+        issues.length === 0
       ) {
         message.success(
           intl.formatMessage({
@@ -420,11 +433,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         return { checkResult: true, unReview, problemNodes };
       } else {
         const errTabNames: string[] = [];
+        let processInstanceValid = true;
         const modelDataset = modelDetail?.data?.json?.lifeCycleModelDataSet;
-        const processInstance = 'lifeCycleModelInformation.technology.processes';
-        errors.forEach((err: any) => {
-          if (!err.path.includes(processInstance)) {
-            const tabName = err?.path?.split('.')[1];
+        issues.forEach((err: any) => {
+          if (err.path.includes('processInstance')) {
+            processInstanceValid = false;
+          } else {
+            const tabName = err?.path[1];
             if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
           }
         });
@@ -460,9 +475,20 @@ const ToolbarEditInfo = forwardRef<any, Props>(
             setDrawerVisible(true);
             onReset();
           }
-          setTimeout(() => {
-            formRefEdit.current?.validateFields();
-          }, 200);
+          if (issues.filter((item: any) => !item.path.includes('processInstance')).length > 0) {
+            setTimeout(() => {
+              formRefEdit.current?.validateFields();
+            }, 200);
+          }
+          setSpinning(false);
+          return { checkResult: false, unReview, problemNodes };
+        } else if (!processInstanceValid) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.review.processInstanceError',
+              defaultMessage: 'Please complete the process instance data',
+            }),
+          );
           setSpinning(false);
           return { checkResult: false, unReview, problemNodes };
         } else if (unRuleVerification && unRuleVerification.length > 0) {

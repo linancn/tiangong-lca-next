@@ -12,6 +12,11 @@
  * - getSourcesByIdsAndVersions: Fetch multiple sources by ID-version pairs (used in Utils/review.tsx)
  */
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createSource: jest.fn(),
+}));
+
 import {
   createSource,
   deleteSource,
@@ -53,7 +58,6 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 jest.mock('@/services/general/util', () => ({
-  getRuleVerification: jest.fn(),
   classificationToString: jest.fn(),
   genClassificationZH: jest.fn(),
   getLangText: jest.fn(),
@@ -74,16 +78,12 @@ jest.mock('@/services/sources/util', () => ({
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
-const {
-  getRuleVerification,
-  classificationToString,
-  genClassificationZH,
-  getLangText,
-  jsonToList,
-} = jest.requireMock('@/services/general/util');
+const { classificationToString, genClassificationZH, getLangText, jsonToList } =
+  jest.requireMock('@/services/general/util');
 const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
+const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 describe('Sources API Service (src/services/sources/api.ts)', () => {
   const mockSession = createMockSession('user-123', 'test-token');
@@ -91,6 +91,10 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    // Setup default SDK mock behavior
+    mockCreateSource.mockReturnValue({
+      validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+    });
   });
 
   describe('createSource', () => {
@@ -99,9 +103,12 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
       const mockInsertResult = createMockSuccessResponse([{ id: mockId }]);
+      const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateSource.mockReturnValue({
+        validateEnhanced: mockValidateEnhanced,
+      });
 
       const builder = createQueryBuilder(mockInsertResult);
       supabase.from.mockReturnValue(builder);
@@ -109,7 +116,8 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const result = await createSource(mockId, mockData);
 
       expect(genSourceJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
-      expect(getRuleVerification).toHaveBeenCalledWith(expect.anything(), mockOrderedData);
+      expect(mockCreateSource).toHaveBeenCalledWith(mockOrderedData);
+      expect(mockValidateEnhanced).toHaveBeenCalled();
       expect(supabase.from).toHaveBeenCalledWith('sources');
       expect(builder.insert).toHaveBeenCalledWith([
         { id: mockId, json_ordered: mockOrderedData, rule_verification: true },
@@ -123,9 +131,12 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
       const mockInsertResult = createMockSuccessResponse([{ id: mockId }]);
+      const mockValidateEnhanced = jest.fn().mockReturnValue({ success: false });
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
-      getRuleVerification.mockReturnValue({ valid: false });
+      mockCreateSource.mockReturnValue({
+        validateEnhanced: mockValidateEnhanced,
+      });
 
       const builder = createQueryBuilder(mockInsertResult);
       supabase.from.mockReturnValue(builder);
@@ -144,7 +155,9 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockError = createMockErrorResponse('Insert failed');
 
       genSourceJsonOrdered.mockReturnValue({});
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateSource.mockReturnValue({
+        validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+      });
 
       const builder = createQueryBuilder(mockError);
       supabase.from.mockReturnValue(builder);
@@ -162,9 +175,12 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
       const mockFunctionResult = createMockEdgeFunctionResponse({ success: true });
+      const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateSource.mockReturnValue({
+        validateEnhanced: mockValidateEnhanced,
+      });
       supabase.functions.invoke.mockResolvedValue(mockFunctionResult);
 
       const result = await updateSource(mockId, mockVersion, mockData);
@@ -192,7 +208,9 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
       genSourceJsonOrdered.mockReturnValue({});
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateSource.mockReturnValue({
+        validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+      });
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
@@ -207,7 +225,9 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockError = { message: 'Update failed' };
 
       genSourceJsonOrdered.mockReturnValue({});
-      getRuleVerification.mockReturnValue({ valid: true });
+      mockCreateSource.mockReturnValue({
+        validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+      });
       supabase.functions.invoke.mockResolvedValue({ data: null, error: mockError });
 
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
