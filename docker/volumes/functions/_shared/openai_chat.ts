@@ -52,7 +52,7 @@ export async function openaiChat(
     Deno.env.get('OPENAI_BASE_URL') ||
     undefined;
   const client = getClient(baseUrl);
-  const model = options.model || Deno.env.get('OPENAI_CHAT_MODEL') || 'gpt-5-mini';
+  const model = options.model || Deno.env.get('OPENAI_CHAT_MODEL') || 'gpt-4.1-mini';
   const stream = options.stream ?? false;
 
   const response = await client.responses.create({
