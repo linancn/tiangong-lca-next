@@ -78,12 +78,8 @@ jest.mock('@/services/sources/util', () => ({
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
-const {
-  classificationToString,
-  genClassificationZH,
-  getLangText,
-  jsonToList,
-} = jest.requireMock('@/services/general/util');
+const { classificationToString, genClassificationZH, getLangText, jsonToList } =
+  jest.requireMock('@/services/general/util');
 const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');

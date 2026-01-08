@@ -66,12 +66,8 @@ jest.mock('@/services/general/api', () => ({
 
 const { supabase } = jest.requireMock('@/services/supabase');
 const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperties/util');
-const {
-  getLangText,
-  classificationToString,
-  jsonToList,
-  genClassificationZH,
-} = jest.requireMock('@/services/general/util');
+const { getLangText, classificationToString, jsonToList, genClassificationZH } =
+  jest.requireMock('@/services/general/util');
 const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');

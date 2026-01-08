@@ -38,7 +38,6 @@ if (!global.crypto.randomUUID) {
   global.crypto.randomUUID = () => uuidv4();
 }
 
-
 if (typeof window !== 'undefined' && window.localStorage) {
   Object.defineProperty(global, 'localStorage', {
     configurable: true,

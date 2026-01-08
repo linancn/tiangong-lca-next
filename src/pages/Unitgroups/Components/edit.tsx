@@ -300,7 +300,6 @@ const UnitGroupEdit: FC<Props> = ({
     const tidasUnitGroup = createTidasUnitGroup(genUnitGroupJsonOrdered(id, fromData));
     const validateResult = tidasUnitGroup.validateEnhanced();
     const issues = validateResult.success ? [] : validateResult.error.issues;
-    console.log('issues', issues, genUnitGroupJsonOrdered(id, fromData));
     if (issues.length) {
       issues.forEach((err) => {
         const tabName = err.path[1];

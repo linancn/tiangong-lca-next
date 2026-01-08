@@ -33,7 +33,14 @@ const selectStr4Table = `
 
 export async function createProcess(id: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = createTidasProcess(newData).validateEnhanced().success;
+  const validateResult = createTidasProcess(newData).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
@@ -44,7 +51,14 @@ export async function createProcess(id: string, data: any, modelId?: string) {
 
 export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = createTidasProcess(newData).validateEnhanced().success;
+  const validateResult = createTidasProcess(newData).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
     return undefined;

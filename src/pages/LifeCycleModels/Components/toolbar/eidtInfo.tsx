@@ -236,18 +236,6 @@ const ToolbarEditInfo = forwardRef<any, Props>(
               !item.path.includes('complianceDeclarations') &&
               !item.path.includes('quantitativeReference'),
           );
-      console.log('issues', issues);
-      console.log(
-        'json',
-        genLifeCycleModelJsonOrdered(data.id, {
-          ...modelDetail.data.json.lifeCycleModelDataSet,
-          model: { ...modelDetail.data.json_tg.xflow },
-        }),
-      );
-      console.log(
-        'tidasLifeCycleModel',
-        tidasLifeCycleModel.lifeCycleModelDataSet.lifeCycleModelInformation.dataSetInformation,
-      );
       let valid = issues.length === 0;
       dealModel(modelDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
 

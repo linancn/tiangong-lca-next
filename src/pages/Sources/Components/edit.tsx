@@ -321,7 +321,6 @@ const SourceEdit: FC<Props> = ({
     const tidasSource = createTidasSource(genSourceJsonOrdered(id, fromData));
     const validateResult = tidasSource.validateEnhanced();
     const issues = validateResult.success ? [] : validateResult.error.issues;
-    console.log('issues', issues, genSourceJsonOrdered(id, fromData));
     if (issues.length) {
       issues.forEach((err) => {
         const tabName = err.path[1];

@@ -50,7 +50,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
           allocation: {
             '@internalReferenceToCoProduct':
               item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
-            '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction'],
+            '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
+              ? item?.allocations?.allocation?.['@allocatedFraction']?.split('%')[0]
+              : undefined,
           },
         },
         relativeStandardDeviation95In: item.relativeStandardDeviation95In,
@@ -1475,7 +1477,9 @@ export function genProcessFromData(data: any): FormProcess {
                 allocation: {
                   '@internalReferenceToCoProduct':
                     item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
-                  '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction'],
+                  '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
+                    ? item?.allocations?.allocation?.['@allocatedFraction'] + '%'
+                    : undefined,
                 },
               },
               relativeStandardDeviation95In: item.relativeStandardDeviation95In,

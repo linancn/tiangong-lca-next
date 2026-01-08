@@ -347,14 +347,18 @@ const FlowsEdit: FC<Props> = ({
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
-    const tidasFlow = createTidasFlow(genFlowJsonOrdered(id, fromData));
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const jsonData = {
+      ...fieldsValue,
+      flowProperties,
+    };
+    const tidasFlow = createTidasFlow(genFlowJsonOrdered(id, jsonData));
     const validateResult = tidasFlow.validateEnhanced();
     const issues = validateResult.success ? [] : validateResult.error.issues;
-    console.log('issues', issues);
     if (issues.length) {
       issues.forEach((err) => {
-        if (err.path.includes('typeOfDataSet')) {
-          errTabNames.push('flowInformation');
+        if (err.path.includes('typeOfDataSet') && validateResult.success === false) {
+          if (!errTabNames.includes('flowInformation')) errTabNames.push('flowInformation');
         } else {
           const tabName = err.path[1];
           if (tabName && !errTabNames.includes(tabName as string))

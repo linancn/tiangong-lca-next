@@ -127,9 +127,14 @@ export async function createLifeCycleModel(data: any) {
     };
   });
 
-  const rule_verification = createTidasLifeCycleModel(
-    newLifeCycleModelJsonOrdered,
-  ).validateEnhanced().success;
+  const validateResult = createTidasLifeCycleModel(newLifeCycleModelJsonOrdered).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   const result = await supabase
     .from('lifecyclemodels')
     .insert([
@@ -374,9 +379,16 @@ export async function updateLifeCycleModel(data: any) {
       };
     });
 
-    const rule_verification = await createTidasLifeCycleModel(
+    const validateResult = createTidasLifeCycleModel(
       newLifeCycleModelJsonOrdered,
-    ).validateEnhanced().success;
+    ).validateEnhanced();
+    let issues = [];
+    if (!validateResult.success) {
+      issues = validateResult.error.issues.filter(
+        (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+      );
+    }
+    const rule_verification = issues.length === 0;
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       const oldSubmodels: any[] = jsonToList(oldData.submodels);
