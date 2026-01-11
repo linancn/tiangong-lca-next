@@ -30,14 +30,14 @@ async function getStandardClient(): Promise<StandardRedisClient> {
     url: Deno.env.get('REDIS_URL') ?? '',
     password: Deno.env.get('REDIS_PASSWORD'),
   });
-  
+
   await client.connect();
   return client;
 }
 
 async function getRedisClient(): Promise<RedisClient> {
   const clientType = getRedisClientType();
-  
+
   if (clientType === 'upstash') {
     return getUpstashClient();
   } else {
@@ -64,7 +64,12 @@ async function redisGet<T = unknown>(client: RedisClient, key: string): Promise<
 }
 
 // Helper function for type-safe set operation
-async function redisSet(client: RedisClient, key: string, value: unknown, options?: { ex?: number }): Promise<void> {
+async function redisSet(
+  client: RedisClient,
+  key: string,
+  value: unknown,
+  options?: { ex?: number },
+): Promise<void> {
   if (isUpstashClient(client)) {
     if (options?.ex) {
       await client.set(key, value, { ex: options.ex });
@@ -82,15 +87,15 @@ async function redisSet(client: RedisClient, key: string, value: unknown, option
   }
 }
 
-export { 
-    getRedisClient,
-    getUpstashClient, 
-    getStandardClient, 
-    getRedisClientType,
-    redisGet,
-    redisSet,
-    isUpstashClient,
-    type RedisClient,
-    type UpstashRedis,
-    type StandardRedisClient
+export {
+  getRedisClient,
+  getRedisClientType,
+  getStandardClient,
+  getUpstashClient,
+  isUpstashClient,
+  redisGet,
+  redisSet,
+  type RedisClient,
+  type StandardRedisClient,
+  type UpstashRedis,
 };

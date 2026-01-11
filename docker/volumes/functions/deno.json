@@ -1,7 +1,7 @@
 {
   "imports": {
     "@aws-sdk/client-cognito-identity-provider": "npm:/@aws-sdk/client-cognito-identity-provider",
-    "@langchain/langgraph-sdk": "npm:@langchain/langgraph-sdk@^0.1.0",
+    "@langchain/langgraph-sdk": "npm:@langchain/langgraph-sdk@^0.1.9",
     "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js/edge-runtime.d.ts",
     "@langchain/core/messages": "npm:/@langchain/core/messages",
     "@langchain/core/prompts": "npm:/@langchain/core/prompts",
@@ -18,7 +18,7 @@
     "@upstash/redis": "npm:/@upstash/redis",
     "aws-jwt-verify": "npm:/aws-jwt-verify",
     "postgres": "https://deno.land/x/postgresjs@v3.4.7/mod.js",
-    "redis": "npm:redis@^5.8.2",
+    "redis": "npm:redis@^5.8.3",
     "zod": "npm:/zod@3.25.76"
   }
 }

@@ -1,5 +1,6 @@
 
 
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -85,17 +86,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
 
 
 
--- Create pgmq schema first
-CREATE SCHEMA IF NOT EXISTS "pgmq";
-
--- Try to create pgmq extension if available (may not exist in standard Supabase image)
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'pgmq') THEN
-        CREATE EXTENSION IF NOT EXISTS "pgmq" WITH SCHEMA "pgmq";
-    END IF;
-END
-$$;
+CREATE EXTENSION IF NOT EXISTS "pgmq";
 
 
 
@@ -306,7 +297,8 @@ CREATE TABLE IF NOT EXISTS "public"."flows" (
     "team_id" "uuid",
     "review_id" "uuid",
     "rule_verification" boolean,
-    "reviews" "jsonb"
+    "reviews" "jsonb",
+    "embedding_flag" smallint
 );
 
 
@@ -315,7 +307,7 @@ ALTER TABLE "public"."flows" OWNER TO "postgres";
 
 CREATE OR REPLACE FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") RETURNS "text"
     LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO ''
+    SET "search_path" TO 'public'
     AS $$
 begin
   return flow.extracted_text;
@@ -368,6 +360,7 @@ ALTER FUNCTION "public"."generate_flow_embedding"() OWNER TO "postgres";
 
 CREATE OR REPLACE FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
     LANGUAGE "plpgsql"
+    SET "statement_timeout" TO '60s'
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$ BEGIN
 		RETURN QUERY WITH full_text AS (
@@ -423,6 +416,7 @@ ALTER FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedd
 
 CREATE OR REPLACE FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
     LANGUAGE "plpgsql"
+    SET "statement_timeout" TO '60s'
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$ BEGIN
 		RETURN QUERY WITH full_text AS (
@@ -478,6 +472,7 @@ ALTER FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "qu
 
 CREATE OR REPLACE FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
     LANGUAGE "plpgsql"
+    SET "statement_timeout" TO '60s'
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$ BEGIN
 		RETURN QUERY WITH full_text AS (
@@ -641,7 +636,8 @@ CREATE TABLE IF NOT EXISTS "public"."lifecyclemodels" (
     "reviews" "jsonb",
     "extracted_text" "text",
     "embedding" "extensions"."halfvec"(384),
-    "embedding_at" timestamp with time zone
+    "embedding_at" timestamp with time zone,
+    "embedding_flag" smallint
 );
 
 
@@ -828,22 +824,32 @@ CREATE OR REPLACE FUNCTION "public"."pgroonga_search_lifecyclemodels"("query_tex
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
-    filter_condition_jsonb JSONB;
+  filter_condition_jsonb jsonb;
 BEGIN
-	filter_condition_jsonb := filter_condition::JSONB;
+  filter_condition_jsonb := filter_condition::jsonb;
+
   RETURN QUERY
-		SELECT 
-			RANK () OVER (ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC) AS rank, 
-			f.id, 
-			f.json,
-			f.version,
-			f.modified_at,
-			COUNT(*) OVER() AS total_count
-		FROM lifecyclemodels f
-		WHERE f.json @> filter_condition_jsonb AND f.json &@~ query_text AND ((data_source = 'tg' AND state_code = 100) or (data_source = 'my' AND user_id::text = this_user_id))
-		ORDER BY pgroonga_score(tableoid, ctid) DESC
-		LIMIT page_size
-		OFFSET (page_current -1) * page_size;
+  SELECT
+    RANK() OVER (ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC) AS rank,
+    f.id,
+    f.json,
+    f.version,
+    f.modified_at,
+    COUNT(*) OVER() AS total_count
+  FROM lifecyclemodels f
+  WHERE
+    -- 结构化过滤
+    f.json @> filter_condition_jsonb
+    -- PGroonga 全文检索
+    AND f.json &@~ query_text
+    -- 数据源与权限过滤
+    AND (
+      (data_source = 'tg' AND state_code = 100)
+      OR (data_source = 'my' AND user_id::text = this_user_id)
+    )
+  ORDER BY pgroonga_score(f.tableoid, f.ctid) DESC
+  LIMIT page_size
+  OFFSET (page_current - 1) * page_size;
 END;
 $$;
 
@@ -1033,7 +1039,9 @@ CREATE TABLE IF NOT EXISTS "public"."processes" (
     "embedding_at" timestamp with time zone,
     "review_id" "uuid",
     "rule_verification" boolean,
-    "reviews" "jsonb"
+    "reviews" "jsonb",
+    "embedding_flag" smallint,
+    "model_id" "uuid"
 );
 
 
@@ -1103,52 +1111,76 @@ CREATE OR REPLACE FUNCTION "public"."semantic_search_flows"("query_embedding" "t
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
-    query_embedding_vector vector(384);
-		filter_condition_jsonb JSONB;
-		flowType TEXT;
-    flowTypeArray TEXT[];
-		asInput BOOLEAN;
+  query_embedding_vector  halfvec(384);
+  filter_condition_jsonb  jsonb;
+  flowType                text;
+  flowTypeArray           text[];
+  asInput                 boolean;
+  candidate_size          int := GREATEST(match_count * 10, 200);
 BEGIN
-    -- Convert the input TEXT to vector(1536) once
-    query_embedding_vector := query_embedding::vector(384);
-		
-		filter_condition_jsonb := filter_condition::JSONB;
-    flowType := filter_condition_jsonb->>'flowType';
-    flowTypeArray := string_to_array(flowType, ',');
-    filter_condition_jsonb := filter_condition_jsonb - 'flowType';
+  -- 1) 向量转 halfvec(384)
+  query_embedding_vector := query_embedding::halfvec(384);
 
-    asInput := (filter_condition_jsonb->'asInput')::BOOLEAN;
-    filter_condition_jsonb := filter_condition_jsonb - 'asInput';
+  -- 2) 解析 filter_condition
+  filter_condition_jsonb := filter_condition::jsonb;
+  flowType               := filter_condition_jsonb->>'flowType';
+  flowTypeArray          := string_to_array(flowType, ',');
+  filter_condition_jsonb := filter_condition_jsonb - 'flowType';
 
-    RETURN QUERY
+  asInput                := (filter_condition_jsonb->'asInput')::boolean;
+  filter_condition_jsonb := filter_condition_jsonb - 'asInput';
+
+  -- 3) 两阶段：先 HNSW 候选，再业务过滤
+  RETURN QUERY
+  WITH cand AS (
     SELECT
-        RANK () OVER (ORDER BY f.embedding <=> query_embedding_vector) AS rank,
-        f.id,
-        f.json,
-				f.version,
-				f.modified_at,
-				COUNT(*) OVER() AS total_count
-    FROM flows f
-    WHERE f.embedding <=> query_embedding_vector < 1 - match_threshold
-					AND f.json @> filter_condition_jsonb
-          AND (
-               (data_source = 'tg' AND state_code = 100)
-               OR (data_source = 'my' AND f.user_id::text = this_user_id)
-          )
-          AND (
-               flowType IS NULL
-               OR flowType = ''
-               OR (f.json->'flowDataSet'->'modellingAndValidation'->'LCIMethod'->>'typeOfDataSet') = ANY(flowTypeArray)
-          )
-          AND (
-               asInput IS NULL
-               OR asInput = false
-               OR NOT (
-                       f.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}'
-                      )
-          )
-    ORDER BY f.embedding <=> query_embedding_vector
-    LIMIT match_count;
+      f.id,
+      f.json,
+      f.version,
+      f.modified_at,
+      f.embedding,
+      f.state_code,
+      f.user_id,
+      f.team_id
+    FROM public.flows f
+    ORDER BY f.embedding <=> query_embedding_vector   
+    LIMIT candidate_size
+  ),
+  final AS (
+    SELECT
+      c.*,
+      (c.embedding <=> query_embedding_vector) AS dist
+    FROM cand c
+    WHERE
+      (c.embedding <=> query_embedding_vector) < 1 - match_threshold
+      AND c.json @> filter_condition_jsonb
+      AND (
+           (data_source = 'tg' AND c.state_code = 100)
+        OR (data_source = 'my' AND c.user_id::text = this_user_id)
+      )
+      AND (
+        flowType IS NULL
+        OR flowType = ''
+        OR (c.json->'flowDataSet'->'modellingAndValidation'->'LCIMethod'->>'typeOfDataSet') = ANY(flowTypeArray)
+      )
+      AND (
+        asInput IS NULL
+        OR asInput = false
+        OR NOT (
+          c.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}'
+        )
+      )
+  )
+  SELECT
+  RANK() OVER (ORDER BY f2.dist) AS "rank",
+  f2.id,
+  f2.json,
+  f2.version,
+  f2.modified_at,
+  COUNT(*) OVER()               AS total_count
+FROM final AS f2
+ORDER BY f2.dist
+LIMIT match_count;
 END;
 $$;
 
@@ -1161,30 +1193,57 @@ CREATE OR REPLACE FUNCTION "public"."semantic_search_lifecyclemodels"("query_emb
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
-    query_embedding_vector vector(384);
-		filter_condition_jsonb JSONB;
+  query_embedding_vector  halfvec(384);   
+  filter_condition_jsonb  jsonb;
+  candidate_size          int := GREATEST(match_count * 10, 200);
 BEGIN
-    -- Convert the input TEXT to vector(1536) once
-    query_embedding_vector := query_embedding::vector(384);
-		filter_condition_jsonb := filter_condition::JSONB;
+  -- 1) 向量入参 -> vector(384)
+  query_embedding_vector := query_embedding::halfvec(384);
 
-    RETURN QUERY
+  -- 2) 解析 filter_condition
+  filter_condition_jsonb := filter_condition::jsonb;
+
+  -- 3) 两阶段：先用向量索引取候选，再应用阈值/过滤/权限，最后排序分页
+  RETURN QUERY
+  WITH cand AS (
     SELECT
-        RANK () OVER (ORDER BY f.embedding <=> query_embedding_vector) AS rank,
-        f.id,
-        f.json,
-				f.version,
-				f.modified_at,
-				COUNT(*) OVER() AS total_count
-    FROM lifecyclemodels f
-    WHERE f.embedding <=> query_embedding_vector < 1 - match_threshold
-					AND f.json @> filter_condition_jsonb
-          AND (
-               (data_source = 'tg' AND state_code = 100)
-               OR (data_source = 'my' AND f.user_id::text = this_user_id)
-          )
-    ORDER BY f.embedding <=> query_embedding_vector
-    LIMIT match_count;
+      m.id,
+      m.json,
+      m.version,
+      m.modified_at,
+      m.embedding,
+      m.state_code,
+      m.user_id
+    FROM public.lifecyclemodels AS m
+    ORDER BY m.embedding <=> query_embedding_vector      
+    LIMIT candidate_size
+  ),
+  final AS (
+    SELECT
+      c.*,
+      (c.embedding <=> query_embedding_vector) AS dist
+    FROM cand AS c
+    WHERE
+      -- 向量阈值（在候选集上应用）
+      (c.embedding <=> query_embedding_vector) < 1 - match_threshold
+      -- JSON 过滤
+      AND c.json @> filter_condition_jsonb
+      -- data_source 访问控制（与原逻辑一致）
+      AND (
+           (data_source = 'tg' AND c.state_code = 100)
+        OR (data_source = 'my' AND c.user_id::text = this_user_id)
+      )
+  )
+  SELECT
+    RANK() OVER (ORDER BY f2.dist) AS "rank",
+    f2.id,
+    f2.json,
+    f2.version,
+    f2.modified_at,
+    COUNT(*) OVER()               AS total_count
+  FROM final AS f2
+  ORDER BY f2.dist
+  LIMIT match_count;
 END;
 $$;
 
@@ -1197,30 +1256,56 @@ CREATE OR REPLACE FUNCTION "public"."semantic_search_processes"("query_embedding
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
-    query_embedding_vector vector(384);
-		filter_condition_jsonb JSONB;
+  query_embedding_vector  halfvec(384);   -- 若列为 halfvec(384)，这里改成 halfvec(384)
+  filter_condition_jsonb  jsonb;
+  candidate_size          int := GREATEST(match_count * 10, 200);
 BEGIN
-    -- Convert the input TEXT to vector(1536) once
-    query_embedding_vector := query_embedding::vector(384);
-		filter_condition_jsonb := filter_condition::JSONB;
+  -- 1) 向量入参转 vector(384)（或 halfvec(384)）
+  query_embedding_vector := query_embedding::halfvec(384);
 
-    RETURN QUERY
+  -- 2) 解析 filter_condition
+  filter_condition_jsonb := filter_condition::jsonb;
+
+  -- 3) 两阶段：先按相似度取候选（命中向量索引），再在候选上施加全部业务过滤/阈值
+  RETURN QUERY
+  WITH cand AS (
     SELECT
-        RANK () OVER (ORDER BY f.embedding <=> query_embedding_vector) AS rank,
-        f.id,
-        f.json,
-				f.version,
-				f.modified_at,
-				COUNT(*) OVER() AS total_count
-    FROM processes f
-    WHERE f.embedding <=> query_embedding_vector < 1 - match_threshold
-					AND f.json @> filter_condition_jsonb
-          AND (
-               (data_source = 'tg' AND state_code = 100)
-               OR (data_source = 'my' AND f.user_id::text = this_user_id)
-          )
-    ORDER BY f.embedding <=> query_embedding_vector
-    LIMIT match_count;
+      p.id,
+      p.json,
+      p.version,
+      p.modified_at,
+      p.embedding,
+      p.state_code,
+      p.user_id
+    FROM public.processes AS p
+    ORDER BY p.embedding <=> query_embedding_vector      
+  ),
+  final AS (
+    SELECT
+      c.*,
+      (c.embedding <=> query_embedding_vector) AS dist
+    FROM cand AS c
+    WHERE
+      -- 向量阈值（在候选集上应用）
+      (c.embedding <=> query_embedding_vector) < 1 - match_threshold
+      -- JSON 过滤
+      AND c.json @> filter_condition_jsonb
+      -- data_source 访问控制（保持你原逻辑）
+      AND (
+           (data_source = 'tg' AND c.state_code = 100)
+        OR (data_source = 'my' AND c.user_id::text = this_user_id)
+      )
+  )
+  SELECT
+    RANK() OVER (ORDER BY f2.dist) AS "rank",
+    f2.id,
+    f2.json,
+    f2.version,
+    f2.modified_at,
+    COUNT(*) OVER()               AS total_count
+  FROM final AS f2
+  ORDER BY f2.dist
+  LIMIT match_count;
 END;
 $$;
 
@@ -1551,29 +1636,6 @@ CREATE TABLE IF NOT EXISTS "public"."lciamethods" (
 ALTER TABLE "public"."lciamethods" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."logs" (
-    "id" bigint NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "log" "jsonb",
-    "log_type" character varying,
-    "user_id" "uuid" DEFAULT "auth"."uid"()
-);
-
-
-ALTER TABLE "public"."logs" OWNER TO "postgres";
-
-
-ALTER TABLE "public"."logs" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME "public"."logs_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE IF NOT EXISTS "public"."reviews" (
     "id" "uuid" NOT NULL,
     "data_id" "uuid",
@@ -1697,11 +1759,6 @@ ALTER TABLE ONLY "public"."lciamethods"
 
 ALTER TABLE ONLY "public"."lifecyclemodels"
     ADD CONSTRAINT "lifecyclemodels_pkey" PRIMARY KEY ("id", "version");
-
-
-
-ALTER TABLE ONLY "public"."logs"
-    ADD CONSTRAINT "logs_pkey" PRIMARY KEY ("id");
 
 
 
@@ -2084,15 +2141,15 @@ CREATE OR REPLACE TRIGGER "contacts_set_modified_at_trigger" BEFORE UPDATE ON "p
 
 
 
-CREATE OR REPLACE TRIGGER "flow_embedding_on_extract_text_update" AFTER UPDATE OF "extracted_text" ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "util"."queue_embeddings"('flows_embedding_input', 'embedding');
+CREATE OR REPLACE TRIGGER "flow_embedding_on_extract_text_update" AFTER UPDATE ON "public"."flows" FOR EACH ROW WHEN (("new"."extracted_text" IS DISTINCT FROM "old"."extracted_text")) EXECUTE FUNCTION "util"."queue_embeddings"('flows_embedding_input', 'embedding');
 
 
 
-CREATE OR REPLACE TRIGGER "flow_embedding_trigger_insert" AFTER INSERT ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE OR REPLACE TRIGGER "flow_extract_text_trigger_insert" AFTER INSERT ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
 
-CREATE OR REPLACE TRIGGER "flow_embedding_trigger_update" AFTER UPDATE ON "public"."flows" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE OR REPLACE TRIGGER "flow_extract_text_trigger_update" AFTER UPDATE ON "public"."flows" FOR EACH ROW WHEN ((("new"."json" IS DISTINCT FROM "old"."json") OR ("new"."embedding_flag" IS DISTINCT FROM "old"."embedding_flag"))) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
 
@@ -2128,15 +2185,15 @@ CREATE OR REPLACE TRIGGER "lciamethods_set_modified_at_trigger" BEFORE UPDATE ON
 
 
 
-CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_on_extract_text_update" AFTER UPDATE OF "extracted_text" ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "util"."queue_embeddings"('lifecyclemodels_embedding_input', 'embedding');
+CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_on_extract_text_update" AFTER UPDATE ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("new"."extracted_text" IS DISTINCT FROM "old"."extracted_text")) EXECUTE FUNCTION "util"."queue_embeddings"('public.lifecyclemodels_embedding_input', 'embedding');
 
 
 
-CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_trigger_insert" AFTER INSERT ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE OR REPLACE TRIGGER "lifecyclemodels_extract_text_trigger_insert" AFTER INSERT ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
 
-CREATE OR REPLACE TRIGGER "lifecyclemodels_embedding_trigger_update" AFTER UPDATE ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE OR REPLACE TRIGGER "lifecyclemodels_extract_text_trigger_update" AFTER UPDATE ON "public"."lifecyclemodels" FOR EACH ROW WHEN ((("new"."json" IS DISTINCT FROM "old"."json") OR ("new"."embedding_flag" IS DISTINCT FROM "old"."embedding_flag"))) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
 
@@ -2148,15 +2205,15 @@ CREATE OR REPLACE TRIGGER "lifecyclemodels_set_modified_at_trigger" BEFORE UPDAT
 
 
 
-CREATE OR REPLACE TRIGGER "process_embedding_on_extract_text_update" AFTER UPDATE OF "extracted_text" ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "util"."queue_embeddings"('processes_embedding_input', 'embedding');
+CREATE OR REPLACE TRIGGER "process_embedding_on_extract_text_update" AFTER UPDATE ON "public"."processes" FOR EACH ROW WHEN (("new"."extracted_text" IS DISTINCT FROM "old"."extracted_text")) EXECUTE FUNCTION "util"."queue_embeddings"('processes_embedding_input', 'embedding');
 
 
 
-CREATE OR REPLACE TRIGGER "process_embedding_trigger_insert" AFTER INSERT ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE OR REPLACE TRIGGER "process_extract_text_trigger_insert" AFTER INSERT ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
 
-CREATE OR REPLACE TRIGGER "process_embedding_trigger_update" AFTER UPDATE ON "public"."processes" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE OR REPLACE TRIGGER "process_extract_text_trigger_update" AFTER UPDATE ON "public"."processes" FOR EACH ROW WHEN ((("new"."json" IS DISTINCT FROM "old"."json") OR ("new"."embedding_flag" IS DISTINCT FROM "old"."embedding_flag"))) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
 
 
 
@@ -2189,6 +2246,11 @@ CREATE OR REPLACE TRIGGER "unitgroups_json_sync_trigger" BEFORE INSERT OR UPDATE
 
 
 CREATE OR REPLACE TRIGGER "unitgroups_set_modified_at_trigger" BEFORE UPDATE ON "public"."unitgroups" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
+
+
+
+ALTER TABLE ONLY "public"."comments"
+    ADD CONSTRAINT "comments_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "public"."reviews"("id");
 
 
 
@@ -2273,7 +2335,7 @@ CREATE POLICY "Enable read access for all users" ON "public"."lciamethods" FOR S
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."contacts" FOR SELECT USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "contacts"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "contacts"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
@@ -2286,7 +2348,7 @@ CREATE POLICY "Enable read access for authenticated users" ON "public"."contacts
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."flowproperties" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "flowproperties"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "flowproperties"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
@@ -2299,7 +2361,7 @@ CREATE POLICY "Enable read access for authenticated users" ON "public"."flowprop
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."flows" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "flows"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "flows"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
@@ -2312,7 +2374,7 @@ CREATE POLICY "Enable read access for authenticated users" ON "public"."flows" F
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."lifecyclemodels" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "lifecyclemodels"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "lifecyclemodels"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
@@ -2325,20 +2387,20 @@ CREATE POLICY "Enable read access for authenticated users" ON "public"."lifecycl
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."processes" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "processes"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "processes"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
   WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "processes"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("processes"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
   WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("processes"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
+           FROM "jsonb_array_elements"("processes"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))))));
 
 
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."sources" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "sources"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "sources"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
@@ -2351,7 +2413,7 @@ CREATE POLICY "Enable read access for authenticated users" ON "public"."sources"
 
 CREATE POLICY "Enable read access for authenticated users" ON "public"."unitgroups" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."team_id" = "unitgroups"."team_id") AND (("roles"."role")::"text" = ANY ((ARRAY['admin'::character varying, 'member'::character varying, 'owner'::character varying])::"text"[])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
+  WHERE (("roles"."team_id" = "unitgroups"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
    FROM "public"."roles"
   WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
    FROM "public"."reviews" "r"
@@ -2364,13 +2426,13 @@ CREATE POLICY "Enable read access for authenticated users" ON "public"."unitgrou
 
 CREATE POLICY "Enable read open data access for reviews" ON "public"."comments" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND ((("roles"."role")::"text" = 'review-admin'::"text") OR ((("roles"."role")::"text" = 'review-member'::"text") AND ("comments"."reviewer_id" = ( SELECT "auth"."uid"() AS "uid"))))))));
+  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND ((("roles"."role")::"text" = 'review-admin'::"text") OR (("roles"."role")::"text" = 'review-member'::"text"))))));
 
 
 
 CREATE POLICY "Enable read open data access for reviews" ON "public"."reviews" FOR SELECT TO "authenticated" USING (((EXISTS ( SELECT 1
    FROM "public"."roles"
-  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND ((("roles"."role")::"text" = 'review-admin'::"text") OR ((("roles"."role")::"text" = 'review-member'::"text") AND ("reviews"."reviewer_id" ? (( SELECT "auth"."uid"() AS "uid"))::"text")))))) OR ((( SELECT "auth"."uid"() AS "uid") IS NOT NULL) AND (((("json" -> 'user'::"text") ->> 'id'::"text"))::"uuid" = ( SELECT "auth"."uid"() AS "uid")))));
+  WHERE (("roles"."user_id" = "auth"."uid"()) AND ((("roles"."role")::"text" = 'review-admin'::"text") OR ((("roles"."role")::"text" = 'review-member'::"text") AND ("reviews"."reviewer_id" ? ("auth"."uid"())::"text")))))) OR (("auth"."uid"() IS NOT NULL) AND (((("json" -> 'user'::"text") ->> 'id'::"text"))::"uuid" = "auth"."uid"())) OR ("state_code" = ANY (ARRAY[2, '-1'::integer]))));
 
 
 
@@ -2407,9 +2469,6 @@ ALTER TABLE "public"."lciamethods" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."lifecyclemodels" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."logs" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."processes" ENABLE ROW LEVEL SECURITY;
@@ -2454,9 +2513,9 @@ CREATE POLICY "update by owner and admin" ON "public"."teams" FOR UPDATE TO "aut
 
 
 
-CREATE POLICY "update by review-admin or data owener" ON "public"."comments" FOR UPDATE TO "authenticated" USING ((("reviewer_id" = "auth"."uid"()) OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."user_id" = "auth"."uid"()) AND (("roles"."role")::"text" = 'review-admin'::"text"))))));
+CREATE POLICY "update by review-admin or data owener" ON "public"."comments" FOR UPDATE TO "authenticated" USING ((("reviewer_id" = ( SELECT "auth"."uid"() AS "uid")) OR (EXISTS ( SELECT 1
+   FROM "public"."roles" "r"
+  WHERE (("r"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND (("r"."role")::"text" = 'review-admin'::"text"))))));
 
 
 
@@ -3978,18 +4037,6 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 
 
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."logs" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."logs" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."logs" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."logs_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."logs_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."logs_id_seq" TO "service_role";
-
-
-
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."reviews" TO "anon";
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."reviews" TO "authenticated";
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."reviews" TO "service_role";
@@ -4086,4 +4133,70 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT,INS
 
 
 
-RESET ALL;
+
+CREATE TRIGGER users_trigger AFTER INSERT OR DELETE OR UPDATE ON auth.users FOR EACH ROW EXECUTE FUNCTION public.sync_auth_users_to_public_users();
+
+
+  create policy "delete by owner 1yyjigf_0"
+  on "storage"."objects"
+  as permissive
+  for select
+  to authenticated
+using (((bucket_id = 'external_docs'::text) AND (owner = ( SELECT auth.uid() AS uid))));
+
+
+
+  create policy "delete by owner 1yyjigf_1"
+  on "storage"."objects"
+  as permissive
+  for delete
+  to authenticated
+using (((bucket_id = 'external_docs'::text) AND (owner = ( SELECT auth.uid() AS uid))));
+
+
+
+  create policy "insert by authenticated 1k3nibb_0"
+  on "storage"."objects"
+  as permissive
+  for insert
+  to authenticated
+with check ((bucket_id = 'sys-files'::text));
+
+
+
+  create policy "insert by authenticated 1yyjigf_0"
+  on "storage"."objects"
+  as permissive
+  for insert
+  to authenticated
+with check ((bucket_id = 'external_docs'::text));
+
+
+
+  create policy "select by authenticated 1k3nibb_0"
+  on "storage"."objects"
+  as permissive
+  for select
+  to authenticated
+using ((bucket_id = 'sys-files'::text));
+
+
+
+  create policy "select by authenticated 1yyjigf_0"
+  on "storage"."objects"
+  as permissive
+  for select
+  to authenticated
+using ((bucket_id = 'external_docs'::text));
+
+
+
+  create policy "upload by authenticated 1k3nibb_0"
+  on "storage"."objects"
+  as permissive
+  for insert
+  to authenticated
+with check ((bucket_id = 'sys-files'::text));
+
+
+
