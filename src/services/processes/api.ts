@@ -76,7 +76,7 @@ export async function updateProcess(id: string, version: string, data: any, mode
     region: FunctionRegion.UsEast1,
   });
   if (result.error) {
-    console.log('error', result.error);
+    console.error('updateProcess error', result.error);
     return { error: result.error };
   }
   return result?.data;

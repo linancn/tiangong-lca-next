@@ -220,16 +220,25 @@ const overrideWithOldProcess = function (newData: any, oldData: any) {
   }
 
   if (oldData?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation) {
+    if (!newData.processDataSet.modellingAndValidation) {
+      newData.processDataSet.modellingAndValidation = {} as any;
+    }
     newData.processDataSet.modellingAndValidation.LCIMethodAndAllocation =
       oldData.processDataSet.modellingAndValidation.LCIMethodAndAllocation;
   }
 
   if (oldData?.processDataSet?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness) {
+    if (!newData.processDataSet.modellingAndValidation) {
+      newData.processDataSet.modellingAndValidation = {} as any;
+    }
     newData.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness =
       oldData.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness;
   }
 
   if (oldData?.processDataSet?.modellingAndValidation?.completeness) {
+    if (!newData.processDataSet.modellingAndValidation) {
+      newData.processDataSet.modellingAndValidation = {} as any;
+    }
     newData.processDataSet.modellingAndValidation.completeness =
       oldData.processDataSet.modellingAndValidation.completeness;
   }
@@ -359,18 +368,20 @@ export async function updateLifeCycleModel(data: any) {
       jsonToList(oldData.submodels),
     );
 
-    const edges = (data?.model?.edges ?? []).map((e: any) => {
+    const edges = (data?.model?.edges ?? []).map((edge: any) => {
       const up2DownEdge = up2DownEdges.find(
-        (edge) =>
-          edge?.upstreamNodeId === e?.source?.cell && edge?.downstreamNodeId === e?.target?.cell,
+        (udEdge) =>
+          udEdge?.upstreamNodeId === edge?.source?.cell &&
+          udEdge?.downstreamNodeId === edge?.target?.cell &&
+          udEdge?.flowUUID === edge?.data?.connection?.outputExchange?.['@flowUUID'],
       );
       return {
-        ...e,
+        ...edge,
         labels: [],
         data: {
-          ...e.data,
+          ...edge?.data,
           connection: {
-            ...e.data?.connection,
+            ...edge?.data?.connection,
             isBalanced: up2DownEdge?.isBalanced,
             unbalancedAmount: up2DownEdge?.unbalancedAmount,
             exchangeAmount: up2DownEdge?.exchangeAmount,
@@ -428,7 +439,7 @@ export async function updateLifeCycleModel(data: any) {
         region: FunctionRegion.UsEast1,
       });
       if (updateResult.error) {
-        console.error(updateResult.error);
+        console.error('update_data lifecyclemodels', updateResult.error);
       } else {
         const deletionPromises: Promise<any>[] =
           deleteOldSubmodels && deleteOldSubmodels.length > 0
