@@ -301,6 +301,7 @@ function assignEdgeDependence(
   refProcessNodeId: string,
   direction: Direction = 'OUTPUT',
 ): void {
+  // 从给定前沿（默认为参考节点）开始，沿“输入边”向上标注为 downstream；返回触达的上游节点集合
   const phaseOutput = (startFrontier?: Set<string>): Set<string> => {
     const frontier =
       startFrontier && startFrontier.size > 0
@@ -434,6 +435,7 @@ function assignEdgeDependence(
     let upFrontier = phaseOutput();
     breakDownstreamCycles();
     let guard = 0;
+    upFrontier.add(refProcessNodeId);
     while (upFrontier.size > 0 && guard++ < 1000) {
       const downFrontier = phaseInput(upFrontier);
       breakUpstreamCycles();
@@ -445,6 +447,7 @@ function assignEdgeDependence(
     let downFrontier = phaseInput();
     breakUpstreamCycles();
     let guard = 0;
+    downFrontier.add(refProcessNodeId);
     while (downFrontier.size > 0 && guard++ < 1000) {
       const upFrontier = phaseOutput(downFrontier);
       breakDownstreamCycles();
@@ -1117,6 +1120,7 @@ export async function genLifeCycleModelProcesses(
     const exchanges = jsonToList(p?.exchange);
     const refExchangeId = (p?.quantitativeReference as any)?.referenceToReferenceFlow ?? '';
     const refExchange = exchanges?.find((e: any) => e?.['@dataSetInternalID'] === refExchangeId);
+
     const flowId = refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
     const direction =
       ((refExchange?.exchangeDirection ?? '') as string).toUpperCase() === 'INPUT'
