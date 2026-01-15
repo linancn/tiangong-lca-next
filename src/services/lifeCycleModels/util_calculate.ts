@@ -321,6 +321,53 @@ function assignEdgeDependence(
   refProcessNodeId: string,
   direction: Direction = 'OUTPUT',
 ): void {
+  const breakCycleEdge = (edge: Up2DownEdge, mainDependence: 'downstream' | 'upstream') => {
+    edge.mainDependence = mainDependence;
+    edge.dependence = 'none';
+    edge.isCycle = true;
+  };
+
+  // Choose which edge to cut within a detected cycle.
+  // - flowIsRef=true means higher weight (prefer to keep)
+  // - flowIsRef=false means lower weight (prefer to cut)
+  // Tie rule: if all edges share the same flowIsRef, keep existing behavior and cut the back-edge.
+  const pickCycleEdgeToBreak = (
+    cycleEdgesInOrder: Up2DownEdge[],
+    backEdge: Up2DownEdge,
+  ): Up2DownEdge => {
+    if (cycleEdgesInOrder.length === 0) return backEdge;
+
+    const first = cycleEdgesInOrder[0];
+    const allSamePriority = cycleEdgesInOrder.every((e) => e?.flowIsRef === first?.flowIsRef);
+    if (allSamePriority) return backEdge;
+
+    // Lower score means higher priority to break.
+    const score = (e: Up2DownEdge) => (e?.flowIsRef ? 1 : 0);
+    let minScore = score(cycleEdgesInOrder[0]);
+    for (const e of cycleEdgesInOrder) {
+      const s = score(e);
+      if (s < minScore) minScore = s;
+    }
+
+    return cycleEdgesInOrder.find((e) => score(e) === minScore) ?? backEdge;
+  };
+
+  const resetNonCycleDependenceMarks = () => {
+    for (const e of up2DownEdges as Up2DownEdge[]) {
+      if (!e || e.isCycle === true) continue;
+      e.dependence = undefined;
+      e.mainDependence = undefined;
+    }
+  };
+
+  const countCycleEdges = () => {
+    let n = 0;
+    for (const e of up2DownEdges as Up2DownEdge[]) {
+      if (e?.isCycle === true) n += 1;
+    }
+    return n;
+  };
+
   // 从给定前沿（默认为参考节点）开始，沿“输入边”向上标注为 downstream；返回触达的上游节点集合
   const phaseOutput = (startFrontier?: Set<string>): Set<string> => {
     const frontier =
@@ -337,6 +384,7 @@ function assignEdgeDependence(
         touchedDownNodesA.add(nodeId);
         const uds = edgesByDownstream.get(nodeId) ?? [];
         for (const ud of uds) {
+          if (ud?.isCycle === true) continue;
           if (ud?.dependence !== undefined) continue;
           ud.dependence = 'downstream';
           touchedUpNodes.add(ud.upstreamId);
@@ -365,6 +413,23 @@ function assignEdgeDependence(
 
   const breakDownstreamCycles = () => {
     const color = new Map<string, 0 | 1 | 2>(); // 0: unvisited, 1: visiting, 2: done
+    const parentNode = new Map<string, string>();
+    const parentEdge = new Map<string, Up2DownEdge>();
+
+    const buildCycleEdges = (fromNodeId: string, ancestorId: string, backEdge: Up2DownEdge) => {
+      const edges: Up2DownEdge[] = [];
+      let cur = fromNodeId;
+      let guard = 0;
+      while (cur !== ancestorId && guard++ < 10000) {
+        const pe = parentEdge.get(cur);
+        const pn = parentNode.get(cur);
+        if (!pe || !pn) break;
+        edges.push(pe);
+        cur = pn;
+      }
+      edges.push(backEdge);
+      return edges;
+    };
 
     const dfs = (nodeId: string) => {
       color.set(nodeId, 1);
@@ -374,11 +439,13 @@ function assignEdgeDependence(
         const up = e.upstreamId;
         const state = color.get(up) ?? 0;
         if (state === 0) {
+          parentNode.set(up, nodeId);
+          parentEdge.set(up, e);
           dfs(up);
         } else if (state === 1) {
-          e.mainDependence = 'downstream';
-          e.dependence = 'none';
-          e.isCycle = true;
+          const cycleEdges = buildCycleEdges(nodeId, up, e);
+          const edgeToBreak = pickCycleEdgeToBreak(cycleEdges, e);
+          breakCycleEdge(edgeToBreak, 'downstream');
         }
       }
       color.set(nodeId, 2);
@@ -401,6 +468,7 @@ function assignEdgeDependence(
       for (const nodeId of current) {
         const uds = edgesByUpstream.get(nodeId) ?? [];
         for (const ud of uds) {
+          if (ud?.isCycle === true) continue;
           if (ud?.dependence !== undefined) continue;
           ud.dependence = 'upstream';
           touchedDownNodes.add(ud.downstreamId);
@@ -429,6 +497,23 @@ function assignEdgeDependence(
 
   const breakUpstreamCycles = () => {
     const color = new Map<string, 0 | 1 | 2>(); // 0: unvisited, 1: visiting, 2: done
+    const parentNode = new Map<string, string>();
+    const parentEdge = new Map<string, Up2DownEdge>();
+
+    const buildCycleEdges = (fromNodeId: string, ancestorId: string, backEdge: Up2DownEdge) => {
+      const edges: Up2DownEdge[] = [];
+      let cur = fromNodeId;
+      let guard = 0;
+      while (cur !== ancestorId && guard++ < 10000) {
+        const pe = parentEdge.get(cur);
+        const pn = parentNode.get(cur);
+        if (!pe || !pn) break;
+        edges.push(pe);
+        cur = pn;
+      }
+      edges.push(backEdge);
+      return edges;
+    };
 
     const dfs = (nodeId: string) => {
       color.set(nodeId, 1);
@@ -438,11 +523,13 @@ function assignEdgeDependence(
         const down = e.downstreamId;
         const state = color.get(down) ?? 0;
         if (state === 0) {
+          parentNode.set(down, nodeId);
+          parentEdge.set(down, e);
           dfs(down);
         } else if (state === 1) {
-          e.mainDependence = 'upstream';
-          e.dependence = 'none';
-          e.isCycle = true;
+          const cycleEdges = buildCycleEdges(nodeId, down, e);
+          const edgeToBreak = pickCycleEdgeToBreak(cycleEdges, e);
+          breakCycleEdge(edgeToBreak, 'upstream');
         }
       }
       color.set(nodeId, 2);
@@ -451,30 +538,45 @@ function assignEdgeDependence(
     dfs(refProcessNodeId);
   };
 
-  if (direction === 'OUTPUT') {
-    let upFrontier = phaseOutput();
-    breakDownstreamCycles();
-    let guard = 0;
-    upFrontier.add(refProcessNodeId);
-    while (upFrontier.size > 0 && guard++ < 1000) {
-      const downFrontier = phaseInput(upFrontier);
-      breakUpstreamCycles();
-      if (downFrontier.size === 0) break;
-      upFrontier = phaseOutput(downFrontier);
+  const runMarkingOnce = () => {
+    resetNonCycleDependenceMarks();
+
+    if (direction === 'OUTPUT') {
+      let upFrontier = phaseOutput();
       breakDownstreamCycles();
-    }
-  } else {
-    let downFrontier = phaseInput();
-    breakUpstreamCycles();
-    let guard = 0;
-    downFrontier.add(refProcessNodeId);
-    while (downFrontier.size > 0 && guard++ < 1000) {
-      const upFrontier = phaseOutput(downFrontier);
-      breakDownstreamCycles();
-      if (upFrontier.size === 0) break;
-      downFrontier = phaseInput(upFrontier);
+      let guard = 0;
+      upFrontier.add(refProcessNodeId);
+      while (upFrontier.size > 0 && guard++ < 1000) {
+        const downFrontier = phaseInput(upFrontier);
+        breakUpstreamCycles();
+        if (downFrontier.size === 0) break;
+        upFrontier = phaseOutput(downFrontier);
+        breakDownstreamCycles();
+      }
+    } else {
+      let downFrontier = phaseInput();
       breakUpstreamCycles();
+      let guard = 0;
+      downFrontier.add(refProcessNodeId);
+      while (downFrontier.size > 0 && guard++ < 1000) {
+        const upFrontier = phaseOutput(downFrontier);
+        breakDownstreamCycles();
+        if (upFrontier.size === 0) break;
+        downFrontier = phaseInput(upFrontier);
+        breakUpstreamCycles();
+      }
     }
+  };
+
+  // If we break a cycle edge that is not the back-edge, previously marked dependence
+  // can become invalid (reachability changes). To keep both upstream/downstream rooted
+  // at the reference node, iterate "mark -> break cycles -> re-mark" until stable.
+  let stabilizeGuard = 0;
+  while (stabilizeGuard++ < 20) {
+    const before = countCycleEdges();
+    runMarkingOnce();
+    const after = countCycleEdges();
+    if (after === before) break;
   }
 
   for (const e of up2DownEdges as Up2DownEdge[]) {
