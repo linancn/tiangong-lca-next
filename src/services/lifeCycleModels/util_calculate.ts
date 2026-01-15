@@ -202,13 +202,16 @@ function buildEdgesAndIndices(
     const mdProcessOutputExchanges = jsonToList(mdProcess?.connections?.outputExchange);
     const refTo = mdProcess?.['referenceToProcess'] as any;
     const dbKey = dbProcessKey(refTo?.['@refObjectId'], refTo?.['@version']);
-    const mainOutputFlowUUID = getMainOutputFlowUUID(
-      mdProcessOutputExchanges,
-      dbProcessMap.get(dbKey),
-    );
+    const dbProccess = dbProcessMap.get(dbKey);
+    const refExchange = dbProccess?.refExchangeMap;
+
+    const mainOutputFlowUUID = getMainOutputFlowUUID(mdProcessOutputExchanges, dbProccess);
 
     for (const o of mdProcessOutputExchanges) {
       const flowUUID = o?.['@flowUUID'];
+      const upFlowIsRef =
+        (refExchange && refExchange.direction === 'OUTPUT' && flowUUID === refExchange.flowId) ??
+        false;
       const downstreamList = jsonToList(o?.downstreamProcess)?.map((d: any) => {
         const downstreamNode = mdProcesses.find(
           (p: any) => p?.['@dataSetInternalID'] === d?.['@id'],
@@ -222,9 +225,26 @@ function buildEdgesAndIndices(
       for (const dp of downstreamList) {
         const downstreamId = dp?.['@id'];
         const downstreamNodeId = dp?.nodeId;
+        const downstreamModelProcess = mdProcesses.find(
+          (p: any) => p?.['@dataSetInternalID'] === downstreamId,
+        );
+        const downstreamRefTo = downstreamModelProcess?.['referenceToProcess'] as any;
+        const downstreamDbKey = dbProcessKey(
+          downstreamRefTo?.['@refObjectId'],
+          downstreamRefTo?.['@version'],
+        );
+        const downstreamDbPorcess = dbProcessMap.get(downstreamDbKey);
+        const downstreamRefExchange = downstreamDbPorcess?.refExchangeMap;
+        const downFlowIsRef =
+          (downstreamRefExchange &&
+            downstreamRefExchange.direction === 'INPUT' &&
+            flowUUID === downstreamRefExchange.flowId) ??
+          false;
+
         const edge: Up2DownEdge = {
           id: `${upstreamId}->${downstreamId}:${flowUUID}`,
           flowUUID,
+          flowIsRef: upFlowIsRef || downFlowIsRef,
           upstreamId,
           upstreamNodeId,
           downstreamId,

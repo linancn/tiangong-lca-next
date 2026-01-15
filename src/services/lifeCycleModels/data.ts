@@ -13,6 +13,7 @@ export type LifeCycleModelTable = {
 export type Up2DownEdge = {
   id: string; //upstreamId + '->' + downstreamId + ':' + dependence
   flowUUID: string;
+  flowIsRef: boolean;
   upstreamId: string;
   upstreamNodeId?: string;
   downstreamId: string;
