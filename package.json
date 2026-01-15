@@ -111,8 +111,5 @@
   },
   "engines": {
     "node": ">=22.0.0"
-  },
-  "overrides": {
-    "@babel/core": "7.28.5"
   }
 }
