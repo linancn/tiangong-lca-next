@@ -9,6 +9,7 @@ export default {
   'pages.table.title.modifiedAt': '更新时间',
   'pages.table.title.option': '操作',
   'pages.table.title.version': '版本',
+  'pages.button.add': '添加',
   'pages.button.createVersion': '新增版本',
   'pages.button.createVersion.fail': '请更改数据集版本后提交',
   'pages.button.allVersion': '所有版本',

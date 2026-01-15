@@ -150,6 +150,7 @@ export class ReffPath {
   '@version': string;
   '@type': string;
   versionUnderReview?: boolean;
+  underReviewVersion?: string;
   versionIsInTg?: boolean;
   children: ReffPath[] = [];
   ruleVerification: boolean;
@@ -176,7 +177,7 @@ export class ReffPath {
 
       if (
         node['@refObjectId'] === ref['@refObjectId'] &&
-        // node['@version'] === ref['@version'] &&  // If you need to use the version for target matching, please add the code separately instead of uncommenting the existing content.
+        node['@version'] === ref['@version'] &&
         node['@type'] === ref['@type']
       ) {
         (node as any)[key] = value;
@@ -195,7 +196,7 @@ export class ReffPath {
     traverse(this);
   }
 
-  findProblemNodes(): ReffPathNode[] {
+  findProblemNodes(actionFrom: 'checkData' | 'review' = 'checkData'): ReffPathNode[] {
     const result: ReffPath[] = [];
     const visited = new Set<ReffPath>();
     const uniqueKeys = new Set<string>();
@@ -206,12 +207,20 @@ export class ReffPath {
       if (visited.has(node)) return;
       visited.add(node);
 
-      if (
+      let isProblemNode =
         node.ruleVerification === false ||
         node.nonExistent === true ||
-        node?.versionUnderReview === true ||
-        node?.versionIsInTg === true
-      ) {
+        node?.versionIsInTg === true;
+
+      if (actionFrom === 'checkData') {
+        isProblemNode =
+          isProblemNode ||
+          (node?.versionUnderReview === true && node['@version'] !== node.underReviewVersion);
+      } else if (actionFrom === 'review') {
+        isProblemNode = isProblemNode || node?.versionUnderReview === true;
+      }
+
+      if (isProblemNode) {
         const nodeKey = getUniqueKey(node);
         if (!uniqueKeys.has(nodeKey)) {
           result.push(node);
@@ -337,10 +346,14 @@ const isCurrentVersionLessThanReleased = (
 export const checkVersions = async (refs: Set<string>, path?: ReffPath) => {
   const refsRecord: Record<string, string[]> = {};
 
+  // { type: { id: Set<version> } }
+  const refsMap: Record<string, Record<string, Set<string>>> = {};
+
   refs.forEach((ref) => {
     const parts = ref.split(':');
     if (parts.length >= 3) {
       const id = parts[0];
+      const version = parts[1];
       const type = parts[2];
 
       if (!refsRecord[type]) {
@@ -349,6 +362,14 @@ export const checkVersions = async (refs: Set<string>, path?: ReffPath) => {
       if (!refsRecord[type].includes(id)) {
         refsRecord[type].push(id);
       }
+
+      if (!refsMap[type]) {
+        refsMap[type] = {};
+      }
+      if (!refsMap[type][id]) {
+        refsMap[type][id] = new Set();
+      }
+      refsMap[type][id].add(version);
     }
   });
 
@@ -360,50 +381,41 @@ export const checkVersions = async (refs: Set<string>, path?: ReffPath) => {
 
     if (details && details.length > 0) {
       details.forEach((detail: any) => {
+        const referencedVersions = refsMap[tableName]?.[detail.id] || new Set();
+
         if (detail.state_code >= 20 && detail.state_code < 100) {
-          if (path) {
-            path.set(
-              {
-                '@type': tableName,
-                '@refObjectId': detail.id,
-                '@version': detail.version,
-              },
-              'versionUnderReview',
-              true,
-            );
-            path.set(
-              {
-                '@type': tableName,
-                '@refObjectId': detail.id,
-                '@version': detail.version,
-              },
-              'underReviewVersion',
-              detail.version,
-            );
-          }
+          referencedVersions.forEach((refVersion) => {
+            if (path) {
+              path.set(
+                {
+                  '@type': tableName,
+                  '@refObjectId': detail.id,
+                  '@version': refVersion,
+                },
+                'versionUnderReview',
+                true,
+              );
+              path.set(
+                {
+                  '@type': tableName,
+                  '@refObjectId': detail.id,
+                  '@version': refVersion,
+                },
+                'underReviewVersion',
+                detail.version,
+              );
+            }
+          });
         }
         if (detail.state_code === 100) {
-          // Find all matching refs from refs set
-          const matchingRefs = Array.from(refs).filter((ref) => {
-            const parts = ref.split(':');
-            if (parts.length >= 3) {
-              const refId = parts[0];
-              const refType = parts[2];
-              return refId === detail.id && refType === tableName;
-            }
-            return false;
-          });
-
-          matchingRefs.forEach((matchingRef) => {
-            const refParts = matchingRef.split(':');
-            const refVersion = refParts[1];
+          referencedVersions.forEach((refVersion) => {
             if (isCurrentVersionLessThanReleased(refVersion, detail.version)) {
               if (path) {
                 path.set(
                   {
                     '@type': tableName,
                     '@refObjectId': detail.id,
-                    '@version': detail.version,
+                    '@version': refVersion,
                   },
                   'versionIsInTg',
                   true,

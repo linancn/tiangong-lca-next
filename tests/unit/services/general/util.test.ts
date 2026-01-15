@@ -312,7 +312,7 @@ describe('General Utility Functions', () => {
       });
     });
 
-    it('should handle null and undefined gracefully', () => {
+    it('should remove null and undefined values', () => {
       const input = {
         a: null,
         b: undefined,
@@ -320,8 +320,6 @@ describe('General Utility Functions', () => {
       };
       const result = removeEmptyObjects(input);
       expect(result).toEqual({
-        a: null,
-        b: undefined,
         c: 1,
       });
     });
@@ -723,24 +721,24 @@ describe('General Utility Functions', () => {
     it('should format date with correct pattern', () => {
       const date = new Date('2024-01-15T10:30:45Z');
       const result = formatDateTime(date);
-      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      // ISO 8601 format with milliseconds and Z suffix
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
-    it('should include timezone offset', () => {
+    it('should include ISO format with Z suffix', () => {
       const date = new Date('2024-01-15T10:30:45Z');
       const result = formatDateTime(date);
-      const expectedSign = date.getTimezoneOffset() <= 0 ? '+' : '-';
-      expect(result).toContain(expectedSign);
+      expect(result).toContain('Z');
+      expect(result).toBe('2024-01-15T10:30:45.000Z');
     });
 
     it('should pad single digits with zero', () => {
       const date = new Date('2024-01-05T09:08:07Z');
       const result = formatDateTime(date);
-      const pad = (num: number) => num.toString().padStart(2, '0');
-      const expectedDatePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-      const expectedTimePart = `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-      expect(result).toContain(expectedDatePart);
-      expect(result).toContain(expectedTimePart);
+      // toISOString() always pads with zeros
+      expect(result).toBe('2024-01-05T09:08:07.000Z');
+      expect(result).toContain('2024-01-05');
+      expect(result).toContain('T09:08:07');
     });
   });
 

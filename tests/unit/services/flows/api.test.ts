@@ -17,6 +17,13 @@ import {
 } from '@/services/flows/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createFlow: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 jest.mock('@/services/flows/util', () => ({
   genFlowJsonOrdered: jest.fn(),
   genFlowName: jest.fn(),
@@ -240,10 +247,6 @@ describe('createFlows', () => {
     const result = await createFlows('flow-id', { name: 'Flow payload' });
 
     expect(mockGenFlowJsonOrdered).toHaveBeenCalledWith('flow-id', { name: 'Flow payload' });
-    expect(mockGetRuleVerification).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({ id: 'flow-id', name: 'Flow payload' }),
-    );
     expect(mockFrom).toHaveBeenCalledWith('flows');
     expect(query.calls.insertArgs).toEqual([
       expect.objectContaining({

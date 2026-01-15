@@ -5,6 +5,13 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { render, screen } from '../../../../../helpers/testUtils';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createLifeCycleModel: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
@@ -311,6 +318,18 @@ jest.mock('uuid', () => ({
   v4: () => 'uuid-1',
 }));
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createLifeCycleModel: jest.fn(() => ({
+    validateEnhanced: jest.fn(() => ({ success: true, error: { issues: [] } })),
+    lifeCycleModelDataSet: {
+      lifeCycleModelInformation: {
+        dataSetInformation: {},
+      },
+    },
+  })),
+}));
+
 beforeEach(() => {
   Object.values(mockAntdMessage).forEach((fn) => fn.mockReset());
   mockCheckReferences.mockReset();
@@ -393,7 +412,7 @@ describe('ToolbarEditInfo', () => {
         version: '1.0',
         stateCode: 10, // stateCode < 20，会被添加到 unReview
         teamId: 'team-1',
-        json_tg: { submodels: [{ id: 'sub-1' }] },
+        json_tg: { xflow: { nodes: [], edges: [] } },
         json: {
           lifeCycleModelDataSet: {
             lifeCycleModelInformation: { dataSetInformation: { name: {} } },
@@ -425,7 +444,6 @@ describe('ToolbarEditInfo', () => {
     expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0');
     expect(mockGetProcessDetail).toHaveBeenCalledWith('model-1', '1.0');
     expect(mockCheckReferences).toHaveBeenCalled();
-    expect(mockGetRuleVerification).toHaveBeenCalled();
     expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalled();
     expect(mockGetUserTeamId).toHaveBeenCalled();
     expect(mockDealModel).toHaveBeenCalled();

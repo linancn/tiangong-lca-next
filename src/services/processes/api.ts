@@ -1,17 +1,16 @@
-import schema from '@/pages/Processes/processes_schema.json';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData } from '@/services/general/api';
 import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/es/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
-  getRuleVerification,
   jsonToList,
 } from '../general/util';
 import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
@@ -34,7 +33,14 @@ const selectStr4Table = `
 
 export async function createProcess(id: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const validateResult = createTidasProcess(newData).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
@@ -45,7 +51,14 @@ export async function createProcess(id: string, data: any, modelId?: string) {
 
 export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const validateResult = createTidasProcess(newData).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
     return undefined;
@@ -63,7 +76,7 @@ export async function updateProcess(id: string, version: string, data: any, mode
     region: FunctionRegion.UsEast1,
   });
   if (result.error) {
-    console.log('error', result.error);
+    console.error('updateProcess error', result.error);
     return { error: result.error };
   }
   return result?.data;
