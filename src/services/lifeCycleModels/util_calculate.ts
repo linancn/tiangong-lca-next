@@ -1049,9 +1049,10 @@ const getFinalProductGroup = (
           return (
             childProcess?.nodeId !== finalProductProcess?.nodeId &&
             childProcess?.finalProductType !== 'has' &&
-            (childProcess?.nodeId === edge?.downstreamId ||
-              childProcess?.nodeId === edge?.upstreamId) &&
-            childProcess?.allocatedExchangeFlowId === edge?.flowUUID
+            childProcess?.dependence?.direction === edge?.dependence &&
+            childProcess?.dependence?.flowUUID === edge?.flowUUID &&
+            ((edge?.dependence === 'upstream' && childProcess?.nodeId === edge?.downstreamId) ||
+              (edge?.dependence === 'downstream' && childProcess?.nodeId === edge?.upstreamId))
           );
         });
 
