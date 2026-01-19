@@ -19,7 +19,19 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CalculatorOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import {
+  Button,
+  Card,
+  Collapse,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+  theme,
+  Tooltip,
+} from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -508,10 +520,16 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.referenceYear'
-                defaultMessage='Reference year'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.referenceYear'
+                    defaultMessage='Reference year'
+                  />
+                }
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
@@ -525,7 +543,7 @@ export const ProcessForm: FC<Props> = ({
                 : []
             }
           >
-            <Input />
+            <InputNumber style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             label={
