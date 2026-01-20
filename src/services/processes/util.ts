@@ -51,7 +51,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
             '@internalReferenceToCoProduct':
               item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
             '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
-              ? item?.allocations?.allocation?.['@allocatedFraction']?.split('%')[0]
+              ? item?.allocations?.allocation?.['@allocatedFraction']?.toString()?.replace('%', '')
               : undefined,
           },
         },

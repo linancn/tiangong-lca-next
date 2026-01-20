@@ -491,7 +491,7 @@ const ToolbarEdit: FC<Props> = ({
   };
 
   const getPortTextColor = (quantitativeReference: boolean, allocations: any) => {
-    const num = allocations?.allocation?.['@allocatedFraction']?.split('%')[0];
+    const num = allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
     const allocatedFractionNum = Number(num);
     if (allocatedFractionNum > 0 || quantitativeReference) {
       return token.colorPrimary;
@@ -506,11 +506,12 @@ const ToolbarEdit: FC<Props> = ({
     return 'normal';
   };
 
-  const getPortLabelWithAllocation = (label: string, allocations: any) => {
-    const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
-    const num = allocatedFraction?.split('%')[0];
-    if (allocatedFraction) {
-      return `${num && num > 0 ? `[${allocatedFraction}]` : ''} ${label}`;
+  const getPortLabelWithAllocation = (label: string, allocations: any, direction: string) => {
+    const num = allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
+    const allocatedFractionNum = Number(num);
+
+    if (allocatedFractionNum > 0 && direction.toUpperCase() === 'OUTPUT') {
+      return `[${allocatedFractionNum}%]${label}`;
     }
     return label;
   };
@@ -532,7 +533,7 @@ const ToolbarEdit: FC<Props> = ({
       const direction = ioPortSelectorDirection.toUpperCase();
       const flowUUID = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-';
       const label = getLangText(textLang, lang);
-      const labelWithAllocation = getPortLabelWithAllocation(label, item?.allocations);
+      const labelWithAllocation = getPortLabelWithAllocation(label, item?.allocations, direction);
       let labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 7 - 4);
       if (lang === 'zh') {
         labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 12 - 4);
@@ -609,12 +610,17 @@ const ToolbarEdit: FC<Props> = ({
         const exchange =
           genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
         const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
-        const inOrOut = refExchange?.exchangeDirection.toUpperCase() === 'INPUT';
+        const direction = refExchange?.exchangeDirection ?? '';
+        const inOrOut = direction.toUpperCase() === 'INPUT';
         const text = getLangText(
           (refExchange?.referenceToFlowDataSet as any)?.['common:shortDescription'],
           lang,
         );
-        const textWithAllocation = getPortLabelWithAllocation(text ?? '', refExchange?.allocations);
+        const textWithAllocation = getPortLabelWithAllocation(
+          text ?? '',
+          refExchange?.allocations,
+          direction,
+        );
         const refPortItem = {
           id:
             (inOrOut ? 'INPUT' : 'OUTPUT') +
@@ -715,9 +721,11 @@ const ToolbarEdit: FC<Props> = ({
                 (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
                 lang,
               );
+
               const newTitleWithAllocation = getPortLabelWithAllocation(
                 newTitle,
                 newItem?.allocations,
+                newItem?.exchangeDirection,
               );
               return {
                 ...item,
@@ -761,6 +769,7 @@ const ToolbarEdit: FC<Props> = ({
               };
             }
           });
+
           updateNode(node.id ?? '', {
             data: {
               ...node.data,
@@ -1013,6 +1022,7 @@ const ToolbarEdit: FC<Props> = ({
       const itemTextWithAllocation = getPortLabelWithAllocation(
         itemText ?? '',
         item?.data?.allocations,
+        item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
       );
       return {
         ...item,
@@ -1166,6 +1176,7 @@ const ToolbarEdit: FC<Props> = ({
             const itemTextWithAllocation = getPortLabelWithAllocation(
               itemText ?? '',
               item?.data?.allocations,
+              item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
             );
             return {
               ...item,
@@ -1267,6 +1278,7 @@ const ToolbarEdit: FC<Props> = ({
               const itemTextWithAllocation = getPortLabelWithAllocation(
                 itemText ?? '',
                 item?.data?.allocations,
+                item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
               );
               return {
                 ...item,

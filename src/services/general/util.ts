@@ -26,58 +26,58 @@ export function removeEmptyObjects(obj: any) {
   return obj;
 }
 
-export function percentStringToNumber(str: string): number | null {
-  if (typeof str !== 'string') return null;
-  const match = str.match(/^(-?\d+(\.\d+)?)%$/);
-  if (!match) return null;
-  return parseFloat(match[1]) / 100;
-}
+// export function percentStringToNumber(str: string): number | null {
+//   if (typeof str !== 'string') return null;
+//   const match = str.match(/^(-?\d+(\.\d+)?)%$/);
+//   if (!match) return null;
+//   return parseFloat(match[1]) / 100;
+// }
 
-export function comparePercentDesc(
-  a: string | number | null | undefined,
-  b: string | number | null | undefined,
-): number {
-  const toComparable = (value: typeof a): number | null => {
-    if (value === null || value === undefined) {
-      return null;
-    }
-    if (typeof value === 'number') {
-      return Number.isFinite(value) ? value : null;
-    }
-    const trimmed = String(value).trim();
-    if (!trimmed) {
-      return null;
-    }
-    const percent = percentStringToNumber(trimmed);
-    if (percent !== null) {
-      return percent;
-    }
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
+// export function comparePercentDesc(
+//   a: string | number | null | undefined,
+//   b: string | number | null | undefined,
+// ): number {
+//   const toComparable = (value: typeof a): number | null => {
+//     if (value === null || value === undefined) {
+//       return null;
+//     }
+//     if (typeof value === 'number') {
+//       return Number.isFinite(value) ? value : null;
+//     }
+//     const trimmed = String(value).trim();
+//     if (!trimmed) {
+//       return null;
+//     }
+//     const percent = percentStringToNumber(trimmed);
+//     if (percent !== null) {
+//       return percent;
+//     }
+//     const parsed = Number(trimmed);
+//     return Number.isFinite(parsed) ? parsed : null;
+//   };
 
-  const numA = toComparable(a);
-  const numB = toComparable(b);
+//   const numA = toComparable(a);
+//   const numB = toComparable(b);
 
-  if (numA === null && numB === null) {
-    return 0;
-  }
-  if (numA === null) {
-    return 1;
-  }
-  if (numB === null) {
-    return -1;
-  }
+//   if (numA === null && numB === null) {
+//     return 0;
+//   }
+//   if (numA === null) {
+//     return 1;
+//   }
+//   if (numB === null) {
+//     return -1;
+//   }
 
-  const absA = Math.abs(numA);
-  const absB = Math.abs(numB);
+//   const absA = Math.abs(numA);
+//   const absB = Math.abs(numB);
 
-  if (absA !== absB) {
-    return absB - absA;
-  }
+//   if (absA !== absB) {
+//     return absB - absA;
+//   }
 
-  return numB - numA;
-}
+//   return numB - numA;
+// }
 
 export async function getUnitData(idType: string, data: any) {
   return new Promise((resolve) => {

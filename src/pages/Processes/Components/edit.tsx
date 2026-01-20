@@ -226,7 +226,8 @@ const ProcessEdit: FC<Props> = ({
     let allocatedFractionTotal = new BigNumber(0);
     output.forEach((e: any) => {
       if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
-        const fraction = e?.allocations?.allocation['@allocatedFraction']?.split('%')[0] ?? 0;
+        const fraction =
+          e?.allocations?.allocation['@allocatedFraction']?.toString()?.replace('%', '') ?? 0;
         allocatedFractionTotal = allocatedFractionTotal.plus(new BigNumber(fraction));
       }
     });

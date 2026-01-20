@@ -386,22 +386,12 @@ const ProcessExchangeCreate: FC<Props> = ({
                   />
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
-                getValueFromEvent={(value) => {
-                  if (typeof value === 'number') {
-                    return `${value}%`;
-                  }
-                  if (typeof value === 'string' && !value.includes('%')) {
-                    return `${value}%`;
-                  }
-                  return value;
-                }}
               >
-                <InputNumber<number>
-                  style={{ width: '100%' }}
+                <InputNumber
                   min={0}
                   max={100}
-                  // formatter={(value) => `${value}%`}
-                  // parser={(value) => value?.replace('%', '') as unknown as number}
+                  suffix='%'
+                  style={{ minWidth: '100px', maxWidth: '200px', width: '100%' }}
                 />
               </Form.Item>
             </Card>

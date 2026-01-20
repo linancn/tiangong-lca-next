@@ -344,7 +344,9 @@ const ProcessCreate: FC<CreateProps> = ({
                   e?.allocations?.allocation['@allocatedFraction']
                 ) {
                   const fraction =
-                    e?.allocations?.allocation['@allocatedFraction']?.split('%')[0] ?? 0;
+                    e?.allocations?.allocation['@allocatedFraction']
+                      ?.toString()
+                      ?.replace('%', '') ?? 0;
                   allocatedFractionTotal = allocatedFractionTotal.plus(new BigNumber(fraction));
                 }
               });
