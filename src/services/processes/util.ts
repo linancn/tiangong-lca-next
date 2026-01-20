@@ -1478,7 +1478,7 @@ export function genProcessFromData(data: any): FormProcess {
                   '@internalReferenceToCoProduct':
                     item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
                   '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
-                    ? item?.allocations?.allocation?.['@allocatedFraction'] + '%'
+                    ? item?.allocations?.allocation?.['@allocatedFraction']?.replace('%', '')
                     : undefined,
                 },
               },
