@@ -4,7 +4,7 @@
 
 ## Environment & Tooling
 
-- Node.js **>= 22** (enforced by `package.json`); run `nvm use 22` or install the required runtime before `npm install`.
+- Node.js **>= 24** (enforced by `package.json`); run `nvm use 24` or install the required runtime before `npm install`.
 - Supabase env keys (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) ship in the repo’s fallback `.env`, so local testing works without extra setup; override only when pointing at a different Supabase project and keep loading them via `src/services/supabase`.
 - No new npm packages unless a human maintainer signs off.
 
