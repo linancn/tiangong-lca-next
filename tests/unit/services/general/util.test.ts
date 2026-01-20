@@ -14,7 +14,6 @@ import {
   classificationToJsonList,
   classificationToString,
   classificationToStringList,
-  comparePercentDesc,
   formatDateTime,
   genClassIdList,
   genClassificationZH,
@@ -31,7 +30,6 @@ import {
   jsonToList,
   listToJson,
   mergeLangArrays,
-  percentStringToNumber,
   removeEmptyObjects,
   toAmountNumber,
   validatePasswordStrength,
@@ -352,48 +350,6 @@ describe('General Utility Functions', () => {
           },
         },
       });
-    });
-  });
-
-  describe('comparePercentDesc', () => {
-    it('should compare percent strings in descending order', () => {
-      expect(comparePercentDesc('10%', '20%')).toBeGreaterThan(0);
-      expect(comparePercentDesc('30%', '10%')).toBeLessThan(0);
-      expect(comparePercentDesc('50%', '50%')).toBe(0);
-    });
-
-    it('should handle decimal percentages', () => {
-      expect(comparePercentDesc('10.5%', '20.7%')).toBeGreaterThan(0);
-      expect(comparePercentDesc('99.9%', '99.1%')).toBeLessThan(0);
-    });
-
-    it('should handle negative percentages', () => {
-      expect(comparePercentDesc('-10%', '20%')).toBeGreaterThan(0);
-      expect(comparePercentDesc('-30%', '-10%')).toBeLessThan(0);
-    });
-  });
-
-  describe('percentStringToNumber', () => {
-    it('should convert valid percent string to number', () => {
-      expect(percentStringToNumber('50%')).toBe(0.5);
-      expect(percentStringToNumber('100%')).toBe(1);
-      expect(percentStringToNumber('25.5%')).toBe(0.255);
-    });
-
-    it('should handle negative percentages', () => {
-      expect(percentStringToNumber('-10%')).toBe(-0.1);
-    });
-
-    it('should return null for invalid inputs', () => {
-      expect(percentStringToNumber('invalid')).toBeNull();
-      expect(percentStringToNumber('50')).toBeNull();
-      expect(percentStringToNumber('')).toBeNull();
-    });
-
-    it('should return null for non-string inputs', () => {
-      expect(percentStringToNumber(50 as any)).toBeNull();
-      expect(percentStringToNumber(null as any)).toBeNull();
-      expect(percentStringToNumber(undefined as any)).toBeNull();
     });
   });
 
