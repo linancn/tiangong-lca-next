@@ -39,10 +39,13 @@ export function getRules(rules: any[]) {
         _rule.pattern = /^[0-9]{4}$/;
       }
     }
-    return {
+    const result = {
       ..._rule,
       message: <FormattedMessage id={rule.messageKey} defaultMessage={rule.defaultMessage} />,
     };
+    delete result.defaultMessage;
+    delete result.messageKey;
+    return result;
   });
 }
 
