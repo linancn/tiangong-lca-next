@@ -1161,6 +1161,7 @@ const ToolbarEdit: FC<Props> = ({
       setNodeCount(0);
       setProblemNodes([]);
       setJsonTg({});
+      modelData({ nodes: [], edges: [] });
       return;
     }
 
