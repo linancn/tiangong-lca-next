@@ -84,7 +84,6 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                 />
               </Divider>
               <LangTextItemDescription data={item?.['common:shortDescription']} />
-              {index < dataList.length - 1 && <Divider />}
             </div>
           </Card>
         ))

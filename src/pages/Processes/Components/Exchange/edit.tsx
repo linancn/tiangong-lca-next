@@ -423,12 +423,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
               >
-                <InputNumber
-                  min={0}
-                  max={100}
-                  suffix='%'
-                  style={{ width: '100%' }}
-                />
+                <InputNumber min={0} max={100} suffix='%' style={{ width: '100%' }} />
               </Form.Item>
             </Card>
             <br />
@@ -522,6 +517,10 @@ const ProcessExchangeEdit: FC<Props> = ({
                             style={{ marginTop: 8 }}
                           >
                             + <FormattedMessage id='pages.button.add' defaultMessage='Add' />{' '}
+                            <FormattedMessage
+                              id='pages.process.view.exchange.referenceToDataSource'
+                              defaultMessage='Data source(s)'
+                            />{' '}
                             <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
                           </Button>
                         </Space>
