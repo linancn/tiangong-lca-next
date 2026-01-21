@@ -6,11 +6,12 @@ import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Card,
+  Collapse,
   Divider,
   Drawer,
   Form,
@@ -438,17 +439,73 @@ const ProcessExchangeCreate: FC<Props> = ({
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
 
-            <SourceSelectForm
-              name={['referencesToDataSource', 'referenceToDataSource']}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.referenceToDataSource'
-                  defaultMessage='Data source(s)'
-                />
-              }
-              lang={lang}
-              formRef={formRefCreate}
-              onData={handletFromData}
+            <Collapse
+              defaultActiveKey={['data-sources']}
+              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              style={{ marginBottom: 16 }}
+              items={[
+                {
+                  key: 'data-sources',
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.view.exchange.referenceToDataSource'
+                      defaultMessage='Data source(s)'
+                    />
+                  ),
+                  children: (
+                    <Form.List
+                      name={['referencesToDataSource', 'referenceToDataSource']}
+                      initialValue={[{}]}
+                    >
+                      {(fields, { add, remove }) => (
+                        <Space direction='vertical' style={{ width: '100%' }}>
+                          {fields.map((field, index) => (
+                            <div key={field.key} style={{ position: 'relative' }}>
+                              <SourceSelectForm
+                                parentName={['referencesToDataSource', 'referenceToDataSource']}
+                                name={[field.name]}
+                                label={
+                                  <Space>
+                                    <FormattedMessage
+                                      id='pages.process.view.exchange.referenceToDataSource'
+                                      defaultMessage='Data source(s)'
+                                    />
+                                    {index + 1}
+                                  </Space>
+                                }
+                                lang={lang}
+                                formRef={formRefCreate}
+                                onData={handletFromData}
+                              />
+                              {fields.length > 1 && (
+                                <CloseOutlined
+                                  onClick={() => {
+                                    remove(field.name);
+                                    handletFromData();
+                                  }}
+                                  style={{ position: 'absolute', right: 8, top: 8 }}
+                                />
+                              )}
+                            </div>
+                          ))}
+                          <Button
+                            type='dashed'
+                            block
+                            onClick={() => {
+                              add({});
+                              handletFromData();
+                            }}
+                            style={{ marginTop: 8 }}
+                          >
+                            + <FormattedMessage id='pages.button.add' defaultMessage='Add' />{' '}
+                            <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
+                          </Button>
+                        </Space>
+                      )}
+                    </Form.List>
+                  ),
+                },
+              ]}
             />
             <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage
