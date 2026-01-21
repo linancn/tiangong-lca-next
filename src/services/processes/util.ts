@@ -59,15 +59,15 @@ export function genProcessJsonOrdered(id: string, data: any) {
         dataSourceType: item.dataSourceType,
         dataDerivationTypeStatus: item.dataDerivationTypeStatus,
         referencesToDataSource: {
-          referenceToDataSource: {
-            '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
-            '@refObjectId': item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
-            '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
-            '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
-            'common:shortDescription': getLangJson(
-              item?.referencesToDataSource?.referenceToDataSource?.['common:shortDescription'],
-            ),
-          },
+          referenceToDataSource: jsonToList(
+            item?.referencesToDataSource?.referenceToDataSource,
+          )?.map((source: any) => ({
+            '@type': source?.['@type'],
+            '@refObjectId': source?.['@refObjectId'],
+            '@uri': source?.['@uri'],
+            '@version': source?.['@version'],
+            'common:shortDescription': getLangJson(source?.['common:shortDescription']),
+          })),
         },
         generalComment: getLangJson(item.generalComment),
       };
@@ -1486,18 +1486,15 @@ export function genProcessFromData(data: any): FormProcess {
               dataSourceType: item.dataSourceType,
               dataDerivationTypeStatus: item.dataDerivationTypeStatus,
               referencesToDataSource: {
-                referenceToDataSource: {
-                  '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
-                  '@refObjectId':
-                    item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
-                  '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
-                  '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
-                  'common:shortDescription': getLangJson(
-                    item?.referencesToDataSource?.referenceToDataSource?.[
-                      'common:shortDescription'
-                    ],
-                  ),
-                },
+                referenceToDataSource: jsonToList(
+                  item?.referencesToDataSource?.referenceToDataSource,
+                )?.map((source: any) => ({
+                  '@type': source?.['@type'],
+                  '@refObjectId': source?.['@refObjectId'],
+                  '@uri': source?.['@uri'],
+                  '@version': source?.['@version'],
+                  'common:shortDescription': getLangList(source?.['common:shortDescription']),
+                })),
               },
               generalComment: getLangList(item.generalComment),
               quantitativeReference: true,
@@ -1537,18 +1534,15 @@ export function genProcessFromData(data: any): FormProcess {
               dataSourceType: item.dataSourceType,
               dataDerivationTypeStatus: item.dataDerivationTypeStatus,
               referencesToDataSource: {
-                referenceToDataSource: {
-                  '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
-                  '@refObjectId':
-                    item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
-                  '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
-                  '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
-                  'common:shortDescription': getLangJson(
-                    item?.referencesToDataSource?.referenceToDataSource?.[
-                      'common:shortDescription'
-                    ],
-                  ),
-                },
+                referenceToDataSource: jsonToList(
+                  item?.referencesToDataSource?.referenceToDataSource,
+                )?.map((source: any) => ({
+                  '@type': source?.['@type'],
+                  '@refObjectId': source?.['@refObjectId'],
+                  '@uri': source?.['@uri'],
+                  '@version': source?.['@version'],
+                  'common:shortDescription': getLangList(source?.['common:shortDescription']),
+                })),
               },
               generalComment: getLangList(item.generalComment),
               quantitativeReference: false,

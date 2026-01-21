@@ -2,8 +2,8 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Divider, Drawer, Tooltip } from 'antd';
+import { CaretRightOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { Button, Card, Collapse, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -352,15 +352,33 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         <br />
-        <SourceSelectDescription
-          title={
-            <FormattedMessage
-              id='pages.process.view.exchange.referenceToDataSource'
-              defaultMessage='Data source(s)'
-            />
-          }
-          lang={lang}
-          data={viewData.referencesToDataSource?.referenceToDataSource}
+        <Collapse
+          defaultActiveKey={['data-sources']}
+          expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+          style={{ marginBottom: 16 }}
+          items={[
+            {
+              key: 'data-sources',
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.referenceToDataSource'
+                  defaultMessage='Data source(s)'
+                />
+              ),
+              children: (
+                <SourceSelectDescription
+                  title={
+                    <FormattedMessage
+                      id='pages.process.view.exchange.referenceToDataSource'
+                      defaultMessage='Data source(s)'
+                    />
+                  }
+                  lang={lang}
+                  data={viewData.referencesToDataSource?.referenceToDataSource}
+                />
+              ),
+            },
+          ]}
         />
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage

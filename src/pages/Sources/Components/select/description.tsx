@@ -14,9 +14,9 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   const locale = getLocale();
   const dataList = jsonToList(data);
   return (
-    <Card size='small' title={title}>
-      <Space direction='vertical' style={{ width: '100%' }}>
-        {dataList.length === 0 ? (
+    <Space direction='vertical' style={{ width: '100%' }}>
+      {dataList.length === 0 ? (
+        <Card size='small' title={title}>
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               key={0}
@@ -28,9 +28,20 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
               -
             </Descriptions.Item>
           </Descriptions>
-        ) : (
-          dataList.map((item: any, index: number) => (
-            <div key={item?.['@refObjectId'] ?? index}>
+        </Card>
+      ) : (
+        dataList.map((item: any, index: number) => (
+          <Card
+            size='small'
+            title={
+              <Space>
+                {title}
+                {index + 1}
+              </Space>
+            }
+            key={item?.['@refObjectId'] ?? index}
+          >
+            <div>
               <Space direction='horizontal'>
                 <Descriptions bordered size={'small'} column={1}>
                   <Descriptions.Item
@@ -75,10 +86,10 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
               <LangTextItemDescription data={item?.['common:shortDescription']} />
               {index < dataList.length - 1 && <Divider />}
             </div>
-          ))
-        )}
-      </Space>
-    </Card>
+          </Card>
+        ))
+      )}
+    </Space>
   );
 };
 
