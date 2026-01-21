@@ -427,7 +427,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                   min={0}
                   max={100}
                   suffix='%'
-                  style={{ minWidth: '100px', maxWidth: '200px', width: '100%' }}
+                  style={{ width: '100%' }}
                 />
               </Form.Item>
             </Card>
