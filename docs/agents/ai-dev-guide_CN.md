@@ -4,7 +4,7 @@
 
 ## 环境与工具
 
-- Node.js **>= 22**（`package.json` 明确要求），先执行 `nvm use 22` 或安装对应版本再 `npm install`。
+- Node.js **>= 24**（`package.json` 明确要求），先执行 `nvm use 24` 或安装对应版本再 `npm install`。
 - 仓库已附带可用的 `.env`（含 `SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`），开箱即可连接 Supabase；仅在需要自定义实例时覆盖，并始终通过 `src/services/supabase.ts` 读取。
 - 未经维护者许可，禁止新增 npm 依赖。
 

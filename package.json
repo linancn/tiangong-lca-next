@@ -1,6 +1,6 @@
 {
   "name": "tiangong-lca-next",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -84,15 +84,15 @@
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
+    "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.13",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.1",
-    "@umijs/lint": "^4.6.22",
-    "@umijs/max": "^4.6.22",
+    "@umijs/lint": "^4.6.24",
+    "@umijs/max": "^4.6.24",
     "cross-env": "^10.1.0",
-    "electron": "^39.2.7",
+    "electron": "^40.0.0",
     "electron-builder": "^26.4.0",
     "eslint": "^8.57.1",
     "gh-pages": "^6.3.0",
@@ -101,7 +101,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^16.2.7",
     "npm-check-updates": "^19.3.1",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.0",
     "prettier-plugin-organize-imports": "^4.3.0",
     "react-dev-inspector": "^2.0.1",
     "tsx": "^4.21.0",
@@ -110,6 +110,6 @@
     "umi-serve": "^1.9.11"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   }
 }
