@@ -149,6 +149,18 @@ Object.defineProperty(global.window.console, 'error', {
       logStr.includes('was not wrapped in act(...)') &&
       (logStr.includes('inside a test') || logStr.includes('not wrapped in act'));
 
+    const shouldSuppressReactWarning =
+      !isActWarning &&
+      [
+        'Warning: findDOMNode is deprecated',
+        'Warning: Each child in a list should have a unique "key" prop.',
+        'Warning: Cannot update a component',
+      ].some((prefix) => logStr.startsWith(prefix));
+
+    if (shouldSuppressReactWarning) {
+      return;
+    }
+
     if (isActWarning) {
       actWarningsThisTest += 1;
 
