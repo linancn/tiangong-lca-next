@@ -870,6 +870,7 @@ const ToolbarEdit: FC<Props> = ({
         );
         setThisId(result.data?.[0]?.id);
         setThisVersion(result.data?.[0]?.version);
+        setJsonTg(result.data?.[0]?.json_tg);
 
         const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
         savedEdges.forEach((edge: any) => {
