@@ -91,7 +91,7 @@ npm run build
 - State management: prefer hooks (`useState`, `useRef`, `useEffect`). Keep `actionRef.current?.reload()` for table refresh and `formRef` for ProForm reset.
 - Use contexts for cross-component state (UnitsContext, RefCheckContext, UpdateReferenceContext). Avoid mutable singletons.
 - Import domain models from `@tiangong-lca/tidas-sdk` where possible; export row/form types from `src/services/<feature>/data.ts`.
-- Validation lives in ProForm `rules` or helper functions (`getRuleVerification`, `percentStringToNumber`, `comparePercentDesc`). IDs come from `uuid.v4`, versions from constants like `initVersion`.
+- Validation lives in ProForm `rules` or helper functions ( `percentStringToNumber`, `comparePercentDesc`). IDs come from `uuid.v4`, versions from constants like `initVersion`.
 
 ## Quality Gates & Testing
 

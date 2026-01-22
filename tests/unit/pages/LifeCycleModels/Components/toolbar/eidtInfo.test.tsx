@@ -284,7 +284,6 @@ jest.mock('@/services/roles/api', () => ({
   getUserTeamId: (...args: any[]) => mockGetUserTeamId(...args),
 }));
 
-const mockGetRuleVerification = jest.fn().mockReturnValue({ valid: true, errors: [] });
 const mockGetLang = jest.fn((locale: string) => (locale === 'zh-CN' ? 'zh' : 'en'));
 const mockGetLangText = jest.fn((langTexts: any, lang: string) => {
   if (Array.isArray(langTexts)) {
@@ -302,7 +301,6 @@ const mockGetLangText = jest.fn((langTexts: any, lang: string) => {
 });
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  getRuleVerification: (...args: any[]) => mockGetRuleVerification(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
 }));
@@ -342,7 +340,6 @@ beforeEach(() => {
   mockGetLifeCycleModelDetail.mockReset();
   mockGetProcessDetail.mockReset();
   mockGetUserTeamId.mockReset().mockResolvedValue('team-1');
-  mockGetRuleVerification.mockReset().mockReturnValue({ valid: true, errors: [] });
   mockGenLifeCycleModelJsonOrdered.mockReset().mockReturnValue({});
   mockUpdateReviewsAfterCheckData.mockReset().mockResolvedValue({});
   mockUpdateUnReviewToUnderReview.mockReset().mockResolvedValue({});
