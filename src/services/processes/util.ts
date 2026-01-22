@@ -1,8 +1,10 @@
 import { FormProcess } from '@/services/processes/data';
 import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import {
+  capitalize,
   classificationToJsonList,
   classificationToStringList,
+  convertCopyrightToBoolean,
   convertToUTCISOString,
   getLangJson,
   getLangList,
@@ -865,7 +867,7 @@ export function genProcessFromData(data: any): FormProcess {
           ),
         },
         time: {
-          'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+          'common:referenceYear': Number(data?.processInformation?.time?.['common:referenceYear']),
           'common:dataSetValidUntil':
             data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
           'common:timeRepresentativenessDescription': getLangList(
@@ -1418,8 +1420,9 @@ export function genProcessFromData(data: any): FormProcess {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:copyright':
+          'common:copyright': convertCopyrightToBoolean(
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          ),
           'common:referenceToEntitiesWithExclusiveAccess': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
@@ -1469,7 +1472,7 @@ export function genProcessFromData(data: any): FormProcess {
               },
               location: item.location,
               functionType: item.functionType,
-              exchangeDirection: item.exchangeDirection,
+              exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
               meanAmount: item.meanAmount,
               resultingAmount: item.resultingAmount,
@@ -1519,7 +1522,7 @@ export function genProcessFromData(data: any): FormProcess {
               },
               location: item.location,
               functionType: item.functionType,
-              exchangeDirection: item.exchangeDirection,
+              exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
               meanAmount: item.meanAmount,
               resultingAmount: item.resultingAmount,

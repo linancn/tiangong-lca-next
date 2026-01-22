@@ -11,9 +11,12 @@ jest.mock('@/services/unitgroups/api');
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import {
+  capitalize,
   classificationToJsonList,
   classificationToString,
   classificationToStringList,
+  convertCopyrightToBoolean,
+  convertToUTCISOString,
   formatDateTime,
   genClassIdList,
   genClassificationZH,
@@ -898,6 +901,90 @@ describe('General Utility Functions', () => {
     it('should return empty array when classifications array is empty', () => {
       const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
       expect(genClassificationZH([], categoryData as any)).toEqual([]);
+    });
+  });
+
+  describe('convertToUTCISOString', () => {
+    it('should convert valid date string to ISO format', () => {
+      const result = convertToUTCISOString('2024-01-15T10:30:45');
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    });
+
+    it('should convert date string with timezone to ISO format', () => {
+      const result = convertToUTCISOString('2024-01-15T10:30:45+08:00');
+      expect(result).toContain('Z');
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    });
+
+    it('should handle ISO date string', () => {
+      const result = convertToUTCISOString('2024-01-15T10:30:45.123Z');
+      expect(result).toBe('2024-01-15T10:30:45.123Z');
+    });
+
+    it('should return empty string for empty input', () => {
+      expect(convertToUTCISOString('')).toBe('');
+    });
+
+    it('should return empty string for null/undefined input', () => {
+      expect(convertToUTCISOString(null as any)).toBe('');
+      expect(convertToUTCISOString(undefined as any)).toBe('');
+    });
+
+    it('should throw error for invalid date string', () => {
+      expect(() => convertToUTCISOString('invalid-date')).toThrow(RangeError);
+    });
+  });
+
+  describe('convertCopyrightToBoolean', () => {
+    it('should convert "Yes" to "true"', () => {
+      expect(convertCopyrightToBoolean('Yes')).toBe('true');
+    });
+
+    it('should convert "No" to "false"', () => {
+      expect(convertCopyrightToBoolean('No')).toBe('false');
+    });
+
+    it('should return original value for other values', () => {
+      expect(convertCopyrightToBoolean('Maybe' as any)).toBe('Maybe');
+      expect(convertCopyrightToBoolean('' as any)).toBe('');
+    });
+
+    it('should handle case-sensitive matching', () => {
+      expect(convertCopyrightToBoolean('yes' as any)).toBe('yes');
+      expect(convertCopyrightToBoolean('YES' as any)).toBe('YES');
+      expect(convertCopyrightToBoolean('no' as any)).toBe('no');
+      expect(convertCopyrightToBoolean('NO' as any)).toBe('NO');
+    });
+  });
+
+  describe('capitalize', () => {
+    it('should capitalize first letter of lowercase string', () => {
+      expect(capitalize('input')).toBe('Input');
+    });
+
+    it('should keep first letter capital if already capitalized', () => {
+      expect(capitalize('Input')).toBe('Input');
+    });
+
+    it('should handle all uppercase string', () => {
+      expect(capitalize('INPUT')).toBe('INPUT');
+    });
+
+    it('should return undefined for empty string', () => {
+      expect(capitalize('')).toBeUndefined();
+    });
+
+    it('should return undefined for null/undefined input', () => {
+      expect(capitalize(null as any)).toBeUndefined();
+      expect(capitalize(undefined as any)).toBeUndefined();
+    });
+
+    it('should capitalize single character', () => {
+      expect(capitalize('output')).toBe('Output');
+    });
+
+    it('should handle string with special characters', () => {
+      expect(capitalize('1output')).toBe('1output');
     });
   });
 });

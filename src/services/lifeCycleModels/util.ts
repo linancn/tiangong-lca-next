@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertCopyrightToBoolean,
   convertToUTCISOString,
   getLangJson,
   getLangList,
@@ -786,8 +787,9 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:copyright':
+          'common:copyright': convertCopyrightToBoolean(
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          ),
           'common:referenceToEntitiesWithExclusiveAccess': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[

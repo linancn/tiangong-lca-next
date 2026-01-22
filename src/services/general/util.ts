@@ -560,10 +560,8 @@ export function formatDateTime(date: any): string {
 }
 
 export function convertToUTCISOString(dateTimeStr: string): string {
-  console.log('convertToUTCISOString input:', dateTimeStr);
   if (!dateTimeStr) return '';
   const date = new Date(dateTimeStr);
-  console.log('Parsed date:', date.toISOString());
   return date.toISOString();
 }
 
@@ -635,4 +633,19 @@ export function getDataSource(pathname: string) {
     return 'te';
   }
   return '';
+}
+
+export function convertCopyrightToBoolean(value: 'Yes' | 'No'): 'true' | 'false' {
+  if (value === 'Yes') {
+    return 'true';
+  }
+  if (value === 'No') {
+    return 'false';
+  }
+  return value;
+}
+
+export function capitalize(str: string): 'Input' | 'Output' {
+  if (!str) return undefined as any;
+  return (str.charAt(0).toUpperCase() + str.slice(1)) as 'Input' | 'Output';
 }

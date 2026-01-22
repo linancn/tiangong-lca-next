@@ -13,8 +13,17 @@ import {
 
 // Mock dependencies
 jest.mock('@/services/general/util', () => ({
+  capitalize: jest.fn((str: string) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }),
   classificationToJsonList: jest.fn((data) => data),
   classificationToStringList: jest.fn((data) => data),
+  convertCopyrightToBoolean: jest.fn((value: 'Yes' | 'No') => {
+    if (value === 'Yes') return 'true';
+    if (value === 'No') return 'false';
+    return value;
+  }),
   convertToUTCISOString: jest.fn((dateStr) => dateStr || ''),
   getLangJson: jest.fn((data) => data),
   getLangList: jest.fn((data) => (Array.isArray(data) ? data : data ? [data] : [])),
