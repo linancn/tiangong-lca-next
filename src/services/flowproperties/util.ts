@@ -3,6 +3,7 @@ import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tid
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertToUTCISOString,
   getLangJson,
   getLangList,
   removeEmptyObjects,
@@ -308,7 +309,9 @@ export function genFlowpropertyFromData(data: any): FormFlowProperty {
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': convertToUTCISOString(
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          ),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

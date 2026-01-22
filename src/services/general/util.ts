@@ -557,18 +557,14 @@ export function isValidURL(url: string): boolean {
 
 export function formatDateTime(date: any): string {
   return date.toISOString();
-  // const pad = (num: any) => (num < 10 ? '0' + num : num);
-  // const year = date.getFullYear();
-  // const month = pad(date.getMonth() + 1);
-  // const day = pad(date.getDate());
-  // const hours = pad(date.getHours());
-  // const minutes = pad(date.getMinutes());
-  // const seconds = pad(date.getSeconds());
-  // const timezoneOffset = -date.getTimezoneOffset();
-  // const sign = timezoneOffset >= 0 ? '+' : '-';
-  // const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
-  // const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
-  // return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
+}
+
+export function convertToUTCISOString(dateTimeStr: string): string {
+  console.log('convertToUTCISOString input:', dateTimeStr);
+  if (!dateTimeStr) return '';
+  const date = new Date(dateTimeStr);
+  console.log('Parsed date:', date.toISOString());
+  return date.toISOString();
 }
 
 export function validatePasswordStrength(_: any, value: string) {

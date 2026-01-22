@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertToUTCISOString,
   getLangJson,
   getLangList,
   getLangText,
@@ -705,7 +706,9 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
           },
         },
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': convertToUTCISOString(
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          ),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

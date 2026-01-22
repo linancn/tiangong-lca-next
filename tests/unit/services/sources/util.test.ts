@@ -8,6 +8,7 @@ import { genSourceFromData, genSourceJsonOrdered } from '@/services/sources/util
 jest.mock('@/services/general/util', () => ({
   classificationToJsonList: jest.fn(),
   classificationToStringList: jest.fn(),
+  convertToUTCISOString: jest.fn(),
   getLangJson: jest.fn(),
   getLangList: jest.fn(),
   jsonToList: jest.fn(),
@@ -18,6 +19,7 @@ jest.mock('@/services/general/util', () => ({
 const {
   classificationToJsonList: mockClassificationToJsonList,
   classificationToStringList: mockClassificationToStringList,
+  convertToUTCISOString: mockConvertToUTCISOString,
   getLangJson: mockGetLangJson,
   getLangList: mockGetLangList,
   jsonToList: mockJsonToList,
@@ -26,6 +28,7 @@ const {
 } = jest.requireMock('@/services/general/util') as {
   classificationToJsonList: jest.Mock;
   classificationToStringList: jest.Mock;
+  convertToUTCISOString: jest.Mock;
   getLangJson: jest.Mock;
   getLangList: jest.Mock;
   jsonToList: jest.Mock;
@@ -44,6 +47,7 @@ describe('Source Utility Functions', () => {
     jest.clearAllMocks();
     mockClassificationToJsonList.mockImplementation(() => ({}));
     mockClassificationToStringList.mockImplementation(() => ({ id: [], value: [] }));
+    mockConvertToUTCISOString.mockImplementation((dateStr) => dateStr || '');
     mockGetLangJson.mockImplementation(() => ({}));
     mockGetLangList.mockImplementation((value) => {
       if (!value) {
