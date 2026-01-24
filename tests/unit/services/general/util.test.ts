@@ -11,9 +11,12 @@ jest.mock('@/services/unitgroups/api');
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import {
+  capitalize,
   classificationToJsonList,
   classificationToString,
   classificationToStringList,
+  convertCopyrightToBoolean,
+  convertToUTCISOString,
   formatDateTime,
   genClassIdList,
   genClassificationZH,
@@ -24,7 +27,6 @@ import {
   getLangJson,
   getLangList,
   getLangText,
-  getRuleVerification,
   getUnitData,
   isValidURL,
   jsonToList,
@@ -902,350 +904,87 @@ describe('General Utility Functions', () => {
     });
   });
 
-  describe('getRuleVerification', () => {
-    it('should validate required fields and return errors', () => {
-      const schema = {
-        field1: {
-          rules: [
-            {
-              required: true,
-              messageKey: 'validator.required',
-              defaultMessage: 'This field is required',
-            },
-          ],
-        },
-        field2: {
-          rules: [],
-        },
-      };
-
-      const data = {
-        field1: '',
-        field2: 'value',
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(false);
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors[0]).toEqual({
-        path: 'field1',
-        message: 'This field is required',
-        rule: 'required',
-      });
+  describe('convertToUTCISOString', () => {
+    it('should convert valid date string to ISO format', () => {
+      const result = convertToUTCISOString('2024-01-15T10:30:45');
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
-    it('should validate multilingual fields require English', () => {
-      const schema = {
-        name: {
-          value: [{ '@xml:lang': 'zh', '#text': '名称' }],
-          rules: [
-            {
-              required: true,
-              messageKey: 'validator.required',
-              defaultMessage: 'Name is required',
-            },
-          ],
-        },
-      };
-
-      const data = {
-        name: [{ '@xml:lang': 'zh', '#text': '名称' }],
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(false);
-      const englishError = result.errors.find(
-        (e: { rule: string }) => e.rule === 'english_required',
-      );
-      expect(englishError).toBeDefined();
-      expect(englishError?.path).toBe('name');
+    it('should convert date string with timezone to ISO format', () => {
+      const result = convertToUTCISOString('2024-01-15T10:30:45+08:00');
+      expect(result).toContain('Z');
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
-    it('should pass validation when all required fields are present', () => {
-      const schema = {
-        field1: {
-          rules: [
-            {
-              required: true,
-              messageKey: 'validator.required',
-              defaultMessage: 'This field is required',
-            },
-          ],
-        },
-        field2: {
-          value: [{ '@xml:lang': 'en', '#text': 'English text' }],
-          rules: [
-            {
-              required: true,
-              messageKey: 'validator.required',
-              defaultMessage: 'Field 2 is required',
-            },
-          ],
-        },
-      };
-
-      const data = {
-        field1: 'value1',
-        field2: [
-          { '@xml:lang': 'en', '#text': 'English text' },
-          { '@xml:lang': 'zh', '#text': '中文文本' },
-        ],
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+    it('should handle ISO date string', () => {
+      const result = convertToUTCISOString('2024-01-15T10:30:45.123Z');
+      expect(result).toBe('2024-01-15T10:30:45.123Z');
     });
 
-    it('should handle nested object paths', () => {
-      const schema = {
-        parent: {
-          child: {
-            rules: [
-              {
-                required: true,
-                messageKey: 'validator.required',
-                defaultMessage: 'Child field is required',
-              },
-            ],
-          },
-        },
-      };
-
-      const data = {
-        parent: {
-          child: '',
-        },
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(false);
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].path).toBe('parent.child');
+    it('should return empty string for empty input', () => {
+      expect(convertToUTCISOString('')).toBe('');
     });
 
-    it('should skip validation for review and compliance paths', () => {
-      const schema = {
-        modellingAndValidation: {
-          validation: {
-            review: {
-              field: {
-                rules: [
-                  {
-                    required: true,
-                    messageKey: 'validator.required',
-                    defaultMessage: 'This field is required',
-                  },
-                ],
-              },
-            },
-          },
-        },
-      };
-
-      const data = {
-        modellingAndValidation: {
-          validation: {
-            review: {
-              field: '',
-            },
-          },
-        },
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      // Review fields should be skipped
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+    it('should return empty string for null/undefined input', () => {
+      expect(convertToUTCISOString(null as any)).toBe('');
+      expect(convertToUTCISOString(undefined as any)).toBe('');
     });
 
-    it('should handle array items validation', () => {
-      const schema = {
-        items: {
-          0: {
-            name: {
-              rules: [
-                {
-                  required: true,
-                  messageKey: 'validator.required',
-                  defaultMessage: 'Item name is required',
-                },
-              ],
-            },
-          },
-        },
-      };
+    it('should throw error for invalid date string', () => {
+      expect(() => convertToUTCISOString('invalid-date')).toThrow(RangeError);
+    });
+  });
 
-      const data = {
-        items: [{ name: '' }, { name: 'valid' }],
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(1);
-      expect(result.errors[0].path).toContain('items.0.name');
+  describe('convertCopyrightToBoolean', () => {
+    it('should convert "Yes" to "true"', () => {
+      expect(convertCopyrightToBoolean('Yes')).toBe('true');
     });
 
-    it('should validate each flow property entry individually', () => {
-      const schema = {
-        flowDataSet: {
-          flowProperties: {
-            flowProperty: [
-              {
-                amount: {
-                  rules: [
-                    {
-                      required: true,
-                      messageKey: 'validator.required',
-                      defaultMessage: 'Amount is required',
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      };
-
-      const data = {
-        flowDataSet: {
-          flowProperties: {
-            flowProperty: [{ amount: '' }, { amount: '' }],
-          },
-        },
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(false);
-      expect(
-        result.errors.some(
-          (error: { path: string }) =>
-            error.path === 'flowDataSet.flowProperties.flowProperty.0.amount',
-        ),
-      ).toBe(true);
-      expect(
-        result.errors.some(
-          (error: { path: string }) =>
-            error.path === 'flowDataSet.flowProperties.flowProperty.1.amount',
-        ),
-      ).toBe(true);
+    it('should convert "No" to "false"', () => {
+      expect(convertCopyrightToBoolean('No')).toBe('false');
     });
 
-    it('should treat process instance output exchanges as satisfied when any connection is valid', () => {
-      const schema = {
-        lifeCycleModelDataSet: {
-          lifeCycleModelInformation: {
-            technology: {
-              processes: {
-                processInstance: [
-                  {
-                    connections: {
-                      outputExchange: [
-                        {
-                          referenceToProcess: {
-                            rules: [
-                              {
-                                required: true,
-                                messageKey: 'validator.required',
-                                defaultMessage: 'Connection is required',
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        },
-      };
-
-      const data = {
-        lifeCycleModelDataSet: {
-          lifeCycleModelInformation: {
-            technology: {
-              processes: {
-                processInstance: [
-                  { connections: { outputExchange: [{ referenceToProcess: '' }] } },
-                  { connections: { outputExchange: [{ referenceToProcess: 'PROC-001' }] } },
-                ],
-              },
-            },
-          },
-        },
-      };
-
-      const result = getRuleVerification(schema, data);
-
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+    it('should return original value for other values', () => {
+      expect(convertCopyrightToBoolean('Maybe' as any)).toBe('Maybe');
+      expect(convertCopyrightToBoolean('' as any)).toBe('');
     });
 
-    it('should report missing process instance output exchanges when all are empty', () => {
-      const schema = {
-        lifeCycleModelDataSet: {
-          lifeCycleModelInformation: {
-            technology: {
-              processes: {
-                processInstance: [
-                  {
-                    connections: {
-                      outputExchange: [
-                        {
-                          referenceToProcess: {
-                            rules: [
-                              {
-                                required: true,
-                                messageKey: 'validator.required',
-                                defaultMessage: 'Connection is required',
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        },
-      };
+    it('should handle case-sensitive matching', () => {
+      expect(convertCopyrightToBoolean('yes' as any)).toBe('yes');
+      expect(convertCopyrightToBoolean('YES' as any)).toBe('YES');
+      expect(convertCopyrightToBoolean('no' as any)).toBe('no');
+      expect(convertCopyrightToBoolean('NO' as any)).toBe('NO');
+    });
+  });
 
-      const data = {
-        lifeCycleModelDataSet: {
-          lifeCycleModelInformation: {
-            technology: {
-              processes: {
-                processInstance: [
-                  { connections: { outputExchange: [{ referenceToProcess: '' }] } },
-                  { connections: { outputExchange: [{ referenceToProcess: '' }] } },
-                ],
-              },
-            },
-          },
-        },
-      };
+  describe('capitalize', () => {
+    it('should capitalize first letter of lowercase string', () => {
+      expect(capitalize('input')).toBe('Input');
+    });
 
-      const result = getRuleVerification(schema, data);
+    it('should keep first letter capital if already capitalized', () => {
+      expect(capitalize('Input')).toBe('Input');
+    });
 
-      expect(result.valid).toBe(false);
-      expect(
-        result.errors.some(
-          (error: { path: string }) =>
-            error.path ===
-            'lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.0.connections.outputExchange.0.referenceToProcess',
-        ),
-      ).toBe(true);
+    it('should handle all uppercase string', () => {
+      expect(capitalize('INPUT')).toBe('INPUT');
+    });
+
+    it('should return undefined for empty string', () => {
+      expect(capitalize('')).toBeUndefined();
+    });
+
+    it('should return undefined for null/undefined input', () => {
+      expect(capitalize(null as any)).toBeUndefined();
+      expect(capitalize(undefined as any)).toBeUndefined();
+    });
+
+    it('should capitalize single character', () => {
+      expect(capitalize('output')).toBe('Output');
+    });
+
+    it('should handle string with special characters', () => {
+      expect(capitalize('1output')).toBe('1output');
     });
   });
 });

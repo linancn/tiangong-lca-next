@@ -36,7 +36,6 @@ jest.mock('@/services/general/util', () => ({
   genClassificationZH: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
-  getRuleVerification: jest.fn(),
 }));
 
 const {
@@ -44,7 +43,6 @@ const {
   genClassificationZH: mockGenClassificationZH,
   getLangText: mockGetLangText,
   jsonToList: mockJsonToList,
-  getRuleVerification: mockGetRuleVerification,
 } = jest.requireMock('@/services/general/util');
 
 jest.mock('@/services/ilcd/api', () => ({
@@ -157,7 +155,6 @@ beforeEach(() => {
     id,
     ...data,
   }));
-  mockGetRuleVerification.mockReturnValue({ valid: true });
   mockClassificationToString.mockImplementation((items: any[]) =>
     (items || [])
       .map((item: any) => item?.label ?? item?.['#text'] ?? item)

@@ -106,7 +106,6 @@ jest.mock('@/pages/Utils/review', () => ({
   dealProcress: jest.fn(),
   getAllRefObj: jest.fn(() => []),
   getErrRefTab: jest.fn(() => ''),
-  getRuleVerification: jest.fn(() => ({ valid: true, errors: [] })),
   updateReviewsAfterCheckData: jest.fn(),
   updateUnReviewToUnderReview: jest.fn(() => Promise.resolve()),
 }));

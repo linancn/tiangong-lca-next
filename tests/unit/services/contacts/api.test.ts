@@ -22,13 +22,8 @@ describe('Contacts API Service', () => {
   const { supabase } = jest.requireMock('@/services/supabase');
   const { getTeamIdByUserId, getDataDetail } = jest.requireMock('@/services/general/api');
   const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
-  const {
-    getRuleVerification,
-    getLangText,
-    jsonToList,
-    genClassificationZH,
-    classificationToString,
-  } = jest.requireMock('@/services/general/util');
+  const { getLangText, jsonToList, genClassificationZH, classificationToString } =
+    jest.requireMock('@/services/general/util');
   const { genContactJsonOrdered } = jest.requireMock('@/services/contacts/util');
 
   let mockFrom: jest.Mock;
@@ -64,7 +59,6 @@ describe('Contacts API Service', () => {
       },
     }));
 
-    getRuleVerification.mockReturnValue({ valid: true });
     getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] || '');
     jsonToList.mockImplementation((value: any) => (Array.isArray(value) ? value : [value]));
     genClassificationZH.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);
@@ -112,8 +106,6 @@ describe('Contacts API Service', () => {
 
     it('should handle create with invalid data', async () => {
       const { createContact } = require('@/services/contacts/api');
-
-      getRuleVerification.mockReturnValue({ valid: false });
 
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockResolvedValue({

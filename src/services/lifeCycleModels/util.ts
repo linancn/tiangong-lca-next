@@ -3,6 +3,8 @@ import { v4 } from 'uuid';
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertCopyrightToBoolean,
+  convertToUTCISOString,
   getLangJson,
   getLangList,
   getLangText,
@@ -705,7 +707,9 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
           },
         },
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': convertToUTCISOString(
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          ),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -783,8 +787,9 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:copyright':
+          'common:copyright': convertCopyrightToBoolean(
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          ),
           'common:referenceToEntitiesWithExclusiveAccess': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
