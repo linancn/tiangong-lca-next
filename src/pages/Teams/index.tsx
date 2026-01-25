@@ -47,7 +47,7 @@ import {
   Tooltip,
   Upload,
 } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { Children, useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
 
@@ -362,7 +362,9 @@ const Team = () => {
             submitter={{
               resetButtonProps: false,
               render: (_, dom) => (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>{dom}</div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  {Children.toArray(dom)}
+                </div>
               ),
             }}
             onFinish={(values) => submitTeamInfo(values)}

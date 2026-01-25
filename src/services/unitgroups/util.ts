@@ -3,6 +3,7 @@ import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertToUTCISOString,
   getLangJson,
   getLangList,
   getLangText,
@@ -258,7 +259,9 @@ export function genUnitGroupFromData(data: any): FormUnitGroup {
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': convertToUTCISOString(
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          ),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

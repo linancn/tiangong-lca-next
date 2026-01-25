@@ -265,10 +265,22 @@ const UnitGroupCreate: FC<CreateProps> = ({
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({
-                ...fromData,
-                [activeTabKey]: allValues[activeTabKey] ?? {},
-              } as FormUnitGroup);
+              const nextSlice = allValues[activeTabKey] ?? {};
+              const applyUpdate = () => {
+                setFromData(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      [activeTabKey]: nextSlice,
+                    }) as FormUnitGroup,
+                );
+              };
+
+              if (typeof globalThis.queueMicrotask === 'function') {
+                globalThis.queueMicrotask(applyUpdate);
+              } else {
+                Promise.resolve().then(applyUpdate);
+              }
             }}
             submitter={{
               render: () => {

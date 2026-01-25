@@ -71,7 +71,6 @@ jest.mock('@/services/processes/util', () => ({
 const mockClassificationToString = jest.fn();
 const mockGenClassificationZH = jest.fn();
 const mockGetLangText = jest.fn();
-const mockGetRuleVerification = jest.fn();
 const mockJsonToList = jest.fn();
 
 jest.mock('@/services/general/util', () => ({
@@ -79,7 +78,6 @@ jest.mock('@/services/general/util', () => ({
   classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
   genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
   getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
-  getRuleVerification: (...args: any[]) => mockGetRuleVerification.apply(null, args),
   jsonToList: (...args: any[]) => mockJsonToList.apply(null, args),
 }));
 
@@ -132,7 +130,6 @@ beforeEach(() => {
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
-  mockGetRuleVerification.mockReset();
   mockJsonToList.mockReset();
 
   mockGenProcessJsonOrdered.mockReturnValue({ ordered: true });
@@ -140,7 +137,6 @@ beforeEach(() => {
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
   mockGetLangText.mockReturnValue('General comment');
-  mockGetRuleVerification.mockReturnValue({ valid: true });
   mockJsonToList.mockImplementation((value: any) =>
     Array.isArray(value) ? value : value ? [value] : [],
   );

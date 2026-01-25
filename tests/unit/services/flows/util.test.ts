@@ -16,6 +16,7 @@ import {
 jest.mock('@/services/general/util', () => ({
   classificationToJsonList: jest.fn((data) => data),
   classificationToStringList: jest.fn((data) => data),
+  convertToUTCISOString: jest.fn((dateStr) => dateStr || ''),
   getLangJson: jest.fn((data) => data),
   getLangList: jest.fn((data) => (Array.isArray(data) ? data : data ? [data] : [])),
   getLangText: jest.fn((data, lang) => {

@@ -126,7 +126,7 @@ jest.mock('@ant-design/pro-components', () => {
         >
           Simulate drag
         </button>
-        <div data-testid='toolbar'>{toolBarRender?.()?.filter(Boolean)}</div>
+        <div data-testid='toolbar'>{React.Children.toArray(toolBarRender?.()).filter(Boolean)}</div>
       </div>
     );
   };

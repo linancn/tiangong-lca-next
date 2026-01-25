@@ -3,6 +3,7 @@ import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertToUTCISOString,
   formatDateTime,
   getLangJson,
   getLangList,
@@ -225,8 +226,9 @@ export function genContactFromData(data: any): FormContact | undefined {
       administrativeInformation: {
         dataEntryBy: {
           'common:timeStamp':
-            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ??
-            formatDateTime(new Date()),
+            convertToUTCISOString(
+              data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+            ) ?? formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

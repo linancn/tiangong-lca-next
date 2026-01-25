@@ -86,7 +86,7 @@ npm run build
 - 状态管理：优先 Hooks（`useState`、`useRef`、`useEffect`）；表格刷新 `actionRef.current?.reload()`，表单重置 `formRef`。
 - 跨组件状态使用 Context（UnitsContext、RefCheckContext、UpdateReferenceContext），禁止可变单例。
 - 类型：优先引入 `@tiangong-lca/tidas-sdk`，在 `src/services/<feature>/data.ts` 导出表格/表单类型。
-- 校验：ProForm `rules` 或 helper（`getRuleVerification`、`percentStringToNumber`、`comparePercentDesc`）；ID 使用 `uuid.v4`，版本常量如 `initVersion`。
+- 校验：ProForm `rules` 或 helper（`percentStringToNumber`、`comparePercentDesc`）；ID 使用 `uuid.v4`，版本常量如 `initVersion`。
 
 ## 质量与测试
 

@@ -40,7 +40,6 @@ jest.mock('@/services/general/util', () => ({
   genClassificationZH: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
-  getRuleVerification: jest.fn(),
 }));
 
 jest.mock('@/services/general/api', () => ({

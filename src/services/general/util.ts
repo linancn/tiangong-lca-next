@@ -26,58 +26,58 @@ export function removeEmptyObjects(obj: any) {
   return obj;
 }
 
-export function percentStringToNumber(str: string): number | null {
-  if (typeof str !== 'string') return null;
-  const match = str.match(/^(-?\d+(\.\d+)?)%$/);
-  if (!match) return null;
-  return parseFloat(match[1]) / 100;
-}
+// export function percentStringToNumber(str: string): number | null {
+//   if (typeof str !== 'string') return null;
+//   const match = str.match(/^(-?\d+(\.\d+)?)%$/);
+//   if (!match) return null;
+//   return parseFloat(match[1]) / 100;
+// }
 
-export function comparePercentDesc(
-  a: string | number | null | undefined,
-  b: string | number | null | undefined,
-): number {
-  const toComparable = (value: typeof a): number | null => {
-    if (value === null || value === undefined) {
-      return null;
-    }
-    if (typeof value === 'number') {
-      return Number.isFinite(value) ? value : null;
-    }
-    const trimmed = String(value).trim();
-    if (!trimmed) {
-      return null;
-    }
-    const percent = percentStringToNumber(trimmed);
-    if (percent !== null) {
-      return percent;
-    }
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
+// export function comparePercentDesc(
+//   a: string | number | null | undefined,
+//   b: string | number | null | undefined,
+// ): number {
+//   const toComparable = (value: typeof a): number | null => {
+//     if (value === null || value === undefined) {
+//       return null;
+//     }
+//     if (typeof value === 'number') {
+//       return Number.isFinite(value) ? value : null;
+//     }
+//     const trimmed = String(value).trim();
+//     if (!trimmed) {
+//       return null;
+//     }
+//     const percent = percentStringToNumber(trimmed);
+//     if (percent !== null) {
+//       return percent;
+//     }
+//     const parsed = Number(trimmed);
+//     return Number.isFinite(parsed) ? parsed : null;
+//   };
 
-  const numA = toComparable(a);
-  const numB = toComparable(b);
+//   const numA = toComparable(a);
+//   const numB = toComparable(b);
 
-  if (numA === null && numB === null) {
-    return 0;
-  }
-  if (numA === null) {
-    return 1;
-  }
-  if (numB === null) {
-    return -1;
-  }
+//   if (numA === null && numB === null) {
+//     return 0;
+//   }
+//   if (numA === null) {
+//     return 1;
+//   }
+//   if (numB === null) {
+//     return -1;
+//   }
 
-  const absA = Math.abs(numA);
-  const absB = Math.abs(numB);
+//   const absA = Math.abs(numA);
+//   const absB = Math.abs(numB);
 
-  if (absA !== absB) {
-    return absB - absA;
-  }
+//   if (absA !== absB) {
+//     return absB - absA;
+//   }
 
-  return numB - numA;
-}
+//   return numB - numA;
+// }
 
 export async function getUnitData(idType: string, data: any) {
   return new Promise((resolve) => {
@@ -557,18 +557,12 @@ export function isValidURL(url: string): boolean {
 
 export function formatDateTime(date: any): string {
   return date.toISOString();
-  // const pad = (num: any) => (num < 10 ? '0' + num : num);
-  // const year = date.getFullYear();
-  // const month = pad(date.getMonth() + 1);
-  // const day = pad(date.getDate());
-  // const hours = pad(date.getHours());
-  // const minutes = pad(date.getMinutes());
-  // const seconds = pad(date.getSeconds());
-  // const timezoneOffset = -date.getTimezoneOffset();
-  // const sign = timezoneOffset >= 0 ? '+' : '-';
-  // const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
-  // const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
-  // return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
+}
+
+export function convertToUTCISOString(dateTimeStr: string): string {
+  if (!dateTimeStr) return '';
+  const date = new Date(dateTimeStr);
+  return date.toISOString();
 }
 
 export function validatePasswordStrength(_: any, value: string) {
@@ -641,308 +635,17 @@ export function getDataSource(pathname: string) {
   return '';
 }
 
-export function getRuleVerification(schema: any, data: any) {
-  const result: {
-    valid: boolean;
-    errors: {
-      path: string;
-      message: string;
-      rule: string;
-    }[];
-  } = { valid: true, errors: [] };
-  const requiredPaths: Array<{ path: string; rule: any }> = [];
-  const multilingualPaths: Array<{ path: string; rule: any }> = [];
-
-  const isMultilingualField = (schemaValue: any): boolean => {
-    const value = schemaValue?.value;
-
-    if (value && Array.isArray(value) && value.length > 0) {
-      return value[0] && typeof value[0] === 'object' && value[0]['@xml:lang'];
-    }
-
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      return !!value['@xml:lang'];
-    }
-
-    return false;
-  };
-
-  const collectRequiredPaths = (schemaObj: any, path: string = '') => {
-    if (!schemaObj || typeof schemaObj !== 'object') return;
-
-    Object.keys(schemaObj).forEach((key) => {
-      const currentPath = path ? `${path}.${key}` : key;
-      const schemaValue = schemaObj[key];
-      if (
-        path.includes('modellingAndValidation.validation.review') ||
-        path.includes('modellingAndValidation.complianceDeclarations.compliance')
-      ) {
-        return;
-      }
-
-      if (schemaValue?.rules) {
-        const requiredRule = schemaValue.rules.find((rule: any) => rule.required);
-
-        if (requiredRule) {
-          requiredPaths.push({
-            path: currentPath,
-            rule: requiredRule,
-          });
-
-          if (isMultilingualField(schemaValue)) {
-            multilingualPaths.push({
-              path: currentPath,
-              rule: {
-                messageKey: 'validator.lang.mustBeEnglish',
-                defaultMessage: 'English is a required language',
-              },
-            });
-          }
-        }
-      }
-
-      if (Array.isArray(schemaValue)) {
-        if (schemaValue.length > 0) {
-          collectRequiredPaths(schemaValue[0], `${currentPath}.0`);
-        }
-      } else if (schemaValue && typeof schemaValue === 'object' && !schemaValue.rules) {
-        collectRequiredPaths(schemaValue, currentPath);
-      }
-    });
-  };
-
-  const getValueByPath = (obj: any, path: string) => {
-    if (!obj) return undefined;
-
-    if (path.includes(':') && !path.includes('.')) {
-      return obj[path];
-    }
-
-    if (path.includes('.')) {
-      const parts = path.split('.');
-      let current = obj;
-
-      for (const part of parts) {
-        if (current === undefined || current === null) return undefined;
-        current = current[part];
-      }
-
-      return current;
-    }
-
-    return obj[path];
-  };
-
-  const isEmpty = (value: any) => {
-    if (value === undefined || value === null) return true;
-    if (typeof value === 'string' && value.trim() === '') return true;
-    if (Array.isArray(value) && value.length === 0) return true;
-    if (typeof value === 'object' && Object.keys(value).length === 0) return true;
-    return false;
-  };
-
-  const hasEnglishEntry = (value: any) => {
-    if (!value) return false;
-
-    if (Array.isArray(value)) {
-      return value.some(
-        (item: any) =>
-          item &&
-          typeof item === 'object' &&
-          item['@xml:lang'] === 'en' &&
-          item['#text'] &&
-          item['#text'].trim() !== '',
-      );
-    }
-
-    if (
-      typeof value === 'object' &&
-      value['@xml:lang'] === 'en' &&
-      value['#text'] &&
-      value['#text'].trim() !== ''
-    ) {
-      return true;
-    }
-
-    return false;
-  };
-
-  collectRequiredPaths(schema);
-  const baseProcessInstancePath =
-    'lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance';
-  requiredPaths.forEach(({ path, rule }) => {
-    if (path.includes('quantitativeReference')) {
-      return;
-    }
-    let value = getValueByPath(data, path);
-
-    if (value && typeof value === 'object' && value.value !== undefined) {
-      value = value.value;
-    }
-
-    let shouldSkipValidation = false;
-    if (path.includes('.0.')) {
-      const pathParts = path.split('.');
-      const arrayIndex = pathParts.findIndex((part) => part === '0');
-      if (arrayIndex !== -1) {
-        const arrayPath = pathParts.slice(0, arrayIndex).join('.');
-        const remainingPath = pathParts.slice(arrayIndex + 1).join('.');
-
-        const arrayData = getValueByPath(data, arrayPath);
-
-        if (Array.isArray(arrayData) && arrayData.length > 0) {
-          // If path includes "lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.0.connections.outputExchange.",
-          // only one valid (non-empty) value in the array is enough to be considered valid.
-          if (path.includes(`${baseProcessInstancePath}.0.connections.outputExchange.`)) {
-            let anyValid = false;
-            for (let i = 0; i < arrayData.length; i++) {
-              const itemPath = `${arrayPath}.${i}.${remainingPath}`;
-              let itemValue = getValueByPath(data, itemPath);
-
-              if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
-                itemValue = itemValue.value;
-              }
-
-              if (!isEmpty(itemValue)) {
-                anyValid = true;
-                break;
-              }
-            }
-            if (!anyValid) {
-              result.valid = false;
-              // Only push an error for the first item (for UI clarity)
-              const firstItemPath = `${arrayPath}.0.${remainingPath}`;
-              result.errors.push({
-                path: firstItemPath,
-                message: rule.defaultMessage || rule.messageKey,
-                rule: 'required',
-              });
-            }
-            shouldSkipValidation = true;
-          } else {
-            let allValid = true;
-            for (let i = 0; i < arrayData.length; i++) {
-              const itemPath = `${arrayPath}.${i}.${remainingPath}`;
-              let itemValue = getValueByPath(data, itemPath);
-
-              if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
-                itemValue = itemValue.value;
-              }
-
-              if (isEmpty(itemValue)) {
-                allValid = false;
-                result.valid = false;
-                result.errors.push({
-                  path: itemPath,
-                  message: rule.defaultMessage || rule.messageKey,
-                  rule: 'required',
-                });
-              }
-            }
-
-            if (allValid) {
-              shouldSkipValidation = true;
-            }
-          }
-        }
-      }
-    }
-
-    if (path.startsWith('flowDataSet.flowProperties.flowProperty')) {
-      const flowPropertyPath = 'flowDataSet.flowProperties.flowProperty';
-      const flowPropertyArray = getValueByPath(data, flowPropertyPath);
-
-      if (Array.isArray(flowPropertyArray) && flowPropertyArray.length > 0) {
-        const remainingPath = path.substring(flowPropertyPath.length + 1);
-
-        let allValid = true;
-        for (let i = 0; i < flowPropertyArray.length; i++) {
-          const itemPath = `${flowPropertyPath}.${i}${remainingPath ? '.' + remainingPath : ''}`;
-          let itemValue = getValueByPath(data, itemPath);
-
-          if (itemValue && typeof itemValue === 'object' && itemValue.value !== undefined) {
-            itemValue = itemValue.value;
-          }
-
-          if (isEmpty(itemValue)) {
-            allValid = false;
-            result.valid = false;
-            result.errors.push({
-              path: itemPath,
-              message: rule.defaultMessage || rule.messageKey,
-              rule: 'required',
-            });
-          }
-        }
-
-        if (allValid) {
-          shouldSkipValidation = true;
-        }
-      } else if (
-        flowPropertyArray &&
-        typeof flowPropertyArray === 'object' &&
-        !Array.isArray(flowPropertyArray)
-      ) {
-        if (!isEmpty(value)) {
-          shouldSkipValidation = true;
-        }
-      }
-    }
-
-    if (shouldSkipValidation) {
-      return;
-    }
-
-    if (path.includes('common:class')) {
-      if (!value) {
-        const classPath = path.includes('common:class.0')
-          ? path.replace('common:class.0', 'common:class')
-          : path.replace('common:class', 'common:class.0');
-        value = getValueByPath(data, classPath);
-      }
-    }
-
-    if (path.includes(`${baseProcessInstancePath}.0.connections`)) {
-      if (!value) {
-        let instance = getValueByPath(data, `${baseProcessInstancePath}`);
-        if (instance) {
-          value = (Array.isArray(instance) ? instance : [instance]).find(
-            (item: any) => item.connections,
-          );
-        }
-      }
-    }
-
-    if (isEmpty(value)) {
-      result.valid = false;
-      result.errors.push({
-        path,
-        message: rule.defaultMessage || rule.messageKey,
-        rule: 'required',
-      });
-    }
-  });
-
-  multilingualPaths.forEach(({ path, rule }) => {
-    let value = getValueByPath(data, path);
-
-    if (value && typeof value === 'object' && value.value !== undefined) {
-      value = value.value;
-    }
-
-    if (!hasEnglishEntry(value)) {
-      result.valid = false;
-      result.errors.push({
-        path,
-        message: rule.defaultMessage,
-        rule: 'english_required',
-      });
-    }
-  });
-
-  if (!result.valid) {
-    console.log('getRuleVerificationFalse', result);
+export function convertCopyrightToBoolean(value: 'Yes' | 'No'): 'true' | 'false' {
+  if (value === 'Yes') {
+    return 'true';
   }
+  if (value === 'No') {
+    return 'false';
+  }
+  return value;
+}
 
-  return result;
+export function capitalize(str: string): 'Input' | 'Output' {
+  if (!str) return undefined as any;
+  return (str.charAt(0).toUpperCase() + str.slice(1)) as 'Input' | 'Output';
 }

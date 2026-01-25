@@ -495,10 +495,6 @@ const Welcome: React.FC = () => {
                 let logoUrl = '';
                 if (team.json?.previewLightUrl) {
                   logoUrl = isDarkMode ? team.json?.previewDarkUrl : team.json?.previewLightUrl;
-                } else {
-                  logoUrl = isDarkMode
-                    ? `/images/dataLogo/${team.json?.darkLogo}`
-                    : `/images/dataLogo/${team.json?.lightLogo}`;
                 }
                 return (
                   <Col xs={24} sm={12} lg={8} key={team.id ?? index}>

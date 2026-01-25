@@ -1,11 +1,11 @@
 import BigNumber from 'bignumber.js';
 import { v4 } from 'uuid';
 import {
-  comparePercentDesc,
+  // comparePercentDesc,
   jsonToList,
   listToJson,
   mergeLangArrays,
-  percentStringToNumber,
+  // percentStringToNumber,
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
@@ -93,7 +93,7 @@ const selectMaxAllocatedFlowId = (
     const flowId: string | undefined = e?.referenceToFlowDataSet?.['@refObjectId'];
     if (!flowId || !allowedFlowIds.has(flowId)) continue;
 
-    const af = e?.allocations?.allocation?.['@allocatedFraction'];
+    const af = e?.allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
 
     if (bestAF === undefined) {
       bestAF = af;
@@ -102,7 +102,7 @@ const selectMaxAllocatedFlowId = (
     }
 
     if (af !== undefined && af !== null && bestAF !== undefined && bestAF !== null) {
-      if (comparePercentDesc(af, bestAF) < 0) {
+      if (Number(bestAF) - Number(af) < 0) {
         bestAF = af;
         bestFlowId = flowId;
       }
@@ -899,8 +899,11 @@ const allocatedProcess = (sumAmountNodeMap: Map<string, any>) => {
 
       const allocations = jsonToList(pExchange?.allocations);
       if (allocations.length > 0) {
-        const allocatedFractionStr = allocations[0]?.allocation?.['@allocatedFraction'] ?? '';
-        const allocatedFraction = percentStringToNumber(allocatedFractionStr);
+        const allocatedFractionStr =
+          allocations[0]?.allocation?.['@allocatedFraction']?.replace('%', '') ?? '';
+
+        const allocatedFraction = Number(allocatedFractionStr) / 100;
+
         if (allocatedFraction && allocatedFraction > 0) {
           allocatedExchanges.push({ exchange: pExchange, allocatedFraction });
           continue;
