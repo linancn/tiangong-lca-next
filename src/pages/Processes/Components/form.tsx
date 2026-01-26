@@ -237,10 +237,18 @@ export const ProcessForm: FC<Props> = ({
       },
     },
     {
+      title: <FormattedMessage id='pages.process.view.lciaresults.unit' defaultMessage='Unit' />,
+      dataIndex: 'referenceQuantity',
+      search: false,
+      render: (_, row) => {
+        return [<span key={0}>{getLangText(row.unit, lang) || '-'}</span>];
+      },
+    },
+    {
       title: (
         <FormattedMessage
           id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
-          defaultMessage='Reference to LCIA method data set version'
+          defaultMessage='Version'
         />
       ),
       dataIndex: 'Version',

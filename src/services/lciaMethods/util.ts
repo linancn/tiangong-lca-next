@@ -1,3 +1,4 @@
+import { getLangJson } from '@/services/general/util';
 import BigNumber from 'bignumber.js';
 import { LCIAResultTable } from './data';
 
@@ -386,8 +387,38 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
       });
 
     if (lciaFlowResultsAggregated.length > 0) {
+      // Helper function to get unit from lciaMethod file
+      const getUnitFromMethod = async (
+        methodId: string,
+        filename: string,
+      ): Promise<string | undefined> => {
+        try {
+          let methodData = await getDecompressedMethod(filename);
+          if (!methodData) {
+            const cached = await cacheAndDecompressMethod(filename);
+            if (cached) {
+              methodData = await getDecompressedMethod(filename);
+            }
+          }
+          if (
+            methodData?.LCIAMethodDataSet?.LCIAMethodInformation?.quantitativeReference
+              ?.referenceQuantity?.['common:shortDescription']
+          ) {
+            return getLangJson(
+              methodData.LCIAMethodDataSet.LCIAMethodInformation.quantitativeReference
+                .referenceQuantity['common:shortDescription'],
+            );
+          }
+        } catch (error) {
+          console.warn(`Failed to get unit for method ${methodId}:`, error);
+        }
+        return undefined;
+      };
+
       for (const result of lciaFlowResultsAggregated) {
         const methodInfo = listData.files.find((it: any) => it.id === result.key);
+
+        const unit = await getUnitFromMethod(result.key, methodInfo.filename);
 
         const lciaResult: LCIAResultTable = {
           key: methodInfo.id,
@@ -399,6 +430,7 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
             'common:shortDescription': methodInfo.description,
           },
           meanAmount: result.value,
+          unit,
         };
         lciaResults.push(lciaResult);
       }

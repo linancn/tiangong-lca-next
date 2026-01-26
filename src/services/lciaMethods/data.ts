@@ -13,4 +13,5 @@ export type LCIAResultTable = {
     ];
   };
   meanAmount: number;
+  unit?: string;
 };

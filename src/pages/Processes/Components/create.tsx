@@ -217,6 +217,7 @@ const ProcessCreate: FC<CreateProps> = ({
         LCIAResult: result.map((item) => ({
           referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
           meanAmount: item.meanAmount,
+          unit: item.unit,
         })),
       },
     } as any);
