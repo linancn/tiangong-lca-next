@@ -695,10 +695,7 @@ const ToolbarEdit: FC<Props> = ({
     await Promise.all(
       nodes.map(async (node) => {
         const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width;
-        const result: any = await getProcessDetail(
-          node?.data?.id ?? '',
-          node?.data?.version ?? '',
-        );
+        const result: any = await getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '');
         const newLabel =
           result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
         const newShortDescription = genProcessNameJson(

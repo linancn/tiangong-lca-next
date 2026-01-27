@@ -108,9 +108,9 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         formRefEdit.current?.setFieldsValue({ ...res });
       }
     };
-    const updateReferenceDescription = async (data:any) => {
-      const { oldRefs } = await getRefsOfCurrentVersion({...data,...fromData});
-      const res = updateRefsData({...data,...fromData}, oldRefs, false);
+    const updateReferenceDescription = async (data: any) => {
+      const { oldRefs } = await getRefsOfCurrentVersion({ ...data, ...fromData });
+      const res = updateRefsData({ ...data, ...fromData }, oldRefs, false);
       setFromData(res);
       formRefEdit.current?.setFieldsValue({ ...res });
     };
