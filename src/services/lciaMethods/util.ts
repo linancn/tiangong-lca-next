@@ -1,3 +1,4 @@
+import { getLangJson } from '@/services/general/util';
 import BigNumber from 'bignumber.js';
 import { LCIAResultTable } from './data';
 
@@ -290,6 +291,42 @@ export const getCachedMethodList = async (): Promise<string[]> => {
   }
 };
 
+// Helper function to get referenceQuantity from list.json by lciaResults
+export const getReferenceQuantityFromMethod = async (
+  lciaResults: LCIAResultTable[] | undefined,
+): Promise<void> => {
+  try {
+    if (!lciaResults) {
+      return undefined;
+    }
+    let listData = await getDecompressedMethod('list.json');
+
+    // Check if cached list.json has referenceQuantity field (version check)
+    const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
+
+    if (!listData || needsUpdate) {
+      const cached = await cacheAndDecompressMethod('list.json');
+      if (!cached) {
+        return;
+      }
+      listData = await getDecompressedMethod('list.json');
+    }
+
+    // Match lciaResults with listData and add unit
+    for (const result of lciaResults) {
+      const methodId = result.referenceToLCIAMethodDataSet['@refObjectId'];
+      const methodInfo = listData?.files?.find((it: any) => it.id === methodId);
+      if (methodInfo?.referenceQuantity?.['common:shortDescription']) {
+        result.referenceQuantityDesc = getLangJson(
+          methodInfo.referenceQuantity['common:shortDescription'],
+        );
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to get referenceQuantity:', error);
+  }
+};
+
 const LCIAResultCalculation = async (exchangeDataSource: any) => {
   const lciaResults: LCIAResultTable[] = [];
 
@@ -298,8 +335,11 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
     // First try to get the list from cache
     let listData = await getDecompressedMethod('list.json');
 
-    if (!listData) {
-      // If not cached, cache it first (this will download, decompress and store)
+    // Check if cached list.json has referenceQuantity field (version check)
+    const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
+
+    if (!listData || needsUpdate) {
+      // If not cached or outdated, cache it first (this will download, decompress and store)
       const cached = await cacheAndDecompressMethod('list.json');
       if (!cached) {
         console.error('Failed to load LCIA methods list');

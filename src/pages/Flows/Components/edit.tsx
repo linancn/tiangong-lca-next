@@ -3,7 +3,11 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
@@ -70,7 +74,7 @@ const FlowsEdit: FC<Props> = ({
   // }, [showRules]);
 
   const updatePropertyDataSource = async () => {
-    propertyDataSource.forEach(async (property: any, index: number) => {
+    for (const property of propertyDataSource) {
       if (property?.referenceToFlowPropertyDataSet) {
         const { data: flowPropertyData, success } = await getFlowpropertyDetail(
           property.referenceToFlowPropertyDataSet['@refObjectId'],
@@ -83,11 +87,9 @@ const FlowsEdit: FC<Props> = ({
           property.referenceToFlowPropertyDataSet['common:shortDescription'] = name;
           property.referenceToFlowPropertyDataSet['@version'] = flowPropertyData?.version;
         }
-        if (index === propertyDataSource.length - 1) {
-          setPropertyDataSource([...propertyDataSource]);
-        }
       }
-    });
+    }
+    setPropertyDataSource([...propertyDataSource]);
   };
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
@@ -120,6 +122,13 @@ const FlowsEdit: FC<Props> = ({
       await updatePropertyDataSource();
       formRefEdit.current?.setFieldsValue({ ...res, id });
     }
+  };
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    await updatePropertyDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
   };
   const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
@@ -193,6 +202,8 @@ const FlowsEdit: FC<Props> = ({
       return;
     }
     if (autoClose) setSpinning(true);
+    await updateReferenceDescription();
+
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const flowProperties = fromData?.flowProperties;
     const updateResult = await updateFlows(id, version, {

@@ -692,110 +692,104 @@ const ToolbarEdit: FC<Props> = ({
 
   const updateReference = async () => {
     setSpinning(true);
-    let requestCount = 0;
-    nodes.forEach((node) => {
-      const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width;
-      getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '')
-        .then(async (result: any) => {
-          const newLabel =
-            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
-          const newShortDescription = genProcessNameJson(
-            result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
-          );
-          const newVersion = result.data?.version ?? '';
-          const exchanges =
-            genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
-          const newItems = (node?.ports as any)?.items?.map((item: any) => {
-            const newItem = exchanges.find((i: any) => {
-              const ids = item?.id?.split(':');
-              if (ids.length < 2) return false;
-              return (
-                (i?.exchangeDirection ?? '-').toUpperCase() +
-                  ':' +
-                  (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
-                ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
-              );
-            });
-            if (newItem) {
-              const newTitle = getLangText(
-                (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
-                lang,
-              );
-
-              const newTitleWithAllocation = getPortLabelWithAllocation(
-                newTitle,
-                newItem?.allocations,
-                newItem?.exchangeDirection,
-              );
-              return {
-                ...item,
-                attrs: {
-                  ...item?.attrs,
-                  text: {
-                    text: `${genPortLabel(newTitleWithAllocation, lang, nodeWidth)}`,
-                    title: newTitleWithAllocation,
-                    cursor: 'pointer',
-                    fill: getPortTextColor(
-                      (newItem as any)?.quantitativeReference,
-                      newItem?.allocations,
-                    ),
-                    'font-weight': getPortTextStyle((newItem as any)?.quantitativeReference),
-                  },
-                },
-                data: {
-                  ...item?.data,
-                  textLang: (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
-                  flowId: (newItem?.referenceToFlowDataSet as any)?.['@refObjectId'],
-                  flowVersion: (newItem?.referenceToFlowDataSet as any)?.['@version'],
-                  quantitativeReference: (newItem as any)?.quantitativeReference,
-                  allocations: newItem?.allocations,
-                },
-              };
-            } else {
-              return {
-                ...item,
-                attrs: {
-                  ...item?.attrs,
-                  text: {
-                    text: '-',
-                    title: '-',
-                    fill: token.colorTextDescription,
-                  },
-                },
-                data: {
-                  ...item?.data,
-                  textLang: {},
-                },
-              };
-            }
+    await Promise.all(
+      nodes.map(async (node) => {
+        const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width;
+        const result: any = await getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '');
+        const newLabel =
+          result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+        const newShortDescription = genProcessNameJson(
+          result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
+        );
+        const newVersion = result.data?.version ?? '';
+        const exchanges =
+          genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
+        const newItems = (node?.ports as any)?.items?.map((item: any) => {
+          const newItem = exchanges.find((i: any) => {
+            const ids = item?.id?.split(':');
+            if (ids.length < 2) return false;
+            return (
+              (i?.exchangeDirection ?? '-').toUpperCase() +
+                ':' +
+                (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+              ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
+            );
           });
+          if (newItem) {
+            const newTitle = getLangText(
+              (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
+              lang,
+            );
 
-          updateNode(node.id ?? '', {
-            data: {
-              ...node.data,
-              label: newLabel,
-              shortDescription: newShortDescription,
-              version: newVersion,
-            },
-            tools: [
-              node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-              nodeTitleTool(nodeWidth, genProcessName(newLabel, lang) ?? ''),
-              inputFlowTool,
-              outputFlowTool,
-            ],
-            ports: {
-              ...node?.ports,
-              items: newItems,
-            },
-          });
-        })
-        .finally(() => {
-          requestCount++;
-          if (requestCount === nodes.length) {
-            setSpinning(false);
+            const newTitleWithAllocation = getPortLabelWithAllocation(
+              newTitle,
+              newItem?.allocations,
+              newItem?.exchangeDirection,
+            );
+            return {
+              ...item,
+              attrs: {
+                ...item?.attrs,
+                text: {
+                  text: `${genPortLabel(newTitleWithAllocation, lang, nodeWidth)}`,
+                  title: newTitleWithAllocation,
+                  cursor: 'pointer',
+                  fill: getPortTextColor(
+                    (newItem as any)?.quantitativeReference,
+                    newItem?.allocations,
+                  ),
+                  'font-weight': getPortTextStyle((newItem as any)?.quantitativeReference),
+                },
+              },
+              data: {
+                ...item?.data,
+                textLang: (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
+                flowId: (newItem?.referenceToFlowDataSet as any)?.['@refObjectId'],
+                flowVersion: (newItem?.referenceToFlowDataSet as any)?.['@version'],
+                quantitativeReference: (newItem as any)?.quantitativeReference,
+                allocations: newItem?.allocations,
+              },
+            };
+          } else {
+            return {
+              ...item,
+              attrs: {
+                ...item?.attrs,
+                text: {
+                  text: '-',
+                  title: '-',
+                  fill: token.colorTextDescription,
+                },
+              },
+              data: {
+                ...item?.data,
+                textLang: {},
+              },
+            };
           }
         });
-    });
+
+        updateNode(node.id ?? '', {
+          data: {
+            ...node.data,
+            label: newLabel,
+            shortDescription: newShortDescription,
+            version: newVersion,
+          },
+          tools: [
+            node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+            nodeTitleTool(nodeWidth, genProcessName(newLabel, lang) ?? ''),
+            inputFlowTool,
+            outputFlowTool,
+          ],
+          ports: {
+            ...node?.ports,
+            items: newItems,
+          },
+        });
+      }),
+    );
+    setSpinning(false);
   };
 
   const deleteCell = async () => {
@@ -832,6 +826,8 @@ const ToolbarEdit: FC<Props> = ({
 
   const saveData = async (setLoadingData = true) => {
     setSpinning(true);
+    await editInfoRef.current?.updateReferenceDescription(infoData);
+    await updateReference();
 
     // 直接从图中获取最新的节点和边数据
     const currentNodes = graph ? graph.getNodes().map((node: any) => node.toJSON()) : nodes;

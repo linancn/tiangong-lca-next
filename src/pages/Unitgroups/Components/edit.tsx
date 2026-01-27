@@ -2,7 +2,11 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { FormUnitGroup, UnitGroupDataSetObjectKeys, UnitTable } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitGroupJsonOrdered } from '@/services/unitgroups/util';
@@ -88,7 +92,12 @@ const UnitGroupEdit: FC<Props> = ({
       formRefEdit.current?.setFieldsValue({ ...res, id });
     }
   };
-
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+  };
   // useEffect(() => {
   //   if (showRules) {
   //     setTimeout(() => {
@@ -166,6 +175,8 @@ const UnitGroupEdit: FC<Props> = ({
 
   const handleSubmit = async (autoClose: boolean) => {
     if (autoClose) setSpinning(true);
+    await updateReferenceDescription();
+
     const units = fromData?.units;
     const formFieldsValue = {
       ...formRefEdit.current?.getFieldsValue(),
