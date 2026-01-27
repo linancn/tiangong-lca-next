@@ -832,6 +832,8 @@ const ToolbarEdit: FC<Props> = ({
 
   const saveData = async (setLoadingData = true) => {
     setSpinning(true);
+    await updateReference();
+    await editInfoRef.current?.updateReferenceDescription();
 
     // 直接从图中获取最新的节点和边数据
     const currentNodes = graph ? graph.getNodes().map((node: any) => node.toJSON()) : nodes;

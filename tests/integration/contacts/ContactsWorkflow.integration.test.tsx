@@ -185,6 +185,8 @@ jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getTeamById: jest.fn(async () => ({ data: [] })),
   contributeSource: jest.fn(),
+  getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),
+  getDataDetailById: jest.fn(() => Promise.resolve({ data: [] })),
 }));
 
 jest.mock('@/services/contacts/util', () => ({
@@ -218,6 +220,19 @@ jest.mock('@/pages/Utils/review', () => ({
   })),
   checkData: jest.fn(),
   getErrRefTab: jest.fn(),
+  getAllRefObj: jest.fn(() => []),
+  getRefTableName: jest.fn((type: string) => {
+    const tableDict: Record<string, string> = {
+      'contact data set': 'contacts',
+      'source data set': 'sources',
+      'unit group data set': 'unitgroups',
+      'flow property data set': 'flowproperties',
+      'flow data set': 'flows',
+      'process data set': 'processes',
+      'lifeCycleModel data set': 'lifecyclemodels',
+    };
+    return tableDict[type];
+  }),
 }));
 
 type ContactRow = {

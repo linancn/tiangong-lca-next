@@ -13,7 +13,11 @@ import {
 } from '@/pages/Utils/review';
 
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
@@ -218,8 +222,17 @@ const ProcessEdit: FC<Props> = ({
     }
   };
 
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    await updateExchangeDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+  };
+
   const handleSubmit = async (closeDrawer: boolean) => {
     if (closeDrawer) setSpinning(true);
+    await updateReferenceDescription();
     const output = exchangeDataSource.filter(
       (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
     );

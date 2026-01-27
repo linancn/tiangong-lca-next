@@ -2,7 +2,11 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import { ContactDataSetObjectKeys, FormContact } from '@/services/contacts/data';
 import { genContactFromData, genContactJsonOrdered } from '@/services/contacts/util';
@@ -124,6 +128,13 @@ const ContactEdit: FC<Props> = ({
     }
   };
 
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+  };
+
   useEffect(() => {
     if (!drawerVisible) {
       setShowRules(false);
@@ -135,6 +146,7 @@ const ContactEdit: FC<Props> = ({
 
   const handleSubmit = async (autoClose: boolean) => {
     if (autoClose) setSpinning(true);
+    await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
     const updateResult = await updateContact(id, version, formFieldsValue);
     if (updateResult?.data) {
