@@ -74,7 +74,7 @@ const FlowsEdit: FC<Props> = ({
   // }, [showRules]);
 
   const updatePropertyDataSource = async () => {
-    propertyDataSource.forEach(async (property: any, index: number) => {
+    for (const property of propertyDataSource) {
       if (property?.referenceToFlowPropertyDataSet) {
         const { data: flowPropertyData, success } = await getFlowpropertyDetail(
           property.referenceToFlowPropertyDataSet['@refObjectId'],
@@ -87,11 +87,9 @@ const FlowsEdit: FC<Props> = ({
           property.referenceToFlowPropertyDataSet['common:shortDescription'] = name;
           property.referenceToFlowPropertyDataSet['@version'] = flowPropertyData?.version;
         }
-        if (index === propertyDataSource.length - 1) {
-          setPropertyDataSource([...propertyDataSource]);
-        }
       }
-    });
+    }
+    setPropertyDataSource([...propertyDataSource]);
   };
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
