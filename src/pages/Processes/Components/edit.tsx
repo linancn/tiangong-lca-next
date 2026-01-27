@@ -696,7 +696,6 @@ const ProcessEdit: FC<Props> = ({
           key: item.key,
           referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
           meanAmount: item.meanAmount,
-          unit: item.unit,
         })),
       },
     } as any);

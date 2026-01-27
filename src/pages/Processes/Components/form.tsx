@@ -13,7 +13,7 @@ import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
-import LCIAResultCalculation from '@/services/lciaMethods/util';
+import LCIAResultCalculation, { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
@@ -102,7 +102,9 @@ export const ProcessForm: FC<Props> = ({
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
 
-  // const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(lciaResults);
+  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(
+    jsonToList(lciaResults),
+  );
   const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
 
   const { token } = theme.useToken();
@@ -241,7 +243,7 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'referenceQuantity',
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{getLangText(row.unit, lang) || '-'}</span>];
+        return [<span key={0}>{getLangText(row?.referenceQuantityDesc, lang) || '-'}</span>];
       },
     },
     {
@@ -263,9 +265,16 @@ export const ProcessForm: FC<Props> = ({
       },
     },
   ];
+  const syncReferenceQuantityToLciaResults = async (lciaResults: LCIAResultTable[] | undefined) => {
+    if (!lciaResults) return;
+    const listLciaResults = jsonToList(lciaResults);
+    await getReferenceQuantityFromMethod(listLciaResults);
+    setLciaResultDataSource(listLciaResults);
+  };
   const getLCIAResult = async () => {
     setLciaResultDataSourceLoading(true);
     const lciaResults = await LCIAResultCalculation(exchangeDataSource);
+    await syncReferenceQuantityToLciaResults(JSON.parse(JSON.stringify(lciaResults)));
     onLciaResults(lciaResults ?? []);
     setLciaResultDataSourceLoading(false);
   };
@@ -2176,7 +2185,7 @@ export const ProcessForm: FC<Props> = ({
             onClick={getLCIAResult}
           />,
         ]}
-        dataSource={jsonToList(lciaResults)}
+        dataSource={lciaResultDataSource}
         columns={lciaResultColumns}
       />
     ),
@@ -2208,6 +2217,9 @@ export const ProcessForm: FC<Props> = ({
 
   useEffect(() => {
     actionRefLciaResultTable.current?.reload();
+    syncReferenceQuantityToLciaResults(
+      JSON.parse(JSON.stringify(lciaResults)) as LCIAResultTable[],
+    );
   }, [lciaResults]);
 
   return (

@@ -74,10 +74,12 @@ jest.mock('@/services/general/util', () => ({
 
 jest.mock('@/services/lciaMethods/util', () => {
   const mockLCIAResultCalculation = jest.fn(() => Promise.resolve([{ key: '1', meanAmount: 12 }]));
+  const mockGetReferenceQuantityFromMethod = jest.fn(() => Promise.resolve());
   return {
     __esModule: true,
     default: mockLCIAResultCalculation,
     LCIAResultCalculation: mockLCIAResultCalculation,
+    getReferenceQuantityFromMethod: mockGetReferenceQuantityFromMethod,
   };
 });
 
@@ -352,7 +354,7 @@ describe('ProcessForm component', () => {
     mockRefCheckContextValue = { refCheckData: [] };
   });
 
-  it('marks rows with issues when rules are enabled', () => {
+  it('marks rows with issues when rules are enabled', async () => {
     mockRefCheckContextValue = {
       refCheckData: [
         {
@@ -366,7 +368,9 @@ describe('ProcessForm component', () => {
       <ProcessForm {...defaultProps} activeTabKey='exchanges' showRules exchangeDataSource={[]} />,
     );
 
-    expect(proTableInstances).toHaveLength(2);
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
 
     const rowClassName = proTableInstances[0].rowClassName;
     const errorRow = rowClassName({
@@ -388,7 +392,7 @@ describe('ProcessForm component', () => {
     expect(validRow).toBe('');
   });
 
-  it('disables exchange actions when actionFrom is modelResult', () => {
+  it('disables exchange actions when actionFrom is modelResult', async () => {
     render(
       <ProcessForm
         {...defaultProps}
@@ -403,31 +407,35 @@ describe('ProcessForm component', () => {
       />,
     );
 
-    expect(mockProcessExchangeCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        disabled: true,
-        direction: 'output',
-      }),
-    );
-    expect(mockProcessExchangeEdit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        disabled: true,
-      }),
-    );
-    expect(mockProcessExchangeDelete).toHaveBeenCalledWith(
-      expect.objectContaining({
-        disabled: true,
-      }),
-    );
+    await waitFor(() => {
+      expect(mockProcessExchangeCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          disabled: true,
+          direction: 'output',
+        }),
+      );
+      expect(mockProcessExchangeEdit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          disabled: true,
+        }),
+      );
+      expect(mockProcessExchangeDelete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          disabled: true,
+        }),
+      );
+    });
   });
 
-  it('notifies parent when tab changes', () => {
+  it('notifies parent when tab changes', async () => {
     render(<ProcessForm {...defaultProps} />);
 
     const validationTab = screen.getByRole('button', { name: 'Validation' });
     fireEvent.click(validationTab);
 
-    expect(defaultProps.onTabChange).toHaveBeenCalledWith('validation');
+    await waitFor(() => {
+      expect(defaultProps.onTabChange).toHaveBeenCalledWith('validation');
+    });
   });
 
   it('calculates LCIA results when toolbar button is clicked', async () => {

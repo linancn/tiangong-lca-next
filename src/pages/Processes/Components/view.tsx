@@ -14,6 +14,7 @@ import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 
 import { getRejectedComments, mergeCommentsToData } from '@/pages/Utils/review';
+import { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -227,7 +228,7 @@ const ProcessView: FC<Props> = ({
       dataIndex: 'referenceQuantity',
       search: false,
       render: (_, row) => {
-        return [<span key={0}>{getLangText(row.unit, lang) || '-'}</span>];
+        return [<span key={0}>{getLangText(row?.referenceQuantityDesc, lang) || '-'}</span>];
       },
     },
     {
@@ -1640,8 +1641,9 @@ const ProcessView: FC<Props> = ({
       }
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
-      const sourceData = formData?.LCIAResults?.LCIAResult ?? [];
-      setLciaResultDataSource(jsonToList(sourceData));
+      const sourceData = jsonToList(formData?.LCIAResults?.LCIAResult);
+      await getReferenceQuantityFromMethod(sourceData);
+      setLciaResultDataSource(sourceData);
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>
