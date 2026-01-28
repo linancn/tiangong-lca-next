@@ -1,7 +1,7 @@
 import type { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { genFlowNameJson } from '@/services/flows/util';
-import { getDataDetailById } from '@/services/general/api';
+import { getDataDetail, getDataDetailById } from '@/services/general/api';
 import { getLangList } from '@/services/general/util';
 
 export const getNewVersionShortDescription = (json: any, type: string) => {
@@ -109,6 +109,45 @@ export const getRefsOfNewVersion = async (initData: any) => {
     }),
   );
   return { newRefs, oldRefs };
+};
+
+export const getRefsOfCurrentVersion = async (initData: any) => {
+  if (!initData) return { oldRefs: [] as RefVersionItem[] };
+  const refObjs = getAllRefObj(initData) ?? [];
+  const seen = new Set<string>();
+  const unique = refObjs.filter((r: any) => {
+    const key = `${r['@refObjectId']}:${r['@version']}:${r['@type']}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const oldRefs: RefVersionItem[] = [];
+  await Promise.all(
+    unique.map(async (r: any) => {
+      const table = getRefTableName(r['@type']);
+      if (!table) return;
+      try {
+        const result = await getDataDetail(r['@refObjectId'], r['@version'], table);
+        const currentRow = result?.data;
+        if (currentRow) {
+          const currentNormDesc = getNewVersionShortDescription(currentRow?.json, r['@type']);
+          oldRefs.push({
+            key: `${r['@refObjectId']}:${r['@version']}:${r['@type']}:current`,
+            id: r['@refObjectId'],
+            type: r['@type'],
+            currentVersion: r['@version'],
+            newVersion: r['@version'],
+            description: getLangList(r['common:shortDescription']),
+            newDescription: currentNormDesc,
+          } as any);
+        }
+      } catch (e) {
+        // ignore single ref error
+      }
+    }),
+  );
+  return { oldRefs };
 };
 
 export function updateRefsData(obj: any, newRefs: RefVersionItem[], updateVersion: boolean) {

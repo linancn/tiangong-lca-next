@@ -159,6 +159,7 @@ export default {
   'pages.process.view.lciaresults.calculate': '计算 LCIA 结果',
   'pages.process.view.lciaresults.shortDescription': 'LCIA',
   'pages.process.view.lciaresults.meanAmount': '平均量',
+  'pages.process.view.lciaresults.unit': '单位',
   'pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion': '版本',
   'processExchange.exchangeDirection': '输入/输出方向',
   'processExchange.resultingAmount': '结果量',

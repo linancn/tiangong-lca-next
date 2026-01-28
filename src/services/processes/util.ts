@@ -851,7 +851,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 'common:shortDescription'
               ],
@@ -1007,7 +1007,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 'common:shortDescription'
               ],
@@ -1052,7 +1052,7 @@ export function genProcessFromData(data: any): FormProcess {
             '@version':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),

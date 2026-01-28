@@ -77,6 +77,7 @@ export default {
   'pages.process.view.lciaresults.calculate': 'Calculate LCIA Results',
   'pages.process.view.lciaresults.shortDescription': 'LCIA',
   'pages.process.view.lciaresults.meanAmount': 'Mean amount',
+  'pages.process.view.lciaresults.unit': 'Unit',
   'pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion': 'Version',
 
   'pages.process.view.modellingAndValidation.typeOfDataSet': 'Type of data set',

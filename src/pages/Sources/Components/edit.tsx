@@ -2,7 +2,11 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
 import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
 import { genSourceFromData, genSourceJsonOrdered } from '@/services/sources/util';
@@ -101,6 +105,12 @@ const SourceEdit: FC<Props> = ({
       formRefEdit.current?.setFieldsValue({ ...res, id });
     }
   };
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+  };
   const handletFromData = () => {
     if (fromData)
       setFromData({
@@ -139,6 +149,7 @@ const SourceEdit: FC<Props> = ({
 
   const handleSubmit = async (autoClose: boolean) => {
     if (autoClose) setSpinning(true);
+    await updateReferenceDescription();
     if (fileList0.length > 0) {
       const nonExistentFiles = fileList0.filter(
         (file0) => !fileList.some((file) => file.uid === file0.uid),

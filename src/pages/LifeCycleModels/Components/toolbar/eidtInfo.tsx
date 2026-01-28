@@ -29,7 +29,11 @@ import {
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { genLifeCycleModelJsonOrdered } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
@@ -104,7 +108,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         formRefEdit.current?.setFieldsValue({ ...res });
       }
     };
-
+    const updateReferenceDescription = async (data: any) => {
+      const { oldRefs } = await getRefsOfCurrentVersion({ ...data, ...fromData });
+      const res = updateRefsData({ ...data, ...fromData }, oldRefs, false);
+      setFromData(res);
+      formRefEdit.current?.setFieldsValue({ ...res });
+    };
     const handletFromData = () => {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
 
@@ -557,6 +566,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
     useImperativeHandle(ref, () => ({
       submitReview: submitReview,
       handleCheckData: handleCheckData,
+      updateReferenceDescription: updateReferenceDescription,
     }));
 
     return (
