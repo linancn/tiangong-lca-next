@@ -484,24 +484,16 @@ export async function getReferenceUnits(params: { id: string; version: string }[
         json->unitGroupDataSet->unitGroupInformation->quantitativeReference->referenceToReferenceUnit,
         json->unitGroupDataSet->units->unit
     `;
-  const _ids = params.map((item: any) => {
-    return item.id;
-  });
 
-  const ids = _ids.filter((id) => id && id.length === 36);
-  if (ids.length > 0) {
-    const { data } = await supabase
-      .from('unitgroups')
-      .select(selectStr)
-      .in('id', ids)
-      .order('version', { ascending: false });
+  if (params.length > 0) {
+    const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+
+    const { data } = await supabase.from('unitgroups').select(selectStr).or(orConditions);
 
     if (data && data.length > 0) {
       result = params.map((item: any) => {
         let unitRes: any = data.find((i: any) => i.id === item.id && i.version === item.version);
-        if (!unitRes) {
-          unitRes = data.find((i: any) => i.id === item.id);
-        }
+
         const dataList = jsonToList(unitRes?.unit);
         const refData = dataList.find(
           (item) => item?.['@dataSetInternalID'] === unitRes?.referenceToReferenceUnit,

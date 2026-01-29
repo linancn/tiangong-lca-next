@@ -22,14 +22,12 @@ jest.mock('@/services/supabase', () => ({
   },
 }));
 
-const mockGetLifeCyclesByIds = jest.fn();
-const mockGetLifeCyclesByIdAndVersion = jest.fn();
+const mockGetLifeCyclesByIdAndVersions = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
-  getLifeCyclesByIds: (...args: any[]) => mockGetLifeCyclesByIds.apply(null, args),
-  getLifeCyclesByIdAndVersion: (...args: any[]) =>
-    mockGetLifeCyclesByIdAndVersion.apply(null, args),
+  getLifeCyclesByIdAndVersions: (...args: any[]) =>
+    mockGetLifeCyclesByIdAndVersions.apply(null, args),
 }));
 
 const mockGetPendingComment = jest.fn();
@@ -89,10 +87,8 @@ beforeEach(() => {
   mockFrom.mockReset();
   mockAuthGetSession.mockReset();
   mockFunctionsInvoke.mockReset();
-  mockGetLifeCyclesByIds.mockReset();
-  mockGetLifeCyclesByIds.mockResolvedValue({ data: [] });
-  mockGetLifeCyclesByIdAndVersion.mockReset();
-  mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
+  mockGetLifeCyclesByIdAndVersions.mockReset();
+  mockGetLifeCyclesByIdAndVersions.mockResolvedValue({ data: [] });
   mockGetPendingComment.mockReset();
   mockGetPendingComment.mockResolvedValue({ data: [] });
   mockGetReviewedComment.mockReset();
@@ -340,7 +336,7 @@ describe('getNotifyReviews', () => {
     const builder = createQueryBuilder(supabaseResult);
     mockFrom.mockReturnValueOnce(builder);
 
-    mockGetLifeCyclesByIds.mockResolvedValueOnce({ data: [] });
+    mockGetLifeCyclesByIdAndVersions.mockResolvedValueOnce({ data: [] });
 
     const result = await reviewsApi.getNotifyReviews({ pageSize: 5, current: 3 }, 'en', 3);
 

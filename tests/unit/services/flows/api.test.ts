@@ -743,7 +743,9 @@ describe('getFlowProperties', () => {
     const result = await getFlowProperties([{ id: flowId, version: '01.00.000' }]);
 
     expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.inArgs[0]).toEqual({ field: 'id', values: [flowId] });
+    expect(query.calls.orArgs).toEqual([
+      `and(id.eq.${flowId},version.eq.01.00.000)`,
+    ]);
     expect(result).toEqual({
       data: [
         {

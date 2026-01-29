@@ -493,11 +493,6 @@ export async function getFlowpropertyDetail(id: string, version: string) {
 // Same function as getReferenceUnitGroup function, imported parameter and return value are different
 
 export async function getReferenceUnitGroups(params: { id: string; version: string }[]) {
-  const _ids = params.map((item: any) => {
-    return item.id;
-  });
-  const ids = _ids.filter((id) => id && id.length === 36);
-
   let result: any = [];
   const selectStr = `
         id,
@@ -505,25 +500,25 @@ export async function getReferenceUnitGroups(params: { id: string; version: stri
         json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
         json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup
     `;
-  if (ids.length) {
-    const { data } = await supabase
-      .from('flowproperties')
-      .select(selectStr)
-      .in('id', ids)
-      .order('version', { ascending: false });
+  if (params.length) {
+    const orConditions = params
+      .map((item) => `and(id.eq.${item.id},version.eq.${item.version})`)
+      .join(',');
+
+    const { data } = await supabase.from('flowproperties').select(selectStr).or(orConditions);
 
     if (data && data.length > 0) {
       result = params.map((item: any) => {
-        let unitGroup: any = data.find((i: any) => i.id === item.id && i.version === item.version);
-        if (!unitGroup) {
-          unitGroup = data.find((i: any) => i.id === item.id);
-        }
+        const unitGroup: any = data.find(
+          (i: any) => i.id === item.id && i.version === item.version,
+        );
 
         return {
           id: unitGroup?.id,
           version: unitGroup?.version,
           name: unitGroup?.['common:name'] ?? '-',
           refUnitGroupId: unitGroup?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
+          refUnitGroupVersion: unitGroup?.referenceToReferenceUnitGroup?.['@version'] ?? '-',
           refUnitGroupShortDescription:
             unitGroup?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
         };

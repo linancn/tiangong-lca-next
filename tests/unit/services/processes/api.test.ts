@@ -52,11 +52,11 @@ jest.mock('@/services/ilcd/api', () => ({
   getILCDClassification: (...args: any[]) => mockGetILCDClassification.apply(null, args),
 }));
 
-const mockGetLifeCyclesByIds = jest.fn();
+const mockGetLifeCyclesByIdAndVersions = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
-  getLifeCyclesByIds: (...args: any[]) => mockGetLifeCyclesByIds.apply(null, args),
+  getLifeCyclesByIdAndVersions: (...args: any[]) => mockGetLifeCyclesByIdAndVersions.apply(null, args),
 }));
 
 const mockGenProcessJsonOrdered = jest.fn();
@@ -124,7 +124,7 @@ beforeEach(() => {
   mockGetTeamIdByUserId.mockReset();
   mockGetILCDLocationByValues.mockReset();
   mockGetILCDClassification.mockReset();
-  mockGetLifeCyclesByIds.mockReset();
+  mockGetLifeCyclesByIdAndVersions.mockReset();
   mockGenProcessJsonOrdered.mockReset();
   mockGenProcessName.mockReset();
   mockClassificationToString.mockReset();
@@ -142,7 +142,7 @@ beforeEach(() => {
   );
   mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
   mockGetILCDClassification.mockResolvedValue({ data: {} });
-  mockGetLifeCyclesByIds.mockResolvedValue({ data: [] });
+  mockGetLifeCyclesByIdAndVersions.mockResolvedValue({ data: [] });
 });
 
 describe('createProcess', () => {
