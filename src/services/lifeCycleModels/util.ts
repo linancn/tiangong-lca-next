@@ -197,11 +197,11 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
         },
         validation: {
           review: listToJson(
-            data?.modellingAndValidation?.validation?.review?.map((review: any) => {
+            jsonToList(data?.modellingAndValidation?.validation?.review)?.map((review: any) => {
               return {
                 '@type': review?.['@type'] ?? {},
                 'common:scope': listToJson(
-                  review?.['common:scope']?.map((scope: any) => {
+                  jsonToList(review?.['common:scope'])?.map((scope: any) => {
                     return {
                       '@name': scope?.['@name'] ?? {},
                       'common:method': {
@@ -257,7 +257,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
         },
         complianceDeclarations: {
           compliance: listToJson(
-            data?.modellingAndValidation?.complianceDeclarations?.compliance?.map(
+            jsonToList(data?.modellingAndValidation?.complianceDeclarations?.compliance)?.map(
               (compliance: any) => {
                 return {
                   'common:referenceToComplianceSystem': {

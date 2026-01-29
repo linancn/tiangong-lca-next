@@ -92,3 +92,8 @@ export const publicationTypeOptions = [
     ),
   },
 ];
+
+export const getPublicationTypeLabel = (value: string) => {
+  const option = publicationTypeOptions.find((opt) => opt.value === value);
+  return option ? option.label : '-';
+};
