@@ -11,7 +11,7 @@ import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } fro
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
-import { publicationTypeOptions } from './optiondata';
+import { getPublicationTypeLabel } from './optiondata';
 import SourceSelectDescription from './select/description';
 
 type Props = {
@@ -21,11 +21,6 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
-};
-
-const getPublicationTypeLabel = (value: string) => {
-  const option = publicationTypeOptions.find((opt) => opt.value === value);
-  return option ? option.label : '-';
 };
 
 const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
