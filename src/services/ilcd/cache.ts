@@ -149,6 +149,10 @@ class ILCDCache {
           Flow: '流',
           Process: '过程',
           LifeCycleModel: '生命周期模型',
+          Contact: '联系信息',
+          Source: '来源',
+          FlowProperty:'流属性',
+          UnitGroup:'单位组',
         };
         resultZH = await supabase.rpc('ilcd_classification_get', {
           this_file_name: 'ILCDClassification_zh',
@@ -251,6 +255,10 @@ export async function getCachedFlowCategorizationAll(lang: string) {
 
 export async function getCachedLocationData(lang: string, locations: string[]) {
   return ilcdCache.getILCDLocationByValues(lang, locations);
+}
+
+export async function getCachedClassificationData(categoryType: string, lang: string, getIds: string[]) {
+  return ilcdCache.getILCDClassification(categoryType, lang, getIds);
 }
 
 // Helper methods to clear cache (useful when data is updated)
