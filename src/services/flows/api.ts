@@ -638,16 +638,23 @@ export async function getFlowProperties(params: { id: string; version: string }[
         json->flowDataSet->flowProperties->flowProperty
     `;
 
-  if (params.length > 0) {
-    const orConditions = params
-      .map((item) => `and(id.eq.${item.id},version.eq.${item.version})`)
-      .join(',');
+  let _ids = params.map((item) => item.id);
+  let ids = _ids.filter((id) => id && id.length === 36);
 
-    const { data } = await supabase.from('flows').select(selectStr).or(orConditions);
+  if (ids.length > 0) {
+    const { data } = await supabase
+      .from('flows')
+      .select(selectStr)
+      .in('id', ids)
+      .order('version', { ascending: false });
 
     if (data && data.length > 0) {
       result = params.map((item: any) => {
-        const property: any = data.find((i: any) => i.id === item.id && i.version === item.version);
+        let property: any = data.find((i: any) => i.id === item.id && i.version === item.version);
+        if (!property) {
+          property = data.find((i: any) => i.id === item.id);
+        }
+
         const dataList = jsonToList(property?.flowProperty);
         const refData = dataList.find(
           (item) => item?.['@dataSetInternalID'] === property?.referenceToReferenceFlowProperty,

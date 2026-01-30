@@ -56,7 +56,8 @@ const mockGetLifeCyclesByIdAndVersions = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
-  getLifeCyclesByIdAndVersions: (...args: any[]) => mockGetLifeCyclesByIdAndVersions.apply(null, args),
+  getLifeCyclesByIdAndVersions: (...args: any[]) =>
+    mockGetLifeCyclesByIdAndVersions.apply(null, args),
 }));
 
 const mockGenProcessJsonOrdered = jest.fn();

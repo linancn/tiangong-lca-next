@@ -743,9 +743,9 @@ describe('getFlowProperties', () => {
     const result = await getFlowProperties([{ id: flowId, version: '01.00.000' }]);
 
     expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.orArgs).toEqual([
-      `and(id.eq.${flowId},version.eq.01.00.000)`,
-    ]);
+    // getFlowProperties uses .in() for ID filtering, not .or()
+    expect(query.calls.inArgs).toEqual([{ field: 'id', values: [flowId] }]);
+    expect(query.calls.orderArgs).toEqual([{ field: 'version', options: { ascending: false } }]);
     expect(result).toEqual({
       data: [
         {
@@ -761,6 +761,14 @@ describe('getFlowProperties', () => {
       ],
       success: true,
     });
+  });
+
+  it('returns failure when no valid ids are provided', async () => {
+    // When IDs are filtered out (not 36 chars), function returns early without DB call
+    const result = await getFlowProperties([{ id: 'short-id', version: '01.00.000' }]);
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [], success: false });
   });
 });
 

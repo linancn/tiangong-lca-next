@@ -711,11 +711,10 @@ describe('getReferenceUnits', () => {
 
     expect(mockFrom).toHaveBeenCalledWith('unitgroups');
     expect(query.calls.selectArgs).toEqual([expect.stringContaining('json->unitGroupDataSet')]);
-    expect(query.calls.orArgs).toEqual([
-      `and(id.eq.${validId},version.eq.01.00.002),and(id.eq.${validId},version.eq.01.00.010)`,
-    ]);
-    // Note: getReferenceUnits does not use .order() method
-    expect(query.calls.orderArgs).toEqual([]);
+    // getReferenceUnits uses .in() for ID filtering, not .or()
+    // Note: The same ID appears twice in params (for different versions), so values array contains duplicates
+    expect(query.calls.inArgs).toEqual([{ field: 'id', values: [validId, validId] }]);
+    expect(query.calls.orderArgs).toEqual([{ field: 'version', options: { ascending: false } }]);
     expect(result).toEqual({
       data: [
         {
@@ -764,13 +763,10 @@ describe('getReferenceUnits', () => {
   });
 
   it('returns failure when no valid ids are provided', async () => {
-    const supabaseResult = { data: [], error: null };
-    const query = createQuery(supabaseResult);
-    mockFrom.mockReturnValueOnce(query as any);
-
+    // When IDs are filtered out (not 36 chars), function returns early without DB call
     const result = await getReferenceUnits([{ id: 'short-id', version: '01.00.000' }]);
 
-    expect(mockFrom).toHaveBeenCalledWith('unitgroups');
+    expect(mockFrom).not.toHaveBeenCalled();
     expect(result).toEqual({ data: [], success: false });
   });
 });
@@ -828,5 +824,12 @@ describe('getReferenceUnit', () => {
       },
       success: true,
     });
+  });
+
+  it('returns undefined when id is invalid', async () => {
+    const result = await getReferenceUnit('short-id', '01.00.000');
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
   });
 });

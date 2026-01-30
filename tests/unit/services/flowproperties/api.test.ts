@@ -805,11 +805,12 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const result = await getReferenceUnitGroups([
         { id: validId1, version: '01.00.000' },
         { id: validId2, version: '02.00.000' },
-        { id: 'short-id', version: '01.00.000' },
       ]);
 
       expect(supabase.from).toHaveBeenCalledWith('flowproperties');
-      expect(builder.or).toHaveBeenCalled();
+      // getReferenceUnitGroups uses .in() for ID filtering, not .or()
+      expect(builder.in).toHaveBeenCalledWith('id', [validId1, validId2]);
+      expect(builder.order).toHaveBeenCalledWith('version', { ascending: false });
       expect(result.success).toBe(true);
       expect(result.data).toEqual([
         {
@@ -817,7 +818,6 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           version: '01.00.000',
           name: mockMultilingualText,
           refUnitGroupId: 'ug-1',
-          refUnitGroupVersion: '-',
           refUnitGroupShortDescription: mockMultilingualText,
         },
         {
@@ -825,32 +825,16 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           version: '02.00.000',
           name: mockMultilingualText,
           refUnitGroupId: 'ug-2',
-          refUnitGroupVersion: '-',
           refUnitGroupShortDescription: mockMultilingualText,
-        },
-        {
-          id: undefined,
-          version: undefined,
-          name: '-',
-          refUnitGroupId: '-',
-          refUnitGroupVersion: '-',
-          refUnitGroupShortDescription: {},
         },
       ]);
     });
 
     it('should return empty failure result when no valid ids provided', async () => {
-      const supabaseResponse = {
-        data: [],
-        error: null,
-      };
-
-      const builder = createQueryBuilder(supabaseResponse);
-      supabase.from.mockReturnValue(builder);
-
+      // When IDs are filtered out (not 36 chars), function returns early without DB call
       const result = await getReferenceUnitGroups([{ id: 'short-id', version: '01.00.000' }]);
 
-      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
+      expect(supabase.from).not.toHaveBeenCalled();
       expect(result).toEqual({
         data: [],
         success: false,
