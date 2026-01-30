@@ -2,12 +2,12 @@ import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime } from '@/services/general/util';
+import { formatDateTime, getLangText } from '@/services/general/util';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
-  genNodeLabel,
+  genPortLabel,
 } from '@/services/lifeCycleModels/util';
 import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { genProcessName } from '@/services/processes/util';
@@ -23,6 +23,12 @@ import { Control } from './control';
 import EdgeExhange from './Exchange/index';
 import IoPortView from './Exchange/ioPortView';
 import { getEdgeLabel } from './utils/edge';
+import {
+  getPortLabelWithAllocation,
+  getPortTextColor,
+  getPortTextStyle,
+  nodeTitleTool,
+} from './utils/node';
 import ToolbarViewInfo from './viewInfo';
 import TargetAmount from './viewTargetAmount';
 type Props = {
@@ -195,52 +201,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     },
   };
 
-  const nodeTitleTool = (width: number, title: string) => {
-    return {
-      id: 'nodeTitle',
-      name: 'button',
-      args: {
-        markup: [
-          {
-            tagName: 'rect',
-            selector: 'button',
-            attrs: {
-              width: width,
-              height: 26,
-              rx: 4,
-              ry: 4,
-              fill: token.colorPrimary,
-              stroke: token.colorPrimary,
-              'stroke-width': 1,
-              cursor: 'pointer',
-            },
-          },
-          {
-            tagName: 'text',
-            textContent: genNodeLabel(title ?? '', lang, width),
-            selector: 'text',
-            attrs: {
-              fill: 'white',
-              'font-size': 14,
-              'text-anchor': 'middle',
-              'dominant-baseline': 'middle',
-              'pointer-events': 'none',
-              x: width / 2,
-              y: 13,
-            },
-          },
-          {
-            tagName: 'title',
-            textContent: title,
-          },
-        ],
-        x: 0,
-        y: 0,
-        offset: { x: 0, y: 0 },
-      },
-    };
-  };
-
   const nodeAttrs = {
     body: {
       stroke: token.colorPrimary,
@@ -255,6 +215,22 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       refY: 8,
       textAnchor: 'middle',
       textVerticalAnchor: 'top',
+    },
+  };
+
+  const nodeTemplate: any = {
+    id: '',
+    label: '',
+    shape: 'rect',
+    x: 200,
+    y: 100,
+    width: 350,
+    height: 80,
+    attrs: nodeAttrs,
+    data: {
+      label: [],
+      quantitativeReference: '0',
+      generalComment: [],
     },
   };
 
@@ -413,23 +389,26 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
               ...node.ports,
               groups: ports.groups,
               items: node?.ports?.items?.map((item: any) => {
+                const itemText = getLangText(item?.data?.textLang, lang);
+                const itemTextWithAllocation = getPortLabelWithAllocation(
+                  itemText ?? '',
+                  item?.data?.allocations,
+                  item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
+                );
                 return {
                   ...item,
                   attrs: {
                     ...item?.attrs,
                     text: {
                       ...item?.attrs?.text,
-                      fill:
-                        item?.data?.quantitativeReference ||
-                        (item?.data?.allocations?.allocation?.['@allocatedFraction'] &&
-                          Number(
-                            item?.data?.allocations?.allocation?.['@allocatedFraction']?.split(
-                              '%',
-                            )[0],
-                          ) > 0)
-                          ? token.colorPrimary
-                          : token.colorTextDescription,
-                      'font-weight': item?.data?.quantitativeReference ? 'bold' : 'normal',
+                      text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width)}`,
+                      title: itemTextWithAllocation,
+                      fill: getPortTextColor(
+                        item?.data?.quantitativeReference,
+                        item?.data?.allocations,
+                        token,
+                      ),
+                      'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
                     },
                   },
                 };
@@ -440,6 +419,8 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
               nodeTitleTool(
                 node?.size?.width ?? node?.width ?? 350,
                 genProcessName(node?.data?.label, lang) ?? '',
+                token,
+                lang,
               ),
               inputFlowTool,
               outputFlowTool,
@@ -506,6 +487,8 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           nodeTitleTool(
             node?.size?.width ?? node?.width ?? 350,
             genProcessName(node?.data?.label, lang) ?? '',
+            token,
+            lang,
           ),
           inputFlowTool,
           outputFlowTool,
