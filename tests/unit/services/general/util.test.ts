@@ -138,7 +138,7 @@ describe('General Utility Functions', () => {
       const mockData = [
         {
           refUnitGroupId: 'ug-1',
-          version: '01.00.000',
+          refUnitGroupVersion: '01.00.000',
         },
       ];
 
@@ -160,7 +160,7 @@ describe('General Utility Functions', () => {
       expect(result).toEqual([
         {
           refUnitGroupId: 'ug-1',
-          version: '01.00.000',
+          refUnitGroupVersion: '01.00.000',
           refUnitRes: {
             id: 'ug-1',
             version: '01.00.000',

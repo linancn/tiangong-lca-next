@@ -818,6 +818,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           version: '01.00.000',
           name: mockMultilingualText,
           refUnitGroupId: 'ug-1',
+          refUnitGroupVersion: '-',
           refUnitGroupShortDescription: mockMultilingualText,
         },
         {
@@ -825,6 +826,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           version: '02.00.000',
           name: mockMultilingualText,
           refUnitGroupId: 'ug-2',
+          refUnitGroupVersion: '-',
           refUnitGroupShortDescription: mockMultilingualText,
         },
       ]);

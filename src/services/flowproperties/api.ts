@@ -524,6 +524,7 @@ export async function getReferenceUnitGroups(params: { id: string; version: stri
           version: unitGroup?.version,
           name: unitGroup?.['common:name'] ?? '-',
           refUnitGroupId: unitGroup?.referenceToReferenceUnitGroup?.['@refObjectId'] ?? '-',
+          refUnitGroupVersion: unitGroup?.referenceToReferenceUnitGroup?.['@version'] ?? '-',
           refUnitGroupShortDescription:
             unitGroup?.referenceToReferenceUnitGroup?.['common:shortDescription'] ?? {},
         };

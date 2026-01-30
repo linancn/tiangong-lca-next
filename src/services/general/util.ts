@@ -151,7 +151,7 @@ export async function getUnitData(idType: string, data: any) {
       const unitParams = data?.map((item: any) => {
         return {
           id: item?.refUnitGroupId,
-          version: item?.version,
+          version: item?.refUnitGroupVersion,
         };
       });
       getReferenceUnits(unitParams).then((unitsRes: any) => {
