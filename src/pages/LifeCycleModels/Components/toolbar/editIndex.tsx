@@ -47,6 +47,12 @@ import ToolbarEditInfo from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelect from './Exchange/ioPortSelect';
 import { getEdgeLabel } from './utils/edge';
+import {
+  getPortLabelWithAllocation,
+  getPortTextColor,
+  getPortTextStyle,
+  nodeTitleTool,
+} from './utils/node';
 
 type Props = {
   id: string;
@@ -117,52 +123,6 @@ const ToolbarEdit: FC<Props> = ({
   const [nodeCount, setNodeCount] = useState(0);
 
   const { token } = theme.useToken();
-
-  const nodeTitleTool = (width: number, title: string) => {
-    return {
-      id: 'nodeTitle',
-      name: 'button',
-      args: {
-        markup: [
-          {
-            tagName: 'rect',
-            selector: 'button',
-            attrs: {
-              width: width,
-              height: 26,
-              rx: 4,
-              ry: 4,
-              fill: token.colorPrimary,
-              stroke: token.colorPrimary,
-              'stroke-width': 1,
-              cursor: 'pointer',
-            },
-          },
-          {
-            tagName: 'text',
-            textContent: genNodeLabel(title ?? '', lang, width),
-            selector: 'text',
-            attrs: {
-              fill: 'white',
-              'font-size': 14,
-              'text-anchor': 'middle',
-              'dominant-baseline': 'middle',
-              'pointer-events': 'none',
-              x: width / 2,
-              y: 13,
-            },
-          },
-          {
-            tagName: 'title',
-            textContent: title,
-          },
-        ],
-        x: 0,
-        y: 0,
-        offset: { x: 0, y: 0 },
-      },
-    };
-  };
 
   const inputFlowTool = {
     id: 'inputFlow',
@@ -490,32 +450,6 @@ const ToolbarEdit: FC<Props> = ({
     }
   };
 
-  const getPortTextColor = (quantitativeReference: boolean, allocations: any) => {
-    const num = allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
-    const allocatedFractionNum = Number(num);
-    if (allocatedFractionNum > 0 || quantitativeReference) {
-      return token.colorPrimary;
-    }
-    return token.colorTextDescription;
-  };
-
-  const getPortTextStyle = (quantitativeReference: boolean) => {
-    if (quantitativeReference) {
-      return 'bold';
-    }
-    return 'normal';
-  };
-
-  const getPortLabelWithAllocation = (label: string, allocations: any, direction: string) => {
-    const num = allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
-    const allocatedFractionNum = Number(num);
-
-    if (allocatedFractionNum > 0 && direction.toUpperCase() === 'OUTPUT') {
-      return `[${allocatedFractionNum}%]${label}`;
-    }
-    return label;
-  };
-
   const updateNodePorts = (data: any) => {
     const group = ioPortSelectorDirection === 'Output' ? 'groupOutput' : 'groupInput';
 
@@ -547,7 +481,7 @@ const ToolbarEdit: FC<Props> = ({
             text: `${labelWithAllocation && labelWithAllocation.length > (lang === 'zh' ? nodeWidth / 12 - 4 : nodeWidth / 7 - 4) ? labelSubWithAllocation + '...' : labelWithAllocation}`,
             title: labelWithAllocation,
             cursor: 'pointer',
-            fill: getPortTextColor(item?.quantitativeReference, item?.allocations),
+            fill: getPortTextColor(item?.quantitativeReference, item?.allocations, token),
             'font-weight': getPortTextStyle(item?.quantitativeReference),
           },
         },
@@ -635,6 +569,7 @@ const ToolbarEdit: FC<Props> = ({
               fill: getPortTextColor(
                 (refExchange as any)?.quantitativeReference,
                 (refExchange as any)?.allocations,
+                token,
               ),
               'font-weight': getPortTextStyle((refExchange as any)?.quantitativeReference),
             },
@@ -666,7 +601,7 @@ const ToolbarEdit: FC<Props> = ({
               quantitativeReference: quantitativeReference,
             },
             tools: [
-              nodeTitleTool(nodeTemplate.width, genProcessName(name, lang) ?? ''),
+              nodeTitleTool(nodeTemplate.width, genProcessName(name, lang) ?? '', token, lang),
               quantitativeReference === '1' ? refTool : nonRefTool,
               inputFlowTool,
               outputFlowTool,
@@ -737,6 +672,7 @@ const ToolbarEdit: FC<Props> = ({
                   fill: getPortTextColor(
                     (newItem as any)?.quantitativeReference,
                     newItem?.allocations,
+                    token,
                   ),
                   'font-weight': getPortTextStyle((newItem as any)?.quantitativeReference),
                 },
@@ -778,7 +714,7 @@ const ToolbarEdit: FC<Props> = ({
           },
           tools: [
             node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-            nodeTitleTool(nodeWidth, genProcessName(newLabel, lang) ?? ''),
+            nodeTitleTool(nodeWidth, genProcessName(newLabel, lang) ?? '', token, lang),
             inputFlowTool,
             outputFlowTool,
           ],
@@ -1028,7 +964,11 @@ const ToolbarEdit: FC<Props> = ({
             ...item?.attrs?.text,
             text: `${genPortLabel(itemTextWithAllocation ?? '', lang, nodeWidth)}`,
             cursor: 'pointer',
-            fill: getPortTextColor(item?.data?.quantitativeReference, item?.data?.allocations),
+            fill: getPortTextColor(
+              item?.data?.quantitativeReference,
+              item?.data?.allocations,
+              token,
+            ),
             'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
           },
         },
@@ -1043,7 +983,7 @@ const ToolbarEdit: FC<Props> = ({
     setTimeout(() => {
       node.addTools([
         node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-        nodeTitleTool(nodeWidth, label ?? ''),
+        nodeTitleTool(nodeWidth, label ?? '', token, lang),
         inputFlowTool,
         outputFlowTool,
       ]);
@@ -1187,6 +1127,7 @@ const ToolbarEdit: FC<Props> = ({
                   fill: getPortTextColor(
                     item?.data?.quantitativeReference,
                     item?.data?.allocations,
+                    token,
                   ),
                   'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
                 },
@@ -1204,6 +1145,8 @@ const ToolbarEdit: FC<Props> = ({
             nodeTitleTool(
               node?.size?.width ?? node?.width ?? nodeTemplate.width,
               genProcessName(node?.data?.label, lang) ?? '',
+              token,
+              lang,
             ),
             inputFlowTool,
             outputFlowTool,
@@ -1289,6 +1232,7 @@ const ToolbarEdit: FC<Props> = ({
                     fill: getPortTextColor(
                       item?.data?.quantitativeReference,
                       item?.data?.allocations,
+                      token,
                     ),
                     'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
                   },
@@ -1306,6 +1250,8 @@ const ToolbarEdit: FC<Props> = ({
               nodeTitleTool(
                 node?.size?.width ?? node?.width ?? nodeTemplate.width,
                 genProcessName(node?.data?.label, lang) ?? '',
+                token,
+                lang,
               ),
               inputFlowTool,
               outputFlowTool,
@@ -1401,6 +1347,8 @@ const ToolbarEdit: FC<Props> = ({
           nodeTitleTool(
             node?.size?.width ?? node?.width ?? nodeTemplate.width,
             genProcessName(node?.data?.label, lang) ?? '',
+            token,
+            lang,
           ),
           inputFlowTool,
           outputFlowTool,
