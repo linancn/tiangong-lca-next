@@ -132,7 +132,7 @@ export async function getReviewsTableDataOfReviewMember(
             ? genProcessName(model?.name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? '-',
+        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
         createAt: new Date(i.created_at).toISOString(),
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
@@ -215,7 +215,7 @@ export async function getReviewsTableDataOfReviewAdmin(
             ? genProcessName(model?.name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? '-',
+        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
         createAt: new Date(i.created_at).toISOString(),
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
@@ -321,7 +321,7 @@ export async function getNotifyReviews(
             ? genProcessName(model?.name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? '-',
+        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
         modifiedAt: new Date(i.modified_at).toISOString(),
         stateCode: i.state_code,
         json: i?.json,
