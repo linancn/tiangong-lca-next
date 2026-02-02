@@ -45,12 +45,17 @@ const {
   jsonToList: mockJsonToList,
 } = jest.requireMock('@/services/general/util');
 
-jest.mock('@/services/ilcd/api', () => ({
-  getILCDClassification: jest.fn(),
+jest.mock('@/services/ilcd/cache', () => ({
+  getCachedClassificationData: jest.fn(),
+  ilcdCache: {
+    get: jest.fn(),
+    set: jest.fn(),
+    clear: jest.fn(),
+  },
 }));
 
-const { getILCDClassification: mockGetILCDClassification } =
-  jest.requireMock('@/services/ilcd/api');
+const { getCachedClassificationData: mockGetCachedClassificationData } =
+  jest.requireMock('@/services/ilcd/cache');
 
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
@@ -191,7 +196,7 @@ beforeEach(() => {
   mockJsonToList.mockImplementation((value: any) =>
     Array.isArray(value) ? value : value ? [value] : [],
   );
-  mockGetILCDClassification.mockResolvedValue({ data: [] });
+  mockGetCachedClassificationData.mockResolvedValue([]);
   mockGetTeamIdByUserId.mockResolvedValue(null);
   mockGetDataDetail.mockResolvedValue({ data: null });
 
@@ -382,13 +387,13 @@ describe('getUnitGroupTableAll', () => {
     };
     const query = createQuery(tableResult);
     mockFrom.mockReturnValueOnce(query as any);
-    mockGetILCDClassification.mockResolvedValueOnce({
-      data: [{ '@value': 'c-1', '#text': '中文分类' }],
-    });
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'c-1', '#text': '中文分类' },
+    ]);
 
     const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', '');
 
-    expect(mockGetILCDClassification).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
     expect(result.data[0]).toEqual(
       expect.objectContaining({
         id: 'ug-2',

@@ -64,8 +64,13 @@ jest.mock('@/services/general/util', () => ({
   jsonToList: jest.fn(),
 }));
 
-jest.mock('@/services/ilcd/api', () => ({
-  getILCDClassification: jest.fn(),
+jest.mock('@/services/ilcd/cache', () => ({
+  getCachedClassificationData: jest.fn(),
+  ilcdCache: {
+    get: jest.fn(),
+    set: jest.fn(),
+    clear: jest.fn(),
+  },
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -80,7 +85,7 @@ jest.mock('@/services/sources/util', () => ({
 const { supabase } = jest.requireMock('@/services/supabase');
 const { classificationToString, genClassificationZH, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
-const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
+const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
 const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
@@ -318,13 +323,13 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
         mockSource.json.sourceDataSet.sourceInformation.dataSetInformation
           .classificationInformation['common:classification']['common:class'],
       );
-      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
       genClassificationZH.mockReturnValue(['出版物']);
       classificationToString.mockReturnValue('出版物');
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'zh', 'tg', []);
 
-      expect(getILCDClassification).toHaveBeenCalledWith('Source', 'zh', ['all']);
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Source', 'zh', ['all']);
       expect(genClassificationZH).toHaveBeenCalled();
       expect(result.data[0].classification).toBe('出版物');
     });

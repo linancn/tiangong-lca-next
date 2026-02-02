@@ -55,8 +55,13 @@ jest.mock('@/services/general/util', () => ({
   jsonToList: jest.fn(),
 }));
 
-jest.mock('@/services/ilcd/api', () => ({
-  getILCDClassification: jest.fn(),
+jest.mock('@/services/ilcd/cache', () => ({
+  getCachedClassificationData: jest.fn(),
+  ilcdCache: {
+    get: jest.fn(),
+    set: jest.fn(),
+    clear: jest.fn(),
+  },
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -68,7 +73,7 @@ const { supabase } = jest.requireMock('@/services/supabase');
 const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperties/util');
 const { getLangText, classificationToString, jsonToList, genClassificationZH } =
   jest.requireMock('@/services/general/util');
-const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
+const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
@@ -265,7 +270,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       getLangText.mockReturnValue('Mass');
       classificationToString.mockReturnValue('');
       jsonToList.mockReturnValue([]);
-      getILCDClassification.mockResolvedValue({ data: [] });
+      getCachedClassificationData.mockResolvedValue([]);
 
       const result = await getFlowpropertyTableAll(params, sort, 'en', 'tg', [], undefined);
 
@@ -414,12 +419,12 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         }
         return typeof value === 'string' ? value : '';
       });
-      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
 
       const result = await getFlowpropertyTableAll(params, sort, 'zh', 'tg', [], undefined);
 
       expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
-      expect(getILCDClassification).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
       expect(genClassificationZH).toHaveBeenCalledWith(
         [{ id: 'class-id-1' }],
         mockILCDClassificationResponse.data,
@@ -630,7 +635,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         }
         return typeof value === 'string' ? value : '';
       });
-      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
 
       const result = await getFlowpropertyTablePgroongaSearch(
         { current: 1, pageSize: 10 },
@@ -641,7 +646,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         undefined,
       );
 
-      expect(getILCDClassification).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
       expect(genClassificationZH).toHaveBeenCalled();
       expect(result.success).toBe(true);
       expect(result.total).toBe(1);
@@ -698,7 +703,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         }
         return typeof value === 'string' ? value : '';
       });
-      getILCDClassification.mockResolvedValue(mockILCDClassificationResponse);
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
 
       const result = await flowproperty_hybrid_search(params, 'zh', 'tg', '质量', {}, 100);
 
@@ -712,7 +717,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           },
         }),
       );
-      expect(getILCDClassification).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
       expect(result.success).toBe(true);
       expect(result.total).toBe(1);
       expect(result.data[0]).toMatchObject({

@@ -13,7 +13,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
+import { getCachedClassificationData, getCachedLocationData } from '../ilcd/cache';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
 const selectStr4Table = `
@@ -174,12 +174,12 @@ export async function getProcessTableAll(
 
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
   const [locationRes, classificationRes] = await Promise.all([
-    getILCDLocationByValues(lang, locations),
-    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+    getCachedLocationData(lang, locations),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
   ]);
-  const locationDataArr = locationRes.data || [];
+  const locationDataArr = locationRes || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes?.data;
+  const classificationData = classificationRes;
 
   let data: any[] = result.data.map((i: any) => {
     try {
@@ -329,13 +329,13 @@ export async function getConnectableProcessesTable(
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
   const processIdsAndVersions = result.data.map((i: any) => ({ id: i.id, version: i.version }));
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
-    getILCDLocationByValues(lang, locations),
-    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+    getCachedLocationData(lang, locations),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
     getLifeCyclesByIdAndVersions(processIdsAndVersions),
   ]);
-  const locationDataArr = locationRes.data || [];
+  const locationDataArr = locationRes || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes?.data;
+  const classificationData = classificationRes;
 
   let data: any[] = result.data.map((i: any) => {
     try {
@@ -574,13 +574,13 @@ export async function getProcessTablePgroongaSearch(
       ),
     );
     let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
+    await getCachedLocationData(lang, locations).then((res) => {
+      locationData = res;
     });
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Process', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.processDataSet?.processInformation;
@@ -600,7 +600,7 @@ export async function getProcessTablePgroongaSearch(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,
@@ -736,13 +736,13 @@ export async function process_hybrid_search(
       ),
     );
     let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
+    await getCachedLocationData(lang, locations).then((res) => {
+      locationData = res;
     });
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Process', lang, ['all']).then((res) => {
         data = resultData.map((i: any) => {
           try {
             const dataInfo = i.json?.processDataSet?.processInformation;
@@ -762,7 +762,7 @@ export async function process_hybrid_search(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,

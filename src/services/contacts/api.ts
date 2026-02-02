@@ -10,7 +10,7 @@ import { supabase } from '@/services/supabase';
 import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
-import {getCachedClassificationData} from '../ilcd/cache';
+import { getCachedClassificationData } from '../ilcd/cache';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
@@ -142,7 +142,6 @@ export async function getContactTableAll(
     // })));
 
     await getCachedClassificationData('Contact', lang, ['all']).then((res) => {
-
       data = result.data.map((i: any) => {
         try {
           const classifications = jsonToList(i?.['common:class']);
@@ -239,7 +238,7 @@ export async function getContactTablePgroongaSearch(
           const classifications = jsonToList(
             dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
           );
-          const classificationZH = genClassificationZH(classifications, res?.data);
+          const classificationZH = genClassificationZH(classifications, res);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -317,7 +316,7 @@ export async function contact_hybrid_search(
           const classifications = jsonToList(
             dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
           );
-          const classificationZH = genClassificationZH(classifications, res?.data);
+          const classificationZH = genClassificationZH(classifications, res);
           return {
             key: i.id + ':' + i.version,
             id: i.id,

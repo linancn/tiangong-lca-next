@@ -10,7 +10,7 @@ import { supabase } from '@/services/supabase';
 import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
-import { getILCDClassification } from '../ilcd/api';
+import { getCachedClassificationData } from '../ilcd/cache';
 import { genFlowpropertyJsonOrdered } from './util';
 export async function createFlowproperties(id: string, data: any) {
   const newData = genFlowpropertyJsonOrdered(id, data);
@@ -143,11 +143,11 @@ export async function getFlowpropertyTableAll(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
+      await getCachedClassificationData('FlowProperty', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const classifications = jsonToList(i?.['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,
@@ -259,7 +259,7 @@ export async function getFlowpropertyTablePgroongaSearch(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
+      await getCachedClassificationData('FlowProperty', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
@@ -268,7 +268,7 @@ export async function getFlowpropertyTablePgroongaSearch(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,
@@ -394,7 +394,7 @@ export async function flowproperty_hybrid_search(
     let data: any[] = [];
 
     if (lang === 'zh') {
-      await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
+      await getCachedClassificationData('FlowProperty', lang, ['all']).then((res) => {
         data = resultData.map((i: any) => {
           try {
             const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
@@ -403,7 +403,7 @@ export async function flowproperty_hybrid_search(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,
