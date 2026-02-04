@@ -26,11 +26,8 @@ flowchart TD
     J{Does the user accept the invitation?}
     K[User becomes a member of the team]
     L[User does not join the team]
-    M[1.Invite/delete users
-2.Set user roles to admin/member
-3.Modify team information]
-    N[1.Invite/delete users
-2.Modify team information]
+    M[1.Invite/delete users<br>2.Set user roles to admin/member<br>3.Modify team information]
+    N[1.Invite/delete users<br>2.Modify team information]
     O[View permission only]
 
     A --> B
