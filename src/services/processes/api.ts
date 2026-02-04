@@ -853,7 +853,7 @@ export async function getProcessDetailByIdAndVersion(data: { id: string; version
 
     const result = await supabase
       .from('processes')
-      .select('id,json,version, modified_at')
+      .select('id,json,version, modified_at, state_code')
       .or(orConditions);
 
     return Promise.resolve({

@@ -511,6 +511,10 @@ export async function getLifeCycleModelSubTableDataBatch(
   const resultData: Record<string, any[]> = {};
 
   processesResult.data.forEach((process: any) => {
+    if (process.state_code !== 20) {
+      return;
+    }
+
     const key = `${process.id}:${process.version}`;
     const relatedReviewIds = processParamMap.get(key) ?? [];
     const sourceInfo = processSourceMap.get(key);
