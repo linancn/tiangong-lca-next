@@ -299,6 +299,43 @@ export default function ReviewProgress({
     },
   ];
 
+  // Helper function: Merge commentReview and commentCompliance into process JSON
+  const mergeCommentDataIntoProcessJson = (
+    processJson: any,
+    commentReview: any[],
+    commentCompliance: any[],
+  ) => {
+    const json = {
+      ...processJson,
+    };
+
+    // Merge commentReview into review
+    const _review = json.processDataSet.modellingAndValidation.validation.review;
+    const _compliance =
+      json.processDataSet.modellingAndValidation.complianceDeclarations.compliance;
+    json.processDataSet.modellingAndValidation = {
+      ...json.processDataSet.modellingAndValidation,
+      validation: {
+        ...json.processDataSet.modellingAndValidation.validation,
+        review: Array.isArray(_review)
+          ? [..._review, ...commentReview]
+          : _review
+            ? [_review, ...commentReview]
+            : [...commentReview],
+      },
+      complianceDeclarations: {
+        ...json.processDataSet.modellingAndValidation.complianceDeclarations,
+        compliance: Array.isArray(_compliance)
+          ? [..._compliance, ...commentCompliance]
+          : _compliance
+            ? [_compliance, ...commentCompliance]
+            : [...commentCompliance],
+      },
+    };
+
+    return json;
+  };
+
   const updateProcessJson = async (process: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
     if (!error && commentData && commentData.length) {
@@ -317,31 +354,7 @@ export default function ReviewProgress({
         }
       });
 
-      const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
-      const _compliance =
-        process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
-      const json = {
-        ...process?.json,
-      };
-      json.processDataSet.modellingAndValidation = {
-        ...process?.json?.processDataSet?.modellingAndValidation,
-        validation: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review)
-            ? [..._review, ...allReviews]
-            : _review
-              ? [_review, ...allReviews]
-              : [...allReviews],
-        },
-        complianceDeclarations: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
-          compliance: Array.isArray(_compliance)
-            ? [..._compliance, ...allCompliance]
-            : _compliance
-              ? [_compliance, ...allCompliance]
-              : [...allCompliance],
-        },
-      };
+      const json = mergeCommentDataIntoProcessJson(process.json, allReviews, allCompliance);
       await updateProcessApi(dataId, dataVersion, { json_ordered: json });
     }
   };
@@ -511,29 +524,7 @@ export default function ReviewProgress({
     const { data: process } = await getProcessDetail(processId, processVersion);
     if (!process) return;
 
-    const json = {
-      ...process.json,
-    };
-
-    // Merge commentReview into review
-    const _review = json.processDataSet.modellingAndValidation.validation.review;
-    json.processDataSet.modellingAndValidation.validation.review = Array.isArray(_review)
-      ? [..._review, ...commentReview]
-      : _review
-        ? [_review, ...commentReview]
-        : [...commentReview];
-
-    // Merge commentCompliance into compliance
-    const _compliance =
-      json.processDataSet.modellingAndValidation.complianceDeclarations.compliance;
-    json.processDataSet.modellingAndValidation.complianceDeclarations.compliance = Array.isArray(
-      _compliance,
-    )
-      ? [..._compliance, ...commentCompliance]
-      : _compliance
-        ? [_compliance, ...commentCompliance]
-        : [...commentCompliance];
-
+    const json = mergeCommentDataIntoProcessJson(process.json, commentReview, commentCompliance);
     await updateProcessApi(processId, processVersion, { json_ordered: json });
   };
 
