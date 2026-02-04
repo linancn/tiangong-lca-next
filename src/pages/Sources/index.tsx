@@ -7,6 +7,7 @@ import {
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { getPublicationTypeLabel } from './Components/optiondata';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
@@ -87,6 +88,9 @@ const TableList: FC = () => {
       dataIndex: 'publicationType',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return <span>{getPublicationTypeLabel(row.publicationType)}</span>;
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,

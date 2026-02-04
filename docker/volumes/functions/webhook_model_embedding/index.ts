@@ -47,8 +47,20 @@ Deno.serve(async (req) => {
 
     // console.log(`${table} ${record.id} ${record.version} summary ${type} request`);
 
-    const systemPrompt =
-      'Summarize the following lca models from JSON input. Include: name, classification, reference time, location, technology description, LCI method principle, LCI method approaches, intended applications if available. Keep it concise, self-contained, under 500 tokens. Output only the summary text.';
+    const systemPrompt = `From the given life cycle assessment ILCD Life Cycle Model JSON, write one continuous English paragraph (<500 tokens) suitable for embedding and retrieval. The paragraph must strictly follow the natural language template below. Fill in values only if explicitly available. Do not add, remove, or reorder sentences. If a field has no value, omit the entire sentence where it belongs, not just the placeholder.
+Always output in English only. Prefer English values if multilingual entries exist; if no English value is available, keep the original value verbatim but write all other sentences in English. Omit or translate non-English names. For technology and included processes, write concise natural sentences, do not mechanically list all referenced processes. Summarize supporting processes by category (utilities, water, energy, treatment) instead of enumerating all. If LCI method information is incomplete, output only what is explicitly given, but note that additional details are not stated.
+
+Template:
+<name.baseName [plus any qualifiers from name.treatmentStandardsRoutes and name.mixAndLocationTypes, joined with commas as non-geographic tags]>. [If classification exists] It is classified under <classification path highest→lowest>. [If reference year exists] The reference time is <representative year>. [If valid location exists] The location is <location code(s) exactly as given; if multiple, state “multiple” and keep codes verbatim>. The technology and included processes are <summary of included unit processes and operation flow synthesized from common:generalComment and referenced process common:shortDescription, deduplicated>. [If LCIMethodPrinciple exists] The LCI method principle is <LCIMethodPrinciple, e.g. Attributional/Consequential>. [If method details exist] The LCI method approaches are <dataset type such as Partly/Non-terminated system, cut-off/completeness rules, and main data sources/DB versions, or note that the model follows the referenced processes practice>. [If intended application exists] Its intended applications are <explicit intended application if provided>.(<UUID>)
+
+Additional rules:
+The <name.baseName> sentence must always be included if any name exists. Prefer English (@xml:lang="en") if available; otherwise keep the given value verbatim. Never omit the name sentence if present.
+Exclude the classification, reference time, or location sentence only if the corresponding field is completely missing or empty.
+Treat any string containing "/", "", "../", ".xml", ".xsd", "http", or "https" as a URI/path. Do not output such values for location or any other field.
+Preserve any codes or IDs verbatim, but integrate them smoothly into sentences (e.g., “… ethylene production (7553090001) …”).
+Never treat mixAndLocationTypes as geography (use them only as non-geographic tags).
+Do not infer or invent values. Only use explicitly available content.
+Keep the entire output as one continuous English paragraph, without lists or bullet points.`;
     const modelInput = `${systemPrompt}\nJSON:\n${JSON.stringify(jsonData)}`;
 
     const { text } = await openaiChat(modelInput, { stream: false });

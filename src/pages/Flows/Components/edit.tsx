@@ -3,20 +3,23 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
-import { genFlowFromData } from '@/services/flows/util';
-import { getRuleVerification } from '@/services/general/util';
+import { genFlowFromData, genFlowJsonOrdered } from '@/services/flows/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
+import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import schema from '../flows_schema.json';
 import { FlowForm } from './form';
 
 type Props = {
@@ -71,7 +74,7 @@ const FlowsEdit: FC<Props> = ({
   // }, [showRules]);
 
   const updatePropertyDataSource = async () => {
-    propertyDataSource.forEach(async (property: any, index: number) => {
+    for (const property of propertyDataSource) {
       if (property?.referenceToFlowPropertyDataSet) {
         const { data: flowPropertyData, success } = await getFlowpropertyDetail(
           property.referenceToFlowPropertyDataSet['@refObjectId'],
@@ -84,11 +87,9 @@ const FlowsEdit: FC<Props> = ({
           property.referenceToFlowPropertyDataSet['common:shortDescription'] = name;
           property.referenceToFlowPropertyDataSet['@version'] = flowPropertyData?.version;
         }
-        if (index === propertyDataSource.length - 1) {
-          setPropertyDataSource([...propertyDataSource]);
-        }
       }
-    });
+    }
+    setPropertyDataSource([...propertyDataSource]);
   };
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
@@ -121,6 +122,13 @@ const FlowsEdit: FC<Props> = ({
       await updatePropertyDataSource();
       formRefEdit.current?.setFieldsValue({ ...res, id });
     }
+  };
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    await updatePropertyDataSource();
+    formRefEdit.current?.setFieldsValue({ ...res, id });
   };
   const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
@@ -194,6 +202,8 @@ const FlowsEdit: FC<Props> = ({
       return;
     }
     if (autoClose) setSpinning(true);
+    await updateReferenceDescription();
+
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const flowProperties = fromData?.flowProperties;
     const updateResult = await updateFlows(id, version, {
@@ -254,13 +264,12 @@ const FlowsEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    let { errors } = getRuleVerification(schema, updateResult?.data[0]?.json);
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     const pathRef = new ReffPath(
       {
-        '@type': 'contact data set',
+        '@type': 'flow data set',
         '@refObjectId': id,
         '@version': version,
       },
@@ -320,6 +329,8 @@ const FlowsEdit: FC<Props> = ({
           defaultMessage: 'Please select flow properties',
         }),
       );
+      setSpinning(false);
+      return;
     } else if (
       (flowProperties?.flowProperty as any)?.filter((item: any) => item?.quantitativeReference)
         .length !== 1
@@ -330,74 +341,81 @@ const FlowsEdit: FC<Props> = ({
           defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
         }),
       );
+      setSpinning(false);
+      return;
+    }
+    const errTabNames: string[] = [];
+    nonExistentRef.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    unRuleVerification.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    problemNodes.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const jsonData = {
+      ...fieldsValue,
+      flowProperties,
+    };
+    const tidasFlow = createTidasFlow(genFlowJsonOrdered(id, jsonData));
+    const validateResult = tidasFlow.validateEnhanced();
+    const issues = validateResult.success ? [] : validateResult.error.issues;
+    if (issues.length) {
+      issues.forEach((err) => {
+        if (err.path.includes('typeOfDataSet') && validateResult.success === false) {
+          if (!errTabNames.includes('flowInformation')) errTabNames.push('flowInformation');
+        } else {
+          const tabName = err.path[1];
+          if (tabName && !errTabNames.includes(tabName as string))
+            errTabNames.push(tabName as string);
+        }
+      });
+      formRefEdit.current?.validateFields();
+    }
+    if (
+      unRuleVerificationData.length === 0 &&
+      nonExistentRefData.length === 0 &&
+      errTabNames.length === 0 &&
+      problemNodes.length === 0 &&
+      issues.length === 0
+    ) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.check.success',
+          defaultMessage: 'Data check successfully!',
+        }),
+      );
     } else {
-      const errTabNames: string[] = [];
-      nonExistentRef.forEach((item: any) => {
-        const tabName = getErrRefTab(item, initData);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      unRuleVerification.forEach((item: any) => {
-        const tabName = getErrRefTab(item, initData);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      problemNodes.forEach((item: any) => {
-        const tabName = getErrRefTab(item, initData);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      errors.forEach((err: any) => {
-        const tabName = err?.path?.split('.')[1];
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      formRefEdit.current
-        ?.validateFields()
-        .then(() => {})
-        .catch((err: any) => {
-          const errorFields = err?.errorFields ?? [];
-          errorFields.forEach((item: any) => {
-            const tabName = item?.name[0];
-            if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-          });
-        })
-        .finally(() => {
-          if (
-            unRuleVerificationData.length === 0 &&
-            nonExistentRefData.length === 0 &&
-            errTabNames.length === 0 &&
-            problemNodes.length === 0
-          ) {
-            message.success(
+      if (errTabNames && errTabNames.length > 0) {
+        message.error(
+          errTabNames
+            .map((tab: any) =>
               intl.formatMessage({
-                id: 'pages.button.check.success',
-                defaultMessage: 'Data check successfully!',
+                id: `pages.flow.view.${tab}`,
+                defaultMessage: tab,
               }),
-            );
-          } else {
-            if (errTabNames && errTabNames.length > 0) {
-              message.error(
-                errTabNames
-                  .map((tab: any) =>
-                    intl.formatMessage({
-                      id: `pages.flow.view.${tab}`,
-                      defaultMessage: tab,
-                    }),
-                  )
-                  .join('，') +
-                  '：' +
-                  intl.formatMessage({
-                    id: 'pages.button.check.error',
-                    defaultMessage: 'Data check failed!',
-                  }),
-              );
-            } else {
-              message.error(
-                intl.formatMessage({
-                  id: 'pages.button.check.error',
-                  defaultMessage: 'Data check failed!',
-                }),
-              );
-            }
-          }
-        });
+            )
+            .join('，') +
+            '：' +
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+        );
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.check.error',
+            defaultMessage: 'Data check failed!',
+          }),
+        );
+      }
     }
     setSpinning(false);
   };

@@ -6,7 +6,7 @@ Use this file as the jumping-off point for any coding agent. Keep it updated whe
 
 ## Quick Orientation
 
-- Node.js **>= 22** (run `nvm use 22` before `npm install`); repo ships a fallback `.env` with working Supabase keys—override only when pointing at a different Supabase project.
+- Node.js **>= 24** (run `nvm use 24` before `npm install`); repo ships a fallback `.env` with working Supabase keys—override only when pointing at a different Supabase project.
 - React 18 + @umijs/max 4 + Ant Design Pro 5 + TypeScript; target `src/app.tsx` and `config/routes.ts`.
 - Service-first: add types/api/helpers under `src/services/<feature>/{data,api,util}.ts`, then consume them from pages.
 - UI is React function components only; reuse `src/components/**` primitives before building new ones.

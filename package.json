@@ -1,6 +1,6 @@
 {
   "name": "tiangong-lca-next",
-  "version": "0.0.14",
+  "version": "0.0.18",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -68,8 +68,8 @@
     "@antv/x6-plugin-snapline": "^2.1.7",
     "@antv/x6-plugin-transform": "^2.1.8",
     "@antv/x6-react-shape": "^2.2.3",
-    "@supabase/supabase-js": "^2.89.0",
-    "@tiangong-lca/tidas-sdk": "^0.1.22",
+    "@supabase/supabase-js": "^2.93.3",
+    "@tiangong-lca/tidas-sdk": "^0.1.30",
     "antd": "^5.29.1",
     "antd-style": "^3.7.1",
     "bignumber.js": "^9.3.1",
@@ -84,24 +84,24 @@
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
+    "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.13",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.1",
-    "@umijs/lint": "^4.6.15",
-    "@umijs/max": "^4.6.15",
+    "@umijs/lint": "^4.6.25",
+    "@umijs/max": "^4.6.25",
     "cross-env": "^10.1.0",
-    "electron": "^39.2.7",
-    "electron-builder": "^26.0.12",
+    "electron": "^40.1.0",
+    "electron-builder": "^26.7.0",
     "eslint": "^8.57.1",
     "gh-pages": "^6.3.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^16.2.7",
-    "npm-check-updates": "^19.2.0",
-    "prettier": "^3.7.4",
+    "npm-check-updates": "^19.3.2",
+    "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "react-dev-inspector": "^2.0.1",
     "tsx": "^4.21.0",
@@ -109,7 +109,10 @@
     "umi-presets-pro": "^2.0.3",
     "umi-serve": "^1.9.11"
   },
+  "resolutions": {
+    "@babel/core": "7.28.6"
+  },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   }
 }

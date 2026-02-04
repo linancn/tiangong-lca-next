@@ -4,7 +4,7 @@
 
 ## Environment & Tooling
 
-- Node.js **>= 22** (run `nvm use 22` before `npm install`). Jest, Testing Library, and Playwright-style helpers are already wired up in `package.json`.
+- Node.js **>= 24** (run `nvm use 24` before `npm install`). Jest, Testing Library, and Playwright-style helpers are already wired up in `package.json`.
 - Supabase credentials (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) ship in the repo’s fallback `.env`, so local tests connect out of the box. Override those vars only when pointing at a different project and keep reading them via `src/services/supabase`.
 - Never add npm dependencies just for tests; reuse the helpers under `tests/helpers/**` and the mocks in `tests/mocks/**`.
 

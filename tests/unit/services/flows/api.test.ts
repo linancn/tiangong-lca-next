@@ -17,6 +17,13 @@ import {
 } from '@/services/flows/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createFlow: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 jest.mock('@/services/flows/util', () => ({
   genFlowJsonOrdered: jest.fn(),
   genFlowName: jest.fn(),
@@ -30,7 +37,6 @@ jest.mock('@/services/general/util', () => ({
   genClassificationZH: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
-  getRuleVerification: jest.fn(),
 }));
 
 const {
@@ -38,7 +44,6 @@ const {
   genClassificationZH: mockGenClassificationZH,
   getLangText: mockGetLangText,
   jsonToList: mockJsonToList,
-  getRuleVerification: mockGetRuleVerification,
 } = jest.requireMock('@/services/general/util');
 
 jest.mock('@/services/ilcd/api', () => ({
@@ -208,7 +213,6 @@ beforeEach(() => {
   mockJsonToList.mockImplementation((value: any) =>
     Array.isArray(value) ? value : value ? [value] : [],
   );
-  mockGetRuleVerification.mockReturnValue({ valid: true, errors: [] });
 
   mockGetCachedLocationData.mockResolvedValue(defaultLocationResponse);
   mockGetCachedFlowCategorizationAll.mockResolvedValue(defaultClassificationResponse);
@@ -240,10 +244,6 @@ describe('createFlows', () => {
     const result = await createFlows('flow-id', { name: 'Flow payload' });
 
     expect(mockGenFlowJsonOrdered).toHaveBeenCalledWith('flow-id', { name: 'Flow payload' });
-    expect(mockGetRuleVerification).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({ id: 'flow-id', name: 'Flow payload' }),
-    );
     expect(mockFrom).toHaveBeenCalledWith('flows');
     expect(query.calls.insertArgs).toEqual([
       expect.objectContaining({
@@ -743,7 +743,9 @@ describe('getFlowProperties', () => {
     const result = await getFlowProperties([{ id: flowId, version: '01.00.000' }]);
 
     expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.inArgs[0]).toEqual({ field: 'id', values: [flowId] });
+    // getFlowProperties uses .in() for ID filtering, not .or()
+    expect(query.calls.inArgs).toEqual([{ field: 'id', values: [flowId] }]);
+    expect(query.calls.orderArgs).toEqual([{ field: 'version', options: { ascending: false } }]);
     expect(result).toEqual({
       data: [
         {
@@ -759,6 +761,14 @@ describe('getFlowProperties', () => {
       ],
       success: true,
     });
+  });
+
+  it('returns failure when no valid ids are provided', async () => {
+    // When IDs are filtered out (not 36 chars), function returns early without DB call
+    const result = await getFlowProperties([{ id: 'short-id', version: '01.00.000' }]);
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [], success: false });
   });
 });
 

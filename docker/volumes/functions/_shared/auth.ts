@@ -4,7 +4,7 @@ import { SupabaseClient } from '@supabase/supabase-js@2';
 import { authenticateCognitoToken } from './cognito_auth.ts';
 import { corsHeaders } from './cors.ts';
 import decodeApiKey from './decode_api_key.ts';
-import { redisGet, redisSet, type RedisClient }from './redis_client.ts';
+import { redisGet, redisSet, type RedisClient } from './redis_client.ts';
 
 const _defaultAppMetadata: UserAppMetadata = {
   provider: '',

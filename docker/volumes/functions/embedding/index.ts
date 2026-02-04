@@ -75,9 +75,18 @@ Deno.serve(async (req) => {
         await processJob(currentJob);
         completedJobs.push(currentJob);
       } catch (error) {
+        const msg = error instanceof Error ? error.message : JSON.stringify(error);
+        console.error('job failed', {
+          id: currentJob.id,
+          version: currentJob.version,
+          jobId: currentJob.jobId,
+          table: `${currentJob.schema}.${currentJob.table}`,
+          contentFunction: currentJob.contentFunction,
+          error: msg,
+        });
         failedJobs.push({
           ...currentJob,
-          error: error instanceof Error ? error.message : JSON.stringify(error),
+          error: msg,
         });
       }
     }
@@ -146,7 +155,13 @@ async function processJob(job: Job) {
   const { jobId, id, version, schema, table, contentFunction, embeddingColumn } = job;
 
   // Log the id & version for traceability of each job
-  console.log('processing embedding job', { id, version, jobId, table: `${schema}.${table}` });
+  console.log('processing embedding job', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    contentFunction,
+  });
 
   // Fetch content for the schema/table/row combination
   const [row]: [Row] = await sql`
@@ -161,16 +176,39 @@ async function processJob(job: Job) {
   `;
 
   if (!row) {
-    throw new Error(`row not found: ${schema}.${table}/${id}/${version}`);
+    console.log('row not found or version changed, ACKing job', {
+      id,
+      version,
+      jobId,
+      table: `${schema}.${table}`,
+    });
+
+    await sql`
+      select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)
+    `;
+
+    return;
   }
 
   if (typeof row.content !== 'string') {
-    throw new Error(`invalid content - expected string: ${schema}.${table}/${id}/${version}`);
+    console.error('invalid content - expected string, ACKing job', {
+      id,
+      version,
+      jobId,
+      table: `${schema}.${table}`,
+      contentType: typeof row.content,
+    });
+
+    await sql`
+      select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)
+    `;
+
+    return;
   }
 
   const embedding = await generateEmbedding(row.content);
 
-  await sql`
+  const result = await sql`
     update
       ${sql(schema)}.${sql(table)}
     set
@@ -179,6 +217,23 @@ async function processJob(job: Job) {
     where
       id = ${id} and version = ${version}
   `;
+
+  if (result.count === 0) {
+    console.log('no rows affected - record not found or version changed, ACKing job', {
+      id,
+      version,
+      jobId,
+      table: `${schema}.${table}`,
+    });
+  } else {
+    console.log('embedding updated successfully', {
+      id,
+      version,
+      jobId,
+      table: `${schema}.${table}`,
+      rowsAffected: result.count,
+    });
+  }
 
   await sql`
     select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)

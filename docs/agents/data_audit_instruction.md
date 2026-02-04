@@ -1,46 +1,52 @@
 # Documentation on Status Code Changes in the Audit Process
 
 ## I. Description of Core Data Tables
-| Data Table Name  | Description                     |
-| ---------------- | -------------------------------- |
-| Lifecyclesmodels | Model data table                 |
-| Processes        | Process data table               |
-| Flows            | Flow data table                  |
-| Flowproperties   | Flow property data table         |
-| Unitgroups       | Unit group data table            |
-| Sources          | Source data table                |
-| Contacts         | Contact data table               |
+
+| Data Table Name  | Description                           |
+| ---------------- | ------------------------------------- |
+| Lifecyclesmodels | Model data table                      |
+| Processes        | Process data table                    |
+| Flows            | Flow data table                       |
+| Flowproperties   | Flow property data table              |
+| Unitgroups       | Unit group data table                 |
+| Sources          | Source data table                     |
+| Contacts         | Contact data table                    |
 | reviews          | Audit administrator review task table |
-| comments         | Auditor comment task table       |
+| comments         | Auditor comment task table            |
 
 ## II. Definition of Status Codes
+
 ### 2.1 Data Status Codes (General Data Tables)
-| Status Code | Status Description                     |
-| ----------- | -------------------------------------- |
-| 0           | Assigned to My Data (Unsubmitted)      |
-| 20          | Assigned to My Data (Submitted, Unaudited) |
-| 100         | Assigned to Open Data (Audited and Approved) |
+
+| Status Code | Status Description                                 |
+| ----------- | -------------------------------------------------- |
+| 0           | Assigned to My Data (Unsubmitted)                  |
+| 20          | Assigned to My Data (Submitted, Unaudited)         |
+| 100         | Assigned to Open Data (Audited and Approved)       |
 | 200         | Assigned to Commercial Data (Audited and Approved) |
 
 ### 2.2 Auditor Recommendation Status Codes (comments table)
-| Status Code | Status Description                                   |
-| ----------- | ---------------------------------------------------- |
-| -3          | Rejected by Auditor                                  |
-| -2          | Auditor Removed                                      |
+
+| Status Code | Status Description                                                          |
+| ----------- | --------------------------------------------------------------------------- |
+| -3          | Rejected by Auditor                                                         |
+| -2          | Auditor Removed                                                             |
 | -1          | Rejected by Audit Administrator in Review (Regardless of Auditor's Opinion) |
-| 0           | Auditor Assigned, But Not Audited Yet                |
-| 1           | Approved by Auditor                                  |
-| 2           | Approved by Administrator in Review (Regardless of Auditor's Opinion) |
+| 0           | Auditor Assigned, But Not Audited Yet                                       |
+| 1           | Approved by Auditor                                                         |
+| 2           | Approved by Administrator in Review (Regardless of Auditor's Opinion)       |
 
 ### 2.3 Audit Administrator Recommendation Status Codes (reviews table)
-| Status Code | Status Description               |
-| ----------- | --------------------------------- |
-| -1          | Audit Rejected                    |
-| 0           | Data Unassigned                   |
-| 1           | Data Pending Audit                |
+
+| Status Code | Status Description                  |
+| ----------- | ----------------------------------- |
+| -1          | Audit Rejected                      |
+| 0           | Data Unassigned                     |
+| 1           | Data Pending Audit                  |
 | 2           | Approved by Administrator in Review |
 
 ## III. Key Status Transition Rules
+
 1. **After Assigning Unassigned Data (reviews.state_code=0)**
    - A. reviews table: state_code updated to 1
    - B. comments table: state_code updated to 0
@@ -58,11 +64,12 @@
 5. **Conditions for Submitting Model Data for Audit**: The state_code of model data must be set to 20
 
 ## IV. Audit Process Flowchart
+
 ```mermaid
 flowchart TD
     %% ========================= Basic Status/Data Table Nodes =========================
     A["Unsubmitted Status<br/>All referenced tables state_code = 0"]
-    
+
     Pupd["Processes table update<br/>▸ json_ordered、rule_verification、modified_at"]
     Pget["Processes table query<br/>▸ id、version、json、state_code、rule_verification、team_id、reviews"]
     V["Data Validation Stage<br/>▸ Status Check: state_code < 20<br/>▸ Schema Required Fields Check<br/>▸ Input/Output Data Check<br/>▸ Referenced Data Completeness Check<br/>▸ Version Check"]
@@ -73,7 +80,7 @@ flowchart TD
     %% Level 1: Audit Administrator · Initial Review
     AM_FIRST{"Audit Administrator · Initial Review"}
     Reject_First["Initial Review Rejected - Data Update<br/>▸ All referenced tables state_code = 0<br/>▸ reviews table state_code = -1<br/>▸ Write rejection reason to reviews.json.comment.message"]
-    
+
     Assign["Audit Task Assignment - Data Update<br/>▸ reviews table: reviewer_id=[Auditor ID], state_code=1, append json.logs, set deadline<br/>▸ comments table new record: Associate review_id, reviewer_id, state_code=0, initialize json, write timestamp"]
     RemoveReviewer["Auditor Removal - Data Update<br/>▸ reviews table: Remove specified reviewer_id<br/>▸ comments table: Corresponding record state_code = -2"]
 

@@ -13,13 +13,25 @@ import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
-import LCIAResultCalculation from '@/services/lciaMethods/util';
+import LCIAResultCalculation, { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CalculatorOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Collapse, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
+import {
+  Button,
+  Card,
+  Collapse,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+  theme,
+  Tooltip,
+} from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import schema from '../processes_schema.json';
@@ -90,7 +102,9 @@ export const ProcessForm: FC<Props> = ({
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
 
-  // const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(lciaResults);
+  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(
+    jsonToList(lciaResults),
+  );
   const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
 
   const { token } = theme.useToken();
@@ -225,10 +239,18 @@ export const ProcessForm: FC<Props> = ({
       },
     },
     {
+      title: <FormattedMessage id='pages.process.view.lciaresults.unit' defaultMessage='Unit' />,
+      dataIndex: 'referenceQuantity',
+      search: false,
+      render: (_, row) => {
+        return [<span key={0}>{getLangText(row?.referenceQuantityDesc, lang) || '-'}</span>];
+      },
+    },
+    {
       title: (
         <FormattedMessage
           id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
-          defaultMessage='Reference to LCIA method data set version'
+          defaultMessage='Version'
         />
       ),
       dataIndex: 'Version',
@@ -243,9 +265,16 @@ export const ProcessForm: FC<Props> = ({
       },
     },
   ];
+  const syncReferenceQuantityToLciaResults = async (lciaResults: LCIAResultTable[] | undefined) => {
+    if (!lciaResults) return;
+    const listLciaResults = jsonToList(lciaResults);
+    await getReferenceQuantityFromMethod(listLciaResults);
+    setLciaResultDataSource(listLciaResults);
+  };
   const getLCIAResult = async () => {
     setLciaResultDataSourceLoading(true);
     const lciaResults = await LCIAResultCalculation(exchangeDataSource);
+    await syncReferenceQuantityToLciaResults(JSON.parse(JSON.stringify(lciaResults)));
     onLciaResults(lciaResults ?? []);
     setLciaResultDataSourceLoading(false);
   };
@@ -508,10 +537,16 @@ export const ProcessForm: FC<Props> = ({
           }
         >
           <Form.Item
+            required={false}
             label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.referenceYear'
-                defaultMessage='Reference year'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.referenceYear'
+                    defaultMessage='Reference year'
+                  />
+                }
               />
             }
             name={['processInformation', 'time', 'common:referenceYear']}
@@ -525,7 +560,7 @@ export const ProcessForm: FC<Props> = ({
                 : []
             }
           >
-            <Input />
+            <InputNumber style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             label={
@@ -2020,7 +2055,7 @@ export const ProcessForm: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.state_code;
+                                  item.stateCode = flow.stateCode;
                                   item['classification'] = flow.classification;
                                 }
                               });
@@ -2108,7 +2143,7 @@ export const ProcessForm: FC<Props> = ({
                                     flow.version === item?.referenceToFlowDataSetVersion,
                                 );
                                 if (flow) {
-                                  item.stateCode = flow.state_code;
+                                  item.stateCode = flow.stateCode;
                                   item['classification'] = flow.classification;
                                 }
                               });
@@ -2150,7 +2185,7 @@ export const ProcessForm: FC<Props> = ({
             onClick={getLCIAResult}
           />,
         ]}
-        dataSource={jsonToList(lciaResults)}
+        dataSource={lciaResultDataSource}
         columns={lciaResultColumns}
       />
     ),
@@ -2182,6 +2217,9 @@ export const ProcessForm: FC<Props> = ({
 
   useEffect(() => {
     actionRefLciaResultTable.current?.reload();
+    syncReferenceQuantityToLciaResults(
+      JSON.parse(JSON.stringify(lciaResults)) as LCIAResultTable[],
+    );
   }, [lciaResults]);
 
   return (

@@ -1,20 +1,19 @@
-import schema from '@/pages/Processes/processes_schema.json';
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData } from '@/services/general/api';
-import { getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
+import { getLifeCyclesByIdAndVersions } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/es/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
-  getRuleVerification,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification, getILCDLocationByValues } from '../ilcd/api';
+import { getCachedClassificationData, getCachedLocationData } from '../ilcd/cache';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
 const selectStr4Table = `
@@ -34,7 +33,14 @@ const selectStr4Table = `
 
 export async function createProcess(id: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const validateResult = createTidasProcess(newData).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('processes')
@@ -45,7 +51,14 @@ export async function createProcess(id: string, data: any, modelId?: string) {
 
 export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const validateResult = createTidasProcess(newData).validateEnhanced();
+  let issues = [];
+  if (!validateResult.success) {
+    issues = validateResult.error.issues.filter(
+      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
+    );
+  }
+  const rule_verification = issues.length === 0;
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
     return undefined;
@@ -63,7 +76,7 @@ export async function updateProcess(id: string, version: string, data: any, mode
     region: FunctionRegion.UsEast1,
   });
   if (result.error) {
-    console.log('error', result.error);
+    console.error('updateProcess error', result.error);
     return { error: result.error };
   }
   return result?.data;
@@ -161,12 +174,12 @@ export async function getProcessTableAll(
 
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
   const [locationRes, classificationRes] = await Promise.all([
-    getILCDLocationByValues(lang, locations),
-    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
+    getCachedLocationData(lang, locations),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
   ]);
-  const locationDataArr = locationRes.data || [];
+  const locationDataArr = locationRes || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes?.data;
+  const classificationData = classificationRes;
 
   let data: any[] = result.data.map((i: any) => {
     try {
@@ -314,15 +327,15 @@ export async function getConnectableProcessesTable(
   result.data = [...filteredData];
 
   const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-  const processIds = result.data.map((i: any) => i.id);
+  const processIdsAndVersions = result.data.map((i: any) => ({ id: i.id, version: i.version }));
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
-    getILCDLocationByValues(lang, locations),
-    lang === 'zh' ? getILCDClassification('Process', lang, ['all']) : Promise.resolve(null),
-    getLifeCyclesByIds(processIds),
+    getCachedLocationData(lang, locations),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
+    getLifeCyclesByIdAndVersions(processIdsAndVersions),
   ]);
-  const locationDataArr = locationRes.data || [];
+  const locationDataArr = locationRes || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes?.data;
+  const classificationData = classificationRes;
 
   let data: any[] = result.data.map((i: any) => {
     try {
@@ -561,13 +574,13 @@ export async function getProcessTablePgroongaSearch(
       ),
     );
     let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
+    await getCachedLocationData(lang, locations).then((res) => {
+      locationData = res;
     });
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Process', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.processDataSet?.processInformation;
@@ -587,7 +600,7 @@ export async function getProcessTablePgroongaSearch(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,
@@ -723,13 +736,13 @@ export async function process_hybrid_search(
       ),
     );
     let locationData: any[] = [];
-    await getILCDLocationByValues(lang, locations).then((res) => {
-      locationData = res.data;
+    await getCachedLocationData(lang, locations).then((res) => {
+      locationData = res;
     });
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Process', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Process', lang, ['all']).then((res) => {
         data = resultData.map((i: any) => {
           try {
             const dataInfo = i.json?.processDataSet?.processInformation;
@@ -749,7 +762,7 @@ export async function process_hybrid_search(
                 'common:class'
               ],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,

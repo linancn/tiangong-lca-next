@@ -1,8 +1,11 @@
 import { FormProcess } from '@/services/processes/data';
 import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import {
+  capitalize,
   classificationToJsonList,
   classificationToStringList,
+  convertCopyrightToBoolean,
+  convertToUTCISOString,
   getLangJson,
   getLangList,
   getLangText,
@@ -41,8 +44,8 @@ export function genProcessJsonOrdered(id: string, data: any) {
         functionType: item.functionType,
         exchangeDirection: item.exchangeDirection,
         referenceToVariable: item.referenceToVariable,
-        meanAmount: item.meanAmount,
-        resultingAmount: resultingAmount,
+        meanAmount: `${item.meanAmount}`,
+        resultingAmount: `${resultingAmount}`,
         minimumAmount: item.minimumAmount,
         maximumAmount: item.maximumAmount,
         uncertaintyDistributionType: item.uncertaintyDistributionType,
@@ -50,22 +53,24 @@ export function genProcessJsonOrdered(id: string, data: any) {
           allocation: {
             '@internalReferenceToCoProduct':
               item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
-            '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction'],
+            '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
+              ? item?.allocations?.allocation?.['@allocatedFraction']?.toString()?.replace('%', '')
+              : undefined,
           },
         },
         relativeStandardDeviation95In: item.relativeStandardDeviation95In,
         dataSourceType: item.dataSourceType,
         dataDerivationTypeStatus: item.dataDerivationTypeStatus,
         referencesToDataSource: {
-          referenceToDataSource: {
-            '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
-            '@refObjectId': item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
-            '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
-            '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
-            'common:shortDescription': getLangJson(
-              item?.referencesToDataSource?.referenceToDataSource?.['common:shortDescription'],
-            ),
-          },
+          referenceToDataSource: jsonToList(
+            item?.referencesToDataSource?.referenceToDataSource,
+          )?.map((source: any) => ({
+            '@type': source?.['@type'],
+            '@refObjectId': source?.['@refObjectId'],
+            '@uri': source?.['@uri'],
+            '@version': source?.['@version'],
+            'common:shortDescription': getLangJson(source?.['common:shortDescription']),
+          })),
         },
         generalComment: getLangJson(item.generalComment),
       };
@@ -142,7 +147,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         quantitativeReference: { ...quantitativeReference },
         time: {
-          'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+          'common:referenceYear': data?.processInformation?.time?.['common:referenceYear']
+            ? Number(data?.processInformation?.time?.['common:referenceYear'])
+            : undefined,
           'common:dataSetValidUntil':
             data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
           'common:timeRepresentativenessDescription': getLangJson(
@@ -844,7 +851,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.processInformation?.dataSetInformation?.['referenceToExternalDocumentation']?.[
                 'common:shortDescription'
               ],
@@ -860,7 +867,7 @@ export function genProcessFromData(data: any): FormProcess {
           ),
         },
         time: {
-          'common:referenceYear': data?.processInformation?.time?.['common:referenceYear'] ?? {},
+          'common:referenceYear': Number(data?.processInformation?.time?.['common:referenceYear']),
           'common:dataSetValidUntil':
             data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
           'common:timeRepresentativenessDescription': getLangList(
@@ -1000,7 +1007,7 @@ export function genProcessFromData(data: any): FormProcess {
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 '@version'
               ] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.LCIMethodAndAllocation?.referenceToLCAMethodDetails?.[
                 'common:shortDescription'
               ],
@@ -1045,7 +1052,7 @@ export function genProcessFromData(data: any): FormProcess {
             '@version':
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['@version'] ?? {},
-            'common:shortDescription': getLangJson(
+            'common:shortDescription': getLangList(
               data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.referenceToDataHandlingPrinciples?.['common:shortDescription'],
             ),
@@ -1229,7 +1236,9 @@ export function genProcessFromData(data: any): FormProcess {
         },
 
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': convertToUTCISOString(
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          ),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -1411,8 +1420,9 @@ export function genProcessFromData(data: any): FormProcess {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:copyright':
+          'common:copyright': convertCopyrightToBoolean(
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          ),
           'common:referenceToEntitiesWithExclusiveAccess': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[
@@ -1462,7 +1472,7 @@ export function genProcessFromData(data: any): FormProcess {
               },
               location: item.location,
               functionType: item.functionType,
-              exchangeDirection: item.exchangeDirection,
+              exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
               meanAmount: item.meanAmount,
               resultingAmount: item.resultingAmount,
@@ -1473,25 +1483,24 @@ export function genProcessFromData(data: any): FormProcess {
                 allocation: {
                   '@internalReferenceToCoProduct':
                     item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
-                  '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction'],
+                  '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
+                    ? item?.allocations?.allocation?.['@allocatedFraction']?.replace('%', '')
+                    : undefined,
                 },
               },
               relativeStandardDeviation95In: item.relativeStandardDeviation95In,
               dataSourceType: item.dataSourceType,
               dataDerivationTypeStatus: item.dataDerivationTypeStatus,
               referencesToDataSource: {
-                referenceToDataSource: {
-                  '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
-                  '@refObjectId':
-                    item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
-                  '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
-                  '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
-                  'common:shortDescription': getLangJson(
-                    item?.referencesToDataSource?.referenceToDataSource?.[
-                      'common:shortDescription'
-                    ],
-                  ),
-                },
+                referenceToDataSource: jsonToList(
+                  item?.referencesToDataSource?.referenceToDataSource,
+                )?.map((source: any) => ({
+                  '@type': source?.['@type'],
+                  '@refObjectId': source?.['@refObjectId'],
+                  '@uri': source?.['@uri'],
+                  '@version': source?.['@version'],
+                  'common:shortDescription': getLangList(source?.['common:shortDescription']),
+                })),
               },
               generalComment: getLangList(item.generalComment),
               quantitativeReference: true,
@@ -1513,7 +1522,7 @@ export function genProcessFromData(data: any): FormProcess {
               },
               location: item.location,
               functionType: item.functionType,
-              exchangeDirection: item.exchangeDirection,
+              exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
               meanAmount: item.meanAmount,
               resultingAmount: item.resultingAmount,
@@ -1531,18 +1540,15 @@ export function genProcessFromData(data: any): FormProcess {
               dataSourceType: item.dataSourceType,
               dataDerivationTypeStatus: item.dataDerivationTypeStatus,
               referencesToDataSource: {
-                referenceToDataSource: {
-                  '@type': item?.referencesToDataSource?.referenceToDataSource?.['@type'],
-                  '@refObjectId':
-                    item?.referencesToDataSource?.referenceToDataSource?.['@refObjectId'],
-                  '@uri': item?.referencesToDataSource?.referenceToDataSource?.['@uri'],
-                  '@version': item?.referencesToDataSource?.referenceToDataSource?.['@version'],
-                  'common:shortDescription': getLangJson(
-                    item?.referencesToDataSource?.referenceToDataSource?.[
-                      'common:shortDescription'
-                    ],
-                  ),
-                },
+                referenceToDataSource: jsonToList(
+                  item?.referencesToDataSource?.referenceToDataSource,
+                )?.map((source: any) => ({
+                  '@type': source?.['@type'],
+                  '@refObjectId': source?.['@refObjectId'],
+                  '@uri': source?.['@uri'],
+                  '@version': source?.['@version'],
+                  'common:shortDescription': getLangList(source?.['common:shortDescription']),
+                })),
               },
               generalComment: getLangList(item.generalComment),
               quantitativeReference: false,

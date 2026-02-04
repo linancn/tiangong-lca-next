@@ -4,7 +4,7 @@
 
 ## 环境与工具
 
-- Node.js **>= 22**（`package.json` 明确要求），先执行 `nvm use 22` 或安装对应版本再 `npm install`。
+- Node.js **>= 24**（`package.json` 明确要求），先执行 `nvm use 24` 或安装对应版本再 `npm install`。
 - 仓库已附带可用的 `.env`（含 `SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`），开箱即可连接 Supabase；仅在需要自定义实例时覆盖，并始终通过 `src/services/supabase.ts` 读取。
 - 未经维护者许可，禁止新增 npm 依赖。
 
@@ -86,7 +86,7 @@ npm run build
 - 状态管理：优先 Hooks（`useState`、`useRef`、`useEffect`）；表格刷新 `actionRef.current?.reload()`，表单重置 `formRef`。
 - 跨组件状态使用 Context（UnitsContext、RefCheckContext、UpdateReferenceContext），禁止可变单例。
 - 类型：优先引入 `@tiangong-lca/tidas-sdk`，在 `src/services/<feature>/data.ts` 导出表格/表单类型。
-- 校验：ProForm `rules` 或 helper（`getRuleVerification`、`percentStringToNumber`、`comparePercentDesc`）；ID 使用 `uuid.v4`，版本常量如 `initVersion`。
+- 校验：ProForm `rules` 或 helper（`percentStringToNumber`、`comparePercentDesc`）；ID 使用 `uuid.v4`，版本常量如 `initVersion`。
 
 ## 质量与测试
 

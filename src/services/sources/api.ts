@@ -1,21 +1,20 @@
-import schema from '@/pages/Sources/sources_schema.json';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk';
 import {
   classificationToString,
   genClassificationZH,
   getLangText,
-  getRuleVerification,
   jsonToList,
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
-import { getILCDClassification } from '../ilcd/api';
+import { getCachedClassificationData } from '../ilcd/cache';
 import { genSourceJsonOrdered } from './util';
 export async function createSource(id: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const rule_verification = createTidasSource(newData).validateEnhanced().success;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
     .from('sources')
@@ -26,7 +25,7 @@ export async function createSource(id: string, data: any) {
 
 export async function updateSource(id: string, version: string, data: any) {
   const newData = genSourceJsonOrdered(id, data);
-  const rule_verification = getRuleVerification(schema, newData)?.valid;
+  const rule_verification = createTidasSource(newData).validateEnhanced().success;
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
@@ -139,11 +138,11 @@ export async function getSourceTableAll(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Source', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Source', lang, ['all']).then((res) => {
         data = result?.data?.map((i: any) => {
           try {
             const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
             return {
               key: i.id + ':' + i.version,
               id: i.id,
@@ -252,14 +251,14 @@ export async function getSourceTablePgroongaSearch(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Source', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Source', lang, ['all']).then((res) => {
         data = result.data.map((i: any) => {
           try {
             const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
             const classifications = jsonToList(
               dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,
@@ -360,14 +359,14 @@ export async function source_hybrid_search(
 
     let data: any[] = [];
     if (lang === 'zh') {
-      await getILCDClassification('Source', lang, ['all']).then((res) => {
+      await getCachedClassificationData('Source', lang, ['all']).then((res) => {
         data = resultData.map((i: any) => {
           try {
             const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
             const classifications = jsonToList(
               dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
             );
-            const classificationZH = genClassificationZH(classifications, res?.data);
+            const classificationZH = genClassificationZH(classifications, res);
 
             return {
               key: i.id + ':' + i.version,

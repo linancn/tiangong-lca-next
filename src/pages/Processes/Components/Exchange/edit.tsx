@@ -5,11 +5,12 @@ import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import styles from '@/style/custom.less';
-import { CloseOutlined, FormOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
   Button,
   Card,
+  Collapse,
   Divider,
   Drawer,
   Form,
@@ -421,45 +422,8 @@ const ProcessExchangeEdit: FC<Props> = ({
                   />
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
-                getValueFromEvent={(value) => {
-                  if (value === null || value === undefined || value === '' || value === 0) {
-                    return '';
-                  }
-                  if (typeof value === 'number') {
-                    return `${value}%`;
-                  }
-                  if (typeof value === 'string' && value.trim() !== '' && !value.includes('%')) {
-                    return `${value}%`;
-                  }
-                  return value;
-                }}
-                getValueProps={(value) => {
-                  if (value === '' || value === null || value === undefined) {
-                    return { value: 0 };
-                  }
-                  if (typeof value === 'string' && value.includes('%')) {
-                    const numValue = parseFloat(value.replace('%', ''));
-                    return { value: isNaN(numValue) ? null : numValue };
-                  }
-                  if (typeof value === 'number') {
-                    return { value };
-                  }
-                  return { value: null };
-                }}
               >
-                <InputNumber<number>
-                  style={{ width: '100%' }}
-                  min={0}
-                  max={100}
-                  formatter={(value) => (value !== null && value !== undefined ? `${value}%` : '')}
-                  parser={(value) => {
-                    if (!value || value.trim() === '' || value === '%') {
-                      return null as unknown as number;
-                    }
-                    const numValue = parseFloat(value.replace('%', ''));
-                    return isNaN(numValue) ? (null as unknown as number) : numValue;
-                  }}
-                />
+                <InputNumber min={0} max={100} suffix='%' style={{ width: '100%' }} />
               </Form.Item>
             </Card>
             <br />
@@ -494,17 +458,77 @@ const ProcessExchangeEdit: FC<Props> = ({
             >
               <Select options={DataDerivationTypeStatusOptions} />
             </Form.Item>
-            <SourceSelectForm
-              name={['referencesToDataSource', 'referenceToDataSource']}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.referenceToDataSource'
-                  defaultMessage='Data source(s)'
-                />
-              }
-              lang={lang}
-              formRef={formRefEdit}
-              onData={handletFromData}
+            <Collapse
+              defaultActiveKey={['data-sources']}
+              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              style={{ marginBottom: 16 }}
+              items={[
+                {
+                  key: 'data-sources',
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.view.exchange.referenceToDataSource'
+                      defaultMessage='Data source(s)'
+                    />
+                  ),
+                  children: (
+                    <Form.List
+                      name={['referencesToDataSource', 'referenceToDataSource']}
+                      initialValue={[{}]}
+                    >
+                      {(fields, { add, remove }) => (
+                        <Space direction='vertical' style={{ width: '100%' }}>
+                          {fields.map((field, index) => (
+                            <div key={field.key} style={{ position: 'relative' }}>
+                              <SourceSelectForm
+                                parentName={['referencesToDataSource', 'referenceToDataSource']}
+                                name={[field.name]}
+                                label={
+                                  <Space>
+                                    <FormattedMessage
+                                      id='pages.process.view.exchange.referenceToDataSource'
+                                      defaultMessage='Data source(s)'
+                                    />
+                                    {index + 1}
+                                  </Space>
+                                }
+                                lang={lang}
+                                formRef={formRefEdit}
+                                onData={handletFromData}
+                              />
+                              {fields.length > 1 && (
+                                <CloseOutlined
+                                  onClick={() => {
+                                    remove(field.name);
+                                    handletFromData();
+                                  }}
+                                  style={{ position: 'absolute', right: 8, top: 8 }}
+                                />
+                              )}
+                            </div>
+                          ))}
+                          <Button
+                            type='dashed'
+                            block
+                            onClick={() => {
+                              add({});
+                              handletFromData();
+                            }}
+                            style={{ marginTop: 8 }}
+                          >
+                            + <FormattedMessage id='pages.button.add' defaultMessage='Add' />{' '}
+                            <FormattedMessage
+                              id='pages.process.view.exchange.referenceToDataSource'
+                              defaultMessage='Data source(s)'
+                            />{' '}
+                            <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
+                          </Button>
+                        </Space>
+                      )}
+                    </Form.List>
+                  ),
+                },
+              ]}
             />
             <Divider orientationMargin='0' orientation='left' plain>
               <FormattedMessage

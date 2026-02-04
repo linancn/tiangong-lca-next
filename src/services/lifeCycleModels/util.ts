@@ -3,6 +3,8 @@ import { v4 } from 'uuid';
 import {
   classificationToJsonList,
   classificationToStringList,
+  convertCopyrightToBoolean,
+  convertToUTCISOString,
   getLangJson,
   getLangList,
   getLangText,
@@ -195,11 +197,11 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
         },
         validation: {
           review: listToJson(
-            data?.modellingAndValidation?.validation?.review?.map((review: any) => {
+            jsonToList(data?.modellingAndValidation?.validation?.review)?.map((review: any) => {
               return {
                 '@type': review?.['@type'] ?? {},
                 'common:scope': listToJson(
-                  review?.['common:scope']?.map((scope: any) => {
+                  jsonToList(review?.['common:scope'])?.map((scope: any) => {
                     return {
                       '@name': scope?.['@name'] ?? {},
                       'common:method': {
@@ -255,7 +257,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
         },
         complianceDeclarations: {
           compliance: listToJson(
-            data?.modellingAndValidation?.complianceDeclarations?.compliance?.map(
+            jsonToList(data?.modellingAndValidation?.complianceDeclarations?.compliance)?.map(
               (compliance: any) => {
                 return {
                   'common:referenceToComplianceSystem': {
@@ -705,7 +707,9 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
           },
         },
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': convertToUTCISOString(
+            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          ),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -783,8 +787,9 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
               ]?.['common:shortDescription'],
             ),
           },
-          'common:copyright':
+          'common:copyright': convertCopyrightToBoolean(
             data?.administrativeInformation?.publicationAndOwnership?.['common:copyright'],
+          ),
           'common:referenceToEntitiesWithExclusiveAccess': {
             '@refObjectId':
               data?.administrativeInformation?.publicationAndOwnership?.[

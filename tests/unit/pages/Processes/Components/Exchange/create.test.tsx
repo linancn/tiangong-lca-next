@@ -139,6 +139,13 @@ jest.mock('antd', () => {
       </div>
     );
   };
+  FormComponent.List = ({ children }: any) => {
+    const fields = [{ key: '0', name: 0 }];
+    return children(fields, {
+      add: jest.fn(),
+      remove: jest.fn(),
+    });
+  };
 
   const InputNumber = ({ onChange, value }: any) => (
     <input
@@ -146,6 +153,14 @@ jest.mock('antd', () => {
       value={value ?? ''}
       onChange={(event) => onChange?.(Number(event.target.value))}
     />
+  );
+
+  const Collapse = ({ items }: any) => (
+    <div>
+      {items?.map((item: any) => (
+        <div key={item.key}>{item.children}</div>
+      ))}
+    </div>
   );
 
   return {
@@ -160,6 +175,7 @@ jest.mock('antd', () => {
     Card,
     Form: FormComponent,
     InputNumber,
+    Collapse,
   };
 });
 
@@ -284,7 +300,7 @@ describe('ProcessExchangeCreate', () => {
       expect(proFormApi?.getFieldsValue()).toEqual({
         meanAmount: 10,
         quantitativeReference: true,
-        exchangeDirection: 'output',
+        exchangeDirection: 'Output',
       });
     });
 

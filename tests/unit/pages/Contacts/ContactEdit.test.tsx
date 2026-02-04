@@ -117,98 +117,82 @@ jest.mock('@ant-design/pro-components', () => {
 
   const ProFormContext = React.createContext<any>(null);
 
-  const deepMerge = (target: any, source: any): any => {
-    const base = Array.isArray(target) ? [...target] : { ...(target ?? {}) };
-    Object.entries(source ?? {}).forEach(([key, value]) => {
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        base[key] = deepMerge(base[key], value);
-      } else {
-        base[key] = value;
-      }
-    });
-    return base;
-  };
-
-  const setDeepValue = (object: any, path: any[], value: any) => {
-    if (!path.length) return;
-    const [head, ...rest] = path;
-    if (rest.length === 0) {
-      object[head] = value;
-      return;
-    }
-    if (!object[head] || typeof object[head] !== 'object') {
-      object[head] = {};
-    }
-    setDeepValue(object[head], rest, value);
-  };
-
-  const buildNestedValue = (path: any[], value: any): any => {
-    if (!path.length) {
-      return value;
-    }
-    const [head, ...rest] = path;
-    if (!rest.length) {
-      return { [head]: value };
-    }
-    return { [head]: buildNestedValue(rest, value) };
-  };
-
   const ProForm = ({ formRef, initialValues = {}, onValuesChange, onFinish, children }: any) => {
-    const initialRef = React.useRef(initialValues);
-    const [values, setValues] = React.useState<any>(initialValues ?? {});
-    const pendingChangeRef = React.useRef<any>(null);
-
-    const handleSetFieldValue = React.useCallback((pathInput: any, nextValue: any) => {
-      const path = Array.isArray(pathInput) ? pathInput : [pathInput];
-      setValues((previous: any) => {
-        const draft = JSON.parse(JSON.stringify(previous ?? {}));
-        setDeepValue(draft, path, nextValue);
-        const changed = buildNestedValue(path, nextValue);
-        pendingChangeRef.current = { changed, nextValues: draft };
-        return draft;
-      });
-    }, []);
-
-    const handleSetFieldsValue = React.useCallback((next: any = {}) => {
-      setValues((previous: any) => {
-        const merged = deepMerge(previous, next);
-        pendingChangeRef.current = { changed: next, nextValues: merged };
-        return merged;
-      });
-    }, []);
-
-    const handleResetFields = React.useCallback(() => {
-      setValues(initialRef.current ?? {});
-    }, []);
-
-    const handleGetFieldsValue = React.useCallback(() => values, [values]);
-
-    const handleSubmit = React.useCallback(async () => onFinish?.(), [onFinish]);
-
-    React.useImperativeHandle(formRef, () => ({
-      getFieldsValue: handleGetFieldsValue,
-      setFieldsValue: handleSetFieldsValue,
-      resetFields: handleResetFields,
-      setFieldValue: handleSetFieldValue,
-      submit: handleSubmit,
-      validateFields: async () => values,
-    }));
+    const valuesRef = React.useRef({ ...initialValues });
+    const [, forceUpdate] = React.useReducer((x: number) => x + 1, 0);
 
     React.useEffect(() => {
-      if (pendingChangeRef.current) {
-        const { changed, nextValues } = pendingChangeRef.current;
-        pendingChangeRef.current = null;
-        onValuesChange?.(changed, nextValues);
+      if (formRef) {
+        formRef.current = {
+          submit: async () => onFinish?.(),
+          resetFields: () => {
+            valuesRef.current = { ...initialValues };
+            forceUpdate();
+          },
+          getFieldsValue: () => ({ ...valuesRef.current }),
+          setFieldsValue: (next: any) => {
+            valuesRef.current = { ...valuesRef.current, ...next };
+            forceUpdate();
+            onValuesChange?.({}, valuesRef.current);
+          },
+          setFieldValue: (name: any, value: any) => {
+            if (Array.isArray(name)) {
+              const next = { ...valuesRef.current };
+              let cursor = next;
+              for (let i = 0; i < name.length - 1; i += 1) {
+                const key = name[i];
+                cursor[key] = { ...(cursor[key] ?? {}) };
+                cursor = cursor[key];
+              }
+              cursor[name[name.length - 1]] = value;
+              valuesRef.current = next;
+            } else {
+              valuesRef.current = { ...valuesRef.current, [name]: value };
+            }
+            forceUpdate();
+            onValuesChange?.({}, valuesRef.current);
+          },
+          getFieldValue: (name: any) => {
+            if (Array.isArray(name)) {
+              return name.reduce(
+                (acc: any, key: string) => (acc ? acc[key] : undefined),
+                valuesRef.current,
+              );
+            }
+            return valuesRef.current[name];
+          },
+          validateFields: async () => valuesRef.current,
+        };
       }
-    }, [values, onValuesChange]);
+    });
 
     const contextValue = React.useMemo(
       () => ({
-        values,
-        setFieldValue: handleSetFieldValue,
-        setFieldsValue: handleSetFieldsValue,
+        values: valuesRef.current,
+        setFieldValue: (name: any, value: any) => {
+          if (Array.isArray(name)) {
+            const next = { ...valuesRef.current };
+            let cursor = next;
+            for (let i = 0; i < name.length - 1; i += 1) {
+              const key = name[i];
+              cursor[key] = { ...(cursor[key] ?? {}) };
+              cursor = cursor[key];
+            }
+            cursor[name[name.length - 1]] = value;
+            valuesRef.current = next;
+          } else {
+            valuesRef.current = { ...valuesRef.current, [name]: value };
+          }
+          forceUpdate();
+          onValuesChange?.({}, valuesRef.current);
+        },
+        setFieldsValue: (next: any) => {
+          valuesRef.current = { ...valuesRef.current, ...next };
+          forceUpdate();
+          onValuesChange?.({}, valuesRef.current);
+        },
       }),
-      [values, handleSetFieldValue, handleSetFieldsValue],
+      [onValuesChange],
     );
 
     return (
@@ -219,7 +203,7 @@ jest.mock('@ant-design/pro-components', () => {
             void onFinish?.();
           }}
         >
-          {typeof children === 'function' ? children(values) : children}
+          {typeof children === 'function' ? children(valuesRef.current) : children}
         </form>
       </ProFormContext.Provider>
     );
@@ -280,6 +264,19 @@ jest.mock('@/pages/Utils/review', () => ({
   ReffPath: jest.fn().mockImplementation(() => ({ findProblemNodes: () => [] })),
   checkData: jest.fn(),
   getErrRefTab: jest.fn(),
+  getAllRefObj: jest.fn(() => []),
+  getRefTableName: jest.fn((type: string) => {
+    const tableDict: Record<string, string> = {
+      'contact data set': 'contacts',
+      'source data set': 'sources',
+      'unit group data set': 'unitgroups',
+      'flow property data set': 'flowproperties',
+      'flow data set': 'flows',
+      'process data set': 'processes',
+      'lifeCycleModel data set': 'lifecyclemodels',
+    };
+    return tableDict[type];
+  }),
 }));
 
 jest.mock('@/services/contacts/api', () => ({
@@ -299,6 +296,24 @@ jest.mock('@/services/contacts/util', () => ({
       },
     },
   })),
+}));
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),
+  getDataDetailById: jest.fn(() => Promise.resolve({ data: [] })),
+}));
+
+jest.mock('@/services/general/util', () => ({
+  __esModule: true,
+  getLangList: jest.fn((data: any) => data ?? []),
+  getLang: jest.fn((data: any, lang: string) => {
+    if (Array.isArray(data)) {
+      const found = data.find((item: any) => item?.['@lang'] === lang);
+      return found?.['#text'] ?? '';
+    }
+    return data?.['#text'] ?? '';
+  }),
 }));
 
 const { getContactDetail: mockGetContactDetail, updateContact: mockUpdateContact } =

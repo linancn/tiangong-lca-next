@@ -4,7 +4,7 @@
 
 ## 环境与工具
 
-- Node.js **>= 22**（先 `nvm use 22` 再 `npm install`）。Jest、Testing Library 已在 `package.json` 配好。
+- Node.js **>= 24**（先 `nvm use 24` 再 `npm install`）。Jest、Testing Library 已在 `package.json` 配好。
 - 仓库自带的 `.env` 已包含可用的 `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`，本地测试开箱即用；仅在切换 Supabase 实例时覆盖，并继续通过 `src/services/supabase` 加载。
 - 不得为测试额外安装依赖；优先复用 `tests/helpers/**` 与 `tests/mocks/**`。
 

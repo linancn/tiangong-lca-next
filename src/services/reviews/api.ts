@@ -1,4 +1,7 @@
-import { getLifeCyclesByIdAndVersion, getLifeCyclesByIds } from '@/services/lifeCycleModels/api';
+import {
+  getLifeCyclesByIdAndVersion,
+  getLifeCyclesByIdAndVersions,
+} from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -129,7 +132,7 @@ export async function getReviewsTableDataOfReviewMember(
             ? genProcessName(model?.name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? '-',
+        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
         createAt: new Date(i.created_at).toISOString(),
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
@@ -212,7 +215,7 @@ export async function getReviewsTableDataOfReviewAdmin(
             ? genProcessName(model?.name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? '-',
+        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
         createAt: new Date(i.created_at).toISOString(),
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
@@ -296,14 +299,15 @@ export async function getNotifyReviews(
       });
     }
 
-    const processIds: string[] = [];
+    const processIdAndVersions: { id: string; version: string }[] = [];
     result?.data.forEach((i) => {
       const id = i?.json?.data?.id;
-      if (id) {
-        processIds.push(id);
+      const version = i?.json?.data?.version;
+      if (id && version) {
+        processIdAndVersions.push({ id, version });
       }
     });
-    const modelResult = await getLifeCyclesByIds(processIds);
+    const modelResult = await getLifeCyclesByIdAndVersions(processIdAndVersions);
     let data = result?.data.map((i: any) => {
       const model = modelResult?.data?.find(
         (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
@@ -317,7 +321,7 @@ export async function getNotifyReviews(
             ? genProcessName(model?.name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? '-',
+        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
         modifiedAt: new Date(i.modified_at).toISOString(),
         stateCode: i.state_code,
         json: i?.json,

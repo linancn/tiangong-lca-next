@@ -6,7 +6,7 @@
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 
 nvm install
-nvm alias default 22
+nvm alias default 24
 nvm use
 
 npm install

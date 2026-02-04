@@ -139,6 +139,21 @@ jest.mock('antd', () => {
       </div>
     );
   };
+  FormComponent.List = ({ children }: any) => {
+    const fields = [{ key: '0', name: 0 }];
+    return children(fields, {
+      add: jest.fn(),
+      remove: jest.fn(),
+    });
+  };
+
+  const Collapse = ({ items }: any) => (
+    <div>
+      {items?.map((item: any) => (
+        <div key={item.key}>{item.children}</div>
+      ))}
+    </div>
+  );
 
   return {
     __esModule: true,
@@ -153,6 +168,7 @@ jest.mock('antd', () => {
     Select,
     Switch,
     Form: FormComponent,
+    Collapse,
   };
 });
 

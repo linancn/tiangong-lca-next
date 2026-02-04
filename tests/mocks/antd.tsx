@@ -233,17 +233,23 @@ export const createAntdMock = () => {
     </label>
   );
 
-  const Space = ({ children, ...rest }: any) => (
-    <div data-testid='space' {...rest}>
-      {children}
-    </div>
-  );
+  const Space = ({ children, wrap: _wrap, ...rest }: any) => {
+    void _wrap;
+    return (
+      <div data-testid='space' {...rest}>
+        {children}
+      </div>
+    );
+  };
 
-  const Row = ({ children, ...rest }: any) => (
-    <div data-testid='row' {...rest}>
-      {children}
-    </div>
-  );
+  const Row = ({ children, wrap: _wrap, ...rest }: any) => {
+    void _wrap;
+    return (
+      <div data-testid='row' {...rest}>
+        {children}
+      </div>
+    );
+  };
 
   const Col = ({ children, ...rest }: any) => (
     <div data-testid='col' {...rest}>
@@ -319,7 +325,16 @@ export const createAntdMock = () => {
     </div>
   );
 
-  const Card = ({ children, cover, tabList, activeTabKey, onTabChange, ...rest }: any) => {
+  const Card = ({
+    children,
+    cover,
+    tabList,
+    activeTabKey,
+    onTabChange,
+    hoverable: _hoverable,
+    ...rest
+  }: any) => {
+    void _hoverable;
     if (tabList && tabList.length) {
       return (
         <div data-testid='mock-card' {...rest}>
@@ -411,28 +426,34 @@ export const createAntdMock = () => {
   (Modal as any).confirm = antdMocks.modal.confirm;
 
   const Typography = {
-    Link: ({ children, onClick, href = '#', ...rest }: any) => (
-      <a
-        href={href}
-        onClick={(event) => {
-          event.preventDefault();
-          onClick?.(event);
-        }}
-        {...rest}
-      >
-        {children}
-      </a>
-    ),
+    Link: ({ children, onClick, href = '#', strong: _strong, ...rest }: any) => {
+      void _strong;
+      return (
+        <a
+          href={href}
+          onClick={(event) => {
+            event.preventDefault();
+            onClick?.(event);
+          }}
+          {...rest}
+        >
+          {children}
+        </a>
+      );
+    },
     Paragraph: ({ children, ...rest }: any) => (
       <p data-testid='typography-paragraph' {...rest}>
         {children}
       </p>
     ),
-    Text: ({ children, ...rest }: any) => (
-      <span data-testid='typography-text' {...rest}>
-        {children}
-      </span>
-    ),
+    Text: ({ children, strong: _strong, ...rest }: any) => {
+      void _strong;
+      return (
+        <span data-testid='typography-text' {...rest}>
+          {children}
+        </span>
+      );
+    },
   };
 
   const FormContext = React.createContext<any>(null);

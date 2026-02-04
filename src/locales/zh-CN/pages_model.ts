@@ -294,6 +294,7 @@ export default {
   'pages.lifecyclemodel.review.submitError': '提交审核失败',
   'pages.lifecyclemodel.review.error': '相关引用数据处于审核阶段，不能再发起审核',
   'pages.lifecyclemodel.review.mainProduceError': '请在模型结果中将主产品过程数据补充完整',
+  'pages.lifecyclemodel.review.processInstanceError': '请将将节点数据补充完整',
   'pages.lifecyclemodel.checkData.inReview': '此数据集正在审核，无法校验',
   'pages.lifecyclemodel.notPublic': '模型尚未公开',
 };

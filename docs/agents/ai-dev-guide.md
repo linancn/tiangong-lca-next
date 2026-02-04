@@ -4,7 +4,7 @@
 
 ## Environment & Tooling
 
-- Node.js **>= 22** (enforced by `package.json`); run `nvm use 22` or install the required runtime before `npm install`.
+- Node.js **>= 24** (enforced by `package.json`); run `nvm use 24` or install the required runtime before `npm install`.
 - Supabase env keys (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) ship in the repo’s fallback `.env`, so local testing works without extra setup; override only when pointing at a different Supabase project and keep loading them via `src/services/supabase`.
 - No new npm packages unless a human maintainer signs off.
 
@@ -91,7 +91,7 @@ npm run build
 - State management: prefer hooks (`useState`, `useRef`, `useEffect`). Keep `actionRef.current?.reload()` for table refresh and `formRef` for ProForm reset.
 - Use contexts for cross-component state (UnitsContext, RefCheckContext, UpdateReferenceContext). Avoid mutable singletons.
 - Import domain models from `@tiangong-lca/tidas-sdk` where possible; export row/form types from `src/services/<feature>/data.ts`.
-- Validation lives in ProForm `rules` or helper functions (`getRuleVerification`, `percentStringToNumber`, `comparePercentDesc`). IDs come from `uuid.v4`, versions from constants like `initVersion`.
+- Validation lives in ProForm `rules` or helper functions ( `percentStringToNumber`, `comparePercentDesc`). IDs come from `uuid.v4`, versions from constants like `initVersion`.
 
 ## Quality Gates & Testing
 

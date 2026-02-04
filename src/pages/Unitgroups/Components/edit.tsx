@@ -2,13 +2,18 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
-import { getRefsOfNewVersion, updateRefsData } from '@/pages/Utils/updateReference';
+import {
+  getRefsOfCurrentVersion,
+  getRefsOfNewVersion,
+  updateRefsData,
+} from '@/pages/Utils/updateReference';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import { FormUnitGroup, UnitGroupDataSetObjectKeys, UnitTable } from '@/services/unitgroups/data';
-import { genUnitGroupFromData } from '@/services/unitgroups/util';
+import { genUnitGroupFromData, genUnitGroupJsonOrdered } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
+import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -87,7 +92,12 @@ const UnitGroupEdit: FC<Props> = ({
       formRefEdit.current?.setFieldsValue({ ...res, id });
     }
   };
-
+  const updateReferenceDescription = async () => {
+    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
+    const res = updateRefsData(fromData, oldRefs, false);
+    setFromData(res);
+    formRefEdit.current?.setFieldsValue({ ...res, id });
+  };
   // useEffect(() => {
   //   if (showRules) {
   //     setTimeout(() => {
@@ -165,6 +175,8 @@ const UnitGroupEdit: FC<Props> = ({
 
   const handleSubmit = async (autoClose: boolean) => {
     if (autoClose) setSpinning(true);
+    await updateReferenceDescription();
+
     const units = fromData?.units;
     const formFieldsValue = {
       ...formRefEdit.current?.getFieldsValue(),
@@ -270,6 +282,8 @@ const UnitGroupEdit: FC<Props> = ({
           defaultMessage: 'Please select unit',
         }),
       );
+      setSpinning(false);
+      return;
     } else if (units.unit.filter((item: any) => item?.quantitativeReference).length !== 1) {
       message.error(
         intl.formatMessage({
@@ -277,70 +291,72 @@ const UnitGroupEdit: FC<Props> = ({
           defaultMessage: 'Unit needs to have exactly one quantitative reference open',
         }),
       );
+      setSpinning(false);
+      return;
+    }
+
+    const errTabNames: string[] = [];
+    nonExistentRef.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    unRuleVerification.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    problemNodes.forEach((item: any) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    const tidasUnitGroup = createTidasUnitGroup(genUnitGroupJsonOrdered(id, fromData));
+    const validateResult = tidasUnitGroup.validateEnhanced();
+    const issues = validateResult.success ? [] : validateResult.error.issues;
+    if (issues.length) {
+      issues.forEach((err) => {
+        const tabName = err.path[1];
+        if (tabName && !errTabNames.includes(tabName as string))
+          errTabNames.push(tabName as string);
+      });
+      formRefEdit.current?.validateFields();
+    }
+    if (
+      unRuleVerification.length === 0 &&
+      nonExistentRef.length === 0 &&
+      errTabNames.length === 0 &&
+      problemNodes.length === 0 &&
+      issues.length === 0
+    ) {
+      message.success(
+        intl.formatMessage({
+          id: 'pages.button.check.success',
+          defaultMessage: 'Data check successfully!',
+        }),
+      );
     } else {
-      const errTabNames: string[] = [];
-      nonExistentRef.forEach((item: any) => {
-        const tabName = getErrRefTab(item, initData);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      unRuleVerification.forEach((item: any) => {
-        const tabName = getErrRefTab(item, initData);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      problemNodes.forEach((item: any) => {
-        const tabName = getErrRefTab(item, initData);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      formRefEdit.current
-        ?.validateFields()
-        .then(() => {})
-        .catch((err: any) => {
-          const errorFields = err?.errorFields ?? [];
-          errorFields.forEach((item: any) => {
-            const tabName = item?.name[0];
-            if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-          });
-        })
-        .finally(() => {
-          if (
-            unRuleVerification.length === 0 &&
-            nonExistentRef.length === 0 &&
-            errTabNames.length === 0 &&
-            problemNodes.length === 0
-          ) {
-            message.success(
+      if (errTabNames && errTabNames.length > 0) {
+        message.error(
+          errTabNames
+            .map((tab: any) =>
               intl.formatMessage({
-                id: 'pages.button.check.success',
-                defaultMessage: 'Data check successfully!',
+                id: `pages.unitgroup.${tab}`,
+                defaultMessage: tab,
               }),
-            );
-          } else {
-            if (errTabNames && errTabNames.length > 0) {
-              message.error(
-                errTabNames
-                  .map((tab: any) =>
-                    intl.formatMessage({
-                      id: `pages.unitgroup.${tab}`,
-                      defaultMessage: tab,
-                    }),
-                  )
-                  .join('，') +
-                  '：' +
-                  intl.formatMessage({
-                    id: 'pages.button.check.error',
-                    defaultMessage: 'Data check failed!',
-                  }),
-              );
-            } else {
-              message.error(
-                intl.formatMessage({
-                  id: 'pages.button.check.error',
-                  defaultMessage: 'Data check failed!',
-                }),
-              );
-            }
-          }
-        });
+            )
+            .join('，') +
+            '：' +
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+        );
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.check.error',
+            defaultMessage: 'Data check failed!',
+          }),
+        );
+      }
     }
     setSpinning(false);
   };

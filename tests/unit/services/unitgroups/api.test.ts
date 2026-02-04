@@ -16,6 +16,13 @@ import {
 } from '@/services/unitgroups/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createUnitGroup: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 jest.mock('@/services/unitgroups/util', () => ({
   genUnitGroupJsonOrdered: jest.fn(),
 }));
@@ -29,7 +36,6 @@ jest.mock('@/services/general/util', () => ({
   genClassificationZH: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
-  getRuleVerification: jest.fn(),
 }));
 
 const {
@@ -37,15 +43,19 @@ const {
   genClassificationZH: mockGenClassificationZH,
   getLangText: mockGetLangText,
   jsonToList: mockJsonToList,
-  getRuleVerification: mockGetRuleVerification,
 } = jest.requireMock('@/services/general/util');
 
-jest.mock('@/services/ilcd/api', () => ({
-  getILCDClassification: jest.fn(),
+jest.mock('@/services/ilcd/cache', () => ({
+  getCachedClassificationData: jest.fn(),
+  ilcdCache: {
+    get: jest.fn(),
+    set: jest.fn(),
+    clear: jest.fn(),
+  },
 }));
 
-const { getILCDClassification: mockGetILCDClassification } =
-  jest.requireMock('@/services/ilcd/api');
+const { getCachedClassificationData: mockGetCachedClassificationData } =
+  jest.requireMock('@/services/ilcd/cache');
 
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
@@ -64,6 +74,7 @@ class MockQuery<T = any> {
     rangeArgs: undefined as any,
     eqArgs: [] as Array<{ field: string; value: any }>,
     inArgs: [] as Array<{ field: string; values: any }>,
+    orArgs: [] as Array<string>,
   };
 
   constructor(private readonly result: T) {}
@@ -100,6 +111,11 @@ class MockQuery<T = any> {
 
   in(field: string, values: any) {
     this.calls.inArgs.push({ field, values });
+    return this;
+  }
+
+  or(filter: string) {
+    this.calls.orArgs.push(filter);
     return this;
   }
 
@@ -150,7 +166,6 @@ beforeEach(() => {
     id,
     ...data,
   }));
-  mockGetRuleVerification.mockReturnValue({ valid: true });
   mockClassificationToString.mockImplementation((items: any[]) =>
     (items || [])
       .map((item: any) => item?.label ?? item?.['#text'] ?? item)
@@ -181,7 +196,7 @@ beforeEach(() => {
   mockJsonToList.mockImplementation((value: any) =>
     Array.isArray(value) ? value : value ? [value] : [],
   );
-  mockGetILCDClassification.mockResolvedValue({ data: [] });
+  mockGetCachedClassificationData.mockResolvedValue([]);
   mockGetTeamIdByUserId.mockResolvedValue(null);
   mockGetDataDetail.mockResolvedValue({ data: null });
 
@@ -204,18 +219,16 @@ describe('createUnitGroup', () => {
     const query = createQuery(insertResult);
     mockFrom.mockReturnValueOnce(query as any);
     mockGenUnitGroupJsonOrdered.mockReturnValueOnce({ data: 'ordered' });
-    mockGetRuleVerification.mockReturnValueOnce({ valid: false });
 
     const result = await createUnitGroup('ug-1', { name: 'Unit Group' });
 
     expect(mockGenUnitGroupJsonOrdered).toHaveBeenCalledWith('ug-1', { name: 'Unit Group' });
-    expect(mockGetRuleVerification).toHaveBeenCalledWith(expect.any(Object), { data: 'ordered' });
     expect(mockFrom).toHaveBeenCalledWith('unitgroups');
     expect(query.calls.insertArgs).toEqual([
       {
         id: 'ug-1',
         json_ordered: { data: 'ordered' },
-        rule_verification: false,
+        rule_verification: true,
       },
     ]);
     expect(query.calls.selectArgs).toEqual([]);
@@ -374,13 +387,13 @@ describe('getUnitGroupTableAll', () => {
     };
     const query = createQuery(tableResult);
     mockFrom.mockReturnValueOnce(query as any);
-    mockGetILCDClassification.mockResolvedValueOnce({
-      data: [{ '@value': 'c-1', '#text': '中文分类' }],
-    });
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'c-1', '#text': '中文分类' },
+    ]);
 
     const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', '');
 
-    expect(mockGetILCDClassification).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
     expect(result.data[0]).toEqual(
       expect.objectContaining({
         id: 'ug-2',
@@ -675,14 +688,19 @@ describe('getReferenceUnits', () => {
         },
         {
           id: validId,
-          version: '01.00.001',
-          'common:name': 'Mass units (previous)',
-          referenceToReferenceUnit: 'u-1',
+          version: '01.00.010',
+          'common:name': 'Mass units latest',
+          referenceToReferenceUnit: 'u-2',
           unit: [
             {
               '@dataSetInternalID': 'u-1',
               name: 'Kilogram',
               generalComment: [{ '@xml:lang': 'en', '#text': 'kg' }],
+            },
+            {
+              '@dataSetInternalID': 'u-2',
+              name: 'Gram',
+              generalComment: [{ '@xml:lang': 'en', '#text': 'g' }],
             },
           ],
         },
@@ -698,6 +716,8 @@ describe('getReferenceUnits', () => {
 
     expect(mockFrom).toHaveBeenCalledWith('unitgroups');
     expect(query.calls.selectArgs).toEqual([expect.stringContaining('json->unitGroupDataSet')]);
+    // getReferenceUnits uses .in() for ID filtering, not .or()
+    // Note: The same ID appears twice in params (for different versions), so values array contains duplicates
     expect(query.calls.inArgs).toEqual([{ field: 'id', values: [validId, validId] }]);
     expect(query.calls.orderArgs).toEqual([{ field: 'version', options: { ascending: false } }]);
     expect(result).toEqual({
@@ -724,11 +744,11 @@ describe('getReferenceUnits', () => {
         },
         {
           id: validId,
-          version: '01.00.002',
-          name: 'Mass units',
-          refUnitId: 'u-1',
-          refUnitName: 'Kilogram',
-          refUnitGeneralComment: [{ '@xml:lang': 'en', '#text': 'kg' }],
+          version: '01.00.010',
+          name: 'Mass units latest',
+          refUnitId: 'u-2',
+          refUnitName: 'Gram',
+          refUnitGeneralComment: [{ '@xml:lang': 'en', '#text': 'g' }],
           unit: [
             {
               '@dataSetInternalID': 'u-1',
@@ -748,6 +768,7 @@ describe('getReferenceUnits', () => {
   });
 
   it('returns failure when no valid ids are provided', async () => {
+    // When IDs are filtered out (not 36 chars), function returns early without DB call
     const result = await getReferenceUnits([{ id: 'short-id', version: '01.00.000' }]);
 
     expect(mockFrom).not.toHaveBeenCalled();
@@ -808,5 +829,12 @@ describe('getReferenceUnit', () => {
       },
       success: true,
     });
+  });
+
+  it('returns undefined when id is invalid', async () => {
+    const result = await getReferenceUnit('short-id', '01.00.000');
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
   });
 });

@@ -3,6 +3,7 @@ import { cleanup } from '@testing-library/react';
 import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
 import React from 'react';
 import { TextDecoder, TextEncoder } from 'util';
+import { v4 as uuidv4 } from 'uuid';
 
 if (typeof global.React === 'undefined') {
   global.React = React;
@@ -26,6 +27,15 @@ if (typeof global.WritableStream === 'undefined') {
 
 if (typeof global.TransformStream === 'undefined') {
   global.TransformStream = TransformStream;
+}
+
+// Polyfill for crypto.randomUUID for jsdom environment
+if (typeof global.crypto === 'undefined') {
+  global.crypto = {};
+}
+
+if (!global.crypto.randomUUID) {
+  global.crypto.randomUUID = () => uuidv4();
 }
 
 if (typeof window !== 'undefined' && window.localStorage) {
@@ -138,6 +148,18 @@ Object.defineProperty(global.window.console, 'error', {
     const isActWarning =
       logStr.includes('was not wrapped in act(...)') &&
       (logStr.includes('inside a test') || logStr.includes('not wrapped in act'));
+
+    const shouldSuppressReactWarning =
+      !isActWarning &&
+      [
+        'Warning: findDOMNode is deprecated',
+        'Warning: Each child in a list should have a unique "key" prop.',
+        'Warning: Cannot update a component',
+      ].some((prefix) => logStr.startsWith(prefix));
+
+    if (shouldSuppressReactWarning) {
+      return;
+    }
 
     if (isActWarning) {
       actWarningsThisTest += 1;

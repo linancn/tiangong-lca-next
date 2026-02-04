@@ -6,6 +6,13 @@
 import * as processesApi from '@/services/processes/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createProcess: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
+}));
+
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
@@ -36,20 +43,27 @@ jest.mock('@/services/general/api', () => ({
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
 }));
 
-const mockGetILCDLocationByValues = jest.fn();
-const mockGetILCDClassification = jest.fn();
+const mockGetCachedLocationData = jest.fn();
+const mockGetCachedClassificationData = jest.fn();
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/ilcd/cache', () => ({
   __esModule: true,
-  getILCDLocationByValues: (...args: any[]) => mockGetILCDLocationByValues.apply(null, args),
-  getILCDClassification: (...args: any[]) => mockGetILCDClassification.apply(null, args),
+  getCachedLocationData: (...args: any[]) => mockGetCachedLocationData.apply(null, args),
+  getCachedClassificationData: (...args: any[]) =>
+    mockGetCachedClassificationData.apply(null, args),
+  ilcdCache: {
+    get: jest.fn(),
+    set: jest.fn(),
+    clear: jest.fn(),
+  },
 }));
 
-const mockGetLifeCyclesByIds = jest.fn();
+const mockGetLifeCyclesByIdAndVersions = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
-  getLifeCyclesByIds: (...args: any[]) => mockGetLifeCyclesByIds.apply(null, args),
+  getLifeCyclesByIdAndVersions: (...args: any[]) =>
+    mockGetLifeCyclesByIdAndVersions.apply(null, args),
 }));
 
 const mockGenProcessJsonOrdered = jest.fn();
@@ -64,7 +78,6 @@ jest.mock('@/services/processes/util', () => ({
 const mockClassificationToString = jest.fn();
 const mockGenClassificationZH = jest.fn();
 const mockGetLangText = jest.fn();
-const mockGetRuleVerification = jest.fn();
 const mockJsonToList = jest.fn();
 
 jest.mock('@/services/general/util', () => ({
@@ -72,7 +85,6 @@ jest.mock('@/services/general/util', () => ({
   classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
   genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
   getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
-  getRuleVerification: (...args: any[]) => mockGetRuleVerification.apply(null, args),
   jsonToList: (...args: any[]) => mockJsonToList.apply(null, args),
 }));
 
@@ -117,15 +129,14 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
-  mockGetILCDLocationByValues.mockReset();
-  mockGetILCDClassification.mockReset();
-  mockGetLifeCyclesByIds.mockReset();
+  mockGetCachedLocationData.mockReset();
+  mockGetCachedClassificationData.mockReset();
+  mockGetLifeCyclesByIdAndVersions.mockReset();
   mockGenProcessJsonOrdered.mockReset();
   mockGenProcessName.mockReset();
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
-  mockGetRuleVerification.mockReset();
   mockJsonToList.mockReset();
 
   mockGenProcessJsonOrdered.mockReturnValue({ ordered: true });
@@ -133,13 +144,12 @@ beforeEach(() => {
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
   mockGetLangText.mockReturnValue('General comment');
-  mockGetRuleVerification.mockReturnValue({ valid: true });
   mockJsonToList.mockImplementation((value: any) =>
     Array.isArray(value) ? value : value ? [value] : [],
   );
-  mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
-  mockGetILCDClassification.mockResolvedValue({ data: {} });
-  mockGetLifeCyclesByIds.mockResolvedValue({ data: [] });
+  mockGetCachedLocationData.mockResolvedValue([]);
+  mockGetCachedClassificationData.mockResolvedValue({});
+  mockGetLifeCyclesByIdAndVersions.mockResolvedValue({ data: [] });
 });
 
 describe('createProcess', () => {
@@ -152,11 +162,11 @@ describe('createProcess', () => {
     const result = await processesApi.createProcess(sampleId, { raw: true });
 
     expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, { raw: true });
-    expect(mockGetRuleVerification).toHaveBeenCalled();
     expect(insertMock).toHaveBeenCalledWith([
       {
         id: sampleId,
         json_ordered: { ordered: true },
+        model_id: undefined,
         rule_verification: true,
       },
     ]);
@@ -167,7 +177,6 @@ describe('createProcess', () => {
 
 describe('updateProcess', () => {
   it('invokes update function with ordered payload when session exists', async () => {
-    mockGetRuleVerification.mockReturnValueOnce({ valid: false });
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
@@ -189,7 +198,8 @@ describe('updateProcess', () => {
         table: 'processes',
         data: {
           json_ordered: { ordered: true },
-          rule_verification: false,
+          model_id: undefined,
+          rule_verification: true,
         },
       },
       region: FunctionRegion.UsEast1,
@@ -366,9 +376,7 @@ describe('getProcessTableAll', () => {
     const builder = createQueryBuilder(queryResult);
     mockFrom.mockReturnValueOnce(builder);
 
-    mockGetILCDLocationByValues.mockResolvedValueOnce({
-      data: [{ '@value': 'CN', '#text': 'China' }],
-    });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
 
     const result = await processesApi.getProcessTableAll(
       { current: 2, pageSize: 5 },
@@ -386,7 +394,7 @@ describe('getProcessTableAll', () => {
     expect(builder.range).toHaveBeenCalledWith(5, 9);
     expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
     expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-filter');
-    expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('en', ['CN']);
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['CN']);
     expect(mockJsonToList).toHaveBeenCalledWith({ '#text': 'class-1' });
     expect(mockClassificationToString).toHaveBeenCalled();
     expect(mockGenProcessName).toHaveBeenCalledWith({ en: 'Raw name' }, 'en');
@@ -504,9 +512,7 @@ describe('process_hybrid_search', () => {
     ];
     (hybridData as any).total_count = 42;
     mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
-    mockGetILCDLocationByValues.mockResolvedValueOnce({
-      data: [{ '@value': 'US', '#text': 'United States' }],
-    });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'US', '#text': 'United States' }]);
 
     const result = await processesApi.process_hybrid_search(
       { current: 3, pageSize: 5 },
@@ -762,8 +768,8 @@ describe('getConnectableProcessesTable', () => {
     ];
     const builder = createQueryBuilder({ data: mockData, error: null, count: 10 });
     mockFrom.mockReturnValue(builder);
-    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
-    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockGetCachedLocationData.mockResolvedValue([]);
+    mockGetCachedClassificationData.mockResolvedValue([]);
     mockJsonToList.mockReturnValue([]);
 
     const result = await processesApi.getConnectableProcessesTable(
@@ -800,8 +806,8 @@ describe('getConnectableProcessesTable', () => {
     mockFrom.mockReturnValue(builder);
     mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user1' } } } });
     mockGetTeamIdByUserId.mockResolvedValue('team1');
-    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
-    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockGetCachedLocationData.mockResolvedValue([]);
+    mockGetCachedClassificationData.mockResolvedValue([]);
     mockJsonToList.mockReturnValue([]);
 
     const result = await processesApi.getConnectableProcessesTable(
@@ -821,7 +827,7 @@ describe('getConnectableProcessesTable', () => {
   it('should return empty data on database error', async () => {
     const builder = createQueryBuilder({ data: null, error: { message: 'DB error' }, count: null });
     mockFrom.mockReturnValue(builder);
-    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
+    mockGetCachedLocationData.mockResolvedValue([]);
 
     const result = await processesApi.getConnectableProcessesTable(
       { current: 1, pageSize: 10 },
@@ -846,8 +852,8 @@ describe('getProcessTablePgroongaSearch', () => {
     };
     mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
     mockRpc.mockResolvedValue(mockResponse);
-    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
-    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockGetCachedLocationData.mockResolvedValue([]);
+    mockGetCachedClassificationData.mockResolvedValue([]);
     mockJsonToList.mockReturnValue([]);
 
     const result = await processesApi.getProcessTablePgroongaSearch(
@@ -877,8 +883,8 @@ describe('getProcessTablePgroongaSearch', () => {
     };
     mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
     mockRpc.mockResolvedValue(mockResponse);
-    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
-    mockGetILCDClassification.mockResolvedValue({ data: [] });
+    mockGetCachedLocationData.mockResolvedValue([]);
+    mockGetCachedClassificationData.mockResolvedValue([]);
 
     const result = await processesApi.getProcessTablePgroongaSearch(
       { current: 1, pageSize: 10 },
