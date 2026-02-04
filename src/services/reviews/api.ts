@@ -1,12 +1,10 @@
-import {
-  getLifeCyclesByIdAndVersion,
-  getLifeCyclesByIdAndVersions,
-} from '@/services/lifeCycleModels/api';
+import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { getPendingComment, getRejectedComment, getReviewedComment } from '../comments/api';
 import { getLangText } from '../general/util';
+import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
 
 export async function addReviewsApi(id: string, data: any) {
@@ -123,13 +121,15 @@ export async function getReviewsTableDataOfReviewMember(
       const model = modelResult?.data?.find(
         (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
       );
+      const modelName =
+        model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
       return {
         key: i.id,
         id: i.id,
         isFromLifeCycle: model ? true : false,
         name:
           (model
-            ? genProcessName(model?.name ?? {}, lang)
+            ? genProcessName(modelName ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
@@ -137,6 +137,10 @@ export async function getReviewsTableDataOfReviewMember(
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
         json: i?.json,
+        // Store complete model data for subtable preloading
+        modelData: model
+          ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
+          : null,
       };
     });
 
@@ -206,13 +210,15 @@ export async function getReviewsTableDataOfReviewAdmin(
       const model = modelResult?.data?.find(
         (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
       );
+      const modelName =
+        model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
       return {
         key: i.id,
         id: i.id,
         isFromLifeCycle: model ? true : false,
         name:
           (model
-            ? genProcessName(model?.name ?? {}, lang)
+            ? genProcessName(modelName ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
@@ -221,6 +227,9 @@ export async function getReviewsTableDataOfReviewAdmin(
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
         json: i?.json,
         comments: i?.comments,
+        modelData: model
+          ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
+          : null,
       };
     });
 
@@ -307,18 +316,20 @@ export async function getNotifyReviews(
         processIdAndVersions.push({ id, version });
       }
     });
-    const modelResult = await getLifeCyclesByIdAndVersions(processIdAndVersions);
+    const modelResult = await getLifeCyclesByIdAndVersion(processIdAndVersions);
     let data = result?.data.map((i: any) => {
       const model = modelResult?.data?.find(
         (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
       );
+      const name =
+        model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
       return {
         key: i.id,
         id: i.id,
         isFromLifeCycle: model ? true : false,
         name:
           (model
-            ? genProcessName(model?.name ?? {}, lang)
+            ? genProcessName(name ?? {}, lang)
             : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
         teamName: getLangText(i?.json?.team?.name ?? {}, lang),
         userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
@@ -390,4 +401,141 @@ export async function getLatestReviewOfMine() {
     .limit(1);
 
   return data;
+}
+
+/**
+ * Batch fetch subtable data for LifecycleModel
+ * Collect and merge data from processInstance and json_tg.submodels
+ * @param modelDatas - lifecyclemodel data array
+ * @param lang - language
+ * @returns Subtable data grouped by reviewId
+ */
+export async function getLifeCycleModelSubTableDataBatch(
+  modelDatas: Array<{
+    reviewId: string;
+    modelData: {
+      id: string;
+      version: string;
+      json: any;
+      json_tg: any;
+    };
+  }>,
+  lang: string,
+): Promise<{
+  data: Record<
+    string,
+    Array<{
+      key: string;
+      id: string;
+      version: string;
+      name: string;
+      generalComment: string;
+      sourceType: 'processInstance' | 'submodel';
+      submodelType: string;
+    }>
+  >;
+  success: boolean;
+}> {
+  if (!modelDatas.length) {
+    return { data: {}, success: true };
+  }
+
+  // 1. Collect all process id and version that need to be fetched, and record data source and type
+  const processParamMap = new Map<string, string[]>(); // key: "id:version", value: reviewId[]
+  const processSourceMap = new Map<
+    string,
+    { source: 'processInstance' | 'submodel'; type?: string }
+  >(); // key: "id:version", value: source info
+
+  modelDatas.forEach(({ reviewId, modelData }) => {
+    if (!modelData) return;
+
+    const { json, json_tg, version } = modelData;
+
+    // Extract from json.processInstance
+    const processInstances =
+      json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology?.processes
+        ?.processInstance ?? [];
+    processInstances.forEach((instance: any) => {
+      const refObjectId = instance?.referenceToProcess?.['@refObjectId'];
+      const refVersion = instance?.referenceToProcess?.['@version'];
+      if (refObjectId && refVersion) {
+        const key = `${refObjectId}:${refVersion}`;
+        if (!processParamMap.has(key)) {
+          processParamMap.set(key, []);
+        }
+        processParamMap.get(key)!.push(reviewId);
+        // Record source as processInstance
+        if (!processSourceMap.has(key)) {
+          processSourceMap.set(key, { source: 'processInstance' });
+        }
+      }
+    });
+
+    // Extract from json_tg.submodels
+    const submodels = json_tg?.submodels ?? [];
+    submodels.forEach((submodel: any) => {
+      const submodelId = submodel?.id;
+      const submodelType = submodel?.type; // primary or secondary
+      if (submodelId) {
+        const key = `${submodelId}:${version}`;
+        if (!processParamMap.has(key)) {
+          processParamMap.set(key, []);
+        }
+        processParamMap.get(key)!.push(reviewId);
+        // Record source as submodel and its type
+        if (!processSourceMap.has(key)) {
+          processSourceMap.set(key, { source: 'submodel', type: submodelType });
+        }
+      }
+    });
+  });
+
+  // 2. Batch fetch all process details
+  const processParams = Array.from(processParamMap.keys()).map((key) => {
+    const [id, version] = key.split(':');
+    return { id, version };
+  });
+
+  if (processParams.length === 0) {
+    return { data: {}, success: true };
+  }
+
+  const processesResult = await getProcessDetailByIdAndVersion(processParams);
+
+  if (!processesResult.success || !processesResult.data) {
+    return { data: {}, success: false };
+  }
+
+  // 3. Group and format process data by reviewId
+  const resultData: Record<string, any[]> = {};
+
+  processesResult.data.forEach((process: any) => {
+    const key = `${process.id}:${process.version}`;
+    const relatedReviewIds = processParamMap.get(key) ?? [];
+    const sourceInfo = processSourceMap.get(key);
+
+    relatedReviewIds.forEach((reviewId) => {
+      if (!resultData[reviewId]) {
+        resultData[reviewId] = [];
+      }
+
+      // Avoid adding the same process multiple times
+      if (!resultData[reviewId].some((item: any) => item.id === process.id)) {
+        resultData[reviewId].push({
+          key: process.id,
+          id: process.id,
+          version: process.version,
+          name: genProcessName(
+            process.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
+            lang,
+          ),
+          sourceType: sourceInfo?.source,
+          submodelType: sourceInfo?.type,
+        });
+      }
+    });
+  });
+
+  return { data: resultData, success: true };
 }
