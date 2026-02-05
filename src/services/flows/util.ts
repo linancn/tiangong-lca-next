@@ -4,6 +4,7 @@ import {
   classificationToJsonList,
   classificationToStringList,
   convertToUTCISOString,
+  formatDateTime,
   getLangJson,
   getLangList,
   getLangText,
@@ -203,7 +204,7 @@ export function genFlowJsonOrdered(id: string, data: any) {
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

@@ -5,6 +5,7 @@ import {
   classificationToStringList,
   convertCopyrightToBoolean,
   convertToUTCISOString,
+  formatDateTime,
   getLangJson,
   getLangList,
   getLangText,
@@ -349,7 +350,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
           },
         },
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

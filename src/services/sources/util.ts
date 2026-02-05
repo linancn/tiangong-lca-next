@@ -4,6 +4,7 @@ import {
   classificationToJsonList,
   classificationToStringList,
   convertToUTCISOString,
+  formatDateTime,
   getLangJson,
   getLangList,
   jsonToList,
@@ -76,8 +77,7 @@ export function genSourceJsonOrdered(id: string, data: any) {
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp':
-            data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? {},
+          'common:timeStamp': formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@type':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
