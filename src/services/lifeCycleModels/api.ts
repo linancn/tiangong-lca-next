@@ -21,7 +21,7 @@ import {
   validateProcessesByIdAndVersion,
 } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import { genLifeCycleModelJsonOrdered } from './util';
+import { genLifeCycleModelJsonOrdered, genReferenceToResultingProcess } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
 const updateLifeCycleModelProcesses = async (id: string, version: string, data: any) => {
@@ -135,12 +135,18 @@ export async function createLifeCycleModel(data: any) {
     );
   }
   const rule_verification = issues.length === 0;
+  const updatedData = genReferenceToResultingProcess(
+    lifeCycleModelProcesses,
+    data.version,
+    newLifeCycleModelJsonOrdered,
+  );
+
   const result = await supabase
     .from('lifecyclemodels')
     .insert([
       {
         id: data.id,
-        json_ordered: newLifeCycleModelJsonOrdered,
+        json_ordered: updatedData,
         json_tg: {
           xflow: { edges, nodes: data?.model?.nodes ?? [] },
           submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
@@ -419,6 +425,11 @@ export async function updateLifeCycleModel(data: any) {
         );
       });
 
+      const updatedData = genReferenceToResultingProcess(
+        lifeCycleModelProcesses,
+        data.version,
+        newLifeCycleModelJsonOrdered,
+      );
       const updateResult = await supabase.functions.invoke('update_data', {
         headers: {
           Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
@@ -428,7 +439,7 @@ export async function updateLifeCycleModel(data: any) {
           version: data.version,
           table: 'lifecyclemodels',
           data: {
-            json_ordered: newLifeCycleModelJsonOrdered,
+            json_ordered: updatedData,
             json_tg: {
               xflow: { edges, nodes: data?.model?.nodes ?? [] },
               submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),

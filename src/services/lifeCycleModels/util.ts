@@ -13,7 +13,7 @@ import {
   listToJson,
   removeEmptyObjects,
 } from '../general/util';
-import { genProcessName } from '../processes/util';
+import { genProcessName, genProcessNameJson } from '../processes/util';
 import { FormLifeCycleModel } from './data';
 
 export function genNodeLabel(label: string, lang: string, nodeWidth: number) {
@@ -32,6 +32,32 @@ export function genPortLabel(label: string, lang: string, nodeWidth: number) {
   return label !== labelSub ? labelSub + '...' : label;
 }
 
+export const genReferenceToResultingProcess = (
+  lifeCycleModelProcesses: any,
+  version: string,
+  data: any,
+) => {
+  if (!lifeCycleModelProcesses || lifeCycleModelProcesses.length === 0 || !data) {
+    return data;
+  }
+
+  const referenceToResultingProcess = lifeCycleModelProcesses.map((process: any) => {
+    return {
+      '@refObjectId': process?.modelInfo?.id,
+      '@type': 'process data set',
+      '@uri': `../processes/${process?.modelInfo?.id}.xml`,
+      '@version': version,
+      'common:shortDescription': genProcessNameJson(
+        process?.data?.processDataSet?.processInformation?.dataSetInformation?.name,
+      ),
+    };
+  });
+  console.log('referenceToResultingProcess', referenceToResultingProcess, data);
+  data['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
+    'referenceToResultingProcess'
+  ] = referenceToResultingProcess;
+  return data;
+};
 export function genLifeCycleModelJsonOrdered(id: string, data: any) {
   const nodes = data?.model?.nodes;
 
