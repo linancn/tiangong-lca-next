@@ -625,8 +625,8 @@ const ToolbarEdit: FC<Props> = ({
     });
   };
 
-  const updateReference = async () => {
-    setSpinning(true);
+  const updateReference = async (setLoadingData: boolean) => {
+    if (setLoadingData) setSpinning(true);
     await Promise.all(
       nodes.map(async (node) => {
         const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width;
@@ -725,7 +725,7 @@ const ToolbarEdit: FC<Props> = ({
         });
       }),
     );
-    setSpinning(false);
+    if (setLoadingData) setSpinning(false);
   };
 
   const deleteCell = async () => {
@@ -763,7 +763,7 @@ const ToolbarEdit: FC<Props> = ({
   const saveData = async (setLoadingData = true) => {
     setSpinning(true);
     await editInfoRef.current?.updateReferenceDescription(infoData);
-    await updateReference();
+    await updateReference(setLoadingData);
 
     // 直接从图中获取最新的节点和边数据
     const currentNodes = graph ? graph.getNodes().map((node: any) => node.toJSON()) : nodes;
@@ -1573,7 +1573,7 @@ const ToolbarEdit: FC<Props> = ({
           size='small'
           icon={<CopyOutlined />}
           style={{ boxShadow: 'none' }}
-          onClick={updateReference}
+          onClick={() => updateReference(true)}
         />
       </Tooltip>
       <Tooltip

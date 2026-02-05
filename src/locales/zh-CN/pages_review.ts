@@ -19,6 +19,11 @@ export default {
   'pages.review.table.column.userName': '用户名称',
   'pages.review.table.column.createAt': '提交时间',
   'pages.review.table.column.deadline': '截止时间',
+  'pages.review.table.column.type': '类型',
+
+  'pages.review.table.type.modelNode': '模型节点',
+  'pages.review.table.type.primaryProduct': '主产品',
+  'pages.review.table.type.secondaryProduct': '子产品',
 
   'pages.review.members.email': '邮箱',
   'pages.review.members.memberName': '成员名称',

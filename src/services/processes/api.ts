@@ -1,7 +1,7 @@
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData } from '@/services/general/api';
-import { getLifeCyclesByIdAndVersions } from '@/services/lifeCycleModels/api';
+import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
@@ -331,7 +331,7 @@ export async function getConnectableProcessesTable(
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
     getCachedLocationData(lang, locations),
     lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
-    getLifeCyclesByIdAndVersions(processIdsAndVersions),
+    getLifeCyclesByIdAndVersion(processIdsAndVersions),
   ]);
   const locationDataArr = locationRes || [];
   const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
@@ -853,7 +853,7 @@ export async function getProcessDetailByIdAndVersion(data: { id: string; version
 
     const result = await supabase
       .from('processes')
-      .select('id,json,version, modified_at')
+      .select('id,json,version, modified_at, state_code')
       .or(orConditions);
 
     return Promise.resolve({

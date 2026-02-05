@@ -25,4 +25,10 @@ export type ReviewsTable = {
       email: string;
     };
   };
+  modelData?: {
+    id: string;
+    version: string;
+    json: any;
+    json_tg: any;
+  } | null;
 };
