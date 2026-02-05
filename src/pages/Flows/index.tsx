@@ -42,9 +42,6 @@ const TableList: FC = () => {
   const [stateCode, setStateCode] = useState<string | number>('all');
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
-  const [allFlows, setAllFlows] = useState<any>([]);
-  const isSortingRef = useRef(false);
-  const sortRef = useRef<null | { field: string; order: string }>(null);
 
   const intl = useIntl();
 
@@ -273,79 +270,11 @@ const TableList: FC = () => {
 
   const onSearch: SearchProps['onSearch'] = (value) => {
     setKeyWord(value);
-    sortRef.current = null;
-    isSortingRef.current = false;
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
   const handleImportData = (jsonData: any) => {
     setImportData(jsonData);
-  };
-  const sortData = () => {
-    const collator = new Intl.Collator('en', {
-      numeric: true,
-      sensitivity: 'variant',
-      caseFirst: 'upper',
-    });
-
-    const getComparableValue = (item: FlowTable) => {
-      if (sortRef.current?.field) {
-        return item[sortRef.current.field as keyof FlowTable];
-      }
-      return item.modifiedAt;
-    };
-
-    const compareValues = (valueA: any, valueB: any) => {
-      if (valueA === valueB) {
-        return 0;
-      }
-
-      if (valueA === null || valueA === undefined) {
-        return 1;
-      }
-      if (valueB === null || valueB === undefined) {
-        return -1;
-      }
-
-      if (typeof valueA === 'number' && typeof valueB === 'number') {
-        return valueA - valueB;
-      }
-
-      const dateA =
-        valueA instanceof Date
-          ? valueA
-          : typeof valueA === 'string' && !Number.isNaN(Date.parse(valueA))
-            ? new Date(valueA)
-            : null;
-      const dateB =
-        valueB instanceof Date
-          ? valueB
-          : typeof valueB === 'string' && !Number.isNaN(Date.parse(valueB))
-            ? new Date(valueB)
-            : null;
-
-      if (dateA && dateB) {
-        return dateA.getTime() - dateB.getTime();
-      }
-
-      return collator.compare(String(valueA), String(valueB));
-    };
-
-    return [...allFlows].sort((a, b) => {
-      const valueA = getComparableValue(a);
-      const valueB = getComparableValue(b);
-      const comparison = compareValues(valueA, valueB);
-
-      if (sortRef.current?.order === 'descend') {
-        return -comparison;
-      }
-
-      if (sortRef.current?.order === 'ascend') {
-        return comparison;
-      }
-
-      return -comparison;
-    });
   };
   return (
     <PageContainer
@@ -416,15 +345,6 @@ const TableList: FC = () => {
           }
           return [];
         }}
-        onChange={(pagination, filters, sorter: any) => {
-          if (sorter?.field && sorter?.order) {
-            isSortingRef.current = true;
-            sortRef.current = sorter;
-          } else {
-            isSortingRef.current = false;
-            sortRef.current = null;
-          }
-        }}
         request={async (
           params: {
             pageSize: number;
@@ -435,12 +355,8 @@ const TableList: FC = () => {
         ) => {
           const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
           if (keyWord.length > 0) {
-            if (isSortingRef.current) {
-              const sortedResult = sortData();
-              return Promise.resolve({ success: true, data: sortedResult });
-            }
             if (openAI) {
-              const result = await flow_hybrid_search(
+              return flow_hybrid_search(
                 params,
                 lang,
                 dataSource,
@@ -450,12 +366,8 @@ const TableList: FC = () => {
                 },
                 stateCode,
               );
-              if (result.data) {
-                setAllFlows(result.data);
-              }
-              return result;
             }
-            const result = await getFlowTablePgroongaSearch(
+            return getFlowTablePgroongaSearch(
               params,
               lang,
               dataSource,
@@ -465,10 +377,6 @@ const TableList: FC = () => {
               },
               stateCode,
             );
-            if (result.data) {
-              setAllFlows(result.data);
-            }
-            return result;
           }
 
           const sortFields: Record<string, string> = {
@@ -487,7 +395,7 @@ const TableList: FC = () => {
             }
           }
 
-          const result = await getFlowTableAll(
+          return getFlowTableAll(
             params,
             convertedSort,
             lang,
@@ -498,10 +406,6 @@ const TableList: FC = () => {
             },
             stateCode,
           );
-          if (result.data) {
-            setAllFlows(result.data);
-          }
-          return result;
         }}
         columns={flowsColumns}
       />
