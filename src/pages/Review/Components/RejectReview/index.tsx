@@ -61,7 +61,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     const controller = new ConcurrencyController(5);
     for (const item of underReview) {
       const updateData = {
-        state_code: 10,
+        state_code: 0,
       };
 
       controller.add(async () => {
