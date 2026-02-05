@@ -14,14 +14,14 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 // Mock dependencies
 jest.mock('@/services/supabase');
 jest.mock('@/services/general/api');
-jest.mock('@/services/ilcd/api');
+jest.mock('@/services/ilcd/cache');
 jest.mock('@/services/general/util');
 jest.mock('@/services/contacts/util');
 
 describe('Contacts API Service', () => {
   const { supabase } = jest.requireMock('@/services/supabase');
   const { getTeamIdByUserId, getDataDetail } = jest.requireMock('@/services/general/api');
-  const { getILCDClassification } = jest.requireMock('@/services/ilcd/api');
+  const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
   const { getLangText, jsonToList, genClassificationZH, classificationToString } =
     jest.requireMock('@/services/general/util');
   const { genContactJsonOrdered } = jest.requireMock('@/services/contacts/util');
@@ -278,10 +278,9 @@ describe('Contacts API Service', () => {
         error: null,
       });
 
-      getILCDClassification.mockResolvedValue({
-        data: [{ '@id': 'cat-1', '@level': '0', '#text': 'Category' }],
-        success: true,
-      });
+      getCachedClassificationData.mockResolvedValue([
+        { '@id': 'cat-1', '@level': '0', '#text': 'Category' },
+      ]);
 
       const result = await getContactTableAll(
         { current: 1, pageSize: 10 },
@@ -293,7 +292,7 @@ describe('Contacts API Service', () => {
 
       expect(mockFrom).toHaveBeenCalledWith('contacts');
       expect(mockEq).toHaveBeenCalledWith('state_code', 100);
-      expect(getILCDClassification).toHaveBeenCalledWith('Contact', 'en', ['all']);
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', 'en', ['all']);
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(result.total).toBe(1);
@@ -415,10 +414,7 @@ describe('Contacts API Service', () => {
         error: null,
       });
 
-      getILCDClassification.mockResolvedValue({
-        data: [],
-        success: true,
-      });
+      getCachedClassificationData.mockResolvedValue([]);
 
       const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', []);
 
@@ -505,10 +501,7 @@ describe('Contacts API Service', () => {
         error: null,
       });
 
-      getILCDClassification.mockResolvedValue({
-        data: [],
-        success: true,
-      });
+      getCachedClassificationData.mockResolvedValue([]);
 
       const result = await getContactTablePgroongaSearch(
         { current: 1, pageSize: 10 },
@@ -637,10 +630,7 @@ describe('Contacts API Service', () => {
         error: null,
       });
 
-      getILCDClassification.mockResolvedValue({
-        data: [],
-        success: true,
-      });
+      getCachedClassificationData.mockResolvedValue([]);
 
       const result = await contact_hybrid_search(
         { current: 1, pageSize: 10 },

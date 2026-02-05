@@ -10,7 +10,7 @@ import { supabase } from '@/services/supabase';
 import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getDataDetail, getTeamIdByUserId } from '../general/api';
-import { getILCDClassification } from '../ilcd/api';
+import { getCachedClassificationData } from '../ilcd/cache';
 import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
@@ -141,11 +141,11 @@ export async function getContactTableAll(
     //   return l0?.['#text'] ?? '';
     // })));
 
-    await getILCDClassification('Contact', lang, ['all']).then((res) => {
+    await getCachedClassificationData('Contact', lang, ['all']).then((res) => {
       data = result.data.map((i: any) => {
         try {
           const classifications = jsonToList(i?.['common:class']);
-          const classificationZH = genClassificationZH(classifications, res?.data);
+          const classificationZH = genClassificationZH(classifications, res);
 
           return {
             key: i.id + ':' + i.version,
@@ -231,14 +231,14 @@ export async function getContactTablePgroongaSearch(
     const totalCount = result.data[0].total_count;
 
     let data: any[] = [];
-    await getILCDClassification('Contact', lang, ['all']).then((res) => {
+    await getCachedClassificationData('Contact', lang, ['all']).then((res) => {
       data = result.data.map((i: any) => {
         try {
           const dataInfo = i.json?.contactDataSet?.contactInformation?.dataSetInformation;
           const classifications = jsonToList(
             dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
           );
-          const classificationZH = genClassificationZH(classifications, res?.data);
+          const classificationZH = genClassificationZH(classifications, res);
           return {
             key: i.id + ':' + i.version,
             id: i.id,
@@ -309,14 +309,14 @@ export async function contact_hybrid_search(
     const totalCount = resultData.total_count;
 
     let data: any[] = [];
-    await getILCDClassification('Contact', lang, ['all']).then((res) => {
+    await getCachedClassificationData('Contact', lang, ['all']).then((res) => {
       data = resultData.map((i: any) => {
         try {
           const dataInfo = i.json?.contactDataSet?.contactInformation?.dataSetInformation;
           const classifications = jsonToList(
             dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
           );
-          const classificationZH = genClassificationZH(classifications, res?.data);
+          const classificationZH = genClassificationZH(classifications, res);
           return {
             key: i.id + ':' + i.version,
             id: i.id,

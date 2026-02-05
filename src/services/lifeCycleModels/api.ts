@@ -974,7 +974,14 @@ export async function getLifeCyclesByIdAndVersion(params: { id: string; version:
   return result;
 }
 
-export async function getLifeCyclesByIds(ids: string[]) {
+export async function getLifeCyclesByIdAndVersions(params: { id: string; version: string }[]) {
+  if (!params.length) {
+    return {
+      data: [],
+    };
+  }
+  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
+
   const result = await supabase
     .from('lifecyclemodels')
     .select(
@@ -988,7 +995,8 @@ export async function getLifeCyclesByIds(ids: string[]) {
     team_id
     `,
     )
-    .in('id', ids);
+    .or(orConditions);
+
   return result;
 }
 
