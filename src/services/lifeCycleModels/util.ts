@@ -52,7 +52,6 @@ export const genReferenceToResultingProcess = (
       ),
     };
   });
-  console.log('referenceToResultingProcess', referenceToResultingProcess, data);
   data['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
     'referenceToResultingProcess'
   ] = referenceToResultingProcess;

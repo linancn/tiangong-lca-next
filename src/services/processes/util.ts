@@ -188,6 +188,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
           },
         },
         technology: {
+          referenceToIncludedProcesses: listToJson(
+            data?.processInformation?.technology?.referenceToIncludedProcesses,
+          ),
           technologyDescriptionAndIncludedProcesses: getLangJson(
             data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
           ),
@@ -898,6 +901,9 @@ export function genProcessFromData(data: any): FormProcess {
           },
         },
         technology: {
+          referenceToIncludedProcesses: jsonToList(
+            data?.processInformation?.technology?.referenceToIncludedProcesses,
+          ),
           technologyDescriptionAndIncludedProcesses: getLangList(
             data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
           ),

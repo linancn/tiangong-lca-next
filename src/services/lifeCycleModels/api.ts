@@ -162,6 +162,17 @@ export async function createLifeCycleModel(data: any) {
     if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
       lifeCycleModelProcesses.forEach(async (n: any) => {
         try {
+          if (n.modelInfo.type === 'primary') {
+            n.data.processDataSet.processInformation.technology = {
+              ...n.data.processDataSet.processInformation.technology,
+              referenceToIncludedProcesses: jsonToList(
+                newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                  ?.technology?.processes?.processInstance,
+              ).map((item) => {
+                return item.referenceToProcess;
+              }),
+            };
+          }
           await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
         } catch (error) {
           console.error(error);
@@ -484,6 +495,18 @@ export async function updateLifeCycleModel(data: any) {
                       if (oldProcess) {
                         overrideWithOldProcess(n.data, oldProcess.json);
                       }
+                      if (n.modelInfo.type === 'primary') {
+                        n.data.processDataSet.processInformation.technology = {
+                          ...n.data.processDataSet.processInformation.technology,
+                          referenceToIncludedProcesses: jsonToList(
+                            newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                              ?.lifeCycleModelInformation?.technology?.processes?.processInstance,
+                          ).map((item) => {
+                            return item.referenceToProcess;
+                          }),
+                        };
+                      }
+
                       return updateProcess(
                         n.modelInfo.id,
                         data.version,
