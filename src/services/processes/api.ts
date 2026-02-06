@@ -530,6 +530,7 @@ export async function getProcessTablePgroongaSearch(
   filterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
+  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
 ) {
   // const time_start = new Date();
   let result: any;
@@ -542,7 +543,8 @@ export async function getProcessTablePgroongaSearch(
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
       data_source: dataSource,
-      this_user_id: session.data.session.user?.id,
+      order_by: orderBy,
+      // this_user_id: session.data.session.user?.id,
     };
     if (typeof stateCode === 'number') {
       requestParams['state_code'] = stateCode;
@@ -550,7 +552,7 @@ export async function getProcessTablePgroongaSearch(
     if (typeOfDataSet && typeOfDataSet !== 'all') {
       requestParams['type_of_data_set'] = typeOfDataSet;
     }
-    result = await supabase.rpc('pgroonga_search_processes', requestParams);
+    result = await supabase.rpc('pgroonga_search_processes_v1', requestParams);
   }
   if (result.error) {
     console.log('error', result.error);

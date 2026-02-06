@@ -867,9 +867,10 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_processes',
+      'pgroonga_search_processes_v1',
       expect.objectContaining({
         query_text: 'search term',
+        order_by: undefined,
       }),
     );
     expect(result).toBeDefined();
