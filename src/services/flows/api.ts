@@ -321,13 +321,14 @@ export async function getFlowTablePgroongaSearch(
   queryText: string,
   filter: any,
   stateCode?: string | number,
+  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
 
   if (session.data.session) {
     result = await supabase.rpc(
-      'pgroonga_search_flows',
+      'pgroonga_search_flows_v1',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -335,8 +336,9 @@ export async function getFlowTablePgroongaSearch(
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
+            // this_user_id: session.data.session.user?.id,
             state_code: stateCode,
+            order_by: orderBy,
           }
         : {
             query_text: queryText,
@@ -344,7 +346,8 @@ export async function getFlowTablePgroongaSearch(
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
+            order_by: orderBy,
+            // this_user_id: session.data.session.user?.id,
           },
     );
   }
