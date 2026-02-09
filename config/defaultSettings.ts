@@ -1,4 +1,5 @@
 import { ProLayoutProps } from '@ant-design/pro-components';
+import { lightBrandTheme } from './branding';
 /**
  * @name
  */
@@ -6,8 +7,8 @@ const Settings: ProLayoutProps & {
   pwa?: boolean;
   logo?: string;
 } = {
-  navTheme: 'light',
-  colorPrimary: '#5C246A',
+  navTheme: lightBrandTheme.navTheme,
+  colorPrimary: lightBrandTheme.colorPrimary,
   layout: 'mix',
   contentWidth: 'Fluid',
   fixedHeader: false,
@@ -15,7 +16,7 @@ const Settings: ProLayoutProps & {
   colorWeak: false,
   title: 'TianGong LCA Data Platform',
   pwa: true,
-  logo: '/logo.svg',
+  logo: lightBrandTheme.logo,
   iconfontUrl: '',
   token: {
     // 参见ts声明，demo 见文档，通过token 修改样式

@@ -15,6 +15,7 @@ import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
+import { getBrandTheme } from '../../../../config/branding';
 import Settings from '../../../../config/defaultSettings';
 
 const LoginMessage: React.FC<{
@@ -132,13 +133,14 @@ const Login: React.FC = () => {
 
   const { status, type: loginType } = userLoginState;
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
 
   return (
     <App>
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
+            colorPrimary: brandTheme.colorPrimary,
           },
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
@@ -175,7 +177,7 @@ const Login: React.FC = () => {
             >
               <LoginForm
                 formRef={formRefLogin}
-                logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
+                logo={brandTheme.logo}
                 title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                 subTitle={
                   <FormattedMessage

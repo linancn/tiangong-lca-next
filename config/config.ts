@@ -161,5 +161,9 @@ export default defineConfig({
   define: {
     'process.env.SUPABASE_URL': process.env.SUPABASE_URL,
     'process.env.SUPABASE_PUBLISHABLE_KEY': process.env.SUPABASE_PUBLISHABLE_KEY,
+    'process.env.APP_LIGHT_PRIMARY': process.env.APP_LIGHT_PRIMARY,
+    'process.env.APP_DARK_PRIMARY': process.env.APP_DARK_PRIMARY,
+    'process.env.APP_LIGHT_LOGO': process.env.APP_LIGHT_LOGO,
+    'process.env.APP_DARK_LOGO': process.env.APP_DARK_LOGO,
   },
 });

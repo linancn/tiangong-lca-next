@@ -7,6 +7,7 @@ import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
 import { Helmet, SelectLang, useIntl } from 'umi';
+import { getBrandTheme } from '../../../../config/branding';
 import Settings from '../../../../config/defaultSettings';
 
 const PasswordSet: FC = () => {
@@ -17,6 +18,7 @@ const PasswordSet: FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
 
   const handleSubmit = async (values: Auth.LoginParams) => {
     try {
@@ -73,7 +75,7 @@ const PasswordSet: FC = () => {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
+            colorPrimary: brandTheme.colorPrimary,
           },
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
@@ -101,7 +103,7 @@ const PasswordSet: FC = () => {
               <Spin spinning={spinning}>
                 <LoginForm
                   layout='vertical'
-                  logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
+                  logo={brandTheme.logo}
                   title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                   subTitle={
                     <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />

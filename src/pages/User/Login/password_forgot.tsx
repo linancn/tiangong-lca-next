@@ -7,6 +7,7 @@ import { Helmet, Link, SelectLang, useIntl } from 'umi';
 
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
+import { getBrandTheme } from '../../../../config/branding';
 import Settings from '../../../../config/defaultSettings';
 
 const PasswordForgot: React.FC = () => {
@@ -16,6 +17,7 @@ const PasswordForgot: React.FC = () => {
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
 
   const handleSubmit = async (values: Auth.LoginParams) => {
     try {
@@ -67,7 +69,7 @@ const PasswordForgot: React.FC = () => {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
+            colorPrimary: brandTheme.colorPrimary,
           },
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
@@ -94,7 +96,7 @@ const PasswordForgot: React.FC = () => {
               <Spin spinning={spinning}>
                 <LoginForm
                   layout='vertical'
-                  logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
+                  logo={brandTheme.logo}
                   title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                   subTitle={
                     <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />
