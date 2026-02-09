@@ -19,7 +19,7 @@ import { FormattedMessage } from 'umi';
 import ComplianceItemForm from '../Compliance/form';
 import ComplianceItemView from '../Compliance/view';
 import ProcessExchangeView from '../Exchange/view';
-import ReveiwItemForm from '../ReviewForm/form';
+import ReviewItemForm from '../ReviewForm/form';
 import ReviewItemView from '../ReviewForm/view';
 
 import {
@@ -106,6 +106,11 @@ export const TabsDetail: FC<Props> = ({
 
   useEffect(() => {
     if (activeTabKey === 'validation' && type === 'edit') {
+      const fieldPath = ['modellingAndValidation', 'validation', 'review'];
+      const currentValue = formRef.current?.getFieldValue(fieldPath);
+      if (!currentValue || currentValue.length === 0) {
+        formRef.current?.setFieldValue(fieldPath, [{ 'common:scope': [{}] }]);
+      }
       getUserDetail().then((res) => {
         if (res.data?.contact) {
           const contact = res.data?.contact;
@@ -1683,7 +1688,8 @@ export const TabsDetail: FC<Props> = ({
           ...defaultTabContent,
           validation: (
             <>
-              <ReveiwItemForm
+              <ReviewItemForm
+                disabled={true}
                 name={['modellingAndValidation', 'validation', 'review']}
                 lang={lang}
                 formRef={formRef}
