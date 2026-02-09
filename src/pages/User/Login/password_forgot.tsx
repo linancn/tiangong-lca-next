@@ -3,12 +3,13 @@ import { MailOutlined } from '@ant-design/icons';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
 import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { Helmet, Link, SelectLang, useIntl } from 'umi';
+import { Helmet, Link, useIntl } from 'umi';
 
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
 import { getBrandTheme } from '../../../../config/branding';
 import Settings from '../../../../config/defaultSettings';
+import LoginTopActions from './Components/LoginTopActions';
 
 const PasswordForgot: React.FC = () => {
   const [initData, setInitData] = useState<Auth.CurrentUser>({});
@@ -16,8 +17,18 @@ const PasswordForgot: React.FC = () => {
   const [sendComplete, setSendComplete] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    () => localStorage.getItem('isDarkMode') === 'true',
+  );
   const brandTheme = getBrandTheme(isDarkMode);
+
+  const handleDarkModeToggle = () => {
+    setIsDarkMode((prevIsDarkMode) => {
+      const nextIsDarkMode = !prevIsDarkMode;
+      localStorage.setItem('isDarkMode', nextIsDarkMode.toString());
+      return nextIsDarkMode;
+    });
+  };
 
   const handleSubmit = async (values: Auth.LoginParams) => {
     try {
@@ -91,7 +102,7 @@ const PasswordForgot: React.FC = () => {
                 - {Settings.title}
               </title>
             </Helmet>
-            <SelectLang style={{ position: 'absolute', right: 16, top: 16 }} />
+            <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
             <div style={{ marginTop: '80px' }}>
               <Spin spinning={spinning}>
                 <LoginForm

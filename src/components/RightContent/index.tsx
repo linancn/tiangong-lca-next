@@ -1,14 +1,20 @@
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import { ConfigProvider, theme } from 'antd';
+import type React from 'react';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
-export const SelectLang = () => {
+interface SelectLangProps {
+  style?: React.CSSProperties;
+}
+
+export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
   return (
     <UmiSelectLang
       style={{
         padding: 4,
+        ...style,
       }}
     />
   );
