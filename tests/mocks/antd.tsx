@@ -428,9 +428,11 @@ export const createAntdMock = () => {
   const Typography = {
     Link: ({ children, onClick, href = '#', strong: _strong, ...rest }: any) => {
       void _strong;
+      const styleColor = rest?.style?.color;
       return (
         <a
           href={href}
+          data-style-color={styleColor}
           onClick={(event) => {
             event.preventDefault();
             onClick?.(event);
@@ -448,8 +450,9 @@ export const createAntdMock = () => {
     ),
     Text: ({ children, strong: _strong, ...rest }: any) => {
       void _strong;
+      const styleColor = rest?.style?.color;
       return (
-        <span data-testid='typography-text' {...rest}>
+        <span data-testid='typography-text' data-style-color={styleColor} {...rest}>
           {children}
         </span>
       );
