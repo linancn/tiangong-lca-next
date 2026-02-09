@@ -12,7 +12,7 @@
 
 import Login from '@/pages/User/Login';
 import { login, signUp } from '@/services/auth';
-import { fireEvent, renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
+import { fireEvent, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 import { antdMocks } from '../../mocks/antd';
 import { umiMocks } from '../../mocks/umi';
 import { umijsMaxMocks } from '../../mocks/umijsMax';
@@ -80,12 +80,30 @@ const mockSignUp = signUp as unknown as LoginMock;
 describe('Login workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
     mockHistoryPush.mockClear();
     mockFetchUserInfo.mockReset();
     mockSetInitialState.mockReset();
     (Object.values(mockMessageApi) as Array<{ mockClear?: () => void }>).forEach((fn) =>
       fn.mockClear?.(),
     );
+  });
+
+  it('renders top-right actions in main-layout order and toggles dark mode', () => {
+    localStorage.setItem('isDarkMode', 'false');
+
+    renderWithProviders(<Login />);
+
+    const actions = screen.getByTestId('login-top-actions');
+    const order = Array.from(actions.children).map((child) => child.getAttribute('data-testid'));
+    expect(order).toEqual(['login-dark-mode', 'login-language', 'login-help']);
+
+    expect(within(actions).getByTestId('select-lang')).toBeInTheDocument();
+    expect(within(actions).getByTestId('icon-question-circle')).toBeInTheDocument();
+
+    fireEvent.click(within(actions).getByTestId('icon-moon'));
+    expect(localStorage.getItem('isDarkMode')).toBe('true');
+    expect(within(actions).getByTestId('icon-sun-filled')).toBeInTheDocument();
   });
 
   it('logs in successfully and redirects to the home page', async () => {

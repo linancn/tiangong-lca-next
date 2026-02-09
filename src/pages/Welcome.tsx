@@ -38,6 +38,7 @@ const Welcome: React.FC = () => {
 
   const { locale } = useIntl();
   const lang = getLang(locale) as 'en' | 'zh';
+  const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
@@ -357,10 +358,7 @@ const Welcome: React.FC = () => {
               >
                 <div className={styles.welcome_metric_content}>
                   <div className={styles.welcome_metric_header}>
-                    <span
-                      className={styles.welcome_metric_icon}
-                      style={{ color: token.colorPrimary }}
-                    >
+                    <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
                       {metric.icon}
                     </span>
                     {metric.key === 'data5' ? (
@@ -369,7 +367,7 @@ const Welcome: React.FC = () => {
                         href='#'
                         onClick={handleOpenDataModal}
                         style={{
-                          color: token.colorPrimary,
+                          color: primaryColor,
                           fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
                           fontWeight: 600,
                           fontSize: '1rem',
@@ -381,7 +379,7 @@ const Welcome: React.FC = () => {
                       <Typography.Text
                         strong
                         style={{
-                          color: token.colorPrimary,
+                          color: primaryColor,
                           fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
                           fontWeight: 600,
                           fontSize: '1rem',
@@ -445,10 +443,7 @@ const Welcome: React.FC = () => {
               >
                 <Space direction='vertical' size={12}>
                   <div className={styles.welcome_section_header}>
-                    <span
-                      className={styles.welcome_section_icon}
-                      style={{ color: token.colorPrimary }}
-                    >
+                    <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
                       {sectionIconMap[section.key]}
                     </span>
                     <Typography.Text

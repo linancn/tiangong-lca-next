@@ -109,7 +109,18 @@ jest.mock('antd', () => {
       ))}
     </div>
   );
-  const theme = { defaultAlgorithm: 'default', darkAlgorithm: 'dark' };
+  const theme = {
+    defaultAlgorithm: 'default',
+    darkAlgorithm: 'dark',
+    useToken: () => ({
+      token: {
+        borderRadius: 8,
+        colorTextSecondary: '#8c8c8c',
+        colorTextTertiary: '#bfbfbf',
+        colorBgTextHover: '#f5f5f5',
+      },
+    }),
+  };
   return {
     __esModule: true,
     App,
