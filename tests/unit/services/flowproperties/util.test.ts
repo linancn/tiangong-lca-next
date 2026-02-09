@@ -9,17 +9,19 @@
 import { genFlowpropertyJsonOrdered } from '@/services/flowproperties/util';
 
 jest.mock('@/services/general/util', () => ({
+  formatDateTime: jest.fn((date) => date.toISOString()),
   getLangJson: jest.fn(),
   classificationToJsonList: jest.fn(),
   removeEmptyObjects: jest.fn(),
 }));
 
-const { getLangJson, classificationToJsonList, removeEmptyObjects } =
+const { formatDateTime, getLangJson, classificationToJsonList, removeEmptyObjects } =
   jest.requireMock('@/services/general/util');
 
 describe('FlowProperties Utility Functions (src/services/flowproperties/util.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    formatDateTime.mockImplementation((date: any) => date.toISOString());
     getLangJson.mockImplementation((value: any) => value || {});
     classificationToJsonList.mockImplementation((value: any) => value || {});
     removeEmptyObjects.mockImplementation((obj: any) => obj);

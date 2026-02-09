@@ -79,7 +79,7 @@ export function genContactJsonOrdered(id: string, data: any) {
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

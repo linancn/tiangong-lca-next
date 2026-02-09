@@ -6,6 +6,7 @@ import {
   classificationToStringList,
   convertCopyrightToBoolean,
   convertToUTCISOString,
+  formatDateTime,
   getLangJson,
   getLangList,
   getLangText,
@@ -187,6 +188,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
           },
         },
         technology: {
+          referenceToIncludedProcesses: listToJson(
+            data?.processInformation?.technology?.referenceToIncludedProcesses,
+          ),
           technologyDescriptionAndIncludedProcesses: getLangJson(
             data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
           ),
@@ -562,7 +566,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
           },
         },
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[
@@ -897,6 +901,9 @@ export function genProcessFromData(data: any): FormProcess {
           },
         },
         technology: {
+          referenceToIncludedProcesses: jsonToList(
+            data?.processInformation?.technology?.referenceToIncludedProcesses,
+          ),
           technologyDescriptionAndIncludedProcesses: getLangList(
             data?.processInformation?.technology?.technologyDescriptionAndIncludedProcesses,
           ),

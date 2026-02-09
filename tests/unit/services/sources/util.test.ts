@@ -9,6 +9,7 @@ jest.mock('@/services/general/util', () => ({
   classificationToJsonList: jest.fn(),
   classificationToStringList: jest.fn(),
   convertToUTCISOString: jest.fn(),
+  formatDateTime: jest.fn(),
   getLangJson: jest.fn(),
   getLangList: jest.fn(),
   jsonToList: jest.fn(),
@@ -20,6 +21,7 @@ const {
   classificationToJsonList: mockClassificationToJsonList,
   classificationToStringList: mockClassificationToStringList,
   convertToUTCISOString: mockConvertToUTCISOString,
+  formatDateTime: mockFormatDateTime,
   getLangJson: mockGetLangJson,
   getLangList: mockGetLangList,
   jsonToList: mockJsonToList,
@@ -29,6 +31,7 @@ const {
   classificationToJsonList: jest.Mock;
   classificationToStringList: jest.Mock;
   convertToUTCISOString: jest.Mock;
+  formatDateTime: jest.Mock;
   getLangJson: jest.Mock;
   getLangList: jest.Mock;
   jsonToList: jest.Mock;
@@ -48,6 +51,7 @@ describe('Source Utility Functions', () => {
     mockClassificationToJsonList.mockImplementation(() => ({}));
     mockClassificationToStringList.mockImplementation(() => ({ id: [], value: [] }));
     mockConvertToUTCISOString.mockImplementation((dateStr) => dateStr || '');
+    mockFormatDateTime.mockImplementation(() => '2024-05-12T00:00:00Z');
     mockGetLangJson.mockImplementation(() => ({}));
     mockGetLangList.mockImplementation((value) => {
       if (!value) {

@@ -4,6 +4,7 @@ import {
   classificationToJsonList,
   classificationToStringList,
   convertToUTCISOString,
+  formatDateTime,
   getLangJson,
   getLangList,
   removeEmptyObjects,
@@ -121,7 +122,7 @@ export function genFlowpropertyJsonOrdered(id: string, data: any) {
       },
       administrativeInformation: {
         dataEntryBy: {
-          'common:timeStamp': data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+          'common:timeStamp': formatDateTime(new Date()),
           'common:referenceToDataSetFormat': {
             '@refObjectId':
               data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']?.[

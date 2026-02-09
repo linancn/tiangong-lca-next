@@ -486,6 +486,22 @@ const TableList: FC = () => {
           sort,
         ) => {
           if (keyWord.length > 0) {
+            let orderBy:
+              | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
+              | undefined;
+            if (sort && Object.keys(sort).length > 0) {
+              const field = Object.keys(sort)[0];
+              const order = sort[field];
+              if (field === 'name') {
+                orderBy = {
+                  key: 'baseName',
+                  lang: lang,
+                  order: order === 'ascend' ? 'asc' : 'desc',
+                };
+              } else if (field === 'classification') {
+                orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+              }
+            }
             if (openAI) {
               return process_hybrid_search(
                 params,
@@ -505,6 +521,7 @@ const TableList: FC = () => {
               {},
               stateCode,
               typeOfDataSet,
+              orderBy,
             );
           }
 
