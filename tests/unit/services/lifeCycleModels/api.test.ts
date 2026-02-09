@@ -394,13 +394,13 @@ describe('getLifeCycleModelTablePgroongaSearch', () => {
     );
 
     expect(mockAuthGetSession).toHaveBeenCalled();
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
       query_text: 'cement',
       filter_condition: mockFilterCondition,
       page_size: mockPaginationParams.pageSize,
       page_current: mockPaginationParams.current,
       data_source: 'my',
-      this_user_id: sampleUserId,
+      order_by: undefined,
       state_code: 100,
     });
     expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'class-1' }]);

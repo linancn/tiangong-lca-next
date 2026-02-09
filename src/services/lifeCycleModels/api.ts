@@ -758,12 +758,13 @@ export async function getLifeCycleModelTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
     result = await supabase.rpc(
-      'pgroonga_search_lifecyclemodels',
+      'pgroonga_search_lifecyclemodels_v1',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -771,7 +772,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
+            order_by: orderBy,
+            // this_user_id: session.data.session.user?.id,
             state_code: stateCode,
           }
         : {
@@ -780,7 +782,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
+            order_by: orderBy,
+            // this_user_id: session.data.session.user?.id,
           },
     );
   }
