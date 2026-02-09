@@ -9,13 +9,15 @@ import {
 } from '@ant-design/pro-components';
 import { Alert, App, Button, ConfigProvider, Tabs, message, theme } from 'antd';
 import React, { useState } from 'react';
-import { Helmet, SelectLang, history, useIntl, useModel } from 'umi';
+import { Helmet, history, useIntl, useModel } from 'umi';
 
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
+import { getBrandTheme } from '../../../../config/branding';
 import Settings from '../../../../config/defaultSettings';
+import LoginTopActions from './Components/LoginTopActions';
 
 const LoginMessage: React.FC<{
   content: string;
@@ -54,6 +56,9 @@ const Login: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const formRefLogin = React.useRef<any>();
   const { token } = theme.useToken();
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    () => localStorage.getItem('isDarkMode') === 'true',
+  );
 
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
@@ -130,15 +135,38 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleDarkModeToggle = () => {
+    setIsDarkMode((prevIsDarkMode) => {
+      const nextIsDarkMode = !prevIsDarkMode;
+      localStorage.setItem('isDarkMode', nextIsDarkMode.toString());
+
+      setInitialState?.((prevState: any) => {
+        if (!prevState) {
+          return prevState;
+        }
+        return {
+          ...prevState,
+          isDarkMode: nextIsDarkMode,
+          settings: {
+            ...(prevState.settings ?? {}),
+            ...getBrandTheme(nextIsDarkMode),
+          },
+        };
+      });
+
+      return nextIsDarkMode;
+    });
+  };
+
   const { status, type: loginType } = userLoginState;
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
 
   return (
     <App>
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
+            colorPrimary: brandTheme.colorPrimary,
           },
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
@@ -161,13 +189,7 @@ const Login: React.FC = () => {
                 - {Settings.title}
               </title>
             </Helmet>
-            <SelectLang
-              style={{
-                position: 'absolute',
-                right: 16,
-                top: 16,
-              }}
-            />
+            <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
             <div
               style={{
                 marginTop: '80px',
@@ -175,7 +197,7 @@ const Login: React.FC = () => {
             >
               <LoginForm
                 formRef={formRefLogin}
-                logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
+                logo={brandTheme.logo}
                 title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                 subTitle={
                   <FormattedMessage

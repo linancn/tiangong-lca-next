@@ -110,7 +110,15 @@ jest.mock('antd', () => {
     defaultAlgorithm: 'default',
     darkAlgorithm: 'dark',
     useToken: () => ({
-      token: { colorWarning: '#f90', colorSuccess: '#0f0', colorError: '#f00' },
+      token: {
+        colorWarning: '#f90',
+        colorSuccess: '#0f0',
+        colorError: '#f00',
+        borderRadius: 8,
+        colorTextSecondary: '#8c8c8c',
+        colorTextTertiary: '#bfbfbf',
+        colorBgTextHover: '#f5f5f5',
+      },
     }),
   };
   return { __esModule: true, App, ConfigProvider, Spin, Tabs, message, theme };

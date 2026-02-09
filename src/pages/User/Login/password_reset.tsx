@@ -6,8 +6,10 @@ import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-desig
 import { FormattedMessage, history } from '@umijs/max';
 import { App, ConfigProvider, Spin, Tabs, message, theme } from 'antd';
 import { useEffect, useState, type FC } from 'react';
-import { Helmet, SelectLang, useIntl } from 'umi';
+import { Helmet, useIntl } from 'umi';
+import { getBrandTheme } from '../../../../config/branding';
 import Settings from '../../../../config/defaultSettings';
+import LoginTopActions from './Components/LoginTopActions';
 
 const PasswordSet: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -16,7 +18,18 @@ const PasswordSet: FC = () => {
   const [spinning, setSpinning] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    () => localStorage.getItem('isDarkMode') === 'true',
+  );
+  const brandTheme = getBrandTheme(isDarkMode);
+
+  const handleDarkModeToggle = () => {
+    setIsDarkMode((prevIsDarkMode) => {
+      const nextIsDarkMode = !prevIsDarkMode;
+      localStorage.setItem('isDarkMode', nextIsDarkMode.toString());
+      return nextIsDarkMode;
+    });
+  };
 
   const handleSubmit = async (values: Auth.LoginParams) => {
     try {
@@ -73,7 +86,7 @@ const PasswordSet: FC = () => {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: isDarkMode ? '#9e3ffd' : Settings.colorPrimary,
+            colorPrimary: brandTheme.colorPrimary,
           },
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
@@ -96,12 +109,12 @@ const PasswordSet: FC = () => {
                 - {Settings.title}
               </title>
             </Helmet>
-            <SelectLang style={{ position: 'absolute', right: 16, top: 16 }} />
+            <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
             <div style={{ marginTop: '80px' }}>
               <Spin spinning={spinning}>
                 <LoginForm
                   layout='vertical'
-                  logo={isDarkMode ? '/logo_dark.svg' : Settings.logo}
+                  logo={brandTheme.logo}
                   title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
                   subTitle={
                     <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />

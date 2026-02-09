@@ -16,6 +16,7 @@ import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
+import { getBrandTheme } from '../config/branding';
 import { default as defaultSettings } from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
@@ -48,11 +49,10 @@ export async function getInitialState(): Promise<{
   };
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
   const updatedSettings = {
     ...defaultSettings,
-    navTheme: isDarkMode ? 'realDark' : defaultSettings.navTheme,
-    colorPrimary: isDarkMode ? '#9e3ffd' : defaultSettings.colorPrimary,
-    logo: isDarkMode ? '/logo_dark.svg' : defaultSettings.logo,
+    ...brandTheme,
   };
 
   // 如果不是登录页面，执行
@@ -83,11 +83,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         isDarkMode: !prevState.isDarkMode,
       };
       localStorage.setItem('isDarkMode', newState.isDarkMode.toString());
+      const brandTheme = getBrandTheme(newState.isDarkMode);
       const updatedSettings = {
         ...newState.settings,
-        navTheme: newState.isDarkMode ? 'realDark' : 'light',
-        colorPrimary: newState.isDarkMode ? '#9e3ffd' : '#5C246A',
-        logo: newState.isDarkMode ? '/logo_dark.svg' : defaultSettings.logo,
+        ...brandTheme,
       };
 
       return { ...newState, settings: updatedSettings };

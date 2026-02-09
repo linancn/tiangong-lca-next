@@ -34,6 +34,7 @@ import { getTeams } from '@/services/teams/api';
 import userEvent from '@testing-library/user-event';
 import { mockTeam } from '../../helpers/testData';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+import { resetAntdToken, setAntdToken } from '../../mocks/antd';
 
 type TeamLangText = { '@xml:lang': string; '#text': string };
 type TeamJson = {
@@ -119,6 +120,7 @@ describe('WelcomeWorkflow integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    resetAntdToken();
     localStorage.clear();
     window.location.href = 'http://localhost/';
   });
@@ -211,5 +213,17 @@ describe('WelcomeWorkflow integration', () => {
     expect(screen.queryByText('Test Team EN')).not.toBeInTheDocument();
     expect(mockGetThumbFileUrls).not.toHaveBeenCalled();
     expect(screen.getByTestId('modal')).toBeInTheDocument();
+  });
+
+  it('binds metric label color to the active primary color variable', () => {
+    setAntdToken({ colorPrimary: '#0C246A' });
+
+    renderWithProviders(<Welcome />);
+
+    const metricLabel = screen.getByText('Unit Processes & Inventories', {
+      selector: '[data-testid="typography-text"]',
+    });
+
+    expect(metricLabel).toHaveAttribute('data-style-color', 'var(--ant-color-primary, #0C246A)');
   });
 });
