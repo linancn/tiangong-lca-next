@@ -26,175 +26,210 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   return (
     <Form.Item>
       <Form.List name={[...name]}>
-        {(subFields, subOpt) => (
-          <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
-            {subFields.map((subField) => (
-              <Row key={subField.key}>
-                <Space direction='vertical' style={{ width: '100%' }}>
-                  <Card
-                    size='small'
-                    title={
-                      <>
-                        <FormattedMessage
-                          id='pages.process.modellingAndValidation.validation.review'
-                          defaultMessage='Review'
-                        />{' '}
-                      </>
-                    }
-                    extra={
-                      <CloseOutlined
-                        style={{
-                          cursor: subFields.length === 1 ? 'not-allowed' : 'pointer',
-                          marginTop: '10px',
-                        }}
-                        onClick={() => {
-                          if (subFields.length === 1) {
-                            return;
-                          }
-                          subOpt.remove(subField.name);
-                        }}
-                      />
-                    }
-                  >
-                    <Col flex='auto' style={{ marginRight: '10px' }}>
-                      <Form.Item
-                        label={
+        {(subFields, subOpt) => {
+          const displayFields = subFields.length > 0 ? subFields : [null];
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+              {displayFields.map((subField) => (
+                <Row key={subField?.key ?? 'empty'}>
+                  <Space direction='vertical' style={{ width: '100%' }}>
+                    <Card
+                      size='small'
+                      title={
+                        <>
                           <FormattedMessage
-                            id='pages.process.validation.modellingAndValidation.review.type'
-                            defaultMessage='Type of review'
+                            id='pages.process.modellingAndValidation.validation.review'
+                            defaultMessage='Review'
+                          />{' '}
+                        </>
+                      }
+                      extra={
+                        subFields.length > 1 ? (
+                          <CloseOutlined
+                            style={{
+                              cursor: 'pointer',
+                              marginTop: '10px',
+                            }}
+                            onClick={() => {
+                              subOpt.remove(subField!.name);
+                            }}
+                          />
+                        ) : null
+                      }
+                    >
+                      <Col flex='auto' style={{ marginRight: '10px' }}>
+                        <Form.Item
+                          label={
+                            <FormattedMessage
+                              id='pages.process.validation.modellingAndValidation.review.type'
+                              defaultMessage='Type of review'
+                            />
+                          }
+                          name={subField ? [subField.name, '@type'] : [...name, 0, '@type']}
+                          rules={getRules(
+                            schema['processDataSet']['modellingAndValidation']['validation'][
+                              'review'
+                            ]['@type']['rules'],
+                          )}
+                        >
+                          <Select options={reviewTypeOptions} />
+                        </Form.Item>
+                      </Col>
+                      <Card
+                        size='small'
+                        title={
+                          <FormattedMessage
+                            id='pages.process.modellingAndValidation.validation.review.scope'
+                            defaultMessage='Scope of review'
                           />
                         }
-                        name={[subField.name, '@type']}
-                        rules={getRules(
-                          schema['processDataSet']['modellingAndValidation']['validation'][
-                            'review'
-                          ]['@type']['rules'],
-                        )}
                       >
-                        <Select options={reviewTypeOptions} />
-                      </Form.Item>
-                    </Col>
-                    <Card
-                      size='small'
-                      title={
-                        <FormattedMessage
-                          id='pages.process.modellingAndValidation.validation.review.scope'
-                          defaultMessage='Scope of review'
+                        <ScopeItemForm
+                          name={
+                            subField
+                              ? [subField.name, 'common:scope']
+                              : [...name, 0, 'common:scope']
+                          }
                         />
-                      }
-                    >
-                      <ScopeItemForm name={[subField.name, 'common:scope']} />
-                    </Card>
-                    <br />
-                    <Card
-                      size='small'
-                      title={
-                        <FormattedMessage
-                          id='pages.process.modellingAndValidation.validation.review.dataQualityIndicators'
-                          defaultMessage='Data quality indicators'
+                      </Card>
+                      <br />
+                      <Card
+                        size='small'
+                        title={
+                          <FormattedMessage
+                            id='pages.process.modellingAndValidation.validation.review.dataQualityIndicators'
+                            defaultMessage='Data quality indicators'
+                          />
+                        }
+                      >
+                        <DataQualityIndicatorItemForm
+                          name={
+                            subField
+                              ? [
+                                  subField.name,
+                                  'common:dataQualityIndicators',
+                                  'common:dataQualityIndicator',
+                                ]
+                              : [
+                                  ...name,
+                                  0,
+                                  'common:dataQualityIndicators',
+                                  'common:dataQualityIndicator',
+                                ]
+                          }
                         />
-                      }
-                    >
-                      <DataQualityIndicatorItemForm
-                        name={[
-                          subField.name,
-                          'common:dataQualityIndicators',
-                          'common:dataQualityIndicator',
-                        ]}
-                      />
-                    </Card>
-                    <Divider
-                      className='required-divider'
-                      orientationMargin='0'
-                      orientation='left'
-                      plain
-                    >
-                      <RequiredMark
+                      </Card>
+                      <Divider
+                        className='required-divider'
+                        orientationMargin='0'
+                        orientation='left'
+                        plain
+                      >
+                        <RequiredMark
+                          label={
+                            <FormattedMessage
+                              id='pages.process.view.modellingAndValidation.validation.reviewDetails'
+                              defaultMessage='Review details'
+                            />
+                          }
+                          showError={reviewDetailsError}
+                        />
+                      </Divider>
+                      <LangTextItemForm
+                        name={
+                          subField
+                            ? [subField.name, 'common:reviewDetails']
+                            : [...name, 0, 'common:reviewDetails']
+                        }
+                        listName={[...name]}
                         label={
                           <FormattedMessage
                             id='pages.process.view.modellingAndValidation.validation.reviewDetails'
                             defaultMessage='Review details'
                           />
                         }
-                        showError={reviewDetailsError}
+                        setRuleErrorState={setReviewDetailsError}
+                        rules={getRules(
+                          schema['processDataSet']['modellingAndValidation']['validation'][
+                            'review'
+                          ]['common:reviewDetails']['rules'],
+                        )}
                       />
-                    </Divider>
-                    <LangTextItemForm
-                      name={[subField.name, 'common:reviewDetails']}
-                      listName={[...name]}
-                      label={
-                        <FormattedMessage
-                          id='pages.process.view.modellingAndValidation.validation.reviewDetails'
-                          defaultMessage='Review details'
-                        />
-                      }
-                      setRuleErrorState={setReviewDetailsError}
-                      rules={getRules(
-                        schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'common:reviewDetails'
-                        ]['rules'],
-                      )}
-                    />
-                    <Divider orientationMargin='0' orientation='left' plain>
-                      <FormattedMessage
-                        id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
-                        defaultMessage='Other review details'
-                      />
-                    </Divider>
-                    <LangTextItemForm
-                      name={[subField.name, 'common:otherReviewDetails']}
-                      listName={[...name]}
-                      label={
+                      <Divider orientationMargin='0' orientation='left' plain>
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
                           defaultMessage='Other review details'
                         />
-                      }
-                    />
-                    <ContactSelectForm
-                      parentName={name}
-                      name={[subField.name, 'common:referenceToNameOfReviewerAndInstitution']}
-                      label={
-                        <FormattedMessage
-                          id='pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution'
-                          defaultMessage='Reviewer name and institution'
-                        />
-                      }
-                      lang={lang}
-                      formRef={formRef}
-                      onData={onData}
-                      rules={getRules(
-                        schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'common:referenceToNameOfReviewerAndInstitution'
-                        ]['@refObjectId']['rules'],
-                      )}
-                    />
-                    <br />
-                    <SourceSelectForm
-                      type='reviewReport'
-                      parentName={name}
-                      name={[subField.name, 'common:referenceToCompleteReviewReport']}
-                      label={
-                        <FormattedMessage
-                          id='pages.process.view.modellingAndValidation.referenceToCompleteReviewReport'
-                          defaultMessage='Complete review report'
-                        />
-                      }
-                      lang={lang}
-                      formRef={formRef}
-                      onData={onData}
-                      rules={getRules(
-                        schema['processDataSet']['modellingAndValidation']['validation']['review'][
-                          'common:referenceToCompleteReviewReport'
-                        ]['@refObjectId']['rules'],
-                      )}
-                    />
-                  </Card>
-                </Space>
-              </Row>
-            ))}
-          </div>
-        )}
+                      </Divider>
+                      <LangTextItemForm
+                        name={
+                          subField
+                            ? [subField.name, 'common:otherReviewDetails']
+                            : [...name, 0, 'common:otherReviewDetails']
+                        }
+                        listName={[...name]}
+                        label={
+                          <FormattedMessage
+                            id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
+                            defaultMessage='Other review details'
+                          />
+                        }
+                      />
+                      <ContactSelectForm
+                        parentName={name}
+                        name={
+                          subField
+                            ? [subField.name, 'common:referenceToNameOfReviewerAndInstitution']
+                            : [...name, 0, 'common:referenceToNameOfReviewerAndInstitution']
+                        }
+                        label={
+                          <FormattedMessage
+                            id='pages.process.view.modellingAndValidation.referenceToNameOfReviewerAndInstitution'
+                            defaultMessage='Reviewer name and institution'
+                          />
+                        }
+                        lang={lang}
+                        formRef={formRef}
+                        onData={onData}
+                        rules={getRules(
+                          schema['processDataSet']['modellingAndValidation']['validation'][
+                            'review'
+                          ]['common:referenceToNameOfReviewerAndInstitution']['@refObjectId'][
+                            'rules'
+                          ],
+                        )}
+                      />
+                      <br />
+                      <SourceSelectForm
+                        type='reviewReport'
+                        parentName={name}
+                        name={
+                          subField
+                            ? [subField.name, 'common:referenceToCompleteReviewReport']
+                            : [...name, 0, 'common:referenceToCompleteReviewReport']
+                        }
+                        label={
+                          <FormattedMessage
+                            id='pages.process.view.modellingAndValidation.referenceToCompleteReviewReport'
+                            defaultMessage='Complete review report'
+                          />
+                        }
+                        lang={lang}
+                        formRef={formRef}
+                        onData={onData}
+                        rules={getRules(
+                          schema['processDataSet']['modellingAndValidation']['validation'][
+                            'review'
+                          ]['common:referenceToCompleteReviewReport']['@refObjectId']['rules'],
+                        )}
+                      />
+                    </Card>
+                  </Space>
+                </Row>
+              ))}
+            </div>
+          );
+        }}
       </Form.List>
     </Form.Item>
   );
