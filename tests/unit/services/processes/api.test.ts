@@ -58,12 +58,12 @@ jest.mock('@/services/ilcd/cache', () => ({
   },
 }));
 
-const mockGetLifeCyclesByIdAndVersions = jest.fn();
+const mockGetLifeCyclesByIdAndVersion = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
   __esModule: true,
-  getLifeCyclesByIdAndVersions: (...args: any[]) =>
-    mockGetLifeCyclesByIdAndVersions.apply(null, args),
+  getLifeCyclesByIdAndVersion: (...args: any[]) =>
+    mockGetLifeCyclesByIdAndVersion.apply(null, args),
 }));
 
 const mockGenProcessJsonOrdered = jest.fn();
@@ -131,7 +131,7 @@ beforeEach(() => {
   mockGetTeamIdByUserId.mockReset();
   mockGetCachedLocationData.mockReset();
   mockGetCachedClassificationData.mockReset();
-  mockGetLifeCyclesByIdAndVersions.mockReset();
+  mockGetLifeCyclesByIdAndVersion.mockReset();
   mockGenProcessJsonOrdered.mockReset();
   mockGenProcessName.mockReset();
   mockClassificationToString.mockReset();
@@ -149,7 +149,7 @@ beforeEach(() => {
   );
   mockGetCachedLocationData.mockResolvedValue([]);
   mockGetCachedClassificationData.mockResolvedValue({});
-  mockGetLifeCyclesByIdAndVersions.mockResolvedValue({ data: [] });
+  mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
 });
 
 describe('createProcess', () => {
@@ -867,9 +867,10 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_processes',
+      'pgroonga_search_processes_v1',
       expect.objectContaining({
         query_text: 'search term',
+        order_by: undefined,
       }),
     );
     expect(result).toBeDefined();

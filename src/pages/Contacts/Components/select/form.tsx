@@ -23,6 +23,7 @@ type Props = {
   onData: () => void;
   rules?: any;
   showRequiredLabel?: boolean;
+  disabled?: boolean;
 };
 
 const ContactSelectForm: FC<Props> = ({
@@ -34,6 +35,7 @@ const ContactSelectForm: FC<Props> = ({
   onData,
   rules = [],
   showRequiredLabel = false,
+  disabled = false,
 }) => {
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -191,8 +193,10 @@ const ContactSelectForm: FC<Props> = ({
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
         <Space direction='horizontal' style={{ marginTop: '6px' }}>
-          {!id && <ContactSelectDrawer buttonType='text' lang={lang} onData={handletContactData} />}
-          {id && (
+          {!id && !disabled && (
+            <ContactSelectDrawer buttonType='text' lang={lang} onData={handletContactData} />
+          )}
+          {id && !disabled && (
             <ContactSelectDrawer
               buttonType='text'
               buttonText={<FormattedMessage id='pages.button.reselect' defaultMessage='Reselect' />}
@@ -213,7 +217,7 @@ const ContactSelectForm: FC<Props> = ({
             </Button>
           )}
           {id && <ContactView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
-          {id && dataUserId === initialState?.currentUser?.userid && (
+          {id && dataUserId === initialState?.currentUser?.userid && !disabled && (
             <ContactEdit
               lang={lang}
               id={id}
@@ -223,7 +227,7 @@ const ContactSelectForm: FC<Props> = ({
               updateErrRef={(data: any) => setErrRef(data)}
             />
           )}
-          {id && (
+          {id && !disabled && (
             <Button
               onClick={() => {
                 formRef.current?.setFieldValue([...name], {});

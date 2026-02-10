@@ -19,9 +19,10 @@ type Props = {
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
+  disabled?: boolean;
 };
 
-const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
+const ReviewItemForm: FC<Props> = ({ name, lang, formRef, onData, disabled }) => {
   const [reviewDetailsError, setReviewDetailsError] = useState(false);
   return (
     <Form.Item>
@@ -152,6 +153,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       }
                     />
                     <ContactSelectForm
+                      disabled={disabled}
                       parentName={name}
                       name={[subField.name, 'common:referenceToNameOfReviewerAndInstitution']}
                       label={
@@ -200,4 +202,4 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
   );
 };
 
-export default ReveiwItemForm;
+export default ReviewItemForm;

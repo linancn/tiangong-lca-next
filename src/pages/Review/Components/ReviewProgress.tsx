@@ -9,7 +9,11 @@ import {
   getLifeCycleModelDetail,
   updateLifeCycleModelJsonApi,
 } from '@/services/lifeCycleModels/api';
-import { getProcessDetail, updateProcessApi } from '@/services/processes/api';
+import {
+  getProcessDetail,
+  getProcessDetailByIdAndVersion,
+  updateProcessApi,
+} from '@/services/processes/api';
 import { updateReviewApi } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { getUsersByIds } from '@/services/users/api';
@@ -295,6 +299,43 @@ export default function ReviewProgress({
     },
   ];
 
+  // Helper function: Merge commentReview and commentCompliance into process JSON
+  const mergeCommentDataIntoProcessJson = (
+    processJson: any,
+    commentReview: any[],
+    commentCompliance: any[],
+  ) => {
+    const json = {
+      ...processJson,
+    };
+
+    // Merge commentReview into review
+    const _review = json.processDataSet.modellingAndValidation.validation.review;
+    const _compliance =
+      json.processDataSet.modellingAndValidation.complianceDeclarations.compliance;
+    json.processDataSet.modellingAndValidation = {
+      ...json.processDataSet.modellingAndValidation,
+      validation: {
+        ...json.processDataSet.modellingAndValidation.validation,
+        review: Array.isArray(_review)
+          ? [..._review, ...commentReview]
+          : _review
+            ? [_review, ...commentReview]
+            : [...commentReview],
+      },
+      complianceDeclarations: {
+        ...json.processDataSet.modellingAndValidation.complianceDeclarations,
+        compliance: Array.isArray(_compliance)
+          ? [..._compliance, ...commentCompliance]
+          : _compliance
+            ? [_compliance, ...commentCompliance]
+            : [...commentCompliance],
+      },
+    };
+
+    return json;
+  };
+
   const updateProcessJson = async (process: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
     if (!error && commentData && commentData.length) {
@@ -313,31 +354,7 @@ export default function ReviewProgress({
         }
       });
 
-      const _review = process?.json?.processDataSet?.modellingAndValidation?.validation?.review;
-      const _compliance =
-        process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
-      const json = {
-        ...process?.json,
-      };
-      json.processDataSet.modellingAndValidation = {
-        ...process?.json?.processDataSet?.modellingAndValidation,
-        validation: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review)
-            ? [..._review, ...allReviews]
-            : _review
-              ? [_review, ...allReviews]
-              : [...allReviews],
-        },
-        complianceDeclarations: {
-          ...process?.json?.processDataSet?.modellingAndValidation?.complianceDeclarations,
-          compliance: Array.isArray(_compliance)
-            ? [..._compliance, ...allCompliance]
-            : _compliance
-              ? [_compliance, ...allCompliance]
-              : [...allCompliance],
-        },
-      };
+      const json = mergeCommentDataIntoProcessJson(process.json, allReviews, allCompliance);
       await updateProcessApi(dataId, dataVersion, { json_ordered: json });
     }
   };
@@ -493,9 +510,55 @@ export default function ReviewProgress({
         dataVersion,
         json,
       );
-      return newLifeCycleModel;
+      return { newLifeCycleModel, commentReview: allReviews, commentCompliance: allCompliance };
     }
   };
+
+  // Helper function: Merge commentReview and commentCompliance into process review and compliance fields
+  const updateProcessWithCommentData = async (
+    processId: string,
+    processVersion: string,
+    commentReview: any[],
+    commentCompliance: any[],
+  ) => {
+    const { data: process } = await getProcessDetail(processId, processVersion);
+    if (!process) return;
+
+    const json = mergeCommentDataIntoProcessJson(process.json, commentReview, commentCompliance);
+    await updateProcessApi(processId, processVersion, { json_ordered: json });
+  };
+
+  // Helper function: Batch update review and compliance fields for processes
+  const updateSubmodelProcessesWithCommentData = async (
+    processParams: Array<{ id: string; version: string }>,
+    commentReview: any[],
+    commentCompliance: any[],
+  ) => {
+    if (
+      processParams.length === 0 ||
+      (commentReview.length === 0 && commentCompliance.length === 0)
+    ) {
+      return;
+    }
+
+    // 1. Batch fetch process details
+    const { data: processes } = await getProcessDetailByIdAndVersion(processParams);
+
+    // 2. Concurrently update all processes
+    const controller = new ConcurrencyController(5);
+    for (const process of processes) {
+      controller.add(async () => {
+        await updateProcessWithCommentData(
+          process.id,
+          process.version,
+          commentReview,
+          commentCompliance,
+        );
+      });
+    }
+    await controller.waitForAll();
+  };
+
   const updateModelReviewDataToPublic = async (modelId: string, modelVersion: string) => {
     const result: any[] = [];
     const teamId = await getUserTeamId();
@@ -535,7 +598,12 @@ export default function ReviewProgress({
 
     const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
     if (success) {
-      const newLifeCycleModel = await updateLifeCycleModelJson(lifeCycleModel);
+      const updateModelRes = await updateLifeCycleModelJson(lifeCycleModel);
+      if (!updateModelRes) {
+        return;
+      }
+      const { newLifeCycleModel, commentReview, commentCompliance } = updateModelRes;
+
       if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
         result.push({
           '@refObjectId': modelId,
@@ -576,16 +644,21 @@ export default function ReviewProgress({
           }
         }
       }
-      // const submodels = lifeCycleModel?.json_tg?.submodels;
-      // if (submodels) {
-      //   submodels.forEach((item: any) => {
-      //     result.push({
-      //       '@refObjectId': item.id,
-      //       '@version': modelVersion,
-      //       '@type': 'process data set',
-      //     });
-      //   });
-      // }
+      const submodels = lifeCycleModel?.json_tg?.submodels;
+      if (submodels) {
+        submodels.forEach((item: any) => {
+          result.push({
+            '@refObjectId': item.id,
+            '@version': modelVersion,
+            '@type': 'process data set',
+          });
+        });
+      }
+      // Batch update the review and compliance fields of the process
+      const processParams = result
+        .filter((item) => item['@type'] === 'process data set')
+        .map((item) => ({ id: item['@refObjectId'], version: item['@version'] }));
+      await updateSubmodelProcessesWithCommentData(processParams, commentReview, commentCompliance);
     }
     for (const item of result) {
       await updateStateCodeApi(

@@ -98,10 +98,39 @@ jest.mock('@/services/users/api', () => ({
 
 const mockGenLifeCycleModelJsonOrdered = jest.fn();
 
+const mockGenReferenceToResultingProcess = jest
+  .fn()
+  .mockImplementation((processes: any, version: string, data: any) => {
+    // Return data with referenceToResultingProcess added (matching real implementation)
+    return {
+      ...data,
+      lifeCycleModelDataSet: {
+        ...(data?.lifeCycleModelDataSet ?? {}),
+        lifeCycleModelInformation: {
+          ...(data?.lifeCycleModelDataSet?.lifeCycleModelInformation ?? {}),
+          dataSetInformation: {
+            ...(data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation ?? {}),
+            referenceToResultingProcess:
+              processes?.map((p: any) => ({
+                '@refObjectId': p?.modelInfo?.id,
+                '@type': 'process data set',
+                '@uri': `../processes/${p?.modelInfo?.id}.xml`,
+                '@version': version,
+                'common:shortDescription':
+                  p?.data?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
+              })) ?? [],
+          },
+        },
+      },
+    };
+  });
+
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelJsonOrdered: (...args: any[]) =>
     mockGenLifeCycleModelJsonOrdered.apply(null, args),
+  genReferenceToResultingProcess: (...args: any[]) =>
+    mockGenReferenceToResultingProcess.apply(null, args),
 }));
 
 const mockGenLifeCycleModelProcesses = jest.fn();
@@ -365,13 +394,13 @@ describe('getLifeCycleModelTablePgroongaSearch', () => {
     );
 
     expect(mockAuthGetSession).toHaveBeenCalled();
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
       query_text: 'cement',
       filter_condition: mockFilterCondition,
       page_size: mockPaginationParams.pageSize,
       page_current: mockPaginationParams.current,
       data_source: 'my',
-      this_user_id: sampleUserId,
+      order_by: undefined,
       state_code: 100,
     });
     expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'class-1' }]);
@@ -649,7 +678,23 @@ describe('createLifeCycleModel', () => {
     expect(insertMock).toHaveBeenCalledWith([
       {
         id: sampleModelId,
-        json_ordered: { lifeCycleModelDataSet: {} },
+        json_ordered: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: {
+              dataSetInformation: {
+                referenceToResultingProcess: [
+                  {
+                    '@refObjectId': sampleProcessId,
+                    '@type': 'process data set',
+                    '@uri': `../processes/${sampleProcessId}.xml`,
+                    '@version': undefined,
+                    'common:shortDescription': {},
+                  },
+                ],
+              },
+            },
+          },
+        },
         json_tg: {
           xflow: payload.model,
           submodels: [{ id: sampleProcessId }],

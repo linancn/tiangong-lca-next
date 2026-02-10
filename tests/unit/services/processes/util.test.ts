@@ -25,6 +25,7 @@ jest.mock('@/services/general/util', () => ({
     return value;
   }),
   convertToUTCISOString: jest.fn((dateStr) => dateStr || ''),
+  formatDateTime: jest.fn((date) => date.toISOString()),
   getLangJson: jest.fn((data) => data),
   getLangList: jest.fn((data) => (Array.isArray(data) ? data : data ? [data] : [])),
   getLangText: jest.fn((data, lang) => {

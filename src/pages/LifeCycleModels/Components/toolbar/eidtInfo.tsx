@@ -174,6 +174,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       unReview: refDataType[];
       problemNodes?: refDataType[];
     }> = async (from, nodes: any[], edges: any[]) => {
+      setSpinning(true);
       if (nodes?.length) {
         const quantitativeReferenceProcress = nodes.find(
           (node) => node?.data?.quantitativeReference === '1',
@@ -414,17 +415,18 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         return { checkResult: valid, unReview, problemNodes };
       }
 
-      // Only submit the process corresponding to the model; sub-products are not submitted for review.
-      // const submodels = modelDetail?.data?.json_tg?.submodels;
-      // if (submodels) {
-      //   submodels.forEach((item: any) => {
-      //     unReview.push({
-      //       '@refObjectId': item.id,
-      //       '@version': data.version,
-      //       '@type': 'process data set',
-      //     });
-      //   });
-      // }
+      const submodels = modelDetail?.data?.json_tg?.submodels;
+      if (submodels) {
+        submodels.forEach((item: any) => {
+          if (item.type === 'secondary') {
+            unReview.push({
+              '@refObjectId': item.id,
+              '@version': data.version,
+              '@type': 'process data set',
+            });
+          }
+        });
+      }
       if (
         valid &&
         nonExistentRef?.length === 0 &&

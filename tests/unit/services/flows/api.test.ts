@@ -496,10 +496,14 @@ describe('getFlowTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_flows',
+      'pgroonga_search_flows_v1',
       expect.objectContaining({
         query_text: 'water',
         data_source: 'tg',
+        filter_condition: { flowType: '' },
+        page_size: 5,
+        page_current: 1,
+        order_by: undefined,
       }),
     );
     expect(result).toEqual({

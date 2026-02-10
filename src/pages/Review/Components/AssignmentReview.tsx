@@ -3,13 +3,14 @@ import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
 import {
+  getLifeCycleModelSubTableDataBatch,
   getReviewsTableDataOfReviewAdmin,
   getReviewsTableDataOfReviewMember,
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Card, Col, Input, Row, Space } from 'antd';
+import { Card, Col, Input, Row, Space, Spin, Table, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useState } from 'react';
@@ -35,6 +36,21 @@ type AssignmentReviewProps = {
   hideReviewButton?: boolean;
 };
 
+const ExpandIconStyle = () => {
+  const { token } = theme.useToken();
+  return (
+    <style>{`
+      .review-table-with-expand-icon .ant-table-row-expand-icon:hover,
+      .review-table-with-expand-icon .ant-table-row-expand-icon-expanded,
+      .review-table-with-expand-icon .ant-table-row-expand-icon-expanded:hover,
+      .review-table-with-expand-icon .ant-table-row-expand-icon:focus,
+      .review-table-with-expand-icon .ant-table-row-expand-icon-expanded:focus {
+        color: ${token.colorPrimary} !important;
+      }
+    `}</style>
+  );
+};
+
 const AssignmentReview = ({
   userData,
   tableType,
@@ -49,6 +65,11 @@ const AssignmentReview = ({
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const intl = useIntl();
 
+  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
+  const [subTableData, setSubTableData] = useState<Record<string, any[]>>({});
+  const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
+  const [preloadedSubTableData, setPreloadedSubTableData] = useState<Record<string, any[]>>({});
+
   const onSearch: SearchProps['onSearch'] = () => {
     // setKeyWord(value);
     // actionRef.current?.setPageInfo?.({ current: 1 });
@@ -58,6 +79,109 @@ const AssignmentReview = ({
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
   };
+
+  const preloadSubTableData = async (reviewsData: ReviewsTable[]) => {
+    const modelDatas = reviewsData
+      .filter((r) => r.isFromLifeCycle && r.modelData)
+      .map((r) => ({
+        reviewId: r.id,
+        modelData: r.modelData!,
+      }));
+
+    if (modelDatas.length === 0) {
+      return;
+    }
+
+    try {
+      const result = await getLifeCycleModelSubTableDataBatch(modelDatas, lang);
+      if (result.success) {
+        setPreloadedSubTableData(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to preload sub table data:', error);
+    }
+  };
+
+  const loadSubTableData = async (record: ReviewsTable) => {
+    const rowKey = record.id;
+
+    if (preloadedSubTableData[rowKey]) {
+      setSubTableData((prev) => ({ ...prev, [rowKey]: preloadedSubTableData[rowKey] }));
+      return;
+    }
+
+    if (subTableData[rowKey]) {
+      return;
+    }
+
+    setSubTableLoading((prev) => ({ ...prev, [rowKey]: true }));
+  };
+
+  const handleExpand = async (expanded: boolean, record: ReviewsTable) => {
+    if (expanded && record.isFromLifeCycle) {
+      await loadSubTableData(record);
+    }
+    const newExpandedKeys = expanded
+      ? [...expandedRowKeys, record.id]
+      : expandedRowKeys.filter((key) => key !== record.id);
+    setExpandedRowKeys(newExpandedKeys);
+  };
+
+  const subColumns = [
+    {
+      title: (
+        <FormattedMessage
+          id='pages.review.table.column.processName'
+          defaultMessage='Process Name'
+        />
+      ),
+      dataIndex: 'name',
+      key: 'name',
+      render: (_: any, record: any) => {
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <ProcessView
+              id={record.id}
+              version={record.version}
+              lang={lang}
+              buttonType='icon'
+              disabled={false}
+              buttonTypeProp='text'
+            />
+            <span style={{ marginLeft: 8 }}>{record.name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      title: <FormattedMessage id='pages.review.table.column.type' defaultMessage='Type' />,
+      dataIndex: 'type',
+      key: 'type',
+      width: 120,
+      render: (_: any, record: any) => {
+        if (record.sourceType === 'processInstance') {
+          return (
+            <FormattedMessage id='pages.review.table.type.modelNode' defaultMessage='Model Node' />
+          );
+        }
+        // submodel
+        if (record.submodelType === 'primary') {
+          return (
+            <FormattedMessage
+              id='pages.review.table.type.primaryProduct'
+              defaultMessage='Primary Product'
+            />
+          );
+        }
+        return (
+          <FormattedMessage
+            id='pages.review.table.type.secondaryProduct'
+            defaultMessage='Secondary Product'
+          />
+        );
+      },
+    },
+  ];
 
   const columns: ProColumns<ReviewsTable>[] = [
     {
@@ -410,10 +534,36 @@ const AssignmentReview = ({
         columns={columns}
         rowKey='id'
         search={false}
+        className='review-table-with-expand-icon'
         pagination={{
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
+        }}
+        expandable={{
+          expandedRowKeys,
+          onExpand: handleExpand,
+          rowExpandable: (record) => record.isFromLifeCycle === true,
+          expandedRowRender: (record) => {
+            if (subTableLoading[record.id]) {
+              return (
+                <div style={{ textAlign: 'center', padding: 20 }}>
+                  <Spin />
+                </div>
+              );
+            }
+            const data = subTableData[record.id] || [];
+            return (
+              <Table
+                columns={subColumns}
+                dataSource={data}
+                pagination={false}
+                rowKey='id'
+                size='small'
+                style={{ margin: '0 48px' }}
+              />
+            );
+          },
         }}
         toolBarRender={() => {
           if (selectedRowKeys && selectedRowKeys?.length > 0 && tableType === 'unassigned') {
@@ -455,7 +605,12 @@ const AssignmentReview = ({
             }
             setTableLoading(true);
             setSelectedRowKeys([]);
-            return await getReviewsTableData(params, sort);
+            setPreloadedSubTableData({});
+            const result = await getReviewsTableData(params, sort);
+            if (result.data && result.data.length > 0) {
+              preloadSubTableData(result.data);
+            }
+            return result;
           } catch (error) {
             console.error(error);
             return {
@@ -477,6 +632,7 @@ const AssignmentReview = ({
             : undefined
         }
       />
+      <ExpandIconStyle />
     </>
   );
 };

@@ -43,7 +43,7 @@ export interface AuthConfig {
   requireAuth?: boolean;
   /** Allowed authentication methods */
   allowedMethods?: AuthMethod[];
-  /** Custom API key for backend services */
+  /** Optional override for Service API key (defaults to env vars) */
   serviceApiKey?: string;
 }
 
@@ -85,8 +85,7 @@ export enum AuthMethod {
  *
  * // For service requests
  * const authResult = await authenticateRequest(req, {
- *   allowedMethods: [AuthMethod.SERVICE_API_KEY],
- *   serviceApiKey: Deno.env.get('SERVICE_API_KEY')
+ *   allowedMethods: [AuthMethod.SERVICE_API_KEY]
  * });
  * ```
  */
@@ -101,6 +100,9 @@ export async function authenticateRequest(
     allowedMethods = [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
     serviceApiKey,
   } = config;
+
+  const resolvedServiceApiKey =
+    serviceApiKey ?? Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY');
 
   // If authentication is not required, return success
   if (!requireAuth) {
@@ -117,7 +119,7 @@ export async function authenticateRequest(
   // Check Service API key
   if (allowedMethods.includes(AuthMethod.SERVICE_API_KEY) && apiKey) {
     console.log('Checking Service API key authentication');
-    const result = authenticateServiceApiKey(apiKey, serviceApiKey);
+    const result = authenticateServiceApiKey(apiKey, resolvedServiceApiKey);
     authResults.push({ method: AuthMethod.SERVICE_API_KEY, result });
   }
 

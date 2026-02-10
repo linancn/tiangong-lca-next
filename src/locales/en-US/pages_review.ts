@@ -18,6 +18,11 @@ export default {
   'pages.review.table.column.userName': 'User Name',
   'pages.review.table.column.createAt': 'Create At',
   'pages.review.table.column.deadline': 'Deadline',
+  'pages.review.table.column.type': 'Type',
+
+  'pages.review.table.type.modelNode': 'Model Node',
+  'pages.review.table.type.primaryProduct': 'Primary Product',
+  'pages.review.table.type.secondaryProduct': 'Secondary Product',
 
   'pages.review.members.email': 'Email',
   'pages.review.members.memberName': 'Member Name',

@@ -21,7 +21,7 @@ import {
   validateProcessesByIdAndVersion,
 } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import { genLifeCycleModelJsonOrdered } from './util';
+import { genLifeCycleModelJsonOrdered, genReferenceToResultingProcess } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
 const updateLifeCycleModelProcesses = async (id: string, version: string, data: any) => {
@@ -135,12 +135,18 @@ export async function createLifeCycleModel(data: any) {
     );
   }
   const rule_verification = issues.length === 0;
+  const updatedData = genReferenceToResultingProcess(
+    lifeCycleModelProcesses,
+    data.version,
+    newLifeCycleModelJsonOrdered,
+  );
+
   const result = await supabase
     .from('lifecyclemodels')
     .insert([
       {
         id: data.id,
-        json_ordered: newLifeCycleModelJsonOrdered,
+        json_ordered: updatedData,
         json_tg: {
           xflow: { edges, nodes: data?.model?.nodes ?? [] },
           submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
@@ -156,6 +162,17 @@ export async function createLifeCycleModel(data: any) {
     if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
       lifeCycleModelProcesses.forEach(async (n: any) => {
         try {
+          if (n.modelInfo.type === 'primary') {
+            n.data.processDataSet.processInformation.technology = {
+              ...n.data.processDataSet.processInformation.technology,
+              referenceToIncludedProcesses: jsonToList(
+                newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
+                  ?.technology?.processes?.processInstance,
+              ).map((item) => {
+                return item.referenceToProcess;
+              }),
+            };
+          }
           await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
         } catch (error) {
           console.error(error);
@@ -419,6 +436,11 @@ export async function updateLifeCycleModel(data: any) {
         );
       });
 
+      const updatedData = genReferenceToResultingProcess(
+        lifeCycleModelProcesses,
+        data.version,
+        newLifeCycleModelJsonOrdered,
+      );
       const updateResult = await supabase.functions.invoke('update_data', {
         headers: {
           Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
@@ -428,7 +450,7 @@ export async function updateLifeCycleModel(data: any) {
           version: data.version,
           table: 'lifecyclemodels',
           data: {
-            json_ordered: newLifeCycleModelJsonOrdered,
+            json_ordered: updatedData,
             json_tg: {
               xflow: { edges, nodes: data?.model?.nodes ?? [] },
               submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
@@ -473,6 +495,18 @@ export async function updateLifeCycleModel(data: any) {
                       if (oldProcess) {
                         overrideWithOldProcess(n.data, oldProcess.json);
                       }
+                      if (n.modelInfo.type === 'primary') {
+                        n.data.processDataSet.processInformation.technology = {
+                          ...n.data.processDataSet.processInformation.technology,
+                          referenceToIncludedProcesses: jsonToList(
+                            newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                              ?.lifeCycleModelInformation?.technology?.processes?.processInstance,
+                          ).map((item) => {
+                            return item.referenceToProcess;
+                          }),
+                        };
+                      }
+
                       return updateProcess(
                         n.modelInfo.id,
                         data.version,
@@ -724,12 +758,13 @@ export async function getLifeCycleModelTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
     result = await supabase.rpc(
-      'pgroonga_search_lifecyclemodels',
+      'pgroonga_search_lifecyclemodels_v1',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -737,7 +772,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
+            order_by: orderBy,
+            // this_user_id: session.data.session.user?.id,
             state_code: stateCode,
           }
         : {
@@ -746,7 +782,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            this_user_id: session.data.session.user?.id,
+            order_by: orderBy,
+            // this_user_id: session.data.session.user?.id,
           },
     );
   }
@@ -954,47 +991,15 @@ export async function lifeCycleModel_hybrid_search(
   return result;
 }
 export async function getLifeCyclesByIdAndVersion(params: { id: string; version: string }[]) {
-  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
-
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select(
-      `
-     id,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
-    version,
-    modified_at,
-    team_id
-    `,
-    )
-    .or(orConditions);
-
-  return result;
-}
-
-export async function getLifeCyclesByIdAndVersions(params: { id: string; version: string }[]) {
   if (!params.length) {
-    return {
-      data: [],
-    };
+    return { data: [] };
   }
+
   const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
 
   const result = await supabase
     .from('lifecyclemodels')
-    .select(
-      `
-      id,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
-    version,
-    modified_at,
-    team_id
-    `,
-    )
+    .select('id, version, json, json_tg, modified_at, team_id')
     .or(orConditions);
 
   return result;

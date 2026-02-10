@@ -16,6 +16,7 @@
     "@pinecone-database/pinecone": "npm:/@pinecone-database/pinecone",
     "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2",
     "@upstash/redis": "npm:/@upstash/redis",
+    "@aws-sdk/client-sagemaker-runtime": "npm:/@aws-sdk/client-sagemaker-runtime",
     "aws-jwt-verify": "npm:/aws-jwt-verify",
     "postgres": "https://deno.land/x/postgresjs@v3.4.7/mod.js",
     "redis": "npm:redis@^5.8.3",
