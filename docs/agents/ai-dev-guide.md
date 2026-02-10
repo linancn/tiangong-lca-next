@@ -6,6 +6,10 @@
 
 - Node.js **>= 24** (enforced by `package.json`); run `nvm use 24` or install the required runtime before `npm install`.
 - Supabase env keys (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) ship in the repo’s fallback `.env`, so local testing works without extra setup; override only when pointing at a different Supabase project and keep loading them via `src/services/supabase`.
+- Frontend shell overrides are env-driven: `APP_LIGHT_PRIMARY`, `APP_DARK_PRIMARY`, `APP_LIGHT_LOGO`, `APP_DARK_LOGO`, `APP_LAYOUT` (`side | top | mix`).
+- Localized shell title envs: `APP_TITLE_ZH_CN` / `APP_TITLE_EN_US` (applies to layout header title and browser tab title, including login page title).
+- Localized login subtitle envs: `APP_LOGIN_SUBTITLE_ZH_CN` / `APP_LOGIN_SUBTITLE_EN_US` (applies to login page subtitle).
+- Title/subtitle resolution order: matching locale env (`zh-CN` or `en-US`) -> i18n fallback (`pages.name` / `pages.login.subTitle`).
 - No new npm packages unless a human maintainer signs off.
 
 ## Core Commands

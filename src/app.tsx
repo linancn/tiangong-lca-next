@@ -17,7 +17,7 @@ import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { getBrandTheme } from '../config/branding';
-import { default as defaultSettings } from '../config/defaultSettings';
+import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -75,7 +75,10 @@ export async function getInitialState(): Promise<{
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
-  const { formatMessage } = getIntl();
+  const { formatMessage, locale } = getIntl();
+  const appTitle =
+    getLocalizedAppTitle(locale) ??
+    formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -242,7 +245,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     ...initialState?.settings,
-    title: formatMessage({ id: 'pages.name', defaultMessage: 'TianGong LCA Data Platform' }),
+    title: appTitle,
   };
 };
 

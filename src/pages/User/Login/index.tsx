@@ -16,7 +16,12 @@ import { FormattedMessage } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
 import { getBrandTheme } from '../../../../config/branding';
-import Settings from '../../../../config/defaultSettings';
+import {
+  defaultAppTitle,
+  defaultLoginSubtitle,
+  getLocalizedAppTitle,
+  getLocalizedLoginSubtitle,
+} from '../../../../config/defaultSettings';
 import LoginTopActions from './Components/LoginTopActions';
 
 const LoginMessage: React.FC<{
@@ -160,6 +165,12 @@ const Login: React.FC = () => {
 
   const { status, type: loginType } = userLoginState;
   const brandTheme = getBrandTheme(isDarkMode);
+  const appTitle =
+    getLocalizedAppTitle(intl.locale) ??
+    intl.formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
+  const loginSubtitle =
+    getLocalizedLoginSubtitle(intl.locale) ??
+    intl.formatMessage({ id: 'pages.login.subTitle', defaultMessage: defaultLoginSubtitle });
 
   return (
     <App>
@@ -186,7 +197,7 @@ const Login: React.FC = () => {
                   id: 'menu.login',
                   defaultMessage: 'Login Page',
                 })}
-                - {Settings.title}
+                - {appTitle}
               </title>
             </Helmet>
             <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
@@ -198,13 +209,8 @@ const Login: React.FC = () => {
               <LoginForm
                 formRef={formRefLogin}
                 logo={brandTheme.logo}
-                title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
-                subTitle={
-                  <FormattedMessage
-                    id='pages.login.subTitle'
-                    defaultMessage="World\'s Largest Open & Free LCA Database"
-                  />
-                }
+                title={appTitle}
+                subTitle={loginSubtitle}
                 initialValues={{ autoLogin: true }}
                 onFinish={async (values) => {
                   if (type === 'login') {
