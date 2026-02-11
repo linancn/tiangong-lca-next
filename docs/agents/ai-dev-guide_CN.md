@@ -6,6 +6,10 @@
 
 - Node.js **>= 24**（`package.json` 明确要求），先执行 `nvm use 24` 或安装对应版本再 `npm install`。
 - 仓库已附带可用的 `.env`（含 `SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`），开箱即可连接 Supabase；仅在需要自定义实例时覆盖，并始终通过 `src/services/supabase.ts` 读取。
+- 前端外观可通过 env 覆盖：`APP_LIGHT_PRIMARY`、`APP_DARK_PRIMARY`、`APP_LIGHT_LOGO`、`APP_DARK_LOGO`、`APP_LAYOUT`（`side | top | mix`）。
+- 本地化平台标题 env：`APP_TITLE_ZH_CN` / `APP_TITLE_EN_US`（作用于布局头部标题与浏览器标签标题，登录页标题同样生效）。
+- 本地化登录副标题 env：`APP_LOGIN_SUBTITLE_ZH_CN` / `APP_LOGIN_SUBTITLE_EN_US`（作用于登录页副标题）。
+- 标题/副标题解析顺序：优先匹配当前 locale 的 env（`zh-CN` 或 `en-US`）-> 未命中时回退到 i18n（`pages.name` / `pages.login.subTitle`）。
 - 未经维护者许可，禁止新增 npm 依赖。
 
 ## 常用命令

@@ -165,5 +165,10 @@ export default defineConfig({
     'process.env.APP_DARK_PRIMARY': process.env.APP_DARK_PRIMARY,
     'process.env.APP_LIGHT_LOGO': process.env.APP_LIGHT_LOGO,
     'process.env.APP_DARK_LOGO': process.env.APP_DARK_LOGO,
+    'process.env.APP_LAYOUT': process.env.APP_LAYOUT,
+    'process.env.APP_TITLE_ZH_CN': process.env.APP_TITLE_ZH_CN,
+    'process.env.APP_TITLE_EN_US': process.env.APP_TITLE_EN_US,
+    'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
+    'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
   },
 });
