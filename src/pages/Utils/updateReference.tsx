@@ -183,7 +183,9 @@ export function updateRefsData(obj: any, newRefs: RefVersionItem[], updateVersio
         if (updateVersion) {
           current['@version'] = matchedRef.newVersion;
         }
-        current['common:shortDescription'] = matchedRef.newDescription;
+        if (matchedRef.newDescription && matchedRef.newDescription.length > 0) {
+          current['common:shortDescription'] = matchedRef.newDescription;
+        }
       }
     }
 

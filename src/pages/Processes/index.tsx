@@ -201,25 +201,23 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {row.modelId ? (
-                <LifeCycleModelView
-                  id={row.modelId}
-                  version={row.version}
-                  lang={lang}
-                  buttonType={'icon'}
-                  actionRef={actionRef}
-                />
-              ) : (
-                <ProcessView
-                  id={row.id}
-                  version={row.version}
-                  // dataSource={dataSource}
-                  buttonType={'icon'}
-                  lang={lang}
-                  disabled={false}
-                  actionRef={actionRef}
-                />
-              )}
+              <ProcessView
+                id={row.id}
+                version={row.version}
+                // dataSource={dataSource}
+                buttonType={'icon'}
+                lang={lang}
+                disabled={false}
+                actionRef={actionRef}
+              />
+              <LifeCycleModelView
+                disabled={!row.modelId}
+                id={row.modelId}
+                version={row.version}
+                lang={lang}
+                buttonType={'iconModel'}
+                actionRef={actionRef}
+              />
               {row.modelId ? (
                 <LifeCycleModelEdit
                   id={row.modelId}
@@ -340,15 +338,39 @@ const TableList: FC = () => {
                 disabled={false}
                 actionRef={actionRef}
               />
-              <ProcessCreate
-                actionType='copy'
-                id={row.id}
+              <LifeCycleModelView
+                disabled={!row.modelId}
+                id={row.modelId}
                 version={row.version}
                 lang={lang}
+                buttonType={'iconModel'}
                 actionRef={actionRef}
               />
               <ReviewDetail processId={row.id} processVersion={row.version} />
-              <ExportData tableName='processes' id={row.id} version={row.version} />
+
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
+                }}
+                menus={[
+                  {
+                    key: 'copy',
+                    name: (
+                      <ProcessCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'export',
+                    name: <ExportData tableName='processes' id={row.id} version={row.version} />,
+                  },
+                ]}
+              />
             </Space>,
           ];
         }
@@ -361,6 +383,14 @@ const TableList: FC = () => {
               buttonType={'icon'}
               lang={lang}
               disabled={false}
+              actionRef={actionRef}
+            />
+            <LifeCycleModelView
+              disabled={!row.modelId}
+              id={row.modelId}
+              version={row.version}
+              lang={lang}
+              buttonType={'iconModel'}
               actionRef={actionRef}
             />
             <ProcessCreate

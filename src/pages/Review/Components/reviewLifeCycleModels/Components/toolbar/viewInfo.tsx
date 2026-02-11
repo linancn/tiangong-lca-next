@@ -16,12 +16,13 @@ import {
 } from '@/pages/Processes/Components/optiondata';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { updateCommentApi } from '@/services/comments/api';
+import { getUserDetail } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 import ComplianceItemForm from '../../../Compliance/form';
@@ -102,7 +103,30 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
-
+  useEffect(() => {
+    if (activeTabKey === 'validation' && type === 'edit') {
+      const fieldPath = ['modellingAndValidation', 'validation', 'review'];
+      const currentValue = formRef.current?.getFieldValue(fieldPath);
+      if (!currentValue || currentValue.length === 0) {
+        formRef.current?.setFieldValue(fieldPath, [{ 'common:scope': [{}] }]);
+      }
+      getUserDetail().then((res) => {
+        if (res.data?.contact) {
+          const contact = res.data?.contact;
+          formRef.current?.setFieldValue(
+            [
+              'modellingAndValidation',
+              'validation',
+              'review',
+              0,
+              'common:referenceToNameOfReviewerAndInstitution',
+            ],
+            contact,
+          );
+        }
+      });
+    }
+  }, [activeTabKey]);
   const tabList = [
     {
       key: 'lifeCycleModelInformation',
@@ -1560,6 +1584,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
               lang={lang}
               formRef={formRef}
               onData={() => {}}
+              disabled={true}
             />
           ),
           complianceDeclarations: (

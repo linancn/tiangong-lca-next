@@ -639,6 +639,22 @@ export const createAntdMock = () => {
     return [api];
   };
 
+  const Layout = ({ children, style }: any) => (
+    <div data-testid='layout' style={style}>
+      {children}
+    </div>
+  );
+  (Layout as any).Sider = ({ children, style: _style }: any) => (
+    <div data-testid='layout-sider' style={_style}>
+      {children}
+    </div>
+  );
+  (Layout as any).Content = ({ children, style: _style }: any) => (
+    <div data-testid='layout-content' style={_style}>
+      {children}
+    </div>
+  );
+
   return {
     __esModule: true,
     Avatar,
@@ -656,6 +672,7 @@ export const createAntdMock = () => {
     Image,
     Input,
     InputNumber,
+    Layout,
     Modal,
     Skeleton,
     Row,

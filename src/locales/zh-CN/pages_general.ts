@@ -14,6 +14,7 @@ export default {
   'pages.button.createVersion.fail': '请更改数据集版本后提交',
   'pages.button.allVersion': '所有版本',
   'pages.button.view': '查看',
+  'pages.button.view.model': '查看模型',
   'pages.button.create.success': '创建成功!',
   'pages.button.save.success': '保存成功!',
   'pages.button.edit': '编辑',
