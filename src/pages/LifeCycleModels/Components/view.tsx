@@ -1,6 +1,6 @@
 import X6GraphComponent from '@/components/X6Graph';
 import { GraphProvider } from '@/contexts/graphContext';
-import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { ButtonType } from 'antd/es/button';
@@ -79,6 +79,17 @@ const LifeCycleModelView: FC<Props> = ({
             shape='circle'
             type={buttonTypeProp}
             icon={<ProfileOutlined />}
+            size='small'
+            onClick={onView}
+          />
+        </Tooltip>
+      ) : buttonType === 'iconModel' ? (
+        <Tooltip title={<FormattedMessage id='pages.button.view.model' defaultMessage='View' />}>
+          <Button
+            disabled={disabled}
+            shape='circle'
+            type={buttonTypeProp}
+            icon={<AppstoreOutlined />}
             size='small'
             onClick={onView}
           />
