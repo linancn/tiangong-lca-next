@@ -201,25 +201,23 @@ const TableList: FC = () => {
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
-              {row.modelId ? (
-                <LifeCycleModelView
-                  id={row.modelId}
-                  version={row.version}
-                  lang={lang}
-                  buttonType={'icon'}
-                  actionRef={actionRef}
-                />
-              ) : (
-                <ProcessView
-                  id={row.id}
-                  version={row.version}
-                  // dataSource={dataSource}
-                  buttonType={'icon'}
-                  lang={lang}
-                  disabled={false}
-                  actionRef={actionRef}
-                />
-              )}
+              <ProcessView
+                id={row.id}
+                version={row.version}
+                // dataSource={dataSource}
+                buttonType={'icon'}
+                lang={lang}
+                disabled={false}
+                actionRef={actionRef}
+              />
+              <LifeCycleModelView
+                disabled={!row.modelId}
+                id={row.modelId}
+                version={row.version}
+                lang={lang}
+                buttonType={'iconModel'}
+                actionRef={actionRef}
+              />
               {row.modelId ? (
                 <LifeCycleModelEdit
                   id={row.modelId}
@@ -385,6 +383,14 @@ const TableList: FC = () => {
               buttonType={'icon'}
               lang={lang}
               disabled={false}
+              actionRef={actionRef}
+            />
+            <LifeCycleModelView
+              disabled={!row.modelId}
+              id={row.modelId}
+              version={row.version}
+              lang={lang}
+              buttonType={'iconModel'}
               actionRef={actionRef}
             />
             <ProcessCreate
