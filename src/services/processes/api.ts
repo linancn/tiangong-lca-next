@@ -621,6 +621,7 @@ export async function getProcessTablePgroongaSearch(
                   ?.typeOfDataSet ?? '-',
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
+              modelId: i?.model_id,
             };
           } catch (e) {
             console.error(e);
@@ -666,6 +667,7 @@ export async function getProcessTablePgroongaSearch(
                 ?.typeOfDataSet ?? '-',
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
+            modelId: i?.model_id,
           };
         } catch (e) {
           console.error(e);
@@ -783,6 +785,7 @@ export async function process_hybrid_search(
                   ?.typeOfDataSet ?? '-',
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
+              modelId: i?.model_id,
             };
           } catch (e) {
             console.error(e);
@@ -828,6 +831,7 @@ export async function process_hybrid_search(
                 ?.typeOfDataSet ?? '-',
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
+            modelId: i?.model_id,
           };
         } catch (e) {
           console.error(e);

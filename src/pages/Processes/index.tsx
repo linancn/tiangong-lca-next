@@ -340,15 +340,39 @@ const TableList: FC = () => {
                 disabled={false}
                 actionRef={actionRef}
               />
-              <ProcessCreate
-                actionType='copy'
-                id={row.id}
+              <LifeCycleModelView
+                disabled={!row.modelId}
+                id={row.modelId}
                 version={row.version}
                 lang={lang}
+                buttonType={'iconModel'}
                 actionRef={actionRef}
               />
               <ReviewDetail processId={row.id} processVersion={row.version} />
-              <ExportData tableName='processes' id={row.id} version={row.version} />
+
+              <TableDropdown
+                style={{
+                  color: token.colorPrimary,
+                }}
+                menus={[
+                  {
+                    key: 'copy',
+                    name: (
+                      <ProcessCreate
+                        actionType='copy'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />
+                    ),
+                  },
+                  {
+                    key: 'export',
+                    name: <ExportData tableName='processes' id={row.id} version={row.version} />,
+                  },
+                ]}
+              />
             </Space>,
           ];
         }

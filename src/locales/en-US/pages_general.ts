@@ -19,6 +19,7 @@ export default {
   'pages.button.save.success': 'Save successfully!',
   'pages.button.reset': 'Reset',
   'pages.button.view': 'View',
+  'pages.button.view.model': 'View Model',
   'pages.button.edit': 'Edit',
   'pages.button.copy': 'Copy',
   'pages.button.refresh': 'Refresh',
