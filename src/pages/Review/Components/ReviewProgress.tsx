@@ -429,6 +429,7 @@ export default function ReviewProgress({
   };
   const approveProcessReview = async () => {
     setSpinning(true);
+    await updateReviewDataToPublic(dataId, dataVersion);
     const { error } = await updateCommentApi(
       reviewId,
       {
@@ -442,8 +443,6 @@ export default function ReviewProgress({
       state_code: 2,
       json: newReviewJson,
     });
-
-    await updateReviewDataToPublic(dataId, dataVersion);
 
     if (!error && !error2) {
       message.success(
@@ -671,6 +670,7 @@ export default function ReviewProgress({
   };
   const approveModelReview = async () => {
     setSpinning(true);
+    await updateModelReviewDataToPublic(dataId, dataVersion);
     const { error } = await updateCommentApi(
       reviewId,
       {
@@ -682,7 +682,6 @@ export default function ReviewProgress({
     const { error: error2 } = await updateReviewApi([reviewId], {
       state_code: 2,
     });
-    await updateModelReviewDataToPublic(dataId, dataVersion);
     if (!error && !error2) {
       message.success(
         intl.formatMessage({
