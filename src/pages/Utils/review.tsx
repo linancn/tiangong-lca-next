@@ -442,7 +442,7 @@ export const checkReferences = async (
 ): Promise<ReffPath | undefined> => {
   let currentPath: ReffPath | undefined;
   const requestKeys = requestKeysSet || new Set<string>();
-  const handelSameModelWithProcress = async (ref: refDataType) => {
+  const handelSameModelWithProcress = async (ref: refDataType, requestKeys: Set<string>) => {
     if (ref['@type'] === 'process data set') {
       const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
         ref['@refObjectId'],
@@ -460,6 +460,7 @@ export const checkReferences = async (
           unRuleVerification,
           nonExistentRef,
           currentPath,
+          requestKeys,
         );
       }
     }
@@ -475,7 +476,7 @@ export const checkReferences = async (
           parentPath.addChild(currentPath);
         }
       }
-      await handelSameModelWithProcress(ref);
+      await handelSameModelWithProcress(ref, requestKeys);
       return;
     }
     const refResult = await getRefData(
@@ -544,7 +545,7 @@ export const checkReferences = async (
           requestKeys,
         );
       }
-      await handelSameModelWithProcress(ref);
+      await handelSameModelWithProcress(ref, requestKeys);
     } else {
       currentPath = new ReffPath(ref, true, true);
       if (parentPath) {

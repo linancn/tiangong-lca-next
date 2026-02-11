@@ -460,11 +460,23 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         });
         unRuleVerification.forEach((item: any) => {
           const tabName = getErrRefTab(item, modelDataset);
-          if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+          if (
+            tabName &&
+            !errTabNames.includes(tabName) &&
+            item['@type'] !== 'lifeCycleModel data set' &&
+            item['@type'] !== 'process data set'
+          )
+            errTabNames.push(tabName);
         });
         problemNodes.forEach((item: any) => {
           const tabName = getErrRefTab(item, modelDataset);
-          if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+          if (
+            tabName &&
+            !errTabNames.includes(tabName) &&
+            item['@type'] !== 'lifeCycleModel data set' &&
+            item['@type'] !== 'process data set'
+          )
+            errTabNames.push(tabName);
         });
         if (errTabNames && errTabNames.length > 0) {
           message.error(
