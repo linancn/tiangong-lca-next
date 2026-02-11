@@ -1,3 +1,4 @@
+import { favicon } from './branding';
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
@@ -151,6 +152,7 @@ export default defineConfig({
   mfsu: {
     strategy: 'normal',
   },
+  favicons: [favicon],
   esbuildMinifyIIFE: true,
   requestRecord: {},
   // publicPath: process.env.NODE_ENV === 'production' ? './' : '/',

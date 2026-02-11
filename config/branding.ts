@@ -23,5 +23,7 @@ export const darkBrandTheme: BrandTheme = {
   logo: readBrandEnv(process.env.APP_DARK_LOGO, '/logo_dark.svg'),
 };
 
+export const favicon = readBrandEnv(process.env.APP_FAVICON, '/favicon.ico');
+
 export const getBrandTheme = (isDarkMode?: boolean): BrandTheme =>
   isDarkMode ? darkBrandTheme : lightBrandTheme;

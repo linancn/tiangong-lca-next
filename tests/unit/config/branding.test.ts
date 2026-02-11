@@ -5,6 +5,7 @@ const BRANDING_ENV_KEYS = [
   'APP_DARK_PRIMARY',
   'APP_LIGHT_LOGO',
   'APP_DARK_LOGO',
+  'APP_FAVICON',
 ] as const;
 
 const clearBrandingEnv = () => {
@@ -61,6 +62,28 @@ describe('branding config (config/branding.ts)', () => {
 
     expect(lightBrandTheme.colorPrimary).toBe('#5C246A');
     expect(darkBrandTheme.logo).toBe('/logo_dark.svg');
+  });
+
+  it('uses default favicon when env var is missing', () => {
+    const { favicon } = require('../../../config/branding');
+
+    expect(favicon).toBe('/favicon.ico');
+  });
+
+  it('reads and trims APP_FAVICON from env', () => {
+    process.env.APP_FAVICON = '  /custom-favicon.png  ';
+
+    const { favicon } = require('../../../config/branding');
+
+    expect(favicon).toBe('/custom-favicon.png');
+  });
+
+  it('falls back to default favicon when env var is blank', () => {
+    process.env.APP_FAVICON = '   ';
+
+    const { favicon } = require('../../../config/branding');
+
+    expect(favicon).toBe('/favicon.ico');
   });
 
   it('returns the correct theme by dark mode flag', () => {
