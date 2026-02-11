@@ -310,9 +310,9 @@ export default function ReviewProgress({
     };
 
     // Merge commentReview into review
-    const _review = json.processDataSet.modellingAndValidation.validation.review;
+    const _review = json?.processDataSet?.modellingAndValidation?.validation?.review ?? [];
     const _compliance =
-      json.processDataSet.modellingAndValidation.complianceDeclarations.compliance;
+      json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance ?? [];
     json.processDataSet.modellingAndValidation = {
       ...json.processDataSet.modellingAndValidation,
       validation: {
