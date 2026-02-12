@@ -482,10 +482,11 @@ describe('lifeCycleModel_hybrid_search', () => {
     );
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith(
-      'lifeCycleModel_hybrid_search',
+      'lifecyclemodel_hybrid_search',
       expect.objectContaining({
         headers: { Authorization: `Bearer ${sampleAccessToken}` },
         body: { query: 'cement', filter: {}, state_code: 100 },
+        region: 'us-east-1',
       }),
     );
     expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'hybrid-class' }]);
