@@ -890,7 +890,7 @@ export async function lifeCycleModel_hybrid_search(
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
-    result = await supabase.functions.invoke('lifeCycleModel_hybrid_search', {
+    result = await supabase.functions.invoke('lifecyclemodel_hybrid_search', {
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
