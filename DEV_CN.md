@@ -43,7 +43,11 @@ npm run lint:fix
 ### 测试代码
 
 ```bash
+# 全量门禁（unit + integration，CI 风格 runner）
 npm test
+
+# 聚焦套件（功能开发推荐）
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 ```
 
 ### 测试覆盖率分析
@@ -130,12 +134,13 @@ npm run test:coverage
 | 命令                           | 说明                           |
 | ------------------------------ | ------------------------------ |
 | `npm test`                     | 运行所有测试                   |
+| `npm run test:ci -- <args>`    | 传入明确 Jest 参数执行聚焦套件 |
 | `npm run test:coverage`        | 运行测试并生成覆盖率数据       |
 | `npm run test:coverage:report` | 生成可读的覆盖率报告           |
 | `npm run test:report`          | 运行测试并生成报告（组合命令） |
 | `npm run test:update`          | 更新测试快照                   |
 
-> 💡 **提示**：详细的测试覆盖率脚本使用说明请查看 [`scripts/README_CN.md`](./scripts/README_CN.md)
+> 💡 **提示**：覆盖率报告实现脚本位于 [`scripts/test-coverage-report.js`](./scripts/test-coverage-report.js)
 
 ### 构建项目
 

@@ -1,13 +1,13 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsView from '@/pages/Flows/Components/view';
 import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
+import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, StarOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Form, Input, Space, Tooltip } from 'antd';
-import BigNumber from 'bignumber.js';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -114,8 +114,8 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           }}
           onValuesChange={(value, values) => {
             if (!value?.scalingFactor) {
-              const targetAmount = new BigNumber(values?.targetAmount || 0);
-              const originalAmount = new BigNumber(values?.originalAmount || 1);
+              const targetAmount = toBigNumberOrZero(values?.targetAmount ?? 0);
+              const originalAmount = toBigNumberOrZero(values?.originalAmount ?? 1);
 
               const scalingFactor = originalAmount.isZero()
                 ? '0'

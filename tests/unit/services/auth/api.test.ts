@@ -11,6 +11,7 @@
 
 import {
   getCurrentUser,
+  getFreshUserMetadata,
   login,
   logout,
   reauthenticate,
@@ -31,6 +32,7 @@ jest.mock('@/services/supabase', () => ({
       signUp: jest.fn(),
       reauthenticate: jest.fn(),
       updateUser: jest.fn(),
+      getUser: jest.fn(),
     },
   },
 }));
@@ -45,6 +47,7 @@ const authMock = (
       signUp: jest.Mock;
       reauthenticate: jest.Mock;
       updateUser: jest.Mock;
+      getUser: jest.Mock;
     };
   }
 ).auth;
@@ -140,6 +143,21 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
 
       expect(result).toEqual({ status: 'error', type: 'login', currentAuthority: 'guest' });
     });
+
+    it('uses empty-string fallback for missing credentials', async () => {
+      authMock.signInWithPassword.mockResolvedValueOnce({
+        data: { user: { role: 'member' } },
+        error: null,
+      });
+
+      const result = await login({ type: 'login' } as any);
+
+      expect(authMock.signInWithPassword).toHaveBeenCalledWith({
+        email: '',
+        password: '',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'login', currentAuthority: 'member' });
+    });
   });
 
   describe('logout', () => {
@@ -174,6 +192,15 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
         type: 'magic',
         currentAuthority: 'guest',
       });
+    });
+
+    it('uses empty email fallback for magic link requests', async () => {
+      authMock.signInWithOtp.mockResolvedValueOnce({ error: null });
+
+      const result = await sendMagicLink({ type: 'magic' } as any);
+
+      expect(authMock.signInWithOtp).toHaveBeenCalledWith({ email: '' });
+      expect(result).toEqual({ status: 'ok', type: 'magic', currentAuthority: 'guest' });
     });
   });
 
@@ -223,6 +250,24 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
 
       expect(result).toEqual({ status: 'error', type: 'register', currentAuthority: 'guest' });
     });
+
+    it('uses empty password fallback when confirmPassword is missing', async () => {
+      authMock.signUp.mockResolvedValueOnce({
+        data: { user: { role: 'authenticated' } },
+        error: null,
+      });
+
+      const result = await signUp({
+        email: 'user@example.com',
+        type: 'register',
+      } as any);
+
+      expect(authMock.signUp).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: '',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'register', currentAuthority: 'guest' });
+    });
   });
 
   describe('reauthenticate', () => {
@@ -258,6 +303,20 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
       expect(result).toEqual({
         status: 'error',
         message: 'Token expired',
+        currentAuthority: 'guest',
+      });
+    });
+
+    it('falls back to guest authority when role is unavailable', async () => {
+      authMock.reauthenticate.mockResolvedValueOnce({
+        data: { user: {} },
+        error: null,
+      });
+
+      const result = await reauthenticate();
+
+      expect(result).toEqual({
+        status: 'ok',
         currentAuthority: 'guest',
       });
     });
@@ -300,6 +359,40 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
       } finally {
         jest.useRealTimers();
       }
+    });
+  });
+
+  describe('getFreshUserMetadata', () => {
+    it('returns null when getUser fails or user is absent', async () => {
+      authMock.getUser.mockResolvedValueOnce({
+        data: { user: null },
+        error: { message: 'expired' },
+      });
+
+      const result = await getFreshUserMetadata();
+
+      expect(result).toBeNull();
+    });
+
+    it('maps fresh metadata when user exists', async () => {
+      authMock.getUser.mockResolvedValueOnce({
+        data: {
+          user: {
+            user_metadata: {
+              update_data_notification_time: 111,
+              update_team_notification_time: 222,
+            },
+          },
+        },
+        error: null,
+      });
+
+      const result = await getFreshUserMetadata();
+
+      expect(result).toEqual({
+        update_data_notification_time: 111,
+        update_team_notification_time: 222,
+      });
     });
   });
 });

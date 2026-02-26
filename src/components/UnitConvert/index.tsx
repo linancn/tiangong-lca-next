@@ -1,6 +1,6 @@
+import { toBigNumberOrNaN } from '@/services/general/bignumber';
 import { FormattedMessage } from '@umijs/max';
 import { Form, Input, Modal, Select, Space } from 'antd';
-import BigNumber from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 
 interface UnitConvertProps {
@@ -40,7 +40,15 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
     if (hasValue && unit) {
       const selectedUnit = units.find((u) => u.name === unit);
       if (selectedUnit) {
-        setResult(new BigNumber(inputValue).times(selectedUnit.meanValue).toNumber());
+        const inputValueBN = toBigNumberOrNaN(inputValue);
+        const meanValueBN = toBigNumberOrNaN(selectedUnit.meanValue);
+
+        if (inputValueBN.isNaN() || meanValueBN.isNaN()) {
+          setResult(undefined);
+          return;
+        }
+
+        setResult(inputValueBN.times(meanValueBN).toNumber());
         return;
       }
     }

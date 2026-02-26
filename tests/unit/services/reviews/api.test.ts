@@ -32,11 +32,21 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockGetPendingComment = jest.fn();
 const mockGetReviewedComment = jest.fn();
+const mockGetRejectedComment = jest.fn();
 
 jest.mock('@/services/comments/api', () => ({
   __esModule: true,
   getPendingComment: (...args: any[]) => mockGetPendingComment.apply(null, args),
   getReviewedComment: (...args: any[]) => mockGetReviewedComment.apply(null, args),
+  getRejectedComment: (...args: any[]) => mockGetRejectedComment.apply(null, args),
+}));
+
+const mockGetProcessDetailByIdAndVersion = jest.fn();
+
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  getProcessDetailByIdAndVersion: (...args: any[]) =>
+    mockGetProcessDetailByIdAndVersion.apply(null, args),
 }));
 
 const mockGetLangText = jest.fn();
@@ -71,6 +81,7 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
     eq: jest.fn().mockReturnThis(),
     filter: jest.fn().mockReturnThis(),
     gte: jest.fn().mockReturnThis(),
+    gt: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(resolvedValue),
     then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
@@ -93,6 +104,10 @@ beforeEach(() => {
   mockGetPendingComment.mockResolvedValue({ data: [] });
   mockGetReviewedComment.mockReset();
   mockGetReviewedComment.mockResolvedValue({ data: [] });
+  mockGetRejectedComment.mockReset();
+  mockGetRejectedComment.mockResolvedValue({ data: [] });
+  mockGetProcessDetailByIdAndVersion.mockReset();
+  mockGetProcessDetailByIdAndVersion.mockResolvedValue({ success: true, data: [] });
   mockGetLangText.mockReset();
   mockGetLangText.mockImplementation((value: any, lang: string) => {
     if (!value) return '-';
@@ -293,6 +308,228 @@ describe('getReviewsByProcess', () => {
   });
 });
 
+describe('getRejectReviewsByProcess', () => {
+  it('queries rejected reviews by process id and version', async () => {
+    const supabaseResult = { data: [{ id: 'review-1' }], error: null };
+    const builder = createQueryBuilder(supabaseResult);
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getRejectReviewsByProcess('process-1', '1.0');
+
+    expect(builder.select).toHaveBeenCalledWith('id');
+    expect(builder.filter).toHaveBeenCalledWith('json->data->>id', 'eq', 'process-1');
+    expect(builder.filter).toHaveBeenCalledWith('json->data->>version', 'eq', '1.0');
+    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+    expect(result).toEqual(supabaseResult);
+  });
+});
+
+describe('getReviewsTableDataOfReviewMember', () => {
+  it('returns empty table when reviewer user id cannot be resolved', async () => {
+    mockGetUserId.mockResolvedValueOnce(undefined);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'reviewed',
+      'en',
+    );
+
+    expect(mockGetReviewedComment).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it('returns empty table when pending comment query returns error', async () => {
+    mockGetPendingComment.mockResolvedValueOnce({ error: { message: 'db failed' }, data: null });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGetPendingComment).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'reviewer-1',
+    );
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it('maps reviewer-rejected comments with lifecycle model enrichment', async () => {
+    const commentPayload = {
+      data: [
+        {
+          reviews: {
+            id: 'review-1',
+            created_at: '2024-04-01T00:00:00.000Z',
+            modified_at: '2024-04-02T00:00:00.000Z',
+            deadline: '2024-04-20T00:00:00.000Z',
+            json: {
+              data: {
+                id: 'process-1',
+                version: '01.00.000',
+                name: {
+                  baseName: { en: 'Fallback Base' },
+                  treatmentStandardsRoutes: { en: 'Fallback Route' },
+                  mixAndLocationTypes: { en: 'Fallback Mix' },
+                  functionalUnitFlowProperties: { en: 'Fallback Unit' },
+                },
+              },
+              team: { name: { en: 'Team A' } },
+              user: { email: 'reviewer@example.com' },
+            },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    };
+    mockGetRejectedComment.mockResolvedValueOnce(commentPayload);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'process-1',
+          version: '01.00.000',
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Model Base' },
+                    treatmentStandardsRoutes: { en: 'Model Route' },
+                    mixAndLocationTypes: { en: 'Model Mix' },
+                    functionalUnitFlowProperties: { en: 'Model Unit' },
+                  },
+                },
+              },
+            },
+          },
+          json_tg: { version: 'tg' },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 2 },
+      { modified_at: 'descend' },
+      'reviewer-rejected',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGetRejectedComment).toHaveBeenCalledWith(
+      { pageSize: 10, current: 2 },
+      { modified_at: 'descend' },
+      'reviewer-1',
+    );
+    expect(mockGetLifeCyclesByIdAndVersion).toHaveBeenCalledWith([
+      { id: 'process-1', version: '01.00.000' },
+    ]);
+    expect(result.success).toBe(true);
+    expect(result.total).toBe(1);
+    expect(result).toHaveProperty('page', 2);
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0]).toMatchObject({
+      id: 'review-1',
+      isFromLifeCycle: true,
+      teamName: 'Team A',
+      userName: 'reviewer@example.com',
+      deadline: '2024-04-20T00:00:00.000Z',
+      modelData: {
+        id: 'process-1',
+        version: '01.00.000',
+      },
+    });
+    expect(result.data[0].name).toContain('Model Base');
+  });
+});
+
+describe('getReviewsTableDataOfReviewAdmin', () => {
+  it('returns empty table for unassigned type when no rows exist', async () => {
+    const builder = createQueryBuilder({ data: [], count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      'unassigned',
+      'en',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 0);
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it('applies assigned query filters and maps table data', async () => {
+    const reviewRow = {
+      id: 'review-10',
+      created_at: '2024-04-01T00:00:00.000Z',
+      modified_at: '2024-04-03T00:00:00.000Z',
+      deadline: null,
+      comments: [{ state_code: 1 }],
+      json: {
+        data: {
+          id: 'process-2',
+          version: '01.00.000',
+          name: {
+            baseName: { en: 'Review Base' },
+            treatmentStandardsRoutes: { en: 'Review Route' },
+            mixAndLocationTypes: { en: 'Review Mix' },
+            functionalUnitFlowProperties: { en: 'Review Unit' },
+          },
+        },
+        team: { name: { en: 'Ops Team' } },
+        user: { name: 'Alice Reviewer' },
+      },
+    };
+    const builder = createQueryBuilder({ data: [reviewRow], count: 1 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 2 },
+      {},
+      'assigned',
+      'en',
+    );
+
+    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 1);
+    expect(builder.select).toHaveBeenCalledWith('*, comments(state_code)');
+    expect(builder.filter).toHaveBeenCalledWith('comments.state_code', 'gte', 0);
+    expect(result.success).toBe(true);
+    expect(result).toHaveProperty('page', 2);
+    expect(result.total).toBe(1);
+    expect(result.data[0]).toMatchObject({
+      id: 'review-10',
+      comments: [{ state_code: 1 }],
+      isFromLifeCycle: false,
+      teamName: 'Ops Team',
+      userName: 'Alice Reviewer',
+      modelData: null,
+    });
+    expect(result.data[0].name).toContain('Review Base');
+  });
+
+  it('returns default empty response when query result has no data field', async () => {
+    const builder = createQueryBuilder({ count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      { modified_at: 'ascend' },
+      'admin-rejected',
+      'en',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+});
+
 describe('getNotifyReviews', () => {
   it('returns failure response when user is missing', async () => {
     mockGetUserId.mockResolvedValueOnce(null);
@@ -365,6 +602,61 @@ describe('getNotifyReviews', () => {
       total: 1,
     });
   });
+
+  it('returns empty success response when no notifications are found', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({ data: [], count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
+
+    expect(builder.gte).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it('returns failure response when query payload is malformed', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({ data: undefined, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
+
+    expect(result).toEqual({ data: [], success: false, total: 0 });
+  });
+});
+
+describe('getNotifyReviewsCount', () => {
+  it('returns failure response when user is missing', async () => {
+    mockGetUserId.mockResolvedValueOnce(null);
+
+    const result = await reviewsApi.getNotifyReviewsCount();
+
+    expect(result).toEqual({ success: false, total: 0 });
+  });
+
+  it('uses last view time filter when provided', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({ count: 5, error: null });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const lastViewTime = new Date('2024-05-01T00:00:00.000Z').getTime();
+    const result = await reviewsApi.getNotifyReviewsCount(3, lastViewTime);
+
+    expect(builder.gt).toHaveBeenCalledWith('modified_at', new Date(lastViewTime).toISOString());
+    expect(builder.gte).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true, total: 5 });
+  });
+
+  it('uses time filter and reports failure when query has error', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({ count: null, error: { message: 'db failed' } });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getNotifyReviewsCount(7);
+
+    expect(builder.gte).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ success: false, total: 0 });
+  });
 });
 
 describe('getLatestReviewOfMine', () => {
@@ -389,5 +681,227 @@ describe('getLatestReviewOfMine', () => {
     expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
     expect(builder.limit).toHaveBeenCalledWith(1);
     expect(result).toEqual([{ id: 'review-1' }]);
+  });
+});
+
+describe('getLifeCycleModelSubTableDataBatch', () => {
+  it('returns empty success when input array is empty', async () => {
+    const result = await reviewsApi.getLifeCycleModelSubTableDataBatch([], 'en');
+
+    expect(result).toEqual({ data: {}, success: true });
+  });
+
+  it('returns empty success when no process references exist in models', async () => {
+    const result = await reviewsApi.getLifeCycleModelSubTableDataBatch(
+      [
+        {
+          reviewId: 'review-1',
+          modelData: {
+            id: 'model-1',
+            version: '01.00.000',
+            json: {},
+            json_tg: {},
+          },
+        },
+      ],
+      'en',
+    );
+
+    expect(mockGetProcessDetailByIdAndVersion).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: {}, success: true });
+  });
+
+  it('returns failure when batch process fetch fails', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({ success: false, data: null });
+
+    const result = await reviewsApi.getLifeCycleModelSubTableDataBatch(
+      [
+        {
+          reviewId: 'review-1',
+          modelData: {
+            id: 'model-1',
+            version: '01.00.000',
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  technology: {
+                    processes: {
+                      processInstance: [
+                        {
+                          referenceToProcess: {
+                            '@refObjectId': 'process-1',
+                            '@version': '01.00.000',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            json_tg: {},
+          },
+        },
+      ],
+      'en',
+    );
+
+    expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ data: {}, success: false });
+  });
+
+  it('groups process details by review and removes duplicate process entries', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'process-1',
+          version: '01.00.000',
+          state_code: 20,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Process 1' },
+                    treatmentStandardsRoutes: { en: 'Route 1' },
+                    mixAndLocationTypes: { en: 'Mix 1' },
+                    functionalUnitFlowProperties: { en: 'Unit 1' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          id: 'process-2',
+          version: '01.00.000',
+          state_code: 20,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Process 2' },
+                    treatmentStandardsRoutes: { en: 'Route 2' },
+                    mixAndLocationTypes: { en: 'Mix 2' },
+                    functionalUnitFlowProperties: { en: 'Unit 2' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          id: 'process-3',
+          version: '02.00.000',
+          state_code: 10,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Process 3' },
+                    treatmentStandardsRoutes: { en: 'Route 3' },
+                    mixAndLocationTypes: { en: 'Mix 3' },
+                    functionalUnitFlowProperties: { en: 'Unit 3' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getLifeCycleModelSubTableDataBatch(
+      [
+        {
+          reviewId: 'review-a',
+          modelData: {
+            id: 'model-1',
+            version: '01.00.000',
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  technology: {
+                    processes: {
+                      processInstance: [
+                        {
+                          referenceToProcess: {
+                            '@refObjectId': 'process-1',
+                            '@version': '01.00.000',
+                          },
+                        },
+                        {
+                          referenceToProcess: {
+                            '@refObjectId': 'process-1',
+                            '@version': '01.00.000',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            json_tg: {
+              submodels: [{ id: 'process-2', type: 'secondary' }],
+            },
+          },
+        },
+        {
+          reviewId: 'review-b',
+          modelData: {
+            id: 'model-2',
+            version: '02.00.000',
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  technology: {
+                    processes: {
+                      processInstance: [
+                        {
+                          referenceToProcess: {
+                            '@refObjectId': 'process-1',
+                            '@version': '01.00.000',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            json_tg: {
+              submodels: [{ id: 'process-3', type: 'primary' }],
+            },
+          },
+        },
+      ],
+      'en',
+    );
+
+    const processParams = mockGetProcessDetailByIdAndVersion.mock.calls[0][0];
+    expect(processParams).toHaveLength(3);
+    expect(processParams).toEqual(
+      expect.arrayContaining([
+        { id: 'process-1', version: '01.00.000' },
+        { id: 'process-2', version: '01.00.000' },
+        { id: 'process-3', version: '02.00.000' },
+      ]),
+    );
+    expect(result.success).toBe(true);
+    expect(result.data['review-a']).toHaveLength(2);
+    expect(result.data['review-b']).toHaveLength(1);
+    expect(result.data['review-a'].find((it: any) => it.id === 'process-2')).toMatchObject({
+      id: 'process-2',
+      sourceType: 'submodel',
+      submodelType: 'secondary',
+    });
+    expect(result.data['review-a'].find((it: any) => it.id === 'process-1')?.sourceType).toBe(
+      'processInstance',
+    );
+    expect(result.data['review-a'][0].name).toContain('Process');
   });
 });

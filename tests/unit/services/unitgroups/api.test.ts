@@ -268,6 +268,40 @@ describe('updateUnitGroup', () => {
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
   });
+
+  it('uses empty bearer token fallback and logs invocation error', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: undefined,
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'invoke failed' },
+    });
+
+    const result = await updateUnitGroup('ug-1', '01.00.000', { name: 'Updated' });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: 'Bearer ' },
+      body: {
+        id: 'ug-1',
+        version: '01.00.000',
+        table: 'unitgroups',
+        data: {
+          json_ordered: expect.any(Object),
+          rule_verification: true,
+        },
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'invoke failed' });
+    expect(result).toBeUndefined();
+    logSpy.mockRestore();
+  });
 });
 
 describe('deleteUnitGroup', () => {
@@ -430,6 +464,182 @@ describe('getUnitGroupTableAll', () => {
 
     expect(result).toEqual({ data: [], success: true });
   });
+
+  it('applies co source and team filters', async () => {
+    const query = createQuery({ data: [], count: 0, error: null });
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getUnitGroupTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'co',
+      'team-co',
+    );
+
+    expect(query.calls.eqArgs).toEqual([
+      { field: 'state_code', value: 200 },
+      { field: 'team_id', value: 'team-co' },
+    ]);
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('applies my source state and user filters when session exists', async () => {
+    const query = createQuery({ data: [], count: 0, error: null });
+    mockFrom.mockReturnValueOnce(query as any);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: { id: 'my-user' },
+        },
+      },
+    });
+
+    const result = await getUnitGroupTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'my',
+      [],
+      300,
+    );
+
+    expect(query.calls.eqArgs).toEqual([
+      { field: 'state_code', value: 300 },
+      { field: 'user_id', value: 'my-user' },
+    ]);
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('applies team scope filter when team id exists', async () => {
+    const query = createQuery({ data: [], count: 0, error: null });
+    mockFrom.mockReturnValueOnce(query as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce('team-te');
+
+    const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', []);
+
+    expect(query.calls.eqArgs).toEqual([{ field: 'team_id', value: 'team-te' }]);
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('returns failure when query result does not include data payload', async () => {
+    const query = createQuery({ error: null });
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', '');
+
+    expect(result).toEqual({ data: [], success: false });
+  });
+
+  it('logs query errors and keeps transformed response', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const query = createQuery({
+      data: [
+        {
+          id: 'ug-e1',
+          version: '01.00.000',
+          modified_at: '2024-01-01T00:00:00Z',
+          'common:name': [{ '@xml:lang': 'en', '#text': 'UG Error' }],
+          'common:class': [],
+          referenceToReferenceUnit: 'missing',
+          unit: [],
+        },
+      ],
+      count: 1,
+      error: { message: 'table warning' },
+    });
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', '');
+
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'table warning' });
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-e1',
+          id: 'ug-e1',
+          name: 'UG Error',
+          classification: '',
+          refUnitId: 'missing',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '01.00.000',
+          modifiedAt: new Date('2024-01-01T00:00:00Z'),
+          teamId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    logSpy.mockRestore();
+  });
+
+  it('falls back to id-only row when mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const query = createQuery({
+      data: [
+        {
+          id: 'ug-throw',
+          version: '01.00.000',
+          modified_at: '2024-01-01T00:00:00Z',
+          'common:name': [{ '@xml:lang': 'en', '#text': 'UG Throw' }],
+          'common:class': [{ '#text': 'Class' }],
+          referenceToReferenceUnit: 'u-1',
+          unit: [{ '@dataSetInternalID': 'u-1', name: 'kg' }],
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(query as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('broken units');
+    });
+
+    const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', '');
+
+    expect(result).toEqual({
+      data: [{ id: 'ug-throw' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('handles zh mapping exceptions by returning id-only rows', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const query = createQuery({
+      data: [
+        {
+          id: 'ug-zh-throw',
+          version: '01.00.001',
+          modified_at: '2024-01-02T00:00:00Z',
+          'common:name': [{ '@xml:lang': 'zh', '#text': '中文异常行' }],
+          'common:class': [{ '#text': '分类' }],
+          referenceToReferenceUnit: 'u-z',
+          unit: [],
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(query as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('zh map failed');
+    });
+
+    const result = await getUnitGroupTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', '');
+
+    expect(result).toEqual({
+      data: [{ id: 'ug-zh-throw' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
+  });
 });
 
 describe('getUnitGroupTablePgroongaSearch', () => {
@@ -517,6 +727,193 @@ describe('getUnitGroupTablePgroongaSearch', () => {
       success: true,
       total: 2,
     });
+  });
+
+  it('omits state code when parameter is not numeric', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null } as any);
+
+    await getUnitGroupTablePgroongaSearch({} as any, 'en', 'tg', 'energy', { k: 1 }, undefined);
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_unitgroups', {
+      query_text: 'energy',
+      filter_condition: { k: 1 },
+      page_size: 10,
+      page_current: 1,
+      data_source: 'tg',
+      this_user_id: 'user-id',
+    });
+  });
+
+  it('returns empty success when rpc payload contains no rows', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null } as any);
+
+    const result = await getUnitGroupTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'none',
+      {},
+      100,
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('logs rpc error and returns raw payload when data is absent', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'rpc failed' } } as any);
+
+    const result = await getUnitGroupTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'none',
+      {},
+      100,
+    );
+
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'rpc failed' });
+    expect(result).toEqual({ data: null, error: { message: 'rpc failed' } });
+    logSpy.mockRestore();
+  });
+
+  it('maps zh rpc rows and fills default fields', async () => {
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'z1', '#text': '中文分类' },
+    ]);
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'ug-zh',
+          version: '01.00.100',
+          modified_at: '2024-06-01T00:00:00Z',
+          team_id: 'team-zh',
+          total_count: 4,
+          json: {
+            unitGroupDataSet: {
+              unitGroupInformation: {
+                dataSetInformation: {
+                  'common:name': [{ '@xml:lang': 'zh', '#text': '中文单位组' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ '@value': 'z1', '#text': '原分类' }],
+                    },
+                  },
+                },
+                quantitativeReference: {},
+              },
+              units: {
+                unit: [],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    } as any);
+
+    const result = await getUnitGroupTablePgroongaSearch(
+      {} as any,
+      'zh',
+      'tg',
+      'zh',
+      {},
+      undefined,
+    );
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-zh:01.00.100',
+          id: 'ug-zh',
+          name: '中文单位组',
+          classification: '中文分类',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '01.00.100',
+          modifiedAt: new Date('2024-06-01T00:00:00Z'),
+          teamId: 'team-zh',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 4,
+    });
+  });
+
+  it('returns id-only row when zh rpc mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockGetCachedClassificationData.mockResolvedValueOnce([]);
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'ug-zh-err',
+          version: '01.00.101',
+          modified_at: '2024-06-02T00:00:00Z',
+          total_count: 1,
+          json: { unitGroupDataSet: {} },
+        },
+      ],
+      error: null,
+    } as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('pg zh fail');
+    });
+
+    const result = await getUnitGroupTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'zh',
+      {},
+      undefined,
+    );
+
+    expect(result).toEqual({
+      data: [{ id: 'ug-zh-err' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('returns id-only row when english rpc mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'ug-en-err',
+          version: '01.00.102',
+          modified_at: '2024-06-03T00:00:00Z',
+          total_count: 1,
+          json: { unitGroupDataSet: {} },
+        },
+      ],
+      error: null,
+    } as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('pg en fail');
+    });
+
+    const result = await getUnitGroupTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'en',
+      {},
+      undefined,
+    );
+
+    expect(result).toEqual({
+      data: [{ id: 'ug-en-err' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
   });
 });
 
@@ -649,6 +1046,191 @@ describe('unitgroup_hybrid_search', () => {
 
     expect((result as any).total).toBe(5);
   });
+
+  it('includes state code in request body and supports empty bearer fallback', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: undefined,
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { data: [], total_count: 6 },
+      error: null,
+    } as any);
+
+    const result = await unitgroup_hybrid_search(
+      { current: 2, pageSize: 5 },
+      'en',
+      'my',
+      'hybrid',
+      { foo: 'bar' },
+      400,
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'unitgroup_hybrid_search',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer ' },
+        body: { query: 'hybrid', filter: { foo: 'bar' }, state_code: 400 },
+      }),
+    );
+    expect(result).toEqual({ data: [], success: true, total: 6 });
+  });
+
+  it('maps zh hybrid rows and keeps default ref unit fields', async () => {
+    mockGetCachedClassificationData.mockResolvedValueOnce([{ '@value': 'z2', '#text': '分类-2' }]);
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: 'ug-hzh',
+            version: '02.00.001',
+            modified_at: '2024-07-01T00:00:00Z',
+            team_id: 'team-hzh',
+            json: {
+              unitGroupDataSet: {
+                unitGroupInformation: {
+                  dataSetInformation: {
+                    'common:name': [{ '@xml:lang': 'zh', '#text': '混合中文单位组' }],
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '@value': 'z2', '#text': '原分类2' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        total_count: 9,
+      },
+      error: null,
+    } as any);
+
+    const result = await unitgroup_hybrid_search({} as any, 'zh', 'tg', 'hybrid-zh', {}, undefined);
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-hzh:02.00.001',
+          id: 'ug-hzh',
+          name: '混合中文单位组',
+          classification: '分类-2',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '02.00.001',
+          modifiedAt: new Date('2024-07-01T00:00:00Z'),
+          teamId: 'team-hzh',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 9,
+    });
+  });
+
+  it('logs invoke errors and returns raw response when payload shape is invalid', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { data: null },
+      error: { message: 'hybrid failed' },
+    } as any);
+
+    const result = await unitgroup_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'broken',
+      {},
+      undefined,
+    );
+
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'hybrid failed' });
+    expect(result).toEqual({ data: { data: null }, error: { message: 'hybrid failed' } });
+    logSpy.mockRestore();
+  });
+
+  it('returns id-only row when zh hybrid mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockGetCachedClassificationData.mockResolvedValueOnce([]);
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: 'ug-hzh-err',
+            version: '02.00.100',
+            modified_at: '2024-07-02T00:00:00Z',
+            json: { unitGroupDataSet: {} },
+          },
+        ],
+        total_count: 2,
+      },
+      error: null,
+    } as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('hybrid zh fail');
+    });
+
+    const result = await unitgroup_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'zh',
+      {},
+      undefined,
+    );
+
+    expect(result).toEqual({
+      data: [{ id: 'ug-hzh-err' }],
+      page: 1,
+      success: true,
+      total: 2,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('returns id-only row when english hybrid mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: 'ug-hen-err',
+            version: '02.00.101',
+            modified_at: '2024-07-03T00:00:00Z',
+            json: { unitGroupDataSet: {} },
+          },
+        ],
+        total_count: 1,
+      },
+      error: null,
+    } as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('hybrid en fail');
+    });
+
+    const result = await unitgroup_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'en',
+      {},
+      undefined,
+    );
+
+    expect(result).toEqual({
+      data: [{ id: 'ug-hen-err' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
+  });
 });
 
 describe('getUnitGroupDetail', () => {
@@ -774,6 +1356,48 @@ describe('getReferenceUnits', () => {
     expect(mockFrom).not.toHaveBeenCalled();
     expect(result).toEqual({ data: [], success: false });
   });
+
+  it('falls back to latest version when requested version is missing', async () => {
+    const supabaseResult = {
+      data: [
+        {
+          id: validId,
+          version: '01.00.011',
+          'common:name': 'Latest Unit Group',
+          referenceToReferenceUnit: 'u-latest',
+          unit: [{ '@dataSetInternalID': 'u-latest', name: 'Newest unit' }],
+        },
+      ],
+    };
+    const query = createQuery(supabaseResult);
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getReferenceUnits([{ id: validId, version: '01.00.001' }]);
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: validId,
+          version: '01.00.011',
+          name: 'Latest Unit Group',
+          refUnitId: 'u-latest',
+          refUnitName: 'Newest unit',
+          refUnitGeneralComment: undefined,
+          unit: [{ '@dataSetInternalID': 'u-latest', name: 'Newest unit' }],
+        },
+      ],
+      success: true,
+    });
+  });
+
+  it('returns failure when query succeeds but no records are found', async () => {
+    const query = createQuery({ data: [] });
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getReferenceUnits([{ id: validId, version: '01.00.000' }]);
+
+    expect(result).toEqual({ data: [], success: false });
+  });
 });
 
 describe('getReferenceUnit', () => {
@@ -836,5 +1460,53 @@ describe('getReferenceUnit', () => {
 
     expect(mockFrom).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
+  });
+
+  it('returns latest version directly when version is omitted', async () => {
+    const latestQuery = createQuery({
+      data: [
+        {
+          id: validId,
+          version: '01.00.020',
+          'common:name': 'No Version Input',
+          referenceToReferenceUnit: undefined,
+          unit: [],
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(latestQuery as any);
+
+    const result = await getReferenceUnit(validId, '');
+
+    expect(latestQuery.calls.eqArgs).toEqual([{ field: 'id', value: validId }]);
+    expect(latestQuery.calls.orderArgs).toEqual([
+      { field: 'version', options: { ascending: false } },
+    ]);
+    expect(latestQuery.calls.rangeArgs).toEqual({ from: 0, to: 0 });
+    expect(result).toEqual({
+      data: {
+        id: validId,
+        version: '01.00.020',
+        name: 'No Version Input',
+        refUnitId: '-',
+        refUnitName: '-',
+        refUnitGeneralComment: undefined,
+        unit: [],
+      },
+      success: true,
+    });
+  });
+
+  it('returns failure payload when valid id lookup has no data', async () => {
+    const emptyQuery = createQuery({ data: [], error: null });
+    const latestEmptyQuery = createQuery({ data: [], error: null });
+    mockFrom.mockReturnValueOnce(emptyQuery as any).mockReturnValueOnce(latestEmptyQuery as any);
+
+    const result = await getReferenceUnit(validId, '01.00.999');
+
+    expect(result).toEqual({
+      data: null,
+      success: false,
+    });
   });
 });

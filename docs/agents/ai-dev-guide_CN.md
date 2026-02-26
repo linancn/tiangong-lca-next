@@ -1,110 +1,82 @@
-# AI Development Spec（中文镜像）
+# AI 开发规范 – Tiangong LCA Next（中文镜像）
 
-> 说明：英文版 `docs/agents/ai-dev-guide.md` 是唯一面向 AI 的规范；本文件仅供人类同事阅读，修改英文版时务必同步更新此处。
+> 开发任务执行规范。先从 `AGENTS.md` 进入，再按需打开本文件。镜像约束：英文版 `docs/agents/ai-dev-guide.md` 变更时，本文件必须同步更新。
 
-## 环境与工具
+## 环境与硬约束
 
-- Node.js **>= 24**（`package.json` 明确要求），先执行 `nvm use 24` 或安装对应版本再 `npm install`。
-- 仓库已附带可用的 `.env`（含 `SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`），开箱即可连接 Supabase；仅在需要自定义实例时覆盖，并始终通过 `src/services/supabase.ts` 读取。
-- 前端外观可通过 env 覆盖：`APP_LIGHT_PRIMARY`、`APP_DARK_PRIMARY`、`APP_LIGHT_LOGO`、`APP_DARK_LOGO`、`APP_LAYOUT`（`side | top | mix`）。
-- 本地化平台标题 env：`APP_TITLE_ZH_CN` / `APP_TITLE_EN_US`（作用于布局头部标题与浏览器标签标题，登录页标题同样生效）。
-- 本地化登录副标题 env：`APP_LOGIN_SUBTITLE_ZH_CN` / `APP_LOGIN_SUBTITLE_EN_US`（作用于登录页副标题）。
-- 标题/副标题解析顺序：优先匹配当前 locale 的 env（`zh-CN` 或 `en-US`）-> 未命中时回退到 i18n（`pages.name` / `pages.login.subTitle`）。
-- 未经维护者许可，禁止新增 npm 依赖。
+- Node.js **>= 24**（先 `nvm use 24`）。
+- Supabase key 由 fallback `.env` 预置，必须通过 `src/services/supabase` 读取。
+- 未经人工批准，不得新增 npm 依赖。
+- 先 service 后 UI：先改 `src/services/<feature>/{data,api,util}.ts`，再接页面。
 
-## 常用命令
+## 最小开发命令
 
-```
+```bash
 npm install
-npm run start:dev   # dev 环境，无 mock，REACT_APP_ENV=dev
-npm start           # 通用 dev 命令
-npm run lint        # eslint + prettier check + tsc
-npm test -- tests/integration/<feature>/
-npm run test:report
+npm run start:dev
+npm run lint
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
 
-## AI 交付流程
+## 按需阅读路径
 
-1. 使用 `rg`、`ls` 与现有路由查找最接近的参考实现。
-2. 若功能影响 `/tgdata`、`/codata`、`/mydata`、`/tedata`，需要在 `config/routes.ts` 中同步四套分支。
-3. 先扩展 `src/services/<feature>/`：`data.ts` 定义类型、`api.ts` 编写 Supabase 查询、`util.ts` 放纯函数。
-4. 在 `src/pages/<Feature>/index.tsx` 搭建页面，再在 `Components/` 下实现 Drawer/Modal。
-5. 优先复用 `src/components`（`TableFilter`、`ToolBarButton`、`ImportData`、`ExportData`、`AllVersionsList`、`ContributeData`、`Notification` 等）。
-6. 按 `docs/agents/ai-testing-guide.md` 验证，运行 `npm run lint` 及对应 `npm test -- <pattern>`。
-7. 处理生命周期模型算法时同时参考 `docs/agents/util_calculate.{md,_CN.md}`，保持实现与文档一致。
+1. 路由/菜单改动
+   - `config/routes.ts`
+2. 表格/抽屉页面模式参考
+   - `src/pages/Processes/**`
+3. 生命周期模型复杂计算
+   - `docs/agents/util_calculate.md`
+4. 测试与验收细节
+   - `docs/agents/ai-testing-guide.md`
 
-## 架构概览
+## 架构契约
 
-- **技术栈**：React 18、`@umijs/max 4`、Ant Design Pro 5、TypeScript 5.9+。
-- **入口**：`src/app.tsx`（布局/运行时配置）、`config/routes.ts`（菜单与路由）。
-- **数据层**：Supabase Postgres、Supabase Auth、存储、Edge Function `update_data`；只能通过 `src/services/**` 访问。
-- **领域 SDK**：`@tiangong-lca/tidas-sdk`（ILCD 数据模型与工具）。
-- **测试**：Jest + Testing Library，`npm run test:report` 生成覆盖率。
+- 运行时：React 18 + `@umijs/max` 4 + Ant Design Pro + TypeScript。
+- 入口：
+  - `src/app.tsx`：运行时与布局配置。
+  - `config/routes.ts`：路由与菜单。
+- 数据边界：
+  - Supabase 访问只能出现在 `src/services/**`。
+  - 页面/组件只消费带类型的 service API。
 
-## 目录约定
+## 功能实现流程
 
-- `docs/agents/**`：AI 规范（已替换 `.github/prompts`）。
-- `config/routes.ts`：Umi 路由/菜单中心。
-- `src/access.ts`：权限辅助函数。
-- `src/components/**`：复用组件（通过 `@/components` 引入）。
-- `src/contexts/**`：共享状态 Context（单位、引用等）。
-- `src/pages/<Feature>/`：页面入口 + `Components/` 抽屉/弹窗。
-- `src/pages/Utils/**`：复用工具（审核、版本等）。
-- `src/services/<feature>/{api,data,util}.ts`：Supabase 查询、类型、纯函数。
-- `src/style/custom.less`：全局样式覆盖。
-- `tests/{unit,integration}/**`：Jest 套件。
-- `types/**`：全局类型声明。
+1. 先调研（`rg`、相似功能、现有测试）。
+2. 在 `data.ts` 补类型。
+3. 在 `api.ts` 补查询与编排逻辑。
+4. 在 `util.ts` 放纯转换/计算。
+5. 在 `src/pages/<Feature>/index.tsx` 与 `Components/` 接 UI。
+6. 优先复用 `src/components/**`。
+7. 补测试并执行质量门禁。
 
-## 功能模块蓝图
+## UI 与 i18n 规则
 
-- **入口**：`dataSource = getDataSource(useLocation().pathname)`（`tg/co/my/te`），`lang = getLang(useIntl().locale)`。
-- **表格**：`ProTable<RowType>` + `actionRef` 触发 `reload()`；`request` 调用 `<feature>TableAll(params, sort, lang, dataSource, tid, stateCode, extraFilters)`。
-- **工具栏**：`TableFilter`（日期/状态/类型）、`ToolBarButton`、`ImportData`/`ExportData` 抽屉、审核入口。
-- **列**：`index`、带 `generalComment` Tooltip 的名称列、`classificationToString`、`AllVersionsList` 渲染版本、`TableDropdown` 操作列。
-- **Drawer/Modal**：宽度约 720px，使用本地 state 控制 Tab/表单，关闭时 `formRef.current?.resetFields()`。
-- **审核流**：复用 `ReviewDetail`，传入 `processId`、`processVersion`、`searchTableName`。
+- 仅使用 React 函数组件。
+- 维持既有交互链路：table -> toolbar -> drawer/modal form。
+- 所有用户可见文案必须走 i18n（`FormattedMessage`、`intl.formatMessage`）。
+- 文案 key 需同时补在 `src/locales/en-US.ts` 与 `src/locales/zh-CN.ts`。
 
-## Service 层规范
+## 数据源分支行为（重点）
 
-- 导出命名使用 camelCase，常量（如 select 字符串）集中放在文件顶部。
-- 列表函数：计算 `sortBy`/`orderBy`，调用 `supabase.from(...).select(..., { count: 'exact' }).order(...).range(...)`。
-- 数据源过滤：`tg` => `state_code=100` + 可选 `team_id`；`co` => `state_code=200`；`my` => 校验 `supabase.auth.getSession()`、按用户过滤、可附加 `stateCode`；`te` => 借助 `getTeamIdByUserId()` 过滤团队。
-- 通过 `Promise.all` 拉取补充数据（`getILCDLocationByValues`、`getSubmodelsByProcessIds` 等），使用 `classificationToString`、`genProcessName`、`getLangText` 等 helper。
-- `create*`：插入 ordered JSON 与 `rule_verification`；`update*`：携带 Bearer token 调用 Supabase `update_data`（`FunctionRegion.UsEast1`）。
-- `util.ts` 仅存放纯函数；类型尽量引用 `@tiangong-lca/tidas-sdk`。
-- 捕获 Supabase 错误并返回 `{ data: [], success: false, error }`，保持调用方稳定。
+列表 API 常见分支：
 
-## UI 交互与复用组件
+- `tg`：默认公开/发布数据路径。
+- `co`：贡献/共享路径。
+- `my`：当前用户数据路径（依赖 session）。
+- `te`：团队数据路径（先解析 team 上下文）。
 
-- 布局与顶部导航在 `src/app.tsx`（暗黑模式、`SelectLang`、`Notification`、`AvatarDropdown`）。
-- 消息统一使用 `message.success/error`，异步流程搭配 `useState<boolean>` + `Spin`。
-- 表格/表单/Drawer/Modal 使用 Ant Design Pro 组件；搜索类控件（`Input.Search`、`Select`、`Checkbox`）保持受控。
-- 数据导入/导出：`ImportData`、`ExportData`、`ContributeData`；审核组件位于 `Processes/Components/Review`。
-- 重点复用：`TableFilter`、`ToolBarButton`、`AllVersions`、`Notification`、`LCIACacheMonitor`、`src/contexts/**`、`src/services/general/**`。
+行为需与现有实现保持一致。
 
-## 国际化、状态与类型
+## 质量门禁
 
-- 语言文件：`src/locales/en-US.ts`、`src/locales/zh-CN.ts` 及子模块拆分。JSX 使用 `<FormattedMessage />`，逻辑内使用 `intl.formatMessage`。
-- key 命名遵循 `pages.<feature>.<scope>`，新增文案需同步两份语言包。数字/日期用 `intl.formatNumber/Date` 或 `formatDateTime`。
-- 状态管理：优先 Hooks（`useState`、`useRef`、`useEffect`）；表格刷新 `actionRef.current?.reload()`，表单重置 `formRef`。
-- 跨组件状态使用 Context（UnitsContext、RefCheckContext、UpdateReferenceContext），禁止可变单例。
-- 类型：优先引入 `@tiangong-lca/tidas-sdk`，在 `src/services/<feature>/data.ts` 导出表格/表单类型。
-- 校验：ProForm `rules` 或 helper（`percentStringToNumber`、`comparePercentDesc`）；ID 使用 `uuid.v4`，版本常量如 `initVersion`。
+- 变更必须配套测试。
+- `npm run lint` 必须通过。
+- 运行与改动相关的聚焦 Jest 套件。
+- 涉及 Supabase edge function payload 形态变更时，必须在 `tests/unit/services/**` 增加单测。
 
-## 质量与测试
+## 交付要求
 
-- 功能改动需配套单测或集测，复用 `tests/helpers/**`。
-- 必须通过 `npm run lint`（ESLint + Prettier check + `tsc`）。
-- 运行针对性的 Jest 命令（如 `npm test -- tests/integration/<feature>/`），并执行新增用例。
-- Supabase Edge Function 调用需在 `tests/unit/services/**` 编写 payload 形状测试。
-- PR 范围保持聚焦；若调整开发规范，需同步 `docs/agents/**`。
-
-## 参考范例
-
-- `src/pages/Processes/index.tsx`：完整列表 + 抽屉流程。
-- `src/pages/Processes/Components/create.tsx`：ProForm Tab 创建抽屉。
-- `src/pages/LifeCycleModels/Components/edit.tsx`：Edge Function 编辑逻辑。
-- `src/services/processes/api.ts`：复杂列表查询与数据补全。
-- `src/services/general/util.ts`：纯工具函数集合。
-- `src/app.tsx`：布局、初始状态、操作栏实现。
+- diff 仅覆盖目标功能。
+- 行为/流程/命令变更时同步更新文档。
+- 若影响协作方，英文与 `_CN` 文档必须同一提交同步更新。

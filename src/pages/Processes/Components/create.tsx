@@ -1,4 +1,5 @@
 // import { checkRequiredFields } from '@/pages/Utils';
+import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { formatDateTime } from '@/services/general/util';
 import { createProcess, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
@@ -6,7 +7,6 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
-import BigNumber from 'bignumber.js';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -337,7 +337,7 @@ const ProcessCreate: FC<CreateProps> = ({
               const output = exchangeDataSource.filter(
                 (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
               );
-              let allocatedFractionTotal = new BigNumber(0);
+              let allocatedFractionTotal = toBigNumberOrZero(0);
               output.forEach((e: any) => {
                 if (
                   e?.allocations?.allocation &&
@@ -347,7 +347,7 @@ const ProcessCreate: FC<CreateProps> = ({
                     e?.allocations?.allocation['@allocatedFraction']
                       ?.toString()
                       ?.replace('%', '') ?? 0;
-                  allocatedFractionTotal = allocatedFractionTotal.plus(new BigNumber(fraction));
+                  allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
                 }
               });
               if (allocatedFractionTotal.isEqualTo(0)) {

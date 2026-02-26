@@ -1,100 +1,92 @@
-# Testing Troubleshooting（中文镜像）
+# 测试排障指南 – Tiangong LCA Next（中文镜像）
 
-> 说明：请先阅读 `docs/agents/ai-testing-guide.md`。本文件收录命令矩阵与常见问题排查，英文详解见 `docs/agents/testing-troubleshooting.md`。
+> 当测试失败、超时、卡住时使用本文件。阅读顺序：`AGENTS.md` -> `ai-testing-guide.md` -> 本文件。镜像约束：英文版 `docs/agents/testing-troubleshooting.md` 更新时，本文件必须同步更新。
 
-## 命令参考
-
-### 核心 Jest 命令
+## 命令矩阵
 
 ```bash
-# 集成测试（串行 + 超时控制）
-npm test -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+# 全量门禁
+npm test
 
-# 单元 / 工具测试
-npm test -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
+# 聚焦集成测试
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 
-# 单文件 + 句柄排查
-detect_open_handles="--detectOpenHandles"
-npm test -- tests/integration/processes/ProcessesWorkflow.integration.test.tsx \
-  --runInBand --testTimeout=20000 $detect_open_handles
+# 聚焦单测/组件测
+npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
 
-# watch 模式（开发阶段，无超时）
-npm test -- tests/unit/services/processes/ --watch
-```
+# 句柄排查
+npm run test:ci -- tests/integration/<feature>/<file>.test.tsx \
+  --runInBand --testTimeout=20000 --detectOpenHandles
 
-### 覆盖率与报告
-
-```bash
+# 覆盖率
 npm run test:coverage
 npm run test:coverage:report
-npx jest --coverage --collectCoverageFrom="src/services/teams/api.ts"
-open coverage/lcov-report/index.html
-```
 
-### Lint / 格式化
-
-```bash
-npm run lint                # ESLint + Prettier check + tsc
-npm run lint -- --fix       # 自动修复
-npm run prettier            # 全量格式检查
-```
-
-### 排查辅助
-
-```bash
-rg "from '@/services/contacts'" -n src/pages
-rg "describe\(.*Processes" -n tests/
-ls tests/integration/<feature>/
-rg "mockTeam" tests/unit/
-```
-
-### 快速流程
-
-```bash
-npm test -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+# Lint
 npm run lint
-
-detect_open_handles="--detectOpenHandles"
-npm test -- tests/unit/services/<module>/ --runInBand --testTimeout=15000 $detect_open_handles
 ```
 
-## 常见问题（Troubleshooting）
+## 故障定位
 
-### 无限循环或超时
+### 1）死循环 / 超时 / Maximum update depth exceeded
 
-- 渲染组件前务必在 `beforeEach` mock 完所有 Supabase/服务调用。
-- 使用 `mockResolvedValue` / `mockRejectedValue` 代替自建 `mockImplementation` 无限循环。
-- 异步断言包裹 `await waitFor(...)`，必要时提升 `--testTimeout` 或在文件内 `jest.setTimeout(...)`。
-- 仍然卡住时，追加 `--detectOpenHandles` 查找未关闭的定时器/句柄。
+优先检查：
 
-### 鉴权 / 会话失败
+- 是否所有服务调用都在 render 前 mock？
+- 是否使用了稳定返回（`mockResolvedValue`），而不是每次新建对象？
+- 异步断言是否都 `await` 了？
 
-- 对依赖鉴权的组件 mock `supabase.auth.getSession()` 或 `useModel('@@initialState')`，确保返回稳定的 session。
-- 复用 `tests/helpers/mockSetup.ts` 提供的默认 session / team 数据。
+修复模板：
 
-### 找不到元素
+```ts
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockApi.list.mockResolvedValue({ data: [], error: null });
+  mockApi.create.mockResolvedValue({ data: { id: '1' }, error: null });
+});
+```
 
-- 优先使用语义化查询（`getByRole`、`getByLabelText`、`findByText`）。
-- 异步渲染改用 `findBy*` 并 `await`。
-- 确认文案 key 已存在于 `src/locales/**`，缺失会导致断言失败。
+### 2）鉴权/session 相关失败
 
-### Supabase mock 未执行
+- 稳定 mock `supabase.auth.getSession()`。
+- 若页面依赖 `@@initialState`，按页面真实路径 mock 对应模型。
 
-- `jest.mock('@/services/...')` 路径需与组件真实 import 完全一致。
-- 在 `beforeEach` 调用 `jest.clearAllMocks()` 或 `jest.resetModules()` 清理旧实现。
+### 3）找不到元素 / 查询不稳定
 
-### 国际化 / 路由上下文报错
+- 优先语义查询：`getByRole`、`getByLabelText`、`findByText`。
+- 异步渲染场景改用 `findBy*`。
+- 校验 locale 中确有目标文案/key。
 
-- 使用 `tests/helpers/testUtils.tsx` 中的 `TestWrapper` 渲染，自动包含 IntlProvider、Router、model。
-- 如需自定义渲染，手动提供 `<IntlProvider locale='en-US' messages={messages}>` 与 `<MemoryRouter>`。
+### 4）Mock 未命中
 
-### 覆盖率缺口
+- `jest.mock('@/services/...')` 路径必须与源码 import 完全一致。
+- 在 `beforeEach` 清理旧 mock/module，防止污染。
 
-- 纯函数/工具逻辑补写单测；集测覆盖不到的分支用组件测或参数化手段触发。
-- 对受特性开关/props 控制的 UI，创建专门的组件测试切换状态。
+### 5）上下文/provider 错误
 
-### 调试技巧
+- 需要 provider 时，优先用 `tests/helpers/testUtils.tsx` 的 `renderWithProviders`。
+- 若必须自定义 render，只补最小 provider 集合。
 
-- 临时使用 `screen.debug()`、`console.log` 查看 DOM/mocks（提交前移除）。
-- 借助 `jest.spyOn` 观测 helper 调用而非重写逻辑。
-- 当 `npm test` 结束后 Node 仍未退出，使用 `--detectOpenHandles` 再运行定位残留句柄。
+## Open Handle 排查流程
+
+当 Jest 无法退出时：
+
+1. 使用 `--detectOpenHandles` 重跑。
+2. 排查未 await 的异步与未清理定时器。
+3. 确认恢复了真实定时器（`jest.useRealTimers()`）。
+4. 检查全局副作用是否在 `afterEach` 清理。
+
+## 覆盖率缺口修复
+
+- 对 integration 覆盖不到的纯分支补 unit。
+- 对 feature flag/props 控制的 UI 分支补 component 测试。
+- 缩小 `collectCoverageFrom` 范围做针对性补洞。
+
+## 最终校验
+
+修复完成前请执行：
+
+1. 重跑失败套件。
+2. 若行为波及邻近模块，补跑相关套件。
+3. 运行 `npm run lint`。
+4. 若流程变更，同步更新英文与 `_CN` 文档。

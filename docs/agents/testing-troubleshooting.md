@@ -1,102 +1,92 @@
 # Testing Troubleshooting – Tiangong LCA Next
 
-> Agents: read `docs/agents/ai-testing-guide.md` first. This file collects the extended command matrix and troubleshooting playbook; mirror: `docs/agents/testing-troubleshooting_CN.md`.
+> Use this file when tests fail, timeout, or hang. Read order: `AGENTS.md` -> `ai-testing-guide.md` -> this file. Mirror requirement: keep `docs/agents/testing-troubleshooting_CN.md` synchronized.
 
-## Command Reference
-
-### Core Jest Commands
+## Command Matrix
 
 ```bash
-# Integration workflow (serial, deterministic timeout)
-npm test -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+# Full gate
+npm test
 
-# Unit/utility suites
-npm test -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
+# Focused integration
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 
-# Single file with handle detection
-detect_open_handles="--detectOpenHandles"
-npm test -- tests/integration/processes/ProcessesWorkflow.integration.test.tsx \
-  --runInBand --testTimeout=20000 $detect_open_handles
+# Focused unit/component
+npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
 
-# Watch mode (no timeout; development only)
-npm test -- tests/unit/services/processes/ --watch
-```
+# Detect open handles
+npm run test:ci -- tests/integration/<feature>/<file>.test.tsx \
+  --runInBand --testTimeout=20000 --detectOpenHandles
 
-### Coverage & Reporting
-
-```bash
+# Coverage
 npm run test:coverage
 npm run test:coverage:report
-npx jest --coverage --collectCoverageFrom="src/services/teams/api.ts"
-open coverage/lcov-report/index.html
-```
 
-### Lint & Formatting
-
-```bash
-npm run lint                # ESLint + Prettier check + tsc
-npm run lint -- --fix       # Attempt auto-fix
-npm run prettier            # Full-format check (mirrors lint:prettier)
-```
-
-### Investigation Helpers
-
-```bash
-rg "from '@/services/contacts'" -n src/pages
-rg "describe\(.*Processes" -n tests/
-ls tests/integration/<feature>/
-rg "mockTeam" tests/unit/
-```
-
-### Quick Reference
-
-```bash
-# Typical verification flow
-npm test -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+# Lint
 npm run lint
-
-# Debug stubborn handles
-detect_open_handles="--detectOpenHandles"
-npm test -- tests/unit/services/<module>/ --runInBand --testTimeout=15000 $detect_open_handles
 ```
 
-## Troubleshooting
+## Failure Diagnosis
 
-### Infinite Loop or Timeout
+### 1) Infinite loop / timeout / Maximum update depth exceeded
 
-- Confirm every Supabase/service call is mocked in `beforeEach` _before_ rendering.
-- Replace `mockImplementation` loops with `mockResolvedValue` / `mockRejectedValue`.
-- Wrap asynchronous assertions with `await waitFor(...)`.
-- Increase timeouts only after verifying mocks; rerun with `--detectOpenHandles` to find leaked timers or sockets.
+Check first:
 
-### Auth or Session Failures
+- Were all service calls mocked before render?
+- Are you returning stable values (`mockResolvedValue`) instead of unstable per-call object construction?
+- Are async assertions properly awaited?
 
-- Mock `supabase.auth.getSession()` (or `useModel('@@initialState')`) to return a stable session when components gate behavior by auth.
-- Reuse helpers in `tests/helpers/mockSetup.ts` to seed default session/team data.
+Fix pattern:
 
-### Unable to Find Elements
+```ts
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockApi.list.mockResolvedValue({ data: [], error: null });
+  mockApi.create.mockResolvedValue({ data: { id: '1' }, error: null });
+});
+```
 
-- Prefer semantic queries (`getByRole`, `getByLabelText`, `findByText`).
-- When content renders asynchronously, switch to `findBy*` with `await`.
-- Verify translated text IDs exist in `src/locales/**`; missing keys break assertions.
+### 2) Auth/session-dependent behavior failing
 
-### Supabase Mock Not Hit
+- Mock `supabase.auth.getSession()` consistently.
+- If page depends on initial state model, mock `@@initialState` provider path used by that page.
 
-- Ensure `jest.mock('@/services/...')` paths match the import path in the component under test.
-- Call `jest.clearAllMocks()` or `jest.resetModules()` in `beforeEach` to avoid stale implementations.
+### 3) Element not found / flaky query
 
-### Intl / Router Context Errors
+- Prefer semantic queries: `getByRole`, `getByLabelText`, `findByText`.
+- Switch to async query (`findBy*`) when content renders after effects.
+- Verify expected i18n text/key exists in locale files.
 
-- Always render via `tests/helpers/testUtils.tsx` (`TestWrapper`) so IntlProvider, Router, and models are present.
-- When custom rendering is required, manually provide `<IntlProvider locale='en-US' messages={messages}>` and `<MemoryRouter>`.
+### 4) Mock not being hit
 
-### Coverage Gaps
+- Ensure `jest.mock('@/services/...')` path exactly matches the import path in the source file.
+- Clear stale mocks/modules in `beforeEach`.
 
-- Add unit tests for pure helpers when integration flows cannot reach certain branches.
-- For UI elements hidden behind feature flags or props, add targeted component tests that flip the relevant state/prop.
+### 5) Context/provider errors
 
-### Debugging Tips
+- Render with `renderWithProviders` from `tests/helpers/testUtils.tsx` when providers are needed.
+- If custom render is required, add only the minimum provider stack needed by the component.
 
-- Sprinkle `screen.debug()` or temporary `console.log` statements while iterating (remove before committing).
-- Use `jest.spyOn` to verify helper invocations without re-implementing logic.
-- Run `npm test -- <pattern> --runInBand --detectOpenHandles` when Node refuses to exit after tests finish.
+## Open Handle Playbook
+
+When Jest does not exit:
+
+1. Rerun with `--detectOpenHandles`.
+2. Check unawaited async flows and unresolved timers.
+3. Ensure fake timers are restored (`jest.useRealTimers()`).
+4. Verify global side effects are cleaned in `afterEach`.
+
+## Coverage Gap Playbook
+
+- Add unit tests for pure helpers/branches unreachable from integration tests.
+- Add component tests for feature-flag/prop-gated UI branches.
+- Use targeted `collectCoverageFrom` runs during gap closure.
+
+## Final Verification
+
+Before concluding a fix:
+
+1. Re-run the focused failing suite.
+2. Re-run neighboring impacted suite if behavior changed.
+3. Run `npm run lint`.
+4. If workflow changed, sync docs (English + `_CN`).

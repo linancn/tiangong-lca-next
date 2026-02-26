@@ -3,7 +3,28 @@
  * Path: src/services/lciaMethods/util.ts
  */
 
-import {
+const mockGetLangJson = jest.fn((value: any) => {
+  if (Array.isArray(value)) {
+    return (
+      value.find((item: any) => item?.['@xml:lang'] === 'en')?.['#text'] ?? value[0]?.['#text']
+    );
+  }
+  if (value && typeof value === 'object') {
+    return value['#text'] ?? value.en ?? '';
+  }
+  return value ?? '';
+});
+
+jest.mock('@/services/general/util', () => {
+  const actual: any = jest.requireActual('@/services/general/util');
+  return {
+    __esModule: true,
+    ...actual,
+    getLangJson: (...args: any[]) => mockGetLangJson.apply(null, args),
+  };
+});
+
+import LCIAResultCalculation, {
   cacheAndDecompressMethod,
   clearCache,
   forceRefreshCache,
@@ -11,6 +32,7 @@ import {
   getCacheManifest,
   getCacheStatus,
   getDecompressedMethod,
+  getReferenceQuantityFromMethod,
   isMethodCached,
 } from '@/services/lciaMethods/util';
 
@@ -38,6 +60,7 @@ class MockIDBRequest {
 
 class MockIDBObjectStore {
   private data: Map<string, any> = new Map();
+  private cursorShouldFail = false;
 
   get(key: string): MockIDBRequest {
     const request = new MockIDBRequest();
@@ -84,6 +107,43 @@ class MockIDBObjectStore {
 
   createIndex() {
     return this;
+  }
+
+  openCursor(): MockIDBRequest {
+    const request = new MockIDBRequest();
+    const entries = Array.from(this.data.values());
+    let index = 0;
+
+    const emit = () => {
+      if (this.cursorShouldFail) {
+        request.fail(new Error('Cursor failure'));
+        return;
+      }
+
+      if (!request.onsuccess) {
+        return;
+      }
+
+      if (index < entries.length) {
+        const cursor = {
+          value: entries[index],
+          continue: () => {
+            index += 1;
+            setTimeout(emit, 0);
+          },
+        };
+        request.onsuccess({ target: { result: cursor } });
+      } else {
+        request.onsuccess({ target: { result: null } });
+      }
+    };
+
+    setTimeout(emit, 0);
+    return request;
+  }
+
+  setCursorShouldFail(shouldFail: boolean) {
+    this.cursorShouldFail = shouldFail;
   }
 
   // Test helper methods
@@ -153,6 +213,19 @@ const createLocalStorageMock = () => {
 describe('LCIA Methods Utility Functions', () => {
   let localStorageMock: ReturnType<typeof createLocalStorageMock>;
   let mockDB: MockIDBDatabase;
+
+  const setCachedMethod = (
+    filename: string,
+    data: any,
+    size: number = JSON.stringify(data).length,
+  ) => {
+    mockDB._getStore()._setData(filename, {
+      filename,
+      data,
+      size,
+      cachedAt: Date.now(),
+    });
+  };
 
   beforeEach(() => {
     // Create fresh localStorage mock
@@ -238,6 +311,18 @@ describe('LCIA Methods Utility Functions', () => {
     } as any;
 
     jest.clearAllMocks();
+    mockGetLangJson.mockReset();
+    mockGetLangJson.mockImplementation((value: any) => {
+      if (Array.isArray(value)) {
+        return (
+          value.find((item: any) => item?.['@xml:lang'] === 'en')?.['#text'] ?? value[0]?.['#text']
+        );
+      }
+      if (value && typeof value === 'object') {
+        return value['#text'] ?? value.en ?? '';
+      }
+      return value ?? '';
+    });
   });
 
   describe('getDecompressedMethod', () => {
@@ -454,6 +539,37 @@ describe('LCIA Methods Utility Functions', () => {
       expect(result.isCached).toBe(true);
       expect(result.isStale).toBe(true);
     });
+
+    it('should calculate indexedDB size from cursor iteration', async () => {
+      const cachedAt = Date.now();
+      localStorageMock._store['lcia_methods_cache_manifest'] = JSON.stringify({
+        version: '1.0.0',
+        files: ['method1.json.gz'],
+        cachedAt,
+      });
+
+      setCachedMethod('method1.json.gz', { id: '1' }, 1536);
+      setCachedMethod('method2.json.gz', { id: '2' }, 512);
+
+      const result = await getCacheStatus();
+
+      expect(result.indexedDBSize).toBe(2);
+      expect(result.decompressed).toBe(false);
+    });
+
+    it('should fall back to zero indexedDB size when cursor request errors', async () => {
+      localStorageMock._store['lcia_methods_cache_manifest'] = JSON.stringify({
+        version: '1.0.0',
+        files: ['method1.json.gz'],
+        cachedAt: Date.now(),
+      });
+
+      mockDB._getStore().setCursorShouldFail(true);
+      const result = await getCacheStatus();
+
+      expect(result.isCached).toBe(true);
+      expect(result.indexedDBSize).toBe(0);
+    });
   });
 
   describe('clearCache', () => {
@@ -551,6 +667,259 @@ describe('LCIA Methods Utility Functions', () => {
       const result = await getCachedMethodList();
 
       expect(result).toEqual([]);
+    });
+
+    it('should return empty array when indexedDB open fails', async () => {
+      const originalOpen = global.indexedDB.open;
+      (global.indexedDB.open as any) = jest.fn(() => {
+        const request = new MockIDBRequest();
+        setTimeout(() => request.fail(new Error('open failed')), 0);
+        return request;
+      });
+
+      const result = await getCachedMethodList();
+
+      expect(result).toEqual([]);
+      (global.indexedDB.open as any) = originalOpen;
+    });
+  });
+
+  describe('getReferenceQuantityFromMethod', () => {
+    it('should return early when lcia results are undefined', async () => {
+      global.fetch = jest.fn();
+
+      const result = await getReferenceQuantityFromMethod(undefined);
+
+      expect(result).toBeUndefined();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should enrich results from cached list.json without network refresh', async () => {
+      setCachedMethod('list.json', {
+        files: [
+          {
+            id: 'method-1',
+            referenceQuantity: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg CO2-eq' }],
+            },
+          },
+        ],
+      });
+
+      const lciaResults: any[] = [
+        {
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': 'method-1',
+          },
+        },
+      ];
+      global.fetch = jest.fn();
+
+      await getReferenceQuantityFromMethod(lciaResults);
+
+      expect(lciaResults[0].referenceQuantityDesc).toBe('kg CO2-eq');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should refresh stale list.json cache and enrich reference quantity', async () => {
+      setCachedMethod('list.json', {
+        files: [{ id: 'method-1' }],
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        text: jest.fn().mockResolvedValue(
+          JSON.stringify({
+            files: [
+              {
+                id: 'method-1',
+                referenceQuantity: {
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg refreshed' }],
+                },
+              },
+            ],
+          }),
+        ),
+      });
+
+      const lciaResults: any[] = [
+        {
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': 'method-1',
+          },
+        },
+      ];
+
+      await getReferenceQuantityFromMethod(lciaResults);
+
+      expect(global.fetch).toHaveBeenCalledWith('/lciamethods/list.json');
+      expect(lciaResults[0].referenceQuantityDesc).toBe('kg refreshed');
+    });
+
+    it('should stop when stale list.json cannot be refreshed', async () => {
+      setCachedMethod('list.json', {
+        files: [{ id: 'method-1' }],
+      });
+      global.fetch = jest.fn().mockResolvedValue({ ok: false });
+
+      const lciaResults: any[] = [
+        {
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': 'method-1',
+          },
+        },
+      ];
+
+      await getReferenceQuantityFromMethod(lciaResults);
+
+      expect(lciaResults[0].referenceQuantityDesc).toBeUndefined();
+    });
+  });
+
+  describe('LCIAResultCalculation', () => {
+    it('should aggregate factors and return LCIA results for matching flow-direction keys', async () => {
+      setCachedMethod('list.json', {
+        files: [
+          {
+            id: 'method-1',
+            version: '01.00.000',
+            description: [{ '@xml:lang': 'en', '#text': 'Method 1' }],
+            referenceQuantity: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg CO2-eq' }],
+            },
+          },
+        ],
+      });
+      setCachedMethod('flow_factors.json.gz', {
+        'flow-1:OUTPUT': {
+          factor: [
+            { key: 'method-1', value: '2' },
+            { key: 'method-1', value: '1.5' },
+            { key: 'method-2', value: 'bad-number' },
+          ],
+        },
+      });
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+          exchangeDirection: 'output',
+          meanAmount: '3',
+        },
+      ]);
+
+      expect(result).toHaveLength(1);
+      expect(result?.[0].key).toBe('method-1');
+      expect(result?.[0].meanAmount).toBe('10.5');
+    });
+
+    it('should return empty array when flow factors are empty', async () => {
+      setCachedMethod('list.json', {
+        files: [
+          {
+            id: 'method-1',
+            version: '01.00.000',
+            description: [],
+            referenceQuantity: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg CO2-eq' }],
+            },
+          },
+        ],
+      });
+      setCachedMethod('flow_factors.json.gz', {});
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+          exchangeDirection: 'OUTPUT',
+          meanAmount: '2',
+        },
+      ]);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return undefined when list.json is unavailable and refresh fails', async () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: false });
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+          exchangeDirection: 'OUTPUT',
+          meanAmount: '2',
+        },
+      ]);
+
+      expect(global.fetch).toHaveBeenCalledWith('/lciamethods/list.json');
+      expect(result).toBeUndefined();
+    });
+
+    it('should return empty array when flow factor refresh fails', async () => {
+      setCachedMethod('list.json', {
+        files: [
+          {
+            id: 'method-1',
+            version: '01.00.000',
+            description: [],
+            referenceQuantity: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg CO2-eq' }],
+            },
+          },
+        ],
+      });
+      global.fetch = jest.fn().mockResolvedValue({ ok: false });
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+          exchangeDirection: 'OUTPUT',
+          meanAmount: '2',
+        },
+      ]);
+
+      expect(global.fetch).toHaveBeenCalledWith('/lciamethods/flow_factors.json.gz');
+      expect(result).toEqual([]);
+    });
+
+    it('should refresh stale list.json before calculating', async () => {
+      setCachedMethod('list.json', {
+        files: [{ id: 'method-1', version: '01.00.000', description: [] }],
+      });
+      setCachedMethod('flow_factors.json.gz', {
+        'flow-1:OUTPUT': {
+          factor: [{ key: 'method-1', value: '1' }],
+        },
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        text: jest.fn().mockResolvedValue(
+          JSON.stringify({
+            files: [
+              {
+                id: 'method-1',
+                version: '01.00.000',
+                description: [{ '@xml:lang': 'en', '#text': 'Updated Method' }],
+                referenceQuantity: {
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg refreshed' }],
+                },
+              },
+            ],
+          }),
+        ),
+      });
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+          exchangeDirection: 'OUTPUT',
+          meanAmount: '5',
+        },
+      ]);
+
+      expect(global.fetch).toHaveBeenCalledWith('/lciamethods/list.json');
+      expect(result?.[0].key).toBe('method-1');
+      expect(result?.[0].meanAmount).toBe('5');
     });
   });
 });

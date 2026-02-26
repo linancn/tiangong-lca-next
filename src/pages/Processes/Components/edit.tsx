@@ -20,6 +20,7 @@ import {
 } from '@/pages/Utils/updateReference';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
+import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';
@@ -30,7 +31,6 @@ import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons'
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
-import BigNumber from 'bignumber.js';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -236,12 +236,12 @@ const ProcessEdit: FC<Props> = ({
     const output = exchangeDataSource.filter(
       (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
     );
-    let allocatedFractionTotal = new BigNumber(0);
+    let allocatedFractionTotal = toBigNumberOrZero(0);
     output.forEach((e: any) => {
       if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
         const fraction =
           e?.allocations?.allocation['@allocatedFraction']?.toString()?.replace('%', '') ?? 0;
-        allocatedFractionTotal = allocatedFractionTotal.plus(new BigNumber(fraction));
+        allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
       }
     });
     if (allocatedFractionTotal.isEqualTo(0)) {
