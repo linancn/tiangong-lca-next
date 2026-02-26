@@ -16,29 +16,30 @@
 最新全量覆盖率运行（`npm run test:coverage`）：
 
 - Test suites：156 passed
-- Tests：1389 passed
+- Tests：1405 passed
 - 覆盖率：
-  - Statements: 61.71% (10528/17059)
-  - Branches: 47.29% (4562/9645)
-  - Functions: 51.21% (1913/3735)
-  - Lines: 61.84% (10052/16253)
+  - Statements: 62.45% (10654/17059)
+  - Branches: 48.18% (4647/9645)
+  - Functions: 51.70% (1931/3735)
+  - Lines: 62.61% (10177/16253)
 - 当前全局 branch 门槛：50%
-- 距离门槛仍差：**261 个分支命中**
+- 距离门槛仍差：**176 个分支命中**
 
 ## 缺口评估
 
 1. 主要阻塞不是“测试是否通过”，而是 branch 覆盖率不足。
 2. 多个高分支文件 branch 覆盖极低甚至为 0。
 3. `src/pages/Review/**` 存在大量 zero-line 文件，回归风险高。
-4. service 层高分支权重模块覆盖不足（`reviews/api`、`general/api`）。
+4. service 层高分支权重模块主要缺口仍在 `general/api`。
 5. `src/services/lciaMethods/util.ts` branch 覆盖率已提升到 94.91%（56/59），不再是 P0 阻塞项。
+6. `src/services/reviews/api.ts` branch 覆盖率已提升到 67.45%（114/169），已移出 P0 阻塞项。
 
 ## 优先级待办
 
 ### P0 – 先恢复覆盖率门禁（必须先做）
 
-- [ ] 为 `src/services/reviews/api.ts` 增加分支导向测试（当前 branch 约 17%）。
-  - 目标：覆盖 session/no-session、error、empty-data、状态映射分支。
+- [x] 为 `src/services/reviews/api.ts` 增加分支导向测试（最新 branch 67.45%）。
+  - 已完成：在 `tests/unit/services/reviews/api.test.ts` 覆盖 review member/admin 列表分支、reject/process 过滤、notify count 过滤与 lifecycle subtable batch 分支。
 - [x] 为 `src/services/lciaMethods/util.ts` 增加分支导向测试（最新 branch 94.91%）。
   - 已完成：在 `tests/unit/services/lciaMethods/util.test.ts` 覆盖 IndexedDB 游标成功/失败、cache miss/hit、旧缓存刷新与 fallback 分支。
 - [ ] 为 `src/services/general/api.ts` 增加分支导向测试（当前 branch 约 53%，分支总量大）。

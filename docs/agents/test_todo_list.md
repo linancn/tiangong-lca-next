@@ -16,29 +16,30 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 Latest full run (`npm run test:coverage`):
 
 - Test suites: 156 passed
-- Tests: 1389 passed
+- Tests: 1405 passed
 - Coverage:
-  - Statements: 61.71% (10528/17059)
-  - Branches: 47.29% (4562/9645)
-  - Functions: 51.21% (1913/3735)
-  - Lines: 61.84% (10052/16253)
+  - Statements: 62.45% (10654/17059)
+  - Branches: 48.18% (4647/9645)
+  - Functions: 51.70% (1931/3735)
+  - Lines: 62.61% (10177/16253)
 - Enforced global branch threshold: 50%
-- Gap to threshold: **261 branch hits** still needed
+- Gap to threshold: **176 branch hits** still needed
 
 ## Gap Assessment
 
 1. Main blocker is branch coverage, not suite pass rate.
 2. Several high-branch files still have very low or zero branch coverage.
 3. `src/pages/Review/**` has many zero-line files; this is a risk area for regressions.
-4. Service-layer hotspots with high branch weight are under-covered (`reviews/api`, `general/api`).
+4. Service-layer hotspot with high branch weight remains under-covered (`general/api`).
 5. `src/services/lciaMethods/util.ts` branch coverage is now 94.91% (56/59) and no longer a P0 blocker.
+6. `src/services/reviews/api.ts` branch coverage is now 67.45% (114/169), removing it from P0 blockers.
 
 ## Priority Backlog
 
 ### P0 – Recover Coverage Gate (must-do first)
 
-- [ ] Add branch-focused tests for `src/services/reviews/api.ts` (current branch ~17%).
-  - Target: cover session/no-session, error, empty-data, and status mapping branches.
+- [x] Add branch-focused tests for `src/services/reviews/api.ts` (latest branch 67.45%).
+  - Completed: covered review member/admin table branches, rejected/process filters, notify count filters, and lifecycle subtable batch branches in `tests/unit/services/reviews/api.test.ts`.
 - [x] Add branch-focused tests for `src/services/lciaMethods/util.ts` (latest branch 94.91%).
   - Completed: covered IndexedDB cursor success/error, cache miss/hit, stale-list refresh, and fallback paths in `tests/unit/services/lciaMethods/util.test.ts`.
 - [ ] Add branch-focused tests for `src/services/general/api.ts` (current branch ~53%, high branch count).
