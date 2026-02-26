@@ -2,11 +2,13 @@ import RequiredSelectFormTitle, { ErrRefTipMessage } from '@/components/Required
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { validateRefObjectId } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
+import { ContactDetailData, ContactDetailResponse } from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
 import { getRefData } from '@/services/general/api';
 import { jsonToList } from '@/services/general/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
+import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, useModel } from 'umi';
 import ContactEdit from '../edit';
@@ -15,15 +17,20 @@ import ContactSelectDrawer from './drawer';
 const { TextArea } = Input;
 
 type Props = {
-  parentName?: any;
-  name: any;
+  parentName?: Array<string | number>;
+  name: Array<string | number>;
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
-  rules?: any;
+  rules?: Rule[];
   showRequiredLabel?: boolean;
   disabled?: boolean;
+};
+
+type RefDataResponse = {
+  data?: ContactDetailData | null;
+  success?: boolean;
 };
 
 const ContactSelectForm: FC<Props> = ({
@@ -42,21 +49,23 @@ const ContactSelectForm: FC<Props> = ({
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
-  const [refData, setRefData] = useState<any>(null);
+  const [refData, setRefData] = useState<ContactDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
   const { initialState } = useModel('@@initialState');
 
-  const updateErrRefByDetail = (data: any) => {
+  const updateErrRefByDetail = (data: ContactDetailData | null | undefined) => {
     if (
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      rules?.length
+      rules?.length &&
+      data?.id &&
+      data?.version
     ) {
       setErrRef({
-        id: data?.id,
-        version: data?.version,
+        id: data.id,
+        version: data.version,
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
@@ -67,8 +76,8 @@ const ContactSelectForm: FC<Props> = ({
 
   useEffect(() => {
     if (id && version && !refData) {
-      getRefData(id, version, 'contacts', '').then((result: any) => {
-        setRefData({ ...result.data });
+      getRefData(id, version, 'contacts', '').then((result: RefDataResponse) => {
+        setRefData(result.data ? { ...result.data } : null);
         setDataUserId(result?.data?.userId);
         updateErrRefByDetail(result?.data);
       });
@@ -78,7 +87,7 @@ const ContactSelectForm: FC<Props> = ({
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
-        (item: any) =>
+        (item) =>
           (item.id === id && item.version === version) ||
           (item.id === refData?.id && item.version === refData?.version),
       );
@@ -93,7 +102,7 @@ const ContactSelectForm: FC<Props> = ({
   }, [refCheckContext, refData]);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
-    getContactDetail(rowId, rowVersion).then(async (result: any) => {
+    getContactDetail(rowId, rowVersion).then(async (result: ContactDetailResponse) => {
       updateErrRefByDetail(result?.data);
       setDataUserId(result?.data?.userId);
       const selectedData = genContactFromData(result.data?.json?.contactDataSet ?? {});
@@ -137,9 +146,18 @@ const ContactSelectForm: FC<Props> = ({
     }
   });
 
-  const requiredRules = rules.filter((rule: any) => rule.required);
-  const isRequired = requiredRules && requiredRules.length;
-  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+  const isRequiredRule = (rule: Rule): rule is Rule & { required: true } => {
+    return (
+      typeof rule === 'object' &&
+      rule !== null &&
+      'required' in rule &&
+      Boolean((rule as { required?: boolean }).required)
+    );
+  };
+
+  const requiredRules = rules.filter(isRequiredRule);
+  const isRequired = requiredRules.length > 0;
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
 
   return (
     <Card
@@ -177,17 +195,21 @@ const ContactSelectForm: FC<Props> = ({
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            isRequired && {
-              validator: (rule, value) => {
-                if (!value) {
-                  setRuleErrorState(true);
-                  console.log('form rules check error');
-                  return Promise.reject(new Error());
-                }
-                setRuleErrorState(false);
-                return Promise.resolve();
-              },
-            },
+            ...(isRequired
+              ? [
+                  {
+                    validator: (_: Rule, value: unknown) => {
+                      if (!value) {
+                        setRuleErrorState(true);
+                        console.log('form rules check error');
+                        return Promise.reject(new Error());
+                      }
+                      setRuleErrorState(false);
+                      return Promise.resolve();
+                    },
+                  },
+                ]
+              : []),
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -224,7 +246,7 @@ const ContactSelectForm: FC<Props> = ({
               version={version ?? ''}
               buttonType=''
               setViewDrawerVisible={() => {}}
-              updateErrRef={(data: any) => setErrRef(data)}
+              updateErrRef={(data) => setErrRef(data)}
             />
           )}
           {id && !disabled && (

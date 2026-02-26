@@ -2,11 +2,16 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getContactDetail } from '@/services/contacts/api';
+import {
+  ContactDataSetObjectKeys,
+  ContactDetailResponse,
+  FormContact,
+} from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ContractDescription from './select/description';
@@ -17,12 +22,27 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
+
+const getClassificationValues = (value: unknown): string[] | undefined => {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+  if (!('value' in value)) {
+    return undefined;
+  }
+  const raw = (value as { value?: unknown }).value;
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  return raw.filter((item): item is string => typeof item === 'string');
+};
+
 const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
-  const [activeTabKey, setActiveTabKey] = useState<string>('contactInformation');
-  const tabList = [
+  const [initData, setInitData] = useState<Partial<FormContact>>({});
+  const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
+  const tabList: { key: ContactDataSetObjectKeys; tab: ReactNode }[] = [
     {
       key: 'contactInformation',
       tab: (
@@ -44,10 +64,16 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   ];
 
   const onTabChange = (key: string) => {
-    setActiveTabKey(key);
+    setActiveTabKey(key as ContactDataSetObjectKeys);
   };
 
-  const contactList: Record<string, React.ReactNode> = {
+  const classificationValues = getClassificationValues(
+    initData.contactInformation?.dataSetInformation?.classificationInformation?.[
+      'common:classification'
+    ]?.['common:class'],
+  );
+
+  const contactList: Record<ContactDataSetObjectKeys, React.ReactNode> = {
     contactInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -73,11 +99,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         />
         <br />
         <LevelTextItemDescription
-          data={
-            initData.contactInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class']?.['value']
-          }
+          data={classificationValues}
           lang={lang}
           categoryType={'Contact'}
         />
@@ -287,8 +309,9 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getContactDetail(id, version).then(async (result: any) => {
-      setInitData({ ...genContactFromData(result.data?.json?.contactDataSet ?? {}) });
+    getContactDetail(id, version).then(async (result: ContactDetailResponse) => {
+      const contactData = genContactFromData(result.data?.json?.contactDataSet ?? {});
+      setInitData(contactData ? { ...contactData } : {});
       setSpinning(false);
     });
   };
