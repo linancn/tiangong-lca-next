@@ -522,6 +522,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(
               item['@type'] === 'process data set'
             );
           });
+          const unRuleVerificationSubProduce = unRuleVerification.find((item: any) => {
+            return submodels?.find(
+              (sub: any) =>
+                sub.type === 'secondary' &&
+                sub.id === item['@refObjectId'] &&
+                item['@type'] === 'process data set',
+            );
+          });
           if (unRuleVerificationMainProduce) {
             valid = false;
 
@@ -530,6 +538,18 @@ const ToolbarEditInfo = forwardRef<any, Props>(
                 id: 'pages.lifecyclemodel.review.mainProduceError',
                 defaultMessage:
                   'Please complete the main product process data in the model results',
+              }),
+            );
+            setSpinning(false);
+            return { checkResult: valid, unReview, problemNodes };
+          }
+          if (unRuleVerificationSubProduce) {
+            valid = false;
+
+            message.error(
+              intl.formatMessage({
+                id: 'pages.lifecyclemodel.review.subProduceError',
+                defaultMessage: 'Please complete the sub product process data in the model results',
               }),
             );
             setSpinning(false);
