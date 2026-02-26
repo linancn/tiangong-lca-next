@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js';
 import { v4 } from 'uuid';
+import { toBigNumberOrZero } from '../general/bignumber';
 import {
   // comparePercentDesc,
   jsonToList,
@@ -600,7 +600,7 @@ const nextScaling = (
 } => {
   if (!baseAmount) return { exchangeAmount: 0, nextScalingFactor: 0 };
   if (!targetAmount || !curSF) return { exchangeAmount: 0, nextScalingFactor: 0 };
-  const exchangeAmount = new BigNumber(targetAmount).times(curSF);
+  const exchangeAmount = toBigNumberOrZero(targetAmount).times(curSF);
   return {
     exchangeAmount: exchangeAmount.toNumber(),
     nextScalingFactor: exchangeAmount.div(baseAmount).toNumber(),
@@ -612,8 +612,8 @@ const nextScaling = (
  * en-US: Ratio r=num/den with epsilon; snap near 0/1.
  */
 const normalizeRatio = (numerator: any, denominator: any, eps = 1e-6): number => {
-  const num = new BigNumber(numerator ?? 0);
-  const den = new BigNumber(denominator ?? 0);
+  const num = toBigNumberOrZero(numerator);
+  const den = toBigNumberOrZero(denominator);
   if (!Number.isFinite(num.toNumber()) || !Number.isFinite(den.toNumber())) return 0;
   if (den.abs().lte(eps)) return 0;
   const r = num.div(den).toNumber();
@@ -739,7 +739,7 @@ const calculateScalingFactor = (
 
     const scalingExchanges =
       dbProcess?.exchanges?.map((ex: any) => {
-        const amount = new BigNumber(toAmountNumber(ex.meanAmount))
+        const amount = toBigNumberOrZero(toAmountNumber(ex.meanAmount))
           .times(scalingFactor ?? 1)
           .toNumber();
         const amountExchange = { ...ex, meanAmount: amount, resultingAmount: amount };
@@ -796,10 +796,10 @@ function mergeExchangesById(prevList?: any[], nextList?: any[]): any[] {
     if (!existed) {
       acc.set(id, { ...ex });
     } else {
-      existed.meanAmount = new BigNumber(existed?.meanAmount ?? 0)
+      existed.meanAmount = toBigNumberOrZero(existed?.meanAmount)
         .plus(toAmountNumber(ex?.meanAmount))
         .toNumber();
-      existed.resultingAmount = new BigNumber(existed?.resultingAmount ?? 0)
+      existed.resultingAmount = toBigNumberOrZero(existed?.resultingAmount)
         .plus(toAmountNumber(ex?.resultingAmount))
         .toNumber();
       acc.set(id, existed);
@@ -938,7 +938,7 @@ const allocatedProcess = (sumAmountNodeMap: Map<string, any>) => {
         const remainingRate = ex?.remainingRate ?? 1;
 
         if (remainingRate > 0 && remainingRate < 1) {
-          const allocatedFractionBN = new BigNumber(allocatedExchange.allocatedFraction);
+          const allocatedFractionBN = toBigNumberOrZero(allocatedExchange.allocatedFraction);
           const remainingAllocatedFraction = allocatedFractionBN.times(remainingRate);
 
           const baseChild = {
@@ -1011,7 +1011,7 @@ const getFinalProductGroup = (
 ) => {
   const finalProductGroups: any[] = [];
   if (finalProductProcess?.isAllocated && finalProductProcess?.allocatedFraction > 0) {
-    const newAllocatedFraction = new BigNumber(finalProductProcess.allocatedFraction)
+    const newAllocatedFraction = toBigNumberOrZero(finalProductProcess.allocatedFraction)
       .times(allocatedFraction)
       .toNumber();
 
@@ -1095,7 +1095,7 @@ const calculateProcess = (process: any) => {
   const childAllocatedFraction = process?.childAllocatedFraction ?? 1;
   const childScalingPercentage = process?.childScalingPercentage ?? 1;
 
-  const scaleFactor = new BigNumber(childAllocatedFraction).times(childScalingPercentage);
+  const scaleFactor = toBigNumberOrZero(childAllocatedFraction).times(childScalingPercentage);
 
   const newExchanges = process?.childExchanges?.map((e: any) => {
     const isAllocatedExchange = e?.['@dataSetInternalID'] === allocatedId;
@@ -1107,8 +1107,8 @@ const calculateProcess = (process: any) => {
       };
     }
 
-    const meanAmount = new BigNumber(e?.meanAmount).times(scaleFactor).toNumber();
-    const resultingAmount = new BigNumber(e?.resultingAmount).times(scaleFactor).toNumber();
+    const meanAmount = toBigNumberOrZero(e?.meanAmount).times(scaleFactor).toNumber();
+    const resultingAmount = toBigNumberOrZero(e?.resultingAmount).times(scaleFactor).toNumber();
     return {
       ...e,
       meanAmount,
@@ -1298,7 +1298,7 @@ export async function genLifeCycleModelProcesses(
   let refScalingFactor = 1;
 
   if (refModelMeanAmount !== 0 && modelTargetAmount !== 0) {
-    refScalingFactor = new BigNumber(modelTargetAmount).div(refModelMeanAmount).toNumber();
+    refScalingFactor = toBigNumberOrZero(modelTargetAmount).div(refModelMeanAmount).toNumber();
   }
   const { up2DownEdges, edgesByDownstreamInput, edgesByUpstreamOutput } = buildEdgesAndIndices(
     mdProcesses,
@@ -1390,14 +1390,18 @@ export async function genLifeCycleModelProcesses(
       edge.isBalanced = true;
     } else {
       const rel = normalizeRatio(
-        new BigNumber(upRemain ?? 0).plus(downRemain ?? 0).toNumber(),
+        toBigNumberOrZero(upRemain)
+          .plus(downRemain ?? 0)
+          .toNumber(),
         allocations ?? 0,
       );
       edge.isBalanced = (allocations ?? 0) > 0 && rel === 0;
     }
     edge.unbalancedAmount = edge.isBalanced
       ? 0
-      : new BigNumber(upRemain ?? 0).minus(downRemain ?? 0).toNumber();
+      : toBigNumberOrZero(upRemain)
+          .minus(downRemain ?? 0)
+          .toNumber();
   };
 
   const mainUpstreamOutputs: any = {};
@@ -2327,14 +2331,14 @@ export async function genLifeCycleModelProcesses(
           const isRefExchange = isPrimaryGroup && e?.quantitativeReference;
           const amount = isRefExchange
             ? modelTargetAmount.toString()
-            : new BigNumber(e?.meanAmount).div(refRemainingRate).toString();
+            : toBigNumberOrZero(e?.meanAmount).div(refRemainingRate).toString();
           e.meanAmount = amount;
           e.resultingAmount = amount;
         });
 
       if (process?.data?.processDataSet?.LCIAResults?.LCIAResult?.length > 0)
         process?.data?.processDataSet?.LCIAResults?.LCIAResult?.forEach((lcia: any) => {
-          const amount = new BigNumber(lcia?.meanAmount).div(refRemainingRate).toString();
+          const amount = toBigNumberOrZero(lcia?.meanAmount).div(refRemainingRate).toString();
           lcia.meanAmount = amount;
         });
     });

@@ -1,5 +1,6 @@
+import { toBigNumberOrNaN, toBigNumberOrZero } from '@/services/general/bignumber';
 import { getLangJson } from '@/services/general/util';
-import BigNumber from 'bignumber.js';
+import type BigNumber from 'bignumber.js';
 import { LCIAResultTable } from './data';
 
 // Enhanced LCIA Cache Management with Decompression
@@ -385,14 +386,14 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
         const key = `${exchangeFlowId}:${exchangeDirection}`;
         const matchingFactor = factorsObj[key];
         if (matchingFactor) {
-          const exchangeAmount = new BigNumber(exchange.meanAmount);
+          const exchangeAmount = toBigNumberOrNaN(exchange.meanAmount);
           if (
             !exchangeAmount.isNaN() &&
             matchingFactor?.factor &&
             matchingFactor?.factor.length > 0
           ) {
             const newFactor = matchingFactor.factor.map((f: any) => {
-              const factorValue = new BigNumber(f.value);
+              const factorValue = toBigNumberOrNaN(f.value);
               if (!factorValue.isNaN()) {
                 return { ...f, value: exchangeAmount.times(factorValue) };
               } else {
@@ -411,9 +412,9 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
         .reduce((map: Map<string, BigNumber>, it: any) => {
           const key = String(it.key);
           const raw = it.value;
-          const val = BigNumber.isBigNumber(raw) ? (raw as BigNumber) : new BigNumber(raw);
+          const val = toBigNumberOrNaN(raw);
           if (!val.isNaN()) {
-            map.set(key, (map.get(key) ?? new BigNumber(0)).plus(val));
+            map.set(key, (map.get(key) ?? toBigNumberOrZero(0)).plus(val));
           }
           return map;
         }, new Map<string, BigNumber>())
@@ -421,7 +422,7 @@ const LCIAResultCalculation = async (exchangeDataSource: any) => {
     )
       .map(([key, sum]) => ({ key, value: sum.toString() }))
       .filter((it: any) => {
-        const bn = new BigNumber(it.value);
+        const bn = toBigNumberOrNaN(it.value);
         return !bn.isNaN() && !bn.isZero();
       });
 

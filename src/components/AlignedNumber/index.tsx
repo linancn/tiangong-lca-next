@@ -1,3 +1,4 @@
+import { toBigNumberOrNaN } from '@/services/general/bignumber';
 import BigNumber from 'bignumber.js';
 
 // Use scientific notation only for very large/small numbers
@@ -57,12 +58,7 @@ const AlignedNumber = ({
     return placeholder;
   }
 
-  let bn: BigNumber;
-  try {
-    bn = new BigNumber(value as BigNumber.Value);
-  } catch (error) {
-    return placeholder;
-  }
+  const bn = toBigNumberOrNaN(value);
 
   if (!bn.isFinite() || bn.isNaN()) {
     return placeholder;
