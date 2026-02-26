@@ -16,21 +16,22 @@
 最新全量覆盖率运行（`npm run test:coverage`）：
 
 - Test suites：156 passed
-- Tests：1377 passed
+- Tests：1389 passed
 - 覆盖率：
-  - Statements: 61.27% (10453/17059)
-  - Branches: 46.86% (4520/9645)
-  - Functions: 50.92% (1902/3735)
-  - Lines: 61.40% (9980/16253)
+  - Statements: 61.71% (10528/17059)
+  - Branches: 47.29% (4562/9645)
+  - Functions: 51.21% (1913/3735)
+  - Lines: 61.84% (10052/16253)
 - 当前全局 branch 门槛：50%
-- 距离门槛仍差：**303 个分支命中**
+- 距离门槛仍差：**261 个分支命中**
 
 ## 缺口评估
 
 1. 主要阻塞不是“测试是否通过”，而是 branch 覆盖率不足。
 2. 多个高分支文件 branch 覆盖极低甚至为 0。
 3. `src/pages/Review/**` 存在大量 zero-line 文件，回归风险高。
-4. service 层高分支权重模块覆盖不足（`reviews/api`、`lciaMethods/util`、`general/api`）。
+4. service 层高分支权重模块覆盖不足（`reviews/api`、`general/api`）。
+5. `src/services/lciaMethods/util.ts` branch 覆盖率已提升到 94.91%（56/59），不再是 P0 阻塞项。
 
 ## 优先级待办
 
@@ -38,8 +39,8 @@
 
 - [ ] 为 `src/services/reviews/api.ts` 增加分支导向测试（当前 branch 约 17%）。
   - 目标：覆盖 session/no-session、error、empty-data、状态映射分支。
-- [ ] 为 `src/services/lciaMethods/util.ts` 增加分支导向测试（当前 branch 约 25%）。
-  - 目标：覆盖 IndexedDB 不可用、cache miss/hit、缓存损坏、refresh/fallback 分支。
+- [x] 为 `src/services/lciaMethods/util.ts` 增加分支导向测试（最新 branch 94.91%）。
+  - 已完成：在 `tests/unit/services/lciaMethods/util.test.ts` 覆盖 IndexedDB 游标成功/失败、cache miss/hit、旧缓存刷新与 fallback 分支。
 - [ ] 为 `src/services/general/api.ts` 增加分支导向测试（当前 branch 约 53%，分支总量大）。
   - 目标：补齐当前遗漏的错误路径与可选参数分支。
 - [ ] 为以下高分支但零 branch 的页面模块补聚焦测试：

@@ -32,11 +32,21 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockGetPendingComment = jest.fn();
 const mockGetReviewedComment = jest.fn();
+const mockGetRejectedComment = jest.fn();
 
 jest.mock('@/services/comments/api', () => ({
   __esModule: true,
   getPendingComment: (...args: any[]) => mockGetPendingComment.apply(null, args),
   getReviewedComment: (...args: any[]) => mockGetReviewedComment.apply(null, args),
+  getRejectedComment: (...args: any[]) => mockGetRejectedComment.apply(null, args),
+}));
+
+const mockGetProcessDetailByIdAndVersion = jest.fn();
+
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  getProcessDetailByIdAndVersion: (...args: any[]) =>
+    mockGetProcessDetailByIdAndVersion.apply(null, args),
 }));
 
 const mockGetLangText = jest.fn();
@@ -71,6 +81,7 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
     eq: jest.fn().mockReturnThis(),
     filter: jest.fn().mockReturnThis(),
     gte: jest.fn().mockReturnThis(),
+    gt: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(resolvedValue),
     then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
@@ -93,6 +104,10 @@ beforeEach(() => {
   mockGetPendingComment.mockResolvedValue({ data: [] });
   mockGetReviewedComment.mockReset();
   mockGetReviewedComment.mockResolvedValue({ data: [] });
+  mockGetRejectedComment.mockReset();
+  mockGetRejectedComment.mockResolvedValue({ data: [] });
+  mockGetProcessDetailByIdAndVersion.mockReset();
+  mockGetProcessDetailByIdAndVersion.mockResolvedValue({ success: true, data: [] });
   mockGetLangText.mockReset();
   mockGetLangText.mockImplementation((value: any, lang: string) => {
     if (!value) return '-';
