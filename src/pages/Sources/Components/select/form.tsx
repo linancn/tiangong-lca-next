@@ -136,6 +136,7 @@ const SourceSelectForm: FC<Props> = ({
     }
     if (!referenceToDataSetFormatId) return;
     getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+      if (!result2?.success || !result2?.data) return;
       const referenceToDataSetFormatData = genSourceFromData(
         result2.data?.json?.sourceDataSet ?? {},
       );
