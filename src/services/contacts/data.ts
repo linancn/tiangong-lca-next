@@ -1,4 +1,5 @@
-import { Contact } from '@tiangong-lca/tidas-sdk';
+import type { ReferenceItem } from '@/services/general/data';
+import type { Contact } from '@tiangong-lca/tidas-sdk';
 
 export type ContactTable = {
   key: React.Key;
@@ -11,6 +12,29 @@ export type ContactTable = {
   email: string;
   modifiedAt: Date;
   teamId: string;
+};
+
+export type ContactReference = ReferenceItem | ReferenceItem[];
+
+export type ContactImportItem = {
+  contactDataSet: Contact['contactDataSet'];
+};
+
+export type ContactImportData = ContactImportItem[];
+
+export type ContactDetailData = {
+  id?: string;
+  version?: string;
+  json?: { contactDataSet?: Contact['contactDataSet'] };
+  modifiedAt?: string | Date;
+  stateCode?: number;
+  ruleVerification?: boolean;
+  userId?: string;
+};
+
+export type ContactDetailResponse = {
+  data?: ContactDetailData | null;
+  success?: boolean;
 };
 
 export type FormContact = Pick<

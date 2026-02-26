@@ -298,6 +298,7 @@ export default {
   'pages.lifecyclemodel.review.submitError': 'Submit review failed',
   'pages.lifecyclemodel.review.error': 'Referenced data is under review, cannot initiate another review',
   'pages.lifecyclemodel.review.mainProduceError': 'Please complete the main product process data in the model results',
+  'pages.lifecyclemodel.review.subProduceError': 'Please complete the sub product process data in the model results',
   'pages.lifecyclemodel.review.processInstanceError': 'Please complete the process instance data',
   'pages.lifecyclemodel.checkData.inReview': 'This data set is under review and cannot be validated',
   'pages.lifecyclemodel.notPublic': 'Model is not public',

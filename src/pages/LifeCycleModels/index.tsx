@@ -262,7 +262,7 @@ const TableList: FC = () => {
               enterButton
             />
           </Col>
-          <Col style={{ display: 'none' }} flex='100px'>
+          <Col flex='100px'>
             <Checkbox
               onChange={(e) => {
                 setOpenAI(e.target.checked);
