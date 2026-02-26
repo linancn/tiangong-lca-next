@@ -16,23 +16,23 @@
 最新全量覆盖率运行（`npm run test:coverage`）：
 
 - Test suites：156 passed
-- Tests：1405 passed
+- Tests：1469 passed
 - 覆盖率：
-  - Statements: 62.45% (10654/17059)
-  - Branches: 48.18% (4647/9645)
-  - Functions: 51.70% (1931/3735)
-  - Lines: 62.61% (10177/16253)
+  - Statements: 63.60% (~10850/17059)
+  - Branches: 50.01% (4823/9645)
+  - Functions: 52.63% (1966/3735)
+  - Lines: 63.78% (10367/16253)
 - 当前全局 branch 门槛：50%
-- 距离门槛仍差：**176 个分支命中**
+- 门禁状态：**已通过**（余量很小，+0.01%）
 
 ## 缺口评估
 
-1. 主要阻塞不是“测试是否通过”，而是 branch 覆盖率不足。
-2. 多个高分支文件 branch 覆盖极低甚至为 0。
-3. `src/pages/Review/**` 存在大量 zero-line 文件，回归风险高。
-4. service 层高分支权重模块主要缺口仍在 `general/api`。
-5. `src/services/lciaMethods/util.ts` branch 覆盖率已提升到 94.91%（56/59），不再是 P0 阻塞项。
-6. `src/services/reviews/api.ts` branch 覆盖率已提升到 67.45%（114/169），已移出 P0 阻塞项。
+1. branch 门禁已恢复，但余量非常小（50.01%），轻微回归就可能导致 CI 失败。
+2. 多个高分支页面文件仍是低覆盖或零分支覆盖。
+3. `src/pages/Review/**` 仍存在大量 zero-line 模块，回归风险依旧较高。
+4. 本轮 service 热点已明显改善： `src/services/processes/api.ts` 87.64%（241/275）、`src/services/unitgroups/api.ts` 82.96%（112/135）、`src/services/auth/api.ts` 96.00%（24/25）。
+5. `src/services/general/api.ts` branch 覆盖率已提升到 72.95%（143/196），不再是门禁阻塞项。
+6. `src/services/lciaMethods/util.ts`（94.91%）与 `src/services/reviews/api.ts`（67.45%）保持稳定。
 
 ## 优先级待办
 
@@ -42,16 +42,22 @@
   - 已完成：在 `tests/unit/services/reviews/api.test.ts` 覆盖 review member/admin 列表分支、reject/process 过滤、notify count 过滤与 lifecycle subtable batch 分支。
 - [x] 为 `src/services/lciaMethods/util.ts` 增加分支导向测试（最新 branch 94.91%）。
   - 已完成：在 `tests/unit/services/lciaMethods/util.test.ts` 覆盖 IndexedDB 游标成功/失败、cache miss/hit、旧缓存刷新与 fallback 分支。
-- [ ] 为 `src/services/general/api.ts` 增加分支导向测试（当前 branch 约 53%，分支总量大）。
-  - 目标：补齐当前遗漏的错误路径与可选参数分支。
-- [ ] 为以下高分支但零 branch 的页面模块补聚焦测试：
+- [x] 为 `src/services/general/api.ts` 增加分支导向测试（最新 branch 72.95%）。
+  - 已完成：在 `tests/unit/services/general/api.test.ts` 补齐更多数据查询、版本列表映射、edge-function 失败与 fallback 分支。
+- [x] 为 `src/services/processes/api.ts` 增加分支导向测试（最新 branch 87.64%）。
+  - 已完成：在 `tests/unit/services/processes/api.test.ts` 覆盖校验失败路径、dataSource 过滤分支、connectable 过滤分支、hybrid/pgroonga 错误路径与可选字段 fallback 分支。
+- [x] 为 `src/services/unitgroups/api.ts` 增加分支导向测试（最新 branch 82.96%）。
+  - 已完成：在 `tests/unit/services/unitgroups/api.test.ts` 覆盖 dataSource 过滤、rpc/edge 错误分支、中英文映射 fallback/catch 分支与 reference 查找 fallback 分支。
+- [x] 为 `src/services/auth/api.ts` 增加分支导向测试（最新 branch 96.00%）。
+  - 已完成：在 `tests/unit/services/auth/api.test.ts` 覆盖空凭证 fallback、reauthenticate guest fallback 与 fresh metadata 获取分支。
+- [ ] 为以下高分支但零 branch 的页面模块补聚焦测试（用于扩大 50% 以上安全余量）：
   - `src/pages/Contacts/Components/select/form.tsx` (BRF 84)
   - `src/pages/Flows/Components/edit.tsx` (BRF 85)
   - `src/pages/Flows/Components/select/form.tsx` (BRF 62)
 
 P0 完成定义：
 
-- global branches >= 50%
+- global branches >= 50%（当前 50.01%）
 - `npm run lint` 通过
 - 改动模块的聚焦套件通过
 

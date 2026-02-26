@@ -16,23 +16,23 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 Latest full run (`npm run test:coverage`):
 
 - Test suites: 156 passed
-- Tests: 1405 passed
+- Tests: 1469 passed
 - Coverage:
-  - Statements: 62.45% (10654/17059)
-  - Branches: 48.18% (4647/9645)
-  - Functions: 51.70% (1931/3735)
-  - Lines: 62.61% (10177/16253)
+  - Statements: 63.60% (~10850/17059)
+  - Branches: 50.01% (4823/9645)
+  - Functions: 52.63% (1966/3735)
+  - Lines: 63.78% (10367/16253)
 - Enforced global branch threshold: 50%
-- Gap to threshold: **176 branch hits** still needed
+- Gate status: **PASS** (buffer is minimal, +0.01%)
 
 ## Gap Assessment
 
-1. Main blocker is branch coverage, not suite pass rate.
-2. Several high-branch files still have very low or zero branch coverage.
-3. `src/pages/Review/**` has many zero-line files; this is a risk area for regressions.
-4. Service-layer hotspot with high branch weight remains under-covered (`general/api`).
-5. `src/services/lciaMethods/util.ts` branch coverage is now 94.91% (56/59) and no longer a P0 blocker.
-6. `src/services/reviews/api.ts` branch coverage is now 67.45% (114/169), removing it from P0 blockers.
+1. Branch gate is recovered but margin is very thin (50.01%), so regressions can quickly fail CI.
+2. Several high-branch page files still have low or zero branch coverage.
+3. `src/pages/Review/**` still has many zero-line files and remains a high regression-risk area.
+4. Service hotspots improved this cycle: `src/services/processes/api.ts` 87.64% (241/275), `src/services/unitgroups/api.ts` 82.96% (112/135), `src/services/auth/api.ts` 96.00% (24/25).
+5. `src/services/general/api.ts` branch coverage is now 72.95% (143/196), no longer a gate blocker.
+6. `src/services/lciaMethods/util.ts` (94.91%) and `src/services/reviews/api.ts` (67.45%) remain stable.
 
 ## Priority Backlog
 
@@ -42,16 +42,22 @@ Latest full run (`npm run test:coverage`):
   - Completed: covered review member/admin table branches, rejected/process filters, notify count filters, and lifecycle subtable batch branches in `tests/unit/services/reviews/api.test.ts`.
 - [x] Add branch-focused tests for `src/services/lciaMethods/util.ts` (latest branch 94.91%).
   - Completed: covered IndexedDB cursor success/error, cache miss/hit, stale-list refresh, and fallback paths in `tests/unit/services/lciaMethods/util.test.ts`.
-- [ ] Add branch-focused tests for `src/services/general/api.ts` (current branch ~53%, high branch count).
-  - Target: error paths and optional parameter branches currently missed.
-- [ ] Add focused tests for zero-branch page modules with high branch count:
+- [x] Add branch-focused tests for `src/services/general/api.ts` (latest branch 72.95%).
+  - Completed: covered additional data access, version list mapping, edge-function failure, and fallback branches in `tests/unit/services/general/api.test.ts`.
+- [x] Add branch-focused tests for `src/services/processes/api.ts` (latest branch 87.64%).
+  - Completed: covered validation-failure paths, datasource filtering branches, connectable-process filtering branches, hybrid/pgroonga error paths, and optional mapping fallbacks in `tests/unit/services/processes/api.test.ts`.
+- [x] Add branch-focused tests for `src/services/unitgroups/api.ts` (latest branch 82.96%).
+  - Completed: covered datasource filters, rpc/edge error branches, zh/en mapping fallback and catch branches, and reference lookup fallbacks in `tests/unit/services/unitgroups/api.test.ts`.
+- [x] Add branch-focused tests for `src/services/auth/api.ts` (latest branch 96.00%).
+  - Completed: covered empty credential fallbacks, reauthenticate guest fallback, and fresh metadata retrieval branches in `tests/unit/services/auth/api.test.ts`.
+- [ ] Add focused tests for zero-branch page modules with high branch count (to build safety buffer above 50%):
   - `src/pages/Contacts/Components/select/form.tsx` (BRF 84)
   - `src/pages/Flows/Components/edit.tsx` (BRF 85)
   - `src/pages/Flows/Components/select/form.tsx` (BRF 62)
 
 Definition of done for P0:
 
-- global branches >= 50%
+- global branches >= 50% (currently 50.01%)
 - `npm run lint` passes
 - focused suites for touched modules pass
 

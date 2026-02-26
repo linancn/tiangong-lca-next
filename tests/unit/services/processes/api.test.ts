@@ -12,6 +12,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
   }),
 }));
+const { createProcess: mockCreateTidasProcess } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
@@ -150,6 +151,9 @@ beforeEach(() => {
   mockGetCachedLocationData.mockResolvedValue([]);
   mockGetCachedClassificationData.mockResolvedValue({});
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
+  (mockCreateTidasProcess as jest.Mock).mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  });
 });
 
 describe('createProcess', () => {
@@ -172,6 +176,36 @@ describe('createProcess', () => {
     ]);
     expect(selectMock).toHaveBeenCalled();
     expect(result).toBe(insertResult);
+  });
+
+  it('sets rule verification to false when non-validation issues exist', async () => {
+    (mockCreateTidasProcess as jest.Mock).mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {
+          issues: [
+            { path: ['validation'] },
+            { path: ['compliance'] },
+            { path: ['processDataSet', 'name'] },
+          ],
+        },
+      }),
+    });
+    const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
+    const selectMock = jest.fn().mockResolvedValue(insertResult);
+    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
+    mockFrom.mockReturnValueOnce({ insert: insertMock });
+
+    await processesApi.createProcess(sampleId, { raw: true }, 'model-1');
+
+    expect(insertMock).toHaveBeenCalledWith([
+      {
+        id: sampleId,
+        json_ordered: { ordered: true },
+        model_id: 'model-1',
+        rule_verification: false,
+      },
+    ]);
   });
 });
 
@@ -231,6 +265,42 @@ describe('updateProcess', () => {
 
     expect(result).toEqual({ error: failure.error });
   });
+
+  it('uses fallback bearer token and keeps rule verification false when validation fails', async () => {
+    (mockCreateTidasProcess as jest.Mock).mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {
+          issues: [{ path: ['processDataSet', 'exchanges'] }],
+        },
+      }),
+    });
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: undefined,
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { ok: true }, error: null });
+
+    await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' }, 'model-x');
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: 'Bearer ' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'processes',
+        data: {
+          json_ordered: { ordered: true },
+          model_id: 'model-x',
+          rule_verification: false,
+        },
+      },
+      region: FunctionRegion.UsEast1,
+    });
+  });
 });
 
 describe('updateProcessApi', () => {
@@ -259,6 +329,43 @@ describe('updateProcessApi', () => {
       region: FunctionRegion.UsEast1,
     });
     expect(result).toEqual({ updated: true });
+  });
+
+  it('returns undefined when session is missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await processesApi.updateProcessApi(sampleId, sampleVersion, { foo: 'bar' });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('logs invocation errors and returns undefined payload', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: undefined,
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: undefined, error: { message: 'bad req' } });
+
+    const result = await processesApi.updateProcessApi(sampleId, sampleVersion, { foo: 'bar' });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: 'Bearer ' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'processes',
+        data: { foo: 'bar' },
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'bad req' });
+    expect(result).toBeUndefined();
+    logSpy.mockRestore();
   });
 });
 
@@ -441,6 +548,167 @@ describe('getProcessTableAll', () => {
     expect(mockFrom).toHaveBeenCalledWith('processes');
     expect(result).toEqual({ data: [], success: false });
   });
+
+  it('applies co-source and type filters and returns empty success when no rows', async () => {
+    const builder = createQueryBuilder({ data: [], count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'co',
+      'team-a',
+      undefined,
+      'Unit process, black box',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith(
+      'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
+      'Unit process, black box',
+    );
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 200);
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-a');
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('returns success with empty data when team source has no team id', async () => {
+    const builder = createQueryBuilder({ data: [], count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+
+    const result = await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'te',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(mockGetTeamIdByUserId).toHaveBeenCalled();
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('returns query error response for failed database request', async () => {
+    const builder = createQueryBuilder({
+      data: null,
+      error: { message: 'query failed' },
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      success: false,
+      error: { message: 'query failed' },
+    });
+  });
+
+  it('maps zh rows with fallback values and default paging fields', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-03-10T00:00:00Z',
+          team_id: 'team-zh',
+          model_id: 'model-zh',
+          name: { zh: '流程' },
+          'common:class': [{ '#text': 'class-zh' }],
+          'common:generalComment': { zh: '注释' },
+          '@location': 'CN',
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': '中国' }]);
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'class-zh', '#text': '分类' },
+    ]);
+
+    const result = await processesApi.getProcessTableAll(
+      {} as any,
+      {},
+      'zh',
+      'tg',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', 'zh', ['all']);
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: 'zh',
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          location: '中国',
+          modifiedAt: new Date('2024-03-10T00:00:00Z'),
+          teamId: 'team-zh',
+          modelId: 'model-zh',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('falls back to id-only row when row transform throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-03-10T00:00:00Z',
+          '@location': 'CN',
+        },
+      ],
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad class');
+    });
+
+    const result = await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [{ id: sampleId }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
+  });
 });
 
 describe('getProcessExchange', () => {
@@ -461,6 +729,18 @@ describe('getProcessExchange', () => {
       page: 1,
       success: true,
       total: 2,
+    });
+  });
+
+  it('uses default paging values when params are omitted', async () => {
+    const exchanges = [{ id: 1, exchangeDirection: 'OUTPUT' }];
+    const result = await processesApi.getProcessExchange(exchanges, 'output', {} as any);
+
+    expect(result).toEqual({
+      data: [{ id: 1, exchangeDirection: 'OUTPUT' }],
+      page: 1,
+      success: true,
+      total: 1,
     });
   });
 });
@@ -551,6 +831,122 @@ describe('process_hybrid_search', () => {
       page: 3,
       success: true,
       total: 42,
+    });
+  });
+
+  it('sends optional filters and handles empty data with invoke error', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: undefined,
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      error: { message: 'hybrid failed' },
+      data: { data: [] },
+    });
+
+    const result = await processesApi.process_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'steel',
+      { status: 'active' },
+      300,
+      'foreground',
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('process_hybrid_search', {
+      headers: { Authorization: 'Bearer ' },
+      body: {
+        query: 'steel',
+        filter: { status: 'active' },
+        state_code: 300,
+        type_of_data_set: 'foreground',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'hybrid failed' });
+    expect(result).toEqual({ data: [], success: true });
+    logSpy.mockRestore();
+  });
+
+  it('maps zh hybrid rows with location translation and fallback fields', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-zh',
+        },
+      },
+    });
+    const hybridData: any = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        modified_at: '2024-05-01T00:00:00Z',
+        team_id: 'team-zh',
+        model_id: 'model-zh',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: { zh: '流程中文名' },
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': { '#text': 'class-zh' },
+                  },
+                },
+              },
+              geography: {
+                locationOfOperationSupplyOrProduction: {
+                  '@location': 'CN',
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    (hybridData as any).total_count = 7;
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': '中国' }]);
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'class-zh', '#text': '分类' },
+    ]);
+
+    const result = await processesApi.process_hybrid_search(
+      {} as any,
+      'zh',
+      'tg',
+      '关键词',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', 'zh', ['all']);
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          referenceYear: '-',
+          location: '中国',
+          version: sampleVersion,
+          typeOfDataSet: '-',
+          modifiedAt: new Date('2024-05-01T00:00:00Z'),
+          teamId: 'team-zh',
+          modelId: 'model-zh',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 7,
     });
   });
 });
@@ -659,6 +1055,76 @@ describe('getProcessesByIdAndVersion', () => {
     expect(result.page).toBe(1);
     expect(result.total).toBe(0);
     expect(result.data).toEqual([]);
+  });
+
+  it('maps with fallback values when lang is provided but optional fields are missing', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-06-01T00:00:00Z',
+          name: { en: 'Name' },
+          'common:generalComment': {},
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdAndVersion(
+      [{ id: sampleId, version: sampleVersion }],
+      'en',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: sampleId,
+      version: sampleVersion,
+      typeOfDataSet: '-',
+      referenceYear: '-',
+    });
+  });
+
+  it('returns raw name branch when lang is omitted', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-06-02T00:00:00Z',
+          name: { en: 'Raw Name' },
+          team_id: 'team-raw',
+          user_id: 'user-raw',
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdAndVersion([
+      { id: sampleId, version: sampleVersion },
+    ]);
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: undefined,
+          name: { en: 'Raw Name' },
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          modifiedAt: new Date('2024-06-02T00:00:00Z'),
+          teamId: 'team-raw',
+          modelId: undefined,
+          userId: 'user-raw',
+        },
+      ],
+      success: true,
+      page: 1,
+      total: 1,
+    });
   });
 });
 
@@ -841,6 +1307,135 @@ describe('getConnectableProcessesTable', () => {
 
     expect(result.data).toEqual([]);
   });
+
+  it('returns early when flow id cannot be resolved from port id', async () => {
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      '',
+      '1.0.0',
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('returns failure for my data source when session is missing', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'my',
+      [],
+      'input:flow-no-user',
+      '',
+    );
+
+    expect(result).toEqual({ data: [], success: false });
+  });
+
+  it('returns empty success for team source when team id is absent', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'te',
+      [],
+      'input:flow-team',
+      '',
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('filters by opposite exchange direction and marks lifecycle-linked rows', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-01-01T00:00:00Z',
+          team_id: 'team-link',
+          '@location': 'CN',
+          exchange: [
+            {
+              exchangeDirection: 'output',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-link', '@version': '01.00.000' },
+            },
+          ],
+        },
+        {
+          id: 'process-other',
+          version: sampleVersion,
+          modified_at: '2024-01-02T00:00:00Z',
+          team_id: 'team-link',
+          '@location': 'CN',
+          exchange: [
+            {
+              exchangeDirection: 'output',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-link', '@version': '99.99.999' },
+            },
+          ],
+        },
+      ],
+      error: null,
+      count: 2,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: sampleId, version: sampleVersion }],
+    });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      'input:flow-link',
+      '01.00.000',
+    );
+
+    expect(builder.filter).toHaveBeenCalledWith(
+      'json->processDataSet->exchanges->exchange',
+      'cs',
+      JSON.stringify([
+        { referenceToFlowDataSet: { '@refObjectId': 'flow-link', '@version': '01.00.000' } },
+      ]),
+    );
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: 'en',
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          location: 'China',
+          modifiedAt: new Date('2024-01-01T00:00:00Z'),
+          teamId: 'team-link',
+          isFromLifeCycle: true,
+        },
+      ],
+      success: true,
+    });
+  });
 });
 
 describe('getProcessTablePgroongaSearch', () => {
@@ -898,6 +1493,123 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(result).toBeDefined();
+  });
+
+  it('uses default paging params and optional filter payload in rpc call', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    await processesApi.getProcessTablePgroongaSearch(
+      {} as any,
+      'en',
+      'my',
+      'keyword',
+      { processType: 'target' },
+      400,
+      'foreground',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_processes_v1', {
+      query_text: 'keyword',
+      filter_condition: { processType: 'target' },
+      page_size: 10,
+      page_current: 1,
+      data_source: 'my',
+      order_by: undefined,
+      state_code: 400,
+      type_of_data_set: 'foreground',
+    });
+  });
+
+  it('logs pgroonga rpc error and returns undefined when no data payload', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'rpc failed' } });
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      { current: 2, pageSize: 5 },
+      'en',
+      'tg',
+      'broken',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(logSpy).toHaveBeenCalledWith('error', { message: 'rpc failed' });
+    expect(result).toBeUndefined();
+    logSpy.mockRestore();
+  });
+
+  it('maps zh pgroonga result rows with location translation and fallback values', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
+    const rpcRows: any[] = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        modified_at: '2024-06-03T00:00:00Z',
+        team_id: 'team-zh',
+        model_id: 'model-zh',
+        total_count: 3,
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: { zh: '名称' },
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': { '#text': 'zh-class' },
+                  },
+                },
+              },
+              geography: {
+                locationOfOperationSupplyOrProduction: {
+                  '@location': 'CN',
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    mockRpc.mockResolvedValueOnce({ data: rpcRows, error: null });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': '中国' }]);
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'zh-class', '#text': '分类' },
+    ]);
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      {} as any,
+      'zh',
+      'tg',
+      '中文',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', 'zh', ['all']);
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          referenceYear: '-',
+          location: '中国',
+          version: sampleVersion,
+          typeOfDataSet: '-',
+          modifiedAt: new Date('2024-06-03T00:00:00Z'),
+          teamId: 'team-zh',
+          modelId: 'model-zh',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 3,
+    });
   });
 });
 
