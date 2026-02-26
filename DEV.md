@@ -43,7 +43,11 @@ npm run lint:fix
 ### Run Tests
 
 ```bash
+# Full gate (unit + integration, CI-style runner)
 npm test
+
+# Focused suite (recommended for feature work)
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 ```
 
 ### Test Coverage Analysis
@@ -130,12 +134,13 @@ Each category displays:
 | Command                        | Description                                      |
 | ------------------------------ | ------------------------------------------------ |
 | `npm test`                     | Run all tests                                    |
+| `npm run test:ci -- <args>`    | Run focused suites with explicit Jest arguments  |
 | `npm run test:coverage`        | Run tests and generate coverage data             |
 | `npm run test:coverage:report` | Run tests and generate readable coverage report  |
 | `npm run test:report`          | Run tests and generate report (combined command) |
 | `npm run test:update`          | Update test snapshots                            |
 
-> 💡 **Tip**: For detailed test coverage script usage, see [`scripts/README.md`](./scripts/README.md)
+> 💡 **Tip**: Coverage report implementation lives in [`scripts/test-coverage-report.js`](./scripts/test-coverage-report.js)
 
 ### Build the Project
 

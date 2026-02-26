@@ -1,57 +1,77 @@
 # AGENTS – Tiangong LCA Next
 
-Use this file as the jumping-off point for any coding agent. Keep it updated whenever build steps, workflows, or conventions change.
+Use this file as the single entry point for coding agents.
 
-> Language contract: Only the English docs (no `_CN` suffix) are loaded into AI contexts. `_CN` mirrors exist for human readers—whenever you edit an English doc, sync the corresponding `_CN` file with equivalent content or release notes.
+> Language contract: agents load English docs only (no `_CN` suffix). Every edited English doc must update its `_CN` mirror in the same change.
 
-## Quick Orientation
+## Why This File Exists
 
-- Node.js **>= 24** (run `nvm use 24` before `npm install`); repo ships a fallback `.env` with working Supabase keys—override only when pointing at a different Supabase project.
-- React 18 + @umijs/max 4 + Ant Design Pro 5 + TypeScript; target `src/app.tsx` and `config/routes.ts`.
-- Service-first: add types/api/helpers under `src/services/<feature>/{data,api,util}.ts`, then consume them from pages.
-- UI is React function components only; reuse `src/components/**` primitives before building new ones.
-- All user-visible strings go through Ant Design Pro i18n helpers (`FormattedMessage`, `intl.formatMessage`).
-- Supabase access (auth, Postgres, storage, edge functions) is already wired; never instantiate ad-hoc clients outside the service layer.
+- Minimize context/token usage: start here, then open only the docs needed for the current task.
+- Keep requirements consistent across development, testing, and delivery.
+
+## Runtime Baseline
+
+- Node.js **>= 24** (`nvm use 24`; `.nvmrc` is `24`).
+- Stack: React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript.
+- Supabase env keys are prewired via fallback `.env`; do not create ad-hoc Supabase clients outside `src/services/**`.
 - Do not add npm dependencies without explicit human approval.
 
 ## Core Commands
 
-```
+```bash
 npm install
 npm start
 npm run lint
 npm test
-npm test -- tests/integration/<feature>/
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
 
-## Source-of-Truth Docs for Agents
+Notes:
 
-- `docs/agents/ai-dev-guide.md` – exhaustive development spec (routing rules, service contracts, component patterns); mirror: `docs/agents/ai-dev-guide_CN.md`.
-- `docs/agents/ai-testing-guide.md` – testing workflow checklist + commands; mirrors: `docs/agents/ai-testing-guide_CN.md`, with deep dives in `docs/agents/testing-patterns(.md|_CN.md)` and troubleshooting references in `docs/agents/testing-troubleshooting(.md|_CN.md)`.
-- `docs/agents/util_calculate.md` – deep dive on `genLifeCycleModelProcesses`; mirror: `docs/agents/util_calculate_CN.md`.
-- `README.md`, `README_CN.md`, `DEV*.md` – human-facing onboarding; reference instead of duplicating content here.
+- `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
+- For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
+
+## Token-Efficient Doc Routing
+
+Read only what matches the current task:
+
+1. Feature/page implementation
+   - `docs/agents/ai-dev-guide.md`
+2. Any test creation/debugging
+   - `docs/agents/ai-testing-guide.md` (first)
+   - `docs/agents/testing-patterns.md` (templates)
+   - `docs/agents/testing-troubleshooting.md` (failures/timeouts/handles)
+3. Lifecycle-model calculation changes
+   - `docs/agents/util_calculate.md`
+4. Test coverage backlog tracking
+   - `docs/agents/test_improvement_plan.md`
+5. Team/data audit process tasks
+   - `docs/agents/team_management.md`
+   - `docs/agents/data_audit_instruction.md`
 
 ## Repo Landmarks
 
-- `config/routes.ts` – mirrored routes for `/tgdata`, `/codata`, `/mydata`, `/tedata`; update every branch when adding shared pages.
-- `src/services/**` – only surface allowed to talk to Supabase; expose typed helpers for React pages.
-- `src/pages/<Feature>/` – page entry in `index.tsx` plus drawers/modals under `Components/`.
-- `src/components/**`, `src/contexts/**`, `types/**` – shared UI, React contexts, and ambient types.
-- `tests/{unit,integration}/**` – Jest suites; follow AI Testing Guide patterns for mocks and utilities.
-- `docs/agents/**` – agent-specific references (supersedes the old GitHub prompt folder).
+- `config/routes.ts`: mirrored route branches (`/tgdata`, `/codata`, `/mydata`, `/tedata`).
+- `src/services/**`: only allowed boundary for Supabase calls.
+- `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.
+- `src/components/**`, `src/contexts/**`, `types/**`: shared UI/context/types.
+- `tests/{unit,integration}/**`: Jest suites + shared helpers in `tests/helpers/**`.
 
-## Workflow Guardrails
+## Delivery Contract
 
-- Investigate before writing code (`rg` for symbols, inspect closest existing feature, study service APIs).
-- Extend services/types before UI; keep business logic out of React components.
-- Keep list/drawer/modal patterns identical to existing table flows (table → toolbar → drawer forms).
-- Respect access control helpers in `src/access.ts` and maintain i18n parity (EN + ZH keys defined in locale files).
-- When editing lifecycle-model utilities, consult both util_calculate guides to avoid diverging from documented flow.
+- Investigate first (`rg`, nearest feature, existing tests).
+- Keep business logic in services/utilities; React layers stay orchestration-focused.
+- Add/adjust tests matching scope.
+- `npm run lint` must pass.
+- Run focused Jest suites relevant to the change.
+- Keep diffs scoped; update docs when expectations or workflows change.
 
-## Delivery Checklist
+## Documentation Maintenance
 
-- Implement tests that mirror the change scope; use helpers from `tests/helpers/**`.
-- `npm run lint` must pass (runs ESLint, Prettier check, and `tsc`).
-- Run focused Jest suites (e.g., `npm test -- tests/integration/<feature>/`) plus any added specs.
-- Keep diffs constrained to the relevant feature/service/tests/docs and update `docs/agents/**` or this file whenever behavior expectations change.
+When editing any English doc (`*.md` without `_CN`):
+
+1. Update the corresponding `_CN` mirror in the same commit.
+2. Keep command examples executable against current scripts.
+3. Avoid duplicating long guidance across files; link back to the source doc.
+4. If workflow changed, update this file first (entry-point accuracy).

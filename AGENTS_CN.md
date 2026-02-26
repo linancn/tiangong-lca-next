@@ -1,55 +1,77 @@
-# AGENTS – Tiangong LCA Next（中文镜像）
+# AGENTS – Tiangong LCA Next（中文）
 
-> 说明：英文版 `AGENTS.md` 是唯一权威来源，AI 代理只读取英文。若英文内容有调整，须同步更新本 `_CN` 文件以方便人类同事查阅。
+本文件是 coding agent 的唯一入口文档。
 
-## 快速导航
+> 语言约定：agent 执行时只加载英文文档（无 `_CN` 后缀）。只要改了英文文档，必须在同一改动里同步对应 `_CN` 镜像。
 
-- Node.js **>= 24**：先执行 `nvm use 24` 再安装依赖。仓库已附带可用 `.env`（含 Supabase key），若切换 Supabase 实例再覆盖，并始终通过 `src/services/supabase` 读取。
-- 技术栈：React 18 + @umijs/max 4 + Ant Design Pro 5 + TypeScript，对应入口 `src/app.tsx`、`config/routes.ts`。
-- Service-first：先在 `src/services/<feature>/{data,api,util}.ts` 增补类型/接口/纯函数，再由页面消费。
-- UI 仅使用函数式组件，并优先复用 `src/components/**` 现有能力。
-- 所有前端文案通过 Umi i18n (`FormattedMessage` / `intl.formatMessage`) 输出，禁止硬编码文本。
-- Supabase（鉴权、Postgres、存储、Edge Functions）已集中初始化，页面层绝不直接 new client。
-- 未获人类维护者许可，不可新增 npm 依赖。
+## 目标
 
-## 常用命令
+- 降低上下文/token 消耗：先读本文件，再按任务按需打开其他文档。
+- 统一开发、测试、交付要求，避免规范冲突。
 
-```
+## 运行基线
+
+- Node.js **>= 24**（执行 `nvm use 24`，`.nvmrc` 已固定为 `24`）。
+- 技术栈：React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript。
+- Supabase 环境变量已由仓库 fallback `.env` 预置；禁止在 `src/services/**` 之外创建临时 Supabase client。
+- 未经人工明确批准，不得新增 npm 依赖。
+
+## 核心命令
+
+```bash
 npm install
 npm start
 npm run lint
 npm test
-npm test -- tests/integration/<feature>/
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
 
-## 代理参考文档
+说明：
 
-- `docs/agents/ai-dev-guide.md` / `_CN` 镜像：AI 开发规范（路由、服务分层、组件模式）。
-- `docs/agents/ai-testing-guide.md` / `_CN` 镜像：测试流程/命令速查；详细模式与排查请参阅 `docs/agents/testing-patterns(.md|_CN.md)` 与 `docs/agents/testing-troubleshooting(.md|_CN.md)`。
-- `docs/agents/util_calculate.md` / `_CN` 镜像：`genLifeCycleModelProcesses` 深入说明。
-- `README*.md`、`DEV*.md`：面向人类的上手文档，可互相引用但不要复制粘贴。
+- `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
+- 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
 
-## 仓库地标
+## 按需文档路由（省 token）
 
-- `config/routes.ts`：/tgdata、/codata、/mydata、/tedata 四套路由，新增共享页面时需全部同步。
-- `src/services/**`：唯一允许直接访问 Supabase 的层，提供类型化 helper。
-- `src/pages/<Feature>/`：页面入口 `index.tsx` 与子组件 `Components/`。
-- `src/components/**`、`src/contexts/**`、`types/**`：复用型 UI、Context 与类型定义。
-- `tests/{unit,integration}/**`：Jest 套件，严格遵循 Testing Guide。
-- `docs/agents/**`：面向 AI 的知识库（已取代旧的 `.github/prompts` 目录）。
+只打开与你当前任务相关的文档：
 
-## 工作流护栏
+1. 功能/页面开发
+   - `docs/agents/ai-dev-guide.md`
+2. 任意测试编写/排错
+   - `docs/agents/ai-testing-guide.md`（先读）
+   - `docs/agents/testing-patterns.md`（模板）
+   - `docs/agents/testing-troubleshooting.md`（超时/句柄/失败排查）
+3. 生命周期模型计算逻辑
+   - `docs/agents/util_calculate.md`
+4. 覆盖率缺口与测试补全计划
+   - `docs/agents/test_improvement_plan.md`
+5. 团队管理/数据审核流程
+   - `docs/agents/team_management.md`
+   - `docs/agents/data_audit_instruction.md`
 
-- 编码前先调研：`rg` 检索符号、阅读相似功能、理解 service API。
-- 先扩展 service/type，再补 UI；业务逻辑不要塞进 React 组件。
-- 列表/Drawer/Modal 交互遵循既有流程（表格→工具栏→弹窗）。
-- 遵守 `src/access.ts` 的权限约束，并保持中英文文案同步。
-- 调整生命周期模型工具前，务必对照 util_calculate 英/中文档。
+## 仓库关键位置
 
-## 交付清单
+- `config/routes.ts`：`/tgdata`、`/codata`、`/mydata`、`/tedata` 路由镜像。
+- `src/services/**`：唯一允许访问 Supabase 的边界层。
+- `src/pages/<Feature>/`：页面入口与 `Components/` 抽屉/弹窗。
+- `src/components/**`、`src/contexts/**`、`types/**`：共享 UI/上下文/类型。
+- `tests/{unit,integration}/**`：Jest 测试，通用能力在 `tests/helpers/**`。
 
-- 变更范围内必须补相应单元或集成测试，复用 `tests/helpers/**` 工具。
-- `npm run lint` 必须通过（ESLint、Prettier、`tsc`）。
-- 运行针对性 Jest（如 `npm test -- tests/integration/<feature>/`）及新增用例。
-- Diff 仅限关联目录，若修改规范/流程需同步更新 `docs/agents/**` 或本文件。
+## 交付约束
+
+- 先调研（`rg`、最近似功能、现有测试）。
+- 业务逻辑放在 services/utilities，React 组件主要做编排。
+- 变更必须配套测试。
+- `npm run lint` 必须通过。
+- 运行与变更相关的聚焦 Jest 套件。
+- 控制 diff 范围；行为或流程变化时同步更新文档。
+
+## 文档维护规则
+
+当你修改任一英文文档（无 `_CN` 后缀）时：
+
+1. 同步修改对应 `_CN` 镜像。
+2. 命令示例必须能在当前脚本下直接执行。
+3. 避免跨文档复制长段说明，优先引用来源文档。
+4. 若工作流变化，优先更新本入口文档（保证入口准确）。

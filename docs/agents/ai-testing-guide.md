@@ -1,64 +1,76 @@
 # AI Testing Guide – Tiangong LCA Next
 
-> Agents: only consult this English file during execution. `docs/agents/ai-testing-guide_CN.md` exists for human teammates and must be updated whenever you touch this doc.
+> Read this first for any test task. Start from `AGENTS.md`, then use this file as the short execution checklist. Mirror requirement: update `docs/agents/ai-testing-guide_CN.md` together with this file.
 
-## Environment & Tooling
+## Environment
 
-- Node.js **>= 24** (run `nvm use 24` before `npm install`). Jest, Testing Library, and Playwright-style helpers are already wired up in `package.json`.
-- Supabase credentials (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) ship in the repo’s fallback `.env`, so local tests connect out of the box. Override those vars only when pointing at a different project and keep reading them via `src/services/supabase`.
-- Never add npm dependencies just for tests; reuse the helpers under `tests/helpers/**` and the mocks in `tests/mocks/**`.
+- Node.js **>= 24** (`nvm use 24`).
+- Jest + Testing Library are preconfigured.
+- Reuse existing helpers and mocks under `tests/helpers/**` and `tests/mocks/**`.
+- Do not add test-only dependencies without approval.
 
-## Fast Workflow for AI Contributors
+## Fast Workflow (Required)
 
-1. **Parse the ask** – capture entity, workflow, and test type (unit vs integration vs component).
-2. **Locate code & mocks** – `ls src/pages/<Feature>/`, `rg "export.*function" src/services/<feature>/`, check `tests/integration/<feature>/` and `tests/unit/**` for prior art.
-3. **Check existing coverage** – search `tests/**` for matching `describe` blocks; note what’s already mocked in `tests/helpers/testData.ts` and `mockSetup.ts`.
-4. **Pick a pattern** – follow the templates in `docs/agents/testing-patterns.md` (unit, integration, component, shared utilities) and keep business logic inside mocks/helpers.
-5. **Write the test** – mock services _before_ rendering, seed Supabase auth session when required, reuse `TestWrapper`, and keep assertions semantic (`getByRole`, `findByText`).
-6. **Verify & report** – run the focused Jest command(s) + `npm run lint`, then summarize file paths, case counts, and command output in your final response.
+1. Parse task scope: feature, workflow, and test type (unit/integration/component).
+2. Inspect existing code and tests (`src/pages/**`, `src/services/**`, `tests/**`).
+3. Reuse project patterns from `testing-patterns.md`.
+4. Mock services before render.
+5. Write semantic assertions (`getByRole`, `findByText`, `waitFor`).
+6. Run focused suites + lint and report exact commands.
 
-## Guardrails & Anti-Loops
+## Critical Guardrails
 
-- ✅ Mock **every** network/service touch (`supabase`, `@/services/**`) inside `beforeEach` prior to calling `render`.
-- ✅ Use `mockResolvedValue`/`mockRejectedValue` for deterministic promises; track call counts with `toHaveBeenCalledTimes`.
-- ✅ Restore timers/mocks in `afterEach`, and prefer `await waitFor(...)` for async state updates.
-- ❌ Never render components before mocks are in place.
-- ❌ Never leave promises unresolved (`fireEvent.submit` without `await waitFor`).
-- ❌ Do not create new mock objects inside `mockImplementation` on every call (causes infinite loops).
+- Mock every network/service touch (`supabase`, `@/services/**`) before calling `render`.
+- Prefer `mockResolvedValue` / `mockRejectedValue` for deterministic async behavior.
+- Reset/clear mocks between tests.
+- Never render first and mock later.
+- Never leave async flows unresolved (missing `await` / `waitFor`).
+- Avoid per-call object creation inside `mockImplementation` when it causes unstable references.
 
-## Running Tests Reliably
+## Reliable Commands
 
 ```bash
-# Integration workflow (serial execution, 20s timeout)
-npm test -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+# Full local gate (same as CI style)
+npm test
 
-# Unit/utility suites (faster timeout)
-npm test -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
+# Focused integration suite
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 
-# Single file with debug helpers
-detect_open_handles="--detectOpenHandles"
-npm test -- tests/integration/processes/ProcessesWorkflow.integration.test.tsx \
-  --runInBand --testTimeout=20000 $detect_open_handles
+# Focused unit/component suite
+npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
 
-# Watch mode while iterating (no timeout)
-npm test -- tests/unit/services/processes/ --watch
+# Single-file open-handle debugging
+npm run test:ci -- tests/integration/processes/ProcessesWorkflow.integration.test.tsx \
+  --runInBand --testTimeout=20000 --detectOpenHandles
 
-# Lint gate (ESLint + Prettier check + tsc)
+# Watch mode during development (direct Jest)
+npx jest tests/unit/services/processes/ --watch
+
+# Lint gate
 npm run lint
 ```
 
-- Raise per-file timeouts inside tests with `jest.setTimeout(20000)` when a workflow legitimately needs longer.
-- When Node refuses to exit, rerun with `--detectOpenHandles` or inspect lingering timers (`jest.useFakeTimers()` + `jest.runAllTimers()`).
+## Coverage Expectations
 
-## Deep References
+- Directional goal: move toward near-100% meaningful coverage.
+- Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
+- Use coverage runs to identify gaps:
 
-- `docs/agents/testing-patterns.md` – exhaustive English reference (project overview, principles, test-type decision tree, unit/integration/component patterns, shared utilities). Mirror: `docs/agents/testing-patterns_CN.md`.
-- `docs/agents/testing-troubleshooting.md` – detailed command matrix plus troubleshooting playbook (timeouts, auth mocks, RTL queries). Mirror: `docs/agents/testing-troubleshooting_CN.md`.
+```bash
+npm run test:coverage
+npm run test:coverage:report
+```
+
+## Related Docs
+
+- `docs/agents/testing-patterns.md`: templates and reusable patterns.
+- `docs/agents/testing-troubleshooting.md`: failure diagnosis matrix.
+- `docs/agents/test_improvement_plan.md`: prioritized backlog for remaining gaps.
 
 ## Delivery Checklist
 
-- Tests cover every new/changed behavior (unit for pure helpers, integration/component for workflows/UI).
-- `npm run lint` passes with zero ESLint/Prettier/`tsc` errors.
-- Relevant Jest suites run with `--runInBand --testTimeout=...` and succeed.
-- Supabase/auth mocks reset between tests; no leaked handles when `npm test -- --detectOpenHandles` runs.
-- Documentation (`docs/agents/**`) updated when expectations or workflows change.
+- Tests added/updated for every changed behavior.
+- `npm run lint` passes.
+- Focused Jest commands pass.
+- No leaked handles in stubborn suites (`--detectOpenHandles` when needed).
+- If workflow changed, sync docs (English + `_CN`).

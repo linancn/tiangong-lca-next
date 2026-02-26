@@ -1,92 +1,246 @@
-# Testing Patterns Reference（中文镜像）
+# 测试模式参考 – Tiangong LCA Next（中文镜像）
 
-> 说明：请先阅读简版的 `docs/agents/ai-testing-guide.md` 了解流程与命令。本文件保留原 AI Testing Guide 的长篇模式、范例与细节，供需要深入信息时查阅；英文详解位于 `docs/agents/testing-patterns.md`。
+> 仅在编写/重构测试时按需阅读本文件。阅读顺序：`AGENTS.md` -> `ai-testing-guide.md` -> 本文件。镜像约束：英文版 `docs/agents/testing-patterns.md` 变更时必须同步本文件。
 
-## 使用须知
+## 目的
 
-- 一切交付流程、命令、Guardrail 以英文简版指南为准。
-- 本文档提供更细的模式与示例，可在实现过程中按需查阅。
-- 执行完成后仍需运行 `npm run lint` 和 `npm test -- ... --runInBand --testTimeout=...`（具体命令见简版指南）。
+本文件提供精简且项目化的测试模式：
 
-## AI 快速流程（与英文版 STEP 1~6 对应）
+- 如何选择测试类型，
+- 如何稳定 mock，
+- 如何复用共享 helper，
+- 交付前必须通过哪些门禁。
 
-1. **理解需求**：识别实体、测试类型、完整工作流（创建/编辑/审核等）。
-2. **定位代码**：`ls src/pages/<Feature>/`、`rg "export.*function" src/services/<feature>/`、查看 `tests/integration/<feature>/`。
-3. **确认已有覆盖**：`rg "describe.*" tests/integration`，复用 `tests/helpers/testData.ts` 中的 mock。
-4. **按模板书写**：集成测试遵循“渲染页面→mock 服务→模拟交互→断言 API 调用”；单元测试聚焦纯函数或 Hook。
-5. **执行质量门**：
-   - 推荐命令：
-     ```bash
-     npm test -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
-     npm test -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
-     npm run lint
-     ```
-   - 需要更长时间时，可在 CLI 中提高 `--testTimeout` 或在测试文件里调用 `jest.setTimeout(...)`；若 Node 不退出，追加 `--detectOpenHandles` 定位未关闭句柄。
-6. **回报结果**：说明文件路径、用例数量、覆盖工作流、lint/test 结果。
+## 1）测试类型选择
 
-## 目录速查
+以下场景用 **unit**：
 
-```
+- `src/services/**` 服务函数，
+- 纯工具函数逻辑，
+- edge function payload 组装逻辑。
+
+以下场景用 **integration**：
+
+- 页面级用户流程联测，
+- 角色/权限行为验证，
+- 表格/抽屉交互链路验证。
+
+以下场景用 **component**：
+
+- 单组件渲染行为，
+- props/callback 契约，
+- 条件渲染状态。
+
+## 2）全局规则（关键）
+
+- 所有服务/网络依赖必须先 mock 再 render。
+- 优先 `mockResolvedValue` / `mockRejectedValue` 保证确定性。
+- `beforeEach` 清理 mocks。
+- 异步状态必须 `await`（`waitFor`、`findBy*`、`await userEvent`）。
+- 优先语义化查询（`getByRole`、`getByLabelText`）。
+- 复用 `tests/helpers/**` 与 `tests/mocks/**`。
+
+禁止：
+
+- 先渲染后 mock，
+- 使用会产生不稳定引用的 `mockImplementation` 链，
+- 提交失败测试，
+- 无说明的 `skip/todo`。
+
+## 3）项目测试目录
+
+```text
 tests/
-  unit/
-    services/  # Supabase 调用、业务函数
-    components/
-    utils/
-  integration/
-    manageSystem/
-    reviews/
-    ...
-  mocks/
-    services/
-    data/
-  helpers/
-    mockBuilders.ts
-    testData.ts
-    mockSetup.ts
-    testUtils.tsx
+  helpers/           # 共享 builder、wrapper、fixtures
+  mocks/             # 可复用模块 mock
+  unit/              # 服务/组件/页面单测
+  integration/       # 流程级集成测试
+  setupTests.jsx     # 全局 setup + polyfill + 警告保护
 ```
 
-- `setupTests.jsx`：Jest 全局初始化。
-- 参考场景：`tests/integration/manageSystem/ManageSystemWorkflow.integration.test.tsx`、`tests/integration/reviews/ReviewWorkflow.integration.test.tsx`。
+命名约定：
 
-## 核心原则（对应英文“CORE TESTING PRINCIPLES”）
+- 单测/组件测：`*.test.ts` / `*.test.tsx`
+- 集成测试：`*Workflow.integration.test.tsx`
 
-- 单测：纯函数/Hook 需覆盖边界条件、错误分支、格式化逻辑。
-- 集测：模拟真实用户路径，验证 Supabase 调用次数、参数、UI 反馈。
-- 组件测：聚焦交互组件（表单、抽屉、列表），通过 RTL 查询语义化节点。
-- Mock 策略：在 `beforeEach` 中统一清理并重建 mock；必要时使用 `jest.resetModules()`。
+## 4）共享 Helper
 
-## 测试类型取舍（对应“TEST TYPE SELECTION”）
+### `tests/helpers/mockBuilders.ts`
 
-- 纯计算 → 单测。
-- 带状态的 Hook/组件 → 组件测试。
-- 涉及多服务/权限/路由 → 集测。
-- 当功能跨多层时，优先写集测，再补关键纯函数单测。
+Supabase 链式查询 mock 统一用 `createQueryBuilder(...)`。
 
-## 单元测试模板摘要
+```ts
+import { createQueryBuilder } from '@/tests/helpers/mockBuilders';
 
-- 使用 `describe` 组织场景，`it` 描述行为；安排 `beforeEach` 重置 mock。
-- 输入输出断言示例：`expect(formatClassification(raw)).toEqual(expected)`。
-- 异常流用 `await expect(fn()).rejects.toThrow()`。
-- 依赖时间/随机数时，使用 `jest.useFakeTimers()`、`jest.spyOn(Date, "now")` 或注入依赖。
+const builder = createQueryBuilder({ data: [{ id: '1' }], error: null, count: 1 });
+supabase.from.mockReturnValue(builder);
+```
 
-## 集成测试模板摘要
+另外可用：
 
-- 依赖 `tests/helpers/mockSetup.ts` 初始化 Supabase/Auth mock。
-- 渲染方式：`render(<Processes />, { wrapper: TestWrapper })`。
-- 交互常用 `userEvent.click/type/selectOptions`，并配合 `await waitFor(...)`。
-- 断言：UI（`getByRole`, `findByText`）、API 调用次数、路由跳转、副作用（如 message 提示）。
-- 提供多场景示例：创建流程、编辑流程、导入/导出、审核通过/拒绝。
+- `createMockSession`、`createMockNoSession`
+- `createMockSuccessResponse`、`createMockErrorResponse`
+- edge/RPC 返回构建器
 
-## 组件测试模板摘要
+### `tests/helpers/testData.ts`
 
-- 针对独立组件（如表单步骤、筛选器、Drawer 子组件）。
-- 使用 RTL 自定义渲染器注入必要 context（UnitsContext、IntlProvider 等）。
-- 验证受控属性、回调触发、校验规则（`fireEvent.submit` + 断言 `onFinish` 参数）。
+优先使用共享 fixture（`mockTeam`、`mockSource`、`mockPaginationParams` 等），避免随手写内联对象。
 
-## 公共工具（对应“SHARED UTILITIES REFERENCE”）
+### `tests/helpers/testUtils.tsx`
 
-- `tests/helpers/mockBuilders.ts`：构造 Supabase 响应。
-- `tests/helpers/testUtils.tsx`：包装 RTL render，内置 Intl、Router。
-- `tests/helpers/testData.ts`：常用 Process/Flow/Team 数据。
-- `tests/mocks/services/**`：分层 mock，实现一致的接口。
+需要 provider 上下文时使用 `renderWithProviders`。
+
+```ts
+import { renderWithProviders, screen } from '@/tests/helpers/testUtils';
+
+renderWithProviders(<MyPage />);
+```
+
+## 5）Unit 模板
+
+```ts
+import { myServiceFn } from '@/services/myFeature/api';
+import { createQueryBuilder } from '@/tests/helpers/mockBuilders';
+
+jest.mock('@/services/supabase', () => ({
+  supabase: {
+    from: jest.fn(),
+    auth: { getSession: jest.fn() },
+    functions: { invoke: jest.fn() },
+    rpc: jest.fn(),
+  },
+}));
+
+const { supabase } = jest.requireMock('@/services/supabase');
+
+describe('myServiceFn', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns data on success', async () => {
+    const builder = createQueryBuilder({ data: [{ id: '1' }], error: null });
+    supabase.from.mockReturnValue(builder);
+
+    const result = await myServiceFn();
+
+    expect(supabase.from).toHaveBeenCalled();
+    expect(result.error).toBeNull();
+  });
+
+  it('returns error on failure', async () => {
+    const builder = createQueryBuilder({ data: null, error: { message: 'db fail' } });
+    supabase.from.mockReturnValue(builder);
+
+    const result = await myServiceFn();
+
+    expect(result.error).toBeDefined();
+  });
+});
+```
+
+## 6）Integration 模板
+
+```ts
+import Page from '@/pages/MyFeature';
+import { renderWithProviders, screen, waitFor } from '@/tests/helpers/testUtils';
+import userEvent from '@testing-library/user-event';
+
+jest.mock('@/services/myFeature/api', () => ({
+  listData: jest.fn(),
+  createData: jest.fn(),
+}));
+
+const { listData, createData } = jest.requireMock('@/services/myFeature/api');
+
+describe('MyFeature workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    listData.mockResolvedValue({ data: [], error: null });
+    createData.mockResolvedValue({ data: { id: '1' }, error: null });
+  });
+
+  it('creates a record and refreshes list', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Page />);
+
+    await waitFor(() => expect(listData).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    await waitFor(() => expect(createData).toHaveBeenCalledTimes(1));
+  });
+});
+```
+
+## 7）Component 模板
+
+```ts
+import { renderWithProviders, screen } from '@/tests/helpers/testUtils';
+import userEvent from '@testing-library/user-event';
+import MyComponent from '@/components/MyComponent';
+
+describe('MyComponent', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('calls callback on submit', async () => {
+    const user = userEvent.setup();
+    const onSubmit = jest.fn();
+
+    renderWithProviders(<MyComponent onSubmit={onSubmit} />);
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+## 8）命令模式（可执行）
+
+```bash
+# 全量门禁（unit + integration）
+npm test
+
+# 聚焦单测/组件测
+npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
+
+# 聚焦集成测试
+npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+
+# 句柄排查
+npm run test:ci -- tests/integration/<feature>/<file>.test.tsx \
+  --runInBand --testTimeout=20000 --detectOpenHandles
+
+# Lint 门禁
+npm run lint
+```
+
+## 9）Skip/TODO 策略
+
+若测试暴露了确认的业务缺陷：
+
+1. 可临时 `it.skip(...)`；
+2. 必须写清晰 `TODO`，包含：
+   - 期望行为，
+   - 实际行为，
+   - 影响模块；
+3. 跳过范围要最小化。
+
+禁止无说明跳过。
+
+## 10）覆盖率策略
+
+- 方向目标：分支/行/函数覆盖持续提升，趋近有意义的高覆盖。
+- 当前强制门禁：以 `jest.config.cjs` 全局阈值为准。
+- 通过覆盖率命令定位缺口后再补精准测试。
+
+## 11）交付前清单
+
+- 相关测试已更新。
+- `npm run lint` 通过。
+- 聚焦 Jest 套件通过。
+- 必要时用 `--detectOpenHandles` 检查异步泄漏。
+- 若测试工作流变化，同步更新英文与 `_CN` 文档。
