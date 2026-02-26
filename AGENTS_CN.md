@@ -45,7 +45,8 @@ npm run build
 3. 生命周期模型计算逻辑
    - `docs/agents/util_calculate.md`
 4. 覆盖率缺口与测试补全计划
-   - `docs/agents/test_improvement_plan.md`
+   - `docs/agents/test_todo_list.md`（可执行待办）
+   - `docs/agents/test_improvement_plan.md`（长期背景）
 5. 团队管理/数据审核流程
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`

@@ -45,7 +45,8 @@ Read only what matches the current task:
 3. Lifecycle-model calculation changes
    - `docs/agents/util_calculate.md`
 4. Test coverage backlog tracking
-   - `docs/agents/test_improvement_plan.md`
+   - `docs/agents/test_todo_list.md` (actionable execution backlog)
+   - `docs/agents/test_improvement_plan.md` (long-term context)
 5. Team/data audit process tasks
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
