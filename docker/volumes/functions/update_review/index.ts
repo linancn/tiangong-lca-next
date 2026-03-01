@@ -46,9 +46,9 @@ Deno.serve(async (req) => {
   const { reviewIds, data } = await req.json();
 
   const { data: userRole } = await getUserRole(user.id, supabase);
-  // const isReviewMember = userRole?.find((item: any) => item.role === 'review-member');
+  const isReviewMember = userRole?.find((item: any) => item.role === 'review-member');
   const isReviewAdmin = userRole?.find((item: any) => item.role === 'review-admin');
-  if (!isReviewAdmin && user.id !== data?.json?.user?.id) {
+  if (!isReviewAdmin && user.id !== data?.json?.user?.id && !isReviewMember) {
     return new Response('Forbidden', { status: 403 });
   }
 

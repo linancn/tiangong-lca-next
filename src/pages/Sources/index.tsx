@@ -16,8 +16,9 @@ import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
-import { SourceTable } from '@/services/sources/data';
+import { SourceImportData, SourceTable } from '@/services/sources/data';
 import { getTeamById } from '@/services/teams/api';
+import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
@@ -32,9 +33,9 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const [stateCode, setStateCode] = useState<string | number>('all');
-  const [keyWord, setKeyWord] = useState<any>('');
-  const [team, setTeam] = useState<any>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [keyWord, setKeyWord] = useState<string>('');
+  const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<SourceImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
@@ -251,7 +252,7 @@ const TableList: FC = () => {
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
-  const handleImportData = (jsonData: any) => {
+  const handleImportData = (jsonData: SourceImportData) => {
     setImportData(jsonData);
   };
   return (

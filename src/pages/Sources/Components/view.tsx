@@ -4,11 +4,12 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import { isValidURL } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
+import { FormSource, SourceDataSetObjectKeys, SourceDetailResponse } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import { CloseOutlined, LinkOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { getPublicationTypeLabel } from './optiondata';
@@ -23,13 +24,27 @@ type Props = {
   lang: string;
 };
 
+const getClassificationValues = (value: unknown): string[] | undefined => {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+  if (!('value' in value)) {
+    return undefined;
+  }
+  const raw = (value as { value?: unknown }).value;
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  return raw.filter((item): item is string => typeof item === 'string');
+};
+
 const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
-  const [activeTabKey, setActiveTabKey] = useState<string>('sourceInformation');
+  const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
-  const tabList = [
+  const [initData, setInitData] = useState<Partial<FormSource>>({});
+  const tabList: { key: SourceDataSetObjectKeys; tab: ReactNode }[] = [
     {
       key: 'sourceInformation',
       tab: (
@@ -51,10 +66,16 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   ];
 
   const onTabChange = (key: string) => {
-    setActiveTabKey(key);
+    setActiveTabKey(key as SourceDataSetObjectKeys);
   };
 
-  const contentList: Record<string, React.ReactNode> = {
+  const classificationValues = getClassificationValues(
+    initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
+      'common:classification'
+    ]?.['common:class'],
+  );
+
+  const contentList: Record<SourceDataSetObjectKeys, React.ReactNode> = {
     sourceInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -79,15 +100,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
           data={initData.sourceInformation?.dataSetInformation?.['common:shortName']}
         />
         <br />
-        <LevelTextItemDescription
-          data={
-            initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class']?.['value']
-          }
-          lang={lang}
-          categoryType={'Source'}
-        />
+        <LevelTextItemDescription data={classificationValues} lang={lang} categoryType={'Source'} />
         <br />
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
@@ -100,7 +113,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {isValidURL(initData.sourceInformation?.dataSetInformation?.sourceCitation) ? (
+            {isValidURL(initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '') ? (
               <Tooltip
                 placement='topLeft'
                 title={initData.sourceInformation?.dataSetInformation?.sourceCitation}
@@ -108,7 +121,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 <Button
                   type='link'
                   target='blank'
-                  href={initData.sourceInformation?.dataSetInformation?.sourceCitation}
+                  href={initData.sourceInformation?.dataSetInformation?.sourceCitation ?? ''}
                 >
                   <LinkOutlined />
                 </Button>
@@ -131,7 +144,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             labelStyle={{ width: '180px' }}
           >
             {getPublicationTypeLabel(
-              initData.sourceInformation?.dataSetInformation?.publicationType,
+              initData.sourceInformation?.dataSetInformation?.publicationType ?? '',
             )}
           </Descriptions.Item>
         </Descriptions>
@@ -305,7 +318,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getSourceDetail(id, version).then(async (result: any) => {
+    getSourceDetail(id, version).then(async (result: SourceDetailResponse) => {
       setInitData(genSourceFromData(result.data?.json?.sourceDataSet ?? {}));
       // if (dataSource === 'my') {
       //   setFooterButtons(

@@ -1,4 +1,4 @@
-import { ListPagination } from '@/services/general/data';
+import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
 import { SourceTable } from '@/services/sources/data';
 import styles from '@/style/custom.less';
@@ -6,7 +6,7 @@ import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC, Key } from 'react';
+import type { FC, Key, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import SourceCreate from '../create';
@@ -14,7 +14,7 @@ import { default as SourceView } from '../view';
 
 type Props = {
   buttonType: string;
-  buttonText?: any;
+  buttonText?: ReactNode;
   lang: string;
   onData: (rowKey: string, version: string) => void;
   type?: 'reviewReport';
@@ -23,13 +23,15 @@ type Props = {
 const { Search } = Input;
 
 const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, type }) => {
-  const [tgKeyWord, setTgKeyWord] = useState<any>('');
-  const [coKeyWord, setCoKeyWord] = useState<any>('');
-  const [myKeyWord, setMyKeyWord] = useState<any>('');
-  const [teKeyWord, setTeKeyWord] = useState<any>('');
+  const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const [coKeyWord, setCoKeyWord] = useState<string>('');
+  const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const [teKeyWord, setTeKeyWord] = useState<string>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>(type === 'reviewReport' ? 'my' : 'tg');
+  const [activeTabKey, setActiveTabKey] = useState<DataTabKey>(
+    type === 'reviewReport' ? 'my' : 'tg',
+  );
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
@@ -41,25 +43,26 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
     setDrawerVisible(true);
   };
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+  const onSelectChange = (newSelectedRowKeys: Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
   const onTabChange = async (key: string) => {
-    await setActiveTabKey(key);
-    if (key === 'tg') {
+    const tabKey = key as DataTabKey;
+    await setActiveTabKey(tabKey);
+    if (tabKey === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
-    if (key === 'co') {
+    if (tabKey === 'co') {
       coActionRefSelect.current?.setPageInfo?.({ current: 1 });
       coActionRefSelect.current?.reload();
     }
-    if (key === 'my') {
+    if (tabKey === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
-    if (key === 'te') {
+    if (tabKey === 'te') {
       teActionRefSelect.current?.setPageInfo?.({ current: 1 });
       teActionRefSelect.current?.reload();
     }
@@ -203,7 +206,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   ];
   const tabList = type === 'reviewReport' ? baseTabList.slice(2) : baseTabList;
 
-  const databaseList: Record<string, React.ReactNode> = {
+  const databaseList: Record<DataTabKey, React.ReactNode> = {
     my: (
       <>
         <Card>

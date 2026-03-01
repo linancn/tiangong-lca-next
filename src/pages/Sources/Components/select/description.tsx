@@ -1,5 +1,5 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import { jsonToList } from '@/services/general/util';
+import type { ReferenceItem } from '@/services/general/data';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
 import { FormattedMessage, getLocale } from 'umi';
@@ -7,12 +7,12 @@ import SourceView from '../view';
 type Props = {
   title: ReactNode | string;
   lang: string;
-  data: any;
+  data?: ReferenceItem | ReferenceItem[];
 };
 
 const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   const locale = getLocale();
-  const dataList = jsonToList(data);
+  const dataList: ReferenceItem[] = Array.isArray(data) ? data : data ? [data] : [];
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
       {dataList.length === 0 ? (
@@ -30,7 +30,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
           </Descriptions>
         </Card>
       ) : (
-        dataList.map((item: any, index: number) => (
+        dataList.map((item, index: number) => (
           <Card
             size='small'
             title={
@@ -60,7 +60,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                 {item?.['@refObjectId'] && (
                   <SourceView
                     id={item?.['@refObjectId']}
-                    version={item?.['@version']}
+                    version={item?.['@version'] ?? ''}
                     buttonType='text'
                     lang={lang}
                   />

@@ -1,6 +1,6 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
-import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { refDataType } from '@/pages/Utils/review';
+import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
+import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
@@ -8,8 +8,9 @@ import {
   updateRefsData,
 } from '@/pages/Utils/updateReference';
 import { getSourceDetail, updateSource } from '@/services/sources/api';
-import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
+import { FormSource, SourceDataSetObjectKeys, SourceDetailResponse } from '@/services/sources/data';
 import { genSourceFromData, genSourceJsonOrdered } from '@/services/sources/util';
+import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
@@ -17,6 +18,7 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
+import type { RcFile, UploadFile } from 'antd/es/upload';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -31,8 +33,12 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  updateErrRef?: (data: any) => void;
+  updateErrRef?: (data: RefCheckType | null) => void;
 };
+
+type UpdateSourceResult = SupabaseMutationResult<{ rule_verification?: boolean }>;
+type FilePath = { '@uri': string };
+type FileWithUid = UploadFile & { newUid?: string };
 
 const SourceEdit: FC<Props> = ({
   id,
@@ -55,13 +61,15 @@ const SourceEdit: FC<Props> = ({
   const [fromData, setFromData] = useState<FormSource>();
   const [initData, setInitData] = useState<FormSource>();
   const [spinning, setSpinning] = useState(false);
-  const [fileList0, setFileList0] = useState<any[]>([]);
-  const [fileList, setFileList] = useState<any[]>([]);
-  const [loadFiles, setLoadFiles] = useState<any[]>([]);
+  const [fileList0, setFileList0] = useState<UploadFile[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [loadFiles, setLoadFiles] = useState<RcFile[]>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
-  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+  const [refCheckContextValue, setRefCheckContextValue] = useState<{
+    refCheckData: RefCheckType[];
+  }>({
     refCheckData: [],
   });
   useEffect(() => {
@@ -133,7 +141,7 @@ const SourceEdit: FC<Props> = ({
 
   const onReset = () => {
     setSpinning(true);
-    getSourceDetail(id, version).then(async (result: any) => {
+    getSourceDetail(id, version).then(async (result: SourceDetailResponse) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       setInitData(dataSet);
       setFromData(dataSet);
@@ -147,7 +155,7 @@ const SourceEdit: FC<Props> = ({
     });
   };
 
-  const handleSubmit = async (autoClose: boolean) => {
+  const handleSubmit = async (autoClose: boolean): Promise<UpdateSourceResult | undefined> => {
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     if (fileList0.length > 0) {
@@ -164,8 +172,8 @@ const SourceEdit: FC<Props> = ({
       }
     }
 
-    let filePaths: any[] = [];
-    let fileListWithUUID = [];
+    const filePaths: FilePath[] = [];
+    let fileListWithUUID: FileWithUid[] = [];
     if (fileList.length > 0) {
       fileListWithUUID = fileList.map((file) => {
         const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
@@ -181,7 +189,7 @@ const SourceEdit: FC<Props> = ({
       });
     }
     const fieldsValue = formRefEdit.current?.getFieldsValue();
-    const result = await updateSource(id, version, {
+    const result: UpdateSourceResult = await updateSource(id, version, {
       ...fieldsValue,
       sourceInformation: {
         ...fromData?.sourceInformation,
@@ -199,7 +207,7 @@ const SourceEdit: FC<Props> = ({
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: result?.data[0]?.rule_verification,
+          ruleVerification: Boolean(result?.data[0]?.rule_verification),
           nonExistent: false,
         });
       }
@@ -221,6 +229,7 @@ const SourceEdit: FC<Props> = ({
         formRefEdit.current?.resetFields();
         setDrawerVisible(false);
         reload();
+        return undefined;
       }
     } else {
       if (result?.error?.state_code === 100) {
@@ -245,7 +254,7 @@ const SourceEdit: FC<Props> = ({
     if (!autoClose) {
       return result;
     }
-    return true;
+    return undefined;
   };
 
   useEffect(() => {
@@ -259,7 +268,7 @@ const SourceEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
-    if (updateResult.error) {
+    if (!updateResult || updateResult.error) {
       setSpinning(false);
       return;
     }
@@ -272,7 +281,7 @@ const SourceEdit: FC<Props> = ({
         '@refObjectId': id,
         '@version': version,
       },
-      updateResult?.data[0]?.rule_verification,
+      updateResult?.data?.[0]?.rule_verification ?? false,
       false,
     );
     await checkData(
@@ -285,9 +294,9 @@ const SourceEdit: FC<Props> = ({
       nonExistentRef,
       pathRef,
     );
-    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
-      let result = problemNodes.map((item: any) => {
+      const result = problemNodes.map((item) => {
         return {
           id: item['@refObjectId'],
           version: item['@version'],
@@ -299,7 +308,7 @@ const SourceEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+    const unRuleVerificationData = unRuleVerification.map((item: refDataType) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
@@ -307,7 +316,7 @@ const SourceEdit: FC<Props> = ({
         nonExistent: false,
       };
     });
-    const nonExistentRefData = nonExistentRef.map((item: any) => {
+    const nonExistentRefData = nonExistentRef.map((item: refDataType) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
@@ -316,15 +325,15 @@ const SourceEdit: FC<Props> = ({
       };
     });
     const errTabNames: string[] = [];
-    nonExistentRef.forEach((item: any) => {
+    nonExistentRef.forEach((item: refDataType) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    unRuleVerification.forEach((item: any) => {
+    unRuleVerification.forEach((item: refDataType) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    problemNodes.forEach((item: any) => {
+    problemNodes.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
@@ -357,7 +366,7 @@ const SourceEdit: FC<Props> = ({
       if (errTabNames && errTabNames.length > 0) {
         message.error(
           errTabNames
-            .map((tab: any) =>
+            .map((tab) =>
               intl.formatMessage({
                 id: `pages.source.view.${tab}`,
                 defaultMessage: tab,
@@ -463,7 +472,10 @@ const SourceEdit: FC<Props> = ({
                   return [];
                 },
               }}
-              onFinish={() => handleSubmit(true)}
+              onFinish={async () => {
+                await handleSubmit(true);
+                return true;
+              }}
             >
               <SourceForm
                 lang={lang}
