@@ -19,9 +19,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitgroupsFrom from '@/pages/Unitgroups/Components/Unit/edit';
 import ToolBarButton from '@/components/ToolBarButton';
+import type {
+  FlowpropertyDetailResponse,
+  FlowpropertyImportData,
+} from '@/services/flowproperties/data';
 import { FlowPropertyDataSetObjectKeys, FormFlowProperty } from '@/services/flowproperties/data';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
+import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { v4 } from 'uuid';
 import { FlowpropertyForm } from './form';
@@ -32,7 +37,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: FlowpropertyImportData | null;
   onClose?: () => void;
   newVersion?: string;
 };
@@ -90,8 +95,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
     if (!id || !version) return;
     setSpinning(true);
     formRefCreate.current?.resetFields();
-    getFlowpropertyDetail(id, version).then(async (result: any) => {
-      const dataset = await genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+    getFlowpropertyDetail(id, version).then((result: FlowpropertyDetailResponse) => {
+      const dataset = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
           newVersion;
@@ -259,7 +264,10 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             onFinish={async () => {
               const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
               const formFieldsValue = formRefCreate.current?.getFieldsValue();
-              const result = await createFlowproperties(paramsId, formFieldsValue);
+              const result: SupabaseMutationResult<unknown> = await createFlowproperties(
+                paramsId,
+                formFieldsValue,
+              );
               if (result.data) {
                 message.success(
                   intl.formatMessage({
@@ -273,7 +281,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
                 setFromData(undefined);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(result.error?.message ?? 'Error');
               }
               return true;
             }}
