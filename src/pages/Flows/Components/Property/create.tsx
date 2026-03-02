@@ -2,6 +2,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import ToolBarButton from '@/components/ToolBarButton';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import { FlowPropertyData } from '@/services/flows/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -14,13 +15,13 @@ import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } f
 
 type Props = {
   lang: string;
-  onData: (data: any) => void;
+  onData: (data: FlowPropertyData) => void;
   showRules?: boolean;
 };
 const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [fromData, setFromData] = useState<any>({});
+  const [fromData, setFromData] = useState<FlowPropertyData>({});
   // const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
   const handletFromData = () => {

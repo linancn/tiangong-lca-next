@@ -487,6 +487,12 @@ export async function flowproperty_hybrid_search(
 }
 
 export async function getFlowpropertyDetail(id: string, version: string) {
+  if (!id || id.length !== 36) {
+    return Promise.resolve({
+      data: null,
+      success: false,
+    });
+  }
   return getDataDetail(id, version, 'flowproperties');
 }
 

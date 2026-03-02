@@ -1,10 +1,17 @@
 import { createFlows, getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
-import { formatDateTime } from '@/services/general/util';
+import { formatDateTime, jsonToList } from '@/services/general/util';
 // import { getSourceDetail } from '@/services/sources/api';
 // import { genSourceFromData } from '@/services/sources/util';
 import ToolBarButton from '@/components/ToolBarButton';
-import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
+import {
+  FlowDataSetObjectKeys,
+  FlowDetailResponse,
+  FlowImportData,
+  FlowPropertyData,
+  FormFlow,
+  FormFlowWithId,
+} from '@/services/flows/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -21,7 +28,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: FlowImportData | null;
   onClose?: () => void;
   newVersion?: string;
 };
@@ -53,9 +60,9 @@ const FlowsCreate: FC<CreateProps> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
-  const [initData, setInitData] = useState<FormFlow & { id?: string }>();
-  const [fromData, setFromData] = useState<FormFlow & { id?: string }>();
-  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [initData, setInitData] = useState<FormFlowWithId>();
+  const [fromData, setFromData] = useState<FormFlowWithId>();
+  const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const [flowType, setFlowType] = useState<string | undefined>(undefined);
 
@@ -77,11 +84,11 @@ const FlowsCreate: FC<CreateProps> = ({
       });
   };
 
-  const handletPropertyData = (data: any) => {
+  const handletPropertyData = (data: FlowPropertyData[]) => {
     if (fromData) setPropertyDataSource([...data]);
   };
 
-  const handletPropertyDataCreate = (data: any) => {
+  const handletPropertyDataCreate = (data: FlowPropertyData) => {
     if (fromData)
       setPropertyDataSource([
         ...propertyDataSource,
@@ -95,20 +102,20 @@ const FlowsCreate: FC<CreateProps> = ({
       flowProperties: {
         flowProperty: [...propertyDataSource],
       },
-    } as any);
+    } as FormFlowWithId);
   }, [propertyDataSource]);
 
   const getFormDetail = () => {
     if (!id || !version) return;
     setSpinning(true);
-    getFlowDetail(id, version).then(async (result: any) => {
+    getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
       const dataset = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
           newVersion;
       }
       setInitData({ ...dataset, id: id });
-      setPropertyDataSource(dataset?.flowProperties?.flowProperty ?? []);
+      setPropertyDataSource(jsonToList(dataset?.flowProperties?.flowProperty));
       setFromData({ ...dataset, id: id });
       setFlowType(dataset?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.resetFields();
@@ -139,7 +146,7 @@ const FlowsCreate: FC<CreateProps> = ({
     if (importData && importData.length > 0) {
       const formData = genFlowFromData(importData[0].flowDataSet);
       setInitData(formData);
-      setPropertyDataSource(formData?.flowProperties?.flowProperty ?? []);
+      setPropertyDataSource(jsonToList(formData?.flowProperties?.flowProperty));
       setFromData(formData);
       setFlowType(formData?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.setFieldsValue(formData);
@@ -153,7 +160,7 @@ const FlowsCreate: FC<CreateProps> = ({
     // const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
     // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
 
-    // getSourceDetail(referenceToComplianceSystemId, '').then(async (result1: any) => {
+    // getSourceDetail(referenceToComplianceSystemId, '').then(async (result1) => {
     //   const referenceToComplianceSystemData = genSourceFromData(
     //     result1.data?.json?.sourceDataSet ?? {},
     //   );
@@ -168,7 +175,7 @@ const FlowsCreate: FC<CreateProps> = ({
     //       ] ?? [],
     //   };
 
-    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2) => {
     // const referenceToDataSetFormatData = genSourceFromData(
     //   result2.data?.json?.sourceDataSet ?? {},
     // );
@@ -331,7 +338,7 @@ const FlowsCreate: FC<CreateProps> = ({
               //   );
               //   return true;
               // } else if (
-              //   flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
+              //   flowProperties.flowProperty.filter((item) => item?.quantitativeReference)
               //     .length !== 1
               // ) {
               //   message.error(
@@ -372,7 +379,7 @@ const FlowsCreate: FC<CreateProps> = ({
               formRef={formRefCreate}
               onData={handletFromData}
               flowType={flowType}
-              onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
+              onTabChange={onTabChange}
               propertyDataSource={propertyDataSource}
               onPropertyData={handletPropertyData}
               onPropertyDataCreate={handletPropertyDataCreate}

@@ -3,10 +3,12 @@ import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import UnitGroupFromMini from '@/pages/Unitgroups/Components/select/formMini';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getFlowDetail } from '@/services/flows/api';
+import { FlowDetailData, FlowDetailResponse } from '@/services/flows/data';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData } from '@/services/general/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
+import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, useModel } from 'umi';
 import FlowsEdit from '../edit';
@@ -15,14 +17,19 @@ import FlowsSelectDrawer from './drawer';
 const { TextArea } = Input;
 
 type Props = {
-  name: any;
+  name: Array<string | number>;
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   drawerVisible: boolean;
   asInput?: boolean;
   onData: () => void;
-  rules?: any[];
+  rules?: Rule[];
+};
+
+type RefDataResponse = {
+  data?: FlowDetailData | null;
+  success?: boolean;
 };
 
 const FlowsSelectForm: FC<Props> = ({
@@ -40,20 +47,24 @@ const FlowsSelectForm: FC<Props> = ({
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
-  const [refData, setRefData] = useState<any>(null);
+  const [refData, setRefData] = useState<FlowDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
   const { initialState } = useModel('@@initialState');
-  const updateErrRefByDetail = (data: any) => {
+  const updateErrRefByDetail = (data: FlowDetailData | null | undefined) => {
+    const resolvedId = data?.id;
+    const resolvedVersion = data?.version;
     if (
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      rules?.length
+      rules?.length &&
+      resolvedId &&
+      resolvedVersion
     ) {
       setErrRef({
-        id: data?.id,
-        version: data?.version,
+        id: resolvedId,
+        version: resolvedVersion,
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
@@ -63,9 +74,9 @@ const FlowsSelectForm: FC<Props> = ({
   };
   useEffect(() => {
     if (id && version && !refData) {
-      getRefData(id, version, 'flows', '').then((result: any) => {
+      getRefData(id, version, 'flows', '').then((result: RefDataResponse) => {
         setDataUserId(result?.data?.userId);
-        setRefData({ ...result.data });
+        setRefData(result.data ? { ...result.data } : null);
         updateErrRefByDetail(result?.data);
       });
     }
@@ -73,7 +84,7 @@ const FlowsSelectForm: FC<Props> = ({
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
-        (item: any) =>
+        (item) =>
           (item.id === id && item.version === version) ||
           (item.id === refData?.id && item.version === refData?.version),
       );
@@ -88,7 +99,7 @@ const FlowsSelectForm: FC<Props> = ({
   }, [refCheckContext, refData]);
 
   const handletFlowsData = (rowId: string, rowVersion: string) => {
-    getFlowDetail(rowId, rowVersion).then(async (result: any) => {
+    getFlowDetail(rowId, rowVersion).then(async (result: FlowDetailResponse) => {
       setDataUserId(result?.data?.userId);
       updateErrRefByDetail(result?.data);
       const selectedData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
@@ -117,9 +128,19 @@ const FlowsSelectForm: FC<Props> = ({
       }
     }
   });
-  const requiredRules = rules.filter((rule: any) => rule.required);
-  const isRequired = requiredRules && requiredRules.length;
-  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+
+  const isRequiredRule = (rule: Rule): rule is Rule & { required: true } => {
+    return (
+      typeof rule === 'object' &&
+      rule !== null &&
+      'required' in rule &&
+      Boolean((rule as { required?: boolean }).required)
+    );
+  };
+
+  const requiredRules = rules.filter(isRequiredRule);
+  const isRequired = requiredRules.length > 0;
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
   return (
     <Card
       size='small'
@@ -155,17 +176,21 @@ const FlowsSelectForm: FC<Props> = ({
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            isRequired && {
-              validator: (rule, value) => {
-                if (!value) {
-                  setRuleErrorState(true);
-                  console.log('form rules check error');
-                  return Promise.reject(new Error());
-                }
-                setRuleErrorState(false);
-                return Promise.resolve();
-              },
-            },
+            ...(isRequired
+              ? [
+                  {
+                    validator: (_: Rule, value: unknown) => {
+                      if (!value) {
+                        setRuleErrorState(true);
+                        console.log('form rules check error');
+                        return Promise.reject(new Error());
+                      }
+                      setRuleErrorState(false);
+                      return Promise.resolve();
+                    },
+                  },
+                ]
+              : []),
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -203,7 +228,7 @@ const FlowsSelectForm: FC<Props> = ({
           {id && <FlowsView lang={lang} id={id} version={version ?? ''} buttonType='text' />}
           {id && dataUserId === initialState?.currentUser?.userid && (
             <FlowsEdit
-              updateErrRef={(data: any) => setErrRef(data)}
+              updateErrRef={(data) => setErrRef(data)}
               lang={lang}
               id={id}
               version={version ?? ''}

@@ -1,3 +1,4 @@
+import { FlowPropertyData } from '@/services/flows/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -7,11 +8,11 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
-  data: any;
+  data: FlowPropertyData[];
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onData: (data: any) => void;
+  onData: (data: FlowPropertyData[]) => void;
 };
 
 const PropertyDelete: FC<Props> = ({
@@ -30,9 +31,9 @@ const PropertyDelete: FC<Props> = ({
   }, []);
 
   const handleOk = useCallback(() => {
-    const filteredData = data.filter((item: any) => item['@dataSetInternalID'] !== id);
+    const filteredData = data.filter((item) => item['@dataSetInternalID'] !== id);
     onData(
-      filteredData.map((item: any, index: number) => {
+      filteredData.map((item, index: number) => {
         return {
           ...item,
           '@dataSetInternalID': index.toString(),
