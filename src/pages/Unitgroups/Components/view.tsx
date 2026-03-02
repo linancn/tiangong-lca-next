@@ -5,9 +5,16 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
+import { getClassificationValues } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
+import { jsonToList } from '@/services/general/util';
 import { getUnitGroupDetail } from '@/services/unitgroups/api';
-import { UnitTable } from '@/services/unitgroups/data';
+import {
+  UnitGroupDetailResponse,
+  UnitGroupFormState,
+  UnitItem,
+  UnitTable,
+} from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitTableData } from '@/services/unitgroups/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -35,8 +42,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
-  const [unitDataSource, setUnitDataSource] = useState<any>([]);
+  const [initData, setInitData] = useState<UnitGroupFormState>({} as UnitGroupFormState);
+  const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
 
   const [activeTabKey, setActiveTabKey] = useState<string>('unitGroupInformation');
   const onTabChange = (key: string) => {
@@ -183,6 +190,15 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     { key: 'units', tab: <FormattedMessage id='pages.unitgroup.units' defaultMessage='Units' /> },
   ];
 
+  const classificationValues = getClassificationValues(
+    initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
+      'common:classification'
+    ]?.['common:class'],
+  );
+  const complianceRecord = initData.modellingAndValidation?.complianceDeclarations?.compliance as
+    | Record<string, unknown>
+    | undefined;
+
   const contentList: Record<string, React.ReactNode> = {
     unitGroupInformation: (
       <>
@@ -203,11 +219,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         />
         <br />
         <LevelTextItemDescription
-          data={
-            initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class']?.['value']
-          }
+          data={classificationValues}
           lang={lang}
           categoryType={'UnitGroup'}
         />
@@ -232,9 +244,9 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             />
           }
           data={
-            initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
-            ] ?? {}
+            (complianceRecord?.['common:referenceToComplianceSystem'] as
+              | Record<string, unknown>
+              | undefined) ?? {}
           }
           lang={lang}
         />
@@ -251,9 +263,8 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             labelStyle={{ width: '240px' }}
           >
             {getComplianceLabel(
-              initData.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
-              ] ?? '-',
+              (complianceRecord?.['common:approvalOfOverallCompliance'] as string | undefined) ??
+                '-',
             )}
           </Descriptions.Item>
         </Descriptions>
@@ -335,7 +346,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           data={
             initData.administrativeInformation?.publicationAndOwnership?.[
               'common:referenceToPrecedingDataSetVersion'
-            ]
+            ] ?? {}
           }
         />
         <br />
@@ -379,12 +390,11 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     console.log('onView', id, version);
     setDrawerVisible(true);
     setSpinning(true);
-    getUnitGroupDetail(id, version).then(async (result: any) => {
-      setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}) });
-      setUnitDataSource([
-        ...(genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ??
-          ([] as any)),
-      ]);
+    getUnitGroupDetail(id, version).then(async (result: UnitGroupDetailResponse) => {
+      const parsedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
+      setInitData({ ...parsedData });
+      const parsedUnits = parsedData?.units?.unit;
+      setUnitDataSource(jsonToList(parsedUnits) as UnitItem[]);
       // if (dataSource === 'my') {
       //   setFooterButtons(
       //     <>

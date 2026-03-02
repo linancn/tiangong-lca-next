@@ -7,7 +7,7 @@ import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import { ListPagination } from '@/services/general/data';
-import { UnitTable } from '@/services/unitgroups/data';
+import { UnitDraft, UnitItem, UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
@@ -27,10 +27,10 @@ type Props = {
   activeTabKey: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
-  onUnitData: (data: any) => void;
-  onUnitDataCreate: (data: any) => void;
+  onUnitData: (data: UnitItem[]) => void;
+  onUnitDataCreate: (data: UnitDraft) => void;
   onTabChange: (key: string) => void;
-  unitDataSource: UnitTable[];
+  unitDataSource: UnitItem[];
   formType?: string;
   showRules?: boolean;
 };
@@ -127,7 +127,7 @@ export const UnitGroupForm: FC<Props> = ({
       search: false,
       align: 'right',
       width: 150,
-      render: (_: any, record: any) => {
+      render: (_: unknown, record) => {
         return <AlignedNumber value={record.meanValue} />;
       },
     },

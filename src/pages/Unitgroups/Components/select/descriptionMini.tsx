@@ -2,6 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import { getReferenceUnitGroup } from '@/services/flowproperties/api';
 import { getReferenceProperty } from '@/services/flows/api';
 import { getReferenceUnit } from '@/services/unitgroups/api';
+import { FlowPropertyUnitGroupData, UnitReferenceData } from '@/services/unitgroups/data';
 import { Card, Descriptions, Divider, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
@@ -13,32 +14,37 @@ type Props = {
 
 const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
-  const [refUnitGroup, setRefUnitGroup] = useState<any>({});
-  const [refUnit, setRefUnit] = useState<any>({});
+  const [refUnitGroup, setRefUnitGroup] = useState<FlowPropertyUnitGroupData | null>(null);
+  const [refUnit, setRefUnit] = useState<UnitReferenceData | null>(null);
 
   useEffect(() => {
     if (id) {
       if (idType === 'flow') {
         setSpinning(true);
-        getReferenceProperty(id, version ?? '').then((res1: any) => {
-          getReferenceUnitGroup(res1?.data?.refFlowPropertytId, res1?.data?.re).then(
-            (res2: any) => {
-              setRefUnitGroup(res2?.data);
-              getReferenceUnit(res2?.data?.refUnitGroupId, res2?.data?.version).then((res3) => {
-                setRefUnit(res3?.data);
+        getReferenceProperty(id, version ?? '').then((res1) => {
+          getReferenceUnitGroup(
+            res1?.data?.refFlowPropertytId ?? '',
+            res1?.data?.version ?? '',
+          ).then((res2) => {
+            setRefUnitGroup(res2?.data ?? null);
+            getReferenceUnit(res2?.data?.refUnitGroupId ?? '', res2?.data?.version ?? '').then(
+              (res3) => {
+                setRefUnit(res3?.data ?? null);
                 setSpinning(false);
-              });
-            },
-          );
+              },
+            );
+          });
         });
       } else if (idType === 'flowproperty') {
         setSpinning(true);
-        getReferenceUnitGroup(id, version ?? '').then((res1: any) => {
-          setRefUnitGroup(res1.data);
-          getReferenceUnit(res1?.data?.refUnitGroupId, res1?.data?.version).then((res2) => {
-            setRefUnit(res2?.data);
-            setSpinning(false);
-          });
+        getReferenceUnitGroup(id, version ?? '').then((res1) => {
+          setRefUnitGroup(res1?.data ?? null);
+          getReferenceUnit(res1?.data?.refUnitGroupId ?? '', res1?.data?.version ?? '').then(
+            (res2) => {
+              setRefUnit(res2?.data ?? null);
+              setSpinning(false);
+            },
+          );
         });
       }
     }

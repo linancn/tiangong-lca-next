@@ -1,3 +1,4 @@
+import type { SupabaseDeleteResult } from '@/services/supabase/data';
 import { deleteUnitGroup } from '@/services/unitgroups/api';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -28,7 +29,7 @@ const UnitGroupDelete: FC<Props> = ({
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteUnitGroup(id, version).then(async (result: any) => {
+    deleteUnitGroup(id, version).then(async (result: SupabaseDeleteResult) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({
@@ -40,7 +41,7 @@ const UnitGroupDelete: FC<Props> = ({
         setIsModalVisible(false);
         actionRef.current?.reload();
       } else {
-        message.error(result.error.message ?? 'Error');
+        message.error(result.error?.message ?? 'Error');
       }
     });
   }, [actionRef, id, setViewDrawerVisible]);

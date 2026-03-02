@@ -7,7 +7,7 @@ import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC, Key } from 'react';
+import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitGroupCreate from '../create';
@@ -15,7 +15,7 @@ import UnitGroupView from '../view';
 
 type Props = {
   buttonType: string;
-  buttonText?: any;
+  buttonText?: ReactNode;
   lang: string;
   onData: (rowKey: string, version: string) => void;
 };
@@ -23,10 +23,10 @@ type Props = {
 const { Search } = Input;
 
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
-  const [tgKeyWord, setTgKeyWord] = useState<any>('');
-  const [coKeyWord, setCoKeyWord] = useState<any>('');
-  // const [myKeyWord, setMyKeyWord] = useState<any>('');
-  // const [teKeyWord, setTeKeyWord] = useState<any>('');
+  const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const [coKeyWord, setCoKeyWord] = useState<string>('');
+  // const [myKeyWord, setMyKeyWord] = useState<string>('');
+  // const [teKeyWord, setTeKeyWord] = useState<string>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<string>('tg');

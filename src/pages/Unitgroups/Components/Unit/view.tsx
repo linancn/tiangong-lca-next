@@ -1,6 +1,7 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+import { UnitItem } from '@/services/unitgroups/data';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -9,17 +10,17 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   id: string;
-  data: any;
+  data: UnitItem[];
   buttonType: string;
 };
 const UnitView: FC<Props> = ({ id, data, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [viewData, setViewData] = useState<any>({});
+  const [viewData, setViewData] = useState<UnitItem>({ '@dataSetInternalID': '' });
   // const [spinning, setSpinning] = useState(false);
 
   const onView = () => {
     setDrawerVisible(true);
-    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
     setViewData(filteredData);
   };
 
@@ -100,7 +101,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             }
             labelStyle={{ width: '180px' }}
           >
-            {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
+            {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
           </Descriptions.Item>
         </Descriptions>
         <br />

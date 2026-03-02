@@ -1,4 +1,5 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import { UnitDraft, UnitItem } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -9,16 +10,16 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   id: string;
-  data: any;
+  data: UnitItem[];
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onData: (data: any) => void;
+  onData: (data: UnitItem[]) => void;
 };
 const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVisible, onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [fromData, setFromData] = useState<UnitDraft>({});
+  const [initData, setInitData] = useState<UnitDraft>({});
   const formRefEdit = useRef<ProFormInstance>();
 
   const onEdit = useCallback(() => {
@@ -28,7 +29,7 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
   const onReset = () => {
     // setSpinning(true);
     formRefEdit.current?.resetFields();
-    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);
@@ -103,9 +104,9 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
           }}
           onFinish={async () => {
             onData(
-              data.map((item: any) => {
+              data.map((item) => {
                 if (item['@dataSetInternalID'] === id) {
-                  return fromData;
+                  return fromData as UnitItem;
                 }
                 return item;
               }),
