@@ -2,14 +2,21 @@ import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { createSource, getSourceDetail } from '@/services/sources/api';
-import { FormSource, SourceDataSetObjectKeys } from '@/services/sources/data';
+import {
+  FormSource,
+  SourceDataSetObjectKeys,
+  SourceDetailResponse,
+  SourceImportData,
+} from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
+import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
+import type { RcFile, UploadFile } from 'antd/es/upload';
 import path from 'path';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -23,7 +30,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: SourceImportData | null;
   onClose?: () => void;
   newVersion?: string;
 };
@@ -57,11 +64,14 @@ const SourceCreate: FC<CreateProps> = ({
   const [fromData, setFromData] = useState<FormSource>();
   const [initData, setInitData] = useState<FormSource>();
   const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
-  const [fileList0, setFileList0] = useState<any[]>([]);
-  const [fileList, setFileList] = useState<any[]>([]);
-  const [loadFiles, setLoadFiles] = useState<any[]>([]);
+  const [fileList0, setFileList0] = useState<UploadFile[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [loadFiles, setLoadFiles] = useState<RcFile[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+
+  type FilePath = { '@uri': string };
+  type FileWithUid = UploadFile & { newUid?: string };
 
   const handletFromData = () => {
     if (fromData)
@@ -94,12 +104,12 @@ const SourceCreate: FC<CreateProps> = ({
       }
     }
 
-    let filePaths: any[] = [];
-    let fileListWithUUID = [];
+    const filePaths: FilePath[] = [];
+    let fileListWithUUID: FileWithUid[] = [];
     if (fileList.length > 0) {
       fileListWithUUID = fileList.map((file) => {
         const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
-        if (isInFileList0) {
+        if (isInFileList0 && file.url) {
           filePaths.push({ '@uri': file.url });
           return file;
         } else {
@@ -113,7 +123,7 @@ const SourceCreate: FC<CreateProps> = ({
 
     const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
     const formFieldsValue = formRefCreate.current?.getFieldsValue();
-    const result = await createSource(paramsId, {
+    const result: SupabaseMutationResult<unknown> = await createSource(paramsId, {
       ...formFieldsValue,
       sourceInformation: {
         ...fromData?.sourceInformation,
@@ -145,12 +155,12 @@ const SourceCreate: FC<CreateProps> = ({
       setDrawerVisible(false);
       reload();
     } else {
-      message.error(result.error.message);
+      message.error(result.error?.message ?? 'Error');
     }
     return true;
   };
 
-  const initFormDetail = async (dataSet: any) => {
+  const initFormDetail = async (dataSet: FormSource) => {
     setInitData(dataSet);
     setFromData(dataSet);
 
@@ -167,7 +177,7 @@ const SourceCreate: FC<CreateProps> = ({
   const getFormDetail = async () => {
     if (!id || !version) return;
     setSpinning(true);
-    getSourceDetail(id, version).then(async (result: any) => {
+    getSourceDetail(id, version).then(async (result: SourceDetailResponse) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataSet.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
@@ -205,7 +215,7 @@ const SourceCreate: FC<CreateProps> = ({
     }
 
     // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
-    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2) => {
     // const referenceToDataSetFormatData = genSourceFromData(
     //   result2.data?.json?.sourceDataSet ?? {},
     // );

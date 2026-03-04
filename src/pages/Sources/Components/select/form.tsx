@@ -3,10 +3,12 @@ import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
 import { getSourceDetail } from '@/services/sources/api';
+import { SourceDetailData, SourceDetailResponse } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage, useModel } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
+import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceEdit from '../edit';
 import SourceView from '../view';
@@ -14,16 +16,21 @@ import SourceSelectDrawer from './drawer';
 const { TextArea } = Input;
 
 type Props = {
-  parentName?: any;
-  name: any;
+  parentName?: Array<string | number>;
+  name: Array<string | number>;
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
-  rules?: any[];
+  rules?: Rule[];
   defaultSourceName?: string;
   type?: 'reviewReport';
   showRequiredLabel?: boolean;
+};
+
+type RefDataResponse = {
+  data?: SourceDetailData | null;
+  success?: boolean;
 };
 
 const SourceSelectForm: FC<Props> = ({
@@ -43,18 +50,22 @@ const SourceSelectForm: FC<Props> = ({
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
-  const [refData, setRefData] = useState<any>(null);
+  const [refData, setRefData] = useState<SourceDetailData | null>(null);
   const { initialState } = useModel('@@initialState');
-  const updateErrRefByDetail = (data: any) => {
+  const updateErrRefByDetail = (data: SourceDetailData | null | undefined) => {
+    const resolvedId = data?.id;
+    const resolvedVersion = data?.version;
     if (
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      rules?.length
+      rules?.length &&
+      resolvedId &&
+      resolvedVersion
     ) {
       setErrRef({
-        id: data?.id,
-        version: data?.version,
+        id: resolvedId,
+        version: resolvedVersion,
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
@@ -64,8 +75,8 @@ const SourceSelectForm: FC<Props> = ({
   };
   useEffect(() => {
     if (id && version && !refData) {
-      getRefData(id, version, 'sources', '').then((result: any) => {
-        setRefData({ ...result.data });
+      getRefData(id, version, 'sources', '').then((result: RefDataResponse) => {
+        setRefData(result.data ? { ...result.data } : null);
         setDataUserId(result?.data?.userId);
         updateErrRefByDetail(result?.data);
       });
@@ -74,7 +85,7 @@ const SourceSelectForm: FC<Props> = ({
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
-        (item: any) =>
+        (item) =>
           (item.id === id && item.version === version) ||
           (item.id === refData?.id && item.version === refData?.version),
       );
@@ -91,7 +102,7 @@ const SourceSelectForm: FC<Props> = ({
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
   const handletSourceData = (rowId: string, rowVersion: string) => {
-    getSourceDetail(rowId, rowVersion).then(async (result: any) => {
+    getSourceDetail(rowId, rowVersion).then(async (result: SourceDetailResponse) => {
       const selectedData = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       setDataUserId(result?.data?.userId);
       updateErrRefByDetail(result?.data);
@@ -135,7 +146,7 @@ const SourceSelectForm: FC<Props> = ({
       referenceToDataSetFormatId = 'd92a1a12-2545-49e2-a585-55c259997756';
     }
     if (!referenceToDataSetFormatId) return;
-    getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+    getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: SourceDetailResponse) => {
       if (!result2?.success || !result2?.data) return;
       const referenceToDataSetFormatData = genSourceFromData(
         result2.data?.json?.sourceDataSet ?? {},
@@ -175,9 +186,18 @@ const SourceSelectForm: FC<Props> = ({
     }
   });
 
-  const requiredRules = rules.filter((rule: any) => rule.required);
-  const isRequired = requiredRules && requiredRules.length;
-  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+  const isRequiredRule = (rule: Rule): rule is Rule & { required: true } => {
+    return (
+      typeof rule === 'object' &&
+      rule !== null &&
+      'required' in rule &&
+      Boolean((rule as { required?: boolean }).required)
+    );
+  };
+
+  const requiredRules = rules.filter(isRequiredRule);
+  const isRequired = requiredRules.length > 0;
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
 
   return (
     <Card
@@ -210,17 +230,21 @@ const SourceSelectForm: FC<Props> = ({
           required={false}
           rules={[
             ...notRequiredRules,
-            isRequired && {
-              validator: (rule, value) => {
-                if (!value) {
-                  setRuleErrorState(true);
-                  console.log('form rules check error');
-                  return Promise.reject(new Error());
-                }
-                setRuleErrorState(false);
-                return Promise.resolve();
-              },
-            },
+            ...(isRequired
+              ? [
+                  {
+                    validator: (_: Rule, value: unknown) => {
+                      if (!value) {
+                        setRuleErrorState(true);
+                        console.log('form rules check error');
+                        return Promise.reject(new Error());
+                      }
+                      setRuleErrorState(false);
+                      return Promise.resolve();
+                    },
+                  },
+                ]
+              : []),
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -263,7 +287,7 @@ const SourceSelectForm: FC<Props> = ({
               version={version ?? ''}
               buttonType=''
               setViewDrawerVisible={() => {}}
-              updateErrRef={(data: any) => setErrRef(data)}
+              updateErrRef={(data) => setErrRef(data)}
             />
           )}
           {id && (

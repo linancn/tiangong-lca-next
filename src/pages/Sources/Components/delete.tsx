@@ -1,9 +1,12 @@
 import { deleteSource, getSourceDetail } from '@/services/sources/api';
+import type { SourceDetailResponse } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
+import type { SupabaseDeleteResult } from '@/services/supabase/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
+import type { UploadFile } from 'antd';
 import { Button, Modal, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
@@ -25,7 +28,7 @@ const SourceDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDr
   }, []);
 
   const deleteData = () => {
-    deleteSource(id, version).then(async (result: any) => {
+    deleteSource(id, version).then(async (result: SupabaseDeleteResult) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({
@@ -37,17 +40,17 @@ const SourceDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDr
         setIsModalVisible(false);
         actionRef.current?.reload();
       } else {
-        message.error(result.error.message ?? 'Error');
+        message.error(result.error?.message ?? 'Error');
       }
     });
   };
 
   const handleOk = useCallback(async () => {
-    await getSourceDetail(id, version).then(async (result: any) => {
+    await getSourceDetail(id, version).then(async (result: SourceDetailResponse) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
-      const initFile = await getThumbFileUrls(
+      const initFile = (await getThumbFileUrls(
         dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
-      );
+      )) as UploadFile[];
 
       if (initFile.length > 0) {
         const { error } = await removeFile(

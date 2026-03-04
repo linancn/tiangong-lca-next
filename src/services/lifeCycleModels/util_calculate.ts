@@ -394,21 +394,51 @@ function assignEdgeDependence(
       current = next;
     }
 
-    for (const upId of touchedUpNodes) {
+    return touchedUpNodes;
+  };
+
+  const hasReverseEdge = (edge: Up2DownEdge, expectedDependence?: 'downstream' | 'upstream') => {
+    const reverseEdges = edgesByUpstream.get(edge.downstreamId) ?? [];
+    for (const re of reverseEdges) {
+      if (re?.downstreamId !== edge.upstreamId) continue;
+      if (!expectedDependence) return true;
+      if (re?.isCycle === true || re?.dependence === expectedDependence) return true;
+    }
+    return false;
+  };
+
+  const pruneDownstreamMainFlow = (upNodeIds: Set<string>) => {
+    for (const upId of upNodeIds) {
       const uds = edgesByUpstream.get(upId);
       if (!uds || uds.length < 2) continue;
       const dsEdges = uds.filter((e) => e.dependence === 'downstream');
-      if (dsEdges.length > 1) {
-        for (const e of dsEdges) {
-          if (e.flowUUID !== e.mainOutputFlowUUID) {
-            e.dependence = 'none';
-            e.mainDependence = 'downstream';
-          }
-        }
+      if (dsEdges.length <= 1) continue;
+
+      for (const e of dsEdges) {
+        if (e.flowUUID === e.mainOutputFlowUUID) continue;
+        // For local back-and-forth loops (A<->B), don't prune the kept edge
+        // by main flow rule after cycle breaking.
+        if (hasReverseEdge(e, 'downstream')) continue;
+        e.dependence = 'none';
+        e.mainDependence = 'downstream';
       }
     }
+  };
 
-    return touchedUpNodes;
+  const pruneUpstreamMainFlow = (downNodeIds: Set<string>) => {
+    for (const downId of downNodeIds) {
+      const uds = edgesByDownstream.get(downId);
+      if (!uds || uds.length < 2) continue;
+      const usEdges = uds.filter((e) => e.dependence === 'upstream');
+      if (usEdges.length <= 1) continue;
+      for (const e of usEdges) {
+        if (e.flowUUID === e.mainInputFlowUUID) continue;
+        // Keep local loop edges in INPUT mode symmetric with OUTPUT mode behavior.
+        if (hasReverseEdge(e, 'upstream')) continue;
+        e.dependence = 'none';
+        e.mainDependence = 'upstream';
+      }
+    }
   };
 
   const breakDownstreamCycles = () => {
@@ -478,20 +508,6 @@ function assignEdgeDependence(
       current = next;
     }
 
-    for (const downId of touchedDownNodes) {
-      const uds = edgesByDownstream.get(downId);
-      if (!uds || uds.length < 2) continue;
-      const usEdges = uds.filter((e) => e.dependence === 'upstream');
-      if (usEdges.length > 1) {
-        for (const e of usEdges) {
-          if (e.flowUUID !== e.mainInputFlowUUID) {
-            e.dependence = 'none';
-            e.mainDependence = 'upstream';
-          }
-        }
-      }
-    }
-
     return touchedDownNodes;
   };
 
@@ -543,27 +559,34 @@ function assignEdgeDependence(
 
     if (direction === 'OUTPUT') {
       let upFrontier = phaseOutput();
+
       breakDownstreamCycles();
+      pruneDownstreamMainFlow(upFrontier);
       let guard = 0;
       upFrontier.add(refProcessNodeId);
       while (upFrontier.size > 0 && guard++ < 1000) {
         const downFrontier = phaseInput(upFrontier);
         breakUpstreamCycles();
+        pruneUpstreamMainFlow(downFrontier);
         if (downFrontier.size === 0) break;
         upFrontier = phaseOutput(downFrontier);
         breakDownstreamCycles();
+        pruneDownstreamMainFlow(upFrontier);
       }
     } else {
       let downFrontier = phaseInput();
       breakUpstreamCycles();
+      pruneUpstreamMainFlow(downFrontier);
       let guard = 0;
       downFrontier.add(refProcessNodeId);
       while (downFrontier.size > 0 && guard++ < 1000) {
         const upFrontier = phaseOutput(downFrontier);
         breakDownstreamCycles();
+        pruneDownstreamMainFlow(upFrontier);
         if (upFrontier.size === 0) break;
         downFrontier = phaseInput(upFrontier);
         breakUpstreamCycles();
+        pruneUpstreamMainFlow(downFrontier);
       }
     }
   };
@@ -1535,6 +1558,11 @@ export async function genLifeCycleModelProcesses(
       );
 
       if (finalProductGroup?.length > 0) {
+        const refProcesses = finalProductGroup.map((fpg) => ({
+          id: fpg.processId,
+          version: fpg.processVersion,
+        }));
+
         let newSumExchanges: any = [];
 
         const calculatedProcessExchanges = finalProductGroup.map((p) => {
@@ -2306,6 +2334,7 @@ export async function genLifeCycleModelProcesses(
                 },
               },
             },
+            refProcesses,
           });
 
           return newData;
@@ -2314,6 +2343,8 @@ export async function genLifeCycleModelProcesses(
       return null;
     }),
   );
+
+  console.log('sumFinalProductGroups', sumFinalProductGroups);
 
   const primaryProcess = sumFinalProductGroups.find((p) => p?.modelInfo?.type === 'primary');
 
