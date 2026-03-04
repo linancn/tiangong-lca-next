@@ -175,10 +175,14 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
-jest.mock('@/services/general/util', () => ({
-  __esModule: true,
-  formatDateTime: () => '2024-01-01 00:00',
-}));
+jest.mock('@/services/general/util', () => {
+  const actual = jest.requireActual('@/services/general/util');
+  return {
+    __esModule: true,
+    ...actual,
+    formatDateTime: () => '2024-01-01 00:00',
+  };
+});
 
 const mockCreateProcess = jest.fn();
 const mockGetProcessDetail = jest.fn();
