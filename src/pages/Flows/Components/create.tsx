@@ -1,6 +1,6 @@
 import { createFlows, getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
-import { formatDateTime, jsonToList } from '@/services/general/util';
+import { formatDateTime } from '@/services/general/util';
 // import { getSourceDetail } from '@/services/sources/api';
 // import { genSourceFromData } from '@/services/sources/util';
 import ToolBarButton from '@/components/ToolBarButton';
@@ -76,6 +76,17 @@ const FlowsCreate: FC<CreateProps> = ({
     setActiveTabKey(key);
   };
 
+  const toFlowPropertyList = (
+    flowProperty: FormFlowWithId['flowProperties']['flowProperty'] | undefined,
+  ): FlowPropertyData[] => {
+    if (!flowProperty) {
+      return [];
+    }
+    return Array.isArray(flowProperty)
+      ? (flowProperty as FlowPropertyData[])
+      : [flowProperty as FlowPropertyData];
+  };
+
   const handletFromData = () => {
     if (fromData)
       setFromData({
@@ -115,7 +126,7 @@ const FlowsCreate: FC<CreateProps> = ({
           newVersion;
       }
       setInitData({ ...dataset, id: id });
-      setPropertyDataSource(jsonToList(dataset?.flowProperties?.flowProperty));
+      setPropertyDataSource(toFlowPropertyList(dataset?.flowProperties?.flowProperty));
       setFromData({ ...dataset, id: id });
       setFlowType(dataset?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.resetFields();
@@ -146,7 +157,7 @@ const FlowsCreate: FC<CreateProps> = ({
     if (importData && importData.length > 0) {
       const formData = genFlowFromData(importData[0].flowDataSet);
       setInitData(formData);
-      setPropertyDataSource(jsonToList(formData?.flowProperties?.flowProperty));
+      setPropertyDataSource(toFlowPropertyList(formData?.flowProperties?.flowProperty));
       setFromData(formData);
       setFlowType(formData?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.setFieldsValue(formData);

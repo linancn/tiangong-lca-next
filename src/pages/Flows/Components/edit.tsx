@@ -152,8 +152,13 @@ const FlowsEdit: FC<Props> = ({
 
   const toFlowPropertyList = (
     flowProperty: FormFlowWithId['flowProperties']['flowProperty'] | undefined,
-  ) => {
-    return jsonToList(flowProperty) as FlowPropertyData[];
+  ): FlowPropertyData[] => {
+    if (!flowProperty) {
+      return [];
+    }
+    return Array.isArray(flowProperty)
+      ? (flowProperty as FlowPropertyData[])
+      : [flowProperty as FlowPropertyData];
   };
 
   const handletFromData = () => {
@@ -442,7 +447,7 @@ const FlowsEdit: FC<Props> = ({
       (aiSuggestionDataRef.current as { flowDataSet?: unknown } | null)?.flowDataSet ?? {},
     );
     setFromData({ ...dataSet, id: id });
-    setPropertyDataSource(jsonToList(dataSet?.flowProperties?.flowProperty));
+    setPropertyDataSource(toFlowPropertyList(dataSet?.flowProperties?.flowProperty));
     formRefEdit.current?.resetFields();
     formRefEdit.current?.setFieldsValue({
       ...dataSet,

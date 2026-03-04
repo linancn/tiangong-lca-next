@@ -15,7 +15,7 @@ import {
 } from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination, ReferenceItem } from '@/services/general/data';
-import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
+import { getLangText, getUnitData } from '@/services/general/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-table';
@@ -93,6 +93,17 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       | { 'ecn:ECNumber'?: string }
       | undefined
   )?.['ecn:ECNumber'];
+
+  const toFlowPropertyList = (
+    flowProperty: FormFlowWithId['flowProperties']['flowProperty'] | undefined,
+  ): FlowPropertyData[] => {
+    if (!flowProperty) {
+      return [];
+    }
+    return Array.isArray(flowProperty)
+      ? (flowProperty as FlowPropertyData[])
+      : [flowProperty as FlowPropertyData];
+  };
 
   useEffect(() => {
     getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
@@ -667,7 +678,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
       const fromData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData, id: id });
-      setPropertyDataSource(jsonToList(fromData?.flowProperties?.flowProperty));
+      setPropertyDataSource(toFlowPropertyList(fromData?.flowProperties?.flowProperty));
       setSpinning(false);
     });
   };
