@@ -8,7 +8,7 @@ import {
 } from '../../optiondata';
 
 type Props = {
-  name: any;
+  name: Array<string | number>;
 };
 
 const DataQualityIndicatorItemForm: FC<Props> = ({ name }) => {

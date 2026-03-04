@@ -1,3 +1,4 @@
+import { ProcessExchangeData } from '@/services/processes/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { Button, message, Modal, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -6,11 +7,11 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
-  data: any;
+  data: ProcessExchangeData[];
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onData: (data: any) => void;
+  onData: (data: ProcessExchangeData[]) => void;
   disabled?: boolean;
 };
 
@@ -31,9 +32,9 @@ const ProcessExchangeDelete: FC<Props> = ({
   }, []);
 
   const handleOk = useCallback(() => {
-    const filteredData = data.filter((item: any) => item['@dataSetInternalID'] !== id);
+    const filteredData = data.filter((item) => item['@dataSetInternalID'] !== id);
     onData(
-      filteredData.map((item: any, index: number) => {
+      filteredData.map((item, index: number) => {
         return {
           ...item,
           '@dataSetInternalID': index.toString(),
