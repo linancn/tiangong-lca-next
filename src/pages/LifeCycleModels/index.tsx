@@ -11,8 +11,12 @@ import {
   getLifeCycleModelTablePgroongaSearch,
   lifeCycleModel_hybrid_search,
 } from '@/services/lifeCycleModels/api';
-import { LifeCycleModelTable } from '@/services/lifeCycleModels/data';
+import type {
+  LifeCycleModelImportData,
+  LifeCycleModelTable,
+} from '@/services/lifeCycleModels/data';
 import { getTeamById } from '@/services/teams/api';
+import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
@@ -28,10 +32,10 @@ import LifeCycleModelView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [keyWord, setKeyWord] = useState<any>('');
+  const [keyWord, setKeyWord] = useState('');
   const [stateCode, setStateCode] = useState<string | number>('all');
-  const [team, setTeam] = useState<any>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
@@ -235,10 +239,13 @@ const TableList: FC = () => {
       return;
     }
     getTeamById(tid ?? '').then((res) => {
-      if (res.data.length > 0) setTeam(res.data[0]);
+      if (res.data.length > 0) {
+        setTeam(res.data[0] as TeamTable);
+      }
     });
   }, []);
-  const handleImportData = (jsonData: any) => {
+
+  const handleImportData = (jsonData: LifeCycleModelImportData) => {
     setImportData(jsonData);
   };
   return (

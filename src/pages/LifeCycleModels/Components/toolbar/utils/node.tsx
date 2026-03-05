@@ -1,7 +1,16 @@
+import type {
+  LifeCycleModelPortData,
+  LifeCycleModelThemeToken,
+} from '@/services/lifeCycleModels/data';
 import { genNodeLabel } from '@/services/lifeCycleModels/util';
 
-export const getPortLabelWithAllocation = (label: string, allocations: any, direction: string) => {
-  const num = allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
+export const getPortLabelWithAllocation = (
+  label: string,
+  allocations: LifeCycleModelPortData['allocations'],
+  direction: string,
+) => {
+  const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
+  const num = typeof allocatedFraction === 'string' ? allocatedFraction.replace('%', '') : '';
   const allocatedFractionNum = Number(num);
 
   if (allocatedFractionNum > 0 && direction.toUpperCase() === 'OUTPUT') {
@@ -10,8 +19,13 @@ export const getPortLabelWithAllocation = (label: string, allocations: any, dire
   return label;
 };
 
-export const getPortTextColor = (quantitativeReference: boolean, allocations: any, token: any) => {
-  const num = allocations?.allocation?.['@allocatedFraction']?.replace('%', '');
+export const getPortTextColor = (
+  quantitativeReference: boolean | undefined,
+  allocations: LifeCycleModelPortData['allocations'],
+  token: LifeCycleModelThemeToken,
+) => {
+  const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
+  const num = typeof allocatedFraction === 'string' ? allocatedFraction.replace('%', '') : '';
   const allocatedFractionNum = Number(num);
   if (allocatedFractionNum > 0 || quantitativeReference) {
     return token.colorPrimary;
@@ -19,14 +33,19 @@ export const getPortTextColor = (quantitativeReference: boolean, allocations: an
   return token.colorTextDescription;
 };
 
-export const getPortTextStyle = (quantitativeReference: boolean) => {
+export const getPortTextStyle = (quantitativeReference: boolean | undefined) => {
   if (quantitativeReference) {
     return 'bold';
   }
   return 'normal';
 };
 
-export const nodeTitleTool = (width: number, title: string, token: any, lang: string) => {
+export const nodeTitleTool = (
+  width: number,
+  title: string,
+  token: LifeCycleModelThemeToken,
+  lang: string,
+) => {
   return {
     id: 'nodeTitle',
     name: 'button',

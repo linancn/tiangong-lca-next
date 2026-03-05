@@ -151,6 +151,21 @@ export type ProcessDetailResponse = {
   success?: boolean;
 };
 
+export type ProcessDetailByVersionItem = {
+  id: string;
+  version: string;
+  json?: {
+    processDataSet?: Process['processDataSet'];
+  };
+  modified_at?: string;
+  state_code?: number;
+};
+
+export type ProcessDetailByVersionResponse = {
+  data: ProcessDetailByVersionItem[];
+  success: boolean;
+};
+
 export type ProcessDataSetObjectKeys = Exclude<
   {
     [K in keyof Process['processDataSet']]: Process['processDataSet'][K] extends object | undefined

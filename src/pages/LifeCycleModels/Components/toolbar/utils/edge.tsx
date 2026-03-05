@@ -1,4 +1,10 @@
-export const getEdgeLabel = (token: any, unbalancedAmount: number, exchangeAmount: number) => {
+import type { LifeCycleModelThemeToken } from '@/services/lifeCycleModels/data';
+
+export const getEdgeLabel = (
+  token: LifeCycleModelThemeToken,
+  unbalancedAmount: number,
+  exchangeAmount: number,
+) => {
   if (unbalancedAmount === undefined || unbalancedAmount === null) {
     return {};
   }

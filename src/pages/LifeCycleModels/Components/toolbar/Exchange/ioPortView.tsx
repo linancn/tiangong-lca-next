@@ -4,8 +4,13 @@ import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 import AlignedNumber from '@/components/AlignedNumber';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
+import type { LifeCycleModelGraphNode } from '@/services/lifeCycleModels/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import type {
+  ProcessDetailResponse,
+  ProcessExchangeData,
+  ProcessExchangeTable,
+} from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -16,7 +21,7 @@ import { FormattedMessage } from 'umi';
 import { getFolwypeOfDataSetOptions } from './ioPortSelect';
 
 type Props = {
-  node: any;
+  node: LifeCycleModelGraphNode;
   lang: string;
   direction: string;
   drawerVisible: boolean;
@@ -25,7 +30,7 @@ type Props = {
 
 const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDrawerVisible }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [exchangeDataSource, setExchangeDataSource] = useState<any[]>([]);
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
 
   const [dataLoading, setDataLoading] = useState(false);
   const actionRefSelect = useRef<ActionType>();
@@ -174,13 +179,16 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
   useEffect(() => {
     if (!drawerVisible) return;
     setDataLoading(true);
-    setSelectedRowKeys(node?.ports?.items?.map((item: any) => item?.id ?? []));
-    getProcessDetail(node?.data?.id, node?.data?.version).then(async (result: any) => {
-      setExchangeDataSource([
-        ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
-      ]);
-      actionRefSelect.current?.reload();
-    });
+    setSelectedRowKeys(node?.ports?.items?.map((item) => item?.id ?? '') ?? []);
+    getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
+      async (result: ProcessDetailResponse) => {
+        setExchangeDataSource([
+          ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
+            []),
+        ]);
+        actionRefSelect.current?.reload();
+      },
+    );
   }, [drawerVisible]);
 
   return (
@@ -214,19 +222,26 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
               genProcessExchangeTableData(exchangeDataSource, lang),
               direction,
               params,
-            ).then((res: any) => {
-              return getUnitData('flow', res?.data)
-                .then((unitRes: any) => {
-                  return {
-                    ...res,
-                    data: unitRes,
-                    success: true,
-                  };
-                })
-                .finally(() => {
-                  setDataLoading(false);
-                });
-            });
+            ).then(
+              (res: {
+                data: ProcessExchangeTable[];
+                page: number;
+                success: boolean;
+                total: number;
+              }) => {
+                return getUnitData('flow', res?.data)
+                  .then((unitRes) => {
+                    return {
+                      ...res,
+                      data: (unitRes ?? []) as ProcessExchangeTable[],
+                      success: true,
+                    };
+                  })
+                  .finally(() => {
+                    setDataLoading(false);
+                  });
+              },
+            );
           }}
           columns={processExchangeColumns}
           tableAlertRender={false}

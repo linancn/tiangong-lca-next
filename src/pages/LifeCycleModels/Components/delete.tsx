@@ -1,4 +1,5 @@
 import { deleteLifeCycleModel } from '@/services/lifeCycleModels/api';
+import type { SupabaseDeleteResult } from '@/services/supabase/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -28,7 +29,7 @@ const LifeCycleModelDelete: FC<Props> = ({
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteLifeCycleModel(id, version).then(async (result: any) => {
+    deleteLifeCycleModel(id, version).then(async (result: SupabaseDeleteResult) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({
@@ -40,7 +41,7 @@ const LifeCycleModelDelete: FC<Props> = ({
         setIsModalVisible(false);
         actionRef.current?.reload();
       } else {
-        message.error(result.error.message ?? 'Error');
+        message.error(result.error?.message ?? 'Error');
       }
     });
   }, [actionRef, id, setViewDrawerVisible]);
