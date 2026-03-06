@@ -1,6 +1,11 @@
 // import { checkRequiredFields } from '@/pages/Utils';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
-import { formatDateTime, jsonToList } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+  jsonToList,
+} from '@/services/general/util';
 import { createProcess, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
@@ -69,6 +74,7 @@ const ProcessCreate: FC<CreateProps> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const handletFromData = async () => {
     const fieldsValue = formRefCreate.current?.getFieldsValue();
@@ -343,7 +349,7 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               setSpinning(true);
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const output = exchangeDataSource.filter(
                 (e) => e.exchangeDirection?.toUpperCase() === 'OUTPUT',
               );
@@ -403,7 +409,14 @@ const ProcessCreate: FC<CreateProps> = ({
                 setDrawerVisible(false);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               setSpinning(false);
               return true;

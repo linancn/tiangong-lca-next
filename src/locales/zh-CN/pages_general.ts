@@ -16,6 +16,7 @@ export default {
   'pages.button.view': '查看',
   'pages.button.view.model': '查看模型',
   'pages.button.create.success': '创建成功!',
+  'pages.button.create.error.duplicateId': '已存在ID相同的数据。',
   'pages.button.save.success': '保存成功!',
   'pages.button.edit': '编辑',
   'pages.button.copy': '复制',

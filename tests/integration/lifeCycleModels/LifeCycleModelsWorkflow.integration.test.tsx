@@ -524,6 +524,8 @@ jest.mock('@/services/general/util', () => ({
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 const mockGetTeamById = jest.fn(async () => ({ data: [] as any[] })) as jest.Mock<any, any[]>;

@@ -16,6 +16,7 @@ export default {
   'pages.button.allVersion': 'All Versions',
   'pages.button.create': 'Create',
   'pages.button.create.success': 'Created successfully!',
+  'pages.button.create.error.duplicateId': 'Data with the same ID already exists.',
   'pages.button.save.success': 'Save successfully!',
   'pages.button.reset': 'Reset',
   'pages.button.view': 'View',

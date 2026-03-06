@@ -5,7 +5,12 @@ import type { refDataType } from '@/pages/Utils/review';
 import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
 import { getRefData } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime, getLangText } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  getLangText,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import {
   createLifeCycleModel,
   getLifeCycleModelDetail,
@@ -130,6 +135,7 @@ const ToolbarEdit: FC<Props> = ({
   const intl = useIntl();
   const [userId, setUserId] = useState<string>('');
   const [processInstances, setProcessInstances] = useState<LifeCycleModelProcessInstance[]>([]);
+  const importedId = getImportedId(importData?.[0]);
 
   const editInfoRef = useRef<ToolbarEditInfoHandle>(null);
   useEffect(() => {
@@ -890,7 +896,7 @@ const ToolbarEdit: FC<Props> = ({
       }
       if (setLoadingData) setSpinning(false);
     } else if (thisAction === 'create') {
-      const newId = actionType === 'createVersion' ? thisId : v4();
+      const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
       const result = await createLifeCycleModel({ ...newData, id: newId });
       if (result.data) {
         message.success(
@@ -916,7 +922,14 @@ const ToolbarEdit: FC<Props> = ({
 
         saveCallback();
       } else {
-        message.error(result.error.message);
+        message.error(
+          isSupabaseDuplicateKeyError(result.error)
+            ? intl.formatMessage({
+                id: 'pages.button.create.error.duplicateId',
+                defaultMessage: 'Data with the same ID already exists.',
+              })
+            : (result.error?.message ?? 'Error'),
+        );
       }
       if (setLoadingData) setSpinning(false);
     }

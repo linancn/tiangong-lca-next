@@ -25,7 +25,11 @@ import type {
 } from '@/services/flowproperties/data';
 import { FlowPropertyDataSetObjectKeys, FormFlowProperty } from '@/services/flowproperties/data';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { v4 } from 'uuid';
@@ -74,6 +78,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   const [fromData, setFromData] = useState<FormFlowProperty & { id?: string }>();
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -262,7 +267,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const formFieldsValue = formRefCreate.current?.getFieldsValue();
               const result: SupabaseMutationResult<unknown> = await createFlowproperties(
                 paramsId,
@@ -281,7 +286,14 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
                 setFromData(undefined);
                 reload();
               } else {
-                message.error(result.error?.message ?? 'Error');
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               return true;
             }}

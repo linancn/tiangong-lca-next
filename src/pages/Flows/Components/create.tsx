@@ -1,6 +1,10 @@
 import { createFlows, getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 // import { getSourceDetail } from '@/services/sources/api';
 // import { genSourceFromData } from '@/services/sources/util';
 import ToolBarButton from '@/components/ToolBarButton';
@@ -67,6 +71,7 @@ const FlowsCreate: FC<CreateProps> = ({
   const [flowType, setFlowType] = useState<string | undefined>(undefined);
 
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -333,7 +338,7 @@ const FlowsCreate: FC<CreateProps> = ({
                 console.log('err', err);
                 return;
               }
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const fieldsValue = formRefCreate.current?.getFieldsValue();
               const flowProperties = fromData?.flowProperties;
               // if (
@@ -378,7 +383,14 @@ const FlowsCreate: FC<CreateProps> = ({
                 setFromData(undefined);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               return true;
             }}

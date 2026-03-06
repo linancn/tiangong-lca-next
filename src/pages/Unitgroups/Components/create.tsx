@@ -1,6 +1,10 @@
 import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import { createUnitGroup, getUnitGroupDetail } from '@/services/unitgroups/api';
 import {
   FormUnitGroup,
@@ -68,6 +72,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
   const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -297,7 +302,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const units = fromData?.units;
               const formFieldsValue = {
                 ...formRefCreate.current?.getFieldsValue(),
@@ -315,7 +320,14 @@ const UnitGroupCreate: FC<CreateProps> = ({
                 setDrawerVisible(false);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               return true;
             }}
