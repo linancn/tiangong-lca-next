@@ -10,9 +10,9 @@ const TableFilter = ({
 }) => {
   return (
     <div>
-      <Select disabled={disabled} defaultValue={'all'} style={{ width: 100 }} onChange={onChange}>
+      <Select disabled={disabled} defaultValue={'all'} style={{ width: 140 }} onChange={onChange}>
         <Select.Option value={'all'}>
-          <FormattedMessage id='pages.table.filter.all' />
+          <FormattedMessage id='pages.table.filter.all.reviewType' />
         </Select.Option>
         <Select.Option value={0}>
           <FormattedMessage id='pages.table.filter.unreviewed' />

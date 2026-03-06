@@ -84,7 +84,8 @@ export default {
   'page.options.savesuccess': '保存成功',
   'page.select.unRuleVerification': '请将数据补充完整',
 
-  'pages.table.filter.all': '全部',
+  'pages.table.filter.all.reviewType': '审核类型',
+  'pages.table.filter.all.datasetType': '数据集类型',
   'pages.table.filter.unreviewed': '未审查',
   'pages.table.filter.reviewing': '正在审查',
   'pages.table.filter.reviewed': '已审查',

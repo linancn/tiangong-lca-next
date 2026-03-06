@@ -76,7 +76,7 @@ const TableList: FC = () => {
     return (
       <Select defaultValue={'all'} style={{ width: 160 }} onChange={onChange}>
         <Select.Option value={'all'}>
-          <FormattedMessage id='pages.table.filter.all' />
+          <FormattedMessage id='pages.table.filter.all.datasetType' />
         </Select.Option>
         {processtypeOfDataSetOptions.map((option) => (
           <Select.Option key={option.value} value={option.value}>

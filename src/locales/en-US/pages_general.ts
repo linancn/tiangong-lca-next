@@ -85,7 +85,8 @@ export default {
   'page.options.savesuccess': 'Save successfully',
   'page.select.unRuleVerification': 'Please complete the data',
 
-  'pages.table.filter.all': 'All',
+  'pages.table.filter.all.reviewType': 'Type of review',
+  'pages.table.filter.all.datasetType': 'Type of data set',
   'pages.table.filter.unreviewed': 'Unreviewed',
   'pages.table.filter.reviewing': 'Reviewing',
   'pages.table.filter.reviewed': 'Reviewed',
