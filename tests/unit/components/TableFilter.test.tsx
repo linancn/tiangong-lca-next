@@ -19,9 +19,15 @@ jest.mock('umi', () => {
     'pages.table.filter.reviewed': 'Reviewed',
   };
 
+  const formatMessage = ({ id, defaultMessage }: { id?: string; defaultMessage?: string }) =>
+    defaultMessage ?? (id ? messages[id] : undefined) ?? id ?? '';
+
   return {
+    useIntl: () => ({
+      formatMessage,
+    }),
     FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
-      <>{defaultMessage ?? messages[id] ?? id}</>
+      <>{formatMessage({ id, defaultMessage })}</>
     ),
   };
 });
