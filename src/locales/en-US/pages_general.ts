@@ -88,9 +88,9 @@ export default {
 
   'pages.table.filter.all.reviewType': 'Type of review',
   'pages.table.filter.all.datasetType': 'Type of data set',
-  'pages.table.filter.unreviewed': 'Unreviewed',
-  'pages.table.filter.reviewing': 'Reviewing',
-  'pages.table.filter.reviewed': 'Reviewed',
+  'pages.table.filter.unreviewed': 'Working draft',
+  'pages.table.filter.reviewing': ' Final draft for external review',
+  'pages.table.filter.reviewed': 'Data set finalised; entirely published',
 
   'pages.action.error': 'Action failed',
   'pages.review.underReview': 'Data is under review, save failed',
