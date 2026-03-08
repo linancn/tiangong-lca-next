@@ -12,15 +12,17 @@ import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
-import { FlowTable } from '@/services/flows/data';
+import { FlowImportData, FlowTable } from '@/services/flows/data';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
+import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
+import type { SortOrder } from 'antd/lib/table/interface';
 import type { FC } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowsCreate from './Components/create';
@@ -32,9 +34,9 @@ import FlowsView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [keyWord, setKeyWord] = useState<any>('');
-  const [team, setTeam] = useState<any>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [keyWord, setKeyWord] = useState<string>('');
+  const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<FlowImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
@@ -264,7 +266,10 @@ const TableList: FC = () => {
       return;
     }
     getTeamById(tid ?? '').then((res) => {
-      if (res.data.length > 0) setTeam(res.data[0]);
+      const teamData = (res.data as TeamTable[])[0];
+      if (teamData) {
+        setTeam(teamData);
+      }
     });
   }, []);
 
@@ -273,7 +278,7 @@ const TableList: FC = () => {
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
-  const handleImportData = (jsonData: any) => {
+  const handleImportData = (jsonData: FlowImportData) => {
     setImportData(jsonData);
   };
   return (
@@ -402,7 +407,7 @@ const TableList: FC = () => {
               'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation',
           };
 
-          const convertedSort: Record<string, any> = {};
+          const convertedSort: Record<string, SortOrder> = {};
           if (sort && Object.keys(sort).length > 0) {
             const field = Object.keys(sort)[0];
             if (sortFields[field]) {

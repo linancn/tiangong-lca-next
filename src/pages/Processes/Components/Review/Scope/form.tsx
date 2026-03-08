@@ -7,7 +7,7 @@ import { FormattedMessage } from 'umi';
 // import schema from '../../../processes_schema.json';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
 type Props = {
-  name: any;
+  name: Array<string | number>;
   showRules: boolean;
 };
 

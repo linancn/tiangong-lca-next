@@ -19,6 +19,8 @@ const mockCreateFlows = jest.fn();
 const mockGetFlowDetail = jest.fn();
 const mockGenFlowFromData = jest.fn();
 const mockFormatDateTime = jest.fn(() => 'formatted-time');
+const mockGetImportedId = jest.fn();
+const mockIsSupabaseDuplicateKeyError = jest.fn();
 let mockUuid = 0;
 
 const mockSetFlowFormProps = jest.fn();
@@ -127,6 +129,8 @@ jest.mock('@/services/flows/util', () => ({
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   formatDateTime: (...args: any[]) => mockFormatDateTime(...args),
+  getImportedId: (...args: any[]) => mockGetImportedId(...args),
+  isSupabaseDuplicateKeyError: (...args: any[]) => mockIsSupabaseDuplicateKeyError(...args),
 }));
 
 jest.mock('uuid', () => ({
@@ -179,6 +183,8 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
     jest.clearAllMocks();
     mockUuid = 0;
     mockFormatDateTime.mockReturnValue('formatted-time');
+    mockGetImportedId.mockReturnValue(undefined);
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
     mockGenFlowFromData.mockImplementation((data: any) => data || {});
     mockGetFlowDetail.mockResolvedValue({
       data: { json: { flowDataSet: { from: 'detail' } }, version: 'v1' },
@@ -230,6 +236,27 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       expect(screen.getByTestId('flowform-property-count').textContent).toBe('2');
     });
     expect(screen.getByTestId('flowform-flow-type').textContent).toBe('Product flow');
+  });
+
+  it('uses imported UUID when saving imported flow data', async () => {
+    const importedUuid = '123e4567-e89b-42d3-a456-426614174000';
+    mockGetImportedId.mockReturnValue(importedUuid);
+
+    renderComponent({
+      importData: [{ flowDataSet: { id: 'imported' } }],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('flowform-drawer-visible').textContent).toBe('true');
+    });
+
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(mockCreateFlows).toHaveBeenCalled();
+    });
+
+    expect(mockCreateFlows).toHaveBeenCalledWith(importedUuid, expect.any(Object));
   });
 
   it('loads existing data when copying or creating new version', async () => {
@@ -300,6 +327,22 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
 
     await waitFor(() => {
       expect(mockMessage.error).toHaveBeenCalledWith('failed');
+    });
+  });
+
+  it('shows duplicate-id toast when create API returns 23505', async () => {
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
+    mockCreateFlows.mockResolvedValueOnce({ error: { code: '23505', message: 'db error' } });
+    renderComponent();
+
+    fireEvent.click(screen.getByText('Create'));
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(mockMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.');
     });
   });
 });

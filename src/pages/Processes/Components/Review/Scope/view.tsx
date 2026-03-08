@@ -1,21 +1,22 @@
+import { ProcessReviewScopeItem } from '@/services/processes/data';
 import { Col, Descriptions, Row } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
 import { methodNameOptions, scopeNameOptions } from '../../optiondata';
 
 type Props = {
-  data: any[];
+  data: ProcessReviewScopeItem[];
 };
 
 const ScopeItemView: FC<Props> = ({ data }) => {
-  const getScopeName = (nameValue: string) => {
+  const getScopeName = (nameValue?: string) => {
     const option = scopeNameOptions.find((item) => item.value === nameValue);
-    return option ? option.label : nameValue;
+    return option ? option.label : (nameValue ?? '-');
   };
 
-  const getMethodName = (nameValue: string) => {
+  const getMethodName = (nameValue?: string) => {
     const option = methodNameOptions.find((item) => item.value === nameValue);
-    return option ? option.label : nameValue;
+    return option ? option.label : (nameValue ?? '-');
   };
 
   return (
@@ -60,7 +61,11 @@ const ScopeItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getMethodName(item['common:method']?.['@name']) || '-'}
+                {getMethodName(
+                  Array.isArray(item['common:method'])
+                    ? item['common:method']?.[0]?.['@name']
+                    : item['common:method']?.['@name'],
+                ) || '-'}
               </Descriptions.Item>
             </Descriptions>
           </Col>

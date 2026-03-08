@@ -1,17 +1,21 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
+import { ReferenceItem } from '@/services/general/data';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
 import { FormattedMessage, getLocale } from 'umi';
 import FlowsView from '../view';
 type Props = {
   title: ReactNode | string;
-  data: any;
+  data: ReferenceItem | null;
   lang: string;
 };
 
 const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const locale = getLocale();
+  const refData = data ?? undefined;
+  const refObjectId = refData?.['@refObjectId'] ?? '';
+  const refVersion = refData?.['@version'] ?? '';
   return (
     <Card size='small' title={title}>
       <Space direction='horizontal'>
@@ -26,16 +30,11 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
             }
             labelStyle={{ width: locale === 'zh-CN' ? '160px' : '240px' }}
           >
-            {data?.['@refObjectId'] ?? '-'}
+            {refObjectId || '-'}
           </Descriptions.Item>
         </Descriptions>
-        {data?.['@refObjectId'] && (
-          <FlowsView
-            id={data?.['@refObjectId']}
-            version={data?.['@version']}
-            lang={lang}
-            buttonType='text'
-          />
+        {refObjectId && (
+          <FlowsView id={refObjectId} version={refVersion} lang={lang} buttonType='text' />
         )}
       </Space>
       <br />
@@ -71,13 +70,9 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
           defaultMessage='Short description'
         />
       </Divider>
-      <LangTextItemDescription data={data?.['common:shortDescription']} />
+      <LangTextItemDescription data={refData?.['common:shortDescription']} />
       <br />
-      <UnitGroupDescriptionMini
-        id={data?.['@refObjectId']}
-        version={data?.['@version']}
-        idType={'flow'}
-      />
+      <UnitGroupDescriptionMini id={refObjectId} version={refVersion} idType={'flow'} />
     </Card>
   );
 };

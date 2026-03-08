@@ -3,9 +3,10 @@ import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
-import { FlowpropertyTable } from '@/services/flowproperties/data';
+import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -34,10 +35,10 @@ import FlowpropertyView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [keyWord, setKeyWord] = useState<any>('');
+  const [keyWord, setKeyWord] = useState<string>('');
   const [stateCode, setStateCode] = useState<string | number>('all');
-  const [team, setTeam] = useState<any>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const { token } = theme.useToken();
   const location = useLocation();
@@ -101,7 +102,7 @@ const TableList: FC = () => {
               placement='topLeft'
               title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
             >
-              {toSuperscript(row.refUnitRes?.refUnitName)}
+              {toSuperscript((row.refUnitRes?.refUnitName as unknown as string) ?? '')}
             </Tooltip>
             )
           </span>,
@@ -273,7 +274,7 @@ const TableList: FC = () => {
       return;
     }
     getTeamById(tid ?? '').then((res) => {
-      if (res.data.length > 0) setTeam(res.data[0]);
+      if (res.data.length > 0) setTeam(res.data[0] as TeamTable);
     });
   }, []);
 
@@ -282,7 +283,7 @@ const TableList: FC = () => {
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
-  const handleImportData = (jsonData: any) => {
+  const handleImportData = (jsonData: FlowpropertyImportData) => {
     setImportData(jsonData);
   };
   return (
@@ -373,7 +374,7 @@ const TableList: FC = () => {
               {},
               stateCode,
             ).then((res) => {
-              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp: any) => {
+              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
                 return {
                   ...res,
                   data: refUnitGroupResp ?? [],
@@ -383,7 +384,7 @@ const TableList: FC = () => {
           }
           return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode).then(
             (res) => {
-              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp: any) => {
+              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
                 return {
                   ...res,
                   data: refUnitGroupResp ?? [],

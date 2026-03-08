@@ -1,4 +1,5 @@
 import { deleteProcess } from '@/services/processes/api';
+import { SupabaseDeleteResult } from '@/services/supabase/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -25,7 +26,7 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
   const handleOk = useCallback(() => {
     setIsDeleting(true);
     deleteProcess(id, version)
-      .then(async (result: any) => {
+      .then(async (result: SupabaseDeleteResult) => {
         if (result.status === 204) {
           message.success(
             intl.formatMessage({
@@ -37,7 +38,7 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
           setIsModalVisible(false);
           actionRef.current?.reload();
         } else {
-          message.error(result.error.message ?? 'Error');
+          message.error(result.error?.message ?? 'Error');
         }
       })
       .finally(() => {

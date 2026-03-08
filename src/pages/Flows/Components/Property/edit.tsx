@@ -1,6 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import { FlowPropertyData } from '@/services/flows/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -24,12 +25,12 @@ import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } f
 
 type Props = {
   id: string;
-  data: any;
+  data: FlowPropertyData[];
   lang: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onData: (data: any) => void;
+  onData: (data: FlowPropertyData[]) => void;
   showRules?: boolean;
 };
 const PropertyEdit: FC<Props> = ({
@@ -44,8 +45,8 @@ const PropertyEdit: FC<Props> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [fromData, setFromData] = useState<FlowPropertyData>({});
+  const [initData, setInitData] = useState<FlowPropertyData>({});
 
   const handletFromData = () => {
     setFromData(formRefEdit.current?.getFieldsValue() ?? {});
@@ -57,7 +58,7 @@ const PropertyEdit: FC<Props> = ({
 
   const onReset = () => {
     formRefEdit.current?.resetFields();
-    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);
@@ -123,7 +124,7 @@ const PropertyEdit: FC<Props> = ({
           }}
           onFinish={async () => {
             onData(
-              data.map((item: any) => {
+              data.map((item) => {
                 if (item['@dataSetInternalID'] === id) {
                   return fromData;
                 }

@@ -9,12 +9,13 @@ import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
+import { TeamTable } from '@/services/teams/data';
 import {
   getUnitGroupTableAll,
   getUnitGroupTablePgroongaSearch,
   unitgroup_hybrid_search,
 } from '@/services/unitgroups/api';
-import { UnitGroupTable } from '@/services/unitgroups/data';
+import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
@@ -31,10 +32,10 @@ import UnitGroupView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [keyWord, setKeyWord] = useState<any>('');
+  const [keyWord, setKeyWord] = useState<string>('');
   const [stateCode, setStateCode] = useState<string | number>('all');
-  const [team, setTeam] = useState<any>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const { token } = theme.useToken();
@@ -266,7 +267,7 @@ const TableList: FC = () => {
       return;
     }
     getTeamById(tid ?? '').then((res) => {
-      if (res.data.length > 0) setTeam(res.data[0]);
+      if (res.data.length > 0) setTeam(res.data[0] as TeamTable);
     });
     getRoleByUserId().then((res) => {
       const systemAdmin = res?.find(
@@ -281,7 +282,7 @@ const TableList: FC = () => {
     actionRef.current?.reload();
   };
 
-  const handleImportData = (jsonData: any) => {
+  const handleImportData = (jsonData: UnitGroupImportItem[]) => {
     setImportData(jsonData);
   };
 

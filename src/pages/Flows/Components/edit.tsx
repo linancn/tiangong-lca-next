@@ -1,7 +1,7 @@
 import AISuggestion from '@/components/AISuggestion';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
-import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { refDataType } from '@/pages/Utils/review';
+import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
+import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
@@ -10,8 +10,16 @@ import {
 } from '@/pages/Utils/updateReference';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
-import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
+import {
+  FlowDataSetObjectKeys,
+  FlowDetailData,
+  FlowDetailResponse,
+  FlowPropertyData,
+  FormFlowWithId,
+} from '@/services/flows/data';
 import { genFlowFromData, genFlowJsonOrdered } from '@/services/flows/util';
+import { jsonToList } from '@/services/general/util';
+import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -28,8 +36,14 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
-  updateErrRef?: (data: any) => void;
+  updateErrRef?: (data: RefCheckType | null) => void;
 };
+
+type UpdateFlowResult = Pick<
+  SupabaseMutationResult<{ rule_verification?: boolean }>,
+  'data' | 'error'
+>;
+
 const FlowsEdit: FC<Props> = ({
   id,
   version,
@@ -45,18 +59,20 @@ const FlowsEdit: FC<Props> = ({
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
-  const [fromData, setFromData] = useState<FormFlow & { id?: string }>();
-  const [initData, setInitData] = useState<FormFlow & { id?: string }>();
-  const [originJson, setOriginJson] = useState<any>({});
-  let AISuggestionData: any;
+  const [fromData, setFromData] = useState<FormFlowWithId>();
+  const [initData, setInitData] = useState<FormFlowWithId>();
+  const [originJson, setOriginJson] = useState<FlowDetailData['json'] | null>(null);
+  const aiSuggestionDataRef = useRef<Record<string, unknown> | null>(null);
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
-  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
-  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
-  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+  const [refCheckContextValue, setRefCheckContextValue] = useState<{
+    refCheckData: RefCheckType[];
+  }>({
     refCheckData: [],
   });
   useEffect(() => {
@@ -77,8 +93,8 @@ const FlowsEdit: FC<Props> = ({
     for (const property of propertyDataSource) {
       if (property?.referenceToFlowPropertyDataSet) {
         const { data: flowPropertyData, success } = await getFlowpropertyDetail(
-          property.referenceToFlowPropertyDataSet['@refObjectId'],
-          property.referenceToFlowPropertyDataSet['@version'],
+          property.referenceToFlowPropertyDataSet['@refObjectId'] ?? '',
+          property.referenceToFlowPropertyDataSet['@version'] ?? '',
         );
         if (success) {
           const name =
@@ -134,6 +150,17 @@ const FlowsEdit: FC<Props> = ({
     setActiveTabKey(key);
   };
 
+  const toFlowPropertyList = (
+    flowProperty: FormFlowWithId['flowProperties']['flowProperty'] | undefined,
+  ): FlowPropertyData[] => {
+    if (!flowProperty) {
+      return [];
+    }
+    return Array.isArray(flowProperty)
+      ? (flowProperty as FlowPropertyData[])
+      : [flowProperty as FlowPropertyData];
+  };
+
   const handletFromData = () => {
     if (fromData)
       setFromData({
@@ -142,11 +169,11 @@ const FlowsEdit: FC<Props> = ({
       });
   };
 
-  const handletPropertyData = (data: any) => {
+  const handletPropertyData = (data: FlowPropertyData[]) => {
     if (fromData) setPropertyDataSource([...data]);
   };
 
-  const handletPropertyDataCreate = (data: any) => {
+  const handletPropertyDataCreate = (data: FlowPropertyData) => {
     if (fromData)
       setPropertyDataSource([
         ...propertyDataSource,
@@ -160,7 +187,7 @@ const FlowsEdit: FC<Props> = ({
       flowProperties: {
         flowProperty: [...propertyDataSource],
       },
-    } as any);
+    } as FormFlowWithId);
   }, [propertyDataSource]);
 
   const onEdit = () => {
@@ -169,11 +196,11 @@ const FlowsEdit: FC<Props> = ({
 
   const onReset = () => {
     setSpinning(true);
-    getFlowDetail(id, version).then(async (result: any) => {
-      setOriginJson(result.data?.json ?? {});
+    getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
+      setOriginJson(result.data?.json ?? null);
       const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData0, id: id });
-      setPropertyDataSource(fromData0?.flowProperties?.flowProperty ?? []);
+      setPropertyDataSource(toFlowPropertyList(fromData0?.flowProperties?.flowProperty));
       setFromData({ ...fromData0, id: id });
       setFlowType(fromData0?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefEdit.current?.resetFields();
@@ -194,7 +221,7 @@ const FlowsEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
-  const handleSubmit = async (autoClose: boolean) => {
+  const handleSubmit = async (autoClose: boolean): Promise<UpdateFlowResult | null | undefined> => {
     try {
       await formRefEdit.current?.validateFields();
     } catch (err) {
@@ -206,18 +233,18 @@ const FlowsEdit: FC<Props> = ({
 
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const flowProperties = fromData?.flowProperties;
-    const updateResult = await updateFlows(id, version, {
+    const updateResult = (await updateFlows(id, version, {
       ...fieldsValue,
       flowProperties,
-    });
+    })) as UpdateFlowResult;
     if (updateResult?.data) {
-      if (updateResult?.data[0]?.rule_verification === true) {
+      if (updateResult?.data?.[0]?.rule_verification === true) {
         updateErrRef(null);
       } else {
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: updateResult?.data[0]?.rule_verification,
+          ruleVerification: Boolean(updateResult?.data?.[0]?.rule_verification),
           nonExistent: false,
         });
       }
@@ -255,12 +282,12 @@ const FlowsEdit: FC<Props> = ({
     if (!autoClose) {
       return updateResult;
     }
-    return true;
+    return null;
   };
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
-    if (updateResult?.error) {
+    if (!updateResult || updateResult?.error) {
       setSpinning(false);
       return;
     }
@@ -273,7 +300,7 @@ const FlowsEdit: FC<Props> = ({
         '@refObjectId': id,
         '@version': version,
       },
-      updateResult?.data[0]?.rule_verification,
+      Boolean(updateResult?.data?.[0]?.rule_verification),
       false,
     );
     await checkData(
@@ -286,9 +313,9 @@ const FlowsEdit: FC<Props> = ({
       nonExistentRef,
       pathRef,
     );
-    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
-      let result = problemNodes.map((item: any) => {
+      const result = problemNodes.map((item) => {
         return {
           id: item['@refObjectId'],
           version: item['@version'],
@@ -300,7 +327,7 @@ const FlowsEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+    const unRuleVerificationData = unRuleVerification.map((item) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
@@ -308,7 +335,7 @@ const FlowsEdit: FC<Props> = ({
         nonExistent: false,
       };
     });
-    const nonExistentRefData = nonExistentRef.map((item: any) => {
+    const nonExistentRefData = nonExistentRef.map((item) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
@@ -317,12 +344,8 @@ const FlowsEdit: FC<Props> = ({
       };
     });
 
-    const flowProperties = fromData?.flowProperties;
-    if (
-      !flowProperties ||
-      !flowProperties?.flowProperty ||
-      (flowProperties?.flowProperty as any)?.length === 0
-    ) {
+    const flowPropertiesList = jsonToList(fromData?.flowProperties?.flowProperty);
+    if (!flowPropertiesList || flowPropertiesList?.length === 0) {
       message.error(
         intl.formatMessage({
           id: 'pages.flow.validator.flowProperties.required',
@@ -331,10 +354,7 @@ const FlowsEdit: FC<Props> = ({
       );
       setSpinning(false);
       return;
-    } else if (
-      (flowProperties?.flowProperty as any)?.filter((item: any) => item?.quantitativeReference)
-        .length !== 1
-    ) {
+    } else if (flowPropertiesList?.filter((item) => item?.quantitativeReference).length !== 1) {
       message.error(
         intl.formatMessage({
           id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
@@ -345,15 +365,15 @@ const FlowsEdit: FC<Props> = ({
       return;
     }
     const errTabNames: string[] = [];
-    nonExistentRef.forEach((item: any) => {
+    nonExistentRef.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    unRuleVerification.forEach((item: any) => {
+    unRuleVerification.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    problemNodes.forEach((item: any) => {
+    problemNodes.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
@@ -361,7 +381,7 @@ const FlowsEdit: FC<Props> = ({
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const jsonData = {
       ...fieldsValue,
-      flowProperties,
+      flowProperties: fromData?.flowProperties,
     };
     const tidasFlow = createTidasFlow(genFlowJsonOrdered(id, jsonData));
     const validateResult = tidasFlow.validateEnhanced();
@@ -395,7 +415,7 @@ const FlowsEdit: FC<Props> = ({
       if (errTabNames && errTabNames.length > 0) {
         message.error(
           errTabNames
-            .map((tab: any) =>
+            .map((tab) =>
               intl.formatMessage({
                 id: `pages.flow.view.${tab}`,
                 defaultMessage: tab,
@@ -419,13 +439,15 @@ const FlowsEdit: FC<Props> = ({
     }
     setSpinning(false);
   };
-  const handleLatestJsonChange = (latestJson: any) => {
-    AISuggestionData = latestJson;
+  const handleLatestJsonChange = (latestJson: Record<string, unknown>) => {
+    aiSuggestionDataRef.current = latestJson;
   };
   const handleAISuggestionClose = () => {
-    const dataSet = genFlowFromData(AISuggestionData?.flowDataSet ?? {});
+    const dataSet = genFlowFromData(
+      (aiSuggestionDataRef.current as { flowDataSet?: unknown } | null)?.flowDataSet ?? {},
+    );
     setFromData({ ...dataSet, id: id });
-    setPropertyDataSource(dataSet?.flowProperties?.flowProperty ?? []);
+    setPropertyDataSource(toFlowPropertyList(dataSet?.flowProperties?.flowProperty));
     formRefEdit.current?.resetFields();
     formRefEdit.current?.setFieldsValue({
       ...dataSet,
@@ -513,12 +535,15 @@ const FlowsEdit: FC<Props> = ({
                   return [];
                 },
               }}
-              onFinish={() => handleSubmit(true)}
+              onFinish={async () => {
+                await handleSubmit(true);
+                return true;
+              }}
               onValuesChange={(_, allValues) => {
                 setFromData({
                   ...fromData,
                   [activeTabKey]: allValues[activeTabKey] ?? {},
-                } as FormFlow);
+                } as FormFlowWithId);
               }}
             >
               <FlowForm
@@ -528,7 +553,7 @@ const FlowsEdit: FC<Props> = ({
                 formRef={formRefEdit}
                 onData={handletFromData}
                 flowType={flowType}
-                onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
+                onTabChange={onTabChange}
                 propertyDataSource={propertyDataSource}
                 onPropertyData={handletPropertyData}
                 onPropertyDataCreate={handletPropertyDataCreate}

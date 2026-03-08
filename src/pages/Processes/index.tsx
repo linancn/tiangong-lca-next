@@ -20,12 +20,14 @@ import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
-import { ProcessTable } from '@/services/processes/data';
+import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
+import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
+import type { SortOrder } from 'antd/es/table/interface';
 import type { FC } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ProcessCreate from './Components/create';
@@ -43,11 +45,11 @@ export const getProcesstypeOfDataSetOptions = (value: string) => {
 };
 
 const TableList: FC = () => {
-  const [keyWord, setKeyWord] = useState<any>('');
+  const [keyWord, setKeyWord] = useState('');
   const [stateCode, setStateCode] = useState<string | number>('all');
   const [typeOfDataSet, setTypeOfDataSet] = useState<string>('all');
-  const [team, setTeam] = useState<any>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<ProcessImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -74,7 +76,7 @@ const TableList: FC = () => {
     return (
       <Select defaultValue={'all'} style={{ width: 160 }} onChange={onChange}>
         <Select.Option value={'all'}>
-          <FormattedMessage id='pages.table.filter.all' />
+          <FormattedMessage id='pages.table.filter.all.datasetType' />
         </Select.Option>
         {processtypeOfDataSetOptions.map((option) => (
           <Select.Option key={option.value} value={option.value}>
@@ -412,7 +414,7 @@ const TableList: FC = () => {
       return;
     }
     getTeamById(tid ?? '').then((res) => {
-      if (res.data.length > 0) setTeam(res.data[0]);
+      if (res.data.length > 0) setTeam(res.data[0] ?? null);
     });
   }, []);
 
@@ -435,7 +437,7 @@ const TableList: FC = () => {
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
-  const handleImportData = (jsonData: any) => {
+  const handleImportData = (jsonData: ProcessImportData) => {
     setImportData(jsonData);
   };
   return (
@@ -561,7 +563,7 @@ const TableList: FC = () => {
               'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
           };
 
-          const convertedSort: Record<string, any> = {};
+          const convertedSort: Record<string, SortOrder> = {};
           if (sort && Object.keys(sort).length > 0) {
             const field = Object.keys(sort)[0];
             if (sortFields[field]) {

@@ -4,6 +4,8 @@ import ContactSelectDescription from '@/pages/Contacts/Components/select/descrip
 import ComplianceItemView from '@/pages/Processes/Components/Compliance/view';
 import ReviewItemView from '@/pages/Processes/Components/Review/view';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getClassificationValues } from '@/pages/Utils';
+import type { FormLifeCycleModel } from '@/services/lifeCycleModels/data';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -13,7 +15,7 @@ import { copyrightOptions, licenseTypeOptions } from '../optiondata';
 
 type Props = {
   lang: string;
-  data: any;
+  data: FormLifeCycleModel & { id?: string; version?: string };
 };
 
 const getLicenseTypeOptions = (value: string) => {
@@ -29,6 +31,12 @@ const getCopyrightOptions = (value: string) => {
 const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
+  const classificationValues =
+    getClassificationValues(
+      data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
+        'common:classification'
+      ]?.['common:class'],
+    ) ?? [];
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -151,11 +159,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         <Descriptions bordered size={'small'} column={1}></Descriptions>
 
         <LevelTextItemDescription
-          data={
-            data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class']?.['value']
-          }
+          data={classificationValues}
           lang={lang}
           categoryType={'LifeCycleModel'}
         />
@@ -462,9 +466,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         </Card>
       </>
     ),
-    validation: <ReviewItemView data={data?.modellingAndValidation?.validation?.review} />,
+    validation: <ReviewItemView data={data?.modellingAndValidation?.validation?.review ?? []} />,
     complianceDeclarations: (
-      <ComplianceItemView data={data?.modellingAndValidation?.complianceDeclarations?.compliance} />
+      <ComplianceItemView
+        data={data?.modellingAndValidation?.complianceDeclarations?.compliance ?? []}
+      />
     ),
   };
 

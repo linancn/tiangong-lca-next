@@ -80,7 +80,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       sorter: false,
       search: false,
       width: 140,
-      render: (_: any, record: any) => {
+      render: (_, record) => {
         return <AlignedNumber value={record.meanAmount} />;
       },
     },
@@ -96,7 +96,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       sorter: false,
       search: false,
       width: 140,
-      render: (_: any, record: any) => {
+      render: (_, record) => {
         return <AlignedNumber value={record.resultingAmount} />;
       },
     },

@@ -5,9 +5,16 @@ import { getLocalValueProps, validateRefObjectId } from '@/pages/Utils';
 import { getRefData } from '@/services/general/api';
 import { jsonToList } from '@/services/general/util';
 import { getReferenceUnit, getUnitGroupDetail } from '@/services/unitgroups/api';
+import {
+  UnitGroupDetailData,
+  UnitGroupDetailResponse,
+  UnitGroupRefFormValue,
+  UnitItem,
+} from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
+import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, useModel } from 'umi';
 import UnitgroupsEdit from '../edit';
@@ -16,14 +23,21 @@ import UnitgroupsSelectDrawer from './drawer';
 
 const { TextArea } = Input;
 
+type FormPath = Array<string | number>;
+
 type Props = {
-  name: any;
+  name: FormPath;
   label: ReactNode | string;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
-  rules?: any[];
+  rules?: Rule[];
   showRequiredLabel?: boolean;
+};
+
+type RefDataResponse = {
+  data?: UnitGroupDetailData | null;
+  success?: boolean;
 };
 
 const UnitgroupsSelectFrom: FC<Props> = ({
@@ -40,20 +54,24 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);
-  const [refData, setRefData] = useState<any>(null);
+  const [refData, setRefData] = useState<UnitGroupDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
   const { initialState } = useModel('@@initialState');
-  const updateErrRefByDetail = (data: any) => {
+  const updateErrRefByDetail = (data: UnitGroupDetailData | null | undefined) => {
+    const resolvedId = data?.id;
+    const resolvedVersion = data?.version;
     if (
       data?.ruleVerification === false &&
       data?.stateCode !== 100 &&
       data?.stateCode !== 200 &&
-      rules?.length
+      rules?.length &&
+      resolvedId &&
+      resolvedVersion
     ) {
       setErrRef({
-        id: data?.id,
-        version: data?.version,
+        id: resolvedId,
+        version: resolvedVersion,
         ruleVerification: data?.ruleVerification,
         nonExistent: false,
       });
@@ -63,8 +81,8 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   };
   useEffect(() => {
     if (id && version && !refData) {
-      getRefData(id, version, 'unitgroups', '').then((result: any) => {
-        setRefData({ ...result.data });
+      getRefData(id, version, 'unitgroups', '').then((result: RefDataResponse) => {
+        setRefData(result.data ? { ...result.data } : null);
         setDataUserId(result?.data?.userId);
         updateErrRefByDetail(result?.data);
       });
@@ -74,7 +92,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
       const ref = refCheckContext?.refCheckData?.find(
-        (item: any) =>
+        (item: RefCheckType) =>
           (item.id === id && item.version === version) ||
           (item.id === refData?.id && item.version === refData?.version),
       );
@@ -89,12 +107,12 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   }, [refCheckContext, refData]);
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
-    getUnitGroupDetail(rowId, rowVersion).then(async (result: any) => {
+    getUnitGroupDetail(rowId, rowVersion).then(async (result: UnitGroupDetailResponse) => {
       setDataUserId(result?.data?.userId);
       updateErrRefByDetail(result?.data);
       const selectedData = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
 
-      const unitList = jsonToList(selectedData?.units?.unit);
+      const unitList = jsonToList(selectedData?.units?.unit) as UnitItem[];
       const refUnit = unitList.find(
         (item) =>
           item?.['@dataSetInternalID'] ===
@@ -112,7 +130,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
           name: toSuperscript(refUnit?.name ?? ''),
           generalComment: refUnit?.generalComment ?? [],
         },
-      });
+      } as UnitGroupRefFormValue);
       setId(rowId);
       setVersion(result.data?.version);
       onData();
@@ -122,14 +140,16 @@ const UnitgroupsSelectFrom: FC<Props> = ({
 
   useEffect(() => {
     // setId(undefined);
-    const refObjectId = formRef.current?.getFieldValue([...name, '@refObjectId']);
+    const refObjectId = formRef.current?.getFieldValue([...name, '@refObjectId']) as
+      | string
+      | undefined;
     if (refObjectId && refObjectId !== id) {
       setId(refObjectId);
-      setVersion(formRef.current?.getFieldValue([...name, '@version']));
+      setVersion(formRef.current?.getFieldValue([...name, '@version']) as string | undefined);
       getReferenceUnit(
-        formRef.current?.getFieldValue([...name, '@refObjectId']),
-        formRef.current?.getFieldValue([...name, '@version']),
-      ).then((res: any) => {
+        (formRef.current?.getFieldValue([...name, '@refObjectId']) as string | undefined) ?? '',
+        (formRef.current?.getFieldValue([...name, '@version']) as string | undefined) ?? '',
+      ).then((res) => {
         formRef.current?.setFieldValue([...name, 'refUnit'], {
           name: toSuperscript(res?.data?.refUnitName ?? ''),
           generalComment: res?.data?.refUnitGeneralComment ?? [],
@@ -137,9 +157,19 @@ const UnitgroupsSelectFrom: FC<Props> = ({
       });
     }
   });
-  const requiredRules = rules.filter((rule: any) => rule.required);
-  const isRequired = requiredRules && requiredRules.length;
-  const notRequiredRules = rules.filter((rule: any) => !rule.required) ?? [];
+
+  const isRequiredRule = (rule: Rule): rule is Rule & { required: true } => {
+    return (
+      typeof rule === 'object' &&
+      rule !== null &&
+      'required' in rule &&
+      Boolean((rule as { required?: boolean }).required)
+    );
+  };
+
+  const requiredRules = rules.filter(isRequiredRule);
+  const isRequired = requiredRules.length > 0;
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
   return (
     <Card
       size='small'
@@ -172,17 +202,21 @@ const UnitgroupsSelectFrom: FC<Props> = ({
           name={[...name, '@refObjectId']}
           rules={[
             ...notRequiredRules,
-            isRequired && {
-              validator: (rule, value) => {
-                if (!value) {
-                  setRuleErrorState(true);
-                  console.log('form rules check error');
-                  return Promise.reject(new Error());
-                }
-                setRuleErrorState(false);
-                return Promise.resolve();
-              },
-            },
+            ...(isRequired
+              ? [
+                  {
+                    validator: (_: Rule, value: unknown) => {
+                      if (!value) {
+                        setRuleErrorState(true);
+                        console.log('form rules check error');
+                        return Promise.reject(new Error());
+                      }
+                      setRuleErrorState(false);
+                      return Promise.resolve();
+                    },
+                  },
+                ]
+              : []),
           ]}
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
@@ -220,7 +254,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
               version={version ?? ''}
               buttonType=''
               setViewDrawerVisible={() => {}}
-              updateErrRef={(data: any) => setErrRef(data)}
+              updateErrRef={(data: RefCheckType | null) => setErrRef(data)}
             />
           )}
           {id && (

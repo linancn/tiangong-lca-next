@@ -1,6 +1,10 @@
 import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import { createSource, getSourceDetail } from '@/services/sources/api';
 import {
   FormSource,
@@ -69,6 +73,7 @@ const SourceCreate: FC<CreateProps> = ({
   const [loadFiles, setLoadFiles] = useState<RcFile[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   type FilePath = { '@uri': string };
   type FileWithUid = UploadFile & { newUid?: string };
@@ -121,7 +126,7 @@ const SourceCreate: FC<CreateProps> = ({
       });
     }
 
-    const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+    const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
     const formFieldsValue = formRefCreate.current?.getFieldsValue();
     const result: SupabaseMutationResult<unknown> = await createSource(paramsId, {
       ...formFieldsValue,
@@ -155,7 +160,14 @@ const SourceCreate: FC<CreateProps> = ({
       setDrawerVisible(false);
       reload();
     } else {
-      message.error(result.error?.message ?? 'Error');
+      message.error(
+        isSupabaseDuplicateKeyError(result.error)
+          ? intl.formatMessage({
+              id: 'pages.button.create.error.duplicateId',
+              defaultMessage: 'Data with the same ID already exists.',
+            })
+          : (result.error?.message ?? 'Error'),
+      );
     }
     return true;
   };

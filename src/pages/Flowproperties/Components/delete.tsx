@@ -1,4 +1,5 @@
 import { deleteFlowproperties } from '@/services/flowproperties/api';
+import type { SupabaseDeleteResult } from '@/services/supabase/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, message, Modal, Tooltip } from 'antd';
@@ -28,7 +29,7 @@ const FlowpropertiesDelete: FC<Props> = ({
   }, []);
 
   const handleOk = useCallback(() => {
-    deleteFlowproperties(id, version).then(async (result: any) => {
+    deleteFlowproperties(id, version).then(async (result: SupabaseDeleteResult) => {
       if (result.status === 204) {
         message.success(
           intl.formatMessage({
@@ -40,7 +41,7 @@ const FlowpropertiesDelete: FC<Props> = ({
         setIsModalVisible(false);
         actionRef.current?.reload();
       } else {
-        message.error(result.error.message ?? 'Error');
+        message.error(result.error?.message ?? 'Error');
       }
     });
   }, [actionRef, id, setViewDrawerVisible]);

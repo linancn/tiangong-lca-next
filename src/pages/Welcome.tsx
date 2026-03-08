@@ -353,7 +353,9 @@ const Welcome: React.FC = () => {
             <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
               <Card
                 className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
-                styles={{ body: { padding: 20 } }}
+                styles={{
+                  body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
+                }}
                 style={{ ...cardBorderRadiusStyle, width: '100%' }}
               >
                 <div className={styles.welcome_metric_content}>

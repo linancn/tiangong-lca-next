@@ -764,14 +764,26 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
   });
 
   describe('getFlowpropertyDetail', () => {
+    const validId = '12345678-1234-1234-1234-1234567890ab';
+
     it('should delegate to getDataDetail with flowproperties table', async () => {
       const mockDetail = { data: { id: 'fp-1' }, success: true };
       getDataDetail.mockResolvedValue(mockDetail);
 
+      const result = await getFlowpropertyDetail(validId, '01.00.000');
+
+      expect(getDataDetail).toHaveBeenCalledWith(validId, '01.00.000', 'flowproperties');
+      expect(result).toEqual(mockDetail);
+    });
+
+    it('should return failed result when id is invalid', async () => {
       const result = await getFlowpropertyDetail('fp-1', '01.00.000');
 
-      expect(getDataDetail).toHaveBeenCalledWith('fp-1', '01.00.000', 'flowproperties');
-      expect(result).toEqual(mockDetail);
+      expect(getDataDetail).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        data: null,
+        success: false,
+      });
     });
   });
 

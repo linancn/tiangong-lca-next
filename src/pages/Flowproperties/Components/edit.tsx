@@ -1,6 +1,6 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
-import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { refDataType } from '@/pages/Utils/review';
+import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
+import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import { checkData } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
@@ -8,11 +8,16 @@ import {
   updateRefsData,
 } from '@/pages/Utils/updateReference';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
-import { FlowPropertyDataSetObjectKeys, FormFlowProperty } from '@/services/flowproperties/data';
+import {
+  FlowPropertyDataSetObjectKeys,
+  FlowpropertyDetailResponse,
+  FormFlowProperty,
+} from '@/services/flowproperties/data';
 import {
   genFlowpropertyFromData,
   genFlowpropertyJsonOrdered,
 } from '@/services/flowproperties/util';
+import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -44,8 +49,14 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
-  updateErrRef?: (data: any) => void;
+  updateErrRef?: (data: RefCheckType | null) => void;
 };
+
+type UpdateFlowpropertiesResult = Pick<
+  SupabaseMutationResult<{ rule_verification?: boolean }>,
+  'data' | 'error'
+>;
+
 const FlowpropertiesEdit: FC<Props> = ({
   id,
   version,
@@ -63,7 +74,7 @@ const FlowpropertiesEdit: FC<Props> = ({
   const [initData, setInitData] = useState<FormFlowProperty & { id?: string }>();
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const intl = useIntl();
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
   const [refsLoading, setRefsLoading] = useState(false);
@@ -72,7 +83,9 @@ const FlowpropertiesEdit: FC<Props> = ({
 
   const parentRefCheckContext = useRefCheckContext();
 
-  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+  const [refCheckContextValue, setRefCheckContextValue] = useState<{
+    refCheckData: RefCheckType[];
+  }>({
     refCheckData: [],
   });
   useEffect(() => {
@@ -144,7 +157,7 @@ const FlowpropertiesEdit: FC<Props> = ({
   const onReset = () => {
     setSpinning(true);
     formRefEdit.current?.resetFields();
-    getFlowpropertyDetail(id, version).then(async (result: any) => {
+    getFlowpropertyDetail(id, version).then(async (result: FlowpropertyDetailResponse) => {
       const fromData0 = await genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
       setInitData({
         ...fromData0,
@@ -172,11 +185,15 @@ const FlowpropertiesEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
-  const handleSubmit = async (autoClose: boolean) => {
+  const handleSubmit = async (autoClose: boolean): Promise<UpdateFlowpropertiesResult | null> => {
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
-    const updateResult = await updateFlowproperties(id, version, formFieldsValue);
+    const updateResult = (await updateFlowproperties(
+      id,
+      version,
+      formFieldsValue,
+    )) as UpdateFlowpropertiesResult;
     if (updateResult?.data) {
       if (updateResult?.data[0]?.rule_verification === true) {
         updateErrRef(null);
@@ -184,7 +201,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: updateResult?.data[0]?.rule_verification,
+          ruleVerification: Boolean(updateResult?.data[0]?.rule_verification),
           nonExistent: false,
         });
       }
@@ -222,13 +239,13 @@ const FlowpropertiesEdit: FC<Props> = ({
     if (!autoClose) {
       return updateResult;
     }
-    return true;
+    return null;
   };
 
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
-    if (updateResult.error) {
+    if (!updateResult || updateResult.error) {
       setSpinning(false);
       return;
     }
@@ -241,7 +258,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         '@refObjectId': id,
         '@version': version,
       },
-      updateResult?.data[0]?.rule_verification,
+      Boolean(updateResult.data?.[0]?.rule_verification),
       false,
     );
     await checkData(
@@ -254,9 +271,9 @@ const FlowpropertiesEdit: FC<Props> = ({
       nonExistentRef,
       pathRef,
     );
-    const problemNodes = pathRef?.findProblemNodes() ?? [];
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
-      let result = problemNodes.map((item: any) => {
+      const result = problemNodes.map((item) => {
         return {
           id: item['@refObjectId'],
           version: item['@version'],
@@ -268,7 +285,7 @@ const FlowpropertiesEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const unRuleVerificationData = unRuleVerification.map((item: any) => {
+    const unRuleVerificationData = unRuleVerification.map((item) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
@@ -276,7 +293,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         nonExistent: false,
       };
     });
-    const nonExistentRefData = nonExistentRef.map((item: any) => {
+    const nonExistentRefData = nonExistentRef.map((item) => {
       return {
         id: item['@refObjectId'],
         version: item['@version'],
@@ -285,15 +302,15 @@ const FlowpropertiesEdit: FC<Props> = ({
       };
     });
     const errTabNames: string[] = [];
-    nonExistentRef.forEach((item: any) => {
+    nonExistentRef.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    unRuleVerification.forEach((item: any) => {
+    unRuleVerification.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    problemNodes.forEach((item: any) => {
+    problemNodes.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
@@ -326,7 +343,7 @@ const FlowpropertiesEdit: FC<Props> = ({
       if (errTabNames && errTabNames.length > 0) {
         message.error(
           errTabNames
-            .map((tab: any) =>
+            .map((tab) =>
               intl.formatMessage({
                 id: `pages.FlowProperties.view.${tab}`,
                 defaultMessage: tab,
@@ -431,7 +448,10 @@ const FlowpropertiesEdit: FC<Props> = ({
                   return [];
                 },
               }}
-              onFinish={() => handleSubmit(true)}
+              onFinish={async () => {
+                await handleSubmit(true);
+                return true;
+              }}
               onValuesChange={(_, allValues) => {
                 setFromData({
                   ...fromData,

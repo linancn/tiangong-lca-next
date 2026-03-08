@@ -2,6 +2,7 @@ import FileGallery from '@/components/FileViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
+import { getClassificationValues } from '@/pages/Utils';
 import { isValidURL } from '@/services/general/util';
 import { getSourceDetail } from '@/services/sources/api';
 import { FormSource, SourceDataSetObjectKeys, SourceDetailResponse } from '@/services/sources/data';
@@ -22,20 +23,6 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
-};
-
-const getClassificationValues = (value: unknown): string[] | undefined => {
-  if (!value || typeof value !== 'object') {
-    return undefined;
-  }
-  if (!('value' in value)) {
-    return undefined;
-  }
-  const raw = (value as { value?: unknown }).value;
-  if (!Array.isArray(raw)) {
-    return undefined;
-  }
-  return raw.filter((item): item is string => typeof item === 'string');
 };
 
 const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {

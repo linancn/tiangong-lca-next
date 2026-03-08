@@ -61,7 +61,7 @@ const Control = (props: ControlIProps) => {
 
   const [zoom, setZoom] = useState(1);
 
-  useGraphEvent('scale', ({ sx }: { sx: any }) => {
+  useGraphEvent('scale', ({ sx }: { sx: number }) => {
     setZoom(sx);
   });
 

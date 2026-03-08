@@ -87,7 +87,7 @@ describe('Flow Properties Data Types (src/services/flowproperties/data.ts)', () 
         },
       };
 
-      expect(flowProp.refUnitRes.MJ.factor).toBe(1);
+      expect((flowProp.refUnitRes.MJ as { factor?: number })?.factor).toBe(1);
       expect(flowProp.refUnitRes.customProperty).toBeInstanceOf(Array);
     });
 

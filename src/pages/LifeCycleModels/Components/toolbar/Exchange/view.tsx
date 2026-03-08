@@ -2,6 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import { getProcessDetail } from '@/services/processes/api';
+import type { ProcessExchangeData } from '@/services/processes/data';
 import { genProcessFromData } from '@/services/processes/util';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin } from 'antd';
@@ -31,8 +32,14 @@ const EdgeExchangeView: FC<Props> = ({
   drawerVisible,
   onDrawerClose,
 }) => {
-  const [exchangeDataSource, setExchangeDataSource] = useState<any>({});
-  const [exchangeDataTarget, setExchangeDataTarget] = useState<any>({});
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData | undefined>();
+  const [exchangeDataTarget, setExchangeDataTarget] = useState<ProcessExchangeData | undefined>();
+  const sourceFlowRef = Array.isArray(exchangeDataSource?.referenceToFlowDataSet)
+    ? exchangeDataSource?.referenceToFlowDataSet[0]
+    : exchangeDataSource?.referenceToFlowDataSet;
+  const targetFlowRef = Array.isArray(exchangeDataTarget?.referenceToFlowDataSet)
+    ? exchangeDataTarget?.referenceToFlowDataSet[0]
+    : exchangeDataTarget?.referenceToFlowDataSet;
   const [spinningSource, setSpinningSource] = useState(false);
   const [spinningTarget, setSpinningTarget] = useState(false);
 
@@ -44,9 +51,11 @@ const EdgeExchangeView: FC<Props> = ({
       const sourceData = (
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
       ).find(
-        (item: any) =>
-          (item?.exchangeDirection).toUpperCase() === 'OUTPUT' &&
-          item?.referenceToFlowDataSet?.['@refObjectId'] === sourceOutputFlowID,
+        (item) =>
+          (item?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT' &&
+          (Array.isArray(item?.referenceToFlowDataSet)
+            ? item?.referenceToFlowDataSet[0]
+            : item?.referenceToFlowDataSet)?.['@refObjectId'] === sourceOutputFlowID,
       );
       setExchangeDataSource(sourceData);
       setSpinningSource(false);
@@ -56,9 +65,11 @@ const EdgeExchangeView: FC<Props> = ({
       const targetData = (
         genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []
       ).find(
-        (item: any) =>
-          (item?.exchangeDirection).toUpperCase() === 'INPUT' &&
-          item?.referenceToFlowDataSet?.['@refObjectId'] === targetInputFlowID,
+        (item: ProcessExchangeData) =>
+          (item?.exchangeDirection ?? '').toUpperCase() === 'INPUT' &&
+          (Array.isArray(item?.referenceToFlowDataSet)
+            ? item?.referenceToFlowDataSet[0]
+            : item?.referenceToFlowDataSet)?.['@refObjectId'] === targetInputFlowID,
       );
       setExchangeDataTarget(targetData);
       setSpinningTarget(false);
@@ -117,7 +128,7 @@ const EdgeExchangeView: FC<Props> = ({
                       defaultMessage='Flow'
                     />
                   }
-                  data={exchangeDataSource?.referenceToFlowDataSet ?? {}}
+                  data={sourceFlowRef ?? null}
                   lang={lang}
                 />
                 <br />
@@ -196,7 +207,7 @@ const EdgeExchangeView: FC<Props> = ({
                     >
                       {
                         <QuantitativeReferenceIcon
-                          value={exchangeDataSource?.quantitativeReference}
+                          value={!!exchangeDataSource?.quantitativeReference}
                         />
                       }
                     </Descriptions.Item>
@@ -245,7 +256,7 @@ const EdgeExchangeView: FC<Props> = ({
                       defaultMessage='Flow'
                     />
                   }
-                  data={exchangeDataTarget?.referenceToFlowDataSet ?? {}}
+                  data={targetFlowRef ?? null}
                   lang={lang}
                 />
                 <br />
@@ -324,7 +335,7 @@ const EdgeExchangeView: FC<Props> = ({
                     >
                       {
                         <QuantitativeReferenceIcon
-                          value={exchangeDataTarget?.quantitativeReference}
+                          value={!!exchangeDataTarget?.quantitativeReference}
                         />
                       }
                     </Descriptions.Item>
