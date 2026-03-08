@@ -28,11 +28,12 @@ import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/es/table/interface';
-import type { FC } from 'react';
+import type { FC, ReactElement } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
+import LcaSolveToolbar from './Components/lcaSolveToolbar';
 import { processtypeOfDataSetOptions } from './Components/optiondata';
 import ReviewDetail from './Components/ReviewDetail';
 import ProcessView from './Components/view';
@@ -483,6 +484,22 @@ const TableList: FC = () => {
         actionRef={actionRef}
         search={false}
         options={{ fullScreen: true }}
+        optionsRender={(_, defaultOptions) => {
+          const settings = (defaultOptions ?? []) as ReactElement[];
+          if (dataSource !== 'my') {
+            return settings;
+          }
+          const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
+          const reloadIndex = settings.findIndex((item) => item.key === 'reload');
+          if (reloadIndex < 0) {
+            return [...settings, calcOption];
+          }
+          return [
+            ...settings.slice(0, reloadIndex + 1),
+            calcOption,
+            ...settings.slice(reloadIndex + 1),
+          ];
+        }}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
