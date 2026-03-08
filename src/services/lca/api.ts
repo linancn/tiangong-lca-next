@@ -3,13 +3,9 @@ import { FunctionRegion } from '@supabase/supabase-js';
 
 export type LcaJobStatus = 'queued' | 'running' | 'ready' | 'completed' | 'failed' | 'stale';
 
-export type LcaSolveRequest = {
+type LcaSolveRequestBase = {
   scope?: string;
   snapshot_id?: string;
-  demand: {
-    process_index: number;
-    amount?: number;
-  };
   solve?: {
     return_x?: boolean;
     return_g?: boolean;
@@ -17,6 +13,27 @@ export type LcaSolveRequest = {
   };
   print_level?: number;
 };
+
+export type LcaSolveSingleRequest = LcaSolveRequestBase & {
+  demand_mode?: 'single';
+  demand: {
+    process_index: number;
+    amount?: number;
+  };
+};
+
+export type LcaSolveAllUnitRequest = LcaSolveRequestBase & {
+  demand_mode: 'all_unit';
+  demand?: never;
+  solve?: {
+    return_x?: false;
+    return_g?: false;
+    return_h?: true;
+  };
+  unit_batch_size?: number;
+};
+
+export type LcaSolveRequest = LcaSolveSingleRequest | LcaSolveAllUnitRequest;
 
 export type LcaSolveSubmitResponse =
   | {

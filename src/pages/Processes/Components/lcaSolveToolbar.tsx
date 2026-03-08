@@ -6,18 +6,24 @@ import {
   type LcaJobResponse,
 } from '@/services/lca';
 import { CalculatorOutlined } from '@ant-design/icons';
-import { Form, InputNumber, Modal, Space, Typography, message } from 'antd';
+import { Form, InputNumber, Modal, Radio, Space, Typography, message } from 'antd';
 import { useState } from 'react';
 import { useIntl } from 'umi';
 
+type SolveMode = 'single' | 'all_unit';
+
 type FormValues = {
-  process_index: number;
-  amount: number;
+  demand_mode: SolveMode;
+  process_index?: number;
+  amount?: number;
+  unit_batch_size?: number;
 };
 
 const DEFAULT_VALUES: FormValues = {
+  demand_mode: 'all_unit',
   process_index: 0,
   amount: 1,
+  unit_batch_size: undefined,
 };
 const DEFAULT_POLL_TIMEOUT_MS = 120000;
 
@@ -28,6 +34,7 @@ const LcaSolveToolbar = () => {
   const [lastJob, setLastJob] = useState<LcaJobResponse | null>(null);
   const [lastResultId, setLastResultId] = useState<string | null>(null);
   const intl = useIntl();
+  const demandMode = Form.useWatch('demand_mode', form) ?? DEFAULT_VALUES.demand_mode;
 
   const onOpen = () => {
     form.setFieldsValue(DEFAULT_VALUES);
@@ -43,45 +50,81 @@ const LcaSolveToolbar = () => {
 
   const onSubmit = async () => {
     const values = await form.validateFields();
-    const processIndex = Number(values.process_index);
-    const amount = Number(values.amount);
-
-    if (!Number.isInteger(processIndex) || processIndex < 0) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.lca.error.processIndexMustBeInteger',
-          defaultMessage: 'process_index must be an integer >= 0',
-        }),
-      );
-      return;
-    }
-    if (!Number.isFinite(amount) || amount <= 0) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.lca.error.amountMustBePositive',
-          defaultMessage: 'amount must be > 0',
-        }),
-      );
-      return;
-    }
+    const mode = values.demand_mode ?? DEFAULT_VALUES.demand_mode;
 
     setRunning(true);
     setLastJob(null);
     setLastResultId(null);
     try {
-      const submit = await submitLcaSolve({
-        scope: 'prod',
-        demand: {
-          process_index: processIndex,
-          amount,
-        },
-        solve: {
-          return_x: false,
-          return_g: true,
-          return_h: true,
-        },
-        print_level: 0,
-      });
+      let submit: Awaited<ReturnType<typeof submitLcaSolve>>;
+      if (mode === 'single') {
+        const processIndex = Number(values.process_index);
+        const amount = Number(values.amount);
+
+        if (!Number.isInteger(processIndex) || processIndex < 0) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.process.lca.error.processIndexMustBeInteger',
+              defaultMessage: 'process_index must be an integer >= 0',
+            }),
+          );
+          return;
+        }
+        if (!Number.isFinite(amount) || amount <= 0) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.process.lca.error.amountMustBePositive',
+              defaultMessage: 'amount must be > 0',
+            }),
+          );
+          return;
+        }
+
+        submit = await submitLcaSolve({
+          scope: 'prod',
+          demand_mode: 'single',
+          demand: {
+            process_index: processIndex,
+            amount,
+          },
+          solve: {
+            return_x: false,
+            return_g: true,
+            return_h: true,
+          },
+          print_level: 0,
+        });
+      } else {
+        const unitBatchSizeValue = values.unit_batch_size;
+        if (
+          unitBatchSizeValue !== undefined &&
+          unitBatchSizeValue !== null &&
+          (!Number.isInteger(unitBatchSizeValue) || unitBatchSizeValue < 1)
+        ) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.process.lca.error.unitBatchSizeMustBePositiveInteger',
+              defaultMessage: 'unit_batch_size must be an integer > 0',
+            }),
+          );
+          return;
+        }
+
+        submit = await submitLcaSolve({
+          scope: 'prod',
+          demand_mode: 'all_unit',
+          solve: {
+            return_x: false,
+            return_g: false,
+            return_h: true,
+          },
+          unit_batch_size:
+            unitBatchSizeValue === undefined || unitBatchSizeValue === null
+              ? undefined
+              : Number(unitBatchSizeValue),
+          print_level: 0,
+        });
+      }
 
       if (submit.mode === 'cache_hit') {
         setLastResultId(submit.result_id);
@@ -209,41 +252,87 @@ const LcaSolveToolbar = () => {
       >
         <Form<FormValues> form={form} layout='vertical' initialValues={DEFAULT_VALUES}>
           <Form.Item
-            name='process_index'
+            name='demand_mode'
             label={intl.formatMessage({
-              id: 'pages.process.lca.field.processIndex',
-              defaultMessage: 'Process Index',
+              id: 'pages.process.lca.field.solveMode',
+              defaultMessage: 'Solve Mode',
             })}
             rules={[
               {
                 required: true,
                 message: intl.formatMessage({
-                  id: 'pages.process.lca.validation.processIndexRequired',
-                  defaultMessage: 'Please input process index',
+                  id: 'pages.process.lca.validation.solveModeRequired',
+                  defaultMessage: 'Please select solve mode',
                 }),
               },
             ]}
           >
-            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            <Radio.Group style={{ width: '100%' }}>
+              <Radio.Button value='all_unit' style={{ width: '50%', textAlign: 'center' }}>
+                {intl.formatMessage({
+                  id: 'pages.process.lca.mode.allUnit',
+                  defaultMessage: 'All Processes (unit)',
+                })}
+              </Radio.Button>
+              <Radio.Button value='single' style={{ width: '50%', textAlign: 'center' }}>
+                {intl.formatMessage({
+                  id: 'pages.process.lca.mode.single',
+                  defaultMessage: 'Single Demand',
+                })}
+              </Radio.Button>
+            </Radio.Group>
           </Form.Item>
-          <Form.Item
-            name='amount'
-            label={intl.formatMessage({
-              id: 'pages.process.lca.field.amount',
-              defaultMessage: 'Amount',
-            })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: 'pages.process.lca.validation.amountRequired',
-                  defaultMessage: 'Please input amount',
-                }),
-              },
-            ]}
-          >
-            <InputNumber min={0.0000001} precision={6} style={{ width: '100%' }} />
-          </Form.Item>
+
+          {demandMode === 'single' ? (
+            <>
+              <Form.Item
+                name='process_index'
+                label={intl.formatMessage({
+                  id: 'pages.process.lca.field.processIndex',
+                  defaultMessage: 'Process Index',
+                })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({
+                      id: 'pages.process.lca.validation.processIndexRequired',
+                      defaultMessage: 'Please input process index',
+                    }),
+                  },
+                ]}
+              >
+                <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+              </Form.Item>
+              <Form.Item
+                name='amount'
+                label={intl.formatMessage({
+                  id: 'pages.process.lca.field.amount',
+                  defaultMessage: 'Amount',
+                })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({
+                      id: 'pages.process.lca.validation.amountRequired',
+                      defaultMessage: 'Please input amount',
+                    }),
+                  },
+                ]}
+              >
+                <InputNumber min={0.0000001} precision={6} style={{ width: '100%' }} />
+              </Form.Item>
+            </>
+          ) : (
+            <Form.Item
+              name='unit_batch_size'
+              label={intl.formatMessage({
+                id: 'pages.process.lca.field.unitBatchSize',
+                defaultMessage: 'Unit Batch Size (optional)',
+              })}
+            >
+              <InputNumber min={1} precision={0} style={{ width: '100%' }} />
+            </Form.Item>
+          )}
         </Form>
 
         <Space direction='vertical' size={4}>
