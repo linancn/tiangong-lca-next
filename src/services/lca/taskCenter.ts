@@ -146,8 +146,13 @@ function normalizeRequest(value: unknown): LcaSolveRequest | undefined {
   if (request.demand_mode === 'all_unit') {
     return value as LcaSolveRequest;
   }
-  const demand = request.demand as { process_index?: unknown } | undefined;
+  const demand = request.demand as
+    | { process_index?: unknown; process_id?: unknown; process_version?: unknown }
+    | undefined;
   if (demand && Number.isInteger(demand.process_index) && Number(demand.process_index) >= 0) {
+    return value as LcaSolveRequest;
+  }
+  if (demand && typeof demand.process_id === 'string' && demand.process_id.trim()) {
     return value as LcaSolveRequest;
   }
   return undefined;

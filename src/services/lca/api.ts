@@ -16,10 +16,19 @@ type LcaSolveRequestBase = {
 
 export type LcaSolveSingleRequest = LcaSolveRequestBase & {
   demand_mode?: 'single';
-  demand: {
-    process_index: number;
-    amount?: number;
-  };
+  demand:
+    | {
+        process_index: number;
+        process_id?: never;
+        process_version?: never;
+        amount?: number;
+      }
+    | {
+        process_id: string;
+        process_version?: string;
+        process_index?: never;
+        amount?: number;
+      };
 };
 
 export type LcaSolveAllUnitRequest = LcaSolveRequestBase & {
@@ -116,6 +125,7 @@ export type LcaQueryRequest =
       snapshot_id?: string;
       mode: 'process_all_impacts';
       process_id: string;
+      process_version?: string;
       allow_fallback?: boolean;
     }
   | {

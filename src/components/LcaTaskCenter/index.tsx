@@ -317,7 +317,7 @@ function taskDetailContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.
           {task.mode === 'all_unit'
             ? intl.formatMessage({
                 id: 'pages.process.lca.mode.allUnit',
-                defaultMessage: 'All Processes (unit)',
+                defaultMessage: 'All Processes (1 Reference Unit)',
               })
             : intl.formatMessage({
                 id: 'pages.process.lca.mode.single',

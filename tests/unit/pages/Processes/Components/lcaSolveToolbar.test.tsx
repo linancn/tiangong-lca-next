@@ -1,5 +1,6 @@
 import LcaSolveToolbar from '@/pages/Processes/Components/lcaSolveToolbar';
 import { submitLcaTask } from '@/services/lca/taskCenter';
+import { listMyProcessesForLca } from '@/services/processes/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 type ReactNode = import('react').ReactNode;
@@ -58,6 +59,11 @@ jest.mock('@/services/lca/taskCenter', () => ({
   submitLcaTask: jest.fn(),
 }));
 
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  listMyProcessesForLca: jest.fn(),
+}));
+
 jest.mock('umi', () => ({
   useIntl: () => ({
     formatMessage: (
@@ -91,8 +97,11 @@ jest.mock('antd', () => {
   };
 
   Form.useForm = () => {
-    const form = buildMockFormApi();
-    return [form];
+    const formRef = React.useRef();
+    if (!formRef.current) {
+      formRef.current = buildMockFormApi();
+    }
+    return [formRef.current as MockFormApi];
   };
 
   Form.useWatch = (name: string, form?: MockFormApi) => {
@@ -212,6 +221,32 @@ jest.mock('antd', () => {
   };
 
   const Space = ({ children }: { children: ReactNode }) => <div>{children}</div>;
+  const Select = (props: any) => {
+    const { options = [], value, onChange, ...rest } = props;
+    delete rest.showSearch;
+    delete rest.optionFilterProp;
+    delete rest.notFoundContent;
+    delete rest.loading;
+    delete rest.placeholder;
+
+    return (
+      <select
+        value={value ?? ''}
+        onChange={(event) => {
+          const next = event.target.value;
+          onChange?.(next || undefined);
+        }}
+        {...rest}
+      >
+        <option value='' />
+        {options.map((option: any) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    );
+  };
   const Typography = {
     Text: ({ children }: { children: ReactNode }) => <span>{children}</span>,
   };
@@ -233,6 +268,7 @@ jest.mock('antd', () => {
       Group: RadioGroup,
       Button: RadioButton,
     },
+    Select,
     Space,
     Typography,
     message,
@@ -242,28 +278,42 @@ jest.mock('antd', () => {
 import { message } from 'antd';
 
 const mockSubmitLcaTask = submitLcaTask as unknown as jest.Mock;
+const mockListMyProcessesForLca = listMyProcessesForLca as unknown as jest.Mock;
 
 describe('LcaSolveToolbar component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSubmitLcaTask.mockReturnValue({ id: 'task-1' });
+    mockListMyProcessesForLca.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: 'process-1',
+          version: '01.00.000',
+          name: 'Process One',
+        },
+      ],
+    });
   });
 
-  const openModal = () => {
+  const openModal = async () => {
     fireEvent.click(screen.getByTestId('lca-toolbar-trigger'));
     expect(screen.getByTestId('lca-modal')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockListMyProcessesForLca).toHaveBeenCalled();
+    });
   };
 
-  it('opens modal from toolbar trigger', () => {
+  it('opens modal from toolbar trigger', async () => {
     render(<LcaSolveToolbar />);
     expect(screen.queryByTestId('lca-modal')).not.toBeInTheDocument();
 
-    openModal();
+    await openModal();
   });
 
   it('submits all_unit request by default', async () => {
     render(<LcaSolveToolbar />);
-    openModal();
+    await openModal();
 
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
@@ -276,7 +326,6 @@ describe('LcaSolveToolbar component', () => {
           return_g: false,
           return_h: true,
         },
-        unit_batch_size: undefined,
         print_level: 0,
       });
     });
@@ -286,40 +335,44 @@ describe('LcaSolveToolbar component', () => {
     );
   });
 
-  it('submits all_unit request with unit_batch_size', async () => {
+  it('submits single request with selected process id and version', async () => {
     render(<LcaSolveToolbar />);
-    openModal();
+    await openModal();
 
-    fireEvent.change(screen.getByTestId('field-unit_batch_size'), { target: { value: '12' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByTestId('field-process_ref'), {
+      target: { value: 'process-1::01.00.000' },
+    });
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
     await waitFor(() => {
       expect(mockSubmitLcaTask).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        demand_mode: 'all_unit',
+        demand_mode: 'single',
+        demand: {
+          process_id: 'process-1',
+          process_version: '01.00.000',
+          amount: 1,
+        },
         solve: {
           return_x: false,
-          return_g: false,
+          return_g: true,
           return_h: true,
         },
-        unit_batch_size: 12,
         print_level: 0,
       });
     });
   });
 
-  it('blocks submit for invalid unit_batch_size (< 1)', async () => {
+  it('hides amount and unit_batch_size inputs for simplified UI', async () => {
     render(<LcaSolveToolbar />);
-    openModal();
+    await openModal();
 
-    fireEvent.change(screen.getByTestId('field-unit_batch_size'), { target: { value: '0' } });
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('unit_batch_size must be an integer > 0');
-    });
-
-    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('field-amount')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('field-unit_batch_size')).not.toBeInTheDocument();
   });
 
   it('shows error when task submission throws', async () => {
@@ -328,7 +381,7 @@ describe('LcaSolveToolbar component', () => {
     });
 
     render(<LcaSolveToolbar />);
-    openModal();
+    await openModal();
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
     await waitFor(() => {

@@ -450,6 +450,7 @@ const ProcessView: FC<Props> = ({
           scope: LCA_SCOPE,
           mode: 'process_all_impacts',
           process_id: id,
+          process_version: version,
           allow_fallback: false,
         });
         const values = (queried.data as { values?: unknown[] })?.values;
@@ -491,7 +492,7 @@ const ProcessView: FC<Props> = ({
         setSolverLciaLoading(false);
       }
     },
-    [baseLciaResultDataSource, id, solverLciaLoaded, solverLciaLoading],
+    [baseLciaResultDataSource, id, solverLciaLoaded, solverLciaLoading, version],
   );
 
   useEffect(() => {
