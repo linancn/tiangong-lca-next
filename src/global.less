@@ -89,3 +89,24 @@ ol {
     color: @error-color !important;
   }
 }
+
+.ant-pro-sider-links {
+  padding-bottom: 12px;
+}
+
+.ant-layout-sider-collapsed {
+  .ant-pro-sider-links {
+    a[href='/umi/plugin/openapi'] {
+      > span:not(.anticon) {
+        display: none;
+      }
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-inline: calc(50% - 11px) !important;
+    }
+    .ant-menu-item:has(a[href='/umi/plugin/openapi']) {
+      padding-inline: 0 !important;
+    }
+  }
+}
