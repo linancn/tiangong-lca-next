@@ -7,7 +7,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import AlignedNumber from '@/components/AlignedNumber';
 import RequiredMark from '@/components/RequiredMark';
 import ToolBarButton from '@/components/ToolBarButton';
-import { useRefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
@@ -15,7 +15,7 @@ import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import LCIAResultCalculation, { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import { ProcessExchangeData, ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
 import { CalculatorOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
@@ -60,15 +60,38 @@ type Props = {
   activeTabKey: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
-  onExchangeData: (data: any) => void;
-  onExchangeDataCreate: (data: any) => void;
+  onExchangeData: (data: ProcessExchangeData[]) => void;
+  onExchangeDataCreate: (data: ProcessExchangeData) => void;
   onTabChange: (key: string) => void;
   onLciaResults: (result: LCIAResultTable[]) => void;
-  exchangeDataSource: ProcessExchangeTable[];
+  exchangeDataSource: ProcessExchangeData[];
   lciaResults: LCIAResultTable[];
   formType?: string;
   showRules?: boolean;
   actionFrom?: 'modelResult';
+};
+
+type FlowStateCodeItem = {
+  id?: string;
+  version?: string;
+  stateCode?: number;
+  classification?: string;
+};
+
+type FlowStateCodeResponse = {
+  error: unknown;
+  data: FlowStateCodeItem[];
+};
+
+type ProcessExchangeResponse = {
+  data: ProcessExchangeTable[];
+  page?: number;
+  success?: boolean;
+  total?: number;
+};
+
+const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
+  return Array.isArray(reference) ? reference[0] : reference;
 };
 
 export const ProcessForm: FC<Props> = ({
@@ -2005,7 +2028,7 @@ export const ProcessForm: FC<Props> = ({
                   }}
                   rowClassName={(record) => {
                     const isInRefCheck = refCheckContext?.refCheckData?.some(
-                      (item: any) =>
+                      (item: RefCheckType) =>
                         item.id === record.referenceToFlowDataSetId &&
                         item.version === record.referenceToFlowDataSetVersion,
                     );
@@ -2037,36 +2060,38 @@ export const ProcessForm: FC<Props> = ({
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Input',
                       params,
-                    ).then((res: any) => {
-                      return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        const flows = exchangeDataSource.map((item: any) => {
+                    ).then((res) => {
+                      const processExchangeRes = res as ProcessExchangeResponse;
+                      return getUnitData('flow', processExchangeRes?.data).then((unitRes) => {
+                        const normalizedUnitRes = (unitRes ?? []) as ProcessExchangeTable[];
+                        const flows = exchangeDataSource.map((item) => {
+                          const ref = toReferenceValue(item?.referenceToFlowDataSet);
                           return {
-                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
-                            version: item?.referenceToFlowDataSet?.['@version'],
+                            id: ref?.['@refObjectId'] ?? '',
+                            version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
-                          ({ error, data: flowsResp }: any) => {
-                            if (!error) {
-                              unitRes.forEach((item: any) => {
-                                const flow = flowsResp.find(
-                                  (flow: any) =>
-                                    flow.id === item?.referenceToFlowDataSetId &&
-                                    flow.version === item?.referenceToFlowDataSetVersion,
-                                );
-                                if (flow) {
-                                  item.stateCode = flow.stateCode;
-                                  item['classification'] = flow.classification;
-                                }
-                              });
-                            }
-                            return {
-                              ...res,
-                              data: unitRes,
-                              success: true,
-                            };
-                          },
-                        );
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
+                          const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
+                          if (!error) {
+                            normalizedUnitRes.forEach((item) => {
+                              const flow = flowsResp.find(
+                                (flowItem) =>
+                                  flowItem.id === item?.referenceToFlowDataSetId &&
+                                  flowItem.version === item?.referenceToFlowDataSetVersion,
+                              );
+                              if (flow) {
+                                item.stateCode = flow.stateCode;
+                                item['classification'] = flow.classification ?? '';
+                              }
+                            });
+                          }
+                          return {
+                            ...processExchangeRes,
+                            data: normalizedUnitRes,
+                            success: true,
+                          };
+                        });
                       });
                     });
                   }}
@@ -2094,7 +2119,7 @@ export const ProcessForm: FC<Props> = ({
                   }}
                   rowClassName={(record) => {
                     const isInRefCheck = refCheckContext?.refCheckData?.some(
-                      (item: any) =>
+                      (item: RefCheckType) =>
                         item.id === record.referenceToFlowDataSetId &&
                         item.version === record.referenceToFlowDataSetVersion,
                     );
@@ -2125,36 +2150,38 @@ export const ProcessForm: FC<Props> = ({
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Output',
                       params,
-                    ).then((res: any) => {
-                      return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        const flows = exchangeDataSource.map((item: any) => {
+                    ).then((res) => {
+                      const processExchangeRes = res as ProcessExchangeResponse;
+                      return getUnitData('flow', processExchangeRes?.data).then((unitRes) => {
+                        const normalizedUnitRes = (unitRes ?? []) as ProcessExchangeTable[];
+                        const flows = exchangeDataSource.map((item) => {
+                          const ref = toReferenceValue(item?.referenceToFlowDataSet);
                           return {
-                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
-                            version: item?.referenceToFlowDataSet?.['@version'],
+                            id: ref?.['@refObjectId'] ?? '',
+                            version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
-                          ({ error, data: flowsResp }: any) => {
-                            if (!error) {
-                              unitRes.forEach((item: any) => {
-                                const flow = flowsResp.find(
-                                  (flow: any) =>
-                                    flow.id === item?.referenceToFlowDataSetId &&
-                                    flow.version === item?.referenceToFlowDataSetVersion,
-                                );
-                                if (flow) {
-                                  item.stateCode = flow.stateCode;
-                                  item['classification'] = flow.classification;
-                                }
-                              });
-                            }
-                            return {
-                              ...res,
-                              data: unitRes,
-                              success: true,
-                            };
-                          },
-                        );
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
+                          const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
+                          if (!error) {
+                            normalizedUnitRes.forEach((item) => {
+                              const flow = flowsResp.find(
+                                (flowItem) =>
+                                  flowItem.id === item?.referenceToFlowDataSetId &&
+                                  flowItem.version === item?.referenceToFlowDataSetVersion,
+                              );
+                              if (flow) {
+                                item.stateCode = flow.stateCode;
+                                item['classification'] = flow.classification ?? '';
+                              }
+                            });
+                          }
+                          return {
+                            ...processExchangeRes,
+                            data: normalizedUnitRes,
+                            success: true,
+                          };
+                        });
                       });
                     });
                   }}

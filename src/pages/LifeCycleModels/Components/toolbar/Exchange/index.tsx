@@ -1,3 +1,4 @@
+import type { LifeCycleModelGraphEdge } from '@/services/lifeCycleModels/data';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -8,7 +9,7 @@ import EdgeExchangeView from './view';
 type Props = {
   lang: string;
   disabled: boolean;
-  edge: any;
+  edge: LifeCycleModelGraphEdge;
 };
 const EdgeExhange: FC<Props> = ({ lang, disabled, edge }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -43,12 +44,14 @@ const EdgeExhange: FC<Props> = ({ lang, disabled, edge }) => {
       </Tooltip>
       <EdgeExchangeView
         lang={lang}
-        sourceProcessId={edge?.data?.node?.sourceProcessId}
-        sourceProcessVersion={edge?.data?.node?.sourceProcessVersion}
-        targetProcessId={edge?.data?.node?.targetProcessId}
-        targetProcessVersion={edge?.data?.node?.targetProcessVersion}
-        sourceOutputFlowID={edge?.data?.connection?.outputExchange?.['@flowUUID']}
-        targetInputFlowID={edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID']}
+        sourceProcessId={edge?.data?.node?.sourceProcessId ?? ''}
+        sourceProcessVersion={edge?.data?.node?.sourceProcessVersion ?? ''}
+        targetProcessId={edge?.data?.node?.targetProcessId ?? ''}
+        targetProcessVersion={edge?.data?.node?.targetProcessVersion ?? ''}
+        sourceOutputFlowID={edge?.data?.connection?.outputExchange?.['@flowUUID'] ?? ''}
+        targetInputFlowID={
+          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'] ?? ''
+        }
         drawerVisible={drawerVisible}
         onDrawerClose={onDrawerClose}
       />

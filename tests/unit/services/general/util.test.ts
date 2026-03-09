@@ -23,6 +23,7 @@ import {
   genClassJsonZH,
   genClassStr,
   getDataSource,
+  getImportedId,
   getLang,
   getLangJson,
   getLangList,
@@ -760,6 +761,104 @@ describe('General Utility Functions', () => {
     it('should handle primitive values', () => {
       expect(jsonToList('string')).toEqual(['string']);
       expect(jsonToList(123)).toEqual([123]);
+    });
+  });
+
+  describe('getImportedId', () => {
+    const importedUuid = '123e4567-e89b-42d3-a456-426614174000';
+
+    it('should prioritize top-level id when it is a valid UUID', () => {
+      const result = getImportedId({
+        id: importedUuid,
+        flowDataSet: {
+          flowInformation: {
+            dataSetInformation: {
+              'common:UUID': '123e4567-e89b-42d3-a456-426614174001',
+            },
+          },
+        },
+      });
+
+      expect(result).toBe(importedUuid);
+    });
+
+    it.each([
+      [
+        'contact dataset UUID',
+        {
+          contactDataSet: {
+            contactInformation: { dataSetInformation: { 'common:UUID': importedUuid } },
+          },
+        },
+      ],
+      [
+        'flow dataset UUID',
+        {
+          flowDataSet: { flowInformation: { dataSetInformation: { 'common:UUID': importedUuid } } },
+        },
+      ],
+      [
+        'process dataset UUID',
+        {
+          processDataSet: {
+            processInformation: { dataSetInformation: { 'common:UUID': importedUuid } },
+          },
+        },
+      ],
+      [
+        'source dataset UUID',
+        {
+          sourceDataSet: {
+            sourceInformation: { dataSetInformation: { 'common:UUID': importedUuid } },
+          },
+        },
+      ],
+      [
+        'flow property dataset UUID',
+        {
+          flowPropertyDataSet: {
+            flowPropertiesInformation: { dataSetInformation: { 'common:UUID': importedUuid } },
+          },
+        },
+      ],
+      [
+        'unit group dataset UUID',
+        {
+          unitGroupDataSet: {
+            unitGroupInformation: { dataSetInformation: { 'common:UUID': importedUuid } },
+          },
+        },
+      ],
+      [
+        'life cycle model dataset UUID',
+        {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { 'common:UUID': importedUuid } },
+          },
+        },
+      ],
+    ])('should extract %s', (_label, importItem) => {
+      expect(getImportedId(importItem)).toBe(importedUuid);
+    });
+
+    it('should ignore invalid top-level id and fallback to dataset UUID', () => {
+      const result = getImportedId({
+        id: 'not-a-uuid',
+        processDataSet: {
+          processInformation: {
+            dataSetInformation: {
+              'common:UUID': importedUuid,
+            },
+          },
+        },
+      });
+
+      expect(result).toBe(importedUuid);
+    });
+
+    it('should return undefined when no valid UUID exists', () => {
+      expect(getImportedId({ id: 'invalid-id' })).toBeUndefined();
+      expect(getImportedId(null)).toBeUndefined();
     });
   });
 

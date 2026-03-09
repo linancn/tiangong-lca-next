@@ -8,6 +8,13 @@ export type ListPagination = {
 
 export type DataTabKey = 'tg' | 'co' | 'my' | 'te';
 
+export type LangTextEntry = {
+  '@xml:lang'?: string;
+  '#text'?: string;
+};
+
+export type LangTextValue = LangTextEntry | LangTextEntry[] | null | undefined;
+
 export type ReferenceItem = {
   '@refObjectId'?: string;
   '@type'?: string;

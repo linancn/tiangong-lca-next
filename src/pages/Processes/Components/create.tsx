@@ -1,6 +1,11 @@
 // import { checkRequiredFields } from '@/pages/Utils';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+  jsonToList,
+} from '@/services/general/util';
 import { createProcess, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
@@ -14,7 +19,13 @@ import { v4 } from 'uuid';
 // import requiredFields from '../requiredFields';
 import ToolBarButton from '@/components/ToolBarButton';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
-import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';
+import {
+  FormProcess,
+  ProcessDataSetObjectKeys,
+  ProcessDetailResponse,
+  ProcessExchangeData,
+  ProcessImportData,
+} from '@/services/processes/data';
 import { ProcessForm } from './form';
 
 type TabKeysType = ProcessDataSetObjectKeys | 'validation' | 'complianceDeclarations';
@@ -26,7 +37,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: ProcessImportData | null;
   onClose?: () => void;
   newVersion?: string;
 };
@@ -60,9 +71,10 @@ const ProcessCreate: FC<CreateProps> = ({
   const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
   const [fromData, setFromData] = useState<FormProcessWithId>();
   const [initData, setInitData] = useState<FormProcessWithId>();
-  const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const handletFromData = async () => {
     const fieldsValue = formRefCreate.current?.getFieldsValue();
@@ -97,7 +109,7 @@ const ProcessCreate: FC<CreateProps> = ({
     actionRef.current?.reload();
   }, [actionRef]);
 
-  const handletExchangeDataCreate = (data: any) => {
+  const handletExchangeDataCreate = (data: ProcessExchangeData) => {
     // if (fromData?.id)
     setExchangeDataSource([
       ...exchangeDataSource,
@@ -105,7 +117,7 @@ const ProcessCreate: FC<CreateProps> = ({
     ]);
   };
 
-  const handletExchangeData = (data: any) => {
+  const handletExchangeData = (data: ProcessExchangeData[]) => {
     if (fromData?.id) setExchangeDataSource([...data]);
   };
 
@@ -116,7 +128,7 @@ const ProcessCreate: FC<CreateProps> = ({
   const getFormDetail = () => {
     if (!id || !version) return;
     setSpinning(true);
-    getProcessDetail(id, version).then(async (result: any) => {
+    getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataSet.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
@@ -211,15 +223,19 @@ const ProcessCreate: FC<CreateProps> = ({
   }, [exchangeDataSource]);
 
   const handleLciaResults = (result: LCIAResultTable[]) => {
-    setFromData({
-      ...fromData,
-      LCIAResults: {
-        LCIAResult: result.map((item) => ({
-          referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
-          meanAmount: item.meanAmount,
-        })),
-      },
-    } as any);
+    const updatedLciaResults = result.map((item) => ({
+      referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
+      meanAmount: String(item.meanAmount ?? ''),
+    }));
+    setFromData(
+      (prev) =>
+        ({
+          ...prev,
+          LCIAResults: {
+            LCIAResult: updatedLciaResults,
+          },
+        }) as FormProcessWithId,
+    );
   };
 
   return (
@@ -333,12 +349,12 @@ const ProcessCreate: FC<CreateProps> = ({
             }}
             onFinish={async () => {
               setSpinning(true);
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const output = exchangeDataSource.filter(
-                (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
+                (e) => e.exchangeDirection?.toUpperCase() === 'OUTPUT',
               );
               let allocatedFractionTotal = toBigNumberOrZero(0);
-              output.forEach((e: any) => {
+              output.forEach((e) => {
                 if (
                   e?.allocations?.allocation &&
                   e?.allocations?.allocation['@allocatedFraction']
@@ -352,9 +368,9 @@ const ProcessCreate: FC<CreateProps> = ({
               });
               if (allocatedFractionTotal.isEqualTo(0)) {
                 const referenceIndex = output.findIndex(
-                  (e: any) =>
+                  (e) =>
                     e.quantitativeReference === true &&
-                    e.exchangeDirection.toUpperCase() === 'OUTPUT',
+                    e.exchangeDirection?.toUpperCase() === 'OUTPUT',
                 );
                 if (referenceIndex > -1) {
                   output[referenceIndex].allocations = {
@@ -393,7 +409,14 @@ const ProcessCreate: FC<CreateProps> = ({
                 setDrawerVisible(false);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               setSpinning(false);
               return true;
@@ -409,7 +432,7 @@ const ProcessCreate: FC<CreateProps> = ({
               onExchangeDataCreate={handletExchangeDataCreate}
               onTabChange={(key) => onTabChange(key as TabKeysType)}
               exchangeDataSource={exchangeDataSource}
-              lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
+              lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
               onLciaResults={handleLciaResults}
             />
           </ProForm>

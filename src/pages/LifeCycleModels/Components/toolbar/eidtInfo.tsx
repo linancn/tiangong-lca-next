@@ -17,7 +17,7 @@ import { LifeCycleModelForm } from '../form';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import type { RefCheckType } from '@/contexts/refCheckContext';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { refDataType } from '@/pages/Utils/review';
+import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import {
   checkReferences,
   checkVersions,
@@ -35,20 +35,38 @@ import {
   updateRefsData,
 } from '@/pages/Utils/updateReference';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import type {
+  LifeCycleModelDetailData,
+  LifeCycleModelDetailResponse,
+  LifeCycleModelFormState,
+  LifeCycleModelGraphEdge,
+  LifeCycleModelGraphNode,
+  LifeCycleModelSubModel,
+  LifeCycleModelToolbarEditInfoHandle,
+  LifeCycleModelValidationIssue,
+} from '@/services/lifeCycleModels/data';
 import { genLifeCycleModelJsonOrdered } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { v4 } from 'uuid';
 
+export type ToolbarEditInfoHandle = LifeCycleModelToolbarEditInfoHandle<refDataType>;
+
+type ReviewProblemNode = ProblemNode & {
+  versionUnderReview?: boolean;
+  underReviewVersion?: string;
+  versionIsInTg?: boolean;
+};
+
 type Props = {
   lang: string;
-  data: any;
-  onData: (data: any) => void;
+  data: LifeCycleModelFormState;
+  onData: (data: LifeCycleModelFormState) => void;
   action: string;
   actionType?: 'create' | 'copy' | 'createVersion';
 };
-const ToolbarEditInfo = forwardRef<any, Props>(
+const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
   ({ lang, data, onData, action, actionType }, ref) => {
     const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
     const [refsLoading, setRefsLoading] = useState(false);
@@ -58,12 +76,14 @@ const ToolbarEditInfo = forwardRef<any, Props>(
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
     const formRefEdit = useRef<ProFormInstance>();
-    const [fromData, setFromData] = useState<any>({});
+    const [fromData, setFromData] = useState<LifeCycleModelFormState>({});
     const [spinning, setSpinning] = useState(false);
     const [showRules, setShowRules] = useState<boolean>(false);
-    const [refCheckData, setRefCheckData] = useState<any[]>([]);
+    const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
     const parentRefCheckContext = useRefCheckContext();
-    const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+    const [refCheckContextValue, setRefCheckContextValue] = useState<{
+      refCheckData: RefCheckType[];
+    }>({
       refCheckData: [],
     });
     useEffect(() => {
@@ -72,7 +92,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       });
     }, [refCheckData, parentRefCheckContext]);
     const intl = useIntl();
-    let modelDetail: any;
+    let modelDetail: LifeCycleModelDetailData | undefined;
 
     useEffect(() => {
       if (showRules) {
@@ -108,7 +128,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         formRefEdit.current?.setFieldsValue({ ...res });
       }
     };
-    const updateReferenceDescription = async (data: any) => {
+    const updateReferenceDescription = async (data: LifeCycleModelFormState) => {
       const { oldRefs } = await getRefsOfCurrentVersion({ ...data, ...fromData });
       const res = updateRefsData({ ...data, ...fromData }, oldRefs, false);
       setFromData(res);
@@ -165,15 +185,15 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       onReset();
     }, [drawerVisible]);
 
-    const handleCheckData: (
+    const handleCheckData = async (
       from: 'review' | 'checkData',
-      nodes: any[],
-      edges: any[],
-    ) => Promise<{
+      nodes: LifeCycleModelGraphNode[],
+      edges: LifeCycleModelGraphEdge[],
+    ): Promise<{
       checkResult: boolean;
       unReview: refDataType[];
       problemNodes?: refDataType[];
-    }> = async (from, nodes: any[], edges: any[]) => {
+    }> => {
       setSpinning(true);
       if (nodes?.length) {
         const quantitativeReferenceProcress = nodes.find(
@@ -220,7 +240,21 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       const nonExistentRef: refDataType[] = [];
       const allRefs = new Set<string>();
 
-      modelDetail = await getLifeCycleModelDetail(data.id, data.version);
+      const modelDetailResp: LifeCycleModelDetailResponse = await getLifeCycleModelDetail(
+        data.id ?? '',
+        data.version ?? '',
+      );
+      modelDetail = modelDetailResp.success ? modelDetailResp.data : undefined;
+      if (!modelDetail) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.button.check.error',
+            defaultMessage: 'Data check failed!',
+          }),
+        );
+        setSpinning(false);
+        return { checkResult: false, unReview };
+      }
       if (modelDetail.stateCode >= 20 && modelDetail.stateCode < 100) {
         message.error(
           intl.formatMessage({
@@ -232,13 +266,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         return { checkResult: false, unReview };
       }
       const tidasLifeCycleModel = createTidasLifeCycleModel(
-        genLifeCycleModelJsonOrdered(data.id, {
-          ...modelDetail.data.json.lifeCycleModelDataSet,
-          model: { ...modelDetail.data.json_tg.xflow },
+        genLifeCycleModelJsonOrdered(data.id ?? '', {
+          ...modelDetail.json.lifeCycleModelDataSet,
+          model: { ...modelDetail.json_tg?.xflow },
         }),
       );
       const validateResult = tidasLifeCycleModel.validateEnhanced();
-      const issues = validateResult.success
+      const issues: LifeCycleModelValidationIssue[] = validateResult.success
         ? []
         : validateResult.error.issues.filter(
             (item) =>
@@ -247,9 +281,12 @@ const ToolbarEditInfo = forwardRef<any, Props>(
               !item.path.includes('quantitativeReference'),
           );
       let valid = issues.length === 0;
-      dealModel(modelDetail?.data, unReview, underReview, unRuleVerification, nonExistentRef);
+      dealModel(modelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
 
-      const { data: sameProcressWithModel } = await getProcessDetail(data.id, data.version);
+      const { data: sameProcressWithModel } = await getProcessDetail(
+        data.id ?? '',
+        data.version ?? '',
+      );
       if (sameProcressWithModel) {
         dealProcress(
           sameProcressWithModel,
@@ -260,10 +297,10 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         );
       }
 
-      const refObjs = getAllRefObj(modelDetail?.data);
+      const refObjs = getAllRefObj(modelDetail);
       const path = await checkReferences(
         refObjs,
-        new Map<string, any>(),
+        new Map<string, unknown>(),
         userTeamId,
         unReview,
         underReview,
@@ -271,11 +308,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         nonExistentRef,
         new ReffPath(
           {
-            '@refObjectId': data.id,
-            '@version': data.version,
+            '@refObjectId': data.id ?? '',
+            '@version': data.version ?? '',
             '@type': 'lifeCycleModel data set',
           },
-          modelDetail?.data?.ruleVerification,
+          modelDetail.ruleVerification,
           false,
         ),
         allRefs,
@@ -284,11 +321,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       if (sameProcressWithModel) allRefs.add(`${data.id}:${data.version}:process data set`);
       await checkVersions(allRefs, path);
 
-      const problemNodes = path?.findProblemNodes(from) ?? [];
+      const problemNodes = (path?.findProblemNodes(from) ?? []) as ReviewProblemNode[];
       if (problemNodes && problemNodes.length > 0) {
-        let underReviewVersionProcessAndModel: RefCheckType[] = [];
-        let versionIsInTgProcessAndModel: RefCheckType[] = [];
-        let result = problemNodes.map((item: any) => {
+        let underReviewVersionProcessAndModel: ReviewProblemNode[] = [];
+        let versionIsInTgProcessAndModel: ReviewProblemNode[] = [];
+        const result: RefCheckType[] = problemNodes.map((item) => {
           if (item['@type'] === 'process data set' || item['@type'] === 'lifeCycleModel data set') {
             if (item.underReviewVersion && item.underReviewVersion !== item['@version']) {
               underReviewVersionProcessAndModel.push(item);
@@ -310,7 +347,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         setRefCheckData(result);
         if (underReviewVersionProcessAndModel.length) {
           const errorMessages: string[] = [];
-          underReviewVersionProcessAndModel.forEach((item: any) => {
+          underReviewVersionProcessAndModel.forEach((item) => {
             if (item['@type'] === 'lifeCycleModel data set') {
               errorMessages.push(
                 intl.formatMessage(
@@ -361,7 +398,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
                 'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
             }),
           ];
-          versionIsInTgProcessAndModel.forEach((item: any) => {
+          versionIsInTgProcessAndModel.forEach((item) => {
             if (item['@type'] === 'lifeCycleModel data set') {
               errorMessages.push(
                 intl.formatMessage(
@@ -415,13 +452,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         return { checkResult: valid, unReview, problemNodes };
       }
 
-      const submodels = modelDetail?.data?.json_tg?.submodels;
+      const submodels: LifeCycleModelSubModel[] = modelDetail?.json_tg?.submodels ?? [];
       if (submodels) {
-        submodels.forEach((item: any) => {
+        submodels.forEach((item) => {
           if (item.type === 'secondary') {
             unReview.push({
               '@refObjectId': item.id,
-              '@version': data.version,
+              '@version': data.version ?? '',
               '@type': 'process data set',
             });
           }
@@ -445,20 +482,20 @@ const ToolbarEditInfo = forwardRef<any, Props>(
       } else {
         const errTabNames: string[] = [];
         let processInstanceValid = true;
-        const modelDataset = modelDetail?.data?.json?.lifeCycleModelDataSet;
-        issues.forEach((err: any) => {
+        const modelDataset = modelDetail?.json?.lifeCycleModelDataSet;
+        issues.forEach((err: LifeCycleModelValidationIssue) => {
           if (err.path.includes('processInstance')) {
             processInstanceValid = false;
           } else {
-            const tabName = err?.path[1];
+            const tabName = typeof err?.path[1] === 'string' ? err.path[1] : undefined;
             if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
           }
         });
-        nonExistentRef.forEach((item: any) => {
+        nonExistentRef.forEach((item) => {
           const tabName = getErrRefTab(item, modelDataset);
           if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
         });
-        unRuleVerification.forEach((item: any) => {
+        unRuleVerification.forEach((item) => {
           const tabName = getErrRefTab(item, modelDataset);
           if (
             tabName &&
@@ -468,7 +505,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
           )
             errTabNames.push(tabName);
         });
-        problemNodes.forEach((item: any) => {
+        problemNodes.forEach((item) => {
           const tabName = getErrRefTab(item, modelDataset);
           if (
             tabName &&
@@ -481,7 +518,7 @@ const ToolbarEditInfo = forwardRef<any, Props>(
         if (errTabNames && errTabNames.length > 0) {
           message.error(
             errTabNames
-              .map((tab: any) =>
+              .map((tab: string) =>
                 intl.formatMessage({
                   id: `pages.lifeCycleModel.view.${tab}`,
                   defaultMessage: tab,
@@ -498,7 +535,11 @@ const ToolbarEditInfo = forwardRef<any, Props>(
             setDrawerVisible(true);
             onReset();
           }
-          if (issues.filter((item: any) => !item.path.includes('processInstance')).length > 0) {
+          if (
+            issues.filter(
+              (item: LifeCycleModelValidationIssue) => !item.path.includes('processInstance'),
+            ).length > 0
+          ) {
             setTimeout(() => {
               formRefEdit.current?.validateFields();
             }, 200);
@@ -515,16 +556,16 @@ const ToolbarEditInfo = forwardRef<any, Props>(
           setSpinning(false);
           return { checkResult: false, unReview, problemNodes };
         } else if (unRuleVerification && unRuleVerification.length > 0) {
-          const unRuleVerificationMainProduce = unRuleVerification.find((item: any) => {
+          const unRuleVerificationMainProduce = unRuleVerification.find((item) => {
             return (
               item['@refObjectId'] === data.id &&
               item['@version'] === data.version &&
               item['@type'] === 'process data set'
             );
           });
-          const unRuleVerificationSubProduce = unRuleVerification.find((item: any) => {
+          const unRuleVerificationSubProduce = unRuleVerification.find((item) => {
             return submodels?.find(
-              (sub: any) =>
+              (sub) =>
                 sub.type === 'secondary' &&
                 sub.id === item['@refObjectId'] &&
                 item['@type'] === 'process data set',
@@ -572,13 +613,13 @@ const ToolbarEditInfo = forwardRef<any, Props>(
 
       const reviewId = v4();
       const result = await updateReviewsAfterCheckData(
-        modelDetail?.data?.teamId,
+        modelDetail?.teamId ?? '',
         {
           id: data.id,
           version: data.version,
           name:
-            modelDetail?.data?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation
-              ?.dataSetInformation?.name ?? {},
+            modelDetail?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation
+              ?.name ?? {},
         },
         reviewId,
       );

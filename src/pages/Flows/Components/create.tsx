@@ -1,10 +1,21 @@
 import { createFlows, getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 // import { getSourceDetail } from '@/services/sources/api';
 // import { genSourceFromData } from '@/services/sources/util';
 import ToolBarButton from '@/components/ToolBarButton';
-import { FlowDataSetObjectKeys, FormFlow } from '@/services/flows/data';
+import {
+  FlowDataSetObjectKeys,
+  FlowDetailResponse,
+  FlowImportData,
+  FlowPropertyData,
+  FormFlow,
+  FormFlowWithId,
+} from '@/services/flows/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -21,7 +32,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: FlowImportData | null;
   onClose?: () => void;
   newVersion?: string;
 };
@@ -53,13 +64,14 @@ const FlowsCreate: FC<CreateProps> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
-  const [initData, setInitData] = useState<FormFlow & { id?: string }>();
-  const [fromData, setFromData] = useState<FormFlow & { id?: string }>();
-  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
+  const [initData, setInitData] = useState<FormFlowWithId>();
+  const [fromData, setFromData] = useState<FormFlowWithId>();
+  const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const [flowType, setFlowType] = useState<string | undefined>(undefined);
 
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -67,6 +79,17 @@ const FlowsCreate: FC<CreateProps> = ({
 
   const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
+  };
+
+  const toFlowPropertyList = (
+    flowProperty: FormFlowWithId['flowProperties']['flowProperty'] | undefined,
+  ): FlowPropertyData[] => {
+    if (!flowProperty) {
+      return [];
+    }
+    return Array.isArray(flowProperty)
+      ? (flowProperty as FlowPropertyData[])
+      : [flowProperty as FlowPropertyData];
   };
 
   const handletFromData = () => {
@@ -77,11 +100,11 @@ const FlowsCreate: FC<CreateProps> = ({
       });
   };
 
-  const handletPropertyData = (data: any) => {
+  const handletPropertyData = (data: FlowPropertyData[]) => {
     if (fromData) setPropertyDataSource([...data]);
   };
 
-  const handletPropertyDataCreate = (data: any) => {
+  const handletPropertyDataCreate = (data: FlowPropertyData) => {
     if (fromData)
       setPropertyDataSource([
         ...propertyDataSource,
@@ -95,20 +118,20 @@ const FlowsCreate: FC<CreateProps> = ({
       flowProperties: {
         flowProperty: [...propertyDataSource],
       },
-    } as any);
+    } as FormFlowWithId);
   }, [propertyDataSource]);
 
   const getFormDetail = () => {
     if (!id || !version) return;
     setSpinning(true);
-    getFlowDetail(id, version).then(async (result: any) => {
+    getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
       const dataset = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
           newVersion;
       }
       setInitData({ ...dataset, id: id });
-      setPropertyDataSource(dataset?.flowProperties?.flowProperty ?? []);
+      setPropertyDataSource(toFlowPropertyList(dataset?.flowProperties?.flowProperty));
       setFromData({ ...dataset, id: id });
       setFlowType(dataset?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.resetFields();
@@ -139,7 +162,7 @@ const FlowsCreate: FC<CreateProps> = ({
     if (importData && importData.length > 0) {
       const formData = genFlowFromData(importData[0].flowDataSet);
       setInitData(formData);
-      setPropertyDataSource(formData?.flowProperties?.flowProperty ?? []);
+      setPropertyDataSource(toFlowPropertyList(formData?.flowProperties?.flowProperty));
       setFromData(formData);
       setFlowType(formData?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
       formRefCreate.current?.setFieldsValue(formData);
@@ -153,7 +176,7 @@ const FlowsCreate: FC<CreateProps> = ({
     // const referenceToComplianceSystemId = '9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a';
     // const referenceToDataSetFormatId = 'a97a0155-0234-4b87-b4ce-a45da52f2a40';
 
-    // getSourceDetail(referenceToComplianceSystemId, '').then(async (result1: any) => {
+    // getSourceDetail(referenceToComplianceSystemId, '').then(async (result1) => {
     //   const referenceToComplianceSystemData = genSourceFromData(
     //     result1.data?.json?.sourceDataSet ?? {},
     //   );
@@ -168,7 +191,7 @@ const FlowsCreate: FC<CreateProps> = ({
     //       ] ?? [],
     //   };
 
-    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2: any) => {
+    // getSourceDetail(referenceToDataSetFormatId, '').then(async (result2) => {
     // const referenceToDataSetFormatData = genSourceFromData(
     //   result2.data?.json?.sourceDataSet ?? {},
     // );
@@ -315,7 +338,7 @@ const FlowsCreate: FC<CreateProps> = ({
                 console.log('err', err);
                 return;
               }
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const fieldsValue = formRefCreate.current?.getFieldsValue();
               const flowProperties = fromData?.flowProperties;
               // if (
@@ -331,7 +354,7 @@ const FlowsCreate: FC<CreateProps> = ({
               //   );
               //   return true;
               // } else if (
-              //   flowProperties.flowProperty.filter((item: any) => item?.quantitativeReference)
+              //   flowProperties.flowProperty.filter((item) => item?.quantitativeReference)
               //     .length !== 1
               // ) {
               //   message.error(
@@ -360,7 +383,14 @@ const FlowsCreate: FC<CreateProps> = ({
                 setFromData(undefined);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               return true;
             }}
@@ -372,7 +402,7 @@ const FlowsCreate: FC<CreateProps> = ({
               formRef={formRefCreate}
               onData={handletFromData}
               flowType={flowType}
-              onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
+              onTabChange={onTabChange}
               propertyDataSource={propertyDataSource}
               onPropertyData={handletPropertyData}
               onPropertyDataCreate={handletPropertyDataCreate}

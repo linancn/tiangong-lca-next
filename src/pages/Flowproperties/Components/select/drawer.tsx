@@ -4,14 +4,14 @@ import {
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
-import { ListPagination } from '@/services/general/data';
+import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC, Key } from 'react';
+import type { FC, Key, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import FlowpropertiesCreate from '../create';
@@ -23,19 +23,19 @@ type Props = {
   buttonType: string;
   lang: string;
   onData: (rowKey: string, version: string) => void;
-  buttonText?: any;
+  buttonText?: ReactNode;
 };
 
 const { Search } = Input;
 
 const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, buttonText }) => {
-  const [tgKeyWord, setTgKeyWord] = useState<any>('');
-  const [coKeyWord, setCoKeyWord] = useState<any>('');
-  const [myKeyWord, setMyKeyWord] = useState<any>('');
-  const [teKeyWord, setTeKeyWord] = useState<any>('');
+  const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const [coKeyWord, setCoKeyWord] = useState<string>('');
+  const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const [teKeyWord, setTeKeyWord] = useState<string>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
@@ -52,20 +52,21 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   };
 
   const onTabChange = async (key: string) => {
-    await setActiveTabKey(key);
-    if (key === 'tg') {
+    const tabKey = key as DataTabKey;
+    await setActiveTabKey(tabKey);
+    if (tabKey === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
-    if (key === 'co') {
+    if (tabKey === 'co') {
       coActionRefSelect.current?.setPageInfo?.({ current: 1 });
       coActionRefSelect.current?.reload();
     }
-    if (key === 'my') {
+    if (tabKey === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
-    if (key === 'te') {
+    if (tabKey === 'te') {
       teActionRefSelect.current?.setPageInfo?.({ current: 1 });
       teActionRefSelect.current?.reload();
     }
@@ -162,7 +163,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               placement='topLeft'
               title={getLangText(row.refUnitRes?.refUnitGeneralComment, lang)}
             >
-              {row.refUnitRes?.refUnitName}
+              {row.refUnitRes?.refUnitName as ReactNode}
             </Tooltip>
             )
           </span>,
@@ -222,7 +223,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
-  const databaseList: Record<string, React.ReactNode> = {
+  const databaseList: Record<DataTabKey, ReactNode> = {
     tg: (
       <>
         <Card>
@@ -253,7 +254,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (tgKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {}).then(
                 (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
                       ...res,
                       data: unitRes,
@@ -263,8 +264,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                 },
               );
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'tg', []).then((res: any) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+            return getFlowpropertyTableAll(params, sort, lang, 'tg', []).then((res) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes) => {
                 return {
                   ...res,
                   data: unitRes,
@@ -313,7 +314,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (coKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'co', coKeyWord, {}).then(
                 (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
                       ...res,
                       data: unitRes,
@@ -323,8 +324,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                 },
               );
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'co', []).then((res: any) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+            return getFlowpropertyTableAll(params, sort, lang, 'co', []).then((res) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes) => {
                 return {
                   ...res,
                   data: unitRes,
@@ -373,7 +374,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (teKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'te', teKeyWord, {}).then(
                 (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
                       ...res,
                       data: unitRes,
@@ -383,8 +384,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                 },
               );
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'te', []).then((res: any) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+            return getFlowpropertyTableAll(params, sort, lang, 'te', []).then((res) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes) => {
                 return {
                   ...res,
                   data: unitRes,
@@ -436,7 +437,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             if (myKeyWord.length > 0) {
               return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {}).then(
                 (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
                       ...res,
                       data: unitRes,
@@ -446,8 +447,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                 },
               );
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'my', []).then((res: any) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes: any) => {
+            return getFlowpropertyTableAll(params, sort, lang, 'my', []).then((res) => {
+              return getUnitData('unitgroup', res?.data).then((unitRes) => {
                 return {
                   ...res,
                   data: unitRes,

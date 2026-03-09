@@ -16,6 +16,7 @@ export default {
   'pages.button.view': '查看',
   'pages.button.view.model': '查看模型',
   'pages.button.create.success': '创建成功!',
+  'pages.button.create.error.duplicateId': '已存在ID相同的数据。',
   'pages.button.save.success': '保存成功!',
   'pages.button.edit': '编辑',
   'pages.button.copy': '复制',
@@ -84,7 +85,8 @@ export default {
   'page.options.savesuccess': '保存成功',
   'page.select.unRuleVerification': '请将数据补充完整',
 
-  'pages.table.filter.all': '全部',
+  'pages.table.filter.all.reviewType': '审核类型',
+  'pages.table.filter.all.datasetType': '数据集类型',
   'pages.table.filter.unreviewed': '未审查',
   'pages.table.filter.reviewing': '正在审查',
   'pages.table.filter.reviewed': '已审查',

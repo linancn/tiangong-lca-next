@@ -215,6 +215,8 @@ jest.mock('@/services/general/util', () => ({
     return match?.['#text'] ?? '';
   }),
   formatDateTime: jest.fn(() => '2024-01-10T00:00:00Z'),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@/services/general/data', () => ({

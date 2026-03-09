@@ -4,13 +4,13 @@ import {
   getFlowTablePgroongaSearch,
 } from '@/services/flows/api';
 import { FlowTable } from '@/services/flows/data';
-import { ListPagination } from '@/services/general/data';
+import { DataTabKey, ListPagination } from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
 import type { SearchProps } from 'antd/es/input/Search';
-import type { FC, Key } from 'react';
+import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import FlowsCreate from '../create';
@@ -21,7 +21,7 @@ import FlowsView from '../view';
 
 type Props = {
   buttonType: string;
-  buttonText?: any;
+  buttonText?: ReactNode;
   lang: string;
   asInput?: boolean;
   onData: (id: string, version: string) => void;
@@ -30,15 +30,14 @@ type Props = {
 const { Search } = Input;
 
 const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, onData }) => {
-  const [tgKeyWord, setTgKeyWord] = useState<any>('');
-  const [coKeyWord, setCoKeyWord] = useState<any>('');
-  const [myKeyWord, setMyKeyWord] = useState<any>('');
-  const [teKeyWord, setTeKeyWord] = useState<any>('');
+  const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const [coKeyWord, setCoKeyWord] = useState<string>('');
+  const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const [teKeyWord, setTeKeyWord] = useState<string>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
   const [openAI, setOpenAI] = useState<boolean>(false);
-  // const [dataSource, setDataSource] = useState<any>([]);
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
@@ -56,20 +55,21 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   };
 
   const onTabChange = async (key: string) => {
-    await setActiveTabKey(key);
-    if (key === 'tg') {
+    const tabKey = key as DataTabKey;
+    await setActiveTabKey(tabKey);
+    if (tabKey === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
-    if (key === 'co') {
+    if (tabKey === 'co') {
       await coActionRefSelect.current?.setPageInfo?.({ current: 1 });
       coActionRefSelect.current?.reload();
     }
-    if (key === 'te') {
+    if (tabKey === 'te') {
       await teActionRefSelect.current?.setPageInfo?.({ current: 1 });
       teActionRefSelect.current?.reload();
     }
-    if (key === 'my') {
+    if (tabKey === 'my') {
       myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
@@ -228,7 +228,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
-  const databaseList: Record<string, React.ReactNode> = {
+  const databaseList: Record<DataTabKey, ReactNode> = {
     tg: (
       <>
         <Card>

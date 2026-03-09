@@ -2,6 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { ProcessExchangeData } from '@/services/processes/data';
 import { CaretRightOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -12,26 +13,31 @@ import {
   dataSourceTypeOptions,
   functionTypeOptions,
 } from '../optiondata';
+
 type Props = {
   id: string;
-  data: any;
+  data: ProcessExchangeData[];
   lang: string;
   // dataSource: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
 };
 
-const getDataDerivationTypeStatusOptions = (value: string) => {
+const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
+  return Array.isArray(reference) ? reference[0] : reference;
+};
+
+const getDataDerivationTypeStatusOptions = (value?: string) => {
   const option = DataDerivationTypeStatusOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
-const getDataSourceTypeOptions = (value: string) => {
+const getDataSourceTypeOptions = (value?: string) => {
   const option = dataSourceTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
 
-const getFunctionTypeOptions = (value: string) => {
+const getFunctionTypeOptions = (value?: string) => {
   const option = functionTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
@@ -39,12 +45,12 @@ const getFunctionTypeOptions = (value: string) => {
 const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
-  const [viewData, setViewData] = useState<any>({});
+  const [viewData, setViewData] = useState<ProcessExchangeData>({});
   // const [spinning, setSpinning] = useState(false);
 
   const onView = () => {
     setDrawerVisible(true);
-    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
     setViewData(filteredData);
     // setSpinning(true);
     // if (dataSource === 'my') {
@@ -132,7 +138,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               defaultMessage='Flow'
             />
           }
-          data={viewData.referenceToFlowDataSet ?? {}}
+          data={toReferenceValue(viewData.referenceToFlowDataSet) ?? null}
           lang={lang}
         />
         <br />
@@ -302,7 +308,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               labelStyle={{ width: '180px' }}
             >
-              {viewData?.allocations?.allocation['@internalReferenceToCoProduct'] ?? '-'}
+              {viewData?.allocations?.allocation?.['@internalReferenceToCoProduct'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -317,7 +323,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               labelStyle={{ width: '180px' }}
             >
-              {viewData?.allocations?.allocation['@allocatedFraction'] ?? '-'}
+              {viewData?.allocations?.allocation?.['@allocatedFraction'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -408,7 +414,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               labelStyle={{ width: '220px' }}
             >
-              {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
+              {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
             </Descriptions.Item>
           </Descriptions>
           <Divider orientationMargin='0' orientation='left' plain>

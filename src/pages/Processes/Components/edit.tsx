@@ -1,6 +1,6 @@
 import AISuggestion from '@/components/AISuggestion';
-import { RefCheckContext } from '@/contexts/refCheckContext';
-import type { refDataType } from '@/pages/Utils/review';
+import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
+import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   checkReferences,
@@ -21,9 +21,16 @@ import {
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
+import { jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
-import { FormProcess, ProcessDataSetObjectKeys } from '@/services/processes/data';
+import {
+  FormProcess,
+  ProcessDataSetObjectKeys,
+  ProcessDetailData,
+  ProcessDetailResponse,
+  ProcessExchangeData,
+} from '@/services/processes/data';
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
@@ -42,6 +49,21 @@ type FormProcessWithDatas = FormProcess & {
   id?: string;
   stateCode?: number;
   ruleVerification?: boolean;
+};
+type ProcessCheckTarget = FormProcessWithDatas & {
+  id: string;
+  version: string;
+  stateCode: number;
+  ruleVerification: boolean;
+};
+type RefProblemNode = ProblemNode & {
+  versionUnderReview?: boolean;
+  underReviewVersion?: string;
+  versionIsInTg?: boolean;
+};
+
+const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
+  return Array.isArray(reference) ? reference[0] : reference;
 };
 type Props = {
   id: string;
@@ -74,16 +96,16 @@ const ProcessEdit: FC<Props> = ({
   const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
   const [fromData, setFromData] = useState<FormProcessWithDatas>();
   const [initData, setInitData] = useState<FormProcessWithDatas>();
-  const [originJson, setOriginJson] = useState<any>({});
-  let AISuggestionData: any;
-  const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
+  const [originJson, setOriginJson] = useState<ProcessDetailData['json']>({});
+  const aiSuggestionDataRef = useRef<ProcessDetailData['json']>();
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  // const [unRuleVerificationData, setUnRuleVerificationData] = useState<any[]>([]);
-  // const [nonExistentRefData, setNonExistentRefData] = useState<any[]>([]);
   const intl = useIntl();
-  const [refCheckData, setRefCheckData] = useState<any[]>([]);
-  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+  const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
+  const [refCheckContextValue, setRefCheckContextValue] = useState<{
+    refCheckData: RefCheckType[];
+  }>({
     refCheckData: [],
   });
   useEffect(() => {
@@ -103,12 +125,12 @@ const ProcessEdit: FC<Props> = ({
     }
   }, [autoOpen, id, version]);
 
-  const handleLatestJsonChange = (latestJson: any) => {
-    AISuggestionData = latestJson;
+  const handleLatestJsonChange = (latestJson: ProcessDetailData['json']) => {
+    aiSuggestionDataRef.current = latestJson;
   };
 
   const handleAISuggestionClose = () => {
-    const dataSet = genProcessFromData(AISuggestionData?.processDataSet ?? {});
+    const dataSet = genProcessFromData(aiSuggestionDataRef.current?.processDataSet ?? {});
     setFromData({ ...dataSet, id: id });
     setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
     formRefEdit.current?.resetFields();
@@ -147,7 +169,7 @@ const ProcessEdit: FC<Props> = ({
     }
   };
 
-  const handletExchangeDataCreate = (data: any) => {
+  const handletExchangeDataCreate = (data: ProcessExchangeData) => {
     if (fromData?.id) {
       setExchangeDataSource([
         ...exchangeDataSource,
@@ -156,15 +178,16 @@ const ProcessEdit: FC<Props> = ({
     }
   };
 
-  const handletExchangeData = (data: any) => {
+  const handletExchangeData = (data: ProcessExchangeData[]) => {
     if (fromData?.id) setExchangeDataSource([...data]);
   };
 
   const updateExchangeDataSource = async () => {
     const newExchangeDataSource = await Promise.all(
-      exchangeDataSource.map(async (item: any) => {
-        const refObjectId = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '';
-        const version = item?.referenceToFlowDataSet?.['@version'] ?? '';
+      exchangeDataSource.map(async (item) => {
+        const reference = toReferenceValue(item?.referenceToFlowDataSet);
+        const refObjectId = reference?.['@refObjectId'] ?? '';
+        const version = reference?.['@version'] ?? '';
 
         const result = await getFlowDetail(refObjectId, version);
 
@@ -173,16 +196,25 @@ const ProcessEdit: FC<Props> = ({
         }
 
         const refData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
+        const shortDescription = (
+          genFlowNameJson(refData?.flowInformation?.dataSetInformation?.name) ?? []
+        ).filter(
+          (
+            item,
+          ): item is {
+            '@xml:lang': string;
+            '#text': string;
+          } => typeof item?.['@xml:lang'] === 'string' && typeof item?.['#text'] === 'string',
+        );
+        const latestReference = {
+          ...(reference ?? {}),
+          '@version': result.data?.version ?? '',
+          'common:shortDescription': shortDescription,
+        };
 
         return {
           ...item,
-          referenceToFlowDataSet: {
-            ...item?.referenceToFlowDataSet,
-            '@version': result.data?.version ?? '',
-            'common:shortDescription': genFlowNameJson(
-              refData?.flowInformation?.dataSetInformation?.name,
-            ),
-          },
+          referenceToFlowDataSet: latestReference,
         };
       }),
     );
@@ -234,10 +266,10 @@ const ProcessEdit: FC<Props> = ({
     if (closeDrawer) setSpinning(true);
     await updateReferenceDescription();
     const output = exchangeDataSource.filter(
-      (e: any) => e.exchangeDirection.toUpperCase() === 'OUTPUT',
+      (e) => e.exchangeDirection?.toUpperCase() === 'OUTPUT',
     );
     let allocatedFractionTotal = toBigNumberOrZero(0);
-    output.forEach((e: any) => {
+    output.forEach((e) => {
       if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
         const fraction =
           e?.allocations?.allocation['@allocatedFraction']?.toString()?.replace('%', '') ?? 0;
@@ -246,8 +278,7 @@ const ProcessEdit: FC<Props> = ({
     });
     if (allocatedFractionTotal.isEqualTo(0)) {
       const referenceIndex = output.findIndex(
-        (e: any) =>
-          e.quantitativeReference === true && e.exchangeDirection.toUpperCase() === 'OUTPUT',
+        (e) => e.quantitativeReference === true && e.exchangeDirection?.toUpperCase() === 'OUTPUT',
       );
       if (referenceIndex > -1) {
         output[referenceIndex].allocations = {
@@ -334,7 +365,10 @@ const ProcessEdit: FC<Props> = ({
     return true;
   };
 
-  const handleCheckData = async (from: 'review' | 'checkData', processDetail: any) => {
+  const handleCheckData = async (
+    from: 'review' | 'checkData',
+    processDetail: ProcessCheckTarget,
+  ) => {
     setSpinning(true);
     setShowRules(true);
     if (processDetail.stateCode >= 20 && processDetail.stateCode < 100 && from === 'checkData') {
@@ -365,6 +399,7 @@ const ProcessEdit: FC<Props> = ({
       }, 200);
     } else {
       const exchanges = fromData?.exchanges;
+      const exchangeList = (exchanges?.exchange ?? []) as ProcessExchangeData[];
       if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
         message.error(
           intl.formatMessage({
@@ -376,9 +411,7 @@ const ProcessEdit: FC<Props> = ({
         await setActiveTabKey('exchanges');
         setSpinning(false);
         return { checkResult: false, unReview: [] };
-      } else if (
-        exchanges?.exchange.filter((item: any) => item?.quantitativeReference).length !== 1
-      ) {
+      } else if (exchangeList.filter((item) => item?.quantitativeReference).length !== 1) {
         message.error(
           intl.formatMessage({
             id: 'pages.process.validator.exchanges.quantitativeReference.required',
@@ -392,10 +425,10 @@ const ProcessEdit: FC<Props> = ({
       }
     }
 
-    const unReview: any[] = []; // stateCode < 20
-    const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
-    const unRuleVerification: any[] = [];
-    const nonExistentRef: any[] = [];
+    const unReview: refDataType[] = []; // stateCode < 20
+    const underReview: refDataType[] = []; // stateCode >= 20 && stateCode < 100
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
     const allRefs = new Set<string>();
 
     dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
@@ -405,7 +438,7 @@ const ProcessEdit: FC<Props> = ({
 
     const path = await checkReferences(
       refObjs,
-      new Map<string, any>(),
+      new Map<string, unknown>(),
       userTeamId,
       unReview,
       underReview,
@@ -424,11 +457,11 @@ const ProcessEdit: FC<Props> = ({
     );
     allRefs.add(`${id}:${version}:process data set`);
     await checkVersions(allRefs, path);
-    const problemNodes = path?.findProblemNodes(from) ?? [];
+    const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
     if (problemNodes && problemNodes.length > 0) {
       let currentProcessUnderReviewVersion = undefined;
       let currentProcessVersionIsInTg = false;
-      let result = problemNodes.map((item: any) => {
+      const result = problemNodes.map((item) => {
         if (item['@refObjectId'] === id && item['@version'] === version) {
           if (item.underReviewVersion && item.underReviewVersion !== version) {
             currentProcessUnderReviewVersion = item.underReviewVersion;
@@ -532,22 +565,22 @@ const ProcessEdit: FC<Props> = ({
         if (tabName && !errTabNames.includes(tabName as string))
           errTabNames.push(tabName as string);
       });
-      nonExistentRef.forEach((item: any) => {
+      nonExistentRef.forEach((item) => {
         const tabName = getErrRefTab(item, processDetail);
         if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
       });
-      unRuleVerification.forEach((item: any) => {
+      unRuleVerification.forEach((item) => {
         const tabName = getErrRefTab(item, processDetail);
         if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
       });
-      problemNodes.forEach((item: any) => {
+      problemNodes.forEach((item) => {
         const tabName = getErrRefTab(item, processDetail);
         if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
       });
       if (errTabNames && errTabNames.length > 0) {
         message.error(
           errTabNames
-            .map((tab: any) =>
+            .map((tab: string) =>
               intl.formatMessage({
                 id: `pages.process.view.${tab}`,
                 defaultMessage: tab,
@@ -648,7 +681,7 @@ const ProcessEdit: FC<Props> = ({
 
   const onReset = () => {
     setSpinning(true);
-    getProcessDetail(id, version).then(async (result: any) => {
+    getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
       setOriginJson(result.data?.json ?? {});
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
       setInitData({
@@ -689,16 +722,19 @@ const ProcessEdit: FC<Props> = ({
   }, [exchangeDataSource]);
 
   const handleLciaResults = (result: LCIAResultTable[]) => {
-    setFromData({
-      ...fromData,
-      LCIAResults: {
-        LCIAResult: result.map((item) => ({
-          key: item.key,
-          referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
-          meanAmount: item.meanAmount,
-        })),
-      },
-    } as any);
+    const updatedLciaResults = result.map((item) => ({
+      referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
+      meanAmount: String(item.meanAmount ?? ''),
+    }));
+    setFromData(
+      (prev) =>
+        ({
+          ...prev,
+          LCIAResults: {
+            LCIAResult: updatedLciaResults,
+          },
+        }) as FormProcessWithDatas,
+    );
   };
 
   return (
@@ -900,7 +936,7 @@ const ProcessEdit: FC<Props> = ({
                 exchangeDataSource={exchangeDataSource}
                 actionFrom={actionFrom}
                 showRules={showRules}
-                lciaResults={fromData?.LCIAResults?.LCIAResult ?? ([] as any)}
+                lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
                 onLciaResults={handleLciaResults}
               />
               <Form.Item name='id' hidden>

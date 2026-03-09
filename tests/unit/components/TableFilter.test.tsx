@@ -13,15 +13,21 @@ type TableFilterProps = {
 
 jest.mock('umi', () => {
   const messages: Record<string, string> = {
-    'pages.table.filter.all': 'All',
+    'pages.table.filter.all.reviewType': 'Type of review',
     'pages.table.filter.unreviewed': 'Unreviewed',
     'pages.table.filter.reviewing': 'Reviewing',
     'pages.table.filter.reviewed': 'Reviewed',
   };
 
+  const formatMessage = ({ id, defaultMessage }: { id?: string; defaultMessage?: string }) =>
+    defaultMessage ?? (id ? messages[id] : undefined) ?? id ?? '';
+
   return {
+    useIntl: () => ({
+      formatMessage,
+    }),
     FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
-      <>{defaultMessage ?? messages[id] ?? id}</>
+      <>{formatMessage({ id, defaultMessage })}</>
     ),
   };
 });
@@ -93,7 +99,7 @@ describe('TableFilter Component', () => {
 
     const options = within(select).getAllByRole('option');
     expect(options.map((option) => option.textContent)).toEqual([
-      'All',
+      'Type of review',
       'Unreviewed',
       'Reviewing',
       'Reviewed',

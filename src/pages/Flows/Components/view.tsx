@@ -6,9 +6,15 @@ import SourceSelectDescription from '@/pages/Sources/Components/select/descripti
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { getFlowDetail } from '@/services/flows/api';
-import { FlowpropertyTabTable } from '@/services/flows/data';
+import {
+  FlowDataSetObjectKeys,
+  FlowDetailResponse,
+  FlowPropertyData,
+  FlowpropertyTabTable,
+  FormFlowWithId,
+} from '@/services/flows/data';
 import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/util';
-import { ListPagination } from '@/services/general/data';
+import { ListPagination, ReferenceItem } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
@@ -35,11 +41,11 @@ const getComplianceLabel = (value: string) => {
 
 const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [activeTabKey, setActiveTabKey] = useState<string>('flowInformation');
+  const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
-  const [propertyDataSource, setPropertyDataSource] = useState<any>([]);
-  const [dataSource, setDataSource] = useState<any>([]);
+  const [initData, setInitData] = useState<FormFlowWithId>();
+  const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
+  const [dataSource, setDataSource] = useState<FlowpropertyTabTable[]>([]);
 
   const tabList = [
     {
@@ -72,15 +78,39 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     },
   ];
 
-  const onTabChange = (key: string) => {
+  const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
+  };
+
+  const compliance = Array.isArray(
+    initData?.modellingAndValidation?.complianceDeclarations?.compliance,
+  )
+    ? initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[0]
+    : initData?.modellingAndValidation?.complianceDeclarations?.compliance;
+
+  const ecNumber = (
+    initData?.flowInformation?.dataSetInformation?.['common:other'] as
+      | { 'ecn:ECNumber'?: string }
+      | undefined
+  )?.['ecn:ECNumber'];
+
+  const toFlowPropertyList = (
+    flowProperty: FormFlowWithId['flowProperties']['flowProperty'] | undefined,
+  ): FlowPropertyData[] => {
+    if (!flowProperty) {
+      return [];
+    }
+    return Array.isArray(flowProperty)
+      ? (flowProperty as FlowPropertyData[])
+      : [flowProperty as FlowPropertyData];
   };
 
   useEffect(() => {
     getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
-      (res: any) => {
-        if (res && res?.length) {
-          setDataSource(res);
+      (res) => {
+        const typedRes = (res ?? []) as FlowpropertyTabTable[];
+        if (typedRes.length) {
+          setDataSource(typedRes);
         } else {
           setDataSource([]);
         }
@@ -198,7 +228,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       },
     },
   ];
-  const contentList: Record<string, React.ReactNode> = {
+  const contentList: Record<FlowDataSetObjectKeys, React.ReactNode> = {
     flowInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -364,8 +394,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             labelStyle={{ width: '140px' }}
           >
-            {initData?.flowInformation?.dataSetInformation?.['common:other']?.['ecn:ECNumber'] ??
-              '-'}
+            {ecNumber ?? '-'}
           </Descriptions.Item>
         </Descriptions>
         <br />
@@ -425,7 +454,12 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='Technical specification'
               />
             }
-            data={initData?.flowInformation?.technology?.referenceToTechnicalSpecification ?? '-'}
+            data={
+              (initData?.flowInformation?.technology?.referenceToTechnicalSpecification as
+                | ReferenceItem
+                | ReferenceItem[]
+                | undefined) ?? undefined
+            }
             lang={lang}
           />
         </Card>
@@ -459,9 +493,9 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         > */}
         <SourceSelectDescription
           data={
-            initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
-            ]
+            (compliance?.['common:referenceToComplianceSystem'] as
+              | ReferenceItem
+              | ReferenceItem[]) ?? undefined
           }
           title={
             <FormattedMessage
@@ -484,9 +518,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             styles={{ label: { width: '260px' } }}
           >
             {getComplianceLabel(
-              initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
-              ] ?? '-',
+              (compliance?.['common:approvalOfOverallCompliance'] as string) ?? '-',
             )}
           </Descriptions.Item>
         </Descriptions>
@@ -585,9 +617,9 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
               />
             }
             data={
-              initData?.administrativeInformation?.publicationAndOwnership?.[
+              (initData?.administrativeInformation?.publicationAndOwnership?.[
                 'common:referenceToPrecedingDataSetVersion'
-              ] ?? {}
+              ] as ReferenceItem | undefined) ?? null
             }
             lang={lang}
           />
@@ -643,10 +675,10 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getFlowDetail(id, version).then(async (result: any) => {
+    getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
       const fromData = genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData, id: id });
-      setPropertyDataSource(fromData?.flowProperties?.flowProperty ?? []);
+      setPropertyDataSource(toFlowPropertyList(fromData?.flowProperties?.flowProperty));
       setSpinning(false);
     });
   };
@@ -685,7 +717,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             style={{ width: '100%' }}
             tabList={tabList}
             activeTabKey={activeTabKey}
-            onTabChange={onTabChange}
+            onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
           >
             {contentList[activeTabKey]}
           </Card>

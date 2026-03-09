@@ -1,7 +1,7 @@
 import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes/index';
-import { ListPagination } from '@/services/general/data';
+import { DataTabKey, ListPagination } from '@/services/general/data';
 import {
   getProcessTableAll,
   getProcessTablePgroongaSearch,
@@ -26,15 +26,15 @@ type Props = {
 const { Search } = Input;
 
 const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
-  const [tgKeyWord, setTgKeyWord] = useState<any>('');
-  const [myKeyWord, setMyKeyWord] = useState<any>('');
-  const [teKeyWord, setTeKeyWord] = useState<any>('');
-  const [coKeyWord, setCoKeyWord] = useState<any>('');
+  const [tgKeyWord, setTgKeyWord] = useState('');
+  const [myKeyWord, setMyKeyWord] = useState('');
+  const [teKeyWord, setTeKeyWord] = useState('');
+  const [coKeyWord, setCoKeyWord] = useState('');
   const [openAI, setOpenAI] = useState<boolean>(false);
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
   const teActionRefSelect = useRef<ActionType>();
@@ -51,7 +51,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   };
 
   const onTabChange = async (key: string) => {
-    await setActiveTabKey(key);
+    await setActiveTabKey(key as DataTabKey);
     if (key === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
@@ -207,7 +207,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' /> },
   ];
 
-  const databaseList: Record<string, React.ReactNode> = {
+  const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
         <Card>

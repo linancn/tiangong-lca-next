@@ -17,7 +17,7 @@ import {
 // const { TextArea } = Input;
 
 type Props = {
-  name: any;
+  name: Array<string | number>;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;

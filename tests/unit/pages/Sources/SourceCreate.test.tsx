@@ -34,6 +34,8 @@ jest.mock('@/services/general/data', () => ({
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   formatDateTime: jest.fn(() => '2024-01-01T00:00:00Z'),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@ant-design/icons', () => ({

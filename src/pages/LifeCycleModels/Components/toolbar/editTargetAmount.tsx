@@ -2,7 +2,12 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import FlowsView from '@/pages/Flows/Components/view';
 import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
+import type {
+  LifeCycleModelGraphNode,
+  LifeCycleModelTargetAmount,
+} from '@/services/lifeCycleModels/data';
 import { getProcessDetail } from '@/services/processes/api';
+import type { ProcessExchangeData, ProcessFormState } from '@/services/processes/data';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, StarOutlined } from '@ant-design/icons';
@@ -13,17 +18,20 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
-  refNode: any;
+  refNode: LifeCycleModelGraphNode;
   drawerVisible: boolean;
   lang: string;
   setDrawerVisible: (value: boolean) => void;
-  onData: (data: any) => void;
+  onData: (data: LifeCycleModelTargetAmount) => void;
 };
 const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisible, onData }) => {
   // const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [initData, setInitData] = useState<any>({});
-  const [refExchange, setRefExchange] = useState<any>({});
+  const [initData, setInitData] = useState<Partial<ProcessFormState>>({});
+  const [refExchange, setRefExchange] = useState<ProcessExchangeData | undefined>();
+  const refFlow = Array.isArray(refExchange?.referenceToFlowDataSet)
+    ? refExchange?.referenceToFlowDataSet[0]
+    : refExchange?.referenceToFlowDataSet;
 
   const onDrawerOpen = () => {
     setDrawerVisible(true);
@@ -38,19 +46,21 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
     if (refNode) {
       const id = refNode?.data?.id;
       const version = refNode?.data?.version;
-      getProcessDetail(id, version).then(async (result: any) => {
+      getProcessDetail(id ?? '', version ?? '').then(async (result) => {
         const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
         setInitData({ ...dataSet, id: id });
         const quantitativeReference = dataSet?.processInformation?.quantitativeReference;
         const refExc =
           (dataSet?.exchanges?.exchange ?? []).find(
-            (item: any) =>
+            (item) =>
               item?.['@dataSetInternalID'] === quantitativeReference?.referenceToReferenceFlow,
-          ) ?? {};
+          ) ?? undefined;
         const refNodeData = refNode?.data;
-        const targetAmount = refNodeData?.targetAmount ?? (refExc as any)?.meanAmount;
-        const originalAmount = refNodeData?.originalAmount ?? (refExc as any)?.meanAmount;
-        const scalingFactor = refNodeData?.scalingFactor ?? targetAmount / originalAmount;
+        const targetAmount = refNodeData?.targetAmount ?? refExc?.meanAmount;
+        const originalAmount = refNodeData?.originalAmount ?? refExc?.meanAmount;
+        const scalingFactor =
+          refNodeData?.scalingFactor ??
+          (originalAmount ? Number(targetAmount ?? 0) / Number(originalAmount) : 0);
         formRefEdit.current?.setFieldsValue({
           targetAmount: targetAmount,
           originalAmount: originalAmount,
@@ -185,13 +195,13 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                   }
                   labelStyle={{ width: '140px' }}
                 >
-                  {refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'}
+                  {refFlow?.['@refObjectId'] ?? '-'}
                 </Descriptions.Item>
               </Descriptions>
-              {refExchange?.referenceToFlowDataSet?.['@refObjectId'] && (
+              {refFlow?.['@refObjectId'] && (
                 <FlowsView
-                  id={refExchange?.referenceToFlowDataSet?.['@refObjectId']}
-                  version={refExchange?.referenceToFlowDataSet?.['@version']}
+                  id={refFlow?.['@refObjectId'] ?? ''}
+                  version={refFlow?.['@version'] ?? ''}
                   lang={lang}
                   buttonType='text'
                 />
@@ -207,7 +217,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 }
                 labelStyle={{ width: '140px' }}
               >
-                {refExchange?.referenceToFlowDataSet?.['@type'] ?? '-'}
+                {refFlow?.['@type'] ?? '-'}
               </Descriptions.Item>
             </Descriptions>
             <br />
@@ -219,7 +229,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 }
                 labelStyle={{ width: '140px' }}
               >
-                {refExchange?.referenceToFlowDataSet?.['@uri'] ?? '-'}
+                {refFlow?.['@uri'] ?? '-'}
               </Descriptions.Item>
             </Descriptions>
             <br />
@@ -229,7 +239,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 label={<FormattedMessage id='pages.version' defaultMessage='Version' />}
                 labelStyle={{ width: '120px' }}
               >
-                {refExchange?.referenceToFlowDataSet?.['@version'] ?? '-'}
+                {refFlow?.['@version'] ?? '-'}
               </Descriptions.Item>
             </Descriptions>
             <Divider orientationMargin='0' orientation='left' plain>
@@ -238,13 +248,11 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 defaultMessage='Short description'
               />
             </Divider>
-            <LangTextItemDescription
-              data={refExchange?.referenceToFlowDataSet?.['common:shortDescription']}
-            />
+            <LangTextItemDescription data={refFlow?.['common:shortDescription']} />
             <br />
             <UnitGroupDescriptionMini
-              id={refExchange?.referenceToFlowDataSet?.['@refObjectId']}
-              version={refExchange?.referenceToFlowDataSet?.['@version']}
+              id={refFlow?.['@refObjectId']}
+              version={refFlow?.['@version']}
               idType={'flow'}
             />
           </Card>

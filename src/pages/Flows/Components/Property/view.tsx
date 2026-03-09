@@ -1,5 +1,7 @@
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowpropertiesSelectDescription from '@/pages/Flowproperties/Components/select/description';
+import { FlowPropertyData } from '@/services/flows/data';
+import { ReferenceItem } from '@/services/general/data';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Descriptions, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -8,17 +10,17 @@ import { FormattedMessage } from 'umi';
 
 type Props = {
   id: string;
-  data: any;
+  data: FlowPropertyData[];
   lang: string;
   buttonType: string;
 };
 const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [viewData, setViewData] = useState<any>({});
+  const [viewData, setViewData] = useState<FlowPropertyData>({});
 
   const onView = () => {
     setDrawerVisible(true);
-    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
     setViewData(filteredData);
   };
 
@@ -56,7 +58,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
         onClose={() => setDrawerVisible(false)}
       >
         <FlowpropertiesSelectDescription
-          data={viewData?.['referenceToFlowPropertyDataSet']}
+          data={(viewData?.['referenceToFlowPropertyDataSet'] as ReferenceItem | undefined) ?? null}
           lang={lang}
           title={
             <FormattedMessage
@@ -92,7 +94,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             }
             labelStyle={{ width: '220px' }}
           >
-            {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
+            {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
           </Descriptions.Item>
         </Descriptions>
       </Drawer>

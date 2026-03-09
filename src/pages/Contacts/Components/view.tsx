@@ -1,6 +1,7 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
+import { getClassificationValues } from '@/pages/Utils';
 import { getContactDetail } from '@/services/contacts/api';
 import {
   ContactDataSetObjectKeys,
@@ -21,20 +22,6 @@ type Props = {
   lang: string;
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
-};
-
-const getClassificationValues = (value: unknown): string[] | undefined => {
-  if (!value || typeof value !== 'object') {
-    return undefined;
-  }
-  if (!('value' in value)) {
-    return undefined;
-  }
-  const raw = (value as { value?: unknown }).value;
-  if (!Array.isArray(raw)) {
-    return undefined;
-  }
-  return raw.filter((item): item is string => typeof item === 'string');
 };
 
 const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {

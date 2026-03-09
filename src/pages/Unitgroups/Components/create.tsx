@@ -1,8 +1,20 @@
 import ToolBarButton from '@/components/ToolBarButton';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import { createUnitGroup, getUnitGroupDetail } from '@/services/unitgroups/api';
-import { FormUnitGroup, UnitGroupDataSetObjectKeys } from '@/services/unitgroups/data';
+import {
+  FormUnitGroup,
+  UnitDraft,
+  UnitGroupDataSetObjectKeys,
+  UnitGroupDetailResponse,
+  UnitGroupFormState,
+  UnitGroupImportItem,
+  UnitItem,
+} from '@/services/unitgroups/data';
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -20,7 +32,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: UnitGroupImportItem[] | null;
   onClose?: () => void;
   disabled?: boolean;
   newVersion?: string;
@@ -55,11 +67,12 @@ const UnitGroupCreate: FC<CreateProps> = ({
   const formRefCreate = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] =
     useState<UnitGroupDataSetObjectKeys>('unitGroupInformation');
-  const [fromData, setFromData] = useState<FormUnitGroup & { id?: string }>();
-  const [initData, setInitData] = useState<FormUnitGroup & { id?: string }>();
-  const [unitDataSource, setUnitDataSource] = useState<any>([]);
+  const [fromData, setFromData] = useState<UnitGroupFormState>();
+  const [initData, setInitData] = useState<UnitGroupFormState>();
+  const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const reload = useCallback(() => {
     actionRef.current?.reload();
@@ -73,15 +86,15 @@ const UnitGroupCreate: FC<CreateProps> = ({
       });
   };
 
-  const handletUnitDataCreate = (data: any) => {
+  const handletUnitDataCreate = (data: UnitDraft) => {
     if (fromData)
       setUnitDataSource([
         ...unitDataSource,
-        { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
+        { ...data, '@dataSetInternalID': unitDataSource.length.toString() } as UnitItem,
       ]);
   };
 
-  const handletUnitData = (data: any) => {
+  const handletUnitData = (data: UnitItem[]) => {
     if (fromData) setUnitDataSource([...data]);
   };
 
@@ -92,7 +105,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
   const getFormDetail = () => {
     if (!id || !version) return;
     setSpinning(true);
-    getUnitGroupDetail(id, version).then(async (result: any) => {
+    getUnitGroupDetail(id, version).then(async (result: UnitGroupDetailResponse) => {
       const dataset = genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
@@ -104,7 +117,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
         id: id,
       });
       setUnitDataSource(
-        genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ?? [],
+        (genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ??
+          []) as UnitItem[],
       );
       formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue({
@@ -131,10 +145,10 @@ const UnitGroupCreate: FC<CreateProps> = ({
       return;
     }
     if (importData && importData.length > 0) {
-      const formData = genUnitGroupFromData(importData[0].unitGroupDataSet);
+      const formData = genUnitGroupFromData(importData[0].unitGroupDataSet ?? {});
       setInitData(formData);
       setFromData(formData);
-      setUnitDataSource(formData?.units?.unit ?? []);
+      setUnitDataSource((formData?.units?.unit ?? []) as UnitItem[]);
       formRefCreate.current?.resetFields();
       formRefCreate.current?.setFieldsValue(formData);
       return;
@@ -169,7 +183,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
   }, [drawerVisible]);
 
   useEffect(() => {
-    setFromData({ ...(fromData ?? {}), units: { unit: unitDataSource } } as FormUnitGroup);
+    setFromData({ ...(fromData ?? {}), units: { unit: unitDataSource } } as UnitGroupFormState);
   }, [unitDataSource]);
 
   return (
@@ -288,7 +302,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const units = fromData?.units;
               const formFieldsValue = {
                 ...formRefCreate.current?.getFieldsValue(),
@@ -306,7 +320,14 @@ const UnitGroupCreate: FC<CreateProps> = ({
                 setDrawerVisible(false);
                 reload();
               } else {
-                message.error(result.error.message);
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               return true;
             }}

@@ -1,7 +1,11 @@
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import {
+  ProcessDetailResponse,
+  ProcessExchangeData,
+  ProcessExchangeTable,
+} from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
@@ -11,6 +15,13 @@ import type { FC, Key } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './view';
+
+type ExchangeSelectionData = {
+  id: string;
+  selectedSource?: ProcessExchangeData;
+  selectedTarget?: ProcessExchangeData;
+};
+
 type Props = {
   id: string;
   buttonType: string;
@@ -22,7 +33,7 @@ type Props = {
   sourceRowKeys: Key[];
   targetRowKeys: Key[];
   optionType: string;
-  onData: (data: any) => void;
+  onData: (data: ExchangeSelectionData) => void;
 };
 
 const ExchangeSelect: FC<Props> = ({
@@ -41,8 +52,8 @@ const ExchangeSelect: FC<Props> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedSourceRowKeys, setSelectedSourceRowKeys] = useState<Key[]>([]);
   const [selectedTargetRowKeys, setSelectedTargetRowKeys] = useState<Key[]>([]);
-  const [exchangeDataSource, setExchangeDataSource] = useState<any[]>([]);
-  const [exchangeDataTarget, setExchangeDataTarget] = useState<any[]>([]);
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
+  const [exchangeDataTarget, setExchangeDataTarget] = useState<ProcessExchangeData[]>([]);
   const [exchangeDataSourceTable, setExchangeDataSourceTable] = useState<ProcessExchangeTable[]>(
     [],
   );
@@ -143,52 +154,58 @@ const ExchangeSelect: FC<Props> = ({
     setSelectedTargetRowKeys(targetRowKeys);
     setLoadingSource(true);
     setLoadingTarget(true);
-    getProcessDetail(sourceProcessId, sourceProcessVersion).then(async (result) => {
-      await setExchangeDataSource([
-        ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
-      ]);
-      await setExchangeDataSourceTable(
-        genProcessExchangeTableData(
-          [
-            ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
-              []),
-          ]
-            ?.map((item) => {
-              if (item.exchangeDirection.toLowerCase() === 'output') {
-                return item;
-              } else {
-                return null;
-              }
-            })
-            .filter((item) => item !== null),
-          lang,
-        ),
-      );
-      setLoadingSource(false);
-    });
-    getProcessDetail(targetProcessId, targetProcessVersion).then(async (result) => {
-      await setExchangeDataTarget([
-        ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
-      ]);
-      await setExchangeDataTargetTable(
-        genProcessExchangeTableData(
-          [
-            ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
-              []),
-          ]
-            ?.map((item) => {
-              if (item.exchangeDirection.toLowerCase() === 'input') {
-                return item;
-              } else {
-                return null;
-              }
-            })
-            .filter((item) => item !== null),
-          lang,
-        ),
-      );
-      setLoadingTarget(false);
-    });
+    getProcessDetail(sourceProcessId, sourceProcessVersion).then(
+      async (result: ProcessDetailResponse) => {
+        await setExchangeDataSource([
+          ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
+            []),
+        ]);
+        await setExchangeDataSourceTable(
+          genProcessExchangeTableData(
+            [
+              ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges
+                ?.exchange ?? []),
+            ]
+              ?.map((item) => {
+                if (item?.exchangeDirection?.toLowerCase() === 'output') {
+                  return item;
+                } else {
+                  return null;
+                }
+              })
+              .filter((item) => item !== null),
+            lang,
+          ),
+        );
+        setLoadingSource(false);
+      },
+    );
+    getProcessDetail(targetProcessId, targetProcessVersion).then(
+      async (result: ProcessDetailResponse) => {
+        await setExchangeDataTarget([
+          ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
+            []),
+        ]);
+        await setExchangeDataTargetTable(
+          genProcessExchangeTableData(
+            [
+              ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges
+                ?.exchange ?? []),
+            ]
+              ?.map((item) => {
+                if (item?.exchangeDirection?.toLowerCase() === 'input') {
+                  return item;
+                } else {
+                  return null;
+                }
+              })
+              .filter((item) => item !== null),
+            lang,
+          ),
+        );
+        setLoadingTarget(false);
+      },
+    );
   }, [drawerVisible]);
 
   return (

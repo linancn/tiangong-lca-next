@@ -73,6 +73,8 @@ jest.mock('@/components/LangTextItem/form', () => {
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   formatDateTime: jest.fn(() => '2023-09-10T00:00:00Z'),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
   getLangText: jest.fn((value: any) => {
     if (typeof value === 'string') return value;
     if (!value) return '';

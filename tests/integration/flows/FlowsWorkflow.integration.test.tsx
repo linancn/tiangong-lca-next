@@ -259,6 +259,8 @@ jest.mock('@/services/general/util', () => ({
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
   formatDateTime: (...args: any[]) => mockFormatDateTime(...args),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@/services/general/api', () => ({

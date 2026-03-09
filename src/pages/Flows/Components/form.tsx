@@ -6,9 +6,13 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
-import { useRefCheckContext } from '@/contexts/refCheckContext';
+import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
-import { FlowpropertyTabTable } from '@/services/flows/data';
+import {
+  FlowDataSetObjectKeys,
+  FlowPropertyData,
+  FlowpropertyTabTable,
+} from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
@@ -27,16 +31,16 @@ import PropertyView from './Property/view';
 import AlignedNumber from '@/components/AlignedNumber';
 type Props = {
   lang: string;
-  activeTabKey: string;
+  activeTabKey: FlowDataSetObjectKeys;
   drawerVisible: boolean;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
   flowType: string | undefined;
-  propertyDataSource: FlowpropertyTabTable[];
-  onPropertyData: (data: any) => void;
-  onPropertyDataCreate: (data: any) => void;
-  onTabChange: (key: string) => void;
-  formType?: string;
+  propertyDataSource: FlowPropertyData[];
+  onPropertyData: (data: FlowPropertyData[]) => void;
+  onPropertyDataCreate: (data: FlowPropertyData) => void;
+  onTabChange: (key: FlowDataSetObjectKeys) => void;
+  formType?: 'create' | 'copy' | 'createVersion' | 'edit';
   showRules?: boolean;
 };
 export const FlowForm: FC<Props> = ({
@@ -57,16 +61,17 @@ export const FlowForm: FC<Props> = ({
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
   const { token } = theme.useToken();
-  const [dataSource, setDataSource] = useState<any>([]);
+  const [dataSource, setDataSource] = useState<FlowpropertyTabTable[]>([]);
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
 
   useEffect(() => {
     getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
-      (res: any) => {
-        if (res && res?.length) {
-          setDataSource(res);
+      (res) => {
+        const typedRes = (res ?? []) as FlowpropertyTabTable[];
+        if (typedRes.length) {
+          setDataSource(typedRes);
         } else {
           setDataSource([]);
         }
@@ -141,7 +146,7 @@ export const FlowForm: FC<Props> = ({
       search: false,
       align: 'right',
       width: 140,
-      render: (_: any, record: any) => {
+      render: (_, record) => {
         return <AlignedNumber value={record.meanValue} />;
       },
     },
@@ -228,7 +233,7 @@ export const FlowForm: FC<Props> = ({
     },
   ];
 
-  const tabContent: { [key: string]: JSX.Element } = {
+  const tabContent: Record<FlowDataSetObjectKeys, React.ReactNode> = {
     flowInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
         {/* <Card size="small" title={'Data Set Information'}> */}
@@ -953,7 +958,7 @@ export const FlowForm: FC<Props> = ({
         }}
         rowClassName={(record) => {
           const isInRefCheck = refCheckContext?.refCheckData?.some(
-            (item: any) =>
+            (item: RefCheckType) =>
               item.id === record.referenceToFlowPropertyDataSetId &&
               item.version === record.referenceToFlowPropertyDataSetVersion,
           );
@@ -988,11 +993,11 @@ export const FlowForm: FC<Props> = ({
       style={{ width: '100%' }}
       tabList={tabList}
       activeTabKey={activeTabKey}
-      onTabChange={onTabChange}
+      onTabChange={(key) => onTabChange(key as FlowDataSetObjectKeys)}
     >
       {Object.keys(tabContent).map((key) => (
         <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
-          {tabContent[key]}
+          {tabContent[key as FlowDataSetObjectKeys]}
         </div>
       ))}
     </Card>

@@ -1,5 +1,6 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import ToolBarButton from '@/components/ToolBarButton';
+import { UnitDraft } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -9,12 +10,12 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 type Props = {
-  onData: (data: any) => void;
+  onData: (data: UnitDraft) => void;
 };
 const UnitCreate: FC<Props> = ({ onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [fromData, setFromData] = useState<any>({});
+  const [fromData, setFromData] = useState<UnitDraft>({});
 
   useEffect(() => {
     if (!drawerVisible) return;

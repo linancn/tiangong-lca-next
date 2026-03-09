@@ -8,7 +8,11 @@ import {
 } from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -62,6 +66,7 @@ const ContactCreate: FC<CreateProps> = ({
   const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
   const [spinning, setSpinning] = useState<boolean>(false);
   const intl = useIntl();
+  const importedId = getImportedId(importData?.[0]);
 
   const handletFromData = () => {
     if (fromData)
@@ -247,7 +252,7 @@ const ContactCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const paramsId = (actionType === 'createVersion' ? id : v4()) ?? '';
+              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
               const formFieldsValue = formRefCreate.current?.getFieldsValue();
               const result: SupabaseMutationResult<unknown> = await createContact(
                 paramsId,
@@ -264,7 +269,14 @@ const ContactCreate: FC<CreateProps> = ({
                 setDrawerVisible(false);
                 reload();
               } else {
-                message.error(result.error?.message ?? 'Error');
+                message.error(
+                  isSupabaseDuplicateKeyError(result.error)
+                    ? intl.formatMessage({
+                        id: 'pages.button.create.error.duplicateId',
+                        defaultMessage: 'Data with the same ID already exists.',
+                      })
+                    : (result.error?.message ?? 'Error'),
+                );
               }
               return true;
             }}
