@@ -1,23 +1,33 @@
 import LcaSolveToolbar from '@/pages/Processes/Components/lcaSolveToolbar';
-import { getLcaResult, pollLcaJobUntilTerminal, submitLcaSolve } from '@/services/lca';
+import { submitLcaTask } from '@/services/lca/taskCenter';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 type ReactNode = import('react').ReactNode;
 
 type MockFormApi = {
-  __values: Record<string, number | undefined>;
-  setFieldsValue: (next: Record<string, number | undefined>) => void;
-  validateFields: () => Promise<Record<string, number | undefined>>;
+  __values: Record<string, unknown>;
+  __listeners: Set<() => void>;
+  __subscribe: (listener: () => void) => () => void;
+  setFieldsValue: (next: Record<string, unknown>) => void;
+  validateFields: () => Promise<Record<string, unknown>>;
 };
 
 const buildMockFormApi = (): MockFormApi => {
   const api: MockFormApi = {
     __values: {},
+    __listeners: new Set(),
+    __subscribe(listener) {
+      api.__listeners.add(listener);
+      return () => {
+        api.__listeners.delete(listener);
+      };
+    },
     setFieldsValue(next) {
       api.__values = {
         ...api.__values,
         ...next,
       };
+      api.__listeners.forEach((listener) => listener());
     },
     async validateFields() {
       return { ...api.__values };
@@ -43,11 +53,9 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
-jest.mock('@/services/lca', () => ({
+jest.mock('@/services/lca/taskCenter', () => ({
   __esModule: true,
-  submitLcaSolve: jest.fn(),
-  pollLcaJobUntilTerminal: jest.fn(),
-  getLcaResult: jest.fn(),
+  submitLcaTask: jest.fn(),
 }));
 
 jest.mock('umi', () => ({
@@ -73,9 +81,11 @@ jest.mock('antd', () => {
   const FormContext = React.createContext(null as { form: MockFormApi } | null);
 
   const Form = ({ form, initialValues, children }: any) => {
-    if (form && initialValues) {
-      form.setFieldsValue(initialValues);
-    }
+    React.useEffect(() => {
+      if (form && initialValues) {
+        form.setFieldsValue(initialValues);
+      }
+    }, [form, initialValues]);
 
     return <FormContext.Provider value={{ form }}>{children}</FormContext.Provider>;
   };
@@ -83,6 +93,23 @@ jest.mock('antd', () => {
   Form.useForm = () => {
     const form = buildMockFormApi();
     return [form];
+  };
+
+  Form.useWatch = (name: string, form?: MockFormApi) => {
+    const key = String(name);
+    const [value, setValue] = React.useState(form?.__values?.[key]);
+
+    React.useEffect(() => {
+      if (!form) {
+        return undefined;
+      }
+      setValue(form.__values?.[key]);
+      return form.__subscribe(() => {
+        setValue(form.__values?.[key]);
+      });
+    }, [form, key]);
+
+    return value;
   };
 
   const MockFormItem = ({ name, label, children }: any) => {
@@ -98,8 +125,9 @@ jest.mock('antd', () => {
           id: `field-${stringName}`,
           'data-testid': `field-${stringName}`,
           value: form?.__values?.[stringName],
-          onChange: (nextValue: number | undefined) => {
-            form?.setFieldsValue({ [stringName]: nextValue });
+          onChange: (nextValue: unknown) => {
+            const value = (nextValue as { target?: { value?: unknown } })?.target?.value;
+            form?.setFieldsValue({ [stringName]: value ?? nextValue });
           },
         })}
       </div>
@@ -125,6 +153,27 @@ jest.mock('antd', () => {
       }}
       {...rest}
     />
+  );
+
+  const RadioGroup = ({ children, value, onChange }: any) => (
+    <div>
+      {React.Children.map(children, (child: any) =>
+        React.cloneElement(child, {
+          checked: child?.props?.value === value,
+          onChange,
+        }),
+      )}
+    </div>
+  );
+
+  const RadioButton = ({ value, onChange, checked, children }: any) => (
+    <button
+      type='button'
+      aria-pressed={Boolean(checked)}
+      onClick={() => onChange?.({ target: { value } })}
+    >
+      {children}
+    </button>
   );
 
   const Modal = ({
@@ -180,6 +229,10 @@ jest.mock('antd', () => {
     Form,
     InputNumber,
     Modal,
+    Radio: {
+      Group: RadioGroup,
+      Button: RadioButton,
+    },
     Space,
     Typography,
     message,
@@ -188,38 +241,12 @@ jest.mock('antd', () => {
 
 import { message } from 'antd';
 
-const mockSubmitLcaSolve = submitLcaSolve as unknown as jest.Mock;
-const mockPollLcaJobUntilTerminal = pollLcaJobUntilTerminal as unknown as jest.Mock;
-const mockGetLcaResult = getLcaResult as unknown as jest.Mock;
-
-const buildJob = (overrides: Record<string, unknown> = {}) => ({
-  job_id: 'job-1',
-  snapshot_id: 'snap-1',
-  job_type: 'solve_one',
-  status: 'completed',
-  timestamps: {
-    created_at: '2026-03-01T00:00:00Z',
-    started_at: '2026-03-01T00:00:01Z',
-    finished_at: '2026-03-01T00:00:02Z',
-    updated_at: '2026-03-01T00:00:02Z',
-  },
-  payload: {},
-  diagnostics: {},
-  result: {
-    result_id: 'res-1',
-    created_at: '2026-03-01T00:00:02Z',
-    artifact_url: 'https://example.com/res.h5',
-    artifact_format: 'hdf5:v1',
-    artifact_byte_size: 100,
-    artifact_sha256: 'sha',
-    diagnostics: {},
-  },
-  ...overrides,
-});
+const mockSubmitLcaTask = submitLcaTask as unknown as jest.Mock;
 
 describe('LcaSolveToolbar component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSubmitLcaTask.mockReturnValue({ id: 'task-1' });
   });
 
   const openModal = () => {
@@ -234,105 +261,70 @@ describe('LcaSolveToolbar component', () => {
     openModal();
   });
 
-  it('submits queued job, polls terminal status, and fetches result', async () => {
-    mockSubmitLcaSolve.mockResolvedValueOnce({
-      mode: 'queued',
-      snapshot_id: 'snap-1',
-      cache_key: 'cache-1',
-      job_id: 'job-1',
-    });
-    mockPollLcaJobUntilTerminal.mockResolvedValueOnce(buildJob());
-    mockGetLcaResult.mockResolvedValueOnce({
-      result_id: 'res-1',
-      snapshot_id: 'snap-1',
-      created_at: '2026-03-01T00:00:02Z',
-      diagnostics: {},
-      artifact: {
-        artifact_url: 'https://example.com/res.h5',
-        artifact_format: 'hdf5:v1',
-        artifact_byte_size: 100,
-        artifact_sha256: 'sha',
-      },
-      job: {
-        job_id: 'job-1',
-        job_type: 'solve_one',
-        status: 'completed',
-        timestamps: {
-          created_at: '2026-03-01T00:00:00Z',
-          started_at: '2026-03-01T00:00:01Z',
-          finished_at: '2026-03-01T00:00:02Z',
-          updated_at: '2026-03-01T00:00:02Z',
-        },
-      },
-    });
-
+  it('submits all_unit request by default', async () => {
     render(<LcaSolveToolbar />);
     openModal();
-
-    fireEvent.change(screen.getByTestId('field-process_index'), { target: { value: '3' } });
-    fireEvent.change(screen.getByTestId('field-amount'), { target: { value: '2.5' } });
 
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
     await waitFor(() => {
-      expect(mockSubmitLcaSolve).toHaveBeenCalledWith({
-        scope: 'prod',
-        demand: {
-          process_index: 3,
-          amount: 2.5,
-        },
+      expect(mockSubmitLcaTask).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        demand_mode: 'all_unit',
         solve: {
           return_x: false,
-          return_g: true,
+          return_g: false,
           return_h: true,
         },
+        unit_batch_size: undefined,
         print_level: 0,
       });
     });
 
+    expect(message.success).toHaveBeenCalledWith(
+      'Task submitted (task-1). Check progress in the top-right task center.',
+    );
+  });
+
+  it('submits all_unit request with unit_batch_size', async () => {
+    render(<LcaSolveToolbar />);
+    openModal();
+
+    fireEvent.change(screen.getByTestId('field-unit_batch_size'), { target: { value: '12' } });
+    fireEvent.click(screen.getByTestId('lca-modal-ok'));
+
     await waitFor(() => {
-      expect(mockPollLcaJobUntilTerminal).toHaveBeenCalledWith('job-1', {
-        timeoutMs: 120000,
+      expect(mockSubmitLcaTask).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        demand_mode: 'all_unit',
+        solve: {
+          return_x: false,
+          return_g: false,
+          return_h: true,
+        },
+        unit_batch_size: 12,
+        print_level: 0,
       });
     });
-
-    await waitFor(() => {
-      expect(mockGetLcaResult).toHaveBeenCalledWith('res-1');
-    });
-
-    expect(message.loading).toHaveBeenCalled();
-    expect(message.success).toHaveBeenCalled();
   });
 
-  it('handles cache_hit without polling', async () => {
-    mockSubmitLcaSolve.mockResolvedValueOnce({
-      mode: 'cache_hit',
-      snapshot_id: 'snap-1',
-      cache_key: 'cache-1',
-      result_id: 'res-cache',
+  it('blocks submit for invalid unit_batch_size (< 1)', async () => {
+    render(<LcaSolveToolbar />);
+    openModal();
+
+    fireEvent.change(screen.getByTestId('field-unit_batch_size'), { target: { value: '0' } });
+    fireEvent.click(screen.getByTestId('lca-modal-ok'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('unit_batch_size must be an integer > 0');
     });
-    mockGetLcaResult.mockResolvedValueOnce({
-      result_id: 'res-cache',
-      snapshot_id: 'snap-1',
-      created_at: '2026-03-01T00:00:02Z',
-      diagnostics: {},
-      artifact: {
-        artifact_url: 'https://example.com/res-cache.h5',
-        artifact_format: 'hdf5:v1',
-        artifact_byte_size: 100,
-        artifact_sha256: 'sha',
-      },
-      job: {
-        job_id: 'job-1',
-        job_type: 'solve_one',
-        status: 'completed',
-        timestamps: {
-          created_at: '2026-03-01T00:00:00Z',
-          started_at: '2026-03-01T00:00:01Z',
-          finished_at: '2026-03-01T00:00:02Z',
-          updated_at: '2026-03-01T00:00:02Z',
-        },
-      },
+
+    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
+  });
+
+  it('shows error when task submission throws', async () => {
+    mockSubmitLcaTask.mockImplementationOnce(() => {
+      throw new Error('boom');
     });
 
     render(<LcaSolveToolbar />);
@@ -340,49 +332,7 @@ describe('LcaSolveToolbar component', () => {
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
     await waitFor(() => {
-      expect(mockGetLcaResult).toHaveBeenCalledWith('res-cache');
+      expect(message.error).toHaveBeenCalledWith('Calculation request failed: boom');
     });
-    expect(mockPollLcaJobUntilTerminal).not.toHaveBeenCalled();
-    expect(message.success).toHaveBeenCalled();
-  });
-
-  it('shows failed message and skips result fetch when job terminal is failed', async () => {
-    mockSubmitLcaSolve.mockResolvedValueOnce({
-      mode: 'queued',
-      snapshot_id: 'snap-1',
-      cache_key: 'cache-1',
-      job_id: 'job-1',
-    });
-    mockPollLcaJobUntilTerminal.mockResolvedValueOnce(
-      buildJob({
-        status: 'failed',
-        result: null,
-      }),
-    );
-
-    render(<LcaSolveToolbar />);
-    openModal();
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(mockPollLcaJobUntilTerminal).toHaveBeenCalled();
-    });
-
-    expect(mockGetLcaResult).not.toHaveBeenCalled();
-    expect(message.error).toHaveBeenCalled();
-  });
-
-  it('blocks submit for invalid process index (< 0)', async () => {
-    render(<LcaSolveToolbar />);
-    openModal();
-
-    fireEvent.change(screen.getByTestId('field-process_index'), { target: { value: '-1' } });
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('process_index must be an integer >= 0');
-    });
-
-    expect(mockSubmitLcaSolve).not.toHaveBeenCalled();
   });
 });
