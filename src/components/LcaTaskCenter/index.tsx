@@ -15,50 +15,80 @@ import {
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Drawer, Empty, List, Popover, Space, Tag, Tooltip, Typography } from 'antd';
+import { Badge, Button, Empty, List, Modal, Popover, Space, Tag, Tooltip, Typography } from 'antd';
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { useIntl } from 'umi';
+
+type IntlShapeLike = ReturnType<typeof useIntl>;
 
 function useLcaTasks(): LcaBackgroundTask[] {
   return useSyncExternalStore(subscribeLcaTasks, listLcaTasks, listLcaTasks);
 }
 
-function statusTag(task: LcaBackgroundTask): React.ReactNode {
+function statusTag(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
   if (task.state === 'completed') {
     return (
       <Tag color='success' icon={<CheckCircleOutlined />}>
-        completed
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.status.completed',
+          defaultMessage: 'Completed',
+        })}
       </Tag>
     );
   }
   if (task.state === 'failed') {
     return (
       <Tag color='error' icon={<CloseCircleOutlined />}>
-        failed
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.status.failed',
+          defaultMessage: 'Failed',
+        })}
       </Tag>
     );
   }
   return (
     <Tag color='processing' icon={<ClockCircleOutlined />}>
-      running
+      {intl.formatMessage({
+        id: 'pages.process.lca.taskCenter.status.running',
+        defaultMessage: 'Running',
+      })}
     </Tag>
   );
 }
 
-function phaseLabel(phase: LcaTaskPhase): string {
+function phaseLabel(phase: LcaTaskPhase, intl: IntlShapeLike): string {
   if (phase === 'submitting') {
-    return 'Submitting';
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.submitting',
+      defaultMessage: 'Submitting',
+    });
   }
   if (phase === 'building_snapshot') {
-    return 'Building snapshot';
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.buildingSnapshot',
+      defaultMessage: 'Building snapshot',
+    });
   }
   if (phase === 'solving') {
-    return 'Solving';
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.solving',
+      defaultMessage: 'Solving',
+    });
   }
   if (phase === 'completed') {
-    return 'Completed';
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.completed',
+      defaultMessage: 'Completed',
+    });
   }
-  return 'Failed';
+  return intl.formatMessage({
+    id: 'pages.process.lca.taskCenter.phase.failed',
+    defaultMessage: 'Failed',
+  });
+}
+
+function shouldShowPhaseTag(task: LcaBackgroundTask): boolean {
+  return task.state === 'running';
 }
 
 function formatDuration(durationMs: number): string {
@@ -111,13 +141,21 @@ const PHASE_COLOR: Record<LcaTrackedTaskPhase, string> = {
   building_snapshot: '#1677ff',
   solving: '#52c41a',
 };
-const PHASE_TEXT: Record<LcaTrackedTaskPhase, string> = {
-  submitting: 'Submitting',
-  building_snapshot: 'Build',
-  solving: 'Solve',
-};
-
-function timelineSegments(task: LcaBackgroundTask): PhaseDurationSegment[] {
+function timelineSegments(task: LcaBackgroundTask, intl: IntlShapeLike): PhaseDurationSegment[] {
+  const phaseText: Record<LcaTrackedTaskPhase, string> = {
+    submitting: intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.submitting',
+      defaultMessage: 'Submitting',
+    }),
+    building_snapshot: intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.buildingShort',
+      defaultMessage: 'Build',
+    }),
+    solving: intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.phase.solvingShort',
+      defaultMessage: 'Solve',
+    }),
+  };
   const totals: Record<LcaTrackedTaskPhase, number> = {
     submitting: 0,
     building_snapshot: 0,
@@ -134,7 +172,7 @@ function timelineSegments(task: LcaBackgroundTask): PhaseDurationSegment[] {
   }
   const segments = PHASE_ORDER.map((phase) => ({
     phase,
-    label: PHASE_TEXT[phase],
+    label: phaseText[phase],
     color: PHASE_COLOR[phase],
     durationMs: totals[phase],
   })).filter((item) => item.durationMs > 0);
@@ -145,15 +183,18 @@ function timelineSegments(task: LcaBackgroundTask): PhaseDurationSegment[] {
   return [
     {
       phase: fallbackPhase,
-      label: PHASE_TEXT[fallbackPhase],
+      label: phaseText[fallbackPhase],
       color: PHASE_COLOR[fallbackPhase],
       durationMs: 0,
     },
   ];
 }
 
-const TaskTimeline: React.FC<{ task: LcaBackgroundTask }> = ({ task }) => {
-  const segments = timelineSegments(task);
+const TaskTimeline: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> = ({
+  task,
+  intl,
+}) => {
+  const segments = timelineSegments(task, intl);
   if (segments.length === 0) {
     return null;
   }
@@ -164,10 +205,19 @@ const TaskTimeline: React.FC<{ task: LcaBackgroundTask }> = ({ task }) => {
     <Space direction='vertical' size={2} style={{ width: '100%' }}>
       <Space size={8} wrap>
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          Stage duration
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.stageDuration',
+            defaultMessage: 'Stage duration',
+          })}
         </Typography.Text>
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          total {formatDuration(totalMs)}
+          {intl.formatMessage(
+            {
+              id: 'pages.process.lca.taskCenter.totalDuration',
+              defaultMessage: 'Total {duration}',
+            },
+            { duration: formatDuration(totalMs) },
+          )}
         </Typography.Text>
       </Space>
       <div
@@ -204,38 +254,127 @@ const TaskTimeline: React.FC<{ task: LcaBackgroundTask }> = ({ task }) => {
   );
 };
 
-function taskDetailContent(task: LcaBackgroundTask): React.ReactNode {
+function taskSummary(task: LcaBackgroundTask, intl: IntlShapeLike): string {
+  if (task.state === 'completed') {
+    if (task.resultId && task.message.toLowerCase().includes('cache hit')) {
+      return intl.formatMessage(
+        {
+          id: 'pages.process.lca.taskCenter.summary.cacheHit',
+          defaultMessage: 'Cache hit (result {resultId})',
+        },
+        { resultId: task.resultId },
+      );
+    }
+    if (task.resultId) {
+      return intl.formatMessage(
+        {
+          id: 'pages.process.lca.taskCenter.summary.completed',
+          defaultMessage: 'Completed (result {resultId})',
+        },
+        { resultId: task.resultId },
+      );
+    }
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.summary.completedNoResult',
+      defaultMessage: 'Completed',
+    });
+  }
+  if (task.phase === 'building_snapshot') {
+    return intl.formatMessage(
+      {
+        id: 'pages.process.lca.taskCenter.summary.buildingSnapshot',
+        defaultMessage: 'Building snapshot ({jobId})',
+      },
+      { jobId: task.buildJobId ?? '-' },
+    );
+  }
+  if (task.phase === 'solving') {
+    return intl.formatMessage(
+      {
+        id: 'pages.process.lca.taskCenter.summary.solving',
+        defaultMessage: 'Solving ({jobId})',
+      },
+      { jobId: task.solveJobId ?? '-' },
+    );
+  }
+  if (task.phase === 'failed') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.summary.failed',
+      defaultMessage: 'Task failed',
+    });
+  }
+  return intl.formatMessage({
+    id: 'pages.process.lca.taskCenter.summary.submitting',
+    defaultMessage: 'Submitting task',
+  });
+}
+
+function taskDetailContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
   return (
     <Space direction='vertical' size={4} style={{ maxWidth: 340 }}>
       <Space size={6} wrap>
-        <Tag color='blue'>{task.mode}</Tag>
+        <Tag color='blue'>
+          {task.mode === 'all_unit'
+            ? intl.formatMessage({
+                id: 'pages.process.lca.mode.allUnit',
+                defaultMessage: 'All Processes (unit)',
+              })
+            : intl.formatMessage({
+                id: 'pages.process.lca.mode.single',
+                defaultMessage: 'Single Demand',
+              })}
+        </Tag>
         <Tag>{task.scope}</Tag>
       </Space>
       {task.buildJobId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          build_job_id: <Typography.Text copyable>{task.buildJobId}</Typography.Text>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.buildJobId',
+            defaultMessage: 'build_job_id',
+          })}
+          : <Typography.Text copyable>{task.buildJobId}</Typography.Text>
         </Typography.Text>
       )}
       {task.solveJobId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          solve_job_id: <Typography.Text copyable>{task.solveJobId}</Typography.Text>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.solveJobId',
+            defaultMessage: 'solve_job_id',
+          })}
+          : <Typography.Text copyable>{task.solveJobId}</Typography.Text>
         </Typography.Text>
       )}
       {task.snapshotId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          snapshot_id: <Typography.Text copyable>{task.snapshotId}</Typography.Text>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.snapshotId',
+            defaultMessage: 'snapshot_id',
+          })}
+          : <Typography.Text copyable>{task.snapshotId}</Typography.Text>
         </Typography.Text>
       )}
       {task.resultId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          result_id: <Typography.Text copyable>{task.resultId}</Typography.Text>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.resultId',
+            defaultMessage: 'result_id',
+          })}
+          : <Typography.Text copyable>{task.resultId}</Typography.Text>
         </Typography.Text>
       )}
       <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        created_at: {formatDateTime(task.createdAt)}
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.detail.createdAt',
+          defaultMessage: 'created_at',
+        })}
+        : {formatDateTime(task.createdAt)}
       </Typography.Text>
       <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        updated_at: {formatDateTime(task.updatedAt)}
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.detail.updatedAt',
+          defaultMessage: 'updated_at',
+        })}
+        : {formatDateTime(task.updatedAt)}
       </Typography.Text>
     </Space>
   );
@@ -252,27 +391,28 @@ const LcaTaskCenter: React.FC = () => {
 
   return (
     <>
-      <Badge count={runningCount} size='small' offset={[-2, 4]} showZero={false}>
+      <Badge count={runningCount} size='small' offset={[-5, 6]} showZero={false}>
         <ClockCircleOutlined
-          style={{ fontSize: 16, opacity: 0.65, cursor: 'pointer' }}
+          style={{ fontSize: 16, opacity: 0.5, cursor: 'pointer' }}
           onClick={() => {
             setOpen(true);
           }}
         />
       </Badge>
-      <Drawer
+      <Modal
         title={intl.formatMessage({
           id: 'pages.process.lca.taskCenter.title',
           defaultMessage: 'LCA Tasks',
         })}
-        placement='right'
-        width={460}
         open={open}
-        onClose={() => {
+        onCancel={() => {
           setOpen(false);
         }}
-        extra={
-          <Space>
+        footer={null}
+        width={760}
+      >
+        <Space direction='vertical' size={12} style={{ width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               size='small'
               onClick={() => {
@@ -284,76 +424,94 @@ const LcaTaskCenter: React.FC = () => {
                 defaultMessage: 'Clear finished',
               })}
             </Button>
-          </Space>
-        }
-      >
-        {tasks.length === 0 ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={intl.formatMessage({
-              id: 'pages.process.lca.taskCenter.empty',
-              defaultMessage: 'No tasks',
-            })}
-          />
-        ) : (
-          <List
-            dataSource={tasks}
-            itemLayout='vertical'
-            renderItem={(task) => (
-              <List.Item
-                key={task.id}
-                actions={[
-                  <Popover
-                    key='details'
-                    trigger='click'
-                    placement='leftTop'
-                    content={taskDetailContent(task)}
+          </div>
+          <div style={{ maxHeight: '68vh', overflowY: 'auto' }}>
+            {tasks.length === 0 ? (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={intl.formatMessage({
+                  id: 'pages.process.lca.taskCenter.empty',
+                  defaultMessage: 'No tasks',
+                })}
+              />
+            ) : (
+              <List
+                dataSource={tasks}
+                itemLayout='vertical'
+                renderItem={(task) => (
+                  <List.Item
+                    key={task.id}
+                    actions={[
+                      <Popover
+                        key='details'
+                        trigger='click'
+                        placement='leftTop'
+                        content={taskDetailContent(task, intl)}
+                      >
+                        <Button size='small' type='link' icon={<InfoCircleOutlined />}>
+                          {intl.formatMessage({
+                            id: 'pages.process.lca.taskCenter.details',
+                            defaultMessage: 'Details',
+                          })}
+                        </Button>
+                      </Popover>,
+                      <Button
+                        key='remove'
+                        type='link'
+                        size='small'
+                        onClick={() => {
+                          removeLcaTask(task.id);
+                        }}
+                      >
+                        {intl.formatMessage({
+                          id: 'pages.process.lca.taskCenter.remove',
+                          defaultMessage: 'Remove',
+                        })}
+                      </Button>,
+                    ]}
                   >
-                    <Button size='small' type='link' icon={<InfoCircleOutlined />}>
-                      Details
-                    </Button>
-                  </Popover>,
-                  <Button
-                    key='remove'
-                    type='link'
-                    size='small'
-                    onClick={() => {
-                      removeLcaTask(task.id);
-                    }}
-                  >
-                    {intl.formatMessage({
-                      id: 'pages.process.lca.taskCenter.remove',
-                      defaultMessage: 'Remove',
-                    })}
-                  </Button>,
-                ]}
-              >
-                <Space direction='vertical' size={4} style={{ width: '100%' }}>
-                  <Space size={8} wrap>
-                    <Typography.Text strong>#{task.sequence}</Typography.Text>
-                    {statusTag(task)}
-                    <Tag color='default'>{phaseLabel(task.phase)}</Tag>
-                    <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                      updated {formatDateTime(task.updatedAt)}
-                    </Typography.Text>
-                  </Space>
-                  <Typography.Text>{task.message}</Typography.Text>
-                  {task.error && <Typography.Text type='danger'>{task.error}</Typography.Text>}
-                  <Space size={12} wrap>
-                    <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                      created {formatDateTime(task.createdAt)}
-                    </Typography.Text>
-                    <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                      elapsed {formatDuration(getTaskElapsedMs(task))}
-                    </Typography.Text>
-                  </Space>
-                  {task.state === 'completed' && <TaskTimeline task={task} />}
-                </Space>
-              </List.Item>
+                    <Space direction='vertical' size={4} style={{ width: '100%' }}>
+                      <Space size={8} wrap>
+                        <Typography.Text strong>#{task.sequence}</Typography.Text>
+                        {statusTag(task, intl)}
+                        {shouldShowPhaseTag(task) && (
+                          <Tag color='default'>{phaseLabel(task.phase, intl)}</Tag>
+                        )}
+                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                          {intl.formatMessage({
+                            id: 'pages.process.lca.taskCenter.updated',
+                            defaultMessage: 'Updated',
+                          })}{' '}
+                          {formatDateTime(task.updatedAt)}
+                        </Typography.Text>
+                      </Space>
+                      <Typography.Text>{taskSummary(task, intl)}</Typography.Text>
+                      {task.error && <Typography.Text type='danger'>{task.error}</Typography.Text>}
+                      <Space size={12} wrap>
+                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                          {intl.formatMessage({
+                            id: 'pages.process.lca.taskCenter.created',
+                            defaultMessage: 'Created',
+                          })}{' '}
+                          {formatDateTime(task.createdAt)}
+                        </Typography.Text>
+                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                          {intl.formatMessage({
+                            id: 'pages.process.lca.taskCenter.elapsed',
+                            defaultMessage: 'Elapsed',
+                          })}{' '}
+                          {formatDuration(getTaskElapsedMs(task))}
+                        </Typography.Text>
+                      </Space>
+                      {task.state === 'completed' && <TaskTimeline task={task} intl={intl} />}
+                    </Space>
+                  </List.Item>
+                )}
+              />
             )}
-          />
-        )}
-      </Drawer>
+          </div>
+        </Space>
+      </Modal>
     </>
   );
 };
