@@ -32,6 +32,60 @@ const selectStr4Table = `
     model_id
   `;
 
+export type LcaMyProcessOption = {
+  id: string;
+  version: string;
+  name: string;
+};
+
+export async function listMyProcessesForLca(
+  lang: string,
+  options: { limit?: number } = {},
+): Promise<{ data: LcaMyProcessOption[]; success: boolean; error?: unknown }> {
+  const session = await supabase.auth.getSession();
+  const userId = session.data.session?.user?.id;
+  if (!userId) {
+    return { data: [], success: false, error: 'unauthorized' };
+  }
+
+  const limit = Math.min(Math.max(options.limit ?? 200, 1), 500);
+  const result = await supabase
+    .from('processes')
+    .select(
+      `
+      id,
+      version,
+      modified_at,
+      json->processDataSet->processInformation->dataSetInformation->name
+    `,
+    )
+    .eq('user_id', userId)
+    .order('modified_at', { ascending: false })
+    .limit(limit);
+
+  if (result.error) {
+    return { data: [], success: false, error: result.error };
+  }
+
+  const data = (result.data ?? [])
+    .map((item: any) => {
+      const id = String(item?.id ?? '').trim();
+      const version = String(item?.version ?? '').trim();
+      if (!id || !version) {
+        return null;
+      }
+      const name = genProcessName(item?.name ?? {}, lang);
+      return {
+        id,
+        version,
+        name: name || `${id}@${version}`,
+      };
+    })
+    .filter((item): item is LcaMyProcessOption => item !== null);
+
+  return { data, success: true };
+}
+
 export async function createProcess(id: string, data: any, modelId?: string) {
   const rawData = genProcessJsonOrdered(id, data);
   const normalizedResult = normalizeLangPayloadForSave

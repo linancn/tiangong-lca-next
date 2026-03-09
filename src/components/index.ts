@@ -6,6 +6,7 @@
  * 布局组件
  */
 import Footer from './Footer';
+import LcaTaskCenter from './LcaTaskCenter';
 import Notification from './Notification';
 import QuantitativeReferenceIcon from './QuantitativeReferenceIcon';
 import { DarkMode, Question, SelectLang } from './RightContent';
@@ -16,6 +17,7 @@ export {
   AvatarName,
   DarkMode,
   Footer,
+  LcaTaskCenter,
   Notification,
   QuantitativeReferenceIcon,
   Question,
