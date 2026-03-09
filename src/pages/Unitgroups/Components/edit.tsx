@@ -1,6 +1,6 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
-import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { refDataType } from '@/pages/Utils/review';
+import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
+import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
@@ -8,7 +8,13 @@ import {
   updateRefsData,
 } from '@/pages/Utils/updateReference';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
-import { FormUnitGroup, UnitGroupDataSetObjectKeys, UnitTable } from '@/services/unitgroups/data';
+import {
+  UnitDraft,
+  UnitGroupDataSetObjectKeys,
+  UnitGroupDetailResponse,
+  UnitGroupFormState,
+  UnitItem,
+} from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitGroupJsonOrdered } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -27,7 +33,7 @@ type Props = {
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  updateErrRef?: (data: any) => void;
+  updateErrRef?: (data: RefCheckType | null) => void;
 };
 const UnitGroupEdit: FC<Props> = ({
   id,
@@ -47,14 +53,16 @@ const UnitGroupEdit: FC<Props> = ({
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] =
     useState<UnitGroupDataSetObjectKeys>('unitGroupInformation');
-  const [initData, setInitData] = useState<FormUnitGroup & { id?: string }>();
-  const [fromData, setFromData] = useState<FormUnitGroup & { id?: string }>();
-  const [unitDataSource, setUnitDataSource] = useState<UnitTable[]>([]);
+  const [initData, setInitData] = useState<UnitGroupFormState>();
+  const [fromData, setFromData] = useState<UnitGroupFormState>();
+  const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
-  const [refCheckData, setRefCheckData] = useState<any[]>([]);
+  const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
-  const [refCheckContextValue, setRefCheckContextValue] = useState<any>({
+  const [refCheckContextValue, setRefCheckContextValue] = useState<{
+    refCheckData: RefCheckType[];
+  }>({
     refCheckData: [],
   });
   useEffect(() => {
@@ -63,6 +71,10 @@ const UnitGroupEdit: FC<Props> = ({
     });
   }, [refCheckData, parentRefCheckContext]);
   const intl = useIntl();
+  type UpdateUnitGroupResult = {
+    data?: Array<{ rule_verification?: boolean }>;
+    error?: { state_code?: number; message?: string };
+  };
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
     const res = updateRefsData(fromData, newRefs, true);
@@ -114,15 +126,15 @@ const UnitGroupEdit: FC<Props> = ({
       });
   };
 
-  const handletUnitDataCreate = (data: any) => {
+  const handletUnitDataCreate = (data: UnitDraft) => {
     if (fromData)
       setUnitDataSource([
         ...unitDataSource,
-        { ...data, '@dataSetInternalID': unitDataSource.length.toString() },
+        { ...data, '@dataSetInternalID': unitDataSource.length.toString() } as UnitItem,
       ]);
   };
 
-  const handletUnitData = (data: any) => {
+  const handletUnitData = (data: UnitItem[]) => {
     if (fromData) setUnitDataSource([...data]);
   };
 
@@ -136,7 +148,7 @@ const UnitGroupEdit: FC<Props> = ({
 
   const onReset = () => {
     setSpinning(true);
-    getUnitGroupDetail(id, version).then(async (result: any) => {
+    getUnitGroupDetail(id, version).then(async (result: UnitGroupDetailResponse) => {
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
       setFromData({
         ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
@@ -144,7 +156,7 @@ const UnitGroupEdit: FC<Props> = ({
       });
       setUnitDataSource(
         (genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {})?.units?.unit ??
-          []) as UnitTable[],
+          []) as UnitItem[],
       );
       formRefEdit.current?.resetFields();
       formRefEdit.current?.setFieldsValue({
@@ -170,10 +182,10 @@ const UnitGroupEdit: FC<Props> = ({
       units: {
         unit: [...unitDataSource],
       },
-    } as FormUnitGroup);
+    } as UnitGroupFormState);
   }, [unitDataSource]);
 
-  const handleSubmit = async (autoClose: boolean) => {
+  const handleSubmit = async (autoClose: boolean): Promise<UpdateUnitGroupResult | true> => {
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
 
@@ -182,7 +194,11 @@ const UnitGroupEdit: FC<Props> = ({
       ...formRefEdit.current?.getFieldsValue(),
       units,
     };
-    const updateResult = await updateUnitGroup(id, version, formFieldsValue);
+    const updateResult = (await updateUnitGroup(
+      id,
+      version,
+      formFieldsValue,
+    )) as UpdateUnitGroupResult;
     if (updateResult?.data) {
       if (updateResult?.data[0]?.rule_verification === true) {
         updateErrRef(null);
@@ -190,7 +206,7 @@ const UnitGroupEdit: FC<Props> = ({
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: updateResult?.data[0]?.rule_verification,
+          ruleVerification: Boolean(updateResult?.data[0]?.rule_verification),
           nonExistent: false,
         });
       }
@@ -234,7 +250,7 @@ const UnitGroupEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
-    if (updateResult.error) {
+    if (typeof updateResult !== 'boolean' && updateResult?.error) {
       setSpinning(false);
       return;
     }
@@ -247,7 +263,7 @@ const UnitGroupEdit: FC<Props> = ({
         '@refObjectId': id,
         '@version': version,
       },
-      updateResult?.data[0]?.rule_verification,
+      typeof updateResult !== 'boolean' && Boolean(updateResult?.data?.[0]?.rule_verification),
       false,
     );
     await checkData(
@@ -262,7 +278,7 @@ const UnitGroupEdit: FC<Props> = ({
     );
     const problemNodes = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
-      let result = problemNodes.map((item: any) => {
+      const result: RefCheckType[] = problemNodes.map((item: ProblemNode) => {
         return {
           id: item['@refObjectId'],
           version: item['@version'],
@@ -284,7 +300,9 @@ const UnitGroupEdit: FC<Props> = ({
       );
       setSpinning(false);
       return;
-    } else if (units.unit.filter((item: any) => item?.quantitativeReference).length !== 1) {
+    } else if (
+      units.unit.filter((item: UnitItem) => Boolean(item?.quantitativeReference)).length !== 1
+    ) {
       message.error(
         intl.formatMessage({
           id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
@@ -296,15 +314,15 @@ const UnitGroupEdit: FC<Props> = ({
     }
 
     const errTabNames: string[] = [];
-    nonExistentRef.forEach((item: any) => {
+    nonExistentRef.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    unRuleVerification.forEach((item: any) => {
+    unRuleVerification.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    problemNodes.forEach((item: any) => {
+    problemNodes.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
@@ -336,7 +354,7 @@ const UnitGroupEdit: FC<Props> = ({
       if (errTabNames && errTabNames.length > 0) {
         message.error(
           errTabNames
-            .map((tab: any) =>
+            .map((tab: string) =>
               intl.formatMessage({
                 id: `pages.unitgroup.${tab}`,
                 defaultMessage: tab,
@@ -449,14 +467,17 @@ const UnitGroupEdit: FC<Props> = ({
                 setFromData({
                   ...fromData,
                   [activeTabKey]: allValues[activeTabKey] ?? {},
-                } as FormUnitGroup);
+                } as UnitGroupFormState);
               }}
               submitter={{
                 render: () => {
                   return [];
                 },
               }}
-              onFinish={() => handleSubmit(true)}
+              onFinish={async () => {
+                await handleSubmit(true);
+                return true;
+              }}
             >
               <UnitGroupForm
                 lang={lang}

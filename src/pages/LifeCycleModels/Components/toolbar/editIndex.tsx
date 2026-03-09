@@ -5,12 +5,29 @@ import type { refDataType } from '@/pages/Utils/review';
 import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
 import { getRefData } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
-import { formatDateTime, getLangText } from '@/services/general/util';
+import {
+  formatDateTime,
+  getImportedId,
+  getLangText,
+  isSupabaseDuplicateKeyError,
+} from '@/services/general/util';
 import {
   createLifeCycleModel,
   getLifeCycleModelDetail,
   updateLifeCycleModel,
 } from '@/services/lifeCycleModels/api';
+import type {
+  LifeCycleModelDetailResponse,
+  LifeCycleModelEditorFormState,
+  LifeCycleModelGraphEdge,
+  LifeCycleModelGraphNode,
+  LifeCycleModelImportData,
+  LifeCycleModelJsonTg,
+  LifeCycleModelPortItem,
+  LifeCycleModelProcessInstance,
+  LifeCycleModelSelectedPortPayload,
+  LifeCycleModelTargetAmount,
+} from '@/services/lifeCycleModels/data';
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
@@ -22,6 +39,12 @@ import {
   getProcessDetailByIdAndVersion,
   getProcessesByIdAndVersion,
 } from '@/services/processes/api';
+import type {
+  ProcessDetailByVersionItem,
+  ProcessDetailByVersionResponse,
+  ProcessDetailResponse,
+  ProcessExchangeData,
+} from '@/services/processes/data';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
 import { getUserId } from '@/services/users/api';
@@ -32,6 +55,7 @@ import {
   SaveOutlined,
   SendOutlined,
 } from '@ant-design/icons';
+import type { Edge as X6Edge, Node as X6Node } from '@antv/x6';
 import { Button, message, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -43,7 +67,7 @@ import LifeCycleModelView from '../view';
 import ModelToolbarAdd from './add';
 import { Control } from './control';
 import TargetAmount from './editTargetAmount';
-import ToolbarEditInfo from './eidtInfo';
+import ToolbarEditInfo, { type ToolbarEditInfoHandle } from './eidtInfo';
 import EdgeExhange from './Exchange/index';
 import IoPortSelect from './Exchange/ioPortSelect';
 import { getEdgeLabel } from './utils/edge';
@@ -63,7 +87,7 @@ type Props = {
   action: string;
   setIsSave: (isSave: boolean) => void;
   actionType?: 'create' | 'copy' | 'createVersion';
-  importData?: any;
+  importData?: LifeCycleModelImportData | null;
   onClose?: () => void;
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
@@ -82,24 +106,24 @@ const ToolbarEdit: FC<Props> = ({
   importData,
   onClose = () => {},
   hideReviewButton = false,
-  updateNodeCb = () => {},
+  updateNodeCb = async () => {},
   newVersion,
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
   const [thisAction, setThisAction] = useState(action);
   const [spinning, setSpinning] = useState(false);
-  const [infoData, setInfoData] = useState<any>({});
-  const [jsonTg, setJsonTg] = useState<any>({});
+  const [infoData, setInfoData] = useState<LifeCycleModelEditorFormState>({});
+  const [jsonTg, setJsonTg] = useState<LifeCycleModelJsonTg>({});
   const [problemNodes, setProblemNodes] = useState<refDataType[]>([]);
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
-  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
+  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<LifeCycleModelGraphNode>();
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
   const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
-  const [connectableProcessesPortId, setConnectableProcessesPortId] = useState<any>('');
-  const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState<any>('');
+  const [connectableProcessesPortId, setConnectableProcessesPortId] = useState('');
+  const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState('');
 
   const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
@@ -110,9 +134,10 @@ const ToolbarEdit: FC<Props> = ({
   const graph = useGraphStore((state) => state.graph);
   const intl = useIntl();
   const [userId, setUserId] = useState<string>('');
-  const [processInstances, setProcessInstances] = useState<any[]>([]);
+  const [processInstances, setProcessInstances] = useState<LifeCycleModelProcessInstance[]>([]);
+  const importedId = getImportedId(importData?.[0]);
 
-  const editInfoRef = useRef<any>(null);
+  const editInfoRef = useRef<ToolbarEditInfoHandle>(null);
   useEffect(() => {
     setThisAction(action);
   }, [action]);
@@ -162,7 +187,7 @@ const ToolbarEdit: FC<Props> = ({
         },
       ],
       offset: { x: 10, y: 30 },
-      async onClick(view: any) {
+      async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
         await setIoPortSelectorDirection('Input');
         await setIoPortSelectorNode(view.cell.store.data);
         await setIoPortSelectorDrawerVisible(true);
@@ -210,7 +235,7 @@ const ToolbarEdit: FC<Props> = ({
       x: '100%',
       y: 0,
       offset: { x: -60, y: 30 },
-      async onClick(view: any) {
+      async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
         await setIoPortSelectorDirection('Output');
         await setIoPortSelectorNode(view.cell.store.data);
         await setIoPortSelectorDrawerVisible(true);
@@ -296,7 +321,7 @@ const ToolbarEdit: FC<Props> = ({
         },
       ],
       offset: { x: 10, y: -12 },
-      onClick(view: any) {
+      onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
         const thisData = view.cell.store.data;
         nodes.forEach(async (node) => {
           if (node.id === thisData?.id) {
@@ -305,7 +330,9 @@ const ToolbarEdit: FC<Props> = ({
                 ...node?.data,
                 quantitativeReference: '1',
               },
-              tools: (node.tools as any)?.map((tool: any) => {
+              tools: (
+                node.tools as Array<{ id?: string; [key: string]: unknown }> | undefined
+              )?.map((tool) => {
                 if (tool.id === 'nonRef') {
                   return refTool;
                 }
@@ -320,7 +347,9 @@ const ToolbarEdit: FC<Props> = ({
                 ...node.data,
                 quantitativeReference: '0',
               },
-              tools: (node.tools as any)?.map((tool: any) => {
+              tools: (
+                node.tools as Array<{ id?: string; [key: string]: unknown }> | undefined
+              )?.map((tool) => {
                 if (tool.id === 'ref' || tool.id === 'nonRef') {
                   return nonRefTool;
                 }
@@ -403,7 +432,7 @@ const ToolbarEdit: FC<Props> = ({
     items: [],
   };
 
-  const nodeTemplate: any = {
+  const nodeTemplate = {
     id: '',
     label: '',
     shape: 'rect',
@@ -432,11 +461,11 @@ const ToolbarEdit: FC<Props> = ({
     setIsSave(true);
   }, [isSave, setIsSave]);
 
-  const updateInfoData = (data: any) => {
+  const updateInfoData = (data: LifeCycleModelEditorFormState) => {
     setInfoData({ ...data, id: thisId, version: thisVersion });
   };
 
-  const updateTargetAmount = (data: any) => {
+  const updateTargetAmount = (data: LifeCycleModelTargetAmount) => {
     const refNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
     if (refNode) {
       updateNode(refNode.id ?? '', {
@@ -450,56 +479,66 @@ const ToolbarEdit: FC<Props> = ({
     }
   };
 
-  const updateNodePorts = (data: any) => {
+  const updateNodePorts = (data: LifeCycleModelSelectedPortPayload) => {
+    if (!ioPortSelectorNode?.size?.width) {
+      return;
+    }
     const group = ioPortSelectorDirection === 'Output' ? 'groupOutput' : 'groupInput';
 
-    const originalItems: any[] =
-      ioPortSelectorNode?.ports?.items?.filter((item: any) => item?.group !== group) ?? [];
+    const originalItems: LifeCycleModelPortItem[] =
+      ioPortSelectorNode?.ports?.items?.filter(
+        (item: LifeCycleModelPortItem) => item?.group !== group,
+      ) ?? [];
 
     let baseY = 65;
     if (group === 'groupOutput') {
       baseY = 65 + originalItems.length * 20;
     }
 
-    const newItems: any[] = data?.selectedRowData?.map((item: any, index: number) => {
-      const nodeWidth = ioPortSelectorNode.size.width;
-      const textLang = item?.referenceToFlowDataSet?.['common:shortDescription'];
-      const direction = ioPortSelectorDirection.toUpperCase();
-      const flowUUID = item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-';
-      const label = getLangText(textLang, lang);
-      const labelWithAllocation = getPortLabelWithAllocation(label, item?.allocations, direction);
-      let labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 7 - 4);
-      if (lang === 'zh') {
-        labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 12 - 4);
-      }
+    const newItems: LifeCycleModelPortItem[] = data?.selectedRowData?.map(
+      (item: ProcessExchangeData, index: number) => {
+        const nodeWidth = ioPortSelectorNode.size?.width ?? 350;
+        const refFlow = Array.isArray(item?.referenceToFlowDataSet)
+          ? item?.referenceToFlowDataSet[0]
+          : item?.referenceToFlowDataSet;
+        const textLang = refFlow?.['common:shortDescription'];
+        const direction = ioPortSelectorDirection.toUpperCase();
+        const flowUUID = refFlow?.['@refObjectId'] ?? '-';
+        const label = getLangText(textLang, lang);
+        const labelWithAllocation = getPortLabelWithAllocation(label, item?.allocations, direction);
+        let labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 7 - 4);
+        if (lang === 'zh') {
+          labelSubWithAllocation = labelWithAllocation?.substring(0, nodeWidth / 12 - 4);
+        }
 
-      return {
-        id: direction + ':' + flowUUID,
-        args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
-        attrs: {
-          text: {
-            text: `${labelWithAllocation && labelWithAllocation.length > (lang === 'zh' ? nodeWidth / 12 - 4 : nodeWidth / 7 - 4) ? labelSubWithAllocation + '...' : labelWithAllocation}`,
-            title: labelWithAllocation,
-            cursor: 'pointer',
-            fill: getPortTextColor(item?.quantitativeReference, item?.allocations, token),
-            'font-weight': getPortTextStyle(item?.quantitativeReference),
+        return {
+          id: direction + ':' + flowUUID,
+          args: { x: group === 'groupOutput' ? '100%' : 0, y: baseY + index * 20 },
+          attrs: {
+            text: {
+              text: `${labelWithAllocation && labelWithAllocation.length > (lang === 'zh' ? nodeWidth / 12 - 4 : nodeWidth / 7 - 4) ? labelSubWithAllocation + '...' : labelWithAllocation}`,
+              title: labelWithAllocation,
+              cursor: 'pointer',
+              fill: getPortTextColor(item?.quantitativeReference, item?.allocations, token),
+              'font-weight': getPortTextStyle(item?.quantitativeReference),
+            },
           },
-        },
-        group: group,
-        data: {
-          textLang: textLang,
-          flowId: item?.referenceToFlowDataSet?.['@refObjectId'],
-          flowVersion: item?.referenceToFlowDataSet?.['@version'],
-          quantitativeReference: item?.quantitativeReference,
-          allocations: item?.allocations,
-        },
-      };
-    });
+          group: group,
+          data: {
+            textLang: textLang,
+            flowId: refFlow?.['@refObjectId'],
+            flowVersion: refFlow?.['@version'],
+            quantitativeReference: item?.quantitativeReference,
+            allocations: item?.allocations,
+          },
+        };
+      },
+    );
 
-    let thisItems: any[] = [];
+    let thisItems: LifeCycleModelPortItem[] = [];
     if (group === 'groupInput') {
       const inputItemLength = newItems.length;
-      const outputItems = originalItems.map((item: any, index: number) => {
+      const outputItems = originalItems.map((item: LifeCycleModelPortItem, index: number) => {
         return { ...item, args: { ...item.args, y: 65 + (inputItemLength + index) * 20 } };
       });
       thisItems = [...newItems, ...outputItems];
@@ -521,12 +560,12 @@ const ToolbarEdit: FC<Props> = ({
     updateNode(ioPortSelectorNode.id, { width: nodeWidth, height: nodeHeight });
   };
 
-  // const updateEdgeData = (data: any) => {
+  // const updateEdgeData = (data: unknown) => {
   //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   //   const { id, shape, ...newEdge } = data;
   //   if (newEdge.target) {
   //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //     const { x, y, ...newTarget } = newEdge.target as any;
+  //     const { x, y, ...newTarget } = newEdge.target as Record<string, unknown>;
   //     updateEdge(id, { ...newEdge, target: newTarget });
   //   } else {
   //     updateEdge(id, { ...newEdge });
@@ -539,150 +578,165 @@ const ToolbarEdit: FC<Props> = ({
     setSpinning(true);
     if (processes.length > 1) {
     }
-    getProcessDetailByIdAndVersion(processes).then(async (result: any) => {
-      const dealData = (data: any, index: number) => {
-        const exchange =
-          genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
-        const refExchange = exchange.find((i: any) => i?.quantitativeReference === true);
-        const direction = refExchange?.exchangeDirection ?? '';
-        const inOrOut = direction.toUpperCase() === 'INPUT';
-        const text = getLangText(
-          (refExchange?.referenceToFlowDataSet as any)?.['common:shortDescription'],
-          lang,
-        );
-        const textWithAllocation = getPortLabelWithAllocation(
-          text ?? '',
-          refExchange?.allocations,
-          direction,
-        );
-        const refPortItem = {
-          id:
-            (inOrOut ? 'INPUT' : 'OUTPUT') +
-            ':' +
-            ((refExchange?.referenceToFlowDataSet as any)?.['@refObjectId'] ?? '-'),
-          args: { x: inOrOut ? 0 : '100%', y: 65 },
-          attrs: {
-            text: {
-              text: `${genPortLabel(textWithAllocation ?? '', lang, nodeTemplate.width)}`,
-              title: textWithAllocation,
-              cursor: 'pointer',
-              fill: getPortTextColor(
-                (refExchange as any)?.quantitativeReference,
-                (refExchange as any)?.allocations,
-                token,
-              ),
-              'font-weight': getPortTextStyle((refExchange as any)?.quantitativeReference),
+    getProcessDetailByIdAndVersion(processes).then(
+      async (result: ProcessDetailByVersionResponse) => {
+        const dealData = (data: ProcessDetailByVersionItem, index: number) => {
+          const exchange = (genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges
+            ?.exchange ?? []) as ProcessExchangeData[];
+          const refExchange = exchange.find(
+            (i: ProcessExchangeData) => i?.quantitativeReference === true,
+          );
+          const refFlow = Array.isArray(refExchange?.referenceToFlowDataSet)
+            ? refExchange?.referenceToFlowDataSet[0]
+            : refExchange?.referenceToFlowDataSet;
+          const direction = refExchange?.exchangeDirection ?? '';
+          const inOrOut = direction.toUpperCase() === 'INPUT';
+          const text = getLangText(refFlow?.['common:shortDescription'], lang);
+          const textWithAllocation = getPortLabelWithAllocation(
+            text ?? '',
+            refExchange?.allocations,
+            direction,
+          );
+          const refPortItem = {
+            id: (inOrOut ? 'INPUT' : 'OUTPUT') + ':' + (refFlow?.['@refObjectId'] ?? '-'),
+            args: { x: inOrOut ? 0 : '100%', y: 65 },
+            attrs: {
+              text: {
+                text: `${genPortLabel(textWithAllocation ?? '', lang, nodeTemplate.width)}`,
+                title: textWithAllocation,
+                cursor: 'pointer',
+                fill: getPortTextColor(
+                  refExchange?.quantitativeReference,
+                  refExchange?.allocations,
+                  token,
+                ),
+                'font-weight': getPortTextStyle(refExchange?.quantitativeReference),
+              },
             },
-          },
-          group:
-            refExchange?.exchangeDirection.toUpperCase() === 'OUTPUT'
-              ? 'groupOutput'
-              : 'groupInput',
-          data: {
-            textLang: (refExchange?.referenceToFlowDataSet as any)?.['common:shortDescription'],
-            flowId: (refExchange?.referenceToFlowDataSet as any)?.['@refObjectId'],
-            flowVersion: (refExchange?.referenceToFlowDataSet as any)?.['@version'],
-            quantitativeReference: (refExchange as any)?.quantitativeReference,
-            allocations: refExchange?.allocations,
-          },
+            group:
+              (refExchange?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
+                ? 'groupOutput'
+                : 'groupInput',
+            data: {
+              textLang: refFlow?.['common:shortDescription'],
+              flowId: refFlow?.['@refObjectId'],
+              flowVersion: refFlow?.['@version'],
+              quantitativeReference: refExchange?.quantitativeReference,
+              allocations: refExchange?.allocations,
+            },
+          } satisfies LifeCycleModelPortItem;
+
+          const processDataSet = data?.json?.processDataSet;
+          const name = processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+          const quantitativeReference = nodeCount === 0 && index === 0 ? '1' : '0';
+          addNodes([
+            {
+              ...nodeTemplate,
+              id: v4(),
+              data: {
+                id: data.id,
+                version: data?.version,
+                label: name,
+                shortDescription: genProcessNameJson(name),
+                quantitativeReference: quantitativeReference,
+              },
+              tools: [
+                nodeTitleTool(
+                  nodeTemplate.width ?? 350,
+                  genProcessName(name, lang) ?? '',
+                  token,
+                  lang,
+                ),
+                quantitativeReference === '1' ? refTool : nonRefTool,
+                inputFlowTool,
+                outputFlowTool,
+              ],
+              ports: {
+                ...ports,
+                items: [refPortItem],
+              },
+            },
+          ]);
         };
 
-        const name = data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
-        const quantitativeReference = nodeCount === 0 && index === 0 ? '1' : '0';
-        addNodes([
-          {
-            ...nodeTemplate,
-            id: v4(),
-            data: {
-              id: data.id,
-              version: data?.version,
-              label: name,
-              shortDescription: genProcessNameJson(name),
-              quantitativeReference: quantitativeReference,
-            },
-            tools: [
-              nodeTitleTool(nodeTemplate.width, genProcessName(name, lang) ?? '', token, lang),
-              quantitativeReference === '1' ? refTool : nonRefTool,
-              inputFlowTool,
-              outputFlowTool,
-            ],
-            ports: {
-              ...ports,
-              items: [refPortItem],
-            },
-          },
-        ]);
-      };
+        if (result && result.data) {
+          result?.data.forEach(async (item: ProcessDetailByVersionItem, index: number) => {
+            await dealData(item, index);
+            await setNodeCount(nodeCount + 1);
+          });
+        }
 
-      if (result && result.data) {
-        result?.data.forEach(async (item: TAddProcessNodesParams, index: number) => {
-          await dealData(item, index);
-          await setNodeCount(nodeCount + 1);
-        });
-      }
-
-      setSpinning(false);
-    });
+        setSpinning(false);
+      },
+    );
   };
 
   const updateReference = async (setLoadingData: boolean) => {
     if (setLoadingData) setSpinning(true);
     await Promise.all(
       nodes.map(async (node) => {
-        const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width;
-        const result: any = await getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '');
+        const nodeWidth = node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350;
+        const result: ProcessDetailResponse = await getProcessDetail(
+          node?.data?.id ?? '',
+          node?.data?.version ?? '',
+        );
         const newLabel =
           result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {};
         const newShortDescription = genProcessNameJson(
           result.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
         );
         const newVersion = result.data?.version ?? '';
-        const exchanges =
-          genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? [];
-        const newItems = (node?.ports as any)?.items?.map((item: any) => {
-          const newItem = exchanges.find((i: any) => {
+        const exchanges = (genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges
+          ?.exchange ?? []) as ProcessExchangeData[];
+        const newItems = (
+          node?.ports as { items?: LifeCycleModelPortItem[] } | undefined
+        )?.items?.map((item: LifeCycleModelPortItem) => {
+          const newItem = exchanges.find((i: ProcessExchangeData) => {
             const ids = item?.id?.split(':');
             if (ids.length < 2) return false;
+            const flowRef = Array.isArray(i?.referenceToFlowDataSet)
+              ? i?.referenceToFlowDataSet[0]
+              : i?.referenceToFlowDataSet;
             return (
               (i?.exchangeDirection ?? '-').toUpperCase() +
                 ':' +
-                (i?.referenceToFlowDataSet?.['@refObjectId'] ?? '-') ===
+                (flowRef?.['@refObjectId'] ?? '-') ===
               ids[0].toUpperCase() + ':' + (ids[ids.length - 1] ?? '-')
             );
           });
           if (newItem) {
-            const newTitle = getLangText(
-              (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
-              lang,
-            );
+            const newRefFlow = Array.isArray(newItem?.referenceToFlowDataSet)
+              ? newItem?.referenceToFlowDataSet[0]
+              : newItem?.referenceToFlowDataSet;
+            const newTitle = getLangText(newRefFlow?.['common:shortDescription'], lang) ?? '';
 
             const newTitleWithAllocation = getPortLabelWithAllocation(
               newTitle,
               newItem?.allocations,
-              newItem?.exchangeDirection,
+              newItem?.exchangeDirection ?? '',
             );
             return {
               ...item,
               attrs: {
                 ...item?.attrs,
                 text: {
-                  text: `${genPortLabel(newTitleWithAllocation, lang, nodeWidth)}`,
+                  text: `${genPortLabel(newTitleWithAllocation ?? '', lang, nodeWidth)}`,
                   title: newTitleWithAllocation,
                   cursor: 'pointer',
                   fill: getPortTextColor(
-                    (newItem as any)?.quantitativeReference,
+                    newItem?.quantitativeReference,
                     newItem?.allocations,
                     token,
                   ),
-                  'font-weight': getPortTextStyle((newItem as any)?.quantitativeReference),
+                  'font-weight': getPortTextStyle(newItem?.quantitativeReference),
                 },
               },
               data: {
                 ...item?.data,
-                textLang: (newItem?.referenceToFlowDataSet as any)?.['common:shortDescription'],
-                flowId: (newItem?.referenceToFlowDataSet as any)?.['@refObjectId'],
-                flowVersion: (newItem?.referenceToFlowDataSet as any)?.['@version'],
-                quantitativeReference: (newItem as any)?.quantitativeReference,
+                textLang: newRefFlow?.['common:shortDescription'],
+                flowId: newRefFlow?.['@refObjectId'],
+                flowVersion: newRefFlow?.['@version'],
+                quantitativeReference: newItem?.quantitativeReference,
                 allocations: newItem?.allocations,
               },
             };
@@ -734,7 +788,8 @@ const ToolbarEdit: FC<Props> = ({
       selectedNodes.forEach(async (node) => {
         const selectedEdges = edges.filter(
           (edge) =>
-            (edge.source as any)?.cell === node.id || (edge.target as any)?.cell === node.id,
+            (edge.source as { cell?: string } | undefined)?.cell === node.id ||
+            (edge.target as { cell?: string } | undefined)?.cell === node.id,
         );
         await removeEdges(selectedEdges.map((e) => e.id ?? ''));
         // if (node.data?.quantitativeReference === '1') {
@@ -766,19 +821,23 @@ const ToolbarEdit: FC<Props> = ({
     await updateReference(setLoadingData);
 
     // 直接从图中获取最新的节点和边数据
-    const currentNodes = graph ? graph.getNodes().map((node: any) => node.toJSON()) : nodes;
-    const currentEdges = graph ? graph.getEdges().map((edge: any) => edge.toJSON()) : edges;
+    const currentNodes: LifeCycleModelGraphNode[] = graph
+      ? graph.getNodes().map((node: X6Node) => node.toJSON() as LifeCycleModelGraphNode)
+      : (nodes as LifeCycleModelGraphNode[]);
+    const currentEdges: LifeCycleModelGraphEdge[] = graph
+      ? graph.getEdges().map((edge: X6Edge) => edge.toJSON() as LifeCycleModelGraphEdge)
+      : (edges as LifeCycleModelGraphEdge[]);
 
-    const newEdges = currentEdges.map((edge: any) => {
+    const newEdges = currentEdges.map((edge: LifeCycleModelGraphEdge) => {
       if (edge.target) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { x, y, ...targetRest } = edge.target as any;
+        const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
         return { ...edge, target: targetRest };
       }
       return edge;
     });
 
-    const newNodes = currentNodes.map((node: any, index: number) => {
+    const newNodes = currentNodes.map((node: LifeCycleModelGraphNode, index: number) => {
       return { ...node, data: { ...node.data, index: index.toString() } };
     });
 
@@ -804,12 +863,13 @@ const ToolbarEdit: FC<Props> = ({
         setThisVersion(result.data?.[0]?.version);
         setJsonTg(result.data?.[0]?.json_tg);
 
-        const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
-        savedEdges.forEach((edge: any) => {
+        const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
+          []) as LifeCycleModelGraphEdge[];
+        savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
           const label = getEdgeLabel(
             token,
-            edge?.data?.connection?.unbalancedAmount,
-            edge?.data?.connection?.exchangeAmount,
+            edge?.data?.connection?.unbalancedAmount as number,
+            edge?.data?.connection?.exchangeAmount as number,
           );
           updateEdge(edge.id, { labels: [label] });
         });
@@ -836,7 +896,7 @@ const ToolbarEdit: FC<Props> = ({
       }
       if (setLoadingData) setSpinning(false);
     } else if (thisAction === 'create') {
-      const newId = actionType === 'createVersion' ? thisId : v4();
+      const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
       const result = await createLifeCycleModel({ ...newData, id: newId });
       if (result.data) {
         message.success(
@@ -849,19 +909,27 @@ const ToolbarEdit: FC<Props> = ({
         setThisId(result.data?.[0]?.id);
         setThisVersion(result.data?.[0]?.version);
 
-        const savedEdges = result?.data?.[0]?.json_tg?.xflow?.edges ?? [];
-        savedEdges.forEach((edge: any) => {
+        const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
+          []) as LifeCycleModelGraphEdge[];
+        savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
           const label = getEdgeLabel(
             token,
-            edge?.data?.connection?.unbalancedAmount,
-            edge?.data?.connection?.exchangeAmount,
+            edge?.data?.connection?.unbalancedAmount as number,
+            edge?.data?.connection?.exchangeAmount as number,
           );
           updateEdge(edge.id, { labels: [label] });
         });
 
         saveCallback();
       } else {
-        message.error(result.error.message);
+        message.error(
+          isSupabaseDuplicateKeyError(result.error)
+            ? intl.formatMessage({
+                id: 'pages.button.create.error.duplicateId',
+                defaultMessage: 'Data with the same ID already exists.',
+              })
+            : (result.error?.message ?? 'Error'),
+        );
       }
       if (setLoadingData) setSpinning(false);
     }
@@ -950,7 +1018,7 @@ const ToolbarEdit: FC<Props> = ({
     const node = evt.node;
     const nodeWidth = node.getSize().width;
     const label = genProcessName(node?.data?.label, lang);
-    const newItems = node?.getPorts()?.map((item: any) => {
+    const newItems = node?.getPorts()?.map((item: LifeCycleModelPortItem) => {
       const itemText = getLangText(item?.data?.textLang, lang);
       const itemTextWithAllocation = getPortLabelWithAllocation(
         itemText ?? '',
@@ -1022,13 +1090,13 @@ const ToolbarEdit: FC<Props> = ({
 
           let matchedPort = null;
           if (clickedPortId) {
-            const ports = node.getPorts();
-            matchedPort = ports.find((port: any) => port.id === clickedPortId);
+            const ports: { id: string; data?: { flowVersion?: string } }[] = node.getPorts();
+            matchedPort = ports.find((port) => port.id === clickedPortId);
 
             if (matchedPort) {
               setConnectableProcessesDrawerVisible(true);
               setConnectableProcessesPortId(clickedPortId);
-              setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion);
+              setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion ?? '');
               return;
             }
           }
@@ -1074,19 +1142,23 @@ const ToolbarEdit: FC<Props> = ({
     });
   });
 
-  const getProcessInstances = async (jsonTg: any) => {
+  const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
     const userId = await getUserId();
     setUserId(userId);
-    let params: { id: string; version: string }[] = [];
-    jsonTg?.xflow?.nodes?.forEach((node: any) => {
-      params.push({
-        id: node?.data?.id,
-        version: node?.data?.version,
-      });
+    const params: { id: string; version: string }[] = [];
+    jsonTg?.xflow?.nodes?.forEach((node) => {
+      const nodeId = node?.data?.id;
+      const nodeVersion = node?.data?.version;
+      if (nodeId && nodeVersion) {
+        params.push({
+          id: nodeId,
+          version: nodeVersion,
+        });
+      }
     });
     if (params.length > 0) {
       const procresses = await getProcessesByIdAndVersion(params);
-      setProcessInstances(procresses.data ?? []);
+      setProcessInstances((procresses.data ?? []) as LifeCycleModelProcessInstance[]);
     }
   };
 
@@ -1105,11 +1177,11 @@ const ToolbarEdit: FC<Props> = ({
       const formData = genLifeCycleModelInfoFromData(importData[0].lifeCycleModelDataSet);
       setInfoData(formData);
       const model = genLifeCycleModelData(importData[0]?.json_tg ?? {}, lang);
-      const initNodes = (model?.nodes ?? []).map((node: any) => {
+      const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
         const updatedPorts = {
           ...node.ports,
           groups: ports.groups,
-          items: (node.ports?.items ?? []).map((item: any) => {
+          items: (node.ports?.items ?? []).map((item: LifeCycleModelPortItem) => {
             const itemText = getLangText(item?.data?.textLang, lang);
             const itemTextWithAllocation = getPortLabelWithAllocation(
               itemText ?? '',
@@ -1122,7 +1194,7 @@ const ToolbarEdit: FC<Props> = ({
                 ...item?.attrs,
                 text: {
                   ...item?.attrs?.text,
-                  text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width)}`,
+                  text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350)}`,
                   title: itemTextWithAllocation,
                   fill: getPortTextColor(
                     item?.data?.quantitativeReference,
@@ -1143,7 +1215,7 @@ const ToolbarEdit: FC<Props> = ({
           tools: [
             node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
             nodeTitleTool(
-              node?.size?.width ?? node?.width ?? nodeTemplate.width,
+              node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350,
               genProcessName(node?.data?.label, lang) ?? '',
               token,
               lang,
@@ -1154,14 +1226,14 @@ const ToolbarEdit: FC<Props> = ({
         };
       });
       const initEdges =
-        model?.edges?.map((edge: any) => {
+        model?.edges?.map((edge: LifeCycleModelGraphEdge) => {
           if (edge.target) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { x, y, ...targetRest } = edge.target as any;
+            const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
             const label = getEdgeLabel(
               token,
-              edge?.data?.connection?.unbalancedAmount,
-              edge?.data?.connection?.exchangeAmount,
+              edge?.data?.connection?.unbalancedAmount as number,
+              edge?.data?.connection?.exchangeAmount as number,
             );
             return {
               ...edge,
@@ -1189,8 +1261,8 @@ const ToolbarEdit: FC<Props> = ({
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);
-      getLifeCycleModelDetail(id, version).then(async (result: any) => {
-        if (!result?.data?.id) {
+      getLifeCycleModelDetail(id, version).then(async (result: LifeCycleModelDetailResponse) => {
+        if (!result.success) {
           message.error(
             intl.formatMessage({
               id: 'pages.lifecyclemodel.notPublic',
@@ -1202,7 +1274,7 @@ const ToolbarEdit: FC<Props> = ({
         const fromData = genLifeCycleModelInfoFromData(
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
-        setJsonTg(result.data?.json_tg);
+        setJsonTg(result.data?.json_tg ?? {});
 
         if (actionType === 'createVersion' && newVersion) {
           fromData.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
@@ -1210,11 +1282,11 @@ const ToolbarEdit: FC<Props> = ({
         }
         setInfoData({ ...fromData, id: thisId, version: thisVersion });
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        const initNodes = (model?.nodes ?? []).map((node: any) => {
+        const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
           const updatedPorts = {
             ...node.ports,
             groups: ports.groups,
-            items: (node.ports?.items ?? []).map((item: any) => {
+            items: (node.ports?.items ?? []).map((item: LifeCycleModelPortItem) => {
               const itemText = getLangText(item?.data?.textLang, lang);
               const itemTextWithAllocation = getPortLabelWithAllocation(
                 itemText ?? '',
@@ -1227,7 +1299,7 @@ const ToolbarEdit: FC<Props> = ({
                   ...item?.attrs,
                   text: {
                     ...item?.attrs?.text,
-                    text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width)}`,
+                    text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350)}`,
                     title: itemTextWithAllocation,
                     fill: getPortTextColor(
                       item?.data?.quantitativeReference,
@@ -1248,7 +1320,7 @@ const ToolbarEdit: FC<Props> = ({
             tools: [
               node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
               nodeTitleTool(
-                node?.size?.width ?? node?.width ?? nodeTemplate.width,
+                node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350,
                 genProcessName(node?.data?.label, lang) ?? '',
                 token,
                 lang,
@@ -1259,14 +1331,14 @@ const ToolbarEdit: FC<Props> = ({
           };
         });
         const initEdges =
-          model?.edges?.map((edge: any) => {
+          model?.edges?.map((edge: LifeCycleModelGraphEdge) => {
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { x, y, ...targetRest } = edge.target as any;
+              const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
               const label = getEdgeLabel(
                 token,
-                edge?.data?.connection?.unbalancedAmount,
-                edge?.data?.connection?.exchangeAmount,
+                edge?.data?.connection?.unbalancedAmount as number,
+                edge?.data?.connection?.exchangeAmount as number,
               );
               return {
                 ...edge,
@@ -1287,7 +1359,7 @@ const ToolbarEdit: FC<Props> = ({
         });
 
         setNodeCount(initNodes.length);
-        getProcessInstances(result.data?.json_tg)
+        getProcessInstances(result.data?.json_tg ?? {})
           .then(() => {})
           .finally(() => {
             setSpinning(false);
@@ -1345,7 +1417,7 @@ const ToolbarEdit: FC<Props> = ({
         tools: [
           node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
           nodeTitleTool(
-            node?.size?.width ?? node?.width ?? nodeTemplate.width,
+            node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350,
             genProcessName(node?.data?.label, lang) ?? '',
             token,
             lang,
@@ -1360,7 +1432,7 @@ const ToolbarEdit: FC<Props> = ({
   useEffect(() => {
     nodes.forEach((node) => {
       const isErrNode = problemNodes.find(
-        (item: any) =>
+        (item: refDataType) =>
           item['@refObjectId'] === node.data.id && item['@version'] === node.data.version,
       );
       if (isErrNode) {
@@ -1401,7 +1473,7 @@ const ToolbarEdit: FC<Props> = ({
 
       const path = await checkReferences(
         refObjs,
-        new Map<string, any>(),
+        new Map<string, unknown>(),
         userTeamId,
         [],
         [],
@@ -1434,20 +1506,26 @@ const ToolbarEdit: FC<Props> = ({
   const handleCheckData = async () => {
     setSpinning(true);
     await saveData(false);
-    const { problemNodes } = await editInfoRef.current?.handleCheckData('checkData', nodes, edges);
-    setProblemNodes(problemNodes ?? []);
+    const checkDataResult = await editInfoRef.current?.handleCheckData(
+      'checkData',
+      nodes as LifeCycleModelGraphNode[],
+      edges as LifeCycleModelGraphEdge[],
+    );
+    setProblemNodes(checkDataResult?.problemNodes ?? []);
     setSpinning(false);
   };
 
   const handelSubmitReview = async () => {
     setSpinning(true);
     await saveData(false);
-    const { checkResult, unReview, problemNodes } = await editInfoRef.current?.handleCheckData(
+    const reviewResult = await editInfoRef.current?.handleCheckData(
       'review',
-      nodes,
-      edges,
+      nodes as LifeCycleModelGraphNode[],
+      edges as LifeCycleModelGraphEdge[],
     );
-    setProblemNodes(problemNodes ?? []);
+    const checkResult = reviewResult?.checkResult;
+    const unReview = reviewResult?.unReview ?? [];
+    setProblemNodes(reviewResult?.problemNodes ?? []);
 
     if (checkResult) {
       await editInfoRef.current?.submitReview(unReview);
@@ -1514,6 +1592,9 @@ const ToolbarEdit: FC<Props> = ({
     }
   };
 
+  const selectedEdge = edges.find((edge) => edge.selected);
+  const quantitativeReferenceNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
+
   return (
     <Space
       direction='vertical'
@@ -1531,11 +1612,11 @@ const ToolbarEdit: FC<Props> = ({
       {getShowResult()}
       <EdgeExhange
         lang={lang}
-        disabled={!edges.find((edge) => edge.selected)}
-        edge={edges.find((edge) => edge.selected)}
+        disabled={!selectedEdge}
+        edge={selectedEdge as LifeCycleModelGraphEdge}
       />
       <TargetAmount
-        refNode={nodes.find((node) => node?.data?.quantitativeReference === '1')}
+        refNode={quantitativeReferenceNode as LifeCycleModelGraphNode}
         drawerVisible={targetAmountDrawerVisible}
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}
@@ -1660,7 +1741,7 @@ const ToolbarEdit: FC<Props> = ({
       <Spin spinning={spinning} fullscreen />
       <IoPortSelect
         lang={lang}
-        node={ioPortSelectorNode}
+        node={ioPortSelectorNode as LifeCycleModelGraphNode}
         direction={ioPortSelectorDirection}
         drawerVisible={ioPortSelectorDrawerVisible}
         onData={updateNodePorts}

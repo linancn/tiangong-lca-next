@@ -4,6 +4,7 @@ import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import { ProcessExchangeData } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CaretRightOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -33,12 +34,12 @@ import {
 
 type Props = {
   id: string;
-  data: any;
+  data: ProcessExchangeData[];
   lang: string;
   buttonType: string;
   // actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onData: (data: any) => void;
+  onData: (data: ProcessExchangeData[]) => void;
   showRules: boolean;
   disabled?: boolean;
 };
@@ -55,11 +56,11 @@ const ProcessExchangeEdit: FC<Props> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
-  const [fromData, setFromData] = useState<any>({});
-  const [initData, setInitData] = useState<any>({});
+  const [fromData, setFromData] = useState<ProcessExchangeData>({});
+  const [initData, setInitData] = useState<ProcessExchangeData>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
-  const [units, setUnits] = useState([]);
+  const [units, setUnits] = useState<{ name: string; meanValue: number }[]>([]);
   const [unitConvertVisible, setUnitConvertVisible] = useState(false);
   const [unitConvertName, setUnitConvertName] = useState('');
   const [targetUnit, setTargetUnit] = useState('');
@@ -80,7 +81,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const onReset = () => {
     // setSpinning(true);
     formRefEdit.current?.resetFields();
-    const filteredData = data?.find((item: any) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);
@@ -168,7 +169,7 @@ const ProcessExchangeEdit: FC<Props> = ({
           }}
           onFinish={async () => {
             onData(
-              data.map((item: any) => {
+              data.map((item) => {
                 if (item['@dataSetInternalID'] === id) {
                   return fromData;
                 }

@@ -4,6 +4,15 @@ import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import type {
+  FormLifeCycleModel,
+  LifeCycleModelFormState,
+  LifeCycleModelGraphEdge,
+  LifeCycleModelGraphNode,
+  LifeCycleModelJsonTg,
+  LifeCycleModelPortItem,
+  LifeCycleModelProcessInstance,
+} from '@/services/lifeCycleModels/data';
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
@@ -41,16 +50,14 @@ type Props = {
 
 const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [spinning, setSpinning] = useState(false);
-  const [infoData, setInfoData] = useState<any>({});
-  const [jsonTg, setJsonTg] = useState<any>({});
+  const [infoData, setInfoData] = useState<LifeCycleModelFormState>({});
+  const [jsonTg, setJsonTg] = useState<LifeCycleModelJsonTg>({});
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
-  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
+  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<LifeCycleModelGraphNode>();
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
-  const [processInstances, setProcessInstances] = useState<any[]>([]);
+  const [processInstances, setProcessInstances] = useState<LifeCycleModelProcessInstance[]>([]);
   // const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
-  // const [connectableProcessesPortId, setConnectableProcessesPortId] = useState<any>('');
-  // const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState<any>('');
 
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -103,7 +110,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         },
       ],
       offset: { x: 10, y: 30 },
-      async onClick(view: any) {
+      async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
         await setIoPortSelectorDirection('Input');
         await setIoPortSelectorNode(view.cell.store.data);
         await setIoPortSelectorDrawerVisible(true);
@@ -151,7 +158,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       x: '100%',
       y: 0,
       offset: { x: -60, y: 30 },
-      async onClick(view: any) {
+      async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
         await setIoPortSelectorDirection('Output');
         await setIoPortSelectorNode(view.cell.store.data);
         await setIoPortSelectorDrawerVisible(true);
@@ -218,7 +225,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     },
   };
 
-  const nodeTemplate: any = {
+  const nodeTemplate = {
     id: '',
     label: '',
     shape: 'rect',
@@ -344,17 +351,21 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     removeEdges([edge.id]);
   });
 
-  const getProcessInstances = async (jsonTg: any) => {
-    let params: { id: string; version: string }[] = [];
-    jsonTg?.xflow?.nodes?.forEach((node: any) => {
-      params.push({
-        id: node?.data?.id,
-        version: node?.data?.version,
-      });
+  const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
+    const params: { id: string; version: string }[] = [];
+    jsonTg?.xflow?.nodes?.forEach((node) => {
+      const nodeId = node?.data?.id;
+      const nodeVersion = node?.data?.version;
+      if (nodeId && nodeVersion) {
+        params.push({
+          id: nodeId,
+          version: nodeVersion,
+        });
+      }
     });
     if (params.length > 0) {
       const procresses = await getProcessesByIdAndVersion(params);
-      setProcessInstances(procresses.data ?? []);
+      setProcessInstances((procresses.data ?? []) as LifeCycleModelProcessInstance[]);
     }
   };
 
@@ -365,8 +376,8 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     }
     if (id && version) {
       setSpinning(true);
-      getLifeCycleModelDetail(id, version).then(async (result: any) => {
-        if (!result?.data?.id) {
+      getLifeCycleModelDetail(id, version).then(async (result) => {
+        if (!result.success) {
           message.error(
             intl.formatMessage({
               id: 'pages.lifecyclemodel.notPublic',
@@ -379,16 +390,16 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
         setInfoData({ ...fromData, id: id });
-        setJsonTg(result.data?.json_tg);
+        setJsonTg(result.data?.json_tg ?? {});
         const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        const initNodes = (model?.nodes ?? []).map((node: any) => {
+        const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
           return {
             ...node,
             attrs: nodeAttrs,
             ports: {
               ...node.ports,
               groups: ports.groups,
-              items: node?.ports?.items?.map((item: any) => {
+              items: node?.ports?.items?.map((item: LifeCycleModelPortItem) => {
                 const itemText = getLangText(item?.data?.textLang, lang);
                 const itemTextWithAllocation = getPortLabelWithAllocation(
                   itemText ?? '',
@@ -401,7 +412,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                     ...item?.attrs,
                     text: {
                       ...item?.attrs?.text,
-                      text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width)}`,
+                      text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350)}`,
                       title: itemTextWithAllocation,
                       fill: getPortTextColor(
                         item?.data?.quantitativeReference,
@@ -429,14 +440,14 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         });
 
         const initEdges =
-          model?.edges?.map((edge: any) => {
+          model?.edges?.map((edge: LifeCycleModelGraphEdge) => {
             if (edge.target) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { x, y, ...targetRest } = edge.target as any;
+              const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
               const label = getEdgeLabel(
                 token,
-                edge?.data?.connection?.unbalancedAmount,
-                edge?.data?.connection?.exchangeAmount,
+                edge?.data?.connection?.unbalancedAmount as number,
+                edge?.data?.connection?.exchangeAmount as number,
               );
               return {
                 ...edge,
@@ -520,17 +531,23 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     );
   };
 
+  const selectedEdge = edges.find((edge) => edge.selected);
+  const quantitativeReferenceNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
+
   return (
     <Space direction='vertical' size={'middle'}>
-      <ToolbarViewInfo lang={lang} data={infoData} />
+      <ToolbarViewInfo
+        lang={lang}
+        data={infoData as FormLifeCycleModel & { id?: string; version?: string }}
+      />
       {getShowResult()}
       <EdgeExhange
         lang={lang}
-        disabled={!edges.find((edge) => edge.selected)}
-        edge={edges.find((edge) => edge.selected)}
+        disabled={!selectedEdge}
+        edge={selectedEdge as LifeCycleModelGraphEdge}
       />
       <TargetAmount
-        refNode={nodes.find((node) => node?.data?.quantitativeReference === '1')}
+        refNode={quantitativeReferenceNode as LifeCycleModelGraphNode}
         drawerVisible={targetAmountDrawerVisible}
         lang={lang}
         setDrawerVisible={setTargetAmountDrawerVisible}
@@ -555,7 +572,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       <Spin spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}
-        node={ioPortSelectorNode}
+        node={ioPortSelectorNode as LifeCycleModelGraphNode}
         direction={ioPortSelectorDirection}
         drawerVisible={ioPortSelectorDrawerVisible}
         onDrawerVisible={setIoPortSelectorDrawerVisible}

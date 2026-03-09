@@ -18,20 +18,19 @@ import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   buttonType: string;
   lang: string;
-  onData: (rowKey: any) => void;
+  onData: (rowKeys: React.Key[]) => void;
 };
 
 const { Search } = Input;
 
 const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => {
-  const [tgKeyWord, setTgKeyWord] = useState<any>('');
-  const [myKeyWord, setMyKeyWord] = useState<any>('');
+  const [tgKeyWord, setTgKeyWord] = useState('');
+  const [myKeyWord, setMyKeyWord] = useState('');
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<'tg' | 'my'>('tg');
   const [openAI, setOpenAI] = useState<boolean>(false);
-  // const [dataSource, setDataSource] = useState<any>([]);
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
@@ -47,7 +46,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   };
 
   const onTabChange = async (key: string) => {
-    await setActiveTabKey(key);
+    await setActiveTabKey(key as 'tg' | 'my');
     if (key === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();

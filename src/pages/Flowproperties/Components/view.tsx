@@ -3,8 +3,17 @@ import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourcesDescription from '@/pages/Sources/Components/select/description';
 import UnitGroupDescription from '@/pages/Unitgroups/Components/select/description';
+import { getClassificationValues } from '@/pages/Utils';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
+import {
+  FlowPropertyDataSetObjectKeys,
+  FlowpropertyDetailResponse,
+  FlowpropertyReference,
+  FormFlowProperty,
+} from '@/services/flowproperties/data';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
+import type { ReferenceItem } from '@/services/general/data';
+import { listToJson } from '@/services/general/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
@@ -28,11 +37,13 @@ const getComplianceLabel = (value: string) => {
 
 const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [activeTabKey, setActiveTabKey] = useState<string>('flowPropertiesInformation');
+  const [activeTabKey, setActiveTabKey] = useState<FlowPropertyDataSetObjectKeys>(
+    'flowPropertiesInformation',
+  );
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
+  const [initData, setInitData] = useState<Partial<FormFlowProperty>>({});
   const onTabChange = (key: string) => {
-    setActiveTabKey(key);
+    setActiveTabKey(key as FlowPropertyDataSetObjectKeys);
   };
 
   const tabList = [
@@ -65,7 +76,26 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
     },
   ];
 
-  const contentList: Record<string, React.ReactNode> = {
+  const classificationValues =
+    getClassificationValues(
+      initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
+        'common:classification'
+      ]?.['common:class'],
+    ) ?? [];
+
+  const compliance = listToJson(
+    initData?.modellingAndValidation?.complianceDeclarations?.compliance,
+  ) as {
+    'common:referenceToComplianceSystem'?: FlowpropertyReference;
+    'common:approvalOfOverallCompliance'?: string;
+  };
+  const precedingDataSetVersionRef = listToJson(
+    initData?.administrativeInformation?.publicationAndOwnership?.[
+      'common:referenceToPrecedingDataSetVersion'
+    ],
+  ) as ReferenceItem;
+
+  const contentList: Partial<Record<FlowPropertyDataSetObjectKeys, React.ReactNode>> = {
     flowPropertiesInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -107,11 +137,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
 
         <br />
         <LevelTextItemDescription
-          data={
-            initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class']?.['value']
-          }
+          data={classificationValues}
           lang={lang}
           categoryType={'FlowProperty'}
         />
@@ -125,7 +151,8 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
           data={
-            initData.flowPropertiesInformation?.quantitativeReference?.referenceToReferenceUnitGroup
+            initData.flowPropertiesInformation?.quantitativeReference
+              ?.referenceToReferenceUnitGroup ?? {}
           }
         />
       </>
@@ -147,11 +174,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
         />
         <br />
         <SourcesDescription
-          data={
-            initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-              'common:referenceToComplianceSystem'
-            ]
-          }
+          data={compliance?.['common:referenceToComplianceSystem']}
           title={
             <FormattedMessage
               id='pages.FlowProperties.view.modellingAndValidation.referenceToComplianceSystem'
@@ -172,11 +195,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             labelStyle={{ width: '240px' }}
           >
-            {getComplianceLabel(
-              initData?.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
-              ] ?? '-',
-            )}
+            {getComplianceLabel(compliance?.['common:approvalOfOverallCompliance'] ?? '-')}
           </Descriptions.Item>
         </Descriptions>
       </>
@@ -250,11 +269,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
           </Descriptions>
           <br />
           <FlowpropertiesSelectDescription
-            data={
-              initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:referenceToPrecedingDataSetVersion'
-              ]
-            }
+            data={precedingDataSetVersionRef}
             lang={lang}
             title={
               <FormattedMessage
@@ -303,7 +318,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const onView = () => {
     setDrawerVisible(true);
     setSpinning(true);
-    getFlowpropertyDetail(id, version).then(async (result: any) => {
+    getFlowpropertyDetail(id, version).then(async (result: FlowpropertyDetailResponse) => {
       setInitData(genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}));
       setSpinning(false);
     });

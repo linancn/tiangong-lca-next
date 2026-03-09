@@ -64,3 +64,17 @@ export const validateRefObjectId = (
 export const getLocalValueProps = (value: string) => ({
   value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
 });
+
+export const getClassificationValues = (value: unknown): string[] | undefined => {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+  if (!('value' in value)) {
+    return undefined;
+  }
+  const raw = (value as { value?: unknown }).value;
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  return raw.filter((item): item is string => typeof item === 'string');
+};

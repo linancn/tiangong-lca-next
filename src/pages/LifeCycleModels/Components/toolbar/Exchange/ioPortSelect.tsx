@@ -5,8 +5,16 @@ import AlignedNumber from '@/components/AlignedNumber';
 import { flowTypeOptions, myFlowTypeOptions } from '@/pages/Flows/Components/optiondata';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
+import type {
+  LifeCycleModelGraphNode,
+  LifeCycleModelSelectedPortPayload,
+} from '@/services/lifeCycleModels/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import type {
+  ProcessDetailResponse,
+  ProcessExchangeData,
+  ProcessExchangeTable,
+} from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined } from '@ant-design/icons';
@@ -21,11 +29,11 @@ export const getFolwypeOfDataSetOptions = (value: string) => {
   return option ? option.label : '-';
 };
 type Props = {
-  node: any;
+  node: LifeCycleModelGraphNode;
   lang: string;
   direction: string;
   drawerVisible: boolean;
-  onData: (data: any) => void;
+  onData: (data: LifeCycleModelSelectedPortPayload) => void;
   onDrawerVisible: (option: boolean) => void;
 };
 
@@ -38,7 +46,7 @@ const IoPortSelect: FC<Props> = ({
   onDrawerVisible,
 }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [exchangeDataSource, setExchangeDataSource] = useState<any[]>([]);
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
 
   const [dataLoading, setDataLoading] = useState(false);
   const actionRefSelect = useRef<ActionType>();
@@ -194,24 +202,27 @@ const IoPortSelect: FC<Props> = ({
     if (!drawerVisible) return;
     setDataLoading(true);
 
-    getProcessDetail(node?.data?.id, node?.data?.version).then(async (result: any) => {
-      setExchangeDataSource([
-        ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ?? []),
-      ]);
-      const selectedRowKeys: Key[] = [];
-      node?.ports?.items?.forEach((item: any) => {
-        const ids = item.id.split(':');
-        if (ids.length === 2 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
-          selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[1]}`);
-        }
-        if (ids.length === 3 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
-          selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[2]}`);
-        }
-      });
-      setSelectedRowKeys(selectedRowKeys);
-      actionRefSelect.current?.reload();
-      // setDataLoading(false);
-    });
+    getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
+      async (result: ProcessDetailResponse) => {
+        setExchangeDataSource([
+          ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
+            []),
+        ]);
+        const selectedRowKeys: Key[] = [];
+        node?.ports?.items?.forEach((item) => {
+          const ids = item.id.split(':');
+          if (ids.length === 2 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
+            selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[1]}`);
+          }
+          if (ids.length === 3 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
+            selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[2]}`);
+          }
+        });
+        setSelectedRowKeys(selectedRowKeys);
+        actionRefSelect.current?.reload();
+        // setDataLoading(false);
+      },
+    );
   }, [drawerVisible]);
 
   return (
@@ -239,10 +250,13 @@ const IoPortSelect: FC<Props> = ({
             <Button
               onClick={() => {
                 const selectedRowData = exchangeDataSource.filter((item) => {
+                  const flowRef = Array.isArray(item?.referenceToFlowDataSet)
+                    ? item?.referenceToFlowDataSet[0]
+                    : item?.referenceToFlowDataSet;
                   const itemKey =
                     (item?.exchangeDirection ?? '-').toUpperCase() +
                     ':' +
-                    (item?.referenceToFlowDataSet?.['@refObjectId'] ?? '-');
+                    (flowRef?.['@refObjectId'] ?? '-');
 
                   return (
                     item?.exchangeDirection?.toUpperCase() === direction.toUpperCase() &&
@@ -273,19 +287,26 @@ const IoPortSelect: FC<Props> = ({
               genProcessExchangeTableData(exchangeDataSource, lang),
               direction,
               params,
-            ).then((res: any) => {
-              return getUnitData('flow', res?.data)
-                .then((unitRes: any) => {
-                  return {
-                    ...res,
-                    data: unitRes,
-                    success: true,
-                  };
-                })
-                .finally(() => {
-                  setDataLoading(false);
-                });
-            });
+            ).then(
+              (res: {
+                data: ProcessExchangeTable[];
+                page: number;
+                success: boolean;
+                total: number;
+              }) => {
+                return getUnitData('flow', res?.data)
+                  .then((unitRes) => {
+                    return {
+                      ...res,
+                      data: (unitRes ?? []) as ProcessExchangeTable[],
+                      success: true,
+                    };
+                  })
+                  .finally(() => {
+                    setDataLoading(false);
+                  });
+              },
+            );
           }}
           columns={processExchangeColumns}
           rowSelection={{

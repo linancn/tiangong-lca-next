@@ -223,6 +223,8 @@ jest.mock('@/services/general/data', () => ({
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   formatDateTime: () => '2024-01-01 00:00',
+  getImportedId: () => undefined,
+  isSupabaseDuplicateKeyError: () => false,
   getLangText: () => 'Flow Name',
 }));
 

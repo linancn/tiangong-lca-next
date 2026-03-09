@@ -1,6 +1,7 @@
 import ToolBarButton from '@/components/ToolBarButton';
 import X6GraphComponent from '@/components/X6Graph';
 import { GraphProvider } from '@/contexts/graphContext';
+import type { LifeCycleModelImportData } from '@/services/lifeCycleModels/data';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
@@ -16,7 +17,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
-  importData?: any;
+  importData?: LifeCycleModelImportData | null;
   onClose?: () => void;
   newVersion?: string;
 };

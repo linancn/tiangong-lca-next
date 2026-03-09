@@ -1,7 +1,8 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { getLang } from '@/services/general/util';
+import { getLang, jsonToList } from '@/services/general/util';
+import { ProcessReviewItem } from '@/services/processes/data';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -11,15 +12,16 @@ import DataQualityIndicatorItemView from './DataQualityIndicator/view';
 import ScopeItemView from './Scope/view';
 
 type Props = {
-  data: any;
+  data: ProcessReviewItem | ProcessReviewItem[];
 };
 
 const ReviewItemView: FC<Props> = ({ data = [] }) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
+  const reviewData = jsonToList(data) as ProcessReviewItem[];
   return (
     <>
-      {data.map((item: any, index: number) => {
+      {reviewData.map((item, index: number) => {
         const reviewType = reviewTypeOptions.find((option) => option.value === item['@type']);
         return (
           <Card
@@ -59,7 +61,7 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                   />
                 }
               >
-                <ScopeItemView data={item?.['common:scope']} />
+                <ScopeItemView data={jsonToList(item?.['common:scope'])} />
               </Card>
               <br />
               <Card
@@ -72,7 +74,9 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                 }
               >
                 <DataQualityIndicatorItemView
-                  data={item?.['common:dataQualityIndicators']?.['common:dataQualityIndicator']}
+                  data={jsonToList(
+                    item?.['common:dataQualityIndicators']?.['common:dataQualityIndicator'],
+                  )}
                 />
               </Card>
               <Divider className='required-divider' orientationMargin='0' orientation='left' plain>

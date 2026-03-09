@@ -12,6 +12,52 @@ export type RefVersionItem = {
   description?: any[];
   newDescription?: any[];
 };
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const toValidUuid = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const normalizedValue = value.trim();
+  if (!UUID_REGEX.test(normalizedValue)) {
+    return undefined;
+  }
+  return normalizedValue;
+};
+
+export function getImportedId(importItem: any): string | undefined {
+  if (!importItem || typeof importItem !== 'object') {
+    return undefined;
+  }
+
+  const candidateIds: unknown[] = [
+    importItem?.id,
+    importItem?.contactDataSet?.contactInformation?.dataSetInformation?.['common:UUID'],
+    importItem?.flowDataSet?.flowInformation?.dataSetInformation?.['common:UUID'],
+    importItem?.processDataSet?.processInformation?.dataSetInformation?.['common:UUID'],
+    importItem?.sourceDataSet?.sourceInformation?.dataSetInformation?.['common:UUID'],
+    importItem?.flowPropertyDataSet?.flowPropertiesInformation?.dataSetInformation?.['common:UUID'],
+    importItem?.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.['common:UUID'],
+    importItem?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.[
+      'common:UUID'
+    ],
+  ];
+
+  for (const candidateId of candidateIds) {
+    const validId = toValidUuid(candidateId);
+    if (validId) {
+      return validId;
+    }
+  }
+
+  return undefined;
+}
+
+export function isSupabaseDuplicateKeyError(error: any): boolean {
+  return error?.code === '23505';
+}
+
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {

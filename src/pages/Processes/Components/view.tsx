@@ -10,9 +10,15 @@ import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
-import { ProcessExchangeTable } from '@/services/processes/data';
+import {
+  FormProcess,
+  ProcessDetailResponse,
+  ProcessExchangeData,
+  ProcessExchangeTable,
+} from '@/services/processes/data';
 import { genProcessExchangeTableData, genProcessFromData } from '@/services/processes/util';
 
+import { getClassificationValues } from '@/pages/Utils';
 import { getRejectedComments, mergeCommentsToData } from '@/pages/Utils/review';
 import { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
@@ -49,6 +55,31 @@ type Props = {
   disabled: boolean;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
+};
+
+type ProcessFormWithId = FormProcess & { id?: string };
+
+type FlowStateCodeItem = {
+  id?: string;
+  version?: string;
+  stateCode?: number;
+  classification?: string;
+};
+
+type FlowStateCodeResponse = {
+  error: unknown;
+  data: FlowStateCodeItem[];
+};
+
+type ProcessExchangeResponse = {
+  data: ProcessExchangeTable[];
+  page?: number;
+  success?: boolean;
+  total?: number;
+};
+
+const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
+  return Array.isArray(reference) ? reference[0] : reference;
 };
 
 const getProcesstypeOfDataSetOptions = (value: string) => {
@@ -103,10 +134,10 @@ const ProcessView: FC<Props> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
-  const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
+  const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [spinning, setSpinning] = useState(false);
-  const [initData, setInitData] = useState<any>({});
-  const [lciaResultDataSource, setLciaResultDataSource] = useState<any>([]);
+  const [initData, setInitData] = useState<Partial<ProcessFormWithId>>({});
+  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
   // const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
   const tabList = [
     {
@@ -367,11 +398,11 @@ const ProcessView: FC<Props> = ({
         />
         <br />
         <LevelTextItemDescription
-          data={
+          data={getClassificationValues(
             initData.processInformation?.dataSetInformation?.classificationInformation?.[
               'common:classification'
-            ]?.['common:class']?.['value']
-          }
+            ]?.['common:class'],
+          )}
           lang={lang}
           categoryType={'Process'}
         />
@@ -1514,36 +1545,38 @@ const ProcessView: FC<Props> = ({
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Input',
                       params,
-                    ).then((res: any) => {
-                      return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        const flows = exchangeDataSource.map((item: any) => {
+                    ).then((res) => {
+                      const processExchangeRes = res as ProcessExchangeResponse;
+                      return getUnitData('flow', processExchangeRes?.data).then((unitRes) => {
+                        const normalizedUnitRes = (unitRes ?? []) as ProcessExchangeTable[];
+                        const flows = exchangeDataSource.map((item) => {
+                          const ref = toReferenceValue(item?.referenceToFlowDataSet);
                           return {
-                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
-                            version: item?.referenceToFlowDataSet?.['@version'],
+                            id: ref?.['@refObjectId'] ?? '',
+                            version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
-                          ({ error, data: flowsResp }: any) => {
-                            if (!error) {
-                              unitRes.forEach((item: any) => {
-                                const flow = flowsResp.find(
-                                  (flow: any) =>
-                                    flow.id === item?.referenceToFlowDataSetId &&
-                                    flow.version === item?.referenceToFlowDataSetVersion,
-                                );
-                                if (flow) {
-                                  item.stateCode = flow.stateCode;
-                                  item['classification'] = flow.classification;
-                                }
-                              });
-                            }
-                            return {
-                              ...res,
-                              data: unitRes,
-                              success: true,
-                            };
-                          },
-                        );
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
+                          const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
+                          if (!error) {
+                            normalizedUnitRes.forEach((item) => {
+                              const flow = flowsResp.find(
+                                (flowItem) =>
+                                  flowItem.id === item?.referenceToFlowDataSetId &&
+                                  flowItem.version === item?.referenceToFlowDataSetVersion,
+                              );
+                              if (flow) {
+                                item.stateCode = flow.stateCode;
+                                item['classification'] = flow.classification ?? '';
+                              }
+                            });
+                          }
+                          return {
+                            ...processExchangeRes,
+                            data: normalizedUnitRes,
+                            success: true,
+                          };
+                        });
                       });
                     });
                   }}
@@ -1573,36 +1606,38 @@ const ProcessView: FC<Props> = ({
                       genProcessExchangeTableData(exchangeDataSource, lang),
                       'Output',
                       params,
-                    ).then((res: any) => {
-                      return getUnitData('flow', res?.data).then((unitRes: any) => {
-                        const flows = exchangeDataSource.map((item: any) => {
+                    ).then((res) => {
+                      const processExchangeRes = res as ProcessExchangeResponse;
+                      return getUnitData('flow', processExchangeRes?.data).then((unitRes) => {
+                        const normalizedUnitRes = (unitRes ?? []) as ProcessExchangeTable[];
+                        const flows = exchangeDataSource.map((item) => {
+                          const ref = toReferenceValue(item?.referenceToFlowDataSet);
                           return {
-                            id: item?.referenceToFlowDataSet?.['@refObjectId'],
-                            version: item?.referenceToFlowDataSet?.['@version'],
+                            id: ref?.['@refObjectId'] ?? '',
+                            version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
-                          ({ error, data: flowsResp }: any) => {
-                            if (!error) {
-                              unitRes.forEach((item: any) => {
-                                const flow = flowsResp.find(
-                                  (flow: any) =>
-                                    flow.id === item?.referenceToFlowDataSetId &&
-                                    flow.version === item?.referenceToFlowDataSetVersion,
-                                );
-                                if (flow) {
-                                  item.stateCode = flow.stateCode;
-                                  item['classification'] = flow.classification;
-                                }
-                              });
-                            }
-                            return {
-                              ...res,
-                              data: unitRes,
-                              success: true,
-                            };
-                          },
-                        );
+                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
+                          const { error, data: flowsResp } = flowRes;
+                          if (!error) {
+                            normalizedUnitRes.forEach((item) => {
+                              const flow = flowsResp.find(
+                                (flowItem) =>
+                                  flowItem.id === item?.referenceToFlowDataSetId &&
+                                  flowItem.version === item?.referenceToFlowDataSetVersion,
+                              );
+                              if (flow) {
+                                item.stateCode = flow.stateCode;
+                                item['classification'] = flow.classification ?? '';
+                              }
+                            });
+                          }
+                          return {
+                            ...processExchangeRes,
+                            data: normalizedUnitRes,
+                            success: true,
+                          };
+                        });
                       });
                     });
                   }}
@@ -1621,10 +1656,12 @@ const ProcessView: FC<Props> = ({
         columns={lciaResultColumns}
       />
     ),
-    validation: <ReviewItemView data={initData?.modellingAndValidation?.validation?.review} />,
+    validation: (
+      <ReviewItemView data={initData?.modellingAndValidation?.validation?.review ?? []} />
+    ),
     complianceDeclarations: (
       <ComplianceItemView
-        data={initData?.modellingAndValidation?.complianceDeclarations?.compliance}
+        data={initData?.modellingAndValidation?.complianceDeclarations?.compliance ?? []}
       />
     ),
   };
@@ -1633,15 +1670,15 @@ const ProcessView: FC<Props> = ({
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
     setSpinning(true);
-    getProcessDetail(id, version).then(async (result: any) => {
+    getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
       const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
-      if (result?.data?.stateCode < 100) {
+      if ((result?.data?.stateCode ?? 100) < 100) {
         const rejectedCommentsRes = await getRejectedComments(id, version);
         mergeCommentsToData(rejectedCommentsRes, formData);
       }
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
-      const sourceData = jsonToList(formData?.LCIAResults?.LCIAResult);
+      const sourceData = jsonToList(formData?.LCIAResults?.LCIAResult) as LCIAResultTable[];
       await getReferenceQuantityFromMethod(sourceData);
       setLciaResultDataSource(sourceData);
       // if (dataSource === 'my') {

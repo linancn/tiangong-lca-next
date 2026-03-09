@@ -1,7 +1,8 @@
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { getLang } from '@/services/general/util';
+import { getLang, jsonToList } from '@/services/general/util';
+import { ProcessComplianceItem } from '@/services/processes/data';
 import { Card, Descriptions, Space } from 'antd';
-import { FC } from 'react';
+import { FC, ReactNode } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import {
   approvalOfOverallComplianceOptions,
@@ -13,20 +14,24 @@ import {
 } from '../optiondata';
 
 type Props = {
-  data: any[];
+  data: ProcessComplianceItem | ProcessComplianceItem[];
 };
 
 const ComplianceItemView: FC<Props> = ({ data }) => {
-  const getOptionLabel = (options: any[], value: string) => {
+  const getOptionLabel = (
+    options: { value: string; label: ReactNode }[],
+    value: string | undefined,
+  ) => {
     const option = options.find((item) => item.value === value);
-    return option ? option.label : value;
+    return option ? option.label : (value ?? '-');
   };
   const intl = useIntl();
   const lang = getLang(intl.locale);
+  const complianceData = jsonToList(data) as ProcessComplianceItem[];
 
   return (
     <>
-      {(data || []).map((item, index) => (
+      {complianceData.map((item, index) => (
         <Card
           key={index}
           size='small'

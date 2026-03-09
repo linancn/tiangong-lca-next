@@ -221,6 +221,8 @@ jest.mock('@/services/general/util', () => ({
     return [value];
   }),
   genClassificationZH: jest.fn((classifications: any) => classifications),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@/services/general/api', () => ({

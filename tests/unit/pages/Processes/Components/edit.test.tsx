@@ -66,7 +66,7 @@ jest.mock('@/services/flows/api', () => ({
 jest.mock('@/services/flows/util', () => ({
   __esModule: true,
   genFlowFromData: jest.fn(() => ({})),
-  genFlowNameJson: jest.fn(() => ({})),
+  genFlowNameJson: jest.fn(() => []),
 }));
 
 jest.mock('@/services/lciaMethods/data', () => ({

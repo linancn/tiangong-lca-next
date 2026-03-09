@@ -14,6 +14,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getCachedClassificationData, getCachedLocationData } from '../ilcd/cache';
+import type { ProcessDetailByVersionResponse } from './data';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
 const selectStr4Table = `
@@ -853,7 +854,9 @@ export async function process_hybrid_search(
   return result;
 }
 
-export async function getProcessDetailByIdAndVersion(data: { id: string; version: string }[]) {
+export async function getProcessDetailByIdAndVersion(
+  data: { id: string; version: string }[],
+): Promise<ProcessDetailByVersionResponse> {
   if (data && data.length > 0) {
     const orConditions = data.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
 

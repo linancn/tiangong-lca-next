@@ -15,7 +15,7 @@ import ScopeItemForm from './Scope/form';
 // const { TextArea } = Input;
 
 type Props = {
-  name: any;
+  name: Array<string | number>;
   lang: string;
   formRef: React.MutableRefObject<ProFormInstance | undefined>;
   onData: () => void;
@@ -128,7 +128,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:reviewDetails']}
-                      listName={[...name]}
+                      listName={name.map(String)}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.validation.reviewDetails'
@@ -154,7 +154,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                     </Divider>
                     <LangTextItemForm
                       name={[subField.name, 'common:otherReviewDetails']}
-                      listName={[...name]}
+                      listName={name.map(String)}
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'

@@ -5,6 +5,7 @@ import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import { ProcessExchangeData } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CaretRightOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -34,7 +35,7 @@ import {
 type Props = {
   direction: string;
   lang: string;
-  onData: (data: any) => void;
+  onData: (data: ProcessExchangeData) => void;
   showRules?: boolean;
   disabled?: boolean;
 };
@@ -47,10 +48,10 @@ const ProcessExchangeCreate: FC<Props> = ({
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
-  const [fromData, setFromData] = useState<any>({});
+  const [fromData, setFromData] = useState<ProcessExchangeData>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
-  const [units, setUnits] = useState([]);
+  const [units, setUnits] = useState<{ name: string; meanValue: number }[]>([]);
   const [unitConvertVisible, setUnitConvertVisible] = useState(false);
   const [unitConvertName, setUnitConvertName] = useState('');
   const [targetUnit, setTargetUnit] = useState('');

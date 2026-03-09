@@ -1,6 +1,8 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
+import { listToJson } from '@/services/general/util';
 import { getReferenceUnit } from '@/services/unitgroups/api';
+import { UnitGroupRefObject, UnitReferenceData } from '@/services/unitgroups/data';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, getLocale } from 'umi';
@@ -8,20 +10,22 @@ import UnitGroupView from '../view';
 
 type Props = {
   title: ReactNode | string;
-  data: any;
+  data: UnitGroupRefObject | Record<string, unknown> | Array<Record<string, unknown>>;
   lang: string;
 };
 
 const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
-  const [refUnit, setRefUnit] = useState<any>({});
+  const [refUnit, setRefUnit] = useState<UnitReferenceData | null>(null);
   const locale = getLocale();
+  const normalizedData = listToJson(data);
+  const refData = normalizedData as UnitGroupRefObject;
   useEffect(() => {
-    if (data?.['@refObjectId']) {
-      getReferenceUnit(data?.['@refObjectId'], data?.['@version']).then((res) => {
-        setRefUnit(res?.data);
+    if (refData?.['@refObjectId']) {
+      getReferenceUnit(refData?.['@refObjectId'] ?? '', refData?.['@version'] ?? '').then((res) => {
+        setRefUnit(res?.data ?? null);
       });
     }
-  }, [data]);
+  }, [refData]);
 
   return (
     <Card size='small' title={title}>
@@ -34,13 +38,13 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
             }
             labelStyle={{ width: locale === 'zh-CN' ? '210px' : '230px' }}
           >
-            {data?.['@refObjectId'] ?? '-'}
+            {refData?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
         </Descriptions>
-        {data?.['@refObjectId'] && (
+        {refData?.['@refObjectId'] && (
           <UnitGroupView
-            id={data?.['@refObjectId']}
-            version={data?.['@version']}
+            id={refData?.['@refObjectId'] ?? ''}
+            version={refData?.['@version'] ?? ''}
             lang={lang}
             buttonType='text'
           />
@@ -89,7 +93,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           defaultMessage='Short description'
         />
       </Divider>
-      <LangTextItemDescription data={data?.['common:shortDescription']} />
+      <LangTextItemDescription data={refData?.['common:shortDescription']} />
       <br />
       <Card
         size='small'

@@ -1,5 +1,5 @@
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes';
-import { ListPagination } from '@/services/general/data';
+import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getConnectableProcessesTable } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
@@ -16,7 +16,7 @@ type Props = {
   lang: string;
   drawerVisible?: boolean;
   setDrawerVisible?: (visible: boolean) => void;
-  onData?: (data: any) => void;
+  onData?: (data: Array<{ id: string; version: string }>) => void;
   readOnly?: boolean;
 };
 
@@ -37,11 +37,11 @@ const ConnectableProcesses: FC<Props> = ({
 
   const myActionRefSelect = useRef<ActionType>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
   const [tableLoading, setTableLoading] = useState<boolean>(false);
 
   const onTabChange = async (key: string) => {
-    setActiveTabKey(key);
+    setActiveTabKey(key as DataTabKey);
   };
 
   useEffect(() => {
@@ -147,7 +147,7 @@ const ConnectableProcesses: FC<Props> = ({
     { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' /> },
   ];
 
-  const databaseList: Record<string, React.ReactNode> = {
+  const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
         <ProTable<ProcessTable, ListPagination>

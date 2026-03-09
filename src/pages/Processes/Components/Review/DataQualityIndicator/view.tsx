@@ -1,3 +1,4 @@
+import { ProcessReviewDataQualityIndicatorItem } from '@/services/processes/data';
 import { Col, Descriptions, Row } from 'antd';
 import { FC } from 'react';
 import { FormattedMessage } from 'umi';
@@ -7,18 +8,18 @@ import {
 } from '../../optiondata';
 
 type Props = {
-  data: any[];
+  data: ProcessReviewDataQualityIndicatorItem[];
 };
 
 const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
-  const getIndicatorName = (nameValue: string) => {
+  const getIndicatorName = (nameValue?: string) => {
     const option = dataQualityIndicatorNameOptions.find((item) => item.value === nameValue);
-    return option ? option.label : nameValue;
+    return option ? option.label : (nameValue ?? '-');
   };
 
-  const getIndicatorValue = (valueValue: string) => {
+  const getIndicatorValue = (valueValue?: string) => {
     const option = dataQualityIndicatorValueOptions.find((item) => item.value === valueValue);
-    return option ? option.label : valueValue;
+    return option ? option.label : (valueValue ?? '-');
   };
 
   return (
