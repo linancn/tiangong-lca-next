@@ -21,6 +21,17 @@ body,
   left: unset;
 }
 
+.ant-table-wrapper {
+  .ant-table-thead > tr > th {
+    white-space: nowrap;
+    .ant-table-column-title {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
 canvas {
   display: block;
 }
