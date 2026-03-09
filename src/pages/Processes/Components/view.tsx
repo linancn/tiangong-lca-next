@@ -7,7 +7,7 @@ import SourceSelectDescription from '@/pages/Sources/Components/select/descripti
 import AlignedNumber from '@/components/AlignedNumber';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
+import { getLangJson, getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { queryLcaResults } from '@/services/lca';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
@@ -21,7 +21,11 @@ import { genProcessExchangeTableData, genProcessFromData } from '@/services/proc
 
 import { getClassificationValues } from '@/pages/Utils';
 import { getRejectedComments, mergeCommentsToData } from '@/pages/Utils/review';
-import { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
+import {
+  cacheAndDecompressMethod,
+  getDecompressedMethod,
+  getReferenceQuantityFromMethod,
+} from '@/services/lciaMethods/util';
 import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import {
@@ -90,16 +94,130 @@ type ProcessExchangeResponse = {
   total?: number;
 };
 
-type SolverLciaResultRow = {
+type SolverLciaValueRow = {
   impact_id: string;
   impact_index: number;
-  impact_key: string;
   impact_name: string;
   unit: string;
   value: number;
 };
 
+type LciaMethodListEntry = {
+  id?: string;
+  version?: string;
+  description?: unknown;
+  referenceQuantity?: {
+    'common:shortDescription'?: unknown;
+  };
+};
+
+type LciaMethodMeta = {
+  description?: unknown;
+  version?: string;
+  referenceQuantityDesc?: unknown;
+};
+
 const LCA_SCOPE = 'dev-v1';
+const UNKNOWN_LCIA_UNIT = 'unknown';
+
+const getLciaMethodMetaMap = async (impactIds: string[]): Promise<Map<string, LciaMethodMeta>> => {
+  const impactIdSet = new Set(impactIds.filter((id) => !!id));
+  if (impactIdSet.size === 0) {
+    return new Map<string, LciaMethodMeta>();
+  }
+
+  let listData = await getDecompressedMethod('list.json');
+  const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
+  if (!listData || needsUpdate) {
+    const cached = await cacheAndDecompressMethod('list.json');
+    if (!cached) {
+      return new Map<string, LciaMethodMeta>();
+    }
+    listData = await getDecompressedMethod('list.json');
+  }
+
+  const files = Array.isArray(listData?.files) ? (listData.files as LciaMethodListEntry[]) : [];
+  const byId = new Map<string, LciaMethodMeta>();
+  files.forEach((item) => {
+    const methodId = String(item?.id ?? '');
+    if (!methodId || !impactIdSet.has(methodId)) {
+      return;
+    }
+    byId.set(methodId, {
+      description: item?.description,
+      version: item?.version,
+      referenceQuantityDesc: getLangJson(item?.referenceQuantity?.['common:shortDescription']),
+    });
+  });
+  return byId;
+};
+
+const toLangFallback = (text: string) => getLangJson({ '@xml:lang': 'en', '#text': text });
+
+const buildMergedLciaRows = (
+  baseRows: LCIAResultTable[],
+  solverRows: SolverLciaValueRow[],
+  methodMetaById: Map<string, LciaMethodMeta>,
+): LCIAResultTable[] => {
+  const mergedRows = baseRows.map((row) => ({
+    ...row,
+    referenceToLCIAMethodDataSet: { ...row.referenceToLCIAMethodDataSet },
+  }));
+  const indexByMethodId = new Map<string, number>();
+  mergedRows.forEach((row, idx) => {
+    const methodId = String(row?.referenceToLCIAMethodDataSet?.['@refObjectId'] ?? '');
+    if (methodId) {
+      indexByMethodId.set(methodId, idx);
+    }
+  });
+
+  solverRows.forEach((solverRow) => {
+    const methodId = solverRow.impact_id;
+    const methodMeta = methodMetaById.get(methodId);
+    const shortDescription =
+      methodMeta?.description ??
+      toLangFallback(solverRow.impact_name?.trim() || solverRow.impact_id || '-');
+    const unitDesc =
+      methodMeta?.referenceQuantityDesc ??
+      (solverRow.unit?.trim() && solverRow.unit !== UNKNOWN_LCIA_UNIT
+        ? toLangFallback(solverRow.unit)
+        : undefined);
+    const existingIdx = indexByMethodId.get(methodId);
+
+    if (existingIdx !== undefined) {
+      const existing = mergedRows[existingIdx];
+      mergedRows[existingIdx] = {
+        ...existing,
+        meanAmount: solverRow.value,
+        referenceQuantityDesc: existing.referenceQuantityDesc || unitDesc,
+        referenceToLCIAMethodDataSet: {
+          ...existing.referenceToLCIAMethodDataSet,
+          '@version':
+            existing.referenceToLCIAMethodDataSet?.['@version'] || methodMeta?.version || '',
+          'common:shortDescription':
+            existing.referenceToLCIAMethodDataSet?.['common:shortDescription'] ||
+            (shortDescription as any),
+        },
+      };
+      return;
+    }
+
+    mergedRows.push({
+      key: methodId,
+      referenceToLCIAMethodDataSet: {
+        '@refObjectId': methodId,
+        '@type': 'lCIA method data set',
+        '@uri': `../lciamethods/${methodId}.xml`,
+        '@version': methodMeta?.version || '',
+        'common:shortDescription': shortDescription as any,
+      },
+      meanAmount: solverRow.value,
+      referenceQuantityDesc: unitDesc,
+    });
+  });
+
+  return mergedRows;
+};
 
 const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
   return Array.isArray(reference) ? reference[0] : reference;
@@ -161,7 +279,7 @@ const ProcessView: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<Partial<ProcessFormWithId>>({});
   const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
-  const [solverLciaRows, setSolverLciaRows] = useState<SolverLciaResultRow[]>([]);
+  const [baseLciaResultDataSource, setBaseLciaResultDataSource] = useState<LCIAResultTable[]>([]);
   const [solverLciaLoading, setSolverLciaLoading] = useState(false);
   const [solverLciaLoaded, setSolverLciaLoaded] = useState(false);
   const [solverLciaError, setSolverLciaError] = useState<string | null>(null);
@@ -317,58 +435,6 @@ const ProcessView: FC<Props> = ({
       },
     },
   ];
-  const solverLciaColumns: ProColumns<SolverLciaResultRow>[] = [
-    {
-      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
-      dataIndex: 'index',
-      valueType: 'index',
-      search: false,
-      width: 70,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.solver.impact'
-          defaultMessage='Impact category'
-        />
-      ),
-      dataIndex: 'impact_name',
-      search: false,
-      width: 360,
-      render: (_, row) => [
-        <span key={0}>{row.impact_name || row.impact_key || row.impact_id}</span>,
-      ],
-    },
-    {
-      title: (
-        <FormattedMessage id='pages.process.view.lciaresults.solver.key' defaultMessage='Key' />
-      ),
-      dataIndex: 'impact_key',
-      search: false,
-      width: 220,
-      ellipsis: true,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.solver.value'
-          defaultMessage='Calculated value'
-        />
-      ),
-      dataIndex: 'value',
-      search: false,
-      render: (_, row) => [<AlignedNumber key={0} value={row.value} />],
-    },
-    {
-      title: (
-        <FormattedMessage id='pages.process.view.lciaresults.solver.unit' defaultMessage='Unit' />
-      ),
-      dataIndex: 'unit',
-      search: false,
-      width: 140,
-    },
-  ];
-
   const loadSolverLciaResults = useCallback(
     async (forceReload = false) => {
       if (solverLciaLoading) {
@@ -392,7 +458,6 @@ const ProcessView: FC<Props> = ({
             const row = item as {
               impact_id?: unknown;
               impact_index?: unknown;
-              impact_key?: unknown;
               impact_name?: unknown;
               unit?: unknown;
               value?: unknown;
@@ -400,16 +465,16 @@ const ProcessView: FC<Props> = ({
             return {
               impact_id: String(row.impact_id ?? ''),
               impact_index: Number(row.impact_index ?? 0),
-              impact_key: String(row.impact_key ?? ''),
               impact_name: String(row.impact_name ?? ''),
               unit: String(row.unit ?? ''),
               value: Number(row.value ?? 0),
-            };
+            } as SolverLciaValueRow;
           })
           .filter((row) => row.impact_id.length > 0)
           .sort((a, b) => a.impact_index - b.impact_index);
-
-        setSolverLciaRows(rows);
+        const methodMetaById = await getLciaMethodMetaMap(rows.map((row) => row.impact_id));
+        const mergedRows = buildMergedLciaRows(baseLciaResultDataSource, rows, methodMetaById);
+        setLciaResultDataSource(mergedRows);
         setSolverLciaMeta({
           snapshotId: queried.snapshot_id,
           resultId: queried.result_id,
@@ -418,7 +483,7 @@ const ProcessView: FC<Props> = ({
         });
         setSolverLciaLoaded(true);
       } catch (error: any) {
-        setSolverLciaRows([]);
+        setLciaResultDataSource(baseLciaResultDataSource);
         setSolverLciaMeta(null);
         setSolverLciaError(error?.message ?? String(error));
         setSolverLciaLoaded(true);
@@ -426,7 +491,7 @@ const ProcessView: FC<Props> = ({
         setSolverLciaLoading(false);
       }
     },
-    [id, solverLciaLoaded, solverLciaLoading],
+    [baseLciaResultDataSource, id, solverLciaLoaded, solverLciaLoading],
   );
 
   useEffect(() => {
@@ -1831,21 +1896,9 @@ const ProcessView: FC<Props> = ({
             />
           </Typography.Text>
         )}
-        <ProTable<SolverLciaResultRow, ListPagination>
-          rowKey={'impact_id'}
-          search={false}
-          options={false}
-          pagination={{ showSizeChanger: false, pageSize: 20 }}
-          dataSource={solverLciaRows}
-          columns={solverLciaColumns}
-        />
-        <Divider orientation='left' orientationMargin={'0'} plain>
-          <FormattedMessage
-            id='pages.process.view.lciaresults.datasetDeclared'
-            defaultMessage='Dataset declared LCIA results'
-          />
-        </Divider>
         <ProTable<LCIAResultTable, ListPagination>
+          rowKey={(row) => row.referenceToLCIAMethodDataSet?.['@refObjectId'] || row.key}
+          loading={solverLciaLoading}
           search={false}
           options={false}
           dataSource={lciaResultDataSource}
@@ -1867,7 +1920,8 @@ const ProcessView: FC<Props> = ({
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
     setSpinning(true);
-    setSolverLciaRows([]);
+    setLciaResultDataSource([]);
+    setBaseLciaResultDataSource([]);
     setSolverLciaError(null);
     setSolverLciaMeta(null);
     setSolverLciaLoaded(false);
@@ -1882,6 +1936,7 @@ const ProcessView: FC<Props> = ({
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
       const sourceData = jsonToList(formData?.LCIAResults?.LCIAResult) as LCIAResultTable[];
       await getReferenceQuantityFromMethod(sourceData);
+      setBaseLciaResultDataSource(sourceData);
       setLciaResultDataSource(sourceData);
       // if (dataSource === 'my') {
       //   setFooterButtons(
