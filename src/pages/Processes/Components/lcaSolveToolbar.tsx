@@ -1,12 +1,8 @@
 import ToolBarButton from '@/components/ToolBarButton';
-import {
-  getLcaResult,
-  pollLcaJobUntilTerminal,
-  submitLcaSolve,
-  type LcaJobResponse,
-} from '@/services/lca';
+import type { LcaSolveRequest } from '@/services/lca';
+import { submitLcaTask } from '@/services/lca/taskCenter';
 import { CalculatorOutlined } from '@ant-design/icons';
-import { Form, InputNumber, Modal, Radio, Space, Typography, message } from 'antd';
+import { Form, InputNumber, Modal, Radio, Typography, message } from 'antd';
 import { useState } from 'react';
 import { useIntl } from 'umi';
 
@@ -25,14 +21,13 @@ const DEFAULT_VALUES: FormValues = {
   amount: 1,
   unit_batch_size: undefined,
 };
-const DEFAULT_POLL_TIMEOUT_MS = 120000;
+
+const SCOPE = 'dev-v1';
 
 const LcaSolveToolbar = () => {
   const [open, setOpen] = useState(false);
-  const [running, setRunning] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm<FormValues>();
-  const [lastJob, setLastJob] = useState<LcaJobResponse | null>(null);
-  const [lastResultId, setLastResultId] = useState<string | null>(null);
   const intl = useIntl();
   const demandMode = Form.useWatch('demand_mode', form) ?? DEFAULT_VALUES.demand_mode;
 
@@ -42,7 +37,7 @@ const LcaSolveToolbar = () => {
   };
 
   const onClose = () => {
-    if (running) {
+    if (submitting) {
       return;
     }
     setOpen(false);
@@ -52,166 +47,102 @@ const LcaSolveToolbar = () => {
     const values = await form.validateFields();
     const mode = values.demand_mode ?? DEFAULT_VALUES.demand_mode;
 
-    setRunning(true);
-    setLastJob(null);
-    setLastResultId(null);
-    try {
-      let submit: Awaited<ReturnType<typeof submitLcaSolve>>;
-      if (mode === 'single') {
-        const processIndex = Number(values.process_index);
-        const amount = Number(values.amount);
+    let request: LcaSolveRequest;
+    if (mode === 'single') {
+      const processIndex = Number(values.process_index);
+      const amount = Number(values.amount);
 
-        if (!Number.isInteger(processIndex) || processIndex < 0) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.lca.error.processIndexMustBeInteger',
-              defaultMessage: 'process_index must be an integer >= 0',
-            }),
-          );
-          return;
-        }
-        if (!Number.isFinite(amount) || amount <= 0) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.lca.error.amountMustBePositive',
-              defaultMessage: 'amount must be > 0',
-            }),
-          );
-          return;
-        }
-
-        submit = await submitLcaSolve({
-          scope: 'prod',
-          demand_mode: 'single',
-          demand: {
-            process_index: processIndex,
-            amount,
-          },
-          solve: {
-            return_x: false,
-            return_g: true,
-            return_h: true,
-          },
-          print_level: 0,
-        });
-      } else {
-        const unitBatchSizeValue = values.unit_batch_size;
-        if (
-          unitBatchSizeValue !== undefined &&
-          unitBatchSizeValue !== null &&
-          (!Number.isInteger(unitBatchSizeValue) || unitBatchSizeValue < 1)
-        ) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.process.lca.error.unitBatchSizeMustBePositiveInteger',
-              defaultMessage: 'unit_batch_size must be an integer > 0',
-            }),
-          );
-          return;
-        }
-
-        submit = await submitLcaSolve({
-          scope: 'prod',
-          demand_mode: 'all_unit',
-          solve: {
-            return_x: false,
-            return_g: false,
-            return_h: true,
-          },
-          unit_batch_size:
-            unitBatchSizeValue === undefined || unitBatchSizeValue === null
-              ? undefined
-              : Number(unitBatchSizeValue),
-          print_level: 0,
-        });
+      if (!Number.isInteger(processIndex) || processIndex < 0) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.lca.error.processIndexMustBeInteger',
+            defaultMessage: 'process_index must be an integer >= 0',
+          }),
+        );
+        return;
       }
-
-      if (submit.mode === 'cache_hit') {
-        setLastResultId(submit.result_id);
-        await getLcaResult(submit.result_id);
-        message.success(
-          intl.formatMessage(
-            {
-              id: 'pages.process.lca.message.cacheHit',
-              defaultMessage: 'Cache hit, result_id: {resultId}',
-            },
-            { resultId: submit.result_id },
-          ),
+      if (!Number.isFinite(amount) || amount <= 0) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.lca.error.amountMustBePositive',
+            defaultMessage: 'amount must be > 0',
+          }),
         );
         return;
       }
 
-      message.loading({
-        key: 'lca-running',
-        content: intl.formatMessage(
-          {
-            id: 'pages.process.lca.message.jobSubmitted',
-            defaultMessage: 'Job submitted, job_id: {jobId}',
-          },
-          { jobId: submit.job_id },
-        ),
-        duration: 0,
-      });
-
-      const job = await pollLcaJobUntilTerminal(submit.job_id, {
-        timeoutMs: DEFAULT_POLL_TIMEOUT_MS,
-      });
-      setLastJob(job);
-
-      if (job.status === 'failed' || job.status === 'stale') {
-        message.error({
-          key: 'lca-running',
-          content: intl.formatMessage(
-            {
-              id: 'pages.process.lca.message.jobFailed',
-              defaultMessage: 'Calculation failed, job_id: {jobId}',
-            },
-            { jobId: job.job_id },
-          ),
-        });
+      request = {
+        scope: SCOPE,
+        demand_mode: 'single',
+        demand: {
+          process_index: processIndex,
+          amount,
+        },
+        solve: {
+          return_x: false,
+          return_g: true,
+          return_h: true,
+        },
+        print_level: 0,
+      };
+    } else {
+      const unitBatchSizeValue = values.unit_batch_size;
+      if (
+        unitBatchSizeValue !== undefined &&
+        unitBatchSizeValue !== null &&
+        (!Number.isInteger(unitBatchSizeValue) || unitBatchSizeValue < 1)
+      ) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.lca.error.unitBatchSizeMustBePositiveInteger',
+            defaultMessage: 'unit_batch_size must be an integer > 0',
+          }),
+        );
         return;
       }
 
-      const resultId = job.result?.result_id ?? null;
-      if (!resultId) {
-        message.warning({
-          key: 'lca-running',
-          content: intl.formatMessage(
-            {
-              id: 'pages.process.lca.message.jobNoResult',
-              defaultMessage: 'Job finished but result_id is missing, job_id: {jobId}',
-            },
-            { jobId: job.job_id },
-          ),
-        });
-        return;
-      }
+      request = {
+        scope: SCOPE,
+        demand_mode: 'all_unit',
+        solve: {
+          return_x: false,
+          return_g: false,
+          return_h: true,
+        },
+        unit_batch_size:
+          unitBatchSizeValue === undefined || unitBatchSizeValue === null
+            ? undefined
+            : Number(unitBatchSizeValue),
+        print_level: 0,
+      };
+    }
 
-      setLastResultId(resultId);
-      await getLcaResult(resultId);
-      message.success({
-        key: 'lca-running',
-        content: intl.formatMessage(
+    try {
+      setSubmitting(true);
+      const task = submitLcaTask(request);
+      message.success(
+        intl.formatMessage(
           {
-            id: 'pages.process.lca.message.jobCompleted',
-            defaultMessage: 'Calculation completed, result_id: {resultId}',
+            id: 'pages.process.lca.message.taskSubmitted',
+            defaultMessage:
+              'Task submitted ({taskId}). Check progress in the top-right task center.',
           },
-          { resultId },
+          { taskId: task.id },
         ),
-      });
+      );
+      setOpen(false);
     } catch (error: any) {
-      message.error({
-        key: 'lca-running',
-        content: intl.formatMessage(
+      message.error(
+        intl.formatMessage(
           {
             id: 'pages.process.lca.message.requestFailed',
             defaultMessage: 'Calculation request failed: {message}',
           },
           { message: error?.message ?? String(error) },
         ),
-      });
+      );
     } finally {
-      setRunning(false);
+      setSubmitting(false);
     }
   };
 
@@ -224,7 +155,7 @@ const LcaSolveToolbar = () => {
           defaultMessage: 'Calculate',
         })}
         onClick={onOpen}
-        disabled={running}
+        disabled={submitting}
       />
       <Modal
         title={intl.formatMessage({
@@ -233,10 +164,10 @@ const LcaSolveToolbar = () => {
         })}
         open={open}
         okText={
-          running
+          submitting
             ? intl.formatMessage({
                 id: 'pages.process.lca.modal.okRunning',
-                defaultMessage: 'Calculating...',
+                defaultMessage: 'Submitting...',
               })
             : intl.formatMessage({ id: 'pages.process.lca.modal.ok', defaultMessage: 'Calculate' })
         }
@@ -246,9 +177,9 @@ const LcaSolveToolbar = () => {
         })}
         onCancel={onClose}
         onOk={onSubmit}
-        confirmLoading={running}
-        maskClosable={!running}
-        keyboard={!running}
+        confirmLoading={submitting}
+        maskClosable={!submitting}
+        keyboard={!submitting}
       >
         <Form<FormValues> form={form} layout='vertical' initialValues={DEFAULT_VALUES}>
           <Form.Item
@@ -335,30 +266,12 @@ const LcaSolveToolbar = () => {
           )}
         </Form>
 
-        <Space direction='vertical' size={4}>
-          {lastJob && (
-            <Typography.Text type='secondary'>
-              {intl.formatMessage(
-                {
-                  id: 'pages.process.lca.latestJob',
-                  defaultMessage: 'latest job: {jobId} ({status})',
-                },
-                { jobId: lastJob.job_id, status: lastJob.status },
-              )}
-            </Typography.Text>
-          )}
-          {lastResultId && (
-            <Typography.Text type='secondary'>
-              {intl.formatMessage(
-                {
-                  id: 'pages.process.lca.latestResult',
-                  defaultMessage: 'latest result: {resultId}',
-                },
-                { resultId: lastResultId },
-              )}
-            </Typography.Text>
-          )}
-        </Space>
+        <Typography.Text type='secondary'>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.hint',
+            defaultMessage: 'Progress will be shown in the top-right task center.',
+          })}
+        </Typography.Text>
       </Modal>
     </>
   );
