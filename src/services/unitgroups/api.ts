@@ -9,12 +9,32 @@ import {
 import { supabase } from '@/services/supabase';
 import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId } from '../general/api';
+import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
 import { getCachedClassificationData } from '../ilcd/cache';
 import { genUnitGroupJsonOrdered } from './util';
 
 export async function createUnitGroup(id: string, data: any) {
-  const newData = genUnitGroupJsonOrdered(id, data);
+  const rawData = genUnitGroupJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const rule_verification = createTidasUnitGroup(newData).validateEnhanced().success;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
@@ -25,7 +45,27 @@ export async function createUnitGroup(id: string, data: any) {
 }
 
 export async function updateUnitGroup(id: string, version: string, data: any) {
-  const newData = genUnitGroupJsonOrdered(id, data);
+  const rawData = genUnitGroupJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const rule_verification = createTidasUnitGroup(newData).validateEnhanced().success;
 
   let result: any = {};

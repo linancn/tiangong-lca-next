@@ -28,11 +28,13 @@ import {
   getLangJson,
   getLangList,
   getLangText,
+  getLangValidationErrorMessage,
   getUnitData,
   isValidURL,
   jsonToList,
   listToJson,
   mergeLangArrays,
+  normalizeLangPayloadBeforeSave,
   removeEmptyObjects,
   toAmountNumber,
   validatePasswordStrength,
@@ -546,6 +548,104 @@ describe('General Utility Functions', () => {
     it('should return empty array for no arguments', () => {
       const result = mergeLangArrays();
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('normalizeLangPayloadBeforeSave', () => {
+    it('should add English translation when only Chinese content exists', async () => {
+      const payload = {
+        title: [{ '@xml:lang': 'zh', '#text': '钢铁制造' }],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue('Steel manufacturing');
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(translateZhToEn).toHaveBeenCalledWith('钢铁制造', 'title');
+      expect(result.issues).toEqual([]);
+      expect(result.payload.title).toEqual([
+        { '@xml:lang': 'en', '#text': 'Steel manufacturing' },
+        { '@xml:lang': 'zh', '#text': '钢铁制造' },
+      ]);
+    });
+
+    it('should translate invalid English when English field contains Chinese only', async () => {
+      const payload = {
+        title: [{ '@xml:lang': 'en', '#text': '钢铁制造' }],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue('Steel manufacturing');
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(translateZhToEn).toHaveBeenCalledWith('钢铁制造', 'title');
+      expect(result.issues).toEqual([]);
+      expect(result.payload.title).toEqual({ '@xml:lang': 'en', '#text': 'Steel manufacturing' });
+    });
+
+    it('should translate invalid English when English field contains mixed Chinese and English', async () => {
+      const payload = {
+        title: [{ '@xml:lang': 'en', '#text': 'Steel钢铁' }],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue('Steel');
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(translateZhToEn).toHaveBeenCalledWith('Steel钢铁', 'title');
+      expect(result.issues).toEqual([]);
+      expect(result.payload.title).toEqual({ '@xml:lang': 'en', '#text': 'Steel' });
+    });
+
+    it('should report missing English when translation is unavailable', async () => {
+      const payload = {
+        title: [{ '@xml:lang': 'zh', '#text': '钢铁制造' }],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue(undefined);
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(result.issues).toHaveLength(1);
+      expect(result.issues[0]).toMatchObject({
+        path: 'title',
+        code: 'missing_en',
+      });
+    });
+
+    it('should report invalid English when mixed with non-English scripts', async () => {
+      const payload = {
+        title: [
+          { '@xml:lang': 'en', '#text': 'Steel钢铁' },
+          { '@xml:lang': 'zh', '#text': '钢铁' },
+        ],
+      };
+
+      const result = await normalizeLangPayloadBeforeSave(payload);
+
+      expect(result.issues).toHaveLength(1);
+      expect(result.issues[0]).toMatchObject({
+        path: 'title',
+        code: 'invalid_en',
+      });
+    });
+
+    it('should keep non-language arrays untouched', async () => {
+      const payload = {
+        classes: [{ '@level': '0', '#text': 'Category' }],
+      };
+
+      const result = await normalizeLangPayloadBeforeSave(payload);
+
+      expect(result.issues).toEqual([]);
+      expect(result.payload.classes).toEqual(payload.classes);
+    });
+  });
+
+  describe('getLangValidationErrorMessage', () => {
+    it('should return compact message for multiple issue paths', () => {
+      const message = getLangValidationErrorMessage([
+        { path: 'a', code: 'missing_en', message: 'x' },
+        { path: 'b', code: 'invalid_en', message: 'y' },
+      ]);
+
+      expect(message).toBe('Language validation failed: a, b.');
     });
   });
 

@@ -626,6 +626,68 @@ describe('getAISuggestion', () => {
   });
 });
 
+describe('multilingual save normalization', () => {
+  it('should normalize payload and auto-fill English translation from AI response', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-6' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: { translatedText: 'Steel manufacturing' },
+      error: null,
+    });
+
+    const result = await generalApi.normalizeLangPayloadForSave({
+      title: [{ '@xml:lang': 'zh', '#text': '钢铁制造' }],
+    });
+
+    expect(result.validationError).toBeUndefined();
+    expect(result.payload.title).toEqual([
+      { '@xml:lang': 'en', '#text': 'Steel manufacturing' },
+      { '@xml:lang': 'zh', '#text': '钢铁制造' },
+    ]);
+  });
+
+  it('should return validation error when English contains non-English scripts', async () => {
+    const result = await generalApi.normalizeLangPayloadForSave({
+      title: [{ '@xml:lang': 'en', '#text': 'Steel钢铁' }],
+    });
+
+    expect(result.validationError).toContain('title');
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0].code).toBe('invalid_en');
+  });
+});
+
+describe('translateZhTextToEnglish', () => {
+  it('should parse fenced JSON response', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-7' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: '```json\n{"translatedText":"Steel"}\n```',
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('钢铁');
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('translate_text', {
+      headers: { Authorization: 'Bearer token-7' },
+      body: {
+        texts: ['钢铁'],
+        sourceLang: 'zh',
+        targetLang: 'en',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result).toBe('Steel');
+  });
+
+  it('should return undefined when session is missing', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
+
+    const result = await generalApi.translateZhTextToEnglish('钢铁');
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+});
+
 describe('Edge Cases and Error Handling', () => {
   describe('exportDataApi', () => {
     it('should handle null data response', async () => {

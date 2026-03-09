@@ -1,6 +1,6 @@
 import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
-import { contributeSource, getRefData } from '@/services/general/api';
+import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -33,7 +33,27 @@ const selectStr4Table = `
   `;
 
 export async function createProcess(id: string, data: any, modelId?: string) {
-  const newData = genProcessJsonOrdered(id, data);
+  const rawData = genProcessJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const validateResult = createTidasProcess(newData).validateEnhanced();
   let issues = [];
   if (!validateResult.success) {
@@ -51,7 +71,27 @@ export async function createProcess(id: string, data: any, modelId?: string) {
 }
 
 export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
-  const newData = genProcessJsonOrdered(id, data);
+  const rawData = genProcessJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const validateResult = createTidasProcess(newData).validateEnhanced();
   let issues = [];
   if (!validateResult.success) {

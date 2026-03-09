@@ -9,11 +9,31 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId } from '../general/api';
+import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
 import { getCachedClassificationData } from '../ilcd/cache';
 import { genSourceJsonOrdered } from './util';
 export async function createSource(id: string, data: any) {
-  const newData = genSourceJsonOrdered(id, data);
+  const rawData = genSourceJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const rule_verification = createTidasSource(newData).validateEnhanced().success;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
@@ -24,7 +44,27 @@ export async function createSource(id: string, data: any) {
 }
 
 export async function updateSource(id: string, version: string, data: any) {
-  const newData = genSourceJsonOrdered(id, data);
+  const rawData = genSourceJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const rule_verification = createTidasSource(newData).validateEnhanced().success;
   let result: any = {};
   const session = await supabase.auth.getSession();

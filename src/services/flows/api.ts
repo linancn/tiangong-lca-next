@@ -9,7 +9,7 @@ import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId } from '../general/api';
+import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
 import { getILCDLocationByValues } from '../ilcd/api';
 import { getCachedFlowCategorizationAll, getCachedLocationData } from '../ilcd/cache';
 import { genFlowJsonOrdered, genFlowName } from './util';
@@ -59,7 +59,27 @@ function resolveLocationOfSupply(
 }
 
 export async function createFlows(id: string, data: any) {
-  const newData = genFlowJsonOrdered(id, data);
+  const rawData = genFlowJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const rule_verification = createTidasFlow(newData).validateEnhanced().success;
   // const teamId = await getTeamIdByUserId();
   const result = await supabase
@@ -70,7 +90,27 @@ export async function createFlows(id: string, data: any) {
 }
 
 export async function updateFlows(id: string, version: string, data: any) {
-  const newData = genFlowJsonOrdered(id, data);
+  const rawData = genFlowJsonOrdered(id, data);
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawData)
+    : { payload: rawData, validationError: undefined };
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const rule_verification = createTidasFlow(newData).validateEnhanced().success;
   let result: any = {};
   const session = await supabase.auth.getSession();
