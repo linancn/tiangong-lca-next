@@ -6,6 +6,7 @@ import { FunctionRegion } from '@supabase/supabase-js';
 import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamIdByUserId } from '../general/api';
+import type { LangTextValue, ReferenceItem } from '../general/data';
 import {
   classificationToString,
   genClassificationZH,
@@ -23,6 +24,32 @@ import {
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genReferenceToResultingProcess } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
+
+type RefProcess = {
+  id: string;
+  version: string;
+  'common:shortDescription': LangTextValue;
+};
+
+const mapRefProcessesToIncludedProcesses = (
+  refProcesses: RefProcess | RefProcess[],
+): ReferenceItem[] => {
+  return jsonToList(refProcesses)
+    .filter(
+      (process): process is RefProcess =>
+        typeof process?.id === 'string' &&
+        process.id.length > 0 &&
+        typeof process?.version === 'string' &&
+        process.version.length > 0,
+    )
+    .map((process) => ({
+      '@refObjectId': process.id,
+      '@type': 'process data set',
+      '@uri': `../processes/${process.id}.xml`,
+      '@version': process.version,
+      'common:shortDescription': process?.['common:shortDescription'],
+    }));
+};
 
 const updateLifeCycleModelProcesses = async (id: string, version: string, data: any) => {
   const result = await supabase
@@ -209,6 +236,12 @@ export async function createLifeCycleModel(data: any) {
               ).map((item) => {
                 return item.referenceToProcess;
               }),
+            };
+          }
+          if (n.modelInfo.type === 'secondary') {
+            n.data.processDataSet.processInformation.technology = {
+              ...n.data.processDataSet.processInformation.technology,
+              referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(n?.refProcesses),
             };
           }
           await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
@@ -566,6 +599,14 @@ export async function updateLifeCycleModel(data: any) {
                         };
                       }
 
+                      if (n.modelInfo.type === 'secondary') {
+                        n.data.processDataSet.processInformation.technology = {
+                          ...n.data.processDataSet.processInformation.technology,
+                          referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
+                            n?.refProcesses,
+                          ),
+                        };
+                      }
                       return updateProcess(
                         n.modelInfo.id,
                         data.version,
