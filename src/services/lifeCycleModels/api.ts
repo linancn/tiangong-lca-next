@@ -617,6 +617,26 @@ export async function updateLifeCycleModel(data: any) {
                       return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                     }
                   } else if (n.option === 'create') {
+                    if (n.modelInfo.type === 'primary') {
+                      n.data.processDataSet.processInformation.technology = {
+                        ...n.data.processDataSet.processInformation.technology,
+                        referenceToIncludedProcesses: jsonToList(
+                          newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                            ?.lifeCycleModelInformation?.technology?.processes?.processInstance,
+                        ).map((item) => {
+                          return item.referenceToProcess;
+                        }),
+                      };
+                    }
+
+                    if (n.modelInfo.type === 'secondary') {
+                      n.data.processDataSet.processInformation.technology = {
+                        ...n.data.processDataSet.processInformation.technology,
+                        referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
+                          n?.refProcesses,
+                        ),
+                      };
+                    }
                     return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                   }
                 } catch (error) {
