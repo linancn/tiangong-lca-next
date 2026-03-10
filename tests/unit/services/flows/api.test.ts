@@ -554,7 +554,7 @@ describe('getFlowTablePgroongaSearch', () => {
       expect.objectContaining({
         query_text: 'water',
         data_source: 'tg',
-        filter_condition: { flowType: '' },
+        filter_condition: JSON.stringify({ flowType: '' }),
         page_size: 5,
         page_current: 1,
         order_by: undefined,
@@ -652,10 +652,10 @@ describe('getFlowTablePgroongaSearch', () => {
     expect(mockRpc).toHaveBeenCalledWith(
       'pgroonga_search_flows_v1',
       expect.objectContaining({
-        filter_condition: {
+        filter_condition: JSON.stringify({
           flowType: 'Product flow',
           classification: [{ scope: 'classification', code: '01' }],
-        },
+        }),
       }),
     );
   });
