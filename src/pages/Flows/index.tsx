@@ -33,10 +33,10 @@ import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
 
 const { Search } = Input;
-// type ClassificationFilter = {
-//   scope: 'elementary' | 'classification';
-//   code: string;
-// };
+type ClassificationFilter = {
+  scope: 'elementary' | 'classification';
+  code: string;
+};
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
@@ -57,30 +57,30 @@ const TableList: FC = () => {
 
   const lang = getLang(intl.locale);
 
-  // const parseClassificationFilter = (
-  //   values?: (string | number | boolean)[] | null,
-  // ): ClassificationFilter[] => {
-  //   if (!values || values.length === 0) {
-  //     return [];
-  //   }
-  //   const result: ClassificationFilter[] = [];
-  //   values.forEach((item) => {
-  //     const raw = String(item);
-  //     const separatorIndex = raw.indexOf(':');
-  //     if (separatorIndex <= 0) {
-  //       return;
-  //     }
-  //     const scope = raw.slice(0, separatorIndex);
-  //     const code = raw.slice(separatorIndex + 1);
-  //     if (!code) {
-  //       return;
-  //     }
-  //     if (scope === 'elementary' || scope === 'classification') {
-  //       result.push({ scope, code });
-  //     }
-  //   });
-  //   return result;
-  // };
+  const parseClassificationFilter = (
+    values?: (string | number | boolean)[] | null,
+  ): ClassificationFilter[] => {
+    if (!values || values.length === 0) {
+      return [];
+    }
+    const result: ClassificationFilter[] = [];
+    values.forEach((item) => {
+      const raw = String(item);
+      const separatorIndex = raw.indexOf(':');
+      if (separatorIndex <= 0) {
+        return;
+      }
+      const scope = raw.slice(0, separatorIndex);
+      const code = raw.slice(separatorIndex + 1);
+      if (!code) {
+        return;
+      }
+      if (scope === 'elementary' || scope === 'classification') {
+        result.push({ scope, code });
+      }
+    });
+    return result;
+  };
 
   const actionRef = useRef<ActionType>();
   const flowsColumns: ProColumns<FlowTable>[] = [
@@ -427,10 +427,10 @@ const TableList: FC = () => {
           filter,
         ) => {
           const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-          // const classificationFilter = parseClassificationFilter(filter?.classification);
+          const classificationFilter = parseClassificationFilter(filter?.classification);
           const searchFilters = {
             flowType: flowTypeFilter,
-            // ...(classificationFilter.length > 0 ? { classification: classificationFilter } : {}),
+            ...(classificationFilter.length > 0 ? { classification: classificationFilter } : {}),
           };
           if (keyWord.length > 0) {
             let orderBy:
