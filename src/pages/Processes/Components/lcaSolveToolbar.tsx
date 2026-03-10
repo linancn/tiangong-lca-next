@@ -1,41 +1,108 @@
 import ToolBarButton from '@/components/ToolBarButton';
-import {
-  getLcaResult,
-  pollLcaJobUntilTerminal,
-  submitLcaSolve,
-  type LcaJobResponse,
-} from '@/services/lca';
+import type { LcaSolveRequest } from '@/services/lca';
+import { submitLcaTask } from '@/services/lca/taskCenter';
+import { listMyProcessesForLca } from '@/services/processes/api';
 import { CalculatorOutlined } from '@ant-design/icons';
-import { Form, InputNumber, Modal, Space, Typography, message } from 'antd';
+import { Form, Modal, Radio, Select, Typography, message } from 'antd';
 import { useState } from 'react';
 import { useIntl } from 'umi';
 
+type SolveMode = 'single' | 'all_unit';
+
 type FormValues = {
-  process_index: number;
-  amount: number;
+  demand_mode: SolveMode;
+  process_ref?: string;
+};
+
+type MyProcessOption = {
+  value: string;
+  label: string;
 };
 
 const DEFAULT_VALUES: FormValues = {
-  process_index: 0,
-  amount: 1,
+  demand_mode: 'all_unit',
+  process_ref: undefined,
 };
-const DEFAULT_POLL_TIMEOUT_MS = 120000;
+
+const SCOPE = 'dev-v1';
+
+function localeToLang(locale?: string): string {
+  return (locale ?? '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+}
+
+function toProcessRef(processId: string, processVersion: string): string {
+  return `${processId}::${processVersion}`;
+}
+
+function parseProcessRef(value?: string): { process_id: string; process_version: string } | null {
+  const text = (value ?? '').trim();
+  const delimiterIndex = text.indexOf('::');
+  if (delimiterIndex <= 0 || delimiterIndex >= text.length - 2) {
+    return null;
+  }
+  const processId = text.slice(0, delimiterIndex).trim();
+  const processVersion = text.slice(delimiterIndex + 2).trim();
+  if (!processId || !processVersion) {
+    return null;
+  }
+  return {
+    process_id: processId,
+    process_version: processVersion,
+  };
+}
 
 const LcaSolveToolbar = () => {
   const [open, setOpen] = useState(false);
-  const [running, setRunning] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [myProcessesLoading, setMyProcessesLoading] = useState(false);
+  const [myProcessOptions, setMyProcessOptions] = useState<MyProcessOption[]>([]);
   const [form] = Form.useForm<FormValues>();
-  const [lastJob, setLastJob] = useState<LcaJobResponse | null>(null);
-  const [lastResultId, setLastResultId] = useState<string | null>(null);
   const intl = useIntl();
+  const demandMode = Form.useWatch('demand_mode', form) ?? DEFAULT_VALUES.demand_mode;
+
+  const loadMyProcesses = async () => {
+    setMyProcessesLoading(true);
+    try {
+      const result = await listMyProcessesForLca(localeToLang(intl.locale), {
+        limit: 300,
+      });
+      if (!result.success) {
+        setMyProcessOptions([]);
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.lca.message.loadMyProcessesFailed',
+            defaultMessage: 'Failed to load your process list',
+          }),
+        );
+        return;
+      }
+      setMyProcessOptions(
+        result.data.map((item) => ({
+          value: toProcessRef(item.id, item.version),
+          label: `${item.name} (${item.version})`,
+        })),
+      );
+    } catch (_error) {
+      setMyProcessOptions([]);
+      message.error(
+        intl.formatMessage({
+          id: 'pages.process.lca.message.loadMyProcessesFailed',
+          defaultMessage: 'Failed to load your process list',
+        }),
+      );
+    } finally {
+      setMyProcessesLoading(false);
+    }
+  };
 
   const onOpen = () => {
     form.setFieldsValue(DEFAULT_VALUES);
     setOpen(true);
+    void loadMyProcesses();
   };
 
   const onClose = () => {
-    if (running) {
+    if (submitting) {
       return;
     }
     setOpen(false);
@@ -43,37 +110,29 @@ const LcaSolveToolbar = () => {
 
   const onSubmit = async () => {
     const values = await form.validateFields();
-    const processIndex = Number(values.process_index);
-    const amount = Number(values.amount);
+    const mode = values.demand_mode ?? DEFAULT_VALUES.demand_mode;
 
-    if (!Number.isInteger(processIndex) || processIndex < 0) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.lca.error.processIndexMustBeInteger',
-          defaultMessage: 'process_index must be an integer >= 0',
-        }),
-      );
-      return;
-    }
-    if (!Number.isFinite(amount) || amount <= 0) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.lca.error.amountMustBePositive',
-          defaultMessage: 'amount must be > 0',
-        }),
-      );
-      return;
-    }
+    let request: LcaSolveRequest;
+    if (mode === 'single') {
+      const processRef = parseProcessRef(values.process_ref);
 
-    setRunning(true);
-    setLastJob(null);
-    setLastResultId(null);
-    try {
-      const submit = await submitLcaSolve({
-        scope: 'prod',
+      if (!processRef) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.lca.error.processRequired',
+            defaultMessage: 'Please select a process',
+          }),
+        );
+        return;
+      }
+
+      request = {
+        scope: SCOPE,
+        demand_mode: 'single',
         demand: {
-          process_index: processIndex,
-          amount,
+          process_id: processRef.process_id,
+          process_version: processRef.process_version,
+          amount: 1,
         },
         solve: {
           return_x: false,
@@ -81,94 +140,46 @@ const LcaSolveToolbar = () => {
           return_h: true,
         },
         print_level: 0,
-      });
+      };
+    } else {
+      request = {
+        scope: SCOPE,
+        demand_mode: 'all_unit',
+        solve: {
+          return_x: false,
+          return_g: false,
+          return_h: true,
+        },
+        print_level: 0,
+      };
+    }
 
-      if (submit.mode === 'cache_hit') {
-        setLastResultId(submit.result_id);
-        await getLcaResult(submit.result_id);
-        message.success(
-          intl.formatMessage(
-            {
-              id: 'pages.process.lca.message.cacheHit',
-              defaultMessage: 'Cache hit, result_id: {resultId}',
-            },
-            { resultId: submit.result_id },
-          ),
-        );
-        return;
-      }
-
-      message.loading({
-        key: 'lca-running',
-        content: intl.formatMessage(
+    try {
+      setSubmitting(true);
+      const task = submitLcaTask(request);
+      message.success(
+        intl.formatMessage(
           {
-            id: 'pages.process.lca.message.jobSubmitted',
-            defaultMessage: 'Job submitted, job_id: {jobId}',
+            id: 'pages.process.lca.message.taskSubmitted',
+            defaultMessage:
+              'Task submitted ({taskId}). Check progress in the top-right task center.',
           },
-          { jobId: submit.job_id },
+          { taskId: task.id },
         ),
-        duration: 0,
-      });
-
-      const job = await pollLcaJobUntilTerminal(submit.job_id, {
-        timeoutMs: DEFAULT_POLL_TIMEOUT_MS,
-      });
-      setLastJob(job);
-
-      if (job.status === 'failed' || job.status === 'stale') {
-        message.error({
-          key: 'lca-running',
-          content: intl.formatMessage(
-            {
-              id: 'pages.process.lca.message.jobFailed',
-              defaultMessage: 'Calculation failed, job_id: {jobId}',
-            },
-            { jobId: job.job_id },
-          ),
-        });
-        return;
-      }
-
-      const resultId = job.result?.result_id ?? null;
-      if (!resultId) {
-        message.warning({
-          key: 'lca-running',
-          content: intl.formatMessage(
-            {
-              id: 'pages.process.lca.message.jobNoResult',
-              defaultMessage: 'Job finished but result_id is missing, job_id: {jobId}',
-            },
-            { jobId: job.job_id },
-          ),
-        });
-        return;
-      }
-
-      setLastResultId(resultId);
-      await getLcaResult(resultId);
-      message.success({
-        key: 'lca-running',
-        content: intl.formatMessage(
-          {
-            id: 'pages.process.lca.message.jobCompleted',
-            defaultMessage: 'Calculation completed, result_id: {resultId}',
-          },
-          { resultId },
-        ),
-      });
+      );
+      setOpen(false);
     } catch (error: any) {
-      message.error({
-        key: 'lca-running',
-        content: intl.formatMessage(
+      message.error(
+        intl.formatMessage(
           {
             id: 'pages.process.lca.message.requestFailed',
             defaultMessage: 'Calculation request failed: {message}',
           },
           { message: error?.message ?? String(error) },
         ),
-      });
+      );
     } finally {
-      setRunning(false);
+      setSubmitting(false);
     }
   };
 
@@ -181,7 +192,7 @@ const LcaSolveToolbar = () => {
           defaultMessage: 'Calculate',
         })}
         onClick={onOpen}
-        disabled={running}
+        disabled={submitting}
       />
       <Modal
         title={intl.formatMessage({
@@ -190,10 +201,10 @@ const LcaSolveToolbar = () => {
         })}
         open={open}
         okText={
-          running
+          submitting
             ? intl.formatMessage({
                 id: 'pages.process.lca.modal.okRunning',
-                defaultMessage: 'Calculating...',
+                defaultMessage: 'Submitting...',
               })
             : intl.formatMessage({ id: 'pages.process.lca.modal.ok', defaultMessage: 'Calculate' })
         }
@@ -203,73 +214,114 @@ const LcaSolveToolbar = () => {
         })}
         onCancel={onClose}
         onOk={onSubmit}
-        confirmLoading={running}
-        maskClosable={!running}
-        keyboard={!running}
+        confirmLoading={submitting}
+        maskClosable={!submitting}
+        keyboard={!submitting}
       >
         <Form<FormValues> form={form} layout='vertical' initialValues={DEFAULT_VALUES}>
           <Form.Item
-            name='process_index'
+            name='demand_mode'
             label={intl.formatMessage({
-              id: 'pages.process.lca.field.processIndex',
-              defaultMessage: 'Process Index',
+              id: 'pages.process.lca.field.solveMode',
+              defaultMessage: 'Solve Mode',
             })}
             rules={[
               {
                 required: true,
                 message: intl.formatMessage({
-                  id: 'pages.process.lca.validation.processIndexRequired',
-                  defaultMessage: 'Please input process index',
+                  id: 'pages.process.lca.validation.solveModeRequired',
+                  defaultMessage: 'Please select solve mode',
                 }),
               },
             ]}
           >
-            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            <Radio.Group style={{ width: '100%' }}>
+              <Radio.Button value='all_unit' style={{ width: '50%', textAlign: 'center' }}>
+                {intl.formatMessage({
+                  id: 'pages.process.lca.mode.allUnit',
+                  defaultMessage: 'All Processes (1 Reference Unit)',
+                })}
+              </Radio.Button>
+              <Radio.Button value='single' style={{ width: '50%', textAlign: 'center' }}>
+                {intl.formatMessage({
+                  id: 'pages.process.lca.mode.single',
+                  defaultMessage: 'Single Demand',
+                })}
+              </Radio.Button>
+            </Radio.Group>
           </Form.Item>
-          <Form.Item
-            name='amount'
-            label={intl.formatMessage({
-              id: 'pages.process.lca.field.amount',
-              defaultMessage: 'Amount',
-            })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: 'pages.process.lca.validation.amountRequired',
-                  defaultMessage: 'Please input amount',
-                }),
-              },
-            ]}
+
+          <div
+            style={{
+              marginBottom: 16,
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: '1px solid #f0f0f0',
+              backgroundColor: '#fafafa',
+            }}
           >
-            <InputNumber min={0.0000001} precision={6} style={{ width: '100%' }} />
-          </Form.Item>
+            <Typography.Text strong style={{ display: 'block' }}>
+              {intl.formatMessage({
+                id: `pages.process.lca.modeHint.${demandMode}`,
+                defaultMessage:
+                  demandMode === 'single'
+                    ? 'Single process calculation'
+                    : 'All-process calculation',
+              })}
+            </Typography.Text>
+            <Typography.Text type='secondary' style={{ display: 'block' }}>
+              {intl.formatMessage({
+                id: `pages.process.lca.modeHint.${demandMode}.detail`,
+                defaultMessage:
+                  demandMode === 'single'
+                    ? 'Calculate one selected process with a fixed amount of 1.'
+                    : 'Calculate all processes in the current snapshot using 1 reference unit demand.',
+              })}
+            </Typography.Text>
+          </div>
+
+          {demandMode === 'single' ? (
+            <Form.Item
+              name='process_ref'
+              label={intl.formatMessage({
+                id: 'pages.process.lca.field.processSelect',
+                defaultMessage: 'Process (My Data)',
+              })}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({
+                    id: 'pages.process.lca.validation.processRequired',
+                    defaultMessage: 'Please select a process',
+                  }),
+                },
+              ]}
+            >
+              <Select
+                showSearch
+                optionFilterProp='label'
+                options={myProcessOptions}
+                loading={myProcessesLoading}
+                disabled={submitting}
+                placeholder={intl.formatMessage({
+                  id: 'pages.process.lca.placeholder.processSelect',
+                  defaultMessage: 'Select one of your processes',
+                })}
+                notFoundContent={intl.formatMessage({
+                  id: 'pages.process.lca.empty.processSelect',
+                  defaultMessage: 'No process available',
+                })}
+              />
+            </Form.Item>
+          ) : null}
         </Form>
 
-        <Space direction='vertical' size={4}>
-          {lastJob && (
-            <Typography.Text type='secondary'>
-              {intl.formatMessage(
-                {
-                  id: 'pages.process.lca.latestJob',
-                  defaultMessage: 'latest job: {jobId} ({status})',
-                },
-                { jobId: lastJob.job_id, status: lastJob.status },
-              )}
-            </Typography.Text>
-          )}
-          {lastResultId && (
-            <Typography.Text type='secondary'>
-              {intl.formatMessage(
-                {
-                  id: 'pages.process.lca.latestResult',
-                  defaultMessage: 'latest result: {resultId}',
-                },
-                { resultId: lastResultId },
-              )}
-            </Typography.Text>
-          )}
-        </Space>
+        <Typography.Text type='secondary'>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.hint',
+            defaultMessage: 'Progress will be shown in the top-right task center.',
+          })}
+        </Typography.Text>
       </Modal>
     </>
   );

@@ -19,6 +19,10 @@ const mockGetFlowStateCode = jest.fn();
 const mockGenProcessFromData = jest.fn();
 const mockGenProcessExchangeTableData = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockQueryLcaResults = jest.fn();
+const mockCacheAndDecompressMethod = jest.fn();
+const mockGetDecompressedMethod = jest.fn();
+const mockGetReferenceQuantityFromMethod = jest.fn();
 const mockJsonToList = jest.fn((value: any) =>
   Array.isArray(value) ? value : value ? [value] : [],
 );
@@ -42,6 +46,7 @@ jest.mock('@/services/processes/util', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
+  getLangJson: (value: any) => value,
   getLangText: () => 'text',
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
   jsonToList: (...args: any[]) => mockJsonToList(...args),
@@ -50,6 +55,18 @@ jest.mock('@/services/general/util', () => ({
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
   getFlowStateCodeByIdsAndVersions: (...args: any[]) => mockGetFlowStateCode(...args),
+}));
+
+jest.mock('@/services/lca', () => ({
+  __esModule: true,
+  queryLcaResults: (...args: any[]) => mockQueryLcaResults(...args),
+}));
+
+jest.mock('@/services/lciaMethods/util', () => ({
+  __esModule: true,
+  cacheAndDecompressMethod: (...args: any[]) => mockCacheAndDecompressMethod(...args),
+  getDecompressedMethod: (...args: any[]) => mockGetDecompressedMethod(...args),
+  getReferenceQuantityFromMethod: (...args: any[]) => mockGetReferenceQuantityFromMethod(...args),
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -172,6 +189,9 @@ jest.mock('antd', () => {
   const Descriptions = ({ children }: any) => <div>{children}</div>;
   Descriptions.Item = ({ children }: any) => <div>{children}</div>;
   const Divider = ({ children }: any) => <div>{children}</div>;
+  const Typography = {
+    Text: ({ children }: any) => <span>{children}</span>,
+  };
   return {
     __esModule: true,
     Button,
@@ -183,6 +203,7 @@ jest.mock('antd', () => {
     Space,
     Descriptions,
     Divider,
+    Typography,
     Input: {
       TextArea: ({ children, ...props }: any) => <textarea {...props}>{children}</textarea>,
     },
@@ -231,6 +252,16 @@ describe('ProcessView component', () => {
     mockGetProcessExchange.mockResolvedValue({ data: [], success: true });
     mockGetUnitData.mockResolvedValue([]);
     mockGetFlowStateCode.mockResolvedValue({ error: null, data: [] });
+    mockGetReferenceQuantityFromMethod.mockResolvedValue(undefined);
+    mockGetDecompressedMethod.mockResolvedValue({ files: [] });
+    mockCacheAndDecompressMethod.mockResolvedValue(true);
+    mockQueryLcaResults.mockResolvedValue({
+      snapshot_id: 'snapshot-1',
+      result_id: 'result-1',
+      source: 'latest_ready',
+      meta: { computed_at: '2026-03-09T00:00:00Z' },
+      data: { values: [] },
+    });
   });
 
   it('opens drawer and fetches process detail', async () => {
