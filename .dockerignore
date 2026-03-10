@@ -42,3 +42,7 @@ build
 # Temporary files
 *.log
 .cache
+
+# Local self-hosted postgres data directory can be root-owned and should never be sent as build context
+docker/volumes/db/data
+docker/volumes/db/data/**
