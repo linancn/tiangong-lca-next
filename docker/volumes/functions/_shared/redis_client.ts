@@ -1,5 +1,5 @@
 import { Redis as UpstashRedis } from '@upstash/redis';
-import { createClient, RedisClientType as StandardRedisClient } from 'redis';
+import { connect, type Redis as DenoRedis } from 'redis';
 
 /**
  * Support Upstash and Standard Redis Client
@@ -9,6 +9,7 @@ import { createClient, RedisClientType as StandardRedisClient } from 'redis';
  * If REDIS_CLIENT_TYPE is not set, the default is 'upstash'
  */
 type RedisClientTypeOption = 'upstash' | 'standard';
+type StandardRedisClient = DenoRedis;
 type RedisClient = UpstashRedis | StandardRedisClient;
 
 function getRedisClientType(): RedisClientTypeOption {
@@ -26,12 +27,15 @@ function getUpstashClient(): UpstashRedis {
 
 async function getStandardClient(): Promise<StandardRedisClient> {
   console.log('Getting Standard Redis Client');
-  const client = createClient({
-    url: Deno.env.get('REDIS_URL') ?? '',
-    password: Deno.env.get('REDIS_PASSWORD'),
+  const redisUrl = Deno.env.get('REDIS_URL') ?? 'redis://127.0.0.1:6379';
+  const url = new URL(redisUrl);
+  const client = await connect({
+    hostname: url.hostname,
+    port: url.port ? Number(url.port) : 6379,
+    password: Deno.env.get('REDIS_PASSWORD') ?? (url.password || undefined),
+    tls: url.protocol === 'rediss:',
   });
 
-  await client.connect();
   return client;
 }
 
@@ -47,7 +51,7 @@ async function getRedisClient(): Promise<RedisClient> {
 
 // Type guard to check if client is Upstash
 function isUpstashClient(client: RedisClient): client is UpstashRedis {
-  return 'get' in client && typeof client.get === 'function' && !('v4' in client);
+  return 'get' in client && typeof client.get === 'function' && !('sendCommand' in client);
 }
 
 // Helper function for type-safe get operation
@@ -79,10 +83,10 @@ async function redisSet(
     }
   } else {
     if (options?.ex) {
-      await client.set(key, value, { EX: options.ex });
+      await client.set(key, String(value), { ex: options.ex });
       console.log('Standard Redis Client set value:', value);
     } else {
-      await client.set(key, value);
+      await client.set(key, String(value));
     }
   }
 }
