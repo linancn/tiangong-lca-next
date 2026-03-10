@@ -83,6 +83,7 @@ class MockQuery<T = any> {
     rangeArgs: undefined as any,
     eqArgs: [] as Array<{ field: string; value: any }>,
     inArgs: [] as Array<{ field: string; values: any }>,
+    filterArgs: [] as Array<{ field: string; operator: string; value: any }>,
     notArgs: [] as Array<any>,
     orArgs: [] as Array<string>,
   };
@@ -121,6 +122,11 @@ class MockQuery<T = any> {
 
   in(field: string, values: any) {
     this.calls.inArgs.push({ field, values });
+    return this;
+  }
+
+  filter(field: string, operator: string, value: any) {
+    this.calls.filterArgs.push({ field, operator, value });
     return this;
   }
 
@@ -429,6 +435,54 @@ describe('getFlowTableAll', () => {
     expect(result.data[0].locationOfSupply).toBe('China');
   });
 
+  it('applies single classification filter', async () => {
+    const tableResult = { data: [], count: 0, error: null };
+    const query = createQuery(tableResult);
+    mockFrom.mockReturnValue(query as any);
+
+    await getFlowTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'descend' },
+      'en',
+      'tg',
+      '',
+      {
+        classification: [{ scope: 'elementary', code: '0' }],
+      },
+    );
+
+    expect(query.calls.filterArgs).toContainEqual({
+      field:
+        'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category"',
+      operator: 'cs',
+      value: JSON.stringify([{ '@catId': '0' }]),
+    });
+  });
+
+  it('applies multiple classification filters with or', async () => {
+    const tableResult = { data: [], count: 0, error: null };
+    const query = createQuery(tableResult);
+    mockFrom.mockReturnValue(query as any);
+
+    await getFlowTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'descend' },
+      'en',
+      'tg',
+      '',
+      {
+        classification: [
+          { scope: 'elementary', code: '0' },
+          { scope: 'classification', code: '01' },
+        ],
+      },
+    );
+
+    expect(query.calls.orArgs).toContain(
+      'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category".cs.[{"@catId":"0"}],json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class".cs.[{"@classId":"01"}]',
+    );
+  });
+
   it('returns failure when personal dataset has no session', async () => {
     mockAuthGetSession.mockResolvedValue({ data: { session: null } });
     const query = createQuery({ data: [], count: 0, error: null });
@@ -586,6 +640,25 @@ describe('getFlowTablePgroongaSearch', () => {
 
     expect(result.data[0].classification).toBe('Products / General');
   });
+
+  it('passes classification filters to rpc search', async () => {
+    mockRpc.mockResolvedValue({ data: [] });
+
+    await getFlowTablePgroongaSearch({ current: 1, pageSize: 5 }, 'en', 'tg', 'steel', {
+      flowType: 'Product flow',
+      classification: [{ scope: 'classification', code: '01' }],
+    });
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'pgroonga_search_flows_v1',
+      expect.objectContaining({
+        filter_condition: {
+          flowType: 'Product flow',
+          classification: [{ scope: 'classification', code: '01' }],
+        },
+      }),
+    );
+  });
 });
 
 describe('flow_hybrid_search', () => {
@@ -702,6 +775,33 @@ describe('flow_hybrid_search', () => {
     const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'steam', {});
 
     expect((result as any).total).toBe(4);
+  });
+
+  it('passes classification filters to hybrid search function', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [],
+        total_count: 0,
+      },
+    });
+
+    await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'steam', {
+      flowType: 'Product flow',
+      classification: [{ scope: 'classification', code: '01' }],
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'flow_hybrid_search',
+      expect.objectContaining({
+        body: {
+          query: 'steam',
+          filter: {
+            flowType: 'Product flow',
+            classification: [{ scope: 'classification', code: '01' }],
+          },
+        },
+      }),
+    );
   });
 });
 

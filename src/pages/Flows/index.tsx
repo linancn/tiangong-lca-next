@@ -16,6 +16,7 @@ import { FlowImportData, FlowTable } from '@/services/flows/data';
 import { contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getCachedFlowCategorizationAll } from '@/services/ilcd/cache';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -23,7 +24,7 @@ import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/lib/table/interface';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
@@ -32,12 +33,19 @@ import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
 
 const { Search } = Input;
+// type ClassificationFilter = {
+//   scope: 'elementary' | 'classification';
+//   code: string;
+// };
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [classificationFilterOptions, setClassificationFilterOptions] = useState<
+    Array<{ text: ReactNode; value: string }>
+  >([]);
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -48,6 +56,31 @@ const TableList: FC = () => {
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
+
+  // const parseClassificationFilter = (
+  //   values?: (string | number | boolean)[] | null,
+  // ): ClassificationFilter[] => {
+  //   if (!values || values.length === 0) {
+  //     return [];
+  //   }
+  //   const result: ClassificationFilter[] = [];
+  //   values.forEach((item) => {
+  //     const raw = String(item);
+  //     const separatorIndex = raw.indexOf(':');
+  //     if (separatorIndex <= 0) {
+  //       return;
+  //     }
+  //     const scope = raw.slice(0, separatorIndex);
+  //     const code = raw.slice(separatorIndex + 1);
+  //     if (!code) {
+  //       return;
+  //     }
+  //     if (scope === 'elementary' || scope === 'classification') {
+  //       result.push({ scope, code });
+  //     }
+  //   });
+  //   return result;
+  // };
 
   const actionRef = useRef<ActionType>();
   const flowsColumns: ProColumns<FlowTable>[] = [
@@ -89,8 +122,9 @@ const TableList: FC = () => {
         <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
       dataIndex: 'classification',
-      sorter: true,
       search: false,
+      filters: classificationFilterOptions.length > 0 ? classificationFilterOptions : undefined,
+      filterMultiple: true,
       render: (_, row) => {
         return row?.classification && row?.classification !== 'undefined'
           ? row.classification
@@ -273,6 +307,40 @@ const TableList: FC = () => {
     });
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const loadClassificationFilters = async () => {
+      try {
+        const data = await getCachedFlowCategorizationAll(lang);
+        if (!active) {
+          return;
+        }
+        const elementaryOptions = (data?.categoryElementaryFlow ?? [])
+          .filter((item: any) => item?.id)
+          .map((item: any) => ({
+            text: item?.label ?? item?.value ?? '-',
+            value: `elementary:${item?.id}`,
+          }));
+        const classificationOptions = (data?.category ?? [])
+          .filter((item: any) => item?.id)
+          .map((item: any) => ({
+            text: item?.label ?? item?.value ?? '-',
+            value: `classification:${item?.id}`,
+          }));
+        setClassificationFilterOptions([...elementaryOptions, ...classificationOptions]);
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setClassificationFilterOptions([]);
+        }
+      }
+    };
+    loadClassificationFilters();
+    return () => {
+      active = false;
+    };
+  }, [lang]);
+
   const onSearch: SearchProps['onSearch'] = (value) => {
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
@@ -359,6 +427,11 @@ const TableList: FC = () => {
           filter,
         ) => {
           const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+          // const classificationFilter = parseClassificationFilter(filter?.classification);
+          const searchFilters = {
+            flowType: flowTypeFilter,
+            // ...(classificationFilter.length > 0 ? { classification: classificationFilter } : {}),
+          };
           if (keyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
@@ -372,8 +445,6 @@ const TableList: FC = () => {
                   lang: lang,
                   order: order === 'ascend' ? 'asc' : 'desc',
                 };
-              } else if (field === 'classification') {
-                orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
               }
             }
             if (openAI) {
@@ -382,9 +453,7 @@ const TableList: FC = () => {
                 lang,
                 dataSource,
                 keyWord,
-                {
-                  flowType: flowTypeFilter,
-                },
+                searchFilters,
                 stateCode,
               );
             }
@@ -393,9 +462,7 @@ const TableList: FC = () => {
               lang,
               dataSource,
               keyWord,
-              {
-                flowType: flowTypeFilter,
-              },
+              searchFilters,
               stateCode,
               orderBy,
             );
@@ -403,8 +470,6 @@ const TableList: FC = () => {
 
           const sortFields: Record<string, string> = {
             name: 'json->flowDataSet->flowInformation->dataSetInformation->name',
-            classification:
-              'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation',
           };
 
           const convertedSort: Record<string, SortOrder> = {};
@@ -423,9 +488,7 @@ const TableList: FC = () => {
             lang,
             dataSource,
             tid ?? '',
-            {
-              flowType: flowTypeFilter,
-            },
+            searchFilters,
             stateCode,
           );
         }}
