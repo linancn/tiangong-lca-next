@@ -17,7 +17,7 @@ const sql = postgres(
 // Job schema: now supports composite PK (id, version)
 const jobSchema = z.object({
   jobId: z.number(),
-  id: z.string().uuid(),
+  id: z.uuid(),
   version: z.string(),
   schema: z.string(),
   table: z.string(),

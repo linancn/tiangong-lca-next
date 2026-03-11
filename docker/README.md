@@ -6,6 +6,70 @@ This is the official Docker Compose setup for self-hosted Supabase. It provides 
 
 Follow the detailed setup guide in our documentation: [Self-Hosting with Docker](https://supabase.com/docs/guides/self-hosting/docker)
 
+## Project Sync Workflows
+
+This project includes two sync workflows used to keep self-hosted assets aligned with upstream services.
+
+### 1) Sync Edge Functions
+
+Script: `docker/pull-edge-functions.sh`
+
+Default behavior:
+- Clone latest functions from `https://github.com/linancn/tiangong-lca-edge-functions.git`
+- Update `docker/volumes/functions/`
+- Backup current `docker/volumes/functions/` to `docker/volumes/functions.backup.<timestamp>`
+
+Command:
+
+```bash
+cd /path/to/tiangong-lca-next
+./docker/pull-edge-functions.sh
+```
+
+Optional: also sync to local `../supabase/functions`:
+
+```bash
+SYNC_LOCAL_SUPABASE_FUNCTIONS=true ./docker/pull-edge-functions.sh
+```
+
+### 2) Sync `data.sql` From Remote Supabase
+
+Script: `docker/scripts/sync-migrations-to-data-sql.sh`
+
+Requirement:
+- Provide `REMOTE_DB_URL` in your environment before running the script.
+- Example format:
+  - `postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres?sslmode=require`
+
+Command:
+
+```bash
+cd /path/to/tiangong-lca-next
+REMOTE_DB_URL='postgresql://postgres:***@db.xxx.supabase.co:5432/postgres?sslmode=require' \
+  ./docker/scripts/sync-migrations-to-data-sql.sh
+```
+
+Check-only mode (no file changes):
+
+```bash
+./docker/scripts/sync-migrations-to-data-sql.sh --check
+```
+
+What the script does:
+- Pull a full schema-only dump with `pg_dump --schema-only`
+- Run `docker/desensitize_data.sql.sh` automatically
+- Filter the dump down to TianGong app-required objects (for example `public`, `pgmq`, `util`, and required business extensions)
+- Remove Supabase base-managed schemas/objects (for example `auth`, `extensions`, `graphql*`, `storage`, `supabase_functions`) and obvious PG17 dump noise such as `\restrict`, `\unrestrict`, and `SET transaction_timeout = 0;`
+- Write the filtered result to `docker/volumes/db/init/data.sql`
+
+Desensitization rules include:
+- `"x_key":"<any>"` -> `"x_key":"edge-functions-key"`
+- `"apikey":"sb_secret_..."` -> `"apikey":"edge-functions-key"`
+- Remaining `sb_secret_*` -> `sb_secret_REDACTED`
+
+Deprecated compatibility wrapper:
+- `docker/scripts/sync-lca-migrations-to-data-sql.sh` forwards to `sync-migrations-to-data-sql.sh`
+
 The guide covers:
 - Prerequisites (Git and Docker)
 - Initial setup and configuration

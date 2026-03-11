@@ -1,5 +1,16 @@
+--
+-- TianGong LCA filtered schema snapshot
+-- Generated from a remote Supabase schema dump.
+-- Base Supabase-managed schemas/objects are intentionally excluded.
+--
+
+--
+-- PostgreSQL database dump
+--
 
 
+-- Dumped from database version 17.6
+-- Dumped by pg_dump version 17.9 (Debian 17.9-1.pgdg13+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12,120 +23,141 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: pgmq; Type: SCHEMA; Schema: -; Owner: postgres
+--
 
-CREATE EXTENSION IF NOT EXISTS "pg_cron" WITH SCHEMA "pg_catalog";
+CREATE SCHEMA pgmq;
 
 
+ALTER SCHEMA pgmq OWNER TO postgres;
 
+--
+-- Name: pgroonga; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS pgroonga WITH SCHEMA extensions;
 
 
-CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
+--
+-- Name: EXTENSION pgroonga; Type: COMMENT; Schema: -; Owner: 
+--
 
+COMMENT ON EXTENSION pgroonga IS 'Super fast and all languages supported full text search index based on Groonga';
 
 
+--
+-- Name: util; Type: SCHEMA; Schema: -; Owner: postgres
+--
 
+CREATE SCHEMA util;
 
 
-CREATE EXTENSION IF NOT EXISTS "pgroonga" WITH SCHEMA "extensions";
+ALTER SCHEMA util OWNER TO postgres;
 
+--
+-- Name: hstore; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA extensions;
 
 
+--
+-- Name: EXTENSION hstore; Type: COMMENT; Schema: -; Owner: 
+--
 
+COMMENT ON EXTENSION hstore IS 'data type for storing sets of (key, value) pairs';
 
-CREATE EXTENSION IF NOT EXISTS "pgsodium";
 
+--
+-- Name: http; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS http WITH SCHEMA extensions;
 
 
+--
+-- Name: EXTENSION http; Type: COMMENT; Schema: -; Owner: 
+--
 
+COMMENT ON EXTENSION http IS 'HTTP client for PostgreSQL, allows web page retrieval inside the database.';
 
-COMMENT ON SCHEMA "public" IS 'standard public schema';
 
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
-CREATE SCHEMA IF NOT EXISTS "util";
 
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
+--
 
-ALTER SCHEMA "util" OWNER TO "postgres";
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
-CREATE EXTENSION IF NOT EXISTS "hstore" WITH SCHEMA "extensions";
+--
+-- Name: pgmq; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS pgmq WITH SCHEMA pgmq;
 
 
+--
+-- Name: EXTENSION pgmq; Type: COMMENT; Schema: -; Owner: 
+--
 
+COMMENT ON EXTENSION pgmq IS 'A lightweight message queue. Like AWS SQS and RSMQ but on Postgres.';
 
 
-CREATE EXTENSION IF NOT EXISTS "http" WITH SCHEMA "extensions";
+--
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
 
 
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
+--
 
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
 
 
-CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
+--
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
 
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 
 
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: 
+--
 
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
 
 
-CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
+--
+-- Name: filtered_row; Type: TYPE; Schema: public; Owner: postgres
+--
 
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pgmq";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "vector" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE TYPE "public"."filtered_row" AS (
-	"id" "uuid",
-	"embedding" "extensions"."vector"(1536)
+CREATE TYPE public.filtered_row AS (
+	id uuid,
+	embedding extensions.vector(1536)
 );
 
 
-ALTER TYPE "public"."filtered_row" OWNER TO "postgres";
+ALTER TYPE public.filtered_row OWNER TO postgres;
 
+--
+-- Name: _navicat_temp_stored_proc(text, extensions.vector, text, double precision, integer, numeric, numeric, numeric, integer, text, text, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "extensions"."vector", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" numeric DEFAULT 0.3, "extracted_text_weight" numeric DEFAULT 0.2, "semantic_weight" numeric DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, full_text_weight numeric DEFAULT 0.3, extracted_text_weight numeric DEFAULT 0.2, semantic_weight numeric DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1) RETURNS TABLE(id uuid, "json" jsonb)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$ BEGIN
 		RETURN QUERY WITH 
 		full_text AS (
@@ -178,12 +210,15 @@ CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "te
 $$;
 
 
-ALTER FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "extensions"."vector", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+ALTER FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) OWNER TO postgres;
 
+--
+-- Name: _navicat_temp_stored_proc(text, text, text, double precision, integer, numeric, numeric, numeric, integer, text, text, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" numeric DEFAULT 0.3, "extracted_text_weight" numeric DEFAULT 0.2, "semantic_weight" numeric DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb")
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, full_text_weight numeric DEFAULT 0.3, extracted_text_weight numeric DEFAULT 0.2, semantic_weight numeric DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1) RETURNS TABLE(id uuid, "json" jsonb)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$ BEGIN
 		RETURN QUERY WITH 
 		full_text AS (
@@ -236,12 +271,15 @@ CREATE OR REPLACE FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "te
 $$;
 
 
-ALTER FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+ALTER FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) OWNER TO postgres;
 
+--
+-- Name: contacts_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."contacts_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.contacts_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -256,12 +294,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."contacts_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.contacts_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: flowproperties_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."flowproperties_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.flowproperties_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -275,42 +316,48 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."flowproperties_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.flowproperties_sync_jsonb_version() OWNER TO postgres;
 
 SET default_tablespace = '';
 
-SET default_table_access_method = "heap";
+SET default_table_access_method = heap;
 
+--
+-- Name: flows; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."flows" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "embedding" "extensions"."halfvec"(384),
-    "embedding_at" timestamp(6) with time zone DEFAULT NULL::timestamp with time zone,
-    "extracted_text" "text",
-    "team_id" "uuid",
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb",
-    "embedding_flag" smallint,
-    "embedding_ft_at" timestamp with time zone,
-    "extracted_md" "text",
-    "embedding_ft" "extensions"."vector"(1024)
+CREATE TABLE public.flows (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    json_ordered json,
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now(),
+    embedding extensions.halfvec(384),
+    embedding_at timestamp(6) with time zone DEFAULT NULL::timestamp with time zone,
+    extracted_text text,
+    team_id uuid,
+    review_id uuid,
+    rule_verification boolean,
+    reviews jsonb,
+    embedding_flag smallint,
+    embedding_ft_at timestamp with time zone,
+    extracted_md text,
+    embedding_ft extensions.vector(1024)
 );
 
 
-ALTER TABLE "public"."flows" OWNER TO "postgres";
+ALTER TABLE public.flows OWNER TO postgres;
 
+--
+-- Name: flows_embedding_ft_input(public.flows); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."flows_embedding_ft_input"("proc" "public"."flows") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.flows_embedding_ft_input(proc public.flows) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO 'public'
     AS $$
 begin
   return proc.extracted_md;
@@ -318,12 +365,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."flows_embedding_ft_input"("proc" "public"."flows") OWNER TO "postgres";
+ALTER FUNCTION public.flows_embedding_ft_input(proc public.flows) OWNER TO postgres;
 
+--
+-- Name: flows_embedding_input(public.flows); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.flows_embedding_input(flow public.flows) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO 'public'
     AS $$
 begin
   return flow.extracted_text;
@@ -331,12 +381,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") OWNER TO "postgres";
+ALTER FUNCTION public.flows_embedding_input(flow public.flows) OWNER TO postgres;
 
+--
+-- Name: flows_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."flows_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.flows_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -350,12 +403,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."flows_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.flows_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: generate_flow_embedding(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."generate_flow_embedding"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.generate_flow_embedding() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   SELECT embedding, extracted_text INTO NEW.embedding, NEW.extracted_text
@@ -371,13 +427,16 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."generate_flow_embedding"() OWNER TO "postgres";
+ALTER FUNCTION public.generate_flow_embedding() OWNER TO postgres;
 
+--
+-- Name: hybrid_search_flows(text, text, text, double precision, integer, double precision, double precision, double precision, integer, text, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone)
-    LANGUAGE "plpgsql"
-    SET "statement_timeout" TO '60s'
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.hybrid_search_flows(query_text text, query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, full_text_weight double precision DEFAULT 0.3, extracted_text_weight double precision DEFAULT 0.2, semantic_weight double precision DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1) RETURNS TABLE(id uuid, "json" jsonb, version character, modified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    SET statement_timeout TO '60s'
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
  BEGIN
 		RETURN QUERY WITH full_text AS (
@@ -449,13 +508,16 @@ CREATE OR REPLACE FUNCTION "public"."hybrid_search_flows"("query_text" "text", "
 $$;
 
 
-ALTER FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+ALTER FUNCTION public.hybrid_search_flows(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) OWNER TO postgres;
 
+--
+-- Name: hybrid_search_lifecyclemodels(text, text, text, double precision, integer, double precision, double precision, double precision, integer, text, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone)
-    LANGUAGE "plpgsql"
-    SET "statement_timeout" TO '60s'
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.hybrid_search_lifecyclemodels(query_text text, query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, full_text_weight double precision DEFAULT 0.3, extracted_text_weight double precision DEFAULT 0.2, semantic_weight double precision DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1) RETURNS TABLE(id uuid, "json" jsonb, version character, modified_at timestamp with time zone)
+    LANGUAGE plpgsql
+    SET statement_timeout TO '60s'
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
  BEGIN
 		RETURN QUERY WITH full_text AS (
@@ -523,13 +585,16 @@ CREATE OR REPLACE FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text"
 $$;
 
 
-ALTER FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+ALTER FUNCTION public.hybrid_search_lifecyclemodels(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) OWNER TO postgres;
 
+--
+-- Name: hybrid_search_processes(text, text, text, double precision, integer, double precision, double precision, double precision, integer, text, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "full_text_weight" double precision DEFAULT 0.3, "extracted_text_weight" double precision DEFAULT 0.2, "semantic_weight" double precision DEFAULT 0.5, "rrf_k" integer DEFAULT 10, "data_source" "text" DEFAULT 'tg'::"text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1) RETURNS TABLE("id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "model_id" "uuid")
-    LANGUAGE "plpgsql"
-    SET "statement_timeout" TO '60s'
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.hybrid_search_processes(query_text text, query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, full_text_weight double precision DEFAULT 0.3, extracted_text_weight double precision DEFAULT 0.2, semantic_weight double precision DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1) RETURNS TABLE(id uuid, "json" jsonb, version character, modified_at timestamp with time zone, model_id uuid)
+    LANGUAGE plpgsql
+    SET statement_timeout TO '60s'
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
  BEGIN
 		RETURN QUERY WITH full_text AS (
@@ -598,12 +663,15 @@ CREATE OR REPLACE FUNCTION "public"."hybrid_search_processes"("query_text" "text
 $$;
 
 
-ALTER FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) OWNER TO "postgres";
+ALTER FUNCTION public.hybrid_search_processes(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) OWNER TO postgres;
 
+--
+-- Name: ilcd_classification_get(text, text, text[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."ilcd_classification_get"("this_file_name" "text", "category_type" "text", "get_values" "text"[]) RETURNS SETOF "jsonb"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.ilcd_classification_get(this_file_name text, category_type text, get_values text[]) RETURNS SETOF jsonb
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   RETURN QUERY
@@ -630,12 +698,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."ilcd_classification_get"("this_file_name" "text", "category_type" "text", "get_values" "text"[]) OWNER TO "postgres";
+ALTER FUNCTION public.ilcd_classification_get(this_file_name text, category_type text, get_values text[]) OWNER TO postgres;
 
+--
+-- Name: ilcd_flow_categorization_get(text, text[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."ilcd_flow_categorization_get"("this_file_name" "text", "get_values" "text"[]) RETURNS SETOF "jsonb"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.ilcd_flow_categorization_get(this_file_name text, get_values text[]) RETURNS SETOF jsonb
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   RETURN QUERY
@@ -653,12 +724,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."ilcd_flow_categorization_get"("this_file_name" "text", "get_values" "text"[]) OWNER TO "postgres";
+ALTER FUNCTION public.ilcd_flow_categorization_get(this_file_name text, get_values text[]) OWNER TO postgres;
 
+--
+-- Name: ilcd_location_get(text, text[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."ilcd_location_get"("this_file_name" "text", "get_values" "text"[]) RETURNS SETOF "jsonb"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.ilcd_location_get(this_file_name text, get_values text[]) RETURNS SETOF jsonb
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   RETURN QUERY
@@ -676,12 +750,40 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."ilcd_location_get"("this_file_name" "text", "get_values" "text"[]) OWNER TO "postgres";
+ALTER FUNCTION public.ilcd_location_get(this_file_name text, get_values text[]) OWNER TO postgres;
+
+--
+-- Name: lca_enqueue_job(text, jsonb); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) RETURNS bigint
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pgmq'
+    AS $$
+DECLARE
+    v_msg_id bigint;
+BEGIN
+    IF p_queue_name IS NULL OR btrim(p_queue_name) = '' THEN
+        RAISE EXCEPTION 'queue name is required';
+    END IF;
+
+    SELECT pgmq.send(p_queue_name, p_message)
+      INTO v_msg_id;
+
+    RETURN v_msg_id;
+END;
+$$;
 
 
-CREATE OR REPLACE FUNCTION "public"."lciamethods_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+ALTER FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) OWNER TO postgres;
+
+--
+-- Name: lciamethods_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.lciamethods_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -693,38 +795,44 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."lciamethods_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.lciamethods_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: lifecyclemodels; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."lifecyclemodels" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp(6) with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "json_tg" "jsonb",
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb",
-    "extracted_text" "text",
-    "embedding" "extensions"."halfvec"(384),
-    "embedding_at" timestamp with time zone,
-    "embedding_flag" smallint,
-    "extracted_md" "text",
-    "embedding_ft_at" timestamp with time zone,
-    "embedding_ft" "extensions"."vector"(1024)
+CREATE TABLE public.lifecyclemodels (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp(6) with time zone DEFAULT now(),
+    json_ordered json,
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    json_tg jsonb,
+    modified_at timestamp with time zone DEFAULT now(),
+    team_id uuid,
+    rule_verification boolean,
+    reviews jsonb,
+    extracted_text text,
+    embedding extensions.halfvec(384),
+    embedding_at timestamp with time zone,
+    embedding_flag smallint,
+    extracted_md text,
+    embedding_ft_at timestamp with time zone,
+    embedding_ft extensions.vector(1024)
 );
 
 
-ALTER TABLE "public"."lifecyclemodels" OWNER TO "postgres";
+ALTER TABLE public.lifecyclemodels OWNER TO postgres;
 
+--
+-- Name: lifecyclemodels_embedding_ft_input(public.lifecyclemodels); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."lifecyclemodels_embedding_ft_input"("proc" "public"."lifecyclemodels") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO 'public'
     AS $$
 begin
   return proc.extracted_md;
@@ -732,12 +840,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."lifecyclemodels_embedding_ft_input"("proc" "public"."lifecyclemodels") OWNER TO "postgres";
+ALTER FUNCTION public.lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels) OWNER TO postgres;
 
+--
+-- Name: lifecyclemodels_embedding_input(public.lifecyclemodels); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.lifecyclemodels_embedding_input(models public.lifecyclemodels) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO 'public'
     AS $$
 begin
   return models.extracted_text;
@@ -745,12 +856,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") OWNER TO "postgres";
+ALTER FUNCTION public.lifecyclemodels_embedding_input(models public.lifecyclemodels) OWNER TO postgres;
 
+--
+-- Name: lifecyclemodels_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."lifecyclemodels_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.lifecyclemodels_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -762,12 +876,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."lifecyclemodels_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.lifecyclemodels_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: pgroonga_search(text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search"("query_text" "text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb")
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search(query_text text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
 BEGIN
@@ -782,12 +899,15 @@ BEGIN
 END;$$;
 
 
-ALTER FUNCTION "public"."pgroonga_search"("query_text" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search(query_text text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_contacts(text, text, bigint, bigint, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_contacts"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_contacts(query_text text, filter_condition text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
     filter_condition_jsonb JSONB;
@@ -810,12 +930,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_contacts"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_contacts(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_flowproperties(text, text, bigint, bigint, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_flowproperties"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_flowproperties(query_text text, filter_condition text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
     filter_condition_jsonb JSONB;
@@ -838,12 +961,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_flowproperties"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_flowproperties(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_flows_text_v1(text, integer, integer, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_flows_text_v1"("query_text" "text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "extracted_text" "text", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_flows_text_v1(query_text text, page_size integer DEFAULT 10, page_current integer DEFAULT 1, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, extracted_text text, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 BEGIN
   RETURN QUERY
@@ -872,12 +998,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_flows_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_flows_text_v1(query_text text, page_size integer, page_current integer, data_source text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_flows_v1(text, text, text, bigint, bigint, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_flows_v1"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "order_by" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_flows_v1(query_text text, filter_condition text DEFAULT ''::text, order_by text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $_$
  
 DECLARE 
@@ -1141,12 +1270,15 @@ BEGIN
 $_$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_flows_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_flows_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_lifecyclemodels_text_v1(text, integer, integer, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_lifecyclemodels_text_v1"("query_text" "text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "extracted_text" "text", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_lifecyclemodels_text_v1(query_text text, page_size integer DEFAULT 10, page_current integer DEFAULT 1, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, extracted_text text, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 BEGIN
   RETURN QUERY
@@ -1175,12 +1307,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_lifecyclemodels_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_lifecyclemodels_text_v1(query_text text, page_size integer, page_current integer, data_source text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_lifecyclemodels_v1(text, text, text, bigint, bigint, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_lifecyclemodels_v1"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "order_by" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_lifecyclemodels_v1(query_text text, filter_condition text DEFAULT ''::text, order_by text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $_$
 DECLARE
   filter_condition_jsonb JSONB;
@@ -1411,12 +1546,15 @@ END;
 $_$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_lifecyclemodels_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_lifecyclemodels_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_processes_text_v1(text, integer, integer, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_processes_text_v1"("query_text" "text", "page_size" integer DEFAULT 10, "page_current" integer DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "extracted_text" "text", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_processes_text_v1(query_text text, page_size integer DEFAULT 10, page_current integer DEFAULT 1, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, extracted_text text, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 BEGIN
   RETURN QUERY
@@ -1445,12 +1583,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_processes_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_processes_text_v1(query_text text, page_size integer, page_current integer, data_source text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_processes_v1(text, text, text, bigint, bigint, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_processes_v1"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "order_by" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "model_id" "uuid", "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_processes_v1(query_text text, filter_condition text DEFAULT ''::text, order_by text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, model_id uuid, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $_$
 DECLARE
     filter_condition_jsonb JSONB;
@@ -1682,12 +1823,15 @@ END;
 $_$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_processes_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_processes_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_sources(text, text, bigint, bigint, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_sources(query_text text, filter_condition text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
     filter_condition_jsonb JSONB;
@@ -1710,12 +1854,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_sources(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) OWNER TO postgres;
 
+--
+-- Name: pgroonga_search_unitgroups(text, text, bigint, bigint, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text" DEFAULT ''::"text", "page_size" bigint DEFAULT 10, "page_current" bigint DEFAULT 1, "data_source" "text" DEFAULT 'tg'::"text", "this_user_id" "text" DEFAULT ''::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.pgroonga_search_unitgroups(query_text text, filter_condition text DEFAULT ''::text, page_size bigint DEFAULT 10, page_current bigint DEFAULT 1, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
     filter_condition_jsonb JSONB;
@@ -1744,11 +1891,14 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") OWNER TO "postgres";
+ALTER FUNCTION public.pgroonga_search_unitgroups(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) OWNER TO postgres;
 
+--
+-- Name: policy_is_current_user_in_roles(uuid, text[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_is_current_user_in_roles"("p_team_id" "uuid", "p_roles_to_check" "text"[]) RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
+CREATE FUNCTION public.policy_is_current_user_in_roles(p_team_id uuid, p_roles_to_check text[]) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
     AS $$
 	-- 增加空数组判断：空数组直接返回 false
     SELECT CASE 
@@ -1766,12 +1916,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_is_current_user_in_roles"("p_team_id
 $$;
 
 
-ALTER FUNCTION "public"."policy_is_current_user_in_roles"("p_team_id" "uuid", "p_roles_to_check" "text"[]) OWNER TO "postgres";
+ALTER FUNCTION public.policy_is_current_user_in_roles(p_team_id uuid, p_roles_to_check text[]) OWNER TO postgres;
 
+--
+-- Name: policy_is_team_id_used(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_is_team_id_used"("_team_id" "uuid") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_is_team_id_used(_team_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT EXISTS (
     SELECT 1
@@ -1780,12 +1933,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_is_team_id_used"("_team_id" "uuid") 
 $$;
 
 
-ALTER FUNCTION "public"."policy_is_team_id_used"("_team_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION public.policy_is_team_id_used(_team_id uuid) OWNER TO postgres;
 
+--
+-- Name: policy_is_team_public(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_is_team_public"("_team_id" "uuid") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_is_team_public(_team_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT EXISTS (
     SELECT 1
@@ -1795,12 +1951,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_is_team_public"("_team_id" "uuid") R
 $$;
 
 
-ALTER FUNCTION "public"."policy_is_team_public"("_team_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION public.policy_is_team_public(_team_id uuid) OWNER TO postgres;
 
+--
+-- Name: policy_roles_delete(uuid, uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_roles_delete"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_roles_delete(_user_id uuid, _team_id uuid, _role text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT (
 	-- 验证当前用户是否为团队管理员或拥有者，被删除用户角色不能为owner角色，自己不能删除自己
@@ -1815,12 +1974,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_roles_delete"("_user_id" "uuid", "_t
 $$;
 
 
-ALTER FUNCTION "public"."policy_roles_delete"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") OWNER TO "postgres";
+ALTER FUNCTION public.policy_roles_delete(_user_id uuid, _team_id uuid, _role text) OWNER TO postgres;
 
+--
+-- Name: policy_roles_insert(uuid, uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_roles_insert"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_roles_insert(_user_id uuid, _team_id uuid, _role text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT (
     ((
@@ -1901,12 +2063,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_roles_insert"("_user_id" "uuid", "_t
 $$;
 
 
-ALTER FUNCTION "public"."policy_roles_insert"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") OWNER TO "postgres";
+ALTER FUNCTION public.policy_roles_insert(_user_id uuid, _team_id uuid, _role text) OWNER TO postgres;
 
+--
+-- Name: policy_roles_select(uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_roles_select"("_team_id" "uuid", "_role" "text") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_roles_select(_team_id uuid, _role text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT (
   	-- 验证当前用户是否为团队成员（非拒绝状态）
@@ -1931,12 +2096,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_roles_select"("_team_id" "uuid", "_r
 $$;
 
 
-ALTER FUNCTION "public"."policy_roles_select"("_team_id" "uuid", "_role" "text") OWNER TO "postgres";
+ALTER FUNCTION public.policy_roles_select(_team_id uuid, _role text) OWNER TO postgres;
 
+--
+-- Name: policy_roles_update(uuid, uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_roles_update"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_roles_update(_user_id uuid, _team_id uuid, _role text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT (
   	-- 验证当前用户是否为团队拥有者或管理员
@@ -1970,12 +2138,15 @@ CREATE OR REPLACE FUNCTION "public"."policy_roles_update"("_user_id" "uuid", "_t
 $$;
 
 
-ALTER FUNCTION "public"."policy_roles_update"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") OWNER TO "postgres";
+ALTER FUNCTION public.policy_roles_update(_user_id uuid, _team_id uuid, _role text) OWNER TO postgres;
 
+--
+-- Name: policy_user_has_team(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."policy_user_has_team"("_user_id" "uuid") RETURNS boolean
-    LANGUAGE "sql" STABLE SECURITY DEFINER
-    SET "search_path" TO 'public'
+CREATE FUNCTION public.policy_user_has_team(_user_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
   SELECT EXISTS (
     SELECT 1
@@ -1986,39 +2157,45 @@ CREATE OR REPLACE FUNCTION "public"."policy_user_has_team"("_user_id" "uuid") RE
 $$;
 
 
-ALTER FUNCTION "public"."policy_user_has_team"("_user_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION public.policy_user_has_team(_user_id uuid) OWNER TO postgres;
 
+--
+-- Name: processes; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."processes" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "extracted_text" "text",
-    "embedding" "extensions"."halfvec"(384),
-    "embedding_at" timestamp with time zone,
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb",
-    "embedding_flag" smallint,
-    "model_id" "uuid",
-    "embedding_ft_at" timestamp with time zone,
-    "embedding_ft" "extensions"."vector"(1024),
-    "extracted_md" "text"
+CREATE TABLE public.processes (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    json_ordered json,
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now(),
+    team_id uuid,
+    extracted_text text,
+    embedding extensions.halfvec(384),
+    embedding_at timestamp with time zone,
+    review_id uuid,
+    rule_verification boolean,
+    reviews jsonb,
+    embedding_flag smallint,
+    model_id uuid,
+    embedding_ft_at timestamp with time zone,
+    embedding_ft extensions.vector(1024),
+    extracted_md text
 );
 
 
-ALTER TABLE "public"."processes" OWNER TO "postgres";
+ALTER TABLE public.processes OWNER TO postgres;
 
+--
+-- Name: processes_embedding_ft_input(public.processes); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."processes_embedding_ft_input"("proc" "public"."processes") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.processes_embedding_ft_input(proc public.processes) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 begin
   return proc.extracted_md;
@@ -2026,12 +2203,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."processes_embedding_ft_input"("proc" "public"."processes") OWNER TO "postgres";
+ALTER FUNCTION public.processes_embedding_ft_input(proc public.processes) OWNER TO postgres;
 
+--
+-- Name: processes_embedding_input(public.processes); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    SET "search_path" TO ''
+CREATE FUNCTION public.processes_embedding_input(proc public.processes) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO ''
     AS $$
 begin
   return proc.extracted_text;
@@ -2039,12 +2219,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") OWNER TO "postgres";
+ALTER FUNCTION public.processes_embedding_input(proc public.processes) OWNER TO postgres;
 
+--
+-- Name: processes_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."processes_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.processes_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -2058,12 +2241,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."processes_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.processes_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: semantic_search(text, double precision, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."semantic_search"("query_embedding" "text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20) RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb")
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.semantic_search(query_embedding text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20) RETURNS TABLE(rank bigint, id uuid, "json" jsonb)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
     query_embedding_vector vector(384);
@@ -2084,12 +2270,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."semantic_search"("query_embedding" "text", "match_threshold" double precision, "match_count" integer) OWNER TO "postgres";
+ALTER FUNCTION public.semantic_search(query_embedding text, match_threshold double precision, match_count integer) OWNER TO postgres;
 
+--
+-- Name: semantic_search_flows_v1(text, text, double precision, integer, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."semantic_search_flows_v1"("query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.semantic_search_flows_v1(query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
   query_embedding_vector  vector(1024);
@@ -2166,12 +2355,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."semantic_search_flows_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.semantic_search_flows_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) OWNER TO postgres;
 
+--
+-- Name: semantic_search_lifecyclemodels_v1(text, text, double precision, integer, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."semantic_search_lifecyclemodels_v1"("query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.semantic_search_lifecyclemodels_v1(query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
   query_embedding_vector  vector(1024);   
@@ -2229,12 +2421,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."semantic_search_lifecyclemodels_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.semantic_search_lifecyclemodels_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) OWNER TO postgres;
 
+--
+-- Name: semantic_search_processes_v1(text, text, double precision, integer, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."semantic_search_processes_v1"("query_embedding" "text", "filter_condition" "text" DEFAULT ''::"text", "match_threshold" double precision DEFAULT 0.5, "match_count" integer DEFAULT 20, "data_source" "text" DEFAULT 'tg'::"text") RETURNS TABLE("rank" bigint, "id" "uuid", "json" "jsonb", "version" character, "modified_at" timestamp with time zone, "total_count" bigint)
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+CREATE FUNCTION public.semantic_search_processes_v1(query_embedding text, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, data_source text DEFAULT 'tg'::text) RETURNS TABLE(rank bigint, id uuid, "json" jsonb, version character, modified_at timestamp with time zone, total_count bigint)
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'extensions', 'pg_temp'
     AS $$
 DECLARE
   query_embedding_vector  vector(1024);   -- 若列为 halfvec(384)，这里改成 halfvec(384)
@@ -2291,12 +2486,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."semantic_search_processes_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") OWNER TO "postgres";
+ALTER FUNCTION public.semantic_search_processes_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) OWNER TO postgres;
 
+--
+-- Name: sources_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."sources_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.sources_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -2310,12 +2508,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."sources_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.sources_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: sync_auth_users_to_public_users(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."sync_auth_users_to_public_users"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.sync_auth_users_to_public_users() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     -- 处理插入操作
@@ -2339,12 +2540,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."sync_auth_users_to_public_users"() OWNER TO "postgres";
+ALTER FUNCTION public.sync_auth_users_to_public_users() OWNER TO postgres;
 
+--
+-- Name: sync_json_to_jsonb(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."sync_json_to_jsonb"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.sync_json_to_jsonb() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb
     THEN
@@ -2354,12 +2558,15 @@ CREATE OR REPLACE FUNCTION "public"."sync_json_to_jsonb"() RETURNS "trigger"
 END;$$;
 
 
-ALTER FUNCTION "public"."sync_json_to_jsonb"() OWNER TO "postgres";
+ALTER FUNCTION public.sync_json_to_jsonb() OWNER TO postgres;
 
+--
+-- Name: unitgroups_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."unitgroups_sync_jsonb_version"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.unitgroups_sync_jsonb_version() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     IF NEW.json_ordered::jsonb IS DISTINCT FROM OLD.json_ordered::jsonb THEN
@@ -2374,12 +2581,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."unitgroups_sync_jsonb_version"() OWNER TO "postgres";
+ALTER FUNCTION public.unitgroups_sync_jsonb_version() OWNER TO postgres;
 
+--
+-- Name: update_modified_at(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "public"."update_modified_at"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
+CREATE FUNCTION public.update_modified_at() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
    NEW.modified_at = NOW();
@@ -2388,12 +2598,15 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."update_modified_at"() OWNER TO "postgres";
+ALTER FUNCTION public.update_modified_at() OWNER TO postgres;
 
+--
+-- Name: clear_column(); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."clear_column"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO ''
+CREATE FUNCTION util.clear_column() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO ''
     AS $$
 declare
     clear_column text := TG_ARGV[0];
@@ -2404,12 +2617,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."clear_column"() OWNER TO "postgres";
+ALTER FUNCTION util.clear_column() OWNER TO postgres;
 
+--
+-- Name: invoke_edge_function(text, jsonb, integer); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."invoke_edge_function"("name" "text", "body" "jsonb", "timeout_milliseconds" integer DEFAULT ((5 * 60) * 1000)) RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
+CREATE FUNCTION util.invoke_edge_function(name text, body jsonb, timeout_milliseconds integer DEFAULT ((5 * 60) * 1000)) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
     AS $$
 declare
   service_key text;
@@ -2437,12 +2653,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."invoke_edge_function"("name" "text", "body" "jsonb", "timeout_milliseconds" integer) OWNER TO "postgres";
+ALTER FUNCTION util.invoke_edge_function(name text, body jsonb, timeout_milliseconds integer) OWNER TO postgres;
 
+--
+-- Name: process_embeddings(integer, integer, integer); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."process_embeddings"("batch_size" integer DEFAULT 10, "max_requests" integer DEFAULT 10, "timeout_milliseconds" integer DEFAULT ((5 * 60) * 1000)) RETURNS "void"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO ''
+CREATE FUNCTION util.process_embeddings(batch_size integer DEFAULT 10, max_requests integer DEFAULT 10, timeout_milliseconds integer DEFAULT ((5 * 60) * 1000)) RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO ''
     AS $$
 declare
   job_batches jsonb[];
@@ -2493,12 +2712,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."process_embeddings"("batch_size" integer, "max_requests" integer, "timeout_milliseconds" integer) OWNER TO "postgres";
+ALTER FUNCTION util.process_embeddings(batch_size integer, max_requests integer, timeout_milliseconds integer) OWNER TO postgres;
 
+--
+-- Name: process_webhook_jobs(integer, integer, integer); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."process_webhook_jobs"("batch_size" integer DEFAULT 3, "max_batches" integer DEFAULT 10, "timeout_milliseconds" integer DEFAULT ((5 * 60) * 1000)) RETURNS "void"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO ''
+CREATE FUNCTION util.process_webhook_jobs(batch_size integer DEFAULT 3, max_batches integer DEFAULT 10, timeout_milliseconds integer DEFAULT ((5 * 60) * 1000)) RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO ''
     AS $$
 declare
   rec record;
@@ -2625,12 +2847,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."process_webhook_jobs"("batch_size" integer, "max_batches" integer, "timeout_milliseconds" integer) OWNER TO "postgres";
+ALTER FUNCTION util.process_webhook_jobs(batch_size integer, max_batches integer, timeout_milliseconds integer) OWNER TO postgres;
 
+--
+-- Name: project_url(); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."project_url"() RETURNS "text"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
+CREATE FUNCTION util.project_url() RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
     AS $$
 declare
   secret_value text;
@@ -2642,12 +2867,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."project_url"() OWNER TO "postgres";
+ALTER FUNCTION util.project_url() OWNER TO postgres;
 
+--
+-- Name: queue_embedding_webhook(); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."queue_embedding_webhook"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
+CREATE FUNCTION util.queue_embedding_webhook() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
     AS $$
 begin
   perform pgmq.send(
@@ -2679,12 +2907,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."queue_embedding_webhook"() OWNER TO "postgres";
+ALTER FUNCTION util.queue_embedding_webhook() OWNER TO postgres;
 
+--
+-- Name: queue_embeddings(); Type: FUNCTION; Schema: util; Owner: postgres
+--
 
-CREATE OR REPLACE FUNCTION "util"."queue_embeddings"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
+CREATE FUNCTION util.queue_embeddings() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
     AS $$
 declare
   content_function text = TG_ARGV[0];
@@ -2708,3072 +2939,2116 @@ end;
 $$;
 
 
-ALTER FUNCTION "util"."queue_embeddings"() OWNER TO "postgres";
+ALTER FUNCTION util.queue_embeddings() OWNER TO postgres;
+
+--
+-- Name: a_embedding_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.a_embedding_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    archived_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
 
 
-CREATE TABLE IF NOT EXISTS "public"."comments" (
-    "review_id" "uuid" NOT NULL,
-    "reviewer_id" "uuid" DEFAULT "auth"."uid"() NOT NULL,
+ALTER TABLE pgmq.a_embedding_jobs OWNER TO postgres;
+
+--
+-- Name: a_lca_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.a_lca_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    archived_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.a_lca_jobs OWNER TO postgres;
+
+--
+-- Name: a_webhook_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.a_webhook_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    archived_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.a_webhook_jobs OWNER TO postgres;
+
+--
+-- Name: q_embedding_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.q_embedding_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.q_embedding_jobs OWNER TO postgres;
+
+--
+-- Name: q_embedding_jobs_msg_id_seq; Type: SEQUENCE; Schema: pgmq; Owner: postgres
+--
+
+ALTER TABLE pgmq.q_embedding_jobs ALTER COLUMN msg_id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME pgmq.q_embedding_jobs_msg_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: q_lca_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.q_lca_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.q_lca_jobs OWNER TO postgres;
+
+--
+-- Name: q_lca_jobs_msg_id_seq; Type: SEQUENCE; Schema: pgmq; Owner: postgres
+--
+
+ALTER TABLE pgmq.q_lca_jobs ALTER COLUMN msg_id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME pgmq.q_lca_jobs_msg_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: q_webhook_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.q_webhook_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.q_webhook_jobs OWNER TO postgres;
+
+--
+-- Name: q_webhook_jobs_msg_id_seq; Type: SEQUENCE; Schema: pgmq; Owner: postgres
+--
+
+ALTER TABLE pgmq.q_webhook_jobs ALTER COLUMN msg_id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME pgmq.q_webhook_jobs_msg_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: comments; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.comments (
+    review_id uuid NOT NULL,
+    reviewer_id uuid DEFAULT auth.uid() NOT NULL,
     "json" json,
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "state_code" integer DEFAULT 0
+    created_at timestamp with time zone DEFAULT now(),
+    modified_at timestamp with time zone DEFAULT now(),
+    state_code integer DEFAULT 0
 );
 
 
-ALTER TABLE "public"."comments" OWNER TO "postgres";
+ALTER TABLE public.comments OWNER TO postgres;
 
+--
+-- Name: contacts; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."contacts" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "embedding" "extensions"."vector"(1536),
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb"
+CREATE TABLE public.contacts (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    json_ordered json,
+    embedding extensions.vector(1536),
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now(),
+    team_id uuid,
+    review_id uuid,
+    rule_verification boolean,
+    reviews jsonb
 );
 
 
-ALTER TABLE "public"."contacts" OWNER TO "postgres";
+ALTER TABLE public.contacts OWNER TO postgres;
 
+--
+-- Name: flowproperties; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."flowproperties" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "embedding" "extensions"."vector"(1536),
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb"
+CREATE TABLE public.flowproperties (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    json_ordered json,
+    embedding extensions.vector(1536),
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now(),
+    team_id uuid,
+    review_id uuid,
+    rule_verification boolean,
+    reviews jsonb
 );
 
 
-ALTER TABLE "public"."flowproperties" OWNER TO "postgres";
+ALTER TABLE public.flowproperties OWNER TO postgres;
 
+--
+-- Name: ilcd; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."ilcd" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "file_name" character varying(255),
-    "json" "jsonb",
-    "created_at" timestamp(6) with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "modified_at" timestamp with time zone DEFAULT "now"()
+CREATE TABLE public.ilcd (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    file_name character varying(255),
+    "json" jsonb,
+    created_at timestamp(6) with time zone DEFAULT now(),
+    json_ordered json,
+    user_id uuid DEFAULT auth.uid(),
+    modified_at timestamp with time zone DEFAULT now()
 );
 
 
-ALTER TABLE "public"."ilcd" OWNER TO "postgres";
+ALTER TABLE public.ilcd OWNER TO postgres;
 
+--
+-- Name: lca_active_snapshots; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."lciamethods" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp(6) with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"()
+CREATE TABLE public.lca_active_snapshots (
+    scope text NOT NULL,
+    snapshot_id uuid NOT NULL,
+    source_hash text NOT NULL,
+    activated_at timestamp with time zone DEFAULT now() NOT NULL,
+    activated_by uuid,
+    note text
 );
 
 
-ALTER TABLE "public"."lciamethods" OWNER TO "postgres";
+ALTER TABLE public.lca_active_snapshots OWNER TO postgres;
 
+--
+-- Name: lca_factorization_registry; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."reviews" (
-    "id" "uuid" NOT NULL,
-    "data_id" "uuid",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "state_code" integer DEFAULT 0,
-    "data_version" character(9),
-    "reviewer_id" "jsonb",
-    "json" "jsonb",
-    "deadline" timestamp with time zone
+CREATE TABLE public.lca_factorization_registry (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    scope text DEFAULT 'prod'::text NOT NULL,
+    snapshot_id uuid NOT NULL,
+    backend text DEFAULT 'umfpack'::text NOT NULL,
+    numeric_options_hash text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    owner_worker_id text,
+    lease_until timestamp with time zone,
+    prepared_job_id uuid,
+    diagnostics jsonb DEFAULT '{}'::jsonb NOT NULL,
+    prepared_at timestamp with time zone,
+    last_used_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_factorization_registry_backend_chk CHECK ((backend = ANY (ARRAY['umfpack'::text, 'cholmod'::text, 'spqr'::text]))),
+    CONSTRAINT lca_factorization_registry_status_chk CHECK ((status = ANY (ARRAY['pending'::text, 'building'::text, 'ready'::text, 'failed'::text, 'stale'::text])))
 );
 
 
-ALTER TABLE "public"."reviews" OWNER TO "postgres";
+ALTER TABLE public.lca_factorization_registry OWNER TO postgres;
 
+--
+-- Name: lca_jobs; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."roles" (
-    "user_id" "uuid" NOT NULL,
-    "team_id" "uuid" NOT NULL,
-    "role" character varying(255) NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "modified_at" timestamp with time zone
+CREATE TABLE public.lca_jobs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_type text NOT NULL,
+    snapshot_id uuid NOT NULL,
+    status text DEFAULT 'queued'::text NOT NULL,
+    payload jsonb,
+    diagnostics jsonb,
+    attempt integer DEFAULT 0 NOT NULL,
+    max_attempt integer DEFAULT 3 NOT NULL,
+    requested_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    started_at timestamp with time zone,
+    finished_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    request_key text,
+    idempotency_key text,
+    CONSTRAINT lca_jobs_attempt_chk CHECK (((attempt >= 0) AND (max_attempt >= 0) AND (attempt <= max_attempt))),
+    CONSTRAINT lca_jobs_status_chk CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'ready'::text, 'completed'::text, 'failed'::text, 'stale'::text]))),
+    CONSTRAINT lca_jobs_type_chk CHECK ((job_type = ANY (ARRAY['prepare_factorization'::text, 'solve_one'::text, 'solve_batch'::text, 'solve_all_unit'::text, 'invalidate_factorization'::text, 'rebuild_factorization'::text, 'build_snapshot'::text])))
 );
 
 
-ALTER TABLE "public"."roles" OWNER TO "postgres";
+ALTER TABLE public.lca_jobs OWNER TO postgres;
 
+--
+-- Name: lca_latest_all_unit_results; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."sources" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "embedding" "extensions"."vector"(1536),
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb"
+CREATE TABLE public.lca_latest_all_unit_results (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    snapshot_id uuid NOT NULL,
+    job_id uuid NOT NULL,
+    result_id uuid NOT NULL,
+    query_artifact_url text NOT NULL,
+    query_artifact_sha256 text NOT NULL,
+    query_artifact_byte_size bigint NOT NULL,
+    query_artifact_format text NOT NULL,
+    status text DEFAULT 'ready'::text NOT NULL,
+    computed_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_latest_all_unit_results_size_chk CHECK ((query_artifact_byte_size >= 0)),
+    CONSTRAINT lca_latest_all_unit_results_status_chk CHECK ((status = ANY (ARRAY['ready'::text, 'stale'::text, 'failed'::text])))
 );
 
 
-ALTER TABLE "public"."sources" OWNER TO "postgres";
+ALTER TABLE public.lca_latest_all_unit_results OWNER TO postgres;
 
+--
+-- Name: lca_network_snapshots; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."teams" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "modified_at" timestamp with time zone,
-    "rank" integer DEFAULT '-1'::integer,
-    "is_public" boolean DEFAULT false
+CREATE TABLE public.lca_network_snapshots (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    scope text DEFAULT 'full_library'::text NOT NULL,
+    process_filter jsonb,
+    lcia_method_id uuid,
+    lcia_method_version character(9),
+    provider_matching_rule text DEFAULT 'strict_unique_provider'::text NOT NULL,
+    source_hash text,
+    status text DEFAULT 'draft'::text NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_network_snapshots_provider_rule_chk CHECK ((provider_matching_rule = ANY (ARRAY['strict_unique_provider'::text, 'equal_split_multi_provider'::text, 'custom_weighted_provider'::text]))),
+    CONSTRAINT lca_network_snapshots_scope_chk CHECK ((scope = 'full_library'::text)),
+    CONSTRAINT lca_network_snapshots_status_chk CHECK ((status = ANY (ARRAY['draft'::text, 'ready'::text, 'stale'::text, 'failed'::text])))
 );
 
 
-ALTER TABLE "public"."teams" OWNER TO "postgres";
+ALTER TABLE public.lca_network_snapshots OWNER TO postgres;
 
+--
+-- Name: lca_result_cache; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."unitgroups" (
-    "id" "uuid" NOT NULL,
-    "json" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "json_ordered" json,
-    "embedding" "extensions"."vector"(1536),
-    "user_id" "uuid" DEFAULT "auth"."uid"(),
-    "state_code" integer DEFAULT 0,
-    "version" character(9) NOT NULL,
-    "modified_at" timestamp with time zone DEFAULT "now"(),
-    "team_id" "uuid",
-    "review_id" "uuid",
-    "rule_verification" boolean,
-    "reviews" "jsonb"
+CREATE TABLE public.lca_result_cache (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    scope text DEFAULT 'prod'::text NOT NULL,
+    snapshot_id uuid NOT NULL,
+    request_key text NOT NULL,
+    request_payload jsonb NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    job_id uuid,
+    result_id uuid,
+    error_code text,
+    error_message text,
+    hit_count bigint DEFAULT 0 NOT NULL,
+    last_accessed_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_result_cache_hit_count_chk CHECK ((hit_count >= 0)),
+    CONSTRAINT lca_result_cache_request_key_chk CHECK ((length(request_key) > 0)),
+    CONSTRAINT lca_result_cache_status_chk CHECK ((status = ANY (ARRAY['pending'::text, 'running'::text, 'ready'::text, 'failed'::text, 'stale'::text])))
 );
 
 
-ALTER TABLE "public"."unitgroups" OWNER TO "postgres";
+ALTER TABLE public.lca_result_cache OWNER TO postgres;
 
+--
+-- Name: lca_results; Type: TABLE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE IF NOT EXISTS "public"."users" (
-    "id" "uuid" NOT NULL,
-    "raw_user_meta_data" "jsonb",
-    "contact" "jsonb"
+CREATE TABLE public.lca_results (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid NOT NULL,
+    snapshot_id uuid NOT NULL,
+    payload jsonb,
+    diagnostics jsonb,
+    artifact_url text,
+    artifact_sha256 text,
+    artifact_byte_size bigint,
+    artifact_format text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_results_artifact_size_chk CHECK (((artifact_byte_size IS NULL) OR (artifact_byte_size >= 0)))
 );
 
 
-ALTER TABLE "public"."users" OWNER TO "postgres";
+ALTER TABLE public.lca_results OWNER TO postgres;
+
+--
+-- Name: lca_snapshot_artifacts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lca_snapshot_artifacts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    snapshot_id uuid NOT NULL,
+    artifact_url text NOT NULL,
+    artifact_sha256 text NOT NULL,
+    artifact_byte_size bigint NOT NULL,
+    artifact_format text NOT NULL,
+    process_count integer NOT NULL,
+    flow_count integer NOT NULL,
+    impact_count integer NOT NULL,
+    a_nnz bigint NOT NULL,
+    b_nnz bigint NOT NULL,
+    c_nnz bigint NOT NULL,
+    coverage jsonb,
+    status text DEFAULT 'ready'::text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_snapshot_artifacts_counts_chk CHECK (((process_count >= 0) AND (flow_count >= 0) AND (impact_count >= 0) AND (a_nnz >= 0) AND (b_nnz >= 0) AND (c_nnz >= 0))),
+    CONSTRAINT lca_snapshot_artifacts_size_chk CHECK ((artifact_byte_size >= 0)),
+    CONSTRAINT lca_snapshot_artifacts_status_chk CHECK ((status = ANY (ARRAY['ready'::text, 'stale'::text, 'failed'::text])))
+);
+
+
+ALTER TABLE public.lca_snapshot_artifacts OWNER TO postgres;
+
+--
+-- Name: lciamethods; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lciamethods (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp(6) with time zone DEFAULT now(),
+    json_ordered json,
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.lciamethods OWNER TO postgres;
+
+--
+-- Name: reviews; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reviews (
+    id uuid NOT NULL,
+    data_id uuid,
+    created_at timestamp with time zone DEFAULT now(),
+    modified_at timestamp with time zone DEFAULT now(),
+    state_code integer DEFAULT 0,
+    data_version character(9),
+    reviewer_id jsonb,
+    "json" jsonb,
+    deadline timestamp with time zone
+);
+
+
+ALTER TABLE public.reviews OWNER TO postgres;
+
+--
+-- Name: roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.roles (
+    user_id uuid NOT NULL,
+    team_id uuid NOT NULL,
+    role character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    modified_at timestamp with time zone
+);
+
+
+ALTER TABLE public.roles OWNER TO postgres;
+
+--
+-- Name: sources; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sources (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    json_ordered json,
+    embedding extensions.vector(1536),
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now(),
+    team_id uuid,
+    review_id uuid,
+    rule_verification boolean,
+    reviews jsonb
+);
 
 
-ALTER TABLE ONLY "public"."comments"
-    ADD CONSTRAINT "comments_pkey" PRIMARY KEY ("review_id", "reviewer_id");
+ALTER TABLE public.sources OWNER TO postgres;
 
+--
+-- Name: teams; Type: TABLE; Schema: public; Owner: postgres
+--
 
+CREATE TABLE public.teams (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    modified_at timestamp with time zone,
+    rank integer DEFAULT '-1'::integer,
+    is_public boolean DEFAULT false
+);
 
-ALTER TABLE ONLY "public"."contacts"
-    ADD CONSTRAINT "contacts_pkey" PRIMARY KEY ("id", "version");
 
+ALTER TABLE public.teams OWNER TO postgres;
 
+--
+-- Name: unitgroups; Type: TABLE; Schema: public; Owner: postgres
+--
 
-ALTER TABLE ONLY "public"."flowproperties"
-    ADD CONSTRAINT "flowproperties_pkey" PRIMARY KEY ("id", "version");
+CREATE TABLE public.unitgroups (
+    id uuid NOT NULL,
+    "json" jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    json_ordered json,
+    embedding extensions.vector(1536),
+    user_id uuid DEFAULT auth.uid(),
+    state_code integer DEFAULT 0,
+    version character(9) NOT NULL,
+    modified_at timestamp with time zone DEFAULT now(),
+    team_id uuid,
+    review_id uuid,
+    rule_verification boolean,
+    reviews jsonb
+);
 
 
+ALTER TABLE public.unitgroups OWNER TO postgres;
 
-ALTER TABLE ONLY "public"."flows"
-    ADD CONSTRAINT "flows_pkey" PRIMARY KEY ("id", "version");
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
 
+CREATE TABLE public.users (
+    id uuid NOT NULL,
+    raw_user_meta_data jsonb,
+    contact jsonb
+);
 
 
-ALTER TABLE ONLY "public"."ilcd"
-    ADD CONSTRAINT "ilcd_pkey" PRIMARY KEY ("id");
+ALTER TABLE public.users OWNER TO postgres;
 
+--
+-- Name: a_embedding_jobs a_embedding_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
 
+ALTER TABLE ONLY pgmq.a_embedding_jobs
+    ADD CONSTRAINT a_embedding_jobs_pkey PRIMARY KEY (msg_id);
 
-ALTER TABLE ONLY "public"."lciamethods"
-    ADD CONSTRAINT "lciamethods_pkey" PRIMARY KEY ("id", "version");
 
+--
+-- Name: a_lca_jobs a_lca_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
 
+ALTER TABLE ONLY pgmq.a_lca_jobs
+    ADD CONSTRAINT a_lca_jobs_pkey PRIMARY KEY (msg_id);
 
-ALTER TABLE ONLY "public"."lifecyclemodels"
-    ADD CONSTRAINT "lifecyclemodels_pkey" PRIMARY KEY ("id", "version");
 
+--
+-- Name: a_webhook_jobs a_webhook_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
 
+ALTER TABLE ONLY pgmq.a_webhook_jobs
+    ADD CONSTRAINT a_webhook_jobs_pkey PRIMARY KEY (msg_id);
 
-ALTER TABLE ONLY "public"."processes"
-    ADD CONSTRAINT "processes_pkey" PRIMARY KEY ("id", "version");
 
+--
+-- Name: q_embedding_jobs q_embedding_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
 
+ALTER TABLE ONLY pgmq.q_embedding_jobs
+    ADD CONSTRAINT q_embedding_jobs_pkey PRIMARY KEY (msg_id);
 
-ALTER TABLE ONLY "public"."reviews"
-    ADD CONSTRAINT "reviews_pkey" PRIMARY KEY ("id");
 
+--
+-- Name: q_lca_jobs q_lca_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
 
+ALTER TABLE ONLY pgmq.q_lca_jobs
+    ADD CONSTRAINT q_lca_jobs_pkey PRIMARY KEY (msg_id);
 
-ALTER TABLE ONLY "public"."roles"
-    ADD CONSTRAINT "roles_pkey" PRIMARY KEY ("user_id", "team_id");
 
+--
+-- Name: q_webhook_jobs q_webhook_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
 
+ALTER TABLE ONLY pgmq.q_webhook_jobs
+    ADD CONSTRAINT q_webhook_jobs_pkey PRIMARY KEY (msg_id);
 
-ALTER TABLE ONLY "public"."sources"
-    ADD CONSTRAINT "sources_pkey" PRIMARY KEY ("id", "version");
 
+--
+-- Name: comments comments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_pkey PRIMARY KEY (review_id, reviewer_id);
 
-ALTER TABLE ONLY "public"."teams"
-    ADD CONSTRAINT "teams_pkey" PRIMARY KEY ("id");
 
+--
+-- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.contacts
+    ADD CONSTRAINT contacts_pkey PRIMARY KEY (id, version);
 
-ALTER TABLE ONLY "public"."unitgroups"
-    ADD CONSTRAINT "unitgroups_pkey" PRIMARY KEY ("id", "version");
 
+--
+-- Name: flowproperties flowproperties_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.flowproperties
+    ADD CONSTRAINT flowproperties_pkey PRIMARY KEY (id, version);
 
-ALTER TABLE ONLY "public"."users"
-    ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
 
+--
+-- Name: flows flows_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.flows
+    ADD CONSTRAINT flows_pkey PRIMARY KEY (id, version);
 
-CREATE INDEX "contacts_created_at_idx" ON "public"."contacts" USING "btree" ("created_at" DESC);
 
+--
+-- Name: ilcd ilcd_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.ilcd
+    ADD CONSTRAINT ilcd_pkey PRIMARY KEY (id);
 
-CREATE INDEX "contacts_json_dataversion" ON "public"."contacts" USING "btree" (((((("json" -> 'contactDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
 
+--
+-- Name: lca_active_snapshots lca_active_snapshots_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_active_snapshots
+    ADD CONSTRAINT lca_active_snapshots_pkey PRIMARY KEY (scope);
 
-CREATE INDEX "contacts_json_email" ON "public"."contacts" USING "btree" (((((("json" -> 'contactDataSet'::"text") -> 'contactInformation'::"text") -> 'dataSetInformation'::"text") ->> 'email'::"text")));
 
+--
+-- Name: lca_factorization_registry lca_factorization_registry_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_factorization_registry
+    ADD CONSTRAINT lca_factorization_registry_pkey PRIMARY KEY (id);
 
-CREATE INDEX "contacts_json_idx" ON "public"."contacts" USING "gin" ("json");
 
+--
+-- Name: lca_factorization_registry lca_factorization_registry_scope_snapshot_backend_opts_uk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_factorization_registry
+    ADD CONSTRAINT lca_factorization_registry_scope_snapshot_backend_opts_uk UNIQUE (scope, snapshot_id, backend, numeric_options_hash);
 
-CREATE INDEX "contacts_json_ordered_vector" ON "public"."contacts" USING "hnsw" ("embedding" "extensions"."vector_cosine_ops");
 
+--
+-- Name: lca_jobs lca_jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_jobs
+    ADD CONSTRAINT lca_jobs_pkey PRIMARY KEY (id);
 
-CREATE INDEX "contacts_json_pgroonga" ON "public"."contacts" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
 
+--
+-- Name: lca_latest_all_unit_results lca_latest_all_unit_results_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_latest_all_unit_results
+    ADD CONSTRAINT lca_latest_all_unit_results_pkey PRIMARY KEY (id);
 
-CREATE INDEX "contacts_user_id_created_at_idx" ON "public"."contacts" USING "btree" ("user_id", "created_at" DESC);
 
+--
+-- Name: lca_latest_all_unit_results lca_latest_all_unit_results_snapshot_uk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_latest_all_unit_results
+    ADD CONSTRAINT lca_latest_all_unit_results_snapshot_uk UNIQUE (snapshot_id);
 
-CREATE UNIQUE INDEX "file_name_index" ON "public"."ilcd" USING "btree" ("file_name");
 
+--
+-- Name: lca_network_snapshots lca_network_snapshots_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_network_snapshots
+    ADD CONSTRAINT lca_network_snapshots_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flowproperties_created_at_idx" ON "public"."flowproperties" USING "btree" ("created_at" DESC);
 
+--
+-- Name: lca_result_cache lca_result_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_result_cache
+    ADD CONSTRAINT lca_result_cache_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flowproperties_json_dataversion" ON "public"."flowproperties" USING "btree" (((((("json" -> 'flowPropertyDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
 
+--
+-- Name: lca_result_cache lca_result_cache_scope_snapshot_request_key_uk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_result_cache
+    ADD CONSTRAINT lca_result_cache_scope_snapshot_request_key_uk UNIQUE (scope, snapshot_id, request_key);
 
-CREATE INDEX "flowproperties_json_idx" ON "public"."flowproperties" USING "gin" ("json");
 
+--
+-- Name: lca_results lca_results_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_results
+    ADD CONSTRAINT lca_results_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flowproperties_json_ordered_vector" ON "public"."flowproperties" USING "hnsw" ("embedding" "extensions"."vector_cosine_ops");
 
+--
+-- Name: lca_snapshot_artifacts lca_snapshot_artifacts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lca_snapshot_artifacts
+    ADD CONSTRAINT lca_snapshot_artifacts_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flowproperties_json_pgroonga" ON "public"."flowproperties" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
 
+--
+-- Name: lciamethods lciamethods_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lciamethods
+    ADD CONSTRAINT lciamethods_pkey PRIMARY KEY (id, version);
 
-CREATE INDEX "flowproperties_json_refobjectid" ON "public"."flowproperties" USING "btree" ((((((("json" -> 'flowPropertyDataSet'::"text") -> 'flowPropertiesInformation'::"text") -> 'quantitativeReference'::"text") -> 'referenceToReferenceUnitGroup'::"text") ->> '@refObjectId'::"text")));
 
+--
+-- Name: lifecyclemodels lifecyclemodels_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.lifecyclemodels
+    ADD CONSTRAINT lifecyclemodels_pkey PRIMARY KEY (id, version);
 
-CREATE INDEX "flowproperties_modified_at_idx" ON "public"."flowproperties" USING "btree" ("modified_at");
 
+--
+-- Name: processes processes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.processes
+    ADD CONSTRAINT processes_pkey PRIMARY KEY (id, version);
 
-CREATE INDEX "flowproperties_user_id_created_at_idx" ON "public"."flowproperties" USING "btree" ("user_id", "created_at" DESC);
 
+--
+-- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.reviews
+    ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flows_composite_idx" ON "public"."flows" USING "btree" (((((("json" -> 'flowDataSet'::"text") -> 'modellingAndValidation'::"text") -> 'LCIMethod'::"text") ->> 'typeOfDataSet'::"text")), "state_code", "modified_at" DESC);
 
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (user_id, team_id);
 
-CREATE INDEX "flows_created_at_idx" ON "public"."flows" USING "btree" ("created_at" DESC);
 
+--
+-- Name: sources sources_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.sources
+    ADD CONSTRAINT sources_pkey PRIMARY KEY (id, version);
 
-CREATE INDEX "flows_embedding_ft_hnsw_idx" ON "public"."flows" USING "hnsw" ("embedding_ft" "extensions"."vector_cosine_ops");
 
+--
+-- Name: teams teams_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.teams
+    ADD CONSTRAINT teams_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flows_embedding_hnsw_idx" ON "public"."flows" USING "hnsw" ("embedding" "extensions"."halfvec_cosine_ops");
 
+--
+-- Name: unitgroups unitgroups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.unitgroups
+    ADD CONSTRAINT unitgroups_pkey PRIMARY KEY (id, version);
 
-CREATE INDEX "flows_json_casnumber" ON "public"."flows" USING "btree" (((((("json" -> 'flowDataSet'::"text") -> 'flowInformation'::"text") -> 'dataSetInformation'::"text") ->> 'CASNumber'::"text")));
 
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
 
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
-CREATE INDEX "flows_json_dataversion" ON "public"."flows" USING "btree" (((((("json" -> 'flowDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
 
+--
+-- Name: archived_at_idx_embedding_jobs; Type: INDEX; Schema: pgmq; Owner: postgres
+--
 
+CREATE INDEX archived_at_idx_embedding_jobs ON pgmq.a_embedding_jobs USING btree (archived_at);
 
-CREATE INDEX "flows_json_locationofsupply" ON "public"."flows" USING "btree" (((((("json" -> 'flowDataSet'::"text") -> 'flowInformation'::"text") -> 'geography'::"text") ->> 'locationOfSupply'::"text")));
 
+--
+-- Name: archived_at_idx_lca_jobs; Type: INDEX; Schema: pgmq; Owner: postgres
+--
 
+CREATE INDEX archived_at_idx_lca_jobs ON pgmq.a_lca_jobs USING btree (archived_at);
 
-CREATE INDEX "flows_json_pgroonga" ON "public"."flows" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
 
+--
+-- Name: archived_at_idx_webhook_jobs; Type: INDEX; Schema: pgmq; Owner: postgres
+--
 
+CREATE INDEX archived_at_idx_webhook_jobs ON pgmq.a_webhook_jobs USING btree (archived_at);
 
-CREATE INDEX "flows_json_typeofdataset" ON "public"."flows" USING "btree" (((((("json" -> 'flowDataSet'::"text") -> 'modellingAndValidation'::"text") -> 'LCIMethod'::"text") ->> 'typeOfDataSet'::"text")));
 
+--
+-- Name: q_embedding_jobs_vt_idx; Type: INDEX; Schema: pgmq; Owner: postgres
+--
 
+CREATE INDEX q_embedding_jobs_vt_idx ON pgmq.q_embedding_jobs USING btree (vt);
 
-CREATE INDEX "flows_modified_at_idx" ON "public"."flows" USING "btree" ("modified_at");
 
+--
+-- Name: q_lca_jobs_vt_idx; Type: INDEX; Schema: pgmq; Owner: postgres
+--
 
+CREATE INDEX q_lca_jobs_vt_idx ON pgmq.q_lca_jobs USING btree (vt);
 
-CREATE INDEX "flows_not_emissions_idx" ON "public"."flows" USING "btree" ("state_code", "modified_at" DESC) WHERE (NOT ("json" @> '{"flowDataSet": {"flowInformation": {"dataSetInformation": {"classificationInformation": {"common:elementaryFlowCategorization": {"common:category": [{"#text": "Emissions", "@level": "0"}]}}}}}}'::"jsonb"));
 
+--
+-- Name: q_webhook_jobs_vt_idx; Type: INDEX; Schema: pgmq; Owner: postgres
+--
 
+CREATE INDEX q_webhook_jobs_vt_idx ON pgmq.q_webhook_jobs USING btree (vt);
 
-CREATE INDEX "flows_review_id_idx" ON "public"."flows" USING "btree" ("review_id");
 
+--
+-- Name: contacts_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
 
+CREATE INDEX contacts_created_at_idx ON public.contacts USING btree (created_at DESC);
 
-CREATE INDEX "flows_state_code_idx" ON "public"."flows" USING "btree" ("state_code");
 
+--
+-- Name: contacts_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
 
+CREATE INDEX contacts_json_dataversion ON public.contacts USING btree (((((("json" -> 'contactDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
 
-CREATE INDEX "flows_team_id_idx" ON "public"."flows" USING "btree" ("team_id");
 
+--
+-- Name: contacts_json_email; Type: INDEX; Schema: public; Owner: postgres
+--
 
+CREATE INDEX contacts_json_email ON public.contacts USING btree (((((("json" -> 'contactDataSet'::text) -> 'contactInformation'::text) -> 'dataSetInformation'::text) ->> 'email'::text)));
 
-CREATE INDEX "flows_text_pgroonga" ON "public"."flows" USING "pgroonga" ("extracted_text");
 
+--
+-- Name: contacts_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
 
+CREATE INDEX contacts_json_idx ON public.contacts USING gin ("json");
 
-CREATE INDEX "flows_user_id_created_at_idx" ON "public"."flows" USING "btree" ("user_id", "created_at" DESC);
 
-
-
-CREATE INDEX "ilcd_created_at_idx" ON "public"."ilcd" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "ilcd_json_idx" ON "public"."ilcd" USING "gin" ("json");
-
-
-
-CREATE INDEX "ilcd_modified_at_idx" ON "public"."ilcd" USING "btree" ("modified_at");
-
-
-
-CREATE INDEX "ilcd_user_id_created_at_idx" ON "public"."ilcd" USING "btree" ("user_id", "created_at" DESC);
-
-
-
-CREATE INDEX "lciamethods_created_at_idx" ON "public"."lciamethods" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "lciamethods_json_dataversion" ON "public"."lciamethods" USING "btree" (((((("json" -> 'LCIAMethodDataSetDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
-
-
-
-CREATE INDEX "lciamethods_json_idx" ON "public"."lciamethods" USING "gin" ("json");
-
-
-
-CREATE INDEX "lciamethods_json_pgroonga" ON "public"."lciamethods" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
-
-
-
-CREATE INDEX "lciamethods_modified_at_idx" ON "public"."lciamethods" USING "btree" ("modified_at");
-
-
-
-CREATE INDEX "lciamethods_user_id_created_at_idx" ON "public"."lciamethods" USING "btree" ("user_id", "created_at" DESC);
-
-
-
-CREATE INDEX "lifecyclemodels_created_at_idx" ON "public"."lifecyclemodels" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "lifecyclemodels_embedding_ft_hnsw_idx" ON "public"."lifecyclemodels" USING "hnsw" ("embedding_ft" "extensions"."vector_cosine_ops");
-
-
-
-CREATE INDEX "lifecyclemodels_embedding_hnsw_idx" ON "public"."lifecyclemodels" USING "hnsw" ("embedding" "extensions"."halfvec_cosine_ops");
-
-
-
-CREATE INDEX "lifecyclemodels_json_dataversion" ON "public"."lifecyclemodels" USING "btree" (((((("json" -> 'lifeCycleModelDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
-
-
-
-CREATE INDEX "lifecyclemodels_json_idx" ON "public"."lifecyclemodels" USING "gin" ("json");
-
-
-
-CREATE INDEX "lifecyclemodels_json_pgroonga" ON "public"."lifecyclemodels" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
-
-
-
-CREATE INDEX "lifecyclemodels_json_tg_idx" ON "public"."lifecyclemodels" USING "gin" ("json_tg");
-
-
-
-CREATE INDEX "lifecyclemodels_modified_at_idx" ON "public"."lifecyclemodels" USING "btree" ("modified_at");
-
-
-
-CREATE INDEX "lifecyclemodels_text_pgroonga" ON "public"."lifecyclemodels" USING "pgroonga" ("extracted_text");
-
-
-
-CREATE INDEX "lifecyclemodels_user_id_created_at_idx" ON "public"."lifecyclemodels" USING "btree" ("user_id", "created_at" DESC);
-
-
-
-CREATE INDEX "processes_created_at_idx" ON "public"."processes" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "processes_embedding_ft_hnsw_idx" ON "public"."processes" USING "hnsw" ("embedding_ft" "extensions"."vector_cosine_ops");
-
-
-
-CREATE INDEX "processes_embedding_hnsw_idx" ON "public"."processes" USING "hnsw" ("embedding" "extensions"."halfvec_cosine_ops");
-
-
-
-CREATE INDEX "processes_json_dataversion" ON "public"."processes" USING "btree" (((((("json" -> 'processDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
-
-
-
-CREATE INDEX "processes_json_exchange_gin_idx" ON "public"."processes" USING "gin" ((((("json" -> 'processDataSet'::"text") -> 'exchanges'::"text") -> 'exchange'::"text")));
-
-
-
-CREATE INDEX "processes_json_location" ON "public"."processes" USING "btree" ((((((("json" -> 'processDataSet'::"text") -> 'processInformation'::"text") -> 'geography'::"text") -> 'locationOfOperationSupplyOrProduction'::"text") ->> '@location'::"text")));
-
-
-
-CREATE INDEX "processes_json_pgroonga" ON "public"."processes" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
-
-
-
-CREATE INDEX "processes_json_referenceyear" ON "public"."processes" USING "btree" (((((("json" -> 'processDataSet'::"text") -> 'processInformation'::"text") -> 'time'::"text") ->> 'common:referenceYear'::"text")));
-
-
-
-CREATE INDEX "processes_modified_at_idx" ON "public"."processes" USING "btree" ("modified_at");
-
-
-
-CREATE INDEX "processes_review_id_idx" ON "public"."processes" USING "btree" ("review_id");
-
-
-
-CREATE INDEX "processes_rule_verification_idx" ON "public"."processes" USING "btree" ("rule_verification");
-
-
-
-CREATE INDEX "processes_state_code_idx" ON "public"."processes" USING "btree" ("state_code");
-
-
-
-CREATE INDEX "processes_team_id_idx" ON "public"."processes" USING "btree" ("team_id");
-
-
-
-CREATE INDEX "processes_text_pgroonga" ON "public"."processes" USING "pgroonga" ("extracted_text");
-
-
-
-CREATE INDEX "processes_user_id_created_at_idx" ON "public"."processes" USING "btree" ("user_id", "created_at" DESC);
-
-
-
-CREATE INDEX "reviews_data_id_data_version_idx" ON "public"."reviews" USING "btree" ("data_id", "data_version");
-
-
-
-CREATE INDEX "roles_role_idx" ON "public"."roles" USING "btree" ("role");
-
-
-
-CREATE INDEX "roles_team_id_user_id_role_idx" ON "public"."roles" USING "btree" ("team_id", "user_id", "role");
-
-
-
-CREATE INDEX "sources_created_at_idx" ON "public"."sources" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "sources_json_dataversion" ON "public"."sources" USING "btree" (((((("json" -> 'sourceDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
-
-
-
-CREATE INDEX "sources_json_idx" ON "public"."sources" USING "gin" ("json");
-
-
-
-CREATE INDEX "sources_json_ordered_vector" ON "public"."sources" USING "hnsw" ("embedding" "extensions"."vector_cosine_ops");
-
-
-
-CREATE INDEX "sources_json_pgroonga" ON "public"."sources" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
-
-
-
-CREATE INDEX "sources_json_publicationtype" ON "public"."sources" USING "btree" (((((("json" -> 'sourceDataSet'::"text") -> 'sourceInformation'::"text") -> 'dataSetInformation'::"text") ->> 'publicationType'::"text")));
-
-
-
-CREATE INDEX "sources_json_sourcecitation" ON "public"."sources" USING "btree" (((((("json" -> 'sourceDataSet'::"text") -> 'sourceInformation'::"text") -> 'dataSetInformation'::"text") ->> 'sourceCitation'::"text")));
-
-
-
-CREATE INDEX "sources_modified_at_idx" ON "public"."sources" USING "btree" ("modified_at");
-
-
-
-CREATE INDEX "sources_user_id_created_at_idx" ON "public"."sources" USING "btree" ("user_id", "created_at" DESC);
-
-
-
-CREATE INDEX "unitgroups_created_at_idx" ON "public"."unitgroups" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "unitgroups_json_dataversion" ON "public"."unitgroups" USING "btree" (((((("json" -> 'unitGroupDataSet'::"text") -> 'administrativeInformation'::"text") -> 'publicationAndOwnership'::"text") ->> 'common:dataSetVersion'::"text")));
-
-
-
-CREATE INDEX "unitgroups_json_idx" ON "public"."unitgroups" USING "gin" ("json");
-
-
-
-CREATE INDEX "unitgroups_json_ordered_vector" ON "public"."unitgroups" USING "hnsw" ("embedding" "extensions"."vector_cosine_ops");
-
-
-
-CREATE INDEX "unitgroups_json_pgroonga" ON "public"."unitgroups" USING "pgroonga" ("json" "extensions"."pgroonga_jsonb_full_text_search_ops_v2");
-
-
-
-CREATE INDEX "unitgroups_json_referencetoreferenceunit" ON "public"."unitgroups" USING "btree" (((((("json" -> 'unitGroupDataSet'::"text") -> 'unitGroupInformation'::"text") -> 'quantitativeReference'::"text") ->> 'referenceToReferenceUnit'::"text")));
-
-
-
-CREATE INDEX "unitgroups_modified_at_idx" ON "public"."unitgroups" USING "btree" ("modified_at");
-
-
-
-CREATE INDEX "unitgroups_user_id_created_at_idx" ON "public"."unitgroups" USING "btree" ("user_id", "created_at" DESC);
-
-
-
-CREATE OR REPLACE TRIGGER "contacts_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."contacts" FOR EACH ROW EXECUTE FUNCTION "public"."contacts_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "contacts_set_modified_at_trigger" BEFORE UPDATE ON "public"."contacts" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "flow_embedding_ft_on_extract_md_update" AFTER UPDATE OF "extracted_md" ON "public"."flows" FOR EACH ROW WHEN (("old"."extracted_md" IS DISTINCT FROM "new"."extracted_md")) EXECUTE FUNCTION "util"."queue_embeddings"('flows_embedding_ft_input', 'embedding_ft', 'embedding_ft');
-
-
-
-CREATE OR REPLACE TRIGGER "flow_extract_md_trigger_insert" AFTER INSERT ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "flow_extract_md_trigger_update" AFTER UPDATE OF "json" ON "public"."flows" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "flow_extract_md_trigger_update_flag" AFTER UPDATE OF "embedding_flag" ON "public"."flows" FOR EACH ROW WHEN (("new"."embedding_flag" IS DISTINCT FROM "old"."embedding_flag")) EXECUTE FUNCTION "util"."queue_embedding_webhook"();
-
-
-
-CREATE OR REPLACE TRIGGER "flow_extract_text_trigger_insert" AFTER INSERT ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "flow_extract_text_trigger_update" AFTER UPDATE OF "json" ON "public"."flows" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "flowproperties_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."flowproperties" FOR EACH ROW EXECUTE FUNCTION "public"."flowproperties_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "flowproperties_set_modified_at_trigger" BEFORE UPDATE ON "public"."flowproperties" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "flows_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "public"."flows_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "flows_set_modified_at_trigger" BEFORE UPDATE ON "public"."flows" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "ilcd_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."ilcd" FOR EACH ROW EXECUTE FUNCTION "public"."sync_json_to_jsonb"();
-
-
-
-CREATE OR REPLACE TRIGGER "ilcd_set_modified_at_trigger" BEFORE UPDATE ON "public"."ilcd" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "lciamethods_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."lciamethods" FOR EACH ROW EXECUTE FUNCTION "public"."lciamethods_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "lciamethods_set_modified_at_trigger" BEFORE UPDATE ON "public"."lciamethods" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodel_embedding_ft_on_extract_md_update" AFTER UPDATE OF "extracted_md" ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("old"."extracted_md" IS DISTINCT FROM "new"."extracted_md")) EXECUTE FUNCTION "util"."queue_embeddings"('lifecyclemodels_embedding_ft_input', 'embedding_ft', 'embedding_ft');
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodel_extract_md_trigger_insert" AFTER INSERT ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodel_extract_md_trigger_update" AFTER UPDATE OF "json" ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodel_extract_md_trigger_update_flag" AFTER UPDATE OF "embedding_flag" ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("new"."embedding_flag" IS DISTINCT FROM "old"."embedding_flag")) EXECUTE FUNCTION "util"."queue_embedding_webhook"();
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodels_extract_text_trigger_insert" AFTER INSERT ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodels_extract_text_trigger_update" AFTER UPDATE OF "json" ON "public"."lifecyclemodels" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodels_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "public"."lifecyclemodels_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "lifecyclemodels_set_modified_at_trigger" BEFORE UPDATE ON "public"."lifecyclemodels" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "process_embedding_ft_on_extract_md_update" AFTER UPDATE OF "extracted_md" ON "public"."processes" FOR EACH ROW WHEN (("old"."extracted_md" IS DISTINCT FROM "new"."extracted_md")) EXECUTE FUNCTION "util"."queue_embeddings"('processes_embedding_ft_input', 'embedding_ft', 'embedding_ft');
-
-
-
-CREATE OR REPLACE TRIGGER "process_extract_md_trigger_insert" AFTER INSERT ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "process_extract_md_trigger_update" AFTER UPDATE OF "json" ON "public"."processes" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "process_extract_md_trigger_update_flag" AFTER UPDATE OF "embedding_flag" ON "public"."processes" FOR EACH ROW WHEN (("new"."embedding_flag" IS DISTINCT FROM "old"."embedding_flag")) EXECUTE FUNCTION "util"."queue_embedding_webhook"();
-
-
-
-CREATE OR REPLACE TRIGGER "process_extract_text_trigger_insert" AFTER INSERT ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "process_extract_text_trigger_update" AFTER UPDATE OF "json" ON "public"."processes" FOR EACH ROW WHEN (("new"."json" IS DISTINCT FROM "old"."json")) EXECUTE FUNCTION "supabase_functions"."http_request"('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
-
-
-
-CREATE OR REPLACE TRIGGER "processes_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "public"."processes_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "processes_set_modified_at_trigger" BEFORE UPDATE ON "public"."processes" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "roles_set_modified_at_trigger" BEFORE UPDATE ON "public"."roles" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "sources_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."sources" FOR EACH ROW EXECUTE FUNCTION "public"."sources_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "sources_set_modified_at_trigger" BEFORE UPDATE ON "public"."sources" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "teams_set_modified_at_trigger" BEFORE UPDATE ON "public"."teams" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "unitgroups_json_sync_trigger" BEFORE INSERT OR UPDATE ON "public"."unitgroups" FOR EACH ROW EXECUTE FUNCTION "public"."unitgroups_sync_jsonb_version"();
-
-
-
-CREATE OR REPLACE TRIGGER "unitgroups_set_modified_at_trigger" BEFORE UPDATE ON "public"."unitgroups" FOR EACH ROW EXECUTE FUNCTION "public"."update_modified_at"();
-
-
-
-ALTER TABLE ONLY "public"."comments"
-    ADD CONSTRAINT "comments_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "public"."reviews"("id");
-
-
-
-ALTER TABLE ONLY "public"."roles"
-    ADD CONSTRAINT "roles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id");
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."contacts" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."flowproperties" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."flows" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."lifecyclemodels" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."processes" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."sources" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."unitgroups" FOR DELETE TO "authenticated" USING ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert data access for self" ON "public"."reviews" FOR INSERT TO "authenticated" WITH CHECK ((("auth"."uid"() IS NOT NULL) AND (((("json" -> 'user'::"text") ->> 'id'::"text"))::"uuid" = ( SELECT "auth"."uid"() AS "uid"))));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."contacts" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."flowproperties" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."flows" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."lifecyclemodels" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."processes" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."sources" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."unitgroups" FOR INSERT TO "authenticated" WITH CHECK ((("state_code" = 0) AND (( SELECT "auth"."uid"() AS "uid") = "user_id")));
-
-
-
-CREATE POLICY "Enable insert for review-admin" ON "public"."comments" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND (("roles"."role")::"text" = 'review-admin'::"text")))));
-
-
-
-CREATE POLICY "Enable read access for all users" ON "public"."ilcd" FOR SELECT TO "authenticated" USING (true);
-
-
-
-CREATE POLICY "Enable read access for all users" ON "public"."lciamethods" FOR SELECT TO "authenticated" USING (true);
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."contacts" FOR SELECT USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "contacts"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "contacts"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("contacts"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("contacts"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."flowproperties" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "flowproperties"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "flowproperties"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("flowproperties"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("flowproperties"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."flows" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "flows"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "flows"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("flows"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("flows"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."lifecyclemodels" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "lifecyclemodels"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "lifecyclemodels"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("lifecyclemodels"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("lifecyclemodels"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."processes" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "processes"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "processes"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("processes"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("processes"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))))));
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."sources" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "sources"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "sources"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("sources"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("sources"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
-
-
-
-CREATE POLICY "Enable read access for authenticated users" ON "public"."unitgroups" FOR SELECT TO "authenticated" USING ((("state_code" >= 100) OR (( SELECT "auth"."uid"() AS "uid") = "user_id") OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = "unitgroups"."team_id") AND (("roles"."role")::"text" = ANY (ARRAY[('admin'::character varying)::"text", ('member'::character varying)::"text", ('owner'::character varying)::"text"])) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (("state_code" = 20) AND ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid") AND (("roles"."role")::"text" = 'review-admin'::"text") AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."state_code" > 0) AND (((("r"."json" -> 'data'::"text") ->> 'id'::"text"))::"uuid" = "unitgroups"."id") AND ((("r"."json" -> 'data'::"text") ->> 'version'::"text") = ("unitgroups"."version")::"text") AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text"))))) OR (EXISTS ( SELECT 1
-   FROM "public"."reviews" "r"
-  WHERE (("r"."id" IN ( SELECT (("review_item"."value" ->> 'id'::"text"))::"uuid" AS "uuid"
-           FROM "jsonb_array_elements"("unitgroups"."reviews") "review_item"("value"))) AND ("r"."reviewer_id" @> "jsonb_build_array"((( SELECT "auth"."uid"() AS "uid"))::"text")))))))));
-
-
-
-CREATE POLICY "Enable read open data access for reviews" ON "public"."comments" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND ((("roles"."role")::"text" = 'review-admin'::"text") OR (("roles"."role")::"text" = 'review-member'::"text"))))));
-
-
-
-CREATE POLICY "Enable read open data access for reviews" ON "public"."reviews" FOR SELECT TO "authenticated" USING (((EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND ((("roles"."role")::"text" = 'review-admin'::"text") OR ((("roles"."role")::"text" = 'review-member'::"text") AND ("reviews"."reviewer_id" ? (( SELECT "auth"."uid"() AS "uid"))::"text")))))) OR ((( SELECT "auth"."uid"() AS "uid") IS NOT NULL) AND (((("json" -> 'user'::"text") ->> 'id'::"text"))::"uuid" = ( SELECT "auth"."uid"() AS "uid"))) OR ("state_code" = ANY (ARRAY[2, '-1'::integer]))));
-
-
-
-ALTER TABLE "public"."comments" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."contacts" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "delete by owner and admin" ON "public"."roles" FOR DELETE TO "authenticated" USING ("public"."policy_roles_delete"("user_id", "team_id", ("role")::"text"));
-
-
-
-ALTER TABLE "public"."flowproperties" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."flows" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."ilcd" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "insert by authenticated" ON "public"."roles" FOR INSERT TO "authenticated" WITH CHECK ("public"."policy_roles_insert"("user_id", "team_id", ("role")::"text"));
-
-
-
-CREATE POLICY "insert by authenticated" ON "public"."teams" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "count"(1) AS "count"
-   FROM "public"."roles"
-  WHERE (("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND (("roles"."role")::"text" <> 'rejected'::"text") AND ("roles"."team_id" <> '00000000-0000-0000-0000-000000000000'::"uuid"))) = 0));
-
-
-
-ALTER TABLE "public"."lciamethods" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."lifecyclemodels" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."processes" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."reviews" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."roles" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "select by owner or public teams" ON "public"."teams" FOR SELECT TO "authenticated" USING (("is_public" OR ("rank" > 0) OR (EXISTS ( SELECT 1
-   FROM "public"."roles"
-  WHERE ((("roles"."team_id" = "teams"."id") OR ("roles"."team_id" = '00000000-0000-0000-0000-000000000000'::"uuid")) AND ("roles"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND (("roles"."role")::"text" <> 'rejected'::"text"))))));
-
-
-
-CREATE POLICY "select by self and team" ON "public"."roles" FOR SELECT TO "authenticated" USING ("public"."policy_roles_select"("team_id", ("role")::"text"));
-
-
-
-CREATE POLICY "select by self and team and admin" ON "public"."users" FOR SELECT TO "authenticated" USING ((("id" = ( SELECT "auth"."uid"() AS "uid")) OR ("id" IN ( SELECT "r"."user_id"
-   FROM "public"."roles" "r"
-  WHERE ((("r"."role")::"text" = 'owner'::"text") AND ("public"."policy_is_team_public"("r"."team_id") = true)))) OR ("id" IN ( SELECT "r0"."user_id"
-   FROM "public"."roles" "r0"
-  WHERE ("r0"."team_id" IN ( SELECT "r"."team_id"
-           FROM "public"."roles" "r"
-          WHERE (("r"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND (("r"."role")::"text" <> 'rejected'::"text")))))) OR "public"."policy_is_current_user_in_roles"('00000000-0000-0000-0000-000000000000'::"uuid", ARRAY['admin'::"text", 'review-admin'::"text", 'review-member'::"text"])));
-
-
-
-ALTER TABLE "public"."sources" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."teams" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."unitgroups" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "update by admin or owner or self" ON "public"."roles" FOR UPDATE TO "authenticated" USING ("public"."policy_roles_update"("user_id", "team_id", ("role")::"text"));
-
-
-
-CREATE POLICY "update by owner and admin" ON "public"."teams" FOR UPDATE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") IN ( SELECT "roles"."user_id"
-   FROM "public"."roles"
-  WHERE ((("roles"."role")::"text" = 'admin'::"text") OR (("roles"."role")::"text" = 'owner'::"text")))));
-
-
-
-CREATE POLICY "update by review-admin or data owener" ON "public"."comments" FOR UPDATE TO "authenticated" USING ((("reviewer_id" = ( SELECT "auth"."uid"() AS "uid")) OR (EXISTS ( SELECT 1
-   FROM "public"."roles" "r"
-  WHERE (("r"."user_id" = ( SELECT "auth"."uid"() AS "uid")) AND (("r"."role")::"text" = 'review-admin'::"text"))))));
-
-
-
-ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
-
-
-
-
-ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
-
-
-
-
-
-GRANT USAGE ON SCHEMA "public" TO "anon";
-GRANT USAGE ON SCHEMA "public" TO "authenticated";
-GRANT USAGE ON SCHEMA "public" TO "service_role";
-GRANT USAGE ON SCHEMA "public" TO "postgres";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-GRANT ALL ON FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."_navicat_temp_stored_proc"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" numeric, "extracted_text_weight" numeric, "semantic_weight" numeric, "rrf_k" integer, "data_source" "text", "this_user_id" "text", "page_size" integer, "page_current" integer) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."contacts_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."flowproperties_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."flowproperties_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."flowproperties_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flows" TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."flows_embedding_ft_input"("proc" "public"."flows") TO "anon";
-GRANT ALL ON FUNCTION "public"."flows_embedding_ft_input"("proc" "public"."flows") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."flows_embedding_ft_input"("proc" "public"."flows") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") TO "anon";
-GRANT ALL ON FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."flows_embedding_input"("flow" "public"."flows") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."flows_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."flows_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."flows_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."generate_flow_embedding"() TO "anon";
-GRANT ALL ON FUNCTION "public"."generate_flow_embedding"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."generate_flow_embedding"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."hybrid_search_flows"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."hybrid_search_lifecyclemodels"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."hybrid_search_processes"("query_text" "text", "query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "full_text_weight" double precision, "extracted_text_weight" double precision, "semantic_weight" double precision, "rrf_k" integer, "data_source" "text", "page_size" integer, "page_current" integer) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."ilcd_classification_get"("this_file_name" "text", "category_type" "text", "get_values" "text"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."ilcd_classification_get"("this_file_name" "text", "category_type" "text", "get_values" "text"[]) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."ilcd_flow_categorization_get"("this_file_name" "text", "get_values" "text"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."ilcd_flow_categorization_get"("this_file_name" "text", "get_values" "text"[]) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."ilcd_location_get"("this_file_name" "text", "get_values" "text"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."ilcd_location_get"("this_file_name" "text", "get_values" "text"[]) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."lciamethods_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."lciamethods_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."lciamethods_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lifecyclemodels" TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_ft_input"("proc" "public"."lifecyclemodels") TO "anon";
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_ft_input"("proc" "public"."lifecyclemodels") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_ft_input"("proc" "public"."lifecyclemodels") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") TO "anon";
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_embedding_input"("models" "public"."lifecyclemodels") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."lifecyclemodels_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search"("query_text" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search"("query_text" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search"("query_text" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_contacts"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_contacts"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_contacts"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flowproperties"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flowproperties"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flowproperties"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_flows_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_lifecyclemodels_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_text_v1"("query_text" "text", "page_size" integer, "page_current" integer, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_processes_v1"("query_text" "text", "filter_condition" "text", "order_by" "text", "page_size" bigint, "page_current" bigint, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_sources"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."pgroonga_search_unitgroups"("query_text" "text", "filter_condition" "text", "page_size" bigint, "page_current" bigint, "data_source" "text", "this_user_id" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_is_current_user_in_roles"("p_team_id" "uuid", "p_roles_to_check" "text"[]) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_is_current_user_in_roles"("p_team_id" "uuid", "p_roles_to_check" "text"[]) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_is_team_id_used"("_team_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_is_team_id_used"("_team_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_is_team_id_used"("_team_id" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_is_team_public"("_team_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_is_team_public"("_team_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_is_team_public"("_team_id" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_roles_delete"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_roles_delete"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_roles_delete"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_roles_insert"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_roles_insert"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_roles_insert"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_roles_select"("_team_id" "uuid", "_role" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_roles_select"("_team_id" "uuid", "_role" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_roles_select"("_team_id" "uuid", "_role" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_roles_update"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_roles_update"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_roles_update"("_user_id" "uuid", "_team_id" "uuid", "_role" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."policy_user_has_team"("_user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."policy_user_has_team"("_user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."policy_user_has_team"("_user_id" "uuid") TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."processes" TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."processes_embedding_ft_input"("proc" "public"."processes") TO "anon";
-GRANT ALL ON FUNCTION "public"."processes_embedding_ft_input"("proc" "public"."processes") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."processes_embedding_ft_input"("proc" "public"."processes") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") TO "anon";
-GRANT ALL ON FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."processes_embedding_input"("proc" "public"."processes") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."processes_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."processes_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."processes_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."semantic_search"("query_embedding" "text", "match_threshold" double precision, "match_count" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."semantic_search"("query_embedding" "text", "match_threshold" double precision, "match_count" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."semantic_search"("query_embedding" "text", "match_threshold" double precision, "match_count" integer) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."semantic_search_flows_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."semantic_search_flows_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."semantic_search_flows_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."semantic_search_lifecyclemodels_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."semantic_search_lifecyclemodels_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."semantic_search_lifecyclemodels_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."semantic_search_processes_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."semantic_search_processes_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."semantic_search_processes_v1"("query_embedding" "text", "filter_condition" "text", "match_threshold" double precision, "match_count" integer, "data_source" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."sources_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."sources_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."sources_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."sync_auth_users_to_public_users"() TO "anon";
-GRANT ALL ON FUNCTION "public"."sync_auth_users_to_public_users"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."sync_auth_users_to_public_users"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."sync_json_to_jsonb"() TO "anon";
-GRANT ALL ON FUNCTION "public"."sync_json_to_jsonb"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."sync_json_to_jsonb"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."unitgroups_sync_jsonb_version"() TO "anon";
-GRANT ALL ON FUNCTION "public"."unitgroups_sync_jsonb_version"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."unitgroups_sync_jsonb_version"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."update_modified_at"() TO "anon";
-GRANT ALL ON FUNCTION "public"."update_modified_at"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."update_modified_at"() TO "service_role";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."comments" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."comments" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."comments" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."contacts" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."contacts" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."contacts" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flowproperties" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flowproperties" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."flowproperties" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."ilcd" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."ilcd" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."ilcd" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lciamethods" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lciamethods" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lciamethods" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."reviews" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."reviews" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."reviews" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."roles" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."roles" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."roles" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."sources" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."sources" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."sources" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."teams" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."teams" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."teams" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."unitgroups" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."unitgroups" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."unitgroups" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."users" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."users" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."users" TO "service_role";
-
-
-
-
-
-
-
-
-
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "service_role";
-
-
-
-
-
-
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "service_role";
-
-
-
-
-
-
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO "service_role";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-drop trigger if exists "contacts_json_sync_trigger" on "public"."contacts";
-
-drop trigger if exists "contacts_set_modified_at_trigger" on "public"."contacts";
-
-drop trigger if exists "flowproperties_json_sync_trigger" on "public"."flowproperties";
-
-drop trigger if exists "flowproperties_set_modified_at_trigger" on "public"."flowproperties";
-
-drop trigger if exists "flows_json_sync_trigger" on "public"."flows";
-
-drop trigger if exists "flows_set_modified_at_trigger" on "public"."flows";
-
-drop trigger if exists "ilcd_json_sync_trigger" on "public"."ilcd";
-
-drop trigger if exists "ilcd_set_modified_at_trigger" on "public"."ilcd";
-
-drop trigger if exists "lciamethods_json_sync_trigger" on "public"."lciamethods";
-
-drop trigger if exists "lciamethods_set_modified_at_trigger" on "public"."lciamethods";
-
-drop trigger if exists "lifecyclemodels_json_sync_trigger" on "public"."lifecyclemodels";
-
-drop trigger if exists "lifecyclemodels_set_modified_at_trigger" on "public"."lifecyclemodels";
-
-drop trigger if exists "processes_json_sync_trigger" on "public"."processes";
-
-drop trigger if exists "processes_set_modified_at_trigger" on "public"."processes";
-
-drop trigger if exists "roles_set_modified_at_trigger" on "public"."roles";
-
-drop trigger if exists "sources_json_sync_trigger" on "public"."sources";
-
-drop trigger if exists "sources_set_modified_at_trigger" on "public"."sources";
-
-drop trigger if exists "teams_set_modified_at_trigger" on "public"."teams";
-
-drop trigger if exists "unitgroups_json_sync_trigger" on "public"."unitgroups";
-
-drop trigger if exists "unitgroups_set_modified_at_trigger" on "public"."unitgroups";
-
-drop policy "Enable insert for review-admin" on "public"."comments";
-
-drop policy "Enable read open data access for reviews" on "public"."comments";
-
-drop policy "update by review-admin or data owener" on "public"."comments";
-
-drop policy "Enable read access for authenticated users" on "public"."contacts";
-
-drop policy "Enable read access for authenticated users" on "public"."flowproperties";
-
-drop policy "Enable read access for authenticated users" on "public"."flows";
-
-drop policy "Enable read access for authenticated users" on "public"."lifecyclemodels";
-
-drop policy "Enable read access for authenticated users" on "public"."processes";
-
-drop policy "Enable read open data access for reviews" on "public"."reviews";
-
-drop policy "delete by owner and admin" on "public"."roles";
-
-drop policy "insert by authenticated" on "public"."roles";
-
-drop policy "select by self and team" on "public"."roles";
-
-drop policy "update by admin or owner or self" on "public"."roles";
-
-drop policy "Enable read access for authenticated users" on "public"."sources";
-
-drop policy "insert by authenticated" on "public"."teams";
-
-drop policy "select by owner or public teams" on "public"."teams";
-
-drop policy "update by owner and admin" on "public"."teams";
-
-drop policy "Enable read access for authenticated users" on "public"."unitgroups";
-
-drop policy "select by self and team and admin" on "public"."users";
-
-alter table "public"."comments" drop constraint "comments_review_id_fkey";
-
-drop function if exists "public"."_navicat_temp_stored_proc"(query_text text, query_embedding vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer);
-
-drop function if exists "public"."flows_embedding_ft_input"(proc flows);
-
-drop function if exists "public"."flows_embedding_input"(flow flows);
-
-drop function if exists "public"."lifecyclemodels_embedding_ft_input"(proc lifecyclemodels);
-
-drop function if exists "public"."lifecyclemodels_embedding_input"(models lifecyclemodels);
-
-drop function if exists "public"."processes_embedding_ft_input"(proc processes);
-
-drop function if exists "public"."processes_embedding_input"(proc processes);
-
-drop type "public"."filtered_row";
-
-drop index if exists "public"."contacts_json_ordered_vector";
-
-drop index if exists "public"."contacts_json_pgroonga";
-
-drop index if exists "public"."flowproperties_json_ordered_vector";
-
-drop index if exists "public"."flowproperties_json_pgroonga";
-
-drop index if exists "public"."flows_embedding_ft_hnsw_idx";
-
-drop index if exists "public"."flows_embedding_hnsw_idx";
-
-drop index if exists "public"."flows_json_pgroonga";
-
-drop index if exists "public"."lciamethods_json_pgroonga";
-
-drop index if exists "public"."lifecyclemodels_embedding_ft_hnsw_idx";
-
-drop index if exists "public"."lifecyclemodels_embedding_hnsw_idx";
-
-drop index if exists "public"."lifecyclemodels_json_pgroonga";
-
-drop index if exists "public"."processes_embedding_ft_hnsw_idx";
-
-drop index if exists "public"."processes_embedding_hnsw_idx";
-
-drop index if exists "public"."processes_json_pgroonga";
-
-drop index if exists "public"."sources_json_ordered_vector";
-
-drop index if exists "public"."sources_json_pgroonga";
-
-drop index if exists "public"."unitgroups_json_ordered_vector";
-
-drop index if exists "public"."unitgroups_json_pgroonga";
-
-alter table "public"."contacts" alter column "embedding" set data type extensions.vector(1536) using "embedding"::extensions.vector(1536);
-
-alter table "public"."flowproperties" alter column "embedding" set data type extensions.vector(1536) using "embedding"::extensions.vector(1536);
-
-alter table "public"."flows" alter column "embedding" set data type extensions.halfvec(384) using "embedding"::extensions.halfvec(384);
-
-alter table "public"."flows" alter column "embedding_ft" set data type extensions.vector(1024) using "embedding_ft"::extensions.vector(1024);
-
-alter table "public"."lifecyclemodels" alter column "embedding" set data type extensions.halfvec(384) using "embedding"::extensions.halfvec(384);
-
-alter table "public"."lifecyclemodels" alter column "embedding_ft" set data type extensions.vector(1024) using "embedding_ft"::extensions.vector(1024);
-
-alter table "public"."processes" alter column "embedding" set data type extensions.halfvec(384) using "embedding"::extensions.halfvec(384);
-
-alter table "public"."processes" alter column "embedding_ft" set data type extensions.vector(1024) using "embedding_ft"::extensions.vector(1024);
-
-alter table "public"."sources" alter column "embedding" set data type extensions.vector(1536) using "embedding"::extensions.vector(1536);
-
-alter table "public"."unitgroups" alter column "embedding" set data type extensions.vector(1536) using "embedding"::extensions.vector(1536);
+--
+-- Name: contacts_json_ordered_vector; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX contacts_json_ordered_vector ON public.contacts USING hnsw (embedding extensions.vector_cosine_ops);
 
+
+--
+-- Name: contacts_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX contacts_json_pgroonga ON public.contacts USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
+
+
+--
+-- Name: contacts_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX contacts_user_id_created_at_idx ON public.contacts USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: file_name_index; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX file_name_index ON public.ilcd USING btree (file_name);
+
+
+--
+-- Name: flowproperties_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flowproperties_created_at_idx ON public.flowproperties USING btree (created_at DESC);
+
+
+--
+-- Name: flowproperties_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flowproperties_json_dataversion ON public.flowproperties USING btree (((((("json" -> 'flowPropertyDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: flowproperties_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flowproperties_json_idx ON public.flowproperties USING gin ("json");
+
+
+--
+-- Name: flowproperties_json_ordered_vector; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX flowproperties_json_ordered_vector ON public.flowproperties USING hnsw (embedding extensions.vector_cosine_ops);
 
+
+--
+-- Name: flowproperties_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX flowproperties_json_pgroonga ON public.flowproperties USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
+
+
+--
+-- Name: flowproperties_json_refobjectid; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flowproperties_json_refobjectid ON public.flowproperties USING btree ((((((("json" -> 'flowPropertyDataSet'::text) -> 'flowPropertiesInformation'::text) -> 'quantitativeReference'::text) -> 'referenceToReferenceUnitGroup'::text) ->> '@refObjectId'::text)));
+
+
+--
+-- Name: flowproperties_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flowproperties_modified_at_idx ON public.flowproperties USING btree (modified_at);
+
+
+--
+-- Name: flowproperties_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flowproperties_user_id_created_at_idx ON public.flowproperties USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: flows_composite_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_composite_idx ON public.flows USING btree (((((("json" -> 'flowDataSet'::text) -> 'modellingAndValidation'::text) -> 'LCIMethod'::text) ->> 'typeOfDataSet'::text)), state_code, modified_at DESC);
+
+
+--
+-- Name: flows_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_created_at_idx ON public.flows USING btree (created_at DESC);
+
+
+--
+-- Name: flows_embedding_ft_hnsw_idx; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX flows_embedding_ft_hnsw_idx ON public.flows USING hnsw (embedding_ft extensions.vector_cosine_ops);
 
+
+--
+-- Name: flows_embedding_hnsw_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX flows_embedding_hnsw_idx ON public.flows USING hnsw (embedding extensions.halfvec_cosine_ops);
+
+
+--
+-- Name: flows_json_casnumber; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_json_casnumber ON public.flows USING btree (((((("json" -> 'flowDataSet'::text) -> 'flowInformation'::text) -> 'dataSetInformation'::text) ->> 'CASNumber'::text)));
+
+
+--
+-- Name: flows_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_json_dataversion ON public.flows USING btree (((((("json" -> 'flowDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: flows_json_locationofsupply; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_json_locationofsupply ON public.flows USING btree (((((("json" -> 'flowDataSet'::text) -> 'flowInformation'::text) -> 'geography'::text) ->> 'locationOfSupply'::text)));
+
+
+--
+-- Name: flows_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX flows_json_pgroonga ON public.flows USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
 
+
+--
+-- Name: flows_json_typeofdataset; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_json_typeofdataset ON public.flows USING btree (((((("json" -> 'flowDataSet'::text) -> 'modellingAndValidation'::text) -> 'LCIMethod'::text) ->> 'typeOfDataSet'::text)));
+
+
+--
+-- Name: flows_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_modified_at_idx ON public.flows USING btree (modified_at);
+
+
+--
+-- Name: flows_not_emissions_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_not_emissions_idx ON public.flows USING btree (state_code, modified_at DESC) WHERE (NOT ("json" @> '{"flowDataSet": {"flowInformation": {"dataSetInformation": {"classificationInformation": {"common:elementaryFlowCategorization": {"common:category": [{"#text": "Emissions", "@level": "0"}]}}}}}}'::jsonb));
+
+
+--
+-- Name: flows_review_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_review_id_idx ON public.flows USING btree (review_id);
+
+
+--
+-- Name: flows_state_code_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_state_code_idx ON public.flows USING btree (state_code);
+
+
+--
+-- Name: flows_team_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_team_id_idx ON public.flows USING btree (team_id);
+
+
+--
+-- Name: flows_text_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_text_pgroonga ON public.flows USING pgroonga (extracted_text);
+
+
+--
+-- Name: flows_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX flows_user_id_created_at_idx ON public.flows USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: ilcd_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ilcd_created_at_idx ON public.ilcd USING btree (created_at DESC);
+
+
+--
+-- Name: ilcd_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ilcd_json_idx ON public.ilcd USING gin ("json");
+
+
+--
+-- Name: ilcd_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ilcd_modified_at_idx ON public.ilcd USING btree (modified_at);
+
+
+--
+-- Name: ilcd_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ilcd_user_id_created_at_idx ON public.ilcd USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: lca_active_snapshots_snapshot_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_active_snapshots_snapshot_idx ON public.lca_active_snapshots USING btree (snapshot_id);
+
+
+--
+-- Name: lca_factorization_registry_snapshot_status_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_factorization_registry_snapshot_status_idx ON public.lca_factorization_registry USING btree (snapshot_id, status, updated_at DESC);
+
+
+--
+-- Name: lca_factorization_registry_status_lease_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_factorization_registry_status_lease_idx ON public.lca_factorization_registry USING btree (status, lease_until);
+
+
+--
+-- Name: lca_jobs_idempotency_key_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_jobs_idempotency_key_uidx ON public.lca_jobs USING btree (idempotency_key) WHERE (idempotency_key IS NOT NULL);
+
+
+--
+-- Name: lca_jobs_snapshot_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_jobs_snapshot_created_idx ON public.lca_jobs USING btree (snapshot_id, created_at DESC);
+
+
+--
+-- Name: lca_jobs_snapshot_type_status_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_jobs_snapshot_type_status_created_idx ON public.lca_jobs USING btree (snapshot_id, job_type, status, created_at DESC);
+
+
+--
+-- Name: lca_jobs_status_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_jobs_status_created_idx ON public.lca_jobs USING btree (status, created_at);
+
+
+--
+-- Name: lca_latest_all_unit_results_computed_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_latest_all_unit_results_computed_idx ON public.lca_latest_all_unit_results USING btree (computed_at DESC);
+
+
+--
+-- Name: lca_latest_all_unit_results_result_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_latest_all_unit_results_result_idx ON public.lca_latest_all_unit_results USING btree (result_id);
+
+
+--
+-- Name: lca_network_snapshots_status_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_network_snapshots_status_created_idx ON public.lca_network_snapshots USING btree (status, created_at DESC);
+
+
+--
+-- Name: lca_network_snapshots_updated_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_network_snapshots_updated_idx ON public.lca_network_snapshots USING btree (updated_at DESC);
+
+
+--
+-- Name: lca_result_cache_job_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_result_cache_job_uidx ON public.lca_result_cache USING btree (job_id) WHERE (job_id IS NOT NULL);
+
+
+--
+-- Name: lca_result_cache_last_accessed_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_result_cache_last_accessed_idx ON public.lca_result_cache USING btree (last_accessed_at DESC);
+
+
+--
+-- Name: lca_result_cache_lookup_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_result_cache_lookup_idx ON public.lca_result_cache USING btree (scope, snapshot_id, status, updated_at DESC);
+
+
+--
+-- Name: lca_result_cache_result_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_result_cache_result_uidx ON public.lca_result_cache USING btree (result_id) WHERE (result_id IS NOT NULL);
+
+
+--
+-- Name: lca_results_job_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_results_job_idx ON public.lca_results USING btree (job_id);
+
+
+--
+-- Name: lca_results_snapshot_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_results_snapshot_created_idx ON public.lca_results USING btree (snapshot_id, created_at DESC);
+
+
+--
+-- Name: lca_snapshot_artifacts_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_snapshot_artifacts_created_idx ON public.lca_snapshot_artifacts USING btree (created_at DESC);
+
+
+--
+-- Name: lca_snapshot_artifacts_snapshot_format_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_snapshot_artifacts_snapshot_format_key ON public.lca_snapshot_artifacts USING btree (snapshot_id, artifact_format);
+
+
+--
+-- Name: lca_snapshot_artifacts_snapshot_status_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_snapshot_artifacts_snapshot_status_idx ON public.lca_snapshot_artifacts USING btree (snapshot_id, status, created_at DESC);
+
+
+--
+-- Name: lciamethods_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lciamethods_created_at_idx ON public.lciamethods USING btree (created_at DESC);
+
+
+--
+-- Name: lciamethods_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lciamethods_json_dataversion ON public.lciamethods USING btree (((((("json" -> 'LCIAMethodDataSetDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: lciamethods_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lciamethods_json_idx ON public.lciamethods USING gin ("json");
+
+
+--
+-- Name: lciamethods_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX lciamethods_json_pgroonga ON public.lciamethods USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
+
+
+--
+-- Name: lciamethods_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lciamethods_modified_at_idx ON public.lciamethods USING btree (modified_at);
+
+
+--
+-- Name: lciamethods_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lciamethods_user_id_created_at_idx ON public.lciamethods USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: lifecyclemodels_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_created_at_idx ON public.lifecyclemodels USING btree (created_at DESC);
+
+
+--
+-- Name: lifecyclemodels_embedding_ft_hnsw_idx; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX lifecyclemodels_embedding_ft_hnsw_idx ON public.lifecyclemodels USING hnsw (embedding_ft extensions.vector_cosine_ops);
 
+
+--
+-- Name: lifecyclemodels_embedding_hnsw_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX lifecyclemodels_embedding_hnsw_idx ON public.lifecyclemodels USING hnsw (embedding extensions.halfvec_cosine_ops);
+
+
+--
+-- Name: lifecyclemodels_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_json_dataversion ON public.lifecyclemodels USING btree (((((("json" -> 'lifeCycleModelDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: lifecyclemodels_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_json_idx ON public.lifecyclemodels USING gin ("json");
+
+
+--
+-- Name: lifecyclemodels_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX lifecyclemodels_json_pgroonga ON public.lifecyclemodels USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
 
+
+--
+-- Name: lifecyclemodels_json_tg_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_json_tg_idx ON public.lifecyclemodels USING gin (json_tg);
+
+
+--
+-- Name: lifecyclemodels_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_modified_at_idx ON public.lifecyclemodels USING btree (modified_at);
+
+
+--
+-- Name: lifecyclemodels_text_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_text_pgroonga ON public.lifecyclemodels USING pgroonga (extracted_text);
+
+
+--
+-- Name: lifecyclemodels_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lifecyclemodels_user_id_created_at_idx ON public.lifecyclemodels USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: processes_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_created_at_idx ON public.processes USING btree (created_at DESC);
+
+
+--
+-- Name: processes_embedding_ft_hnsw_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX processes_embedding_ft_hnsw_idx ON public.processes USING hnsw (embedding_ft extensions.vector_cosine_ops);
+
+
+--
+-- Name: processes_embedding_hnsw_idx; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX processes_embedding_hnsw_idx ON public.processes USING hnsw (embedding extensions.halfvec_cosine_ops);
 
+
+--
+-- Name: processes_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_json_dataversion ON public.processes USING btree (((((("json" -> 'processDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: processes_json_exchange_gin_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_json_exchange_gin_idx ON public.processes USING gin ((((("json" -> 'processDataSet'::text) -> 'exchanges'::text) -> 'exchange'::text)));
+
+
+--
+-- Name: processes_json_location; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_json_location ON public.processes USING btree ((((((("json" -> 'processDataSet'::text) -> 'processInformation'::text) -> 'geography'::text) -> 'locationOfOperationSupplyOrProduction'::text) ->> '@location'::text)));
+
+
+--
+-- Name: processes_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX processes_json_pgroonga ON public.processes USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
+
+
+--
+-- Name: processes_json_referenceyear; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_json_referenceyear ON public.processes USING btree (((((("json" -> 'processDataSet'::text) -> 'processInformation'::text) -> 'time'::text) ->> 'common:referenceYear'::text)));
+
+
+--
+-- Name: processes_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_modified_at_idx ON public.processes USING btree (modified_at);
+
+
+--
+-- Name: processes_review_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_review_id_idx ON public.processes USING btree (review_id);
+
+
+--
+-- Name: processes_rule_verification_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_rule_verification_idx ON public.processes USING btree (rule_verification);
+
+
+--
+-- Name: processes_state_code_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_state_code_idx ON public.processes USING btree (state_code);
+
+
+--
+-- Name: processes_team_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_team_id_idx ON public.processes USING btree (team_id);
+
+
+--
+-- Name: processes_text_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_text_pgroonga ON public.processes USING pgroonga (extracted_text);
+
+
+--
+-- Name: processes_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX processes_user_id_created_at_idx ON public.processes USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: reviews_data_id_data_version_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX reviews_data_id_data_version_idx ON public.reviews USING btree (data_id, data_version);
+
+
+--
+-- Name: roles_role_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX roles_role_idx ON public.roles USING btree (role);
+
+
+--
+-- Name: roles_team_id_user_id_role_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX roles_team_id_user_id_role_idx ON public.roles USING btree (team_id, user_id, role);
+
+
+--
+-- Name: sources_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_created_at_idx ON public.sources USING btree (created_at DESC);
+
+
+--
+-- Name: sources_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_json_dataversion ON public.sources USING btree (((((("json" -> 'sourceDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: sources_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_json_idx ON public.sources USING gin ("json");
+
+
+--
+-- Name: sources_json_ordered_vector; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX sources_json_ordered_vector ON public.sources USING hnsw (embedding extensions.vector_cosine_ops);
 
+
+--
+-- Name: sources_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX sources_json_pgroonga ON public.sources USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
+
+
+--
+-- Name: sources_json_publicationtype; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_json_publicationtype ON public.sources USING btree (((((("json" -> 'sourceDataSet'::text) -> 'sourceInformation'::text) -> 'dataSetInformation'::text) ->> 'publicationType'::text)));
+
+
+--
+-- Name: sources_json_sourcecitation; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_json_sourcecitation ON public.sources USING btree (((((("json" -> 'sourceDataSet'::text) -> 'sourceInformation'::text) -> 'dataSetInformation'::text) ->> 'sourceCitation'::text)));
+
+
+--
+-- Name: sources_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_modified_at_idx ON public.sources USING btree (modified_at);
+
+
+--
+-- Name: sources_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX sources_user_id_created_at_idx ON public.sources USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: unitgroups_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX unitgroups_created_at_idx ON public.unitgroups USING btree (created_at DESC);
+
+
+--
+-- Name: unitgroups_json_dataversion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX unitgroups_json_dataversion ON public.unitgroups USING btree (((((("json" -> 'unitGroupDataSet'::text) -> 'administrativeInformation'::text) -> 'publicationAndOwnership'::text) ->> 'common:dataSetVersion'::text)));
+
+
+--
+-- Name: unitgroups_json_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX unitgroups_json_idx ON public.unitgroups USING gin ("json");
+
+
+--
+-- Name: unitgroups_json_ordered_vector; Type: INDEX; Schema: public; Owner: postgres
+--
 
 CREATE INDEX unitgroups_json_ordered_vector ON public.unitgroups USING hnsw (embedding extensions.vector_cosine_ops);
 
+
+--
+-- Name: unitgroups_json_pgroonga; Type: INDEX; Schema: public; Owner: postgres
+--
+
 CREATE INDEX unitgroups_json_pgroonga ON public.unitgroups USING pgroonga ("json" extensions.pgroonga_jsonb_full_text_search_ops_v2);
 
-alter table "public"."comments" add constraint "comments_review_id_fkey" FOREIGN KEY (review_id) REFERENCES public.reviews(id) not valid;
 
-alter table "public"."comments" validate constraint "comments_review_id_fkey";
+--
+-- Name: unitgroups_json_referencetoreferenceunit; Type: INDEX; Schema: public; Owner: postgres
+--
 
-set check_function_bodies = off;
-
-CREATE OR REPLACE FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text DEFAULT ''::text, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 20, full_text_weight numeric DEFAULT 0.3, extracted_text_weight numeric DEFAULT 0.2, semantic_weight numeric DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, this_user_id text DEFAULT ''::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1)
- RETURNS TABLE(id uuid, "json" jsonb)
- LANGUAGE plpgsql
- SET search_path TO 'public', 'extensions', 'pg_temp'
-AS $function$ BEGIN
-		RETURN QUERY WITH 
-		full_text AS (
-			SELECT
-				ps.RANK AS ps_rank,
-				ps.ID AS ps_id,
-				ps.JSON AS ps_json 
-			FROM
-				pgroonga_search_processes ( query_text, filter_condition, 20, -- page_size: 获取足够多候选
-					1, -- page_current: 第1页
-				data_source, this_user_id ) ps 
-		),
-		ex_text AS (
-    SELECT
-      ex.rank AS ex_rank,
-      ex.id   AS ex_id,
-      p.json  AS ex_json
-    FROM pgroonga_search_processes_text(
-           query_text,
-           20,          -- page_size
-           1,      -- page_current
-           data_source,
-           this_user_id
-         ) ex
-    JOIN public.processes p ON p.id = ex.id
-  ),
-		semantic AS (
-			SELECT
-				ss.RANK AS ss_rank,
-				ss.ID AS ss_id,
-				ss.JSON AS ss_json 
-			FROM
-				semantic_search_processes ( query_embedding, filter_condition, match_threshold, match_count, data_source, this_user_id ) ss 
-		) SELECT COALESCE
-		( full_text.ps_id, semantic.ss_id, ex_text.ex_id ) AS ID,
-		COALESCE ( full_text.ps_json, semantic.ss_json, ex_text.ex_json) AS JSON, 
-		COALESCE(1.0 / (rrf_k + full_text.ps_rank), 0.0) * full_text_weight
-      + COALESCE(1.0 / (rrf_k + ex_text.ex_rank), 0.0) * text_weight
-      + COALESCE(1.0 / (rrf_k + semantic.ss_rank), 0.0) * semantic_weight
-      AS score
-		FROM
-			full_text
-			FULL OUTER JOIN semantic ON full_text.ps_id = semantic.ss_id
-			FULL OUTER JOIN ex_text ON ex_text.ex_id = COALESCE(full_text.ps_id, semantic.ss_id) 
-		ORDER BY
-			score DESC 
-			LIMIT page_size OFFSET ( page_current - 1 ) * page_size;
-		
-	END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.flows_embedding_ft_input(proc public.flows)
- RETURNS text
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public'
-AS $function$
-begin
-  return proc.extracted_md;
-end;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.flows_embedding_input(flow public.flows)
- RETURNS text
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public'
-AS $function$
-begin
-  return flow.extracted_text;
-end;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels)
- RETURNS text
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public'
-AS $function$
-begin
-  return proc.extracted_md;
-end;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.lifecyclemodels_embedding_input(models public.lifecyclemodels)
- RETURNS text
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public'
-AS $function$
-begin
-  return models.extracted_text;
-end;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.processes_embedding_ft_input(proc public.processes)
- RETURNS text
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public', 'extensions', 'pg_temp'
-AS $function$
-begin
-  return proc.extracted_md;
-end;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.processes_embedding_input(proc public.processes)
- RETURNS text
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO ''
-AS $function$
-begin
-  return proc.extracted_text;
-end;
-$function$
-;
-
-create type "public"."filtered_row" as ("id" uuid, "embedding" extensions.vector(1536));
+CREATE INDEX unitgroups_json_referencetoreferenceunit ON public.unitgroups USING btree (((((("json" -> 'unitGroupDataSet'::text) -> 'unitGroupInformation'::text) -> 'quantitativeReference'::text) ->> 'referenceToReferenceUnit'::text)));
 
 
-  create policy "Enable insert for review-admin"
-  on "public"."comments"
-  as permissive
-  for insert
-  to authenticated
-with check ((EXISTS ( SELECT 1
+--
+-- Name: unitgroups_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX unitgroups_modified_at_idx ON public.unitgroups USING btree (modified_at);
+
+
+--
+-- Name: unitgroups_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX unitgroups_user_id_created_at_idx ON public.unitgroups USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: contacts contacts_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER contacts_json_sync_trigger BEFORE INSERT OR UPDATE ON public.contacts FOR EACH ROW EXECUTE FUNCTION public.contacts_sync_jsonb_version();
+
+
+--
+-- Name: contacts contacts_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER contacts_set_modified_at_trigger BEFORE UPDATE ON public.contacts FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: flows flow_embedding_ft_on_extract_md_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flow_embedding_ft_on_extract_md_update AFTER UPDATE OF extracted_md ON public.flows FOR EACH ROW WHEN ((old.extracted_md IS DISTINCT FROM new.extracted_md)) EXECUTE FUNCTION util.queue_embeddings('flows_embedding_ft_input', 'embedding_ft', 'embedding_ft');
+
+
+--
+-- Name: flows flow_extract_md_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flow_extract_md_trigger_insert AFTER INSERT ON public.flows FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: flows flow_extract_md_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flow_extract_md_trigger_update AFTER UPDATE OF "json" ON public.flows FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: flows flow_extract_md_trigger_update_flag; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flow_extract_md_trigger_update_flag AFTER UPDATE OF embedding_flag ON public.flows FOR EACH ROW WHEN ((new.embedding_flag IS DISTINCT FROM old.embedding_flag)) EXECUTE FUNCTION util.queue_embedding_webhook();
+
+
+--
+-- Name: flows flow_extract_text_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flow_extract_text_trigger_insert AFTER INSERT ON public.flows FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: flows flow_extract_text_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flow_extract_text_trigger_update AFTER UPDATE OF "json" ON public.flows FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: flowproperties flowproperties_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flowproperties_json_sync_trigger BEFORE INSERT OR UPDATE ON public.flowproperties FOR EACH ROW EXECUTE FUNCTION public.flowproperties_sync_jsonb_version();
+
+
+--
+-- Name: flowproperties flowproperties_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flowproperties_set_modified_at_trigger BEFORE UPDATE ON public.flowproperties FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: flows flows_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flows_json_sync_trigger BEFORE INSERT OR UPDATE ON public.flows FOR EACH ROW EXECUTE FUNCTION public.flows_sync_jsonb_version();
+
+
+--
+-- Name: flows flows_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER flows_set_modified_at_trigger BEFORE UPDATE ON public.flows FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: ilcd ilcd_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER ilcd_json_sync_trigger BEFORE INSERT OR UPDATE ON public.ilcd FOR EACH ROW EXECUTE FUNCTION public.sync_json_to_jsonb();
+
+
+--
+-- Name: ilcd ilcd_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER ilcd_set_modified_at_trigger BEFORE UPDATE ON public.ilcd FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: lciamethods lciamethods_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lciamethods_json_sync_trigger BEFORE INSERT OR UPDATE ON public.lciamethods FOR EACH ROW EXECUTE FUNCTION public.lciamethods_sync_jsonb_version();
+
+
+--
+-- Name: lciamethods lciamethods_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lciamethods_set_modified_at_trigger BEFORE UPDATE ON public.lciamethods FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: lifecyclemodels lifecyclemodel_embedding_ft_on_extract_md_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodel_embedding_ft_on_extract_md_update AFTER UPDATE OF extracted_md ON public.lifecyclemodels FOR EACH ROW WHEN ((old.extracted_md IS DISTINCT FROM new.extracted_md)) EXECUTE FUNCTION util.queue_embeddings('lifecyclemodels_embedding_ft_input', 'embedding_ft', 'embedding_ft');
+
+
+--
+-- Name: lifecyclemodels lifecyclemodel_extract_md_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodel_extract_md_trigger_insert AFTER INSERT ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: lifecyclemodels lifecyclemodel_extract_md_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodel_extract_md_trigger_update AFTER UPDATE OF "json" ON public.lifecyclemodels FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: lifecyclemodels lifecyclemodel_extract_md_trigger_update_flag; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodel_extract_md_trigger_update_flag AFTER UPDATE OF embedding_flag ON public.lifecyclemodels FOR EACH ROW WHEN ((new.embedding_flag IS DISTINCT FROM old.embedding_flag)) EXECUTE FUNCTION util.queue_embedding_webhook();
+
+
+--
+-- Name: lifecyclemodels lifecyclemodels_extract_text_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodels_extract_text_trigger_insert AFTER INSERT ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: lifecyclemodels lifecyclemodels_extract_text_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodels_extract_text_trigger_update AFTER UPDATE OF "json" ON public.lifecyclemodels FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: lifecyclemodels lifecyclemodels_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodels_json_sync_trigger BEFORE INSERT OR UPDATE ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION public.lifecyclemodels_sync_jsonb_version();
+
+
+--
+-- Name: lifecyclemodels lifecyclemodels_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER lifecyclemodels_set_modified_at_trigger BEFORE UPDATE ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: processes process_embedding_ft_on_extract_md_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER process_embedding_ft_on_extract_md_update AFTER UPDATE OF extracted_md ON public.processes FOR EACH ROW WHEN ((old.extracted_md IS DISTINCT FROM new.extracted_md)) EXECUTE FUNCTION util.queue_embeddings('processes_embedding_ft_input', 'embedding_ft', 'embedding_ft');
+
+
+--
+-- Name: processes process_extract_md_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER process_extract_md_trigger_insert AFTER INSERT ON public.processes FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: processes process_extract_md_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER process_extract_md_trigger_update AFTER UPDATE OF "json" ON public.processes FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: processes process_extract_md_trigger_update_flag; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER process_extract_md_trigger_update_flag AFTER UPDATE OF embedding_flag ON public.processes FOR EACH ROW WHEN ((new.embedding_flag IS DISTINCT FROM old.embedding_flag)) EXECUTE FUNCTION util.queue_embedding_webhook();
+
+
+--
+-- Name: processes process_extract_text_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER process_extract_text_trigger_insert AFTER INSERT ON public.processes FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: processes process_extract_text_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER process_extract_text_trigger_update AFTER UPDATE OF "json" ON public.processes FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+
+
+--
+-- Name: processes processes_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER processes_json_sync_trigger BEFORE INSERT OR UPDATE ON public.processes FOR EACH ROW EXECUTE FUNCTION public.processes_sync_jsonb_version();
+
+
+--
+-- Name: processes processes_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER processes_set_modified_at_trigger BEFORE UPDATE ON public.processes FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: roles roles_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER roles_set_modified_at_trigger BEFORE UPDATE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: sources sources_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER sources_json_sync_trigger BEFORE INSERT OR UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION public.sources_sync_jsonb_version();
+
+
+--
+-- Name: sources sources_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER sources_set_modified_at_trigger BEFORE UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: teams teams_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER teams_set_modified_at_trigger BEFORE UPDATE ON public.teams FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: unitgroups unitgroups_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER unitgroups_json_sync_trigger BEFORE INSERT OR UPDATE ON public.unitgroups FOR EACH ROW EXECUTE FUNCTION public.unitgroups_sync_jsonb_version();
+
+
+--
+-- Name: unitgroups unitgroups_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER unitgroups_set_modified_at_trigger BEFORE UPDATE ON public.unitgroups FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
+-- Name: comments comments_review_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_review_id_fkey FOREIGN KEY (review_id) REFERENCES public.reviews(id);
+
+
+--
+-- Name: lca_active_snapshots lca_active_snapshots_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_active_snapshots
+    ADD CONSTRAINT lca_active_snapshots_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: lca_factorization_registry lca_factorization_registry_prepared_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_factorization_registry
+    ADD CONSTRAINT lca_factorization_registry_prepared_job_fk FOREIGN KEY (prepared_job_id) REFERENCES public.lca_jobs(id) ON DELETE SET NULL;
+
+
+--
+-- Name: lca_factorization_registry lca_factorization_registry_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_factorization_registry
+    ADD CONSTRAINT lca_factorization_registry_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_jobs lca_jobs_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_jobs
+    ADD CONSTRAINT lca_jobs_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_latest_all_unit_results lca_latest_all_unit_results_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_latest_all_unit_results
+    ADD CONSTRAINT lca_latest_all_unit_results_job_fk FOREIGN KEY (job_id) REFERENCES public.lca_jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_latest_all_unit_results lca_latest_all_unit_results_result_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_latest_all_unit_results
+    ADD CONSTRAINT lca_latest_all_unit_results_result_fk FOREIGN KEY (result_id) REFERENCES public.lca_results(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_latest_all_unit_results lca_latest_all_unit_results_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_latest_all_unit_results
+    ADD CONSTRAINT lca_latest_all_unit_results_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_network_snapshots lca_network_snapshots_lcia_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_network_snapshots
+    ADD CONSTRAINT lca_network_snapshots_lcia_fk FOREIGN KEY (lcia_method_id, lcia_method_version) REFERENCES public.lciamethods(id, version) ON DELETE SET NULL;
+
+
+--
+-- Name: lca_result_cache lca_result_cache_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_result_cache
+    ADD CONSTRAINT lca_result_cache_job_fk FOREIGN KEY (job_id) REFERENCES public.lca_jobs(id) ON DELETE SET NULL;
+
+
+--
+-- Name: lca_result_cache lca_result_cache_result_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_result_cache
+    ADD CONSTRAINT lca_result_cache_result_fk FOREIGN KEY (result_id) REFERENCES public.lca_results(id) ON DELETE SET NULL;
+
+
+--
+-- Name: lca_result_cache lca_result_cache_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_result_cache
+    ADD CONSTRAINT lca_result_cache_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_results lca_results_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_results
+    ADD CONSTRAINT lca_results_job_fk FOREIGN KEY (job_id) REFERENCES public.lca_jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_results lca_results_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_results
+    ADD CONSTRAINT lca_results_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_snapshot_artifacts lca_snapshot_artifacts_snapshot_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_snapshot_artifacts
+    ADD CONSTRAINT lca_snapshot_artifacts_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: roles roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: contacts Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.contacts FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: flowproperties Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.flowproperties FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: flows Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.flows FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: lifecyclemodels Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.lifecyclemodels FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: processes Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.processes FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: sources Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.sources FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: unitgroups Enable delete for users based on user_id; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable delete for users based on user_id" ON public.unitgroups FOR DELETE TO authenticated USING (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: reviews Enable insert data access for self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert data access for self" ON public.reviews FOR INSERT TO authenticated WITH CHECK (((auth.uid() IS NOT NULL) AND (((("json" -> 'user'::text) ->> 'id'::text))::uuid = ( SELECT auth.uid() AS uid))));
+
+
+--
+-- Name: contacts Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.contacts FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: flowproperties Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.flowproperties FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: flows Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.flows FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: lifecyclemodels Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.lifecyclemodels FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: processes Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.processes FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: sources Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.sources FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: unitgroups Enable insert for authenticated users only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.unitgroups FOR INSERT TO authenticated WITH CHECK (((state_code = 0) AND (( SELECT auth.uid() AS uid) = user_id)));
+
+
+--
+-- Name: comments Enable insert for review-admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable insert for review-admin" ON public.comments FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND ((roles.role)::text = 'review-admin'::text)))));
 
 
+--
+-- Name: ilcd Enable read access for all users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read open data access for reviews"
-  on "public"."comments"
-  as permissive
-  for select
-  to authenticated
-using ((EXISTS ( SELECT 1
-   FROM public.roles
-  WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND (((roles.role)::text = 'review-admin'::text) OR ((roles.role)::text = 'review-member'::text))))));
+CREATE POLICY "Enable read access for all users" ON public.ilcd FOR SELECT TO authenticated USING (true);
 
 
+--
+-- Name: lciamethods Enable read access for all users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "update by review-admin or data owener"
-  on "public"."comments"
-  as permissive
-  for update
-  to authenticated
-using (((reviewer_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
-   FROM public.roles r
-  WHERE ((r.user_id = ( SELECT auth.uid() AS uid)) AND ((r.role)::text = 'review-admin'::text))))));
+CREATE POLICY "Enable read access for all users" ON public.lciamethods FOR SELECT TO authenticated USING (true);
 
 
+--
+-- Name: contacts Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read access for authenticated users"
-  on "public"."contacts"
-  as permissive
-  for select
-  to public
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.contacts FOR SELECT USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = contacts.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((state_code = 20) AND ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5785,13 +5060,11 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(contacts.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text)))))))));
 
 
+--
+-- Name: flowproperties Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read access for authenticated users"
-  on "public"."flowproperties"
-  as permissive
-  for select
-  to authenticated
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.flowproperties FOR SELECT TO authenticated USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = flowproperties.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((state_code = 20) AND ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5803,13 +5076,11 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(flowproperties.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text)))))))));
 
 
+--
+-- Name: flows Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read access for authenticated users"
-  on "public"."flows"
-  as permissive
-  for select
-  to authenticated
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.flows FOR SELECT TO authenticated USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = flows.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((state_code = 20) AND ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5821,13 +5092,11 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(flows.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text)))))))));
 
 
+--
+-- Name: lifecyclemodels Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read access for authenticated users"
-  on "public"."lifecyclemodels"
-  as permissive
-  for select
-  to authenticated
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.lifecyclemodels FOR SELECT TO authenticated USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = lifecyclemodels.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((state_code = 20) AND ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5839,13 +5108,11 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(lifecyclemodels.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text)))))))));
 
 
+--
+-- Name: processes Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read access for authenticated users"
-  on "public"."processes"
-  as permissive
-  for select
-  to authenticated
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.processes FOR SELECT TO authenticated USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = processes.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5857,60 +5124,11 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(processes.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text))))))));
 
 
+--
+-- Name: sources Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "Enable read open data access for reviews"
-  on "public"."reviews"
-  as permissive
-  for select
-  to authenticated
-using (((EXISTS ( SELECT 1
-   FROM public.roles
-  WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND (((roles.role)::text = 'review-admin'::text) OR (((roles.role)::text = 'review-member'::text) AND (reviews.reviewer_id ? (( SELECT auth.uid() AS uid))::text)))))) OR ((( SELECT auth.uid() AS uid) IS NOT NULL) AND (((("json" -> 'user'::text) ->> 'id'::text))::uuid = ( SELECT auth.uid() AS uid))) OR (state_code = ANY (ARRAY[2, '-1'::integer]))));
-
-
-
-  create policy "delete by owner and admin"
-  on "public"."roles"
-  as permissive
-  for delete
-  to authenticated
-using (public.policy_roles_delete(user_id, team_id, (role)::text));
-
-
-
-  create policy "insert by authenticated"
-  on "public"."roles"
-  as permissive
-  for insert
-  to authenticated
-with check (public.policy_roles_insert(user_id, team_id, (role)::text));
-
-
-
-  create policy "select by self and team"
-  on "public"."roles"
-  as permissive
-  for select
-  to authenticated
-using (public.policy_roles_select(team_id, (role)::text));
-
-
-
-  create policy "update by admin or owner or self"
-  on "public"."roles"
-  as permissive
-  for update
-  to authenticated
-using (public.policy_roles_update(user_id, team_id, (role)::text));
-
-
-
-  create policy "Enable read access for authenticated users"
-  on "public"."sources"
-  as permissive
-  for select
-  to authenticated
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.sources FOR SELECT TO authenticated USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = sources.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((state_code = 20) AND ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5922,46 +5140,11 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(sources.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text)))))))));
 
 
+--
+-- Name: unitgroups Enable read access for authenticated users; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "insert by authenticated"
-  on "public"."teams"
-  as permissive
-  for insert
-  to authenticated
-with check ((( SELECT count(1) AS count
-   FROM public.roles
-  WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND ((roles.role)::text <> 'rejected'::text) AND (roles.team_id <> '00000000-0000-0000-0000-000000000000'::uuid))) = 0));
-
-
-
-  create policy "select by owner or public teams"
-  on "public"."teams"
-  as permissive
-  for select
-  to authenticated
-using ((is_public OR (rank > 0) OR (EXISTS ( SELECT 1
-   FROM public.roles
-  WHERE (((roles.team_id = teams.id) OR (roles.team_id = '00000000-0000-0000-0000-000000000000'::uuid)) AND (roles.user_id = ( SELECT auth.uid() AS uid)) AND ((roles.role)::text <> 'rejected'::text))))));
-
-
-
-  create policy "update by owner and admin"
-  on "public"."teams"
-  as permissive
-  for update
-  to authenticated
-using ((( SELECT auth.uid() AS uid) IN ( SELECT roles.user_id
-   FROM public.roles
-  WHERE (((roles.role)::text = 'admin'::text) OR ((roles.role)::text = 'owner'::text)))));
-
-
-
-  create policy "Enable read access for authenticated users"
-  on "public"."unitgroups"
-  as permissive
-  for select
-  to authenticated
-using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY "Enable read access for authenticated users" ON public.unitgroups FOR SELECT TO authenticated USING (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.roles
   WHERE ((roles.team_id = unitgroups.team_id) AND ((roles.role)::text = ANY (ARRAY[('admin'::character varying)::text, ('member'::character varying)::text, ('owner'::character varying)::text])) AND (roles.user_id = ( SELECT auth.uid() AS uid))))) OR ((state_code = 20) AND ((EXISTS ( SELECT 1
    FROM public.roles
@@ -5973,13 +5156,192 @@ using (((state_code >= 100) OR (( SELECT auth.uid() AS uid) = user_id) OR (EXIST
            FROM jsonb_array_elements(unitgroups.reviews) review_item(value))) AND (r.reviewer_id @> jsonb_build_array((( SELECT auth.uid() AS uid))::text)))))))));
 
 
+--
+-- Name: comments Enable read open data access for reviews; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "select by self and team and admin"
-  on "public"."users"
-  as permissive
-  for select
-  to authenticated
-using (((id = ( SELECT auth.uid() AS uid)) OR (id IN ( SELECT r.user_id
+CREATE POLICY "Enable read open data access for reviews" ON public.comments FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.roles
+  WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND (((roles.role)::text = 'review-admin'::text) OR ((roles.role)::text = 'review-member'::text))))));
+
+
+--
+-- Name: reviews Enable read open data access for reviews; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Enable read open data access for reviews" ON public.reviews FOR SELECT TO authenticated USING (((EXISTS ( SELECT 1
+   FROM public.roles
+  WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND (((roles.role)::text = 'review-admin'::text) OR (((roles.role)::text = 'review-member'::text) AND (reviews.reviewer_id ? (( SELECT auth.uid() AS uid))::text)))))) OR ((( SELECT auth.uid() AS uid) IS NOT NULL) AND (((("json" -> 'user'::text) ->> 'id'::text))::uuid = ( SELECT auth.uid() AS uid))) OR (state_code = ANY (ARRAY[2, '-1'::integer]))));
+
+
+--
+-- Name: comments; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: contacts; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: roles delete by owner and admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "delete by owner and admin" ON public.roles FOR DELETE TO authenticated USING (public.policy_roles_delete(user_id, team_id, (role)::text));
+
+
+--
+-- Name: flowproperties; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.flowproperties ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: flows; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.flows ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: ilcd; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.ilcd ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: roles insert by authenticated; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "insert by authenticated" ON public.roles FOR INSERT TO authenticated WITH CHECK (public.policy_roles_insert(user_id, team_id, (role)::text));
+
+
+--
+-- Name: teams insert by authenticated; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "insert by authenticated" ON public.teams FOR INSERT TO authenticated WITH CHECK ((( SELECT count(1) AS count
+   FROM public.roles
+  WHERE ((roles.user_id = ( SELECT auth.uid() AS uid)) AND ((roles.role)::text <> 'rejected'::text) AND (roles.team_id <> '00000000-0000-0000-0000-000000000000'::uuid))) = 0));
+
+
+--
+-- Name: lca_active_snapshots; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_active_snapshots ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_factorization_registry; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_factorization_registry ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_jobs; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_jobs ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_jobs lca_jobs_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_jobs_select_own ON public.lca_jobs FOR SELECT TO authenticated USING ((requested_by = auth.uid()));
+
+
+--
+-- Name: lca_latest_all_unit_results; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_latest_all_unit_results ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_network_snapshots; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_network_snapshots ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_result_cache; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_result_cache ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_results; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_results ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_results lca_results_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_results_select_own ON public.lca_results FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.lca_jobs j
+  WHERE ((j.id = lca_results.job_id) AND (j.requested_by = auth.uid())))));
+
+
+--
+-- Name: lca_snapshot_artifacts; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_snapshot_artifacts ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lciamethods; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lciamethods ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lifecyclemodels; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lifecyclemodels ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: processes; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.processes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: reviews; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: roles; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: teams select by owner or public teams; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "select by owner or public teams" ON public.teams FOR SELECT TO authenticated USING ((is_public OR (rank > 0) OR (EXISTS ( SELECT 1
+   FROM public.roles
+  WHERE (((roles.team_id = teams.id) OR (roles.team_id = '00000000-0000-0000-0000-000000000000'::uuid)) AND (roles.user_id = ( SELECT auth.uid() AS uid)) AND ((roles.role)::text <> 'rejected'::text))))));
+
+
+--
+-- Name: roles select by self and team; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "select by self and team" ON public.roles FOR SELECT TO authenticated USING (public.policy_roles_select(team_id, (role)::text));
+
+
+--
+-- Name: users select by self and team and admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "select by self and team and admin" ON public.users FOR SELECT TO authenticated USING (((id = ( SELECT auth.uid() AS uid)) OR (id IN ( SELECT r.user_id
    FROM public.roles r
   WHERE (((r.role)::text = 'owner'::text) AND (public.policy_is_team_public(r.team_id) = true)))) OR (id IN ( SELECT r0.user_id
    FROM public.roles r0
@@ -5988,109 +5350,807 @@ using (((id = ( SELECT auth.uid() AS uid)) OR (id IN ( SELECT r.user_id
           WHERE ((r.user_id = ( SELECT auth.uid() AS uid)) AND ((r.role)::text <> 'rejected'::text)))))) OR public.policy_is_current_user_in_roles('00000000-0000-0000-0000-000000000000'::uuid, ARRAY['admin'::text, 'review-admin'::text, 'review-member'::text])));
 
 
-CREATE TRIGGER contacts_json_sync_trigger BEFORE INSERT OR UPDATE ON public.contacts FOR EACH ROW EXECUTE FUNCTION public.contacts_sync_jsonb_version();
+--
+-- Name: sources; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
 
-CREATE TRIGGER contacts_set_modified_at_trigger BEFORE UPDATE ON public.contacts FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+ALTER TABLE public.sources ENABLE ROW LEVEL SECURITY;
 
-CREATE TRIGGER flowproperties_json_sync_trigger BEFORE INSERT OR UPDATE ON public.flowproperties FOR EACH ROW EXECUTE FUNCTION public.flowproperties_sync_jsonb_version();
+--
+-- Name: teams; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
 
-CREATE TRIGGER flowproperties_set_modified_at_trigger BEFORE UPDATE ON public.flowproperties FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 
-CREATE TRIGGER flows_json_sync_trigger BEFORE INSERT OR UPDATE ON public.flows FOR EACH ROW EXECUTE FUNCTION public.flows_sync_jsonb_version();
+--
+-- Name: unitgroups; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
 
-CREATE TRIGGER flows_set_modified_at_trigger BEFORE UPDATE ON public.flows FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+ALTER TABLE public.unitgroups ENABLE ROW LEVEL SECURITY;
 
-CREATE TRIGGER ilcd_json_sync_trigger BEFORE INSERT OR UPDATE ON public.ilcd FOR EACH ROW EXECUTE FUNCTION public.sync_json_to_jsonb();
+--
+-- Name: roles update by admin or owner or self; Type: POLICY; Schema: public; Owner: postgres
+--
 
-CREATE TRIGGER ilcd_set_modified_at_trigger BEFORE UPDATE ON public.ilcd FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER lciamethods_json_sync_trigger BEFORE INSERT OR UPDATE ON public.lciamethods FOR EACH ROW EXECUTE FUNCTION public.lciamethods_sync_jsonb_version();
-
-CREATE TRIGGER lciamethods_set_modified_at_trigger BEFORE UPDATE ON public.lciamethods FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER lifecyclemodels_json_sync_trigger BEFORE INSERT OR UPDATE ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION public.lifecyclemodels_sync_jsonb_version();
-
-CREATE TRIGGER lifecyclemodels_set_modified_at_trigger BEFORE UPDATE ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER processes_json_sync_trigger BEFORE INSERT OR UPDATE ON public.processes FOR EACH ROW EXECUTE FUNCTION public.processes_sync_jsonb_version();
-
-CREATE TRIGGER processes_set_modified_at_trigger BEFORE UPDATE ON public.processes FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER roles_set_modified_at_trigger BEFORE UPDATE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER sources_json_sync_trigger BEFORE INSERT OR UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION public.sources_sync_jsonb_version();
-
-CREATE TRIGGER sources_set_modified_at_trigger BEFORE UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER teams_set_modified_at_trigger BEFORE UPDATE ON public.teams FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER unitgroups_json_sync_trigger BEFORE INSERT OR UPDATE ON public.unitgroups FOR EACH ROW EXECUTE FUNCTION public.unitgroups_sync_jsonb_version();
-
-CREATE TRIGGER unitgroups_set_modified_at_trigger BEFORE UPDATE ON public.unitgroups FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-CREATE TRIGGER users_trigger AFTER INSERT OR DELETE OR UPDATE ON auth.users FOR EACH ROW EXECUTE FUNCTION public.sync_auth_users_to_public_users();
+CREATE POLICY "update by admin or owner or self" ON public.roles FOR UPDATE TO authenticated USING (public.policy_roles_update(user_id, team_id, (role)::text));
 
 
-  create policy "delete by owner 1yyjigf_0"
-  on "storage"."objects"
-  as permissive
-  for select
-  to authenticated
-using (((bucket_id = 'external_docs'::text) AND (owner = ( SELECT auth.uid() AS uid))));
+--
+-- Name: teams update by owner and admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "update by owner and admin" ON public.teams FOR UPDATE TO authenticated USING ((( SELECT auth.uid() AS uid) IN ( SELECT roles.user_id
+   FROM public.roles
+  WHERE (((roles.role)::text = 'admin'::text) OR ((roles.role)::text = 'owner'::text)))));
 
 
+--
+-- Name: comments update by review-admin or data owener; Type: POLICY; Schema: public; Owner: postgres
+--
 
-  create policy "delete by owner 1yyjigf_1"
-  on "storage"."objects"
-  as permissive
-  for delete
-  to authenticated
-using (((bucket_id = 'external_docs'::text) AND (owner = ( SELECT auth.uid() AS uid))));
-
-
-
-  create policy "insert by authenticated 1k3nibb_0"
-  on "storage"."objects"
-  as permissive
-  for insert
-  to authenticated
-with check ((bucket_id = 'sys-files'::text));
+CREATE POLICY "update by review-admin or data owener" ON public.comments FOR UPDATE TO authenticated USING (((reviewer_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
+   FROM public.roles r
+  WHERE ((r.user_id = ( SELECT auth.uid() AS uid)) AND ((r.role)::text = 'review-admin'::text))))));
 
 
+--
+-- Name: users; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
 
-  create policy "insert by authenticated 1yyjigf_0"
-  on "storage"."objects"
-  as permissive
-  for insert
-  to authenticated
-with check ((bucket_id = 'external_docs'::text));
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
+--
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
+--
 
-
-  create policy "select by authenticated 1k3nibb_0"
-  on "storage"."objects"
-  as permissive
-  for select
-  to authenticated
-using ((bucket_id = 'sys-files'::text));
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO service_role;
+GRANT USAGE ON SCHEMA public TO postgres;
 
 
+--
+-- Name: FUNCTION _navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer); Type: ACL; Schema: public; Owner: postgres
+--
 
-  create policy "select by authenticated 1yyjigf_0"
-  on "storage"."objects"
-  as permissive
-  for select
-  to authenticated
-using ((bucket_id = 'external_docs'::text));
+GRANT ALL ON FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) TO anon;
+GRANT ALL ON FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) TO authenticated;
+GRANT ALL ON FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) TO service_role;
 
 
+--
+-- Name: FUNCTION _navicat_temp_stored_proc(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer); Type: ACL; Schema: public; Owner: postgres
+--
 
-  create policy "upload by authenticated 1k3nibb_0"
-  on "storage"."objects"
-  as permissive
-  for insert
-  to authenticated
-with check ((bucket_id = 'sys-files'::text));
+GRANT ALL ON FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) TO anon;
+GRANT ALL ON FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) TO authenticated;
+GRANT ALL ON FUNCTION public._navicat_temp_stored_proc(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer) TO service_role;
 
+
+--
+-- Name: FUNCTION contacts_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.contacts_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.contacts_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.contacts_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: FUNCTION flowproperties_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.flowproperties_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.flowproperties_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.flowproperties_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: TABLE flows; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.flows TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.flows TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.flows TO service_role;
+
+
+--
+-- Name: FUNCTION flows_embedding_ft_input(proc public.flows); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.flows_embedding_ft_input(proc public.flows) TO anon;
+GRANT ALL ON FUNCTION public.flows_embedding_ft_input(proc public.flows) TO authenticated;
+GRANT ALL ON FUNCTION public.flows_embedding_ft_input(proc public.flows) TO service_role;
+
+
+--
+-- Name: FUNCTION flows_embedding_input(flow public.flows); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.flows_embedding_input(flow public.flows) TO anon;
+GRANT ALL ON FUNCTION public.flows_embedding_input(flow public.flows) TO authenticated;
+GRANT ALL ON FUNCTION public.flows_embedding_input(flow public.flows) TO service_role;
+
+
+--
+-- Name: FUNCTION flows_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.flows_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.flows_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.flows_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: FUNCTION generate_flow_embedding(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.generate_flow_embedding() TO anon;
+GRANT ALL ON FUNCTION public.generate_flow_embedding() TO authenticated;
+GRANT ALL ON FUNCTION public.generate_flow_embedding() TO service_role;
+
+
+--
+-- Name: FUNCTION hybrid_search_flows(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.hybrid_search_flows(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO anon;
+GRANT ALL ON FUNCTION public.hybrid_search_flows(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO authenticated;
+GRANT ALL ON FUNCTION public.hybrid_search_flows(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO service_role;
+
+
+--
+-- Name: FUNCTION hybrid_search_lifecyclemodels(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.hybrid_search_lifecyclemodels(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO anon;
+GRANT ALL ON FUNCTION public.hybrid_search_lifecyclemodels(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO authenticated;
+GRANT ALL ON FUNCTION public.hybrid_search_lifecyclemodels(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO service_role;
+
+
+--
+-- Name: FUNCTION hybrid_search_processes(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.hybrid_search_processes(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO anon;
+GRANT ALL ON FUNCTION public.hybrid_search_processes(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO authenticated;
+GRANT ALL ON FUNCTION public.hybrid_search_processes(query_text text, query_embedding text, filter_condition text, match_threshold double precision, match_count integer, full_text_weight double precision, extracted_text_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer) TO service_role;
+
+
+--
+-- Name: FUNCTION ilcd_classification_get(this_file_name text, category_type text, get_values text[]); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.ilcd_classification_get(this_file_name text, category_type text, get_values text[]) TO authenticated;
+GRANT ALL ON FUNCTION public.ilcd_classification_get(this_file_name text, category_type text, get_values text[]) TO service_role;
+
+
+--
+-- Name: FUNCTION ilcd_flow_categorization_get(this_file_name text, get_values text[]); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.ilcd_flow_categorization_get(this_file_name text, get_values text[]) TO authenticated;
+GRANT ALL ON FUNCTION public.ilcd_flow_categorization_get(this_file_name text, get_values text[]) TO service_role;
+
+
+--
+-- Name: FUNCTION ilcd_location_get(this_file_name text, get_values text[]); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.ilcd_location_get(this_file_name text, get_values text[]) TO authenticated;
+GRANT ALL ON FUNCTION public.ilcd_location_get(this_file_name text, get_values text[]) TO service_role;
+
+
+--
+-- Name: FUNCTION lca_enqueue_job(p_queue_name text, p_message jsonb); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) TO service_role;
+
+
+--
+-- Name: FUNCTION lciamethods_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.lciamethods_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.lciamethods_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.lciamethods_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: TABLE lifecyclemodels; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lifecyclemodels TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lifecyclemodels TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lifecyclemodels TO service_role;
+
+
+--
+-- Name: FUNCTION lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels) TO anon;
+GRANT ALL ON FUNCTION public.lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels) TO authenticated;
+GRANT ALL ON FUNCTION public.lifecyclemodels_embedding_ft_input(proc public.lifecyclemodels) TO service_role;
+
+
+--
+-- Name: FUNCTION lifecyclemodels_embedding_input(models public.lifecyclemodels); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.lifecyclemodels_embedding_input(models public.lifecyclemodels) TO anon;
+GRANT ALL ON FUNCTION public.lifecyclemodels_embedding_input(models public.lifecyclemodels) TO authenticated;
+GRANT ALL ON FUNCTION public.lifecyclemodels_embedding_input(models public.lifecyclemodels) TO service_role;
+
+
+--
+-- Name: FUNCTION lifecyclemodels_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.lifecyclemodels_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.lifecyclemodels_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.lifecyclemodels_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search(query_text text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search(query_text text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search(query_text text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search(query_text text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_contacts(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_contacts(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_contacts(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_contacts(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_flowproperties(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_flowproperties(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_flowproperties(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_flowproperties(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_flows_text_v1(query_text text, page_size integer, page_current integer, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_flows_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_flows_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_flows_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_flows_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_flows_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_flows_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_flows_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_lifecyclemodels_text_v1(query_text text, page_size integer, page_current integer, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_lifecyclemodels_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_lifecyclemodels_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_lifecyclemodels_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_lifecyclemodels_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_lifecyclemodels_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_lifecyclemodels_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_lifecyclemodels_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_processes_text_v1(query_text text, page_size integer, page_current integer, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_processes_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_processes_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_processes_text_v1(query_text text, page_size integer, page_current integer, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_processes_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_processes_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_processes_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_processes_v1(query_text text, filter_condition text, order_by text, page_size bigint, page_current bigint, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_sources(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_sources(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_sources(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_sources(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO service_role;
+
+
+--
+-- Name: FUNCTION pgroonga_search_unitgroups(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.pgroonga_search_unitgroups(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO anon;
+GRANT ALL ON FUNCTION public.pgroonga_search_unitgroups(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO authenticated;
+GRANT ALL ON FUNCTION public.pgroonga_search_unitgroups(query_text text, filter_condition text, page_size bigint, page_current bigint, data_source text, this_user_id text) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_is_current_user_in_roles(p_team_id uuid, p_roles_to_check text[]); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_is_current_user_in_roles(p_team_id uuid, p_roles_to_check text[]) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_is_current_user_in_roles(p_team_id uuid, p_roles_to_check text[]) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_is_team_id_used(_team_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_is_team_id_used(_team_id uuid) TO anon;
+GRANT ALL ON FUNCTION public.policy_is_team_id_used(_team_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_is_team_id_used(_team_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_is_team_public(_team_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_is_team_public(_team_id uuid) TO anon;
+GRANT ALL ON FUNCTION public.policy_is_team_public(_team_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_is_team_public(_team_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_roles_delete(_user_id uuid, _team_id uuid, _role text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_roles_delete(_user_id uuid, _team_id uuid, _role text) TO anon;
+GRANT ALL ON FUNCTION public.policy_roles_delete(_user_id uuid, _team_id uuid, _role text) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_roles_delete(_user_id uuid, _team_id uuid, _role text) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_roles_insert(_user_id uuid, _team_id uuid, _role text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_roles_insert(_user_id uuid, _team_id uuid, _role text) TO anon;
+GRANT ALL ON FUNCTION public.policy_roles_insert(_user_id uuid, _team_id uuid, _role text) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_roles_insert(_user_id uuid, _team_id uuid, _role text) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_roles_select(_team_id uuid, _role text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_roles_select(_team_id uuid, _role text) TO anon;
+GRANT ALL ON FUNCTION public.policy_roles_select(_team_id uuid, _role text) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_roles_select(_team_id uuid, _role text) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_roles_update(_user_id uuid, _team_id uuid, _role text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_roles_update(_user_id uuid, _team_id uuid, _role text) TO anon;
+GRANT ALL ON FUNCTION public.policy_roles_update(_user_id uuid, _team_id uuid, _role text) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_roles_update(_user_id uuid, _team_id uuid, _role text) TO service_role;
+
+
+--
+-- Name: FUNCTION policy_user_has_team(_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.policy_user_has_team(_user_id uuid) TO anon;
+GRANT ALL ON FUNCTION public.policy_user_has_team(_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.policy_user_has_team(_user_id uuid) TO service_role;
+
+
+--
+-- Name: TABLE processes; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.processes TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.processes TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.processes TO service_role;
+
+
+--
+-- Name: FUNCTION processes_embedding_ft_input(proc public.processes); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.processes_embedding_ft_input(proc public.processes) TO anon;
+GRANT ALL ON FUNCTION public.processes_embedding_ft_input(proc public.processes) TO authenticated;
+GRANT ALL ON FUNCTION public.processes_embedding_ft_input(proc public.processes) TO service_role;
+
+
+--
+-- Name: FUNCTION processes_embedding_input(proc public.processes); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.processes_embedding_input(proc public.processes) TO anon;
+GRANT ALL ON FUNCTION public.processes_embedding_input(proc public.processes) TO authenticated;
+GRANT ALL ON FUNCTION public.processes_embedding_input(proc public.processes) TO service_role;
+
+
+--
+-- Name: FUNCTION processes_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.processes_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.processes_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.processes_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: FUNCTION semantic_search(query_embedding text, match_threshold double precision, match_count integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.semantic_search(query_embedding text, match_threshold double precision, match_count integer) TO anon;
+GRANT ALL ON FUNCTION public.semantic_search(query_embedding text, match_threshold double precision, match_count integer) TO authenticated;
+GRANT ALL ON FUNCTION public.semantic_search(query_embedding text, match_threshold double precision, match_count integer) TO service_role;
+
+
+--
+-- Name: FUNCTION semantic_search_flows_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.semantic_search_flows_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.semantic_search_flows_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.semantic_search_flows_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION semantic_search_lifecyclemodels_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.semantic_search_lifecyclemodels_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.semantic_search_lifecyclemodels_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.semantic_search_lifecyclemodels_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION semantic_search_processes_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.semantic_search_processes_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO anon;
+GRANT ALL ON FUNCTION public.semantic_search_processes_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO authenticated;
+GRANT ALL ON FUNCTION public.semantic_search_processes_v1(query_embedding text, filter_condition text, match_threshold double precision, match_count integer, data_source text) TO service_role;
+
+
+--
+-- Name: FUNCTION sources_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.sources_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.sources_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.sources_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: FUNCTION sync_auth_users_to_public_users(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.sync_auth_users_to_public_users() TO anon;
+GRANT ALL ON FUNCTION public.sync_auth_users_to_public_users() TO authenticated;
+GRANT ALL ON FUNCTION public.sync_auth_users_to_public_users() TO service_role;
+
+
+--
+-- Name: FUNCTION sync_json_to_jsonb(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.sync_json_to_jsonb() TO anon;
+GRANT ALL ON FUNCTION public.sync_json_to_jsonb() TO authenticated;
+GRANT ALL ON FUNCTION public.sync_json_to_jsonb() TO service_role;
+
+
+--
+-- Name: FUNCTION unitgroups_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.unitgroups_sync_jsonb_version() TO anon;
+GRANT ALL ON FUNCTION public.unitgroups_sync_jsonb_version() TO authenticated;
+GRANT ALL ON FUNCTION public.unitgroups_sync_jsonb_version() TO service_role;
+
+
+--
+-- Name: FUNCTION update_modified_at(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.update_modified_at() TO anon;
+GRANT ALL ON FUNCTION public.update_modified_at() TO authenticated;
+GRANT ALL ON FUNCTION public.update_modified_at() TO service_role;
+
+
+--
+-- Name: TABLE a_embedding_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.a_embedding_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE a_lca_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.a_lca_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE a_webhook_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.a_webhook_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE q_embedding_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.q_embedding_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE q_lca_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.q_lca_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE q_webhook_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.q_webhook_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE comments; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.comments TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.comments TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.comments TO service_role;
+
+
+--
+-- Name: TABLE contacts; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.contacts TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.contacts TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.contacts TO service_role;
+
+
+--
+-- Name: TABLE flowproperties; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.flowproperties TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.flowproperties TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.flowproperties TO service_role;
+
+
+--
+-- Name: TABLE ilcd; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ilcd TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ilcd TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ilcd TO service_role;
+
+
+--
+-- Name: TABLE lca_active_snapshots; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_active_snapshots TO service_role;
+
+
+--
+-- Name: TABLE lca_factorization_registry; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_factorization_registry TO service_role;
+
+
+--
+-- Name: TABLE lca_jobs; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_jobs TO service_role;
+GRANT SELECT ON TABLE public.lca_jobs TO authenticated;
+
+
+--
+-- Name: TABLE lca_latest_all_unit_results; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_latest_all_unit_results TO service_role;
+
+
+--
+-- Name: TABLE lca_network_snapshots; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_network_snapshots TO service_role;
+
+
+--
+-- Name: TABLE lca_result_cache; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_result_cache TO service_role;
+
+
+--
+-- Name: TABLE lca_results; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_results TO service_role;
+GRANT SELECT ON TABLE public.lca_results TO authenticated;
+
+
+--
+-- Name: TABLE lca_snapshot_artifacts; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_snapshot_artifacts TO service_role;
+
+
+--
+-- Name: TABLE lciamethods; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lciamethods TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lciamethods TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lciamethods TO service_role;
+
+
+--
+-- Name: TABLE reviews; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.reviews TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.reviews TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.reviews TO service_role;
+
+
+--
+-- Name: TABLE roles; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.roles TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.roles TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.roles TO service_role;
+
+
+--
+-- Name: TABLE sources; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.sources TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.sources TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.sources TO service_role;
+
+
+--
+-- Name: TABLE teams; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.teams TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.teams TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.teams TO service_role;
+
+
+--
+-- Name: TABLE unitgroups; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.unitgroups TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.unitgroups TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.unitgroups TO service_role;
+
+
+--
+-- Name: TABLE users; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.users TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.users TO authenticated;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.users TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: pgmq; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA pgmq GRANT SELECT ON SEQUENCES TO pg_monitor;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: pgmq; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA pgmq GRANT SELECT ON TABLES TO pg_monitor;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: supabase_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: supabase_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: supabase_admin
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO service_role;
 
 

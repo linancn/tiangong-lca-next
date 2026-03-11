@@ -53,3 +53,11 @@ docker/volumes/db/data
 docker/volumes/storage
 docker/.env
 docker/test.http
+docker/volumes/db/data/
+
+# python cache
+__pycache__/
+*.py[cod]
+
+# local deploy env
+docker/.env.deploy.local

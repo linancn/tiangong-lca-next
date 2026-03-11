@@ -1,25 +1,15 @@
 {
   "imports": {
-    "@aws-sdk/client-cognito-identity-provider": "npm:/@aws-sdk/client-cognito-identity-provider",
-    "@langchain/langgraph-sdk": "npm:@langchain/langgraph-sdk@^0.1.9",
-    "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js/edge-runtime.d.ts",
-    "@langchain/core/messages": "npm:/@langchain/core/messages",
-    "@langchain/core/prompts": "npm:/@langchain/core/prompts",
-    "@langchain/core/runnables": "npm:/@langchain/core/runnables",
-    "@langchain/core/tools": "npm:/@langchain/core/tools",
-    "@langchain/langgraph": "npm:/@langchain/langgraph",
-    "@langchain/langgraph/prebuilt": "npm:/@langchain/langgraph/prebuilt",
-    "@langchain/openai": "npm:/@langchain/openai",
-    "@openai/openai": "jsr:/@openai/openai",
-    "@opensearch-project/opensearch": "npm:/@opensearch-project/opensearch",
-    "@opensearch-project/opensearch/aws": "npm:/@opensearch-project/opensearch/aws",
-    "@pinecone-database/pinecone": "npm:/@pinecone-database/pinecone",
-    "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2",
-    "@upstash/redis": "npm:/@upstash/redis",
-    "@aws-sdk/client-sagemaker-runtime": "npm:/@aws-sdk/client-sagemaker-runtime",
-    "aws-jwt-verify": "npm:/aws-jwt-verify",
-    "postgres": "https://deno.land/x/postgresjs@v3.4.7/mod.js",
-    "redis": "npm:redis@^5.8.3",
-    "zod": "npm:/zod@3.25.76"
+    "@aws-sdk/client-cognito-identity-provider": "npm:@aws-sdk/client-cognito-identity-provider@3.1004.0",
+    "@aws-sdk/client-sagemaker-runtime": "npm:@aws-sdk/client-sagemaker-runtime@3.1004.0",
+    "@langchain/langgraph-sdk": "npm:/@langchain/langgraph-sdk@1.6.5",
+    "@openai/openai": "npm:openai@6.27.0",
+    "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js@2.98.0/edge-runtime.d.ts",
+    "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2.98.0",
+    "@upstash/redis": "https://esm.sh/@upstash/redis@1.36.3",
+    "aws-jwt-verify": "npm:aws-jwt-verify@5.1.1",
+    "postgres": "https://deno.land/x/postgresjs@v3.4.8/mod.js",
+    "redis": "jsr:@db/redis@0.40.0",
+    "zod": "npm:/zod@4.3.6"
   }
 }
