@@ -3,12 +3,14 @@ import {
   CompressOutlined,
   ExpandOutlined,
   MinusOutlined,
+  PartitionOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
 
 import { useGraphEvent, useGraphInstance } from '@/contexts/graphContext';
+import { applyDagreLayout } from '@/pages/LifeCycleModels/Components/toolbar/utils/layout';
 import { Button, Space, Tooltip } from 'antd';
 import { FormattedMessage } from 'umi';
 import './styles/index.less';
@@ -19,6 +21,7 @@ export enum ControlEnum {
   ZoomOut = 'zoomOut',
   ZoomToFit = 'zoomToFit',
   ZoomToOrigin = 'zoomToOrigin',
+  AutoLayoutLR = 'autoLayoutLR',
 }
 
 const dropDownItems = [
@@ -44,7 +47,14 @@ const dropDownItems = [
   },
 ];
 
-const ControlActionList = ['zoomTo', 'zoomIn', 'zoomOut', 'zoomToFit', 'zoomToOrigin'] as const;
+const ControlActionList = [
+  'zoomTo',
+  'zoomIn',
+  'zoomOut',
+  'zoomToFit',
+  'zoomToOrigin',
+  'autoLayoutLR',
+] as const;
 
 type ControlAction = (typeof ControlActionList)[number];
 
@@ -94,6 +104,10 @@ const Control = (props: ControlIProps) => {
       ),
       icon: <ExpandOutlined />,
     },
+    [ControlEnum.AutoLayoutLR]: {
+      label: <FormattedMessage id='pages.button.model.autoLayoutLR' defaultMessage='Auto Layout' />,
+      icon: <PartitionOutlined />,
+    },
   };
 
   const changeZoom = (type: ControlAction, args?: string) => {
@@ -120,6 +134,13 @@ const Control = (props: ControlIProps) => {
       case ControlEnum.ZoomTo:
         graph.zoomTo(zoomNum);
         break;
+      case ControlEnum.AutoLayoutLR: {
+        const didLayout = applyDagreLayout(graph, 'LR');
+        if (didLayout) {
+          graph.zoomToFit({ maxScale: 1 });
+        }
+        break;
+      }
       default:
         break;
     }

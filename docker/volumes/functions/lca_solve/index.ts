@@ -721,8 +721,8 @@ async function isSnapshotFresh(
 
   const [processMax, flowMax, methodMax] = await Promise.all([
     fetchProcessMaxModifiedAt(processFilter),
-    fetchTableMaxModifiedAt('flows'),
-    fetchTableMaxModifiedAt('lciamethods'),
+    fetchTableMaxModifiedAt('flows', processFilter),
+    fetchTableMaxModifiedAt('lciamethods', processFilter),
   ]);
 
   const latest = [processMax, flowMax, methodMax]
@@ -763,13 +763,29 @@ async function fetchProcessMaxModifiedAt(filter: ParsedProcessFilter): Promise<s
   return data?.modified_at ? String(data.modified_at) : null;
 }
 
-async function fetchTableMaxModifiedAt(table: 'flows' | 'lciamethods'): Promise<string | null> {
-  const { data, error } = await supabaseClient
+async function fetchTableMaxModifiedAt(
+  table: 'flows' | 'lciamethods',
+  filter: ParsedProcessFilter,
+): Promise<string | null> {
+  let query = supabaseClient
     .from(table)
     .select('modified_at')
     .order('modified_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(1);
+
+  if (!filter.allStates) {
+    if (filter.processStates.length > 0 && filter.includeUserId) {
+      query = query.or(
+        `state_code.in.(${filter.processStates.join(',')}),user_id.eq.${filter.includeUserId}`,
+      );
+    } else if (filter.processStates.length > 0) {
+      query = query.in('state_code', filter.processStates);
+    } else if (filter.includeUserId) {
+      query = query.eq('user_id', filter.includeUserId);
+    }
+  }
+
+  const { data, error } = await query.maybeSingle();
   if (error) {
     console.warn('fetch table max modified_at failed', { table, error: error.message });
     return null;

@@ -8,7 +8,7 @@ import AlignedNumber from '@/components/AlignedNumber';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangJson, getLangText, getUnitData, jsonToList } from '@/services/general/util';
-import { queryLcaResults } from '@/services/lca';
+import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import {
@@ -289,6 +289,10 @@ const ProcessView: FC<Props> = ({
     source: string;
     computedAt: string;
   } | null>(null);
+  const [solverLciaPendingBuild, setSolverLciaPendingBuild] = useState<{
+    jobId: string;
+    snapshotId: string;
+  } | null>(null);
   // const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
   const tabList = [
     {
@@ -445,6 +449,7 @@ const ProcessView: FC<Props> = ({
       }
       setSolverLciaLoading(true);
       setSolverLciaError(null);
+      setSolverLciaPendingBuild(null);
       try {
         const queried = await queryLcaResults({
           scope: LCA_SCOPE,
@@ -482,11 +487,31 @@ const ProcessView: FC<Props> = ({
           source: queried.source,
           computedAt: queried.meta.computed_at,
         });
+        setSolverLciaPendingBuild(null);
         setSolverLciaLoaded(true);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_build_queued') {
+          const buildJobId =
+            typeof error.body?.build_job_id === 'string' ? error.body.build_job_id.trim() : '';
+          const buildSnapshotId =
+            typeof error.body?.build_snapshot_id === 'string'
+              ? error.body.build_snapshot_id.trim()
+              : '';
+          if (buildJobId && buildSnapshotId) {
+            setSolverLciaPendingBuild({
+              jobId: buildJobId,
+              snapshotId: buildSnapshotId,
+            });
+            setSolverLciaMeta(null);
+            setSolverLciaError(null);
+            setSolverLciaLoaded(true);
+            return;
+          }
+        }
+        setSolverLciaPendingBuild(null);
         setLciaResultDataSource(baseLciaResultDataSource);
         setSolverLciaMeta(null);
-        setSolverLciaError(error?.message ?? String(error));
+        setSolverLciaError(error instanceof Error ? error.message : String(error));
         setSolverLciaLoaded(true);
       } finally {
         setSolverLciaLoading(false);
@@ -501,6 +526,18 @@ const ProcessView: FC<Props> = ({
     }
     void loadSolverLciaResults(false);
   }, [activeTabKey, drawerVisible, loadSolverLciaResults]);
+
+  useEffect(() => {
+    if (!drawerVisible || activeTabKey !== 'lciaResults' || !solverLciaPendingBuild) {
+      return;
+    }
+    const timer = globalThis.setTimeout(() => {
+      void loadSolverLciaResults(true);
+    }, 4000);
+    return () => {
+      globalThis.clearTimeout(timer);
+    };
+  }, [activeTabKey, drawerVisible, loadSolverLciaResults, solverLciaPendingBuild]);
 
   // const getLCIAResult = async () => {
   //   setLciaResultDataSourceLoading(true);
@@ -1887,8 +1924,17 @@ const ProcessView: FC<Props> = ({
               {`source=${solverLciaMeta.source}, snapshot=${solverLciaMeta.snapshotId}, result=${solverLciaMeta.resultId}, computed_at=${solverLciaMeta.computedAt}`}
             </Typography.Text>
           )}
+          {solverLciaPendingBuild && (
+            <Typography.Text type='secondary'>
+              <FormattedMessage
+                id='pages.process.view.lciaresults.solver.snapshotBuilding'
+                defaultMessage='Snapshot is rebuilding (job {jobId}). Retrying automatically...'
+                values={{ jobId: solverLciaPendingBuild.jobId }}
+              />
+            </Typography.Text>
+          )}
         </Space>
-        {solverLciaError && (
+        {solverLciaError && !solverLciaPendingBuild && (
           <Typography.Text type='danger'>
             <FormattedMessage
               id='pages.process.view.lciaresults.solver.error'
@@ -1925,6 +1971,7 @@ const ProcessView: FC<Props> = ({
     setBaseLciaResultDataSource([]);
     setSolverLciaError(null);
     setSolverLciaMeta(null);
+    setSolverLciaPendingBuild(null);
     setSolverLciaLoaded(false);
     setSolverLciaLoading(false);
     getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
