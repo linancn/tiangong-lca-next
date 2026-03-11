@@ -126,9 +126,12 @@ function parse_meta(header_line,   tmp, parts, n) {
 }
 
 {
-  if (!should_drop_line($0)) {
+  line = $0
+  sub(/\r$/, "", line)
+
+  if (!should_drop_line(line)) {
     line_count++
-    lines[line_count] = $0
+    lines[line_count] = line
   }
 }
 
