@@ -1737,7 +1737,9 @@ const ToolbarEdit: FC<Props> = ({
           />
         </Tooltip>
       ) : null}
-      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
+      <Control
+        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
+      />
       <Spin spinning={spinning} fullscreen />
       <IoPortSelect
         lang={lang}

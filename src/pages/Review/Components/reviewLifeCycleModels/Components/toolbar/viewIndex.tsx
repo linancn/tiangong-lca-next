@@ -571,7 +571,9 @@ const ToolbarView: FC<Props> = ({
         buttonType={'toolResultIcon'}
         disabled={false}
       />
-      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
+      <Control
+        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
+      />
       <Spin spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}

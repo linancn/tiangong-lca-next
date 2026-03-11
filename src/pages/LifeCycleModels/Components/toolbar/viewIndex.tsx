@@ -568,7 +568,9 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         lang={lang}
         actionType='view'
       />
-      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
+      <Control
+        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
+      />
       <Spin spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}
