@@ -17,11 +17,21 @@ OUTPUT=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --input)
-      INPUT="${2:-}"
+      if [[ $# -lt 2 || -z "${2:-}" ]]; then
+        echo "[filter-sql] missing value for --input" >&2
+        usage >&2
+        exit 1
+      fi
+      INPUT="$2"
       shift 2
       ;;
     --output)
-      OUTPUT="${2:-}"
+      if [[ $# -lt 2 || -z "${2:-}" ]]; then
+        echo "[filter-sql] missing value for --output" >&2
+        usage >&2
+        exit 1
+      fi
+      OUTPUT="$2"
       shift 2
       ;;
     -h|--help)
@@ -87,7 +97,7 @@ function keep_block(name, obj_type, schema, ext_name) {
       return in_csv_set(ext_name, "pgmq,vector,pgroonga,hstore,http,pgcrypto,uuid-ossp")
     }
 
-    if (obj_type == "ACL" && name == "public") {
+    if (obj_type == "ACL" && (name == "public" || name == "SCHEMA public")) {
       return 1
     }
 
