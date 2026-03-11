@@ -22,6 +22,23 @@ const awsClient = new CognitoIdentityProviderClient({
   },
 });
 
+function getErrorName(error: unknown): string | undefined {
+  if (typeof error === 'object' && error !== null && 'name' in error) {
+    const name = (error as { name?: unknown }).name;
+    if (typeof name === 'string') {
+      return name;
+    }
+  }
+  return undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return typeof error === 'string' ? error : JSON.stringify(error);
+}
+
 async function changeEmail(currentEmail: string, newEmail: string) {
   try {
     // check if user exists
@@ -52,7 +69,7 @@ async function changeEmail(currentEmail: string, newEmail: string) {
 
     return { success: true, userExists: true };
   } catch (error) {
-    if (error.name === 'UserNotFoundException') {
+    if (getErrorName(error) === 'UserNotFoundException') {
       console.log(`User not found: ${currentEmail}, ignoring email change.`);
       return { success: true, userExists: false };
     }
@@ -137,7 +154,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: 'Failed to change email',
-        details: error.message,
+        details: getErrorMessage(error),
         currentEmail: user.email,
         newEmail: newEmail,
       }),

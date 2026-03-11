@@ -1,134 +1,149 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Data desensitization script
-# Used to replace sensitive information in data.sql
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 
-set -e
+DEFAULT_INPUT_FILE="${REPO_ROOT}/docker/volumes/db/init/data.sql"
+DEFAULT_OUTPUT_FILE="${REPO_ROOT}/docker/volumes/db/init/data_desensitized.sql"
 
-# Color definitions
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+INPUT_FILE="${DEFAULT_INPUT_FILE}"
+OUTPUT_FILE="${DEFAULT_OUTPUT_FILE}"
+IN_PLACE=0
+CREATE_BACKUP=1
+STRICT=0
+QUIET=0
 
-# Default file paths
-DEFAULT_INPUT_FILE="docker/volumes/db/init/data.sql"
-DEFAULT_OUTPUT_FILE="docker/volumes/db/init/data_desensitized.sql"
-
-# Show help information
 show_help() {
-    echo "Data Desensitization Script"
-    echo ""
-    echo "Usage: $0 [options]"
-    echo ""
-    echo "Options:"
-    echo "  -i, --input FILE     Input file path (default: $DEFAULT_INPUT_FILE)"
-    echo "  -o, --output FILE    Output file path (default: $DEFAULT_OUTPUT_FILE)"
-    echo "  -h, --help           Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  $0                                    # Use default file paths"
-    echo "  $0 -i input.sql -o output.sql         # Specify input and output files"
-    echo ""
+  cat <<'EOF'
+Data.sql Desensitization Script
+
+Usage:
+  desensitize_data.sql.sh [options]
+
+Options:
+  -i, --input FILE      Input SQL file. Default: docker/volumes/db/init/data.sql
+  -o, --output FILE     Output SQL file. Default: docker/volumes/db/init/data_desensitized.sql
+      --in-place        Overwrite input file directly.
+      --no-backup       Do not create backup file.
+      --strict          Exit non-zero if sensitive patterns remain after replacement.
+  -q, --quiet           Reduce log output.
+  -h, --help            Show this help.
+
+Examples:
+  ./docker/desensitize_data.sql.sh
+  ./docker/desensitize_data.sql.sh --in-place --no-backup --strict
+  ./docker/desensitize_data.sql.sh -i /tmp/raw.sql -o /tmp/safe.sql
+EOF
 }
 
-# Parse command line arguments
-INPUT_FILE="$DEFAULT_INPUT_FILE"
-OUTPUT_FILE="$DEFAULT_OUTPUT_FILE"
+log() {
+  if [[ "${QUIET}" != "1" ]]; then
+    echo "$@"
+  fi
+}
 
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        -i|--input)
-            INPUT_FILE="$2"
-            shift 2
-            ;;
-        -o|--output)
-            OUTPUT_FILE="$2"
-            shift 2
-            ;;
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Error: Unknown option $1${NC}"
-            show_help
-            exit 1
-            ;;
-    esac
+  case "$1" in
+    -i|--input)
+      if [[ $# -lt 2 || -z "${2:-}" ]]; then
+        echo "[desensitize] --input requires a file path" >&2
+        exit 1
+      fi
+      INPUT_FILE="${2}"
+      shift 2
+      ;;
+    -o|--output)
+      if [[ $# -lt 2 || -z "${2:-}" ]]; then
+        echo "[desensitize] --output requires a file path" >&2
+        exit 1
+      fi
+      OUTPUT_FILE="${2}"
+      shift 2
+      ;;
+    --in-place)
+      IN_PLACE=1
+      shift
+      ;;
+    --no-backup)
+      CREATE_BACKUP=0
+      shift
+      ;;
+    --strict)
+      STRICT=1
+      shift
+      ;;
+    -q|--quiet)
+      QUIET=1
+      shift
+      ;;
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      echo "[desensitize] unknown option: $1" >&2
+      show_help >&2
+      exit 1
+      ;;
+  esac
 done
 
-# Check if input file exists
-if [[ ! -f "$INPUT_FILE" ]]; then
-    echo -e "${RED}Error: Input file '$INPUT_FILE' does not exist${NC}"
-    exit 1
+if [[ -z "${INPUT_FILE}" ]]; then
+  echo "[desensitize] input file is required" >&2
+  exit 1
 fi
 
-echo -e "${YELLOW}Starting data desensitization...${NC}"
-echo "Input file: $INPUT_FILE"
-echo "Output file: $OUTPUT_FILE"
-echo ""
-
-# Create output directory if it does not exist
-OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
-if [[ ! -d "$OUTPUT_DIR" ]]; then
-    mkdir -p "$OUTPUT_DIR"
-    echo -e "${GREEN}Created output directory: $OUTPUT_DIR${NC}"
+if [[ "${IN_PLACE}" == "1" ]]; then
+  OUTPUT_FILE="${INPUT_FILE}"
 fi
 
-# Backup original file
-BACKUP_FILE="${INPUT_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
-cp "$INPUT_FILE" "$BACKUP_FILE"
-echo -e "${GREEN}Backup file created: $BACKUP_FILE${NC}"
-
-# Perform desensitization replacements
-echo -e "${YELLOW}Performing desensitization replacements...${NC}"
-
-# Replace x_key sensitive information
-echo "Replacing x_key sensitive information..."
-sed -E 's/"x_key":"[^"]*"/"x_key":"edge-functions-key"/g' "$INPUT_FILE" > "$OUTPUT_FILE"
-
-# Replace apikey sensitive information
-echo "Replacing apikey sensitive information..."
-sed -i '' -E 's/"apikey":"sb_secret_[^"]*"/"apikey":"edge-functions-key"/g' "$OUTPUT_FILE"
-
-# Replace other possible sensitive information
-echo "Replacing other sensitive information..."
-sed -i '' -E 's/"x_key":"[^"]*"/"x_key":"edge-functions-key"/g' "$OUTPUT_FILE"
-
-# Check replacement results
-echo ""
-echo -e "${YELLOW}Checking replacement results...${NC}"
-
-# Check if any sensitive information remains
-SENSITIVE_COUNT=$(grep -c "sb_secret\|1qaZ_Xsw2_Mju7" "$OUTPUT_FILE" 2>/dev/null || echo "0")
-if [[ "$SENSITIVE_COUNT" -gt 0 ]]; then
-    echo -e "${RED}Warning: Found $SENSITIVE_COUNT possible sensitive information remnants${NC}"
-    grep -n "sb_secret\|1qaZ_Xsw2_Mju7" "$OUTPUT_FILE" || true
-else
-    echo -e "${GREEN}✓ All sensitive information has been successfully replaced${NC}"
+if [[ ! -f "${INPUT_FILE}" ]]; then
+  echo "[desensitize] input file does not exist: ${INPUT_FILE}" >&2
+  exit 1
 fi
 
-# Show replacement statistics
-echo ""
-echo -e "${GREEN}Desensitization completed!${NC}"
-echo "Original file: $INPUT_FILE"
-echo "Desensitized file: $OUTPUT_FILE"
-echo "Backup file: $BACKUP_FILE"
+OUTPUT_DIR="$(dirname -- "${OUTPUT_FILE}")"
+mkdir -p "${OUTPUT_DIR}"
 
-# Show file size comparison
-ORIGINAL_SIZE=$(wc -c < "$INPUT_FILE")
-DESENSITIZED_SIZE=$(wc -c < "$OUTPUT_FILE")
-echo ""
-echo "File size comparison:"
-echo "  Original file: $ORIGINAL_SIZE bytes"
-echo "  Desensitized file: $DESENSITIZED_SIZE bytes"
+if [[ "${CREATE_BACKUP}" == "1" ]]; then
+  BACKUP_FILE="${INPUT_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
+  cp -- "${INPUT_FILE}" "${BACKUP_FILE}"
+  log "[desensitize] backup created: ${BACKUP_FILE}"
+fi
 
-echo ""
-echo -e "${YELLOW}Recommendations:${NC}"
-echo "1. Check the desensitized file to ensure all sensitive information has been properly replaced"
-echo "2. Rename the desensitized file to data.sql to replace the original file"
-echo "3. Ensure the backup file is stored safely"
-echo ""
-echo "To replace the original file, run:"
-echo "  mv $OUTPUT_FILE $INPUT_FILE" 
+TMP_FILE="$(mktemp /tmp/desensitize_data_sql.XXXXXX)"
+trap 'rm -f "${TMP_FILE}"' EXIT
+
+log "[desensitize] replacing sensitive patterns..."
+
+# 1) x_key values in embedded JSON payloads.
+# 2) apikey values that start with sb_secret_ in embedded JSON payloads.
+# 3) any remaining sb_secret_* tokens in plain SQL text.
+sed -E \
+  -e 's/"x_key"[[:space:]]*:[[:space:]]*"[^"]*"/"x_key":"edge-functions-key"/g' \
+  -e 's/"apikey"[[:space:]]*:[[:space:]]*"sb_secret_[^"]*"/"apikey":"edge-functions-key"/g' \
+  -e 's/sb_secret_[A-Za-z0-9._-]+/sb_secret_REDACTED/g' \
+  "${INPUT_FILE}" > "${TMP_FILE}"
+
+cp -- "${TMP_FILE}" "${OUTPUT_FILE}"
+
+leftover_sb_secret="$(grep -nE 'sb_secret_[A-Za-z0-9._-]+' "${OUTPUT_FILE}" | grep -v 'sb_secret_REDACTED' || true)"
+leftover_x_key="$(grep -nE '"x_key"[[:space:]]*:[[:space:]]*"[^"]*"' "${OUTPUT_FILE}" | grep -v '"x_key":"edge-functions-key"' || true)"
+
+if [[ -n "${leftover_sb_secret}" || -n "${leftover_x_key}" ]]; then
+  echo "[desensitize] warning: possible sensitive patterns remain" >&2
+  if [[ -n "${leftover_sb_secret}" ]]; then
+    echo "[desensitize] remaining sb_secret-like tokens:" >&2
+    echo "${leftover_sb_secret}" >&2
+  fi
+  if [[ -n "${leftover_x_key}" ]]; then
+    echo "[desensitize] remaining x_key tokens:" >&2
+    echo "${leftover_x_key}" >&2
+  fi
+  if [[ "${STRICT}" == "1" ]]; then
+    exit 2
+  fi
+fi
+
+log "[desensitize] done: ${OUTPUT_FILE}"

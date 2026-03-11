@@ -1,14 +1,18 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { InvokeEndpointCommand, SageMakerRuntimeClient } from '@aws-sdk/client-sagemaker-runtime';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import {
+  HYBRID_SYNONYM_RULES,
+  hybridQuerySchema,
+  HybridSearchQuery,
+  sanitizeHybridQueryOutput,
+} from '../_shared/hybrid_query_utils.ts';
+import { openaiStructuredOutput } from '../_shared/openai_structured.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseClient as supabase } from '../_shared/supabase_client.ts';
-const openai_api_key = Deno.env.get('OPENAI_API_KEY') ?? '';
-const openai_chat_model = Deno.env.get('OPENAI_CHAT_MODEL') ?? '';
+const openai_chat_model = Deno.env.get('OPENAI_CHAT_MODEL') ?? 'gpt-4.1-mini';
 const SAGEMAKER_ENDPOINT_NAME = Deno.env.get('SAGEMAKER_ENDPOINT_NAME');
 const AWS_REGION = 'us-east-1';
 const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
@@ -192,65 +196,31 @@ Deno.serve(async (req) => {
   if (!query) {
     return new Response('Missing query', { status: 400 });
   }
+  const queryText = typeof query === 'string' ? query.trim() : String(query);
 
-  const model = new ChatOpenAI({
-    model: openai_chat_model,
-    temperature: 0,
-    streaming: false,
-    apiKey: openai_api_key,
+  const rawRes = await openaiStructuredOutput<HybridSearchQuery>({
+    schemaName: 'lifecyclemodel_hybrid_search_queries',
+    schema: hybridQuerySchema,
+    systemPrompt: `Field: Life Cycle Assessment (LCA)
+Task: Transform description of lifecycle models into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.
+${HYBRID_SYNONYM_RULES}`,
+    userPrompt: `Lifecycle model description: ${queryText}`,
+    options: { model: openai_chat_model, temperature: 0 },
   });
 
-  const querySchema = {
-    type: 'object',
-    properties: {
-      semantic_query_en: {
-        title: 'SemanticQueryEN',
-        description: 'A query for semantic retrieval in English.',
-        type: 'string',
-      },
-      fulltext_query_en: {
-        title: 'FulltextQueryEN',
-        description:
-          'FulltextQueryEN: A query list for full-text search in English, including original names and synonyms.',
-        type: 'array',
-        items: {
-          type: 'string',
-        },
-      },
-      fulltext_query_zh: {
-        title: 'FulltextQueryZH',
-        description:
-          'FulltextQueryZH: A query list for full-text search in Simplified Chinese, including original names and synonyms.',
-        type: 'array',
-        items: {
-          type: 'string',
-        },
-      },
-    },
-    required: ['semantic_query_en', 'fulltext_query_en', 'fulltext_query_zh'],
-  };
+  const normalizedRes = sanitizeHybridQueryOutput(rawRes, queryText);
+  const semanticQueryEn = normalizedRes.semantic_query_en;
+  const fulltextQueryZh = normalizedRes.fulltext_query_zh;
+  const fulltextQueryEn = normalizedRes.fulltext_query_en;
 
-  const modelWithStructuredOutput = model.withStructuredOutput(querySchema);
+  if (!semanticQueryEn) {
+    throw new Error('OpenAI structured output missing semantic_query_en');
+  }
 
-  const prompt = ChatPromptTemplate.fromMessages([
-    [
-      'system',
-      `Field: Life Cycle Assessment (LCA)
-Task: Transform description of lifecycle models into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.`,
-    ],
-    ['human', 'Lifecycle model description: {input}'],
-  ]);
-
-  const chain = prompt.pipe(modelWithStructuredOutput);
-
-  const res = await chain.invoke({ input: query });
-
-  const combinedFulltextQueries = [...res.fulltext_query_zh, ...res.fulltext_query_en].map(
+  const combinedFulltextQueries = [...fulltextQueryZh, ...fulltextQueryEn].map(
     (query) => `(${query})`,
   );
   const queryFulltextString = combinedFulltextQueries.join(' OR ');
-
-  const semanticQueryEn = res.semantic_query_en;
 
   const embedding = await generateEmbedding(semanticQueryEn);
   const vectorStr = `[${embedding.join(',')}]`;

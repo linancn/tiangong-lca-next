@@ -415,6 +415,33 @@ services:
         "/home/deno/functions/main"
       ]
 
+  lca-calculator-worker:
+    container_name: tiangong-lca-calculator-worker
+    build:
+      context: .
+      dockerfile: Dockerfile.calculator-worker
+      args:
+        LCA_CALCULATOR_REPO: ${LCA_CALCULATOR_REPO}
+        LCA_CALCULATOR_REF: ${LCA_CALCULATOR_REF}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      SOLVER_MODE: worker
+      PGMQ_QUEUE: lca_jobs
+      WORKER_POLL_MS: ${LCA_WORKER_POLL_MS}
+      WORKER_VT_SECONDS: ${LCA_WORKER_VT_SECONDS}
+      RUST_LOG: ${LCA_WORKER_RUST_LOG}
+      S3_ENDPOINT: ${LCA_S3_ENDPOINT}
+      S3_REGION: ${LCA_S3_REGION}
+      S3_BUCKET: ${LCA_S3_BUCKET}
+      S3_ACCESS_KEY_ID: ${S3_PROTOCOL_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_PROTOCOL_ACCESS_KEY_SECRET}
+      S3_SESSION_TOKEN: ${LCA_S3_SESSION_TOKEN}
+      S3_PREFIX: ${LCA_S3_PREFIX}
+
   analytics:
     container_name: supabase-analytics
     image: supabase/logflare:1.31.2

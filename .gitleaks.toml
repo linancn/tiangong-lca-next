@@ -11,12 +11,23 @@ paths = [
     '''.gitleaks.toml''',
     '''tests/'''
 ]
+regexes = [
+    '''edge-functions-key''',
+    '''sb_secret_(?:REDACTED|\.{3})''',
+    '''Deno\.env\.get''',
+    '''local-secret-key''',
+    '''local-access-key''',
+    '''postgresql:\/\/postgres:<password>@db\.<project>\.supabase\.co''',
+    '''postgresql:\/\/postgres:\*\*\*@db\.xxx\.supabase\.co''',
+    '''postgresql:\/\/postgres:\$\{[A-Z0-9_]+\}@\$\{[A-Z0-9_]+\}''',
+    '''postgres:\/\/postgres\.your-tenant-id:your-super-secret-and-long-postgres-password@localhost'''
+]
 
 # Common password and key patterns
 [[rules]]
 id = "generic-api-key"
 description = "Detect Generic API Keys"
-regex = '''(?i)(['"]?[a-z0-9_-]*(?:key|token|secret|password|passwd|pwd|auth)['"]?\s*[:=]\s*['"][a-z0-9._\-+/=]{8,}['"])'''
+regex = '''(?i)(?:^|[\s,{])(?:[A-Z0-9_]*?(?:openai(?:_|-)?api(?:_|-)?key|supabase(?:_|-)?anon(?:_|-)?key|service(?:_|-)?role(?:_|-)?key|service(?:_|-)?api(?:_|-)?key|anon(?:_|-)?key|api(?:_|-)?key|access(?:_|-)?key(?:_|-)?(?:id|secret)?|secret(?:_|-)?key(?:_|-)?base|secret(?:_|-)?key|jwt(?:_|-)?secret|auth(?:_|-)?token|refresh(?:_|-)?token|id(?:_|-)?token|bearer(?:_|-)?token|private(?:_|-)?access(?:_|-)?token|public(?:_|-)?access(?:_|-)?token|password|passwd|pwd|smtp(?:_|-)?pass(?:word)?|vault(?:_|-)?enc(?:_|-)?key)[A-Z0-9_]*)\s*[:=]\s*(?:['"][A-Za-z0-9._~!$%+=:@\/-]{8,}['"]|[A-Za-z0-9._~!$%+=:@\/-]{8,})'''
 tags = ["key", "API", "generic"]
 severity = "HIGH"
 
@@ -65,20 +76,13 @@ severity = "HIGH"
 [[rules]]
 id = "basic-auth"
 description = "Basic Authentication Header"
-regex = '''(?i)basic [a-z0-9=:_\+\/-]{5,100}'''
+regex = '''(?i)(?:(?:authorization|proxy-authorization)\s*:\s*)?basic\s+[A-Za-z0-9+\/]{16,}={0,2}'''
 tags = ["auth", "credentials"]
 severity = "HIGH"
 
 [[rules]]
 id = "password-in-url"
 description = "Password in URL"
-regex = '''[a-zA-Z]{3,10}:\/\/[^\/\s:@]*?:[^\/\s:@]*?@[^\/\s:@]*'''
+regex = '''[a-zA-Z]{3,10}:\/\/[^\/\s:@]+:[^\/\s:@]{4,}@[^\/\s:@]+'''
 tags = ["auth", "credentials"]
 severity = "HIGH"
-
-[rules.allowlist]
-regexes = [
-    '''example\.com''',
-    '''dummy''',
-    '''placeholder'''
-]

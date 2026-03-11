@@ -1,7 +1,8 @@
-import '@supabase/functions-js/edge-runtime.d.ts';
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
+import getUserRole from '../_shared/get_user_role.ts';
 import { supabaseClient } from '../_shared/supabase_client.ts';
 
 Deno.serve(async (req) => {
@@ -24,6 +25,15 @@ Deno.serve(async (req) => {
   if (!user || !user.id) {
     return new Response('Unauthorized Request', { status: 401 });
   }
+  if (!userId) {
+    return new Response('User Id Not Found', { status: 404 });
+  }
+
+  const { data: userRole } = await getUserRole(user.id, supabaseClient);
+  const isReviewAdmin = userRole?.find((item: any) => item.role === 'review-admin');
+  if (!isReviewAdmin && user.id !== userId) {
+    return new Response('Forbidden', { status: 403 });
+  }
 
   const updateResult = await supabaseClient.from('users').update(data).eq('id', userId);
 
@@ -31,4 +41,3 @@ Deno.serve(async (req) => {
     headers: { 'Content-Type': 'application/json', ...corsHeaders },
   });
 });
-

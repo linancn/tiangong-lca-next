@@ -22,6 +22,23 @@ const awsClient = new CognitoIdentityProviderClient({
   },
 });
 
+function getErrorName(error: unknown): string | undefined {
+  if (typeof error === 'object' && error !== null && 'name' in error) {
+    const name = (error as { name?: unknown }).name;
+    if (typeof name === 'string') {
+      return name;
+    }
+  }
+  return undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return typeof error === 'string' ? error : JSON.stringify(error);
+}
+
 async function signUpUser(email: string, password: string) {
   try {
     const createCmd = new AdminCreateUserCommand({
@@ -47,7 +64,7 @@ async function signUpUser(email: string, password: string) {
 
     return { success: true, result: createResult, userExists: false };
   } catch (error) {
-    if (error.name === 'UsernameExistsException') {
+    if (getErrorName(error) === 'UsernameExistsException') {
       console.log(`User already exists: ${email}`);
       return { success: true, result: null, userExists: true };
     }
@@ -121,7 +138,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: 'Failed to create user',
-        details: error.message,
+        details: getErrorMessage(error),
         email: user.email,
       }),
       {

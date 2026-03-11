@@ -6,6 +6,14 @@ echo "Running replace_env_vars.sh script to substitute environment variables in 
 # To replace the environment variables in the SQL files
 if [ -f /docker-entrypoint-initdb.d/migrations/data.sql ]; then
     echo "Processing /docker-entrypoint-initdb.d/migrations/data.sql..."
+
+    # Skip write-back when there is nothing to replace. This avoids
+    # unnecessary writes to bind-mounted files during init.
+    if ! grep -q '\${[A-Z0-9_]\+}' /docker-entrypoint-initdb.d/migrations/data.sql; then
+        echo "No placeholders found in data.sql, skipping substitution"
+        echo "replace_env_vars.sh script completed"
+        exit 0
+    fi
     
     # Create a temporary file
     cp /docker-entrypoint-initdb.d/migrations/data.sql /tmp/data.sql.tmp

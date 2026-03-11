@@ -1,5 +1,5 @@
 import type { User, UserAppMetadata, UserMetadata } from '@supabase/supabase-js@2';
-import { SupabaseClient } from '@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from '@supabase/supabase-js@2';
 // import { Redis } from '@upstash/redis';
 import { authenticateCognitoToken } from './cognito_auth.ts';
 import { corsHeaders } from './cors.ts';
@@ -127,7 +127,7 @@ export async function authenticateRequest(
   if (allowedMethods.includes(AuthMethod.USER_API_KEY) && supabase && redis && authHeader) {
     console.log('Checking User API key authentication');
     const apiKeyValue = authHeader.replace('Bearer ', '');
-    const result = authenticateUserApiKey(apiKeyValue, supabase, redis);
+    const result = authenticateUserApiKey(apiKeyValue, redis);
     authResults.push({ method: AuthMethod.USER_API_KEY, result });
   }
 
@@ -260,15 +260,10 @@ async function authenticateSupabaseJWT(
 /**
  * Authenticate using User API Key (email:password encoded), used in the openAPI Service and MCP Service. API key in the Authorization header, after `Bearer ` prefix.
  * @param apiKey - The API key
- * @param supabase - The Supabase client, created with `Publishable key`
  * @param redis - The Redis client
  * @returns The authentication result
  */
-async function authenticateUserApiKey(
-  apiKey: string,
-  supabase: SupabaseClient,
-  redis: RedisClient,
-): Promise<AuthResult> {
+async function authenticateUserApiKey(apiKey: string, redis: RedisClient): Promise<AuthResult> {
   const credentials = decodeApiKey(apiKey);
   if (!credentials) {
     return {
@@ -298,7 +293,18 @@ async function authenticateUserApiKey(
     };
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const authClient = createAuthClientForUserApiKey();
+  if (!authClient) {
+    return {
+      isAuthenticated: false,
+      response: new Response('Auth client not configured', {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }),
+    };
+  }
+
+  const { data, error } = await authClient.auth.signInWithPassword({
     email: email,
     password: password,
   });
@@ -323,8 +329,7 @@ async function authenticateUserApiKey(
     };
   }
 
-  // Cache the user ID for 1 hour
-  // await redis.setex(cacheKey, 3600, data.user.id);
+  // Cache the user ID for 1 hour.
   await redisSet(redis, cacheKey, data.user.id, { ex: 3600 });
 
   return {
@@ -338,6 +343,24 @@ async function authenticateUserApiKey(
       created_at: _defaultCreatedAt,
     },
   };
+}
+
+function createAuthClientForUserApiKey(): SupabaseClient | null {
+  const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
+  const serviceApiKey =
+    Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '';
+
+  if (!supabaseUrl || !serviceApiKey) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, serviceApiKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
 }
 
 /**
