@@ -1229,9 +1229,19 @@ export async function genLifeCycleModelProcesses(
   });
 
   const mdProcessMap = new Map<string, any>();
+  const processShortDescriptionMap = new Map<string, any>();
   for (const p of mdProcesses as any[]) {
     const nid = p?.['@dataSetInternalID'];
     if (nid) mdProcessMap.set(nid, p);
+
+    const processId = p?.referenceToProcess?.['@refObjectId'];
+    const processVersion = p?.referenceToProcess?.['@version'];
+    if (processId && processVersion) {
+      processShortDescriptionMap.set(
+        dbProcessKey(processId, processVersion),
+        p?.referenceToProcess?.['common:shortDescription'],
+      );
+    }
   }
 
   const refMdProcess = mdProcessMap.get(refProcessNodeId);
@@ -1558,10 +1568,15 @@ export async function genLifeCycleModelProcesses(
       );
 
       if (finalProductGroup?.length > 0) {
-        const refProcesses = finalProductGroup.map((fpg) => ({
-          id: fpg.processId,
-          version: fpg.processVersion,
-        }));
+        const refProcesses = finalProductGroup.map((fpg) =>
+          removeEmptyObjects({
+            id: fpg.processId,
+            version: fpg.processVersion,
+            'common:shortDescription': processShortDescriptionMap.get(
+              dbProcessKey(fpg.processId, fpg.processVersion),
+            ),
+          }),
+        );
 
         let newSumExchanges: any = [];
 

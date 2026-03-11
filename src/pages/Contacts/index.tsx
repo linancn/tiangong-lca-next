@@ -155,6 +155,7 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
+                showSyncOpenDataButton={true}
               />
               <ContactDelete
                 id={row.id}

@@ -38,6 +38,7 @@ export default {
   'pages.button.select': '选择',
   'pages.button.reselect': '重选',
   'pages.button.updateReference': '更新引用',
+  'pages.button.syncToOpenData': '同步到开放数据',
   'pages.button.export': '导出',
   'pages.button.clear': '清空',
   'pages.button.model': '模型',
@@ -94,6 +95,10 @@ export default {
   'pages.action.error': '操作失败',
   'pages.review.underReview': '数据正在审核中，保存失败',
   'pages.review.openData': '此数据为开放数据，保存失败',
+  'pages.contact.syncToOpenData.ruleVerificationRequired': '当前联系人数据未通过必填校验，请先补全必填项后再同步。',
+  'pages.contact.syncToOpenData.invalidContactReference': '联系人引用 {id}({version}) 必须与当前联系人 ID 和版本一致。',
+  'pages.contact.syncToOpenData.invalidReferenceState': '引用数据 {id}({version}) 需为开放数据。',
+  'pages.contact.syncToOpenData.success': '同步到开放数据成功！',
 
   'pages.pagination.showTotal': '第{start}-{end}条 / 总共{total}条',
 };

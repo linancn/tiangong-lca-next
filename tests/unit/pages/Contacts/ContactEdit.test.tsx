@@ -302,6 +302,8 @@ jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),
   getDataDetailById: jest.fn(() => Promise.resolve({ data: [] })),
+  getRefData: jest.fn(() => Promise.resolve({ success: true, data: {} })),
+  updateStateCodeApi: jest.fn(() => Promise.resolve({ updated: true })),
 }));
 
 jest.mock('@/services/general/util', () => ({
@@ -316,14 +318,26 @@ jest.mock('@/services/general/util', () => ({
   }),
 }));
 
+jest.mock('@/services/roles/api', () => ({
+  __esModule: true,
+  getReviewUserRoleApi: jest.fn(() => Promise.resolve(null)),
+  getUserTeamId: jest.fn(() => Promise.resolve('team-1')),
+}));
+
 const { getContactDetail: mockGetContactDetail, updateContact: mockUpdateContact } =
   jest.requireMock('@/services/contacts/api');
+const { getRefData: mockGetRefData, updateStateCodeApi: mockUpdateStateCodeApi } =
+  jest.requireMock('@/services/general/api');
+const { getReviewUserRoleApi: mockGetReviewUserRoleApi, getUserTeamId: mockGetUserTeamId } =
+  jest.requireMock('@/services/roles/api');
+const { getAllRefObj: mockGetAllRefObj } = jest.requireMock('@/pages/Utils/review');
 
 describe('ContactEdit component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetContactDetail.mockResolvedValue({
       data: {
+        stateCode: 0,
         json: {
           contactDataSet: {
             contactInformation: {
@@ -336,7 +350,37 @@ describe('ContactEdit component', () => {
         },
       },
     });
-    mockUpdateContact.mockResolvedValue({ data: [{ rule_verification: true }] });
+    mockUpdateContact.mockResolvedValue({
+      data: [
+        {
+          id: 'contact-123',
+          version: '01.00.000',
+          state_code: 0,
+          rule_verification: true,
+          json: {
+            contactDataSet: {
+              contactInformation: {
+                dataSetInformation: {
+                  'common:shortName': 'Updated contact',
+                  email: 'updated@example.com',
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+    mockGetReviewUserRoleApi.mockResolvedValue(null);
+    mockGetUserTeamId.mockResolvedValue('team-1');
+    mockGetAllRefObj.mockReturnValue([]);
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        stateCode: 100,
+        ruleVerification: true,
+      },
+    });
+    mockUpdateStateCodeApi.mockResolvedValue({ updated: true });
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -393,5 +437,140 @@ describe('ContactEdit component', () => {
     );
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('shows sync button for review admin and disables it when state_code is 100', async () => {
+    const user = userEvent.setup();
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetContactDetail.mockResolvedValue({
+      data: {
+        stateCode: 100,
+        json: {
+          contactDataSet: {
+            contactInformation: {
+              dataSetInformation: {
+                'common:shortName': 'Original contact',
+                email: 'original@example.com',
+              },
+            },
+          },
+        },
+      },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    expect(syncButton).toBeDisabled();
+  });
+
+  it('syncs to open data after validations pass', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@type': 'source data set',
+        '@refObjectId': 'source-123',
+        '@version': '01.00.000',
+      },
+      {
+        '@type': 'contact data set',
+        '@refObjectId': 'contact-123',
+        '@version': '01.00.000',
+      },
+    ]);
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        stateCode: 100,
+        ruleVerification: false,
+      },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    expect(syncButton).toBeEnabled();
+
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
+        'contact-123',
+        '01.00.000',
+        'contacts',
+        100,
+      ),
+    );
+    expect(mockGetRefData).toHaveBeenCalledWith('source-123', '01.00.000', 'sources', 'team-1');
+    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith(
+      'Synchronized to open data successfully!',
+    );
+  });
+
+  it('blocks sync when referenced non-contact data is not open', async () => {
+    const user = userEvent.setup();
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@type': 'source data set',
+        '@refObjectId': 'source-123',
+        '@version': '01.00.000',
+      },
+    ]);
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        stateCode: 20,
+        ruleVerification: true,
+      },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() => {
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'Referenced data {id}({version}) must be open data.',
+      );
+    });
+    expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
   });
 });

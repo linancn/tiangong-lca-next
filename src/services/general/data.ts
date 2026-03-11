@@ -1,5 +1,3 @@
-import type { STMultiLang } from '@tiangong-lca/tidas-sdk';
-
 export type ListPagination = {
   total: number;
   pageSize: number;
@@ -20,7 +18,7 @@ export type ReferenceItem = {
   '@type'?: string;
   '@uri'?: string;
   '@version'?: string;
-  'common:shortDescription'?: STMultiLang;
+  'common:shortDescription'?: LangTextValue;
 };
 
 export type Classification = {
