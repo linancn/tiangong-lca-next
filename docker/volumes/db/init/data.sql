@@ -5400,6 +5400,16 @@ CREATE POLICY "update by review-admin or data owener" ON public.comments FOR UPD
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
+--
+
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO service_role;
+GRANT USAGE ON SCHEMA public TO postgres;
+
+
+--
 -- Name: FUNCTION _navicat_temp_stored_proc(query_text text, query_embedding extensions.vector, filter_condition text, match_threshold double precision, match_count integer, full_text_weight numeric, extracted_text_weight numeric, semantic_weight numeric, rrf_k integer, data_source text, this_user_id text, page_size integer, page_current integer); Type: ACL; Schema: public; Owner: postgres
 --
 
