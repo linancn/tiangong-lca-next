@@ -61,9 +61,10 @@ REMOTE_DB_URL='postgresql://postgres:***@db.xxx.supabase.co:5432/postgres?sslmod
 
 脚本行为：
 
-- 使用 `pg_dump --schema-only` 拉取远程全量 schema
-- 去除 `\restrict` / `\unrestrict` 随机 token，避免无效 diff
+- 使用 `pg_dump --schema-only` 拉取远程全量 schema dump
 - 自动执行 `docker/desensitize_data.sql.sh` 脱敏
+- 再过滤成 TianGong 业务真正需要的对象（例如 `public`、`pgmq`、`util` 和必要业务扩展）
+- 去掉由 Supabase 底座负责的 schema/object（例如 `auth`、`extensions`、`graphql*`、`storage`、`supabase_functions`）以及明显的 PG17 dump 噪音（如 `\restrict`、`\unrestrict`、`SET transaction_timeout = 0;`）
 - 写入 `docker/volumes/db/init/data.sql`
 
 默认脱敏规则：
