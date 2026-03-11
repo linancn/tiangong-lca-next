@@ -95,81 +95,86 @@ const SourceCreate: FC<CreateProps> = ({
   }, [actionRef]);
 
   const onSubmit = async () => {
-    if (fileList0.length > 0) {
-      const nonExistentFiles = fileList0.filter(
-        (file0) => !fileList.some((file) => file.uid === file0.uid),
-      );
-      if (nonExistentFiles.length > 0) {
-        const { error } = await removeFile(
-          nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+    setSpinning(true);
+    try {
+      if (fileList0.length > 0) {
+        const nonExistentFiles = fileList0.filter(
+          (file0) => !fileList.some((file) => file.uid === file0.uid),
         );
-        if (error) {
-          message.error(error.message);
+        if (nonExistentFiles.length > 0) {
+          const { error } = await removeFile(
+            nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
+          );
+          if (error) {
+            message.error(error.message);
+          }
         }
       }
-    }
 
-    const filePaths: FilePath[] = [];
-    let fileListWithUUID: FileWithUid[] = [];
-    if (fileList.length > 0) {
-      fileListWithUUID = fileList.map((file) => {
-        const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
-        if (isInFileList0 && file.url) {
-          filePaths.push({ '@uri': file.url });
-          return file;
-        } else {
-          const fileExtension = path.extname(file.name);
-          const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
-          filePaths.push({ '@uri': newUid });
-          return { ...file, newUid: newUid };
-        }
-      });
-    }
-
-    const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
-    const formFieldsValue = formRefCreate.current?.getFieldsValue();
-    const result: SupabaseMutationResult<unknown> = await createSource(paramsId, {
-      ...formFieldsValue,
-      sourceInformation: {
-        ...fromData?.sourceInformation,
-        dataSetInformation: {
-          ...fromData?.sourceInformation?.dataSetInformation,
-          referenceToDigitalFile: filePaths,
-        },
-      },
-    });
-
-    if (result?.data) {
-      if (fileListWithUUID.length > 0) {
-        fileListWithUUID.forEach(async (file) => {
-          if (file.newUid) {
-            const thisFile = loadFiles.find((f) => f.uid === file.uid);
-            await uploadFile(file.newUid.replace(`../${supabaseStorageBucket}/`, ''), thisFile);
+      const filePaths: FilePath[] = [];
+      let fileListWithUUID: FileWithUid[] = [];
+      if (fileList.length > 0) {
+        fileListWithUUID = fileList.map((file) => {
+          const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
+          if (isInFileList0 && file.url) {
+            filePaths.push({ '@uri': file.url });
+            return file;
+          } else {
+            const fileExtension = path.extname(file.name);
+            const newUid = `../${supabaseStorageBucket}/${v4()}${fileExtension}`;
+            filePaths.push({ '@uri': newUid });
+            return { ...file, newUid: newUid };
           }
         });
       }
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.create.success',
-          defaultMessage: 'Created successfully!',
-        }),
-      );
-      setFromData(undefined);
-      formRefCreate.current?.resetFields();
-      formRefCreate.current?.setFieldsValue({});
-      setDrawerVisible(false);
-      reload();
-    } else {
-      message.error(
-        isSupabaseDuplicateKeyError(result.error)
-          ? intl.formatMessage({
-              id: 'pages.button.create.error.duplicateId',
-              defaultMessage: 'Data with the same ID already exists.',
-            })
-          : (result.error?.message ?? 'Error'),
-      );
+
+      const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
+      const formFieldsValue = formRefCreate.current?.getFieldsValue();
+      const result: SupabaseMutationResult<unknown> = await createSource(paramsId, {
+        ...formFieldsValue,
+        sourceInformation: {
+          ...fromData?.sourceInformation,
+          dataSetInformation: {
+            ...fromData?.sourceInformation?.dataSetInformation,
+            referenceToDigitalFile: filePaths,
+          },
+        },
+      });
+
+      if (result?.data) {
+        if (fileListWithUUID.length > 0) {
+          fileListWithUUID.forEach(async (file) => {
+            if (file.newUid) {
+              const thisFile = loadFiles.find((f) => f.uid === file.uid);
+              await uploadFile(file.newUid.replace(`../${supabaseStorageBucket}/`, ''), thisFile);
+            }
+          });
+        }
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.create.success',
+            defaultMessage: 'Created successfully!',
+          }),
+        );
+        setFromData(undefined);
+        formRefCreate.current?.resetFields();
+        formRefCreate.current?.setFieldsValue({});
+        setDrawerVisible(false);
+        reload();
+      } else {
+        message.error(
+          isSupabaseDuplicateKeyError(result.error)
+            ? intl.formatMessage({
+                id: 'pages.button.create.error.duplicateId',
+                defaultMessage: 'Data with the same ID already exists.',
+              })
+            : (result.error?.message ?? 'Error'),
+        );
+      }
+      return true;
+    } finally {
+      setSpinning(false);
     }
-    return true;
   };
 
   const initFormDetail = async (dataSet: FormSource) => {
