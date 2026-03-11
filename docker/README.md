@@ -56,10 +56,11 @@ Check-only mode (no file changes):
 ```
 
 What the script does:
-- Pull full schema with `pg_dump --schema-only`
-- Remove unstable `\restrict` / `\unrestrict` tokens for stable diffs
+- Pull a full schema-only dump with `pg_dump --schema-only`
 - Run `docker/desensitize_data.sql.sh` automatically
-- Write result to `docker/volumes/db/init/data.sql`
+- Filter the dump down to TianGong app-required objects (for example `public`, `pgmq`, `util`, and required business extensions)
+- Remove Supabase base-managed schemas/objects (for example `auth`, `extensions`, `graphql*`, `storage`, `supabase_functions`) and obvious PG17 dump noise such as `\restrict`, `\unrestrict`, and `SET transaction_timeout = 0;`
+- Write the filtered result to `docker/volumes/db/init/data.sql`
 
 Desensitization rules include:
 - `"x_key":"<any>"` -> `"x_key":"edge-functions-key"`
