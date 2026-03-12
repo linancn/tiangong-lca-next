@@ -12,6 +12,8 @@ import {
   getAllRefObj,
   getErrRefTab,
   getRefTableName,
+  getRejectedComments,
+  mergeCommentsToData,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
 } from '@/pages/Utils/review';
@@ -39,10 +41,19 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 }));
 
 const mockAddReviewsApi = jest.fn();
+const mockGetRejectReviewsByProcess = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
   addReviewsApi: (...args: any[]) => mockAddReviewsApi(...args),
+  getRejectReviewsByProcess: (...args: any[]) => mockGetRejectReviewsByProcess(...args),
+}));
+
+const mockGetRejectedCommentsByReviewIds = jest.fn();
+
+jest.mock('@/services/comments/api', () => ({
+  __esModule: true,
+  getRejectedCommentsByReviewIds: (...args: any[]) => mockGetRejectedCommentsByReviewIds(...args),
 }));
 
 const mockGetSourcesByIdsAndVersions = jest.fn();
@@ -78,6 +89,8 @@ describe('review utilities', () => {
     mockUpdateStateCodeApi.mockReset();
     mockGetLifeCycleModelDetail.mockReset();
     mockAddReviewsApi.mockReset();
+    mockGetRejectReviewsByProcess.mockReset();
+    mockGetRejectedCommentsByReviewIds.mockReset();
     mockGetSourcesByIdsAndVersions.mockReset();
     mockGetTeamMessageApi.mockReset();
     mockGetUserId.mockReset();
@@ -531,6 +544,45 @@ describe('review utilities', () => {
     );
   });
 
+  it('updates nested nodes and treats under-review versions as problems in review mode', () => {
+    const parent = new ReffPath(
+      {
+        '@refObjectId': 'parent',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
+    const child = new ReffPath(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
+    parent.addChild(child);
+
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'versionUnderReview',
+      true,
+    );
+
+    expect(parent.findProblemNodes('review')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ '@refObjectId': 'child', versionUnderReview: true }),
+        expect.objectContaining({ '@refObjectId': 'parent' }),
+      ]),
+    );
+  });
+
   it('aggregates review data and submits to reviews API', async () => {
     mockGetTeamMessageApi.mockResolvedValue({
       data: [{ json: { title: 'Team Title' } }],
@@ -588,5 +640,78 @@ describe('review utilities', () => {
         stateCode: 30,
       },
     ]);
+  });
+
+  it('returns rejected comments for rejected process reviews', async () => {
+    mockGetRejectReviewsByProcess.mockResolvedValue({
+      data: [{ id: 'review-1' }, { id: 'review-2' }],
+      error: null,
+    });
+    mockGetRejectedCommentsByReviewIds.mockResolvedValue({
+      data: [{ json: { foo: 'bar' } }, { json: { baz: 'qux' } }],
+      error: null,
+    });
+
+    const result = await getRejectedComments('process-1', '1.0.0');
+
+    expect(mockGetRejectReviewsByProcess).toHaveBeenCalledWith('process-1', '1.0.0');
+    expect(mockGetRejectedCommentsByReviewIds).toHaveBeenCalledWith(['review-1', 'review-2']);
+    expect(result).toEqual([{ foo: 'bar' }, { baz: 'qux' }]);
+  });
+
+  it('merges rejected comments back into modellingAndValidation arrays and scalars', () => {
+    const data: any = {
+      modellingAndValidation: {
+        validation: {
+          review: [{ id: 'existing-review' }],
+        },
+        complianceDeclarations: {
+          compliance: { id: 'existing-compliance' },
+        },
+      },
+    };
+
+    mergeCommentsToData(
+      [
+        {
+          modellingAndValidation: {
+            validation: {
+              review: [{ id: 'new-review' }],
+              summary: { id: 'summary-1' },
+            },
+            complianceDeclarations: {
+              compliance: [{ id: 'new-compliance' }],
+            },
+          },
+        },
+      ] as any,
+      data,
+    );
+
+    expect(data.modellingAndValidation.validation.review).toEqual([
+      { id: 'existing-review' },
+      { id: 'new-review' },
+    ]);
+    expect(data.modellingAndValidation.validation.summary).toEqual({ id: 'summary-1' });
+    expect(data.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'new-compliance' },
+    ]);
+  });
+
+  it('skips lifecycle model process refs when resolving error tabs', () => {
+    const ref = {
+      '@refObjectId': 'process-1',
+      '@version': '01',
+      '@type': 'process data set',
+    };
+    const data = {
+      lifeCycleModelInformation: {
+        technology: {
+          processes: [ref],
+        },
+      },
+    };
+
+    expect(getErrRefTab(ref, data)).toBeNull();
   });
 });

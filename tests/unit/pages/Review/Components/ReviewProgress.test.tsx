@@ -59,12 +59,13 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, children, title, extra }: any) =>
+  const Drawer = ({ open, children, title, extra, footer }: any) =>
     open ? (
       <section data-testid='drawer'>
         <header>{toText(title)}</header>
         <div>{extra}</div>
         <div>{children}</div>
+        <div>{footer}</div>
       </section>
     ) : null;
 
@@ -234,11 +235,13 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 }));
 
 const mockGetProcessDetail = jest.fn();
+const mockGetProcessDetailByIdAndVersion = jest.fn();
 const mockUpdateProcessApi = jest.fn();
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
+  getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
   updateProcessApi: (...args: any[]) => mockUpdateProcessApi(...args),
 }));
 
@@ -252,7 +255,7 @@ jest.mock('@/services/roles/api', () => ({
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   ConcurrencyController: jest.fn().mockImplementation(() => ({
-    add: jest.fn(),
+    add: jest.fn((task: any) => task()),
     waitForAll: jest.fn(() => Promise.resolve()),
   })),
   getAllRefObj: jest.fn(() => []),
@@ -279,6 +282,7 @@ describe('ReviewProgress component', () => {
           reviewer_name: '',
           state_code: 0,
           updated_at: '2024-01-01T00:00:00Z',
+          json: {},
         },
       ],
     });
@@ -294,6 +298,7 @@ describe('ReviewProgress component', () => {
     mockUpdateProcessApi.mockResolvedValue({ error: null });
     mockGetUserTeamId.mockResolvedValue('team-1');
     message.success.mockReset();
+    message.error.mockReset();
     Modal.confirm.mockClear();
   });
 
@@ -320,5 +325,279 @@ describe('ReviewProgress component', () => {
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Successfully revoked the auditor'),
     );
+  });
+
+  it('shows an error toast when reviewer revocation fails', async () => {
+    mockUpdateCommentByreviewerApi.mockResolvedValue({ error: { message: 'failed' } });
+    mockUpdateReviewApi.mockResolvedValue({ data: [] });
+
+    render(<ReviewProgress reviewId='review-1' />);
+
+    const [openButton] = screen.getAllByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => screen.getByTestId('protable'));
+
+    fireEvent.click(screen.getByTestId('remove-user-2'));
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to revoke the auditor'));
+  });
+
+  it('renders reviewer rejection comments from JSON payloads', async () => {
+    mockGetCommentApi.mockResolvedValue({
+      data: [
+        {
+          id: 'row-1',
+          reviewer_id: 'user-2',
+          reviewer_name: '',
+          state_code: -3,
+          updated_at: '2024-01-01T00:00:00Z',
+          json: {
+            comment: JSON.stringify({ message: 'Needs revision' }),
+          },
+        },
+      ],
+    });
+
+    render(<ReviewProgress reviewId='review-1' />);
+
+    const [openButton] = screen.getAllByRole('button');
+    fireEvent.click(openButton);
+
+    expect(await screen.findByText('Needs revision')).toBeInTheDocument();
+  });
+
+  it('approves process reviews and publishes the reviewed process state', async () => {
+    const reload = jest.fn();
+    const actionRef = { current: { reload } };
+
+    mockGetCommentApi.mockImplementation(async (_reviewId: string, state?: string) => {
+      if (state === 'assigned') {
+        return {
+          data: [
+            {
+              id: 'row-1',
+              reviewer_id: 'user-2',
+              reviewer_name: '',
+              state_code: 0,
+              updated_at: '2024-01-01T00:00:00Z',
+              json: {
+                modellingAndValidation: {
+                  validation: { review: [{ id: 'review-note' }] },
+                  complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
+                },
+              },
+            },
+          ],
+        };
+      }
+      return { data: [] };
+    });
+    mockGetProcessDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'process-1',
+        version: '1.0.0',
+        stateCode: 10,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: { review: [] },
+              complianceDeclarations: { compliance: [] },
+            },
+          },
+        },
+      },
+    });
+
+    render(
+      <ReviewProgress
+        reviewId='review-1'
+        dataId='process-1'
+        dataVersion='1.0.0'
+        actionType='process'
+        tabType='assigned'
+        actionRef={actionRef}
+      />,
+    );
+
+    const [openButton] = screen.getAllByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => screen.getByTestId('protable'));
+    fireEvent.click(screen.getByRole('button', { name: /approve review/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateProcessApi).toHaveBeenCalledWith(
+        'process-1',
+        '1.0.0',
+        expect.objectContaining({
+          json_ordered: expect.objectContaining({
+            processDataSet: expect.objectContaining({
+              modellingAndValidation: expect.objectContaining({
+                validation: { review: [{ id: 'review-note' }] },
+                complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
+              }),
+            }),
+          }),
+        }),
+      ),
+    );
+    await waitFor(() =>
+      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith('process-1', '1.0.0', 'processes', 100),
+    );
+    expect(mockUpdateCommentApi).toHaveBeenCalledWith('review-1', { state_code: 2 }, 'assigned');
+    expect(mockUpdateReviewApi).toHaveBeenCalledWith(
+      ['review-1'],
+      expect.objectContaining({ state_code: 2 }),
+    );
+    expect(message.success).toHaveBeenCalledWith('Review approved successfully');
+    expect(reload).toHaveBeenCalled();
+  });
+
+  it('approves model reviews and propagates review data to the model and related processes', async () => {
+    const reload = jest.fn();
+    const actionRef = { current: { reload } };
+
+    mockGetCommentApi.mockImplementation(async (_reviewId: string, state?: string) => {
+      if (state === 'assigned') {
+        return {
+          data: [
+            {
+              id: 'row-1',
+              reviewer_id: 'user-2',
+              reviewer_name: '',
+              state_code: 0,
+              updated_at: '2024-01-01T00:00:00Z',
+              json: {
+                modellingAndValidation: {
+                  validation: { review: [{ id: 'review-note' }] },
+                  complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
+                },
+              },
+            },
+          ],
+        };
+      }
+      return { data: [] };
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0.0',
+        stateCode: 10,
+        json: {
+          lifeCycleModelDataSet: {
+            modellingAndValidation: {
+              validation: { review: [] },
+              complianceDeclarations: { compliance: [] },
+            },
+          },
+        },
+        json_tg: {
+          submodels: [{ id: 'submodel-proc' }],
+        },
+      },
+    });
+    mockGetProcessDetail.mockImplementation(async (id: string) => ({
+      success: true,
+      data: {
+        id,
+        version: '1.0.0',
+        stateCode: 10,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: { review: [] },
+              complianceDeclarations: { compliance: [] },
+            },
+          },
+        },
+      },
+    }));
+    mockGetProcessDetailByIdAndVersion.mockResolvedValue({
+      data: [
+        {
+          id: 'model-1',
+          version: '1.0.0',
+          json: {
+            processDataSet: {
+              modellingAndValidation: {
+                validation: { review: [] },
+                complianceDeclarations: { compliance: [] },
+              },
+            },
+          },
+        },
+        {
+          id: 'submodel-proc',
+          version: '1.0.0',
+          json: {
+            processDataSet: {
+              modellingAndValidation: {
+                validation: { review: [] },
+                complianceDeclarations: { compliance: [] },
+              },
+            },
+          },
+        },
+      ],
+    });
+    mockUpdateLifeCycleModelJsonApi.mockResolvedValue({
+      data: {
+        lifeCycleModelDataSet: {
+          modellingAndValidation: {
+            validation: { review: [{ id: 'review-note' }] },
+            complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
+          },
+        },
+      },
+    });
+
+    render(
+      <ReviewProgress
+        reviewId='review-1'
+        dataId='model-1'
+        dataVersion='1.0.0'
+        actionType='model'
+        tabType='assigned'
+        actionRef={actionRef}
+      />,
+    );
+
+    const [openButton] = screen.getAllByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => screen.getByTestId('protable'));
+    fireEvent.click(screen.getByRole('button', { name: /approve review/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModelJsonApi).toHaveBeenCalledWith(
+        'model-1',
+        '1.0.0',
+        expect.objectContaining({
+          lifeCycleModelDataSet: expect.objectContaining({
+            modellingAndValidation: expect.objectContaining({
+              validation: { review: [{ id: 'review-note' }] },
+              complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
+            }),
+          }),
+        }),
+      ),
+    );
+    await waitFor(() =>
+      expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalledWith([
+        { id: 'model-1', version: '1.0.0' },
+        { id: 'submodel-proc', version: '1.0.0' },
+      ]),
+    );
+    await waitFor(() =>
+      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith('model-1', '1.0.0', 'processes', 100),
+    );
+    expect(mockUpdateCommentApi).toHaveBeenCalledWith('review-1', { state_code: 2 }, 'assigned');
+    expect(mockUpdateReviewApi).toHaveBeenCalledWith(['review-1'], { state_code: 2 });
+    expect(message.success).toHaveBeenCalledWith('Review approved successfully');
+    expect(reload).toHaveBeenCalled();
   });
 });
