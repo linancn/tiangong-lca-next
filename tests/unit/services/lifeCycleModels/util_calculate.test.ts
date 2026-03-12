@@ -64,6 +64,10 @@ const createLifeCycleModelData = () => ({
               referenceToProcess: {
                 '@refObjectId': 'procA',
                 '@version': '1',
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Process A' },
+                  { '@xml:lang': 'zh', '#text': '过程A' },
+                ],
               },
               connections: {
                 outputExchange: [
@@ -79,6 +83,10 @@ const createLifeCycleModelData = () => ({
               referenceToProcess: {
                 '@refObjectId': 'procB',
                 '@version': '1',
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Process B' },
+                  { '@xml:lang': 'zh', '#text': '过程B' },
+                ],
               },
               connections: {
                 outputExchange: [
@@ -102,6 +110,10 @@ const createLifeCycleModelData = () => ({
               referenceToProcess: {
                 '@refObjectId': 'procC',
                 '@version': '1',
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Process C' },
+                  { '@xml:lang': 'zh', '#text': '过程C' },
+                ],
               },
               connections: {
                 outputExchange: {
@@ -313,6 +325,30 @@ describe('genLifeCycleModelProcesses', () => {
     expect(secondary?.option).toBe('update');
     expect(secondary?.modelInfo?.id).toBe('existing-secondary');
     expect(secondary?.modelInfo?.finalId?.allocatedExchangeFlowId).toBe('flow-C-final');
+    expect(primary?.refProcesses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'procA',
+          version: '1',
+          'common:shortDescription': [
+            { '@xml:lang': 'en', '#text': 'Process A' },
+            { '@xml:lang': 'zh', '#text': '过程A' },
+          ],
+        }),
+      ]),
+    );
+    expect(secondary?.refProcesses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'procC',
+          version: '1',
+          'common:shortDescription': [
+            { '@xml:lang': 'en', '#text': 'Process C' },
+            { '@xml:lang': 'zh', '#text': '过程C' },
+          ],
+        }),
+      ]),
+    );
 
     expect(mockLCIAResultCalculation).toHaveBeenCalledTimes(2);
     expect(mockLCIAResultCalculation).toHaveBeenNthCalledWith(

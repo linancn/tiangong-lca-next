@@ -1,7 +1,13 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
-import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import {
+  ReffPath,
+  checkData,
+  getAllRefObj,
+  getErrRefTab,
+  getRefTableName,
+} from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
   getRefsOfNewVersion,
@@ -14,6 +20,8 @@ import {
   FormContact,
 } from '@/services/contacts/data';
 import { genContactFromData, genContactJsonOrdered } from '@/services/contacts/util';
+import { getRefData, updateStateCodeApi } from '@/services/general/api';
+import { getReviewUserRoleApi, getUserTeamId } from '@/services/roles/api';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -33,9 +41,16 @@ type Props = {
   lang: string;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   updateErrRef?: (data: RefCheckType | null) => void;
+  showSyncOpenDataButton?: boolean;
 };
 
-type UpdateContactResult = SupabaseMutationResult<{ rule_verification?: boolean }>;
+type UpdateContactResult = SupabaseMutationResult<{
+  id?: string;
+  version?: string;
+  json?: { contactDataSet?: any };
+  state_code?: number;
+  rule_verification?: boolean;
+}>;
 
 const ContactEdit: FC<Props> = ({
   id,
@@ -45,6 +60,7 @@ const ContactEdit: FC<Props> = ({
   lang,
   setViewDrawerVisible,
   updateErrRef = () => {},
+  showSyncOpenDataButton = false,
 }) => {
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
   const [refsLoading, setRefsLoading] = useState(false);
@@ -56,6 +72,8 @@ const ContactEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<FormContact>();
   const [fromData, setFromData] = useState<FormContact>();
+  const [currentStateCode, setCurrentStateCode] = useState<number>();
+  const [isReviewAdmin, setIsReviewAdmin] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
   const [showRules, setShowRules] = useState<boolean>(false);
   const intl = useIntl();
@@ -104,6 +122,7 @@ const ContactEdit: FC<Props> = ({
       setInitData(contactFromData);
       formRefEdit.current?.setFieldsValue(contactFromData);
       setFromData(contactFromData);
+      setCurrentStateCode(result.data?.stateCode);
       setSpinning(false);
     });
   };
@@ -153,12 +172,34 @@ const ContactEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
+  useEffect(() => {
+    if (!drawerVisible || !showSyncOpenDataButton) {
+      setIsReviewAdmin(false);
+      return;
+    }
+
+    let mounted = true;
+    getReviewUserRoleApi().then((userRole) => {
+      if (!mounted) {
+        return;
+      }
+      setIsReviewAdmin(userRole?.role === 'review-admin');
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [drawerVisible, showSyncOpenDataButton]);
+
   const handleSubmit = async (autoClose: boolean): Promise<UpdateContactResult | undefined> => {
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
     const updateResult: UpdateContactResult = await updateContact(id, version, formFieldsValue);
     if (updateResult?.data) {
+      if (typeof updateResult?.data?.[0]?.state_code === 'number') {
+        setCurrentStateCode(updateResult?.data?.[0]?.state_code);
+      }
       if (updateResult?.data[0]?.rule_verification === true) {
         updateErrRef(null);
       } else {
@@ -205,6 +246,142 @@ const ContactEdit: FC<Props> = ({
       return updateResult;
     }
     return undefined;
+  };
+
+  const validateReferencesForSyncOpenData = async (
+    contactId: string,
+    contactVersion: string,
+    contactDataSet: any,
+  ) => {
+    const refs = getAllRefObj(contactDataSet);
+    if (!refs.length) {
+      return true;
+    }
+
+    const uniqueRefs = refs.filter((item, index) => {
+      const key = `${item['@refObjectId']}:${item['@version']}:${item['@type']}`;
+      return (
+        refs.findIndex((ref) => {
+          const currentKey = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
+          return currentKey === key;
+        }) === index
+      );
+    });
+
+    const userTeamId = (await getUserTeamId()) ?? '';
+    for (const ref of uniqueRefs) {
+      if (ref['@type'] === 'contact data set') {
+        if (ref['@refObjectId'] !== contactId || ref['@version'] !== contactVersion) {
+          message.error(
+            intl.formatMessage(
+              {
+                id: 'pages.contact.syncToOpenData.invalidContactReference',
+                defaultMessage:
+                  'Contact reference {id}({version}) must match the current contact ID and version.',
+              },
+              {
+                id: ref['@refObjectId'],
+                version: ref['@version'],
+              },
+            ),
+          );
+          return false;
+        }
+        continue;
+      }
+
+      const tableName = getRefTableName(ref['@type']);
+      if (!tableName) {
+        continue;
+      }
+
+      const refResult = await getRefData(
+        ref['@refObjectId'],
+        ref['@version'],
+        tableName,
+        userTeamId,
+      );
+      const refData = refResult?.data;
+      if (!refResult?.success || !refData || refData?.stateCode !== 100) {
+        message.error(
+          intl.formatMessage(
+            {
+              id: 'pages.contact.syncToOpenData.invalidReferenceState',
+              defaultMessage: 'Referenced data {id}({version}) must be open data.',
+            },
+            {
+              id: ref['@refObjectId'],
+              version: ref['@version'],
+            },
+          ),
+        );
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleSyncToOpenData = async () => {
+    if (currentStateCode === 100) {
+      return;
+    }
+
+    setSpinning(true);
+    const updateResult = await handleSubmit(false);
+    if (!updateResult || updateResult.error || !updateResult?.data?.[0]) {
+      setSpinning(false);
+      return;
+    }
+
+    const latestData = updateResult.data[0];
+    const currentId = latestData?.id ?? id;
+    const currentVersion = latestData?.version ?? version;
+
+    if (latestData?.rule_verification !== true) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.contact.syncToOpenData.ruleVerificationRequired',
+          defaultMessage:
+            'Current contact data is incomplete. Please fill all required fields before syncing.',
+        }),
+      );
+      setSpinning(false);
+      return;
+    }
+
+    const referencesValid = await validateReferencesForSyncOpenData(
+      currentId,
+      currentVersion,
+      latestData?.json?.contactDataSet ?? fromData,
+    );
+
+    if (!referencesValid) {
+      setSpinning(false);
+      return;
+    }
+
+    const result = await updateStateCodeApi(currentId, currentVersion, 'contacts', 100);
+    if (!result) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.action.error',
+          defaultMessage: 'Action failed',
+        }),
+      );
+      setSpinning(false);
+      return;
+    }
+
+    setCurrentStateCode(100);
+    actionRef?.current?.reload();
+    message.success(
+      intl.formatMessage({
+        id: 'pages.contact.syncToOpenData.success',
+        defaultMessage: 'Synchronized to open data successfully!',
+      }),
+    );
+    setSpinning(false);
   };
 
   const handleCheckData = async () => {
@@ -371,6 +548,17 @@ const ContactEdit: FC<Props> = ({
             <Button onClick={handleCheckData}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
+            {showSyncOpenDataButton && isReviewAdmin && (
+              <Button
+                disabled={spinning || currentStateCode === 100}
+                onClick={handleSyncToOpenData}
+              >
+                <FormattedMessage
+                  id='pages.button.syncToOpenData'
+                  defaultMessage='Sync to Open Data'
+                />
+              </Button>
+            )}
             <Button
               onClick={() => {
                 handleUpdateReference();

@@ -267,35 +267,40 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
-              const formFieldsValue = formRefCreate.current?.getFieldsValue();
-              const result: SupabaseMutationResult<unknown> = await createFlowproperties(
-                paramsId,
-                formFieldsValue,
-              );
-              if (result.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.button.create.success',
-                    defaultMessage: 'Created successfully!',
-                  }),
+              setSpinning(true);
+              try {
+                const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
+                const formFieldsValue = formRefCreate.current?.getFieldsValue();
+                const result: SupabaseMutationResult<unknown> = await createFlowproperties(
+                  paramsId,
+                  formFieldsValue,
                 );
-                formRefCreate.current?.resetFields();
-                setDrawerVisible(false);
-                setActiveTabKey('flowPropertiesInformation');
-                setFromData(undefined);
-                reload();
-              } else {
-                message.error(
-                  isSupabaseDuplicateKeyError(result.error)
-                    ? intl.formatMessage({
-                        id: 'pages.button.create.error.duplicateId',
-                        defaultMessage: 'Data with the same ID already exists.',
-                      })
-                    : (result.error?.message ?? 'Error'),
-                );
+                if (result.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  formRefCreate.current?.resetFields();
+                  setDrawerVisible(false);
+                  setActiveTabKey('flowPropertiesInformation');
+                  setFromData(undefined);
+                  reload();
+                } else {
+                  message.error(
+                    isSupabaseDuplicateKeyError(result.error)
+                      ? intl.formatMessage({
+                          id: 'pages.button.create.error.duplicateId',
+                          defaultMessage: 'Data with the same ID already exists.',
+                        })
+                      : (result.error?.message ?? 'Error'),
+                  );
+                }
+                return true;
+              } finally {
+                setSpinning(false);
               }
-              return true;
             }}
           >
             <FlowpropertyForm

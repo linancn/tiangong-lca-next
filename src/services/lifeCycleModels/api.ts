@@ -1,11 +1,12 @@
 import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
-import { contributeSource, getRefData } from '@/services/general/api';
+import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamIdByUserId } from '../general/api';
+import type { LangTextValue, ReferenceItem } from '../general/data';
 import {
   classificationToString,
   genClassificationZH,
@@ -23,6 +24,32 @@ import {
 import { genProcessName } from '../processes/util';
 import { genLifeCycleModelJsonOrdered, genReferenceToResultingProcess } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
+
+type RefProcess = {
+  id: string;
+  version: string;
+  'common:shortDescription': LangTextValue;
+};
+
+const mapRefProcessesToIncludedProcesses = (
+  refProcesses: RefProcess | RefProcess[],
+): ReferenceItem[] => {
+  return jsonToList(refProcesses)
+    .filter(
+      (process): process is RefProcess =>
+        typeof process?.id === 'string' &&
+        process.id.length > 0 &&
+        typeof process?.version === 'string' &&
+        process.version.length > 0,
+    )
+    .map((process) => ({
+      '@refObjectId': process.id,
+      '@type': 'process data set',
+      '@uri': `../processes/${process.id}.xml`,
+      '@version': process.version,
+      'common:shortDescription': process?.['common:shortDescription'],
+    }));
+};
 
 const updateLifeCycleModelProcesses = async (id: string, version: string, data: any) => {
   const result = await supabase
@@ -56,6 +83,23 @@ const updateLifeCycleModelProcesses = async (id: string, version: string, data: 
           review: data?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review,
         },
       };
+      const normalizedResult = normalizeLangPayloadForSave
+        ? await normalizeLangPayloadForSave(newJson)
+        : { payload: newJson, validationError: undefined };
+      const normalizedJson = normalizedResult?.payload ?? newJson;
+      const validationError = normalizedResult?.validationError;
+      if (validationError) {
+        console.error(validationError);
+        return {
+          error: {
+            message: validationError,
+            code: 'LANG_VALIDATION_ERROR',
+            details: '',
+            hint: '',
+            name: 'LangValidationError',
+          },
+        };
+      }
       const updateResult = await supabase.functions.invoke('update_data', {
         headers: {
           Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
@@ -65,7 +109,7 @@ const updateLifeCycleModelProcesses = async (id: string, version: string, data: 
           version,
           table: 'processes',
           data: {
-            json_ordered: newJson,
+            json_ordered: normalizedJson,
           },
         },
         region: FunctionRegion.UsEast1,
@@ -98,7 +142,28 @@ export async function createLifeCycleModel(data: any) {
   //   },
   // };
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
-  const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+  const normalizedCreateResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered)
+    : { payload: rawLifeCycleModelJsonOrdered, validationError: undefined };
+  const newLifeCycleModelJsonOrdered =
+    normalizedCreateResult?.payload ?? rawLifeCycleModelJsonOrdered;
+  const validationError = normalizedCreateResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   // const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
@@ -171,6 +236,12 @@ export async function createLifeCycleModel(data: any) {
               ).map((item) => {
                 return item.referenceToProcess;
               }),
+            };
+          }
+          if (n.modelInfo.type === 'secondary') {
+            n.data.processDataSet.processInformation.technology = {
+              ...n.data.processDataSet.processInformation.technology,
+              referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(n?.refProcesses),
             };
           }
           await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
@@ -376,7 +447,28 @@ export async function updateLifeCycleModel(data: any) {
   if (result.data && result.data.length === 1) {
     const oldData = result.data[0];
 
-    const newLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+    const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+    const normalizedUpdateResult = normalizeLangPayloadForSave
+      ? await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered)
+      : { payload: rawLifeCycleModelJsonOrdered, validationError: undefined };
+    const newLifeCycleModelJsonOrdered =
+      normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
+    const validationError = normalizedUpdateResult?.validationError;
+    if (validationError) {
+      return {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
+      };
+    }
 
     const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
       data.id,
@@ -507,6 +599,14 @@ export async function updateLifeCycleModel(data: any) {
                         };
                       }
 
+                      if (n.modelInfo.type === 'secondary') {
+                        n.data.processDataSet.processInformation.technology = {
+                          ...n.data.processDataSet.processInformation.technology,
+                          referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
+                            n?.refProcesses,
+                          ),
+                        };
+                      }
                       return updateProcess(
                         n.modelInfo.id,
                         data.version,
@@ -517,6 +617,26 @@ export async function updateLifeCycleModel(data: any) {
                       return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                     }
                   } else if (n.option === 'create') {
+                    if (n.modelInfo.type === 'primary') {
+                      n.data.processDataSet.processInformation.technology = {
+                        ...n.data.processDataSet.processInformation.technology,
+                        referenceToIncludedProcesses: jsonToList(
+                          newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet
+                            ?.lifeCycleModelInformation?.technology?.processes?.processInstance,
+                        ).map((item) => {
+                          return item.referenceToProcess;
+                        }),
+                      };
+                    }
+
+                    if (n.modelInfo.type === 'secondary') {
+                      n.data.processDataSet.processInformation.technology = {
+                        ...n.data.processDataSet.processInformation.technology,
+                        referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
+                          n?.refProcesses,
+                        ),
+                      };
+                    }
                     return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
                   }
                 } catch (error) {
@@ -536,6 +656,26 @@ export async function updateLifeCycleModel(data: any) {
 }
 
 export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
+  const normalizedResult = normalizeLangPayloadForSave
+    ? await normalizeLangPayloadForSave(data)
+    : { payload: data, validationError: undefined };
+  const normalizedData = normalizedResult?.payload ?? data;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   let updateResult: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
@@ -543,7 +683,7 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body: { id, version, table: 'lifecyclemodels', data: { json_ordered: data } },
+      body: { id, version, table: 'lifecyclemodels', data: { json_ordered: normalizedData } },
       region: FunctionRegion.UsEast1,
     });
   }
@@ -559,7 +699,7 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
       for (const item of submodels) {
         controller.add(async () => {
           try {
-            const result = await updateLifeCycleModelProcesses(item.id, version, data);
+            const result = await updateLifeCycleModelProcesses(item.id, version, normalizedData);
             return { success: true, result, item };
           } catch (error) {
             console.error(`update process ${item.id} failed:`, error);

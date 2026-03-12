@@ -816,124 +816,126 @@ const ToolbarEdit: FC<Props> = ({
   };
 
   const saveData = async (setLoadingData = true) => {
-    setSpinning(true);
-    await editInfoRef.current?.updateReferenceDescription(infoData);
-    await updateReference(setLoadingData);
+    if (setLoadingData) setSpinning(true);
+    try {
+      await editInfoRef.current?.updateReferenceDescription(infoData);
+      await updateReference(false);
 
-    // 直接从图中获取最新的节点和边数据
-    const currentNodes: LifeCycleModelGraphNode[] = graph
-      ? graph.getNodes().map((node: X6Node) => node.toJSON() as LifeCycleModelGraphNode)
-      : (nodes as LifeCycleModelGraphNode[]);
-    const currentEdges: LifeCycleModelGraphEdge[] = graph
-      ? graph.getEdges().map((edge: X6Edge) => edge.toJSON() as LifeCycleModelGraphEdge)
-      : (edges as LifeCycleModelGraphEdge[]);
+      // 直接从图中获取最新的节点和边数据
+      const currentNodes: LifeCycleModelGraphNode[] = graph
+        ? graph.getNodes().map((node: X6Node) => node.toJSON() as LifeCycleModelGraphNode)
+        : (nodes as LifeCycleModelGraphNode[]);
+      const currentEdges: LifeCycleModelGraphEdge[] = graph
+        ? graph.getEdges().map((edge: X6Edge) => edge.toJSON() as LifeCycleModelGraphEdge)
+        : (edges as LifeCycleModelGraphEdge[]);
 
-    const newEdges = currentEdges.map((edge: LifeCycleModelGraphEdge) => {
-      if (edge.target) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
-        return { ...edge, target: targetRest };
-      }
-      return edge;
-    });
+      const newEdges = currentEdges.map((edge: LifeCycleModelGraphEdge) => {
+        if (edge.target) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
+          return { ...edge, target: targetRest };
+        }
+        return edge;
+      });
 
-    const newNodes = currentNodes.map((node: LifeCycleModelGraphNode, index: number) => {
-      return { ...node, data: { ...node.data, index: index.toString() } };
-    });
+      const newNodes = currentNodes.map((node: LifeCycleModelGraphNode, index: number) => {
+        return { ...node, data: { ...node.data, index: index.toString() } };
+      });
 
-    const newData = {
-      ...(infoData ?? {}),
-      model: {
-        nodes: newNodes ?? [],
-        edges: newEdges ?? [],
-      },
-    };
+      const newData = {
+        ...(infoData ?? {}),
+        model: {
+          nodes: newNodes ?? [],
+          edges: newEdges ?? [],
+        },
+      };
 
-    if (thisAction === 'edit') {
-      const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
-      if (result?.data) {
-        setInfoData({ ...newData, id: thisId, version: thisVersion });
-        message.success(
-          intl.formatMessage({
-            id: 'pages.flows.savesuccess',
-            defaultMessage: 'Save successfully',
-          }),
-        );
-        setThisId(result.data?.[0]?.id);
-        setThisVersion(result.data?.[0]?.version);
-        setJsonTg(result.data?.[0]?.json_tg);
-
-        const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
-          []) as LifeCycleModelGraphEdge[];
-        savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
-          const label = getEdgeLabel(
-            token,
-            edge?.data?.connection?.unbalancedAmount as number,
-            edge?.data?.connection?.exchangeAmount as number,
-          );
-          updateEdge(edge.id, { labels: [label] });
-        });
-
-        saveCallback();
-      } else {
-        if (result?.error?.state_code === 100) {
-          message.error(
+      if (thisAction === 'edit') {
+        const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
+        if (result?.data) {
+          setInfoData({ ...newData, id: thisId, version: thisVersion });
+          message.success(
             intl.formatMessage({
-              id: 'pages.review.openData',
-              defaultMessage: 'This data is open data, save failed',
+              id: 'pages.flows.savesuccess',
+              defaultMessage: 'Save successfully',
             }),
           );
-        } else if (result?.error?.state_code === 20) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.review.underReview',
-              defaultMessage: 'Data is under review, save failed',
-            }),
-          );
+          setThisId(result.data?.[0]?.id);
+          setThisVersion(result.data?.[0]?.version);
+          setJsonTg(result.data?.[0]?.json_tg);
+
+          const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
+            []) as LifeCycleModelGraphEdge[];
+          savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
+            const label = getEdgeLabel(
+              token,
+              edge?.data?.connection?.unbalancedAmount as number,
+              edge?.data?.connection?.exchangeAmount as number,
+            );
+            updateEdge(edge.id, { labels: [label] });
+          });
+
+          saveCallback();
         } else {
-          message.error(result?.error?.message);
+          if (result?.error?.state_code === 100) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.review.openData',
+                defaultMessage: 'This data is open data, save failed',
+              }),
+            );
+          } else if (result?.error?.state_code === 20) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.review.underReview',
+                defaultMessage: 'Data is under review, save failed',
+              }),
+            );
+          } else {
+            message.error(result?.error?.message);
+          }
+        }
+      } else if (thisAction === 'create') {
+        const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
+        const result = await createLifeCycleModel({ ...newData, id: newId });
+        if (result.data) {
+          message.success(
+            intl.formatMessage({
+              id: 'pages.button.create.success',
+              defaultMessage: 'Created successfully!',
+            }),
+          );
+          setThisAction('edit');
+          setThisId(result.data?.[0]?.id);
+          setThisVersion(result.data?.[0]?.version);
+
+          const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
+            []) as LifeCycleModelGraphEdge[];
+          savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
+            const label = getEdgeLabel(
+              token,
+              edge?.data?.connection?.unbalancedAmount as number,
+              edge?.data?.connection?.exchangeAmount as number,
+            );
+            updateEdge(edge.id, { labels: [label] });
+          });
+
+          saveCallback();
+        } else {
+          message.error(
+            isSupabaseDuplicateKeyError(result.error)
+              ? intl.formatMessage({
+                  id: 'pages.button.create.error.duplicateId',
+                  defaultMessage: 'Data with the same ID already exists.',
+                })
+              : (result.error?.message ?? 'Error'),
+          );
         }
       }
-      if (setLoadingData) setSpinning(false);
-    } else if (thisAction === 'create') {
-      const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
-      const result = await createLifeCycleModel({ ...newData, id: newId });
-      if (result.data) {
-        message.success(
-          intl.formatMessage({
-            id: 'pages.button.create.success',
-            defaultMessage: 'Created successfully!',
-          }),
-        );
-        setThisAction('edit');
-        setThisId(result.data?.[0]?.id);
-        setThisVersion(result.data?.[0]?.version);
-
-        const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
-          []) as LifeCycleModelGraphEdge[];
-        savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
-          const label = getEdgeLabel(
-            token,
-            edge?.data?.connection?.unbalancedAmount as number,
-            edge?.data?.connection?.exchangeAmount as number,
-          );
-          updateEdge(edge.id, { labels: [label] });
-        });
-
-        saveCallback();
-      } else {
-        message.error(
-          isSupabaseDuplicateKeyError(result.error)
-            ? intl.formatMessage({
-                id: 'pages.button.create.error.duplicateId',
-                defaultMessage: 'Data with the same ID already exists.',
-              })
-            : (result.error?.message ?? 'Error'),
-        );
-      }
+      return true;
+    } finally {
       if (setLoadingData) setSpinning(false);
     }
-    return true;
   };
 
   useGraphEvent('edge:added', (evt) => {

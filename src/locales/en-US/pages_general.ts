@@ -39,6 +39,7 @@ export default {
   'pages.button.select': 'Select',
   'pages.button.reselect': 'Reselect',
   'pages.button.updateReference': 'Update Reference',
+  'pages.button.syncToOpenData': 'Sync to Open Data',
   'pages.button.export': 'Export',
   'pages.button.clear': 'Clear',
   'pages.button.model': 'Model',
@@ -96,6 +97,10 @@ export default {
   'pages.action.error': 'Action failed',
   'pages.review.underReview': 'Data is under review, save failed',
   'pages.review.openData': 'This data is open data, save failed',
+  'pages.contact.syncToOpenData.ruleVerificationRequired': 'Current contact data is incomplete. Please fill all required fields before syncing.',
+  'pages.contact.syncToOpenData.invalidContactReference': 'Contact reference {id}({version}) must match the current contact ID and version.',
+  'pages.contact.syncToOpenData.invalidReferenceState': 'Referenced data {id}({version}) must be open data.',
+  'pages.contact.syncToOpenData.success': 'Synchronized to open data successfully!',
 
   'pages.pagination.showTotal': 'Items {start}-{end} of {total}',
 };

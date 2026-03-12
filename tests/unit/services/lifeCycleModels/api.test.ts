@@ -1070,6 +1070,73 @@ describe('createLifeCycleModel', () => {
     expect(result).toBe(insertResult);
   });
 
+  it('maps secondary refProcesses to referenceToIncludedProcesses when creating child process', async () => {
+    const secondaryProcessId = '33333333-3333-3333-3333-333333333333';
+    const generatedProcesses = {
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: { id: secondaryProcessId, type: 'secondary' },
+          refProcesses: [
+            {
+              id: sampleProcessId,
+              version: sampleVersion,
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Secondary Ref Process' }],
+            },
+          ],
+          data: {
+            processDataSet: {
+              processInformation: {
+                technology: {},
+              },
+            },
+          },
+        },
+      ],
+    };
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce(generatedProcesses);
+
+    const insertResult = {
+      data: [{ id: sampleModelId, version: sampleVersion }],
+      error: null,
+    };
+    const selectMock = jest.fn().mockResolvedValue(insertResult);
+    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
+    mockFrom.mockReturnValueOnce({ insert: insertMock });
+
+    const payload = {
+      id: sampleModelId,
+      model: {
+        nodes: [{ data: { id: sampleProcessId, quantitativeReference: '1', targetAmount: 10 } }],
+        edges: [],
+      },
+    };
+
+    await lifeCycleModelsApi.createLifeCycleModel(payload);
+    await waitForMicrotasks();
+
+    expect(mockCreateProcess).toHaveBeenCalledWith(
+      secondaryProcessId,
+      expect.objectContaining({
+        processInformation: expect.objectContaining({
+          technology: expect.objectContaining({
+            referenceToIncludedProcesses: [
+              {
+                '@refObjectId': sampleProcessId,
+                '@type': 'process data set',
+                '@uri': `../processes/${sampleProcessId}.xml`,
+                '@version': sampleVersion,
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Secondary Ref Process' },
+                ],
+              },
+            ],
+          }),
+        }),
+      }),
+      sampleModelId,
+    );
+  });
+
   test.failing('passes reference target amount when generating processes', async () => {
     const insertResult = { data: [], error: null };
     const selectMock = jest.fn().mockResolvedValue(insertResult);
@@ -1274,6 +1341,7 @@ describe('updateLifeCycleModel', () => {
         option: 'create',
         modelInfo: {
           id: 'new-process-id',
+          type: 'secondary',
           finalId: {
             nodeId: 'node-new',
             processId: 'proc-new',
@@ -1281,6 +1349,13 @@ describe('updateLifeCycleModel', () => {
             allocatedExchangeFlowId: 'flow-new',
           },
         },
+        refProcesses: [
+          {
+            id: '44444444-4444-4444-4444-444444444444',
+            version: sampleVersion,
+            'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Sub Ref 1' }],
+          },
+        ],
         data: {
           ...processDataSkeleton,
         },
@@ -1382,7 +1457,21 @@ describe('updateLifeCycleModel', () => {
     );
     expect(mockCreateProcess).toHaveBeenCalledWith(
       'new-process-id',
-      expect.anything(),
+      expect.objectContaining({
+        processInformation: expect.objectContaining({
+          technology: expect.objectContaining({
+            referenceToIncludedProcesses: [
+              {
+                '@refObjectId': '44444444-4444-4444-4444-444444444444',
+                '@type': 'process data set',
+                '@uri': '../processes/44444444-4444-4444-4444-444444444444.xml',
+                '@version': sampleVersion,
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Sub Ref 1' }],
+              },
+            ],
+          }),
+        }),
+      }),
       sampleModelId,
     );
     expect(result).toEqual({ updated: true });
