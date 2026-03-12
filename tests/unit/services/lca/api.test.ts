@@ -3,6 +3,7 @@ import {
   getLcaResult,
   isTerminalJobStatus,
   pollLcaJobUntilTerminal,
+  queryLcaResults,
   submitLcaSolve,
 } from '@/services/lca/api';
 import { supabase } from '@/services/supabase';
@@ -35,6 +36,10 @@ type LcaMockSupabase = {
 };
 
 const supabaseMock = supabase as unknown as LcaMockSupabase;
+const createMockResponse = (body: string, status: number) => ({
+  status,
+  text: jest.fn().mockResolvedValue(body),
+});
 
 describe('LCA service API (src/services/lca/api.ts)', () => {
   beforeEach(() => {
@@ -138,6 +143,66 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
 
       uuidSpy.mockRestore();
     });
+
+    it('converts snapshot_build_queued edge errors into snapshot_building responses', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'invoke_failed',
+          context: createMockResponse(
+            JSON.stringify({
+              error: 'snapshot_build_queued',
+              detail: 'build queued',
+              build_job_id: 'build-1',
+              build_snapshot_id: 'snapshot-build',
+            }),
+            409,
+          ),
+        },
+      });
+
+      await expect(
+        submitLcaSolve({
+          demand_mode: 'all_unit',
+          solve: { return_h: true },
+        }),
+      ).resolves.toEqual({
+        mode: 'snapshot_building',
+        snapshot_id: 'snapshot-build',
+        build_job_id: 'build-1',
+        build_snapshot_id: 'snapshot-build',
+      });
+    });
+
+    it('rethrows snapshot_build_queued errors when build identifiers are missing', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'invoke_failed',
+          context: createMockResponse(
+            JSON.stringify({
+              error: 'snapshot_build_queued',
+              detail: 'build queued',
+            }),
+            409,
+          ),
+        },
+      });
+
+      await expect(
+        submitLcaSolve({
+          demand: {
+            process_index: 0,
+            amount: 1,
+          },
+        }),
+      ).rejects.toMatchObject({
+        name: 'LcaFunctionInvokeError',
+        message: 'snapshot_build_queued: build queued',
+        status: 409,
+        code: 'snapshot_build_queued',
+      });
+    });
   });
 
   describe('getLcaJob/getLcaResult', () => {
@@ -238,6 +303,79 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
       });
 
       await expect(getLcaJob('job-edge-error')).rejects.toThrow('edge_error');
+    });
+
+    it('uses raw response text when function error payload is not JSON', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'invoke_failed',
+          context: createMockResponse('plain-text-error', 500),
+        },
+      });
+
+      await expect(getLcaResult('result-raw-error')).rejects.toThrow(
+        'invoke_failed: plain-text-error',
+      );
+    });
+
+    it('falls back to the base edge message when reading context text fails', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'invoke_failed',
+          context: {
+            status: 502,
+            text: jest.fn().mockRejectedValue(new Error('stream_closed')),
+          },
+        },
+      });
+
+      await expect(getLcaResult('result-broken-error')).rejects.toMatchObject({
+        name: 'LcaFunctionInvokeError',
+        message: 'invoke_failed',
+        status: 502,
+      });
+    });
+  });
+
+  describe('queryLcaResults', () => {
+    it('invokes lca_query_results with auth headers and payload', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: {
+          snapshot_id: 'snapshot-1',
+          result_id: 'result-1',
+          source: 'all_unit',
+          mode: 'process_all_impacts',
+          data: { impacts: [] },
+          meta: {
+            cache_hit: true,
+            computed_at: '2026-03-12T12:00:00.000Z',
+          },
+        },
+        error: null,
+      });
+
+      await queryLcaResults({
+        scope: 'prod',
+        mode: 'process_all_impacts',
+        process_id: 'process-1',
+        process_version: '1.0.0',
+      });
+
+      expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('lca_query_results', {
+        method: 'POST',
+        body: {
+          scope: 'prod',
+          mode: 'process_all_impacts',
+          process_id: 'process-1',
+          process_version: '1.0.0',
+        },
+        headers: {
+          Authorization: 'Bearer token-123',
+        },
+        region: FunctionRegion.UsEast1,
+      });
     });
   });
 

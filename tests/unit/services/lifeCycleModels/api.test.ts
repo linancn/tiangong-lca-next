@@ -37,10 +37,14 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 const mockGetTeamIdByUserId = jest.fn();
+const mockContributeSource = jest.fn();
+const mockGetRefData = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
+  contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
+  getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
 }));
 
 const mockClassificationToString = jest.fn();
@@ -96,6 +100,13 @@ jest.mock('@/services/users/api', () => ({
   getUserId: (...args: any[]) => mockGetUserId.apply(null, args),
 }));
 
+const mockGetCurrentUser = jest.fn();
+
+jest.mock('@/services/auth', () => ({
+  __esModule: true,
+  getCurrentUser: (...args: any[]) => mockGetCurrentUser.apply(null, args),
+}));
+
 const mockGenLifeCycleModelJsonOrdered = jest.fn();
 
 const mockGenReferenceToResultingProcess = jest
@@ -142,6 +153,8 @@ jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
 
 const mockControllerAdd = jest.fn();
 const mockControllerWaitForAll = jest.fn();
+const mockGetAllRefObj = jest.fn();
+const mockGetRefTableName = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
@@ -149,6 +162,8 @@ jest.mock('@/pages/Utils/review', () => ({
     add: (...args: any[]) => mockControllerAdd.apply(null, args),
     waitForAll: (...args: any[]) => mockControllerWaitForAll.apply(null, args),
   })),
+  getAllRefObj: (...args: any[]) => mockGetAllRefObj.apply(null, args),
+  getRefTableName: (...args: any[]) => mockGetRefTableName.apply(null, args),
 }));
 
 import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
@@ -181,6 +196,8 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
+  mockContributeSource.mockReset();
+  mockGetRefData.mockReset();
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
@@ -197,9 +214,14 @@ beforeEach(() => {
   mockGenLifeCycleModelProcesses.mockReset();
   mockControllerAdd.mockReset();
   mockControllerWaitForAll.mockReset();
+  mockGetCurrentUser.mockReset();
+  mockGetAllRefObj.mockReset();
+  mockGetRefTableName.mockReset();
 
   mockAuthGetSession.mockResolvedValue(createMockSession(sampleUserId, sampleAccessToken));
   mockGetTeamIdByUserId.mockResolvedValue('team-default');
+  mockContributeSource.mockResolvedValue({ success: true });
+  mockGetRefData.mockResolvedValue({ success: true, data: null });
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
   mockGetLangText.mockReturnValue('localized-text');
@@ -214,9 +236,18 @@ beforeEach(() => {
   mockValidateProcessesByIdAndVersion.mockResolvedValue(true);
   mockGenProcessName.mockReturnValue('Life Cycle Model Name');
   mockGetUserId.mockResolvedValue(sampleUserId);
+  mockGetCurrentUser.mockResolvedValue({ userid: sampleUserId });
   mockGenLifeCycleModelJsonOrdered.mockReturnValue({ lifeCycleModelDataSet: {} });
   mockGenLifeCycleModelProcesses.mockResolvedValue({ lifeCycleModelProcesses: [] });
   mockControllerWaitForAll.mockResolvedValue(undefined);
+  mockGetAllRefObj.mockReturnValue([]);
+  mockGetRefTableName.mockImplementation((type: string) => {
+    if (type === 'process data set') return 'processes';
+    if (type === 'flow data set') return 'flows';
+    if (type === 'source data set') return 'sources';
+    if (type === 'lifeCycleModel data set') return 'lifecyclemodels';
+    return '';
+  });
 });
 
 describe('getLifeCycleModelTableAll', () => {
@@ -1039,5 +1070,176 @@ describe('updateLifeCycleModelJsonApi', () => {
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
+  });
+});
+
+describe('getLifeCyclesByIdAndVersion', () => {
+  it('returns empty data when the input list is empty', async () => {
+    const result = await lifeCycleModelsApi.getLifeCyclesByIdAndVersion([]);
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [] });
+  });
+
+  it('builds OR conditions for lifecycle model id/version pairs', async () => {
+    const builder = createQueryBuilder({
+      data: [{ id: sampleModelId, version: sampleVersion }],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await lifeCycleModelsApi.getLifeCyclesByIdAndVersion([
+      { id: sampleModelId, version: sampleVersion },
+      { id: '33333333-3333-3333-3333-333333333333', version: '02.00.000' },
+    ]);
+
+    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
+    expect(builder.select).toHaveBeenCalledWith('id, version, json, json_tg, modified_at, team_id');
+    expect(builder.or).toHaveBeenCalledWith(
+      `and(id.eq.${sampleModelId},version.eq.${sampleVersion}),and(id.eq.33333333-3333-3333-3333-333333333333,version.eq.02.00.000)`,
+    );
+    expect(result).toEqual({
+      data: [{ id: sampleModelId, version: sampleVersion }],
+      error: null,
+    });
+  });
+});
+
+describe('contributeLifeCycleModel', () => {
+  it('returns an error payload when the current user cannot be resolved', async () => {
+    mockGetCurrentUser.mockResolvedValueOnce({});
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      error: true,
+      message: 'Failed to get current user',
+    });
+  });
+
+  it('recursively collects owned refs, deduplicates them, and contributes matching datasets', async () => {
+    const detailBuilder = createQueryBuilder({
+      data: [
+        {
+          json: { nested: true },
+          json_tg: {},
+          state_code: 10,
+          rule_verification: {},
+          team_id: 'team-owned',
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(detailBuilder);
+
+    mockGetAllRefObj
+      .mockReturnValueOnce([
+        { '@refObjectId': 'flow-1', '@version': '01.00.000', '@type': 'flow data set' },
+        { '@refObjectId': 'flow-1', '@version': '01.00.000', '@type': 'flow data set' },
+        { '@refObjectId': 'public-ref', '@version': '01.00.000', '@type': 'process data set' },
+        { '@refObjectId': 'other-user', '@version': '01.00.000', '@type': 'source data set' },
+      ])
+      .mockReturnValueOnce([
+        { '@refObjectId': 'nested-ref', '@version': '02.00.000', '@type': 'process data set' },
+      ])
+      .mockReturnValueOnce([]);
+
+    mockGetRefData.mockImplementation(async (id: string) => {
+      if (id === 'flow-1') {
+        return {
+          success: true,
+          data: {
+            stateCode: 0,
+            userId: sampleUserId,
+            json: { nested: true },
+          },
+        };
+      }
+      if (id === 'public-ref') {
+        return {
+          success: true,
+          data: {
+            stateCode: 100,
+            userId: sampleUserId,
+            json: {},
+          },
+        };
+      }
+      if (id === 'other-user') {
+        return {
+          success: true,
+          data: {
+            stateCode: 0,
+            userId: 'someone-else',
+            json: {},
+          },
+        };
+      }
+      if (id === 'nested-ref') {
+        return {
+          success: true,
+          data: {
+            stateCode: 0,
+            userId: sampleUserId,
+            json: {},
+          },
+        };
+      }
+      return { success: false };
+    });
+
+    mockContributeSource.mockImplementation(async (_table: string, id: string) => {
+      if (id === 'nested-ref') {
+        throw new Error('contribution failed');
+      }
+      return { id };
+    });
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(mockGetRefData).toHaveBeenCalledTimes(4);
+    expect(result.success).toBe(true);
+    expect(result.needContribute).toEqual([
+      expect.objectContaining({
+        id: 'flow-1',
+        version: '01.00.000',
+        type: 'flow data set',
+      }),
+      expect.objectContaining({
+        id: 'nested-ref',
+        version: '02.00.000',
+        type: 'process data set',
+      }),
+      {
+        id: sampleModelId,
+        version: sampleVersion,
+        type: 'lifeCycleModel data set',
+      },
+    ]);
+    expect(result.contributeResults).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          success: true,
+          id: 'flow-1',
+          type: 'flow data set',
+        }),
+        expect.objectContaining({
+          success: false,
+          id: 'nested-ref',
+          version: '02.00.000',
+        }),
+        expect.objectContaining({
+          success: true,
+          id: sampleModelId,
+          type: 'lifeCycleModel data set',
+        }),
+      ]),
+    );
+    expect(mockContributeSource).toHaveBeenCalledWith('flows', 'flow-1', '01.00.000');
+    expect(mockContributeSource).toHaveBeenCalledWith(
+      'lifecyclemodels',
+      sampleModelId,
+      sampleVersion,
+    );
   });
 });
