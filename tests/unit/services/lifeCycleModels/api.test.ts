@@ -1242,4 +1242,125 @@ describe('contributeLifeCycleModel', () => {
       sampleVersion,
     );
   });
+
+  it('skips unknown refs and ref-data fetch failures, then contributes only the model itself', async () => {
+    const detailBuilder = createQueryBuilder({
+      data: [
+        {
+          json: { nested: true },
+          json_tg: {},
+          state_code: 10,
+          rule_verification: {},
+          team_id: 'team-owned',
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(detailBuilder);
+
+    mockGetAllRefObj.mockReturnValueOnce([
+      { '@refObjectId': 'unknown-1', '@version': '01.00.000', '@type': 'unknown data set' },
+      { '@refObjectId': 'flow-1', '@version': '01.00.000', '@type': 'flow data set' },
+    ]);
+
+    mockGetRefData.mockRejectedValueOnce(new Error('network failure'));
+
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(mockGetRefData).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching ref data:', expect.any(Error));
+    expect(result).toEqual({
+      success: true,
+      needContribute: [
+        {
+          id: sampleModelId,
+          version: sampleVersion,
+          type: 'lifeCycleModel data set',
+        },
+      ],
+      contributeResults: [
+        {
+          success: true,
+          data: { success: true },
+          id: sampleModelId,
+          version: sampleVersion,
+          type: 'lifeCycleModel data set',
+        },
+      ],
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('returns an invalid-table contribution result when a collected ref can no longer be mapped', async () => {
+    const detailBuilder = createQueryBuilder({
+      data: [
+        {
+          json: { nested: true },
+          json_tg: {},
+          state_code: 10,
+          rule_verification: {},
+          team_id: 'team-owned',
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(detailBuilder);
+
+    mockGetAllRefObj.mockReturnValueOnce([
+      { '@refObjectId': 'flow-1', '@version': '01.00.000', '@type': 'flow data set' },
+    ]);
+
+    mockGetRefTableName
+      .mockImplementationOnce(() => 'flows')
+      .mockImplementationOnce(() => '')
+      .mockImplementationOnce(() => 'lifecyclemodels');
+
+    mockGetRefData.mockResolvedValueOnce({
+      success: true,
+      data: {
+        stateCode: 0,
+        userId: sampleUserId,
+        json: null,
+      },
+    });
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result.needContribute).toEqual([
+      expect.objectContaining({
+        id: 'flow-1',
+        version: '01.00.000',
+        type: 'flow data set',
+      }),
+      {
+        id: sampleModelId,
+        version: sampleVersion,
+        type: 'lifeCycleModel data set',
+      },
+    ]);
+    expect(result.contributeResults).toEqual([
+      {
+        success: false,
+        error: 'Invalid table name',
+        id: 'flow-1',
+        version: '01.00.000',
+      },
+      {
+        success: true,
+        data: { success: true },
+        id: sampleModelId,
+        version: sampleVersion,
+        type: 'lifeCycleModel data set',
+      },
+    ]);
+    expect(mockContributeSource).toHaveBeenCalledTimes(1);
+    expect(mockContributeSource).toHaveBeenCalledWith(
+      'lifecyclemodels',
+      sampleModelId,
+      sampleVersion,
+    );
+  });
 });
