@@ -54,7 +54,7 @@ npm run lint
 
 - 方向目标：逐步接近 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
-- 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）的 global branch coverage 为 47.19%，因此 `docs/agents/test_todo_list.md` 中的 P0 仍是当前阻塞项。
+- 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）的 global branch coverage 为 47.79%，因此 `docs/agents/test_todo_list.md` 中的 P0 仍是当前阻塞项。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - 覆盖率排查命令：
 

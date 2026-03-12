@@ -16,19 +16,26 @@
 
 最新已验证全量覆盖率运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）：
 
-- Test suites：159 passed
-- Tests：1502 passed
+- Test suites：161 passed
+- Tests：1516 passed
 - 覆盖率：
-  - Statements: 62.21% (11168/17950)
-  - Branches: 47.19% (4955/10500)
-  - Functions: 51.82% (2012/3882)
-  - Lines: 62.42% (10692/17129)
+  - Statements: 62.88% (11287/17950)
+  - Branches: 47.79% (5018/10500)
+  - Functions: 52.29% (2030/3882)
+  - Lines: 63.05% (10801/17129)
+- 相比上一版已记录基线的增量：
+  - Test suites：+2
+  - Tests：+14
+  - Statements：+0.67
+  - Branches：+0.60
+  - Functions：+0.47
+  - Lines：+0.63
 - 当前全局 branch 门槛：50%
-- 门禁状态：**未通过**（低于门槛 2.81 个百分点）
+- 门禁状态：**未通过**（低于门槛 2.21 个百分点）
 
 ## 缺口评估
 
-1. branch 门禁当前未通过（47.19%，门槛为 50%），恢复全局 branch 覆盖率是当前首要阻塞项。
+1. branch 门禁仍未通过（47.79%，门槛为 50%），但最新这批 Utils 测试已经缩小缺口，说明这类低成本 helper 目标能有效推动全局数字。
 2. 多个高分支页面文件仍是低覆盖或零分支覆盖。
 3. `src/pages/Review/**` 仍存在大量 zero-line 模块，回归风险依旧较高。
 4. service 层近期补测仍然有价值，但当前全局数字再次主要被页面层和 UI helper 的分支缺口拖低。
@@ -51,15 +58,17 @@
   - 已完成：在 `tests/unit/services/unitgroups/api.test.ts` 覆盖 dataSource 过滤、rpc/edge 错误分支、中英文映射 fallback/catch 分支与 reference 查找 fallback 分支。
 - [x] 为 `src/services/auth/api.ts` 增加分支导向测试（最新 branch 96.00%）。
   - 已完成：在 `tests/unit/services/auth/api.test.ts` 覆盖空凭证 fallback、reauthenticate guest fallback 与 fresh metadata 获取分支。
-- [ ] 为以下高分支但零 branch 的页面模块补聚焦测试（先把 global branches 拉回 50% 以上，再建立安全余量）：
-  - `src/pages/Utils/index.tsx`（小型 helper 分支文件，低成本提高安全余量）
-  - `src/pages/Contacts/Components/select/form.tsx` (BRF 84)
-  - `src/pages/Flows/Components/edit.tsx` (BRF 85)
-  - `src/pages/Flows/Components/select/form.tsx` (BRF 62)
+- [x] 为 `src/pages/Utils/index.tsx` 补聚焦测试（小型 helper 分支文件，低成本提高安全余量）。
+  - 已完成：新增 `tests/unit/pages/Utils/index.test.tsx`；该文件现为 100% statements / 100% branches / 100% functions / 100% lines。
+- [x] 将 `src/pages/Utils/updateReference.tsx` 作为相邻的低风险 utility 分支目标一并补测。
+  - 已完成：新增 `tests/unit/pages/Utils/updateReference.test.ts`；该文件现为 99.18% statements / 83.33% branches / 100% functions / 100% lines。
+- [ ] 为 `src/pages/Contacts/Components/select/form.tsx` 补聚焦测试 (BRF 84)。
+- [ ] 为 `src/pages/Flows/Components/edit.tsx` 补聚焦测试 (BRF 85)。
+- [ ] 为 `src/pages/Flows/Components/select/form.tsx` 补聚焦测试 (BRF 62)。
 
 P0 完成定义：
 
-- global branches 恢复到 50% 以上，并具备可量化安全余量（当前 47.19%）
+- global branches 恢复到 50% 以上，并具备可量化安全余量（当前 47.79%）
 - `npm run lint` 通过
 - 改动模块的聚焦套件通过
 

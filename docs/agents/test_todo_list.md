@@ -16,19 +16,26 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 
 Latest verified full run (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`):
 
-- Test suites: 159 passed
-- Tests: 1502 passed
+- Test suites: 161 passed
+- Tests: 1516 passed
 - Coverage:
-  - Statements: 62.21% (11168/17950)
-  - Branches: 47.19% (4955/10500)
-  - Functions: 51.82% (2012/3882)
-  - Lines: 62.42% (10692/17129)
+  - Statements: 62.88% (11287/17950)
+  - Branches: 47.79% (5018/10500)
+  - Functions: 52.29% (2030/3882)
+  - Lines: 63.05% (10801/17129)
+- Delta vs previous documented baseline:
+  - Test suites: +2
+  - Tests: +14
+  - Statements: +0.67
+  - Branches: +0.60
+  - Functions: +0.47
+  - Lines: +0.63
 - Enforced global branch threshold: 50%
-- Gate status: **FAIL** (threshold miss: -2.81%)
+- Gate status: **FAIL** (threshold miss: -2.21%)
 
 ## Gap Assessment
 
-1. Branch gate is currently failing (47.19% vs required 50%), so restoring global branch coverage is the immediate blocker.
+1. Branch gate is still failing (47.79% vs required 50%), but the latest Utils batch reduced the gap and confirmed these low-cost helper targets move the global number.
 2. Several high-branch page files still have low or zero branch coverage.
 3. `src/pages/Review/**` still has many zero-line files and remains a high regression-risk area.
 4. Recent service-layer gains remain valuable, but page-level and UI helper branch gaps now dominate the global number again.
@@ -51,15 +58,17 @@ Latest verified full run (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:c
   - Completed: covered datasource filters, rpc/edge error branches, zh/en mapping fallback and catch branches, and reference lookup fallbacks in `tests/unit/services/unitgroups/api.test.ts`.
 - [x] Add branch-focused tests for `src/services/auth/api.ts` (latest branch 96.00%).
   - Completed: covered empty credential fallbacks, reauthenticate guest fallback, and fresh metadata retrieval branches in `tests/unit/services/auth/api.test.ts`.
-- [ ] Add focused tests for zero-branch page modules with high branch count (to restore global branches above 50%, then rebuild safety buffer):
-  - `src/pages/Utils/index.tsx` (small helper-branch file, low-cost buffer gain)
-  - `src/pages/Contacts/Components/select/form.tsx` (BRF 84)
-  - `src/pages/Flows/Components/edit.tsx` (BRF 85)
-  - `src/pages/Flows/Components/select/form.tsx` (BRF 62)
+- [x] Add focused tests for `src/pages/Utils/index.tsx` (small helper-branch file, low-cost buffer gain).
+  - Completed in `tests/unit/pages/Utils/index.test.tsx`; file coverage is now 100% statements / 100% branches / 100% functions / 100% lines.
+- [x] Add focused tests for `src/pages/Utils/updateReference.tsx` as an adjacent low-risk utility branch target.
+  - Completed in `tests/unit/pages/Utils/updateReference.test.ts`; file coverage is now 99.18% statements / 83.33% branches / 100% functions / 100% lines.
+- [ ] Add focused tests for `src/pages/Contacts/Components/select/form.tsx` (BRF 84).
+- [ ] Add focused tests for `src/pages/Flows/Components/edit.tsx` (BRF 85).
+- [ ] Add focused tests for `src/pages/Flows/Components/select/form.tsx` (BRF 62).
 
 Definition of done for P0:
 
-- global branches are back above 50% with measurable safety buffer (currently 47.19%)
+- global branches are back above 50% with measurable safety buffer (currently 47.79%)
 - `npm run lint` passes
 - focused suites for touched modules pass
 

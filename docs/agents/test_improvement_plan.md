@@ -6,12 +6,12 @@
 
 - Latest verified full run: `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`
 - Current Jest coverage (full run):
-  - Statements: 62.21%
-  - Branches: 47.19%
-  - Functions: 51.82%
-  - Lines: 62.42%
+  - Statements: 62.88%
+  - Branches: 47.79%
+  - Functions: 52.29%
+  - Lines: 63.05%
 - Current enforced threshold in `jest.config.cjs`: 50% global (branches/functions/lines/statements).
-- Immediate issue: **branch coverage is below the enforced threshold, so full coverage runs currently fail the global gate**.
+- Immediate issue: **branch coverage is still below the enforced threshold, so full coverage runs currently fail the global gate despite recent Utils gains**.
 
 ## Principles
 
@@ -25,9 +25,9 @@
 - [x] Auth reset/forgot flows are now covered in unit tests.
 - [x] Core graph/context/request/supabase bootstrap tests are in place.
 - [ ] Recover branch coverage above the global threshold, then rebuild a safety buffer (short-term target: restore >50%, then stabilize above 51%).
-- [ ] Add direct tests for `src/pages/Utils/index.tsx` helper branches.
+- [x] Add direct tests for `src/pages/Utils/index.tsx` helper branches.
 - [ ] Expand tests around `src/pages/Utils/review.tsx` branch logic.
-- [ ] Expand tests around `src/pages/Utils/updateReference.tsx` branch logic.
+- [x] Expand tests around `src/pages/Utils/updateReference.tsx` branch logic.
 - [ ] Add focused tests for remaining low-coverage page-level branches (e.g. admin/edge-state rendering paths).
 - [ ] Continue targeted branch closure toward higher quality gate (mid-term target: >= 70% branches).
 
