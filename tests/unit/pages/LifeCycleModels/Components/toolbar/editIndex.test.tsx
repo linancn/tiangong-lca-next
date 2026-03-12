@@ -9,6 +9,10 @@ const mockRemoveNodes = jest.fn();
 const mockRemoveEdges = jest.fn();
 const mockUpdateEdge = jest.fn();
 const mockInitData = jest.fn();
+const mockToolbarHandleCheckData = jest.fn();
+const mockToolbarSubmitReview = jest.fn();
+const mockToolbarUpdateReferenceDescription = jest.fn();
+const mockUpdateNodeCb = jest.fn();
 
 let mockGraphStoreState: any = { nodes: [], edges: [] };
 
@@ -118,8 +122,10 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/eidtInfo', () => {
     __esModule: true,
     default: React.forwardRef((props: any, ref: any) => {
       React.useImperativeHandle(ref, () => ({
-        handleCheckData: jest.fn(),
-        submitReview: jest.fn(),
+        handleCheckData: (...args: any[]) => mockToolbarHandleCheckData(...args),
+        submitReview: (...args: any[]) => mockToolbarSubmitReview(...args),
+        updateReferenceDescription: (...args: any[]) =>
+          mockToolbarUpdateReferenceDescription(...args),
       }));
       return <div>toolbar-edit-info</div>;
     }),
@@ -257,9 +263,42 @@ beforeEach(() => {
   mockRemoveEdges.mockReset();
   mockUpdateEdge.mockReset();
   mockInitData.mockReset();
+  mockToolbarHandleCheckData.mockReset().mockResolvedValue({ problemNodes: [] });
+  mockToolbarSubmitReview.mockReset().mockResolvedValue(undefined);
+  mockToolbarUpdateReferenceDescription.mockReset().mockResolvedValue(undefined);
+  mockUpdateNodeCb.mockReset().mockResolvedValue(undefined);
   mockUseGraphEvent.mockClear();
-  mockGetProcessDetail.mockReset();
+  mockGetProcessDetail.mockReset().mockResolvedValue({
+    data: {
+      version: '2.0',
+      json: {
+        processDataSet: {
+          processInformation: {
+            dataSetInformation: {
+              name: [{ '@xml:lang': 'en', '#text': 'Updated Process' }],
+            },
+          },
+        },
+      },
+    },
+  });
   mockGenProcessFromData.mockReset().mockReturnValue({ exchanges: { exchange: [] } });
+  mockUpdateLifeCycleModel.mockReset().mockResolvedValue({
+    data: [
+      {
+        id: 'model-1',
+        version: '1.1',
+        json_tg: {
+          xflow: {
+            edges: [],
+          },
+        },
+      },
+    ],
+  });
+  const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+  antMessage.success.mockReset();
+  antMessage.error.mockReset();
   mockGraphStoreState = {
     initData: mockInitData,
     addNodes: mockAddNodes,
@@ -311,6 +350,7 @@ describe('ToolbarEdit', () => {
     action: 'edit',
     setIsSave: jest.fn(),
     onClose: jest.fn(),
+    updateNodeCb: mockUpdateNodeCb,
   };
 
   it('updates reference node target amounts via TargetAmount callback', async () => {
@@ -440,5 +480,86 @@ describe('ToolbarEdit', () => {
 
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
     expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: false });
+  });
+
+  it('saves lifecycle model data when the save action is clicked', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'model-1',
+          version: '1.0',
+          model: expect.objectContaining({
+            nodes: expect.any(Array),
+            edges: expect.any(Array),
+          }),
+        }),
+      ),
+    );
+    expect(mockToolbarUpdateReferenceDescription).toHaveBeenCalled();
+    expect(mockUpdateNodeCb).toHaveBeenCalledWith({
+      '@refObjectId': 'model-1',
+      '@version': '1.0',
+      '@type': 'lifeCycleModel data set',
+    });
+  });
+
+  it('runs footer data-check through the edit info ref after saving', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'checkData',
+        expect.any(Array),
+        expect.any(Array),
+      ),
+    );
+  });
+
+  it('submits a review when review validation passes', async () => {
+    mockToolbarHandleCheckData.mockResolvedValue({
+      checkResult: true,
+      unReview: [{ '@refObjectId': 'proc-1', '@version': '1.0', '@type': 'process data set' }],
+      problemNodes: [],
+    });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'review',
+        expect.any(Array),
+        expect.any(Array),
+      ),
+    );
+    expect(mockToolbarSubmitReview).toHaveBeenCalledWith([
+      { '@refObjectId': 'proc-1', '@version': '1.0', '@type': 'process data set' },
+    ]);
+  });
+
+  it('does not submit a review when review validation fails and hides the button when requested', async () => {
+    mockToolbarHandleCheckData.mockResolvedValue({
+      checkResult: false,
+      unReview: [],
+      problemNodes: [],
+    });
+
+    const { rerender } = render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() => expect(mockToolbarHandleCheckData).toHaveBeenCalled());
+    expect(mockToolbarSubmitReview).not.toHaveBeenCalled();
+
+    rerender(<ToolbarEdit {...baseProps} hideReviewButton />);
+
+    expect(screen.queryByRole('button', { name: 'send-icon' })).not.toBeInTheDocument();
   });
 });

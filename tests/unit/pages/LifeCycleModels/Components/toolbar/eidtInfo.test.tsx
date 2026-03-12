@@ -381,6 +381,21 @@ describe('ToolbarEditInfo', () => {
     expect(result).toEqual({ checkResult: false, unReview: [] });
   });
 
+  it('validates that one node must be selected as the quantitative reference', async () => {
+    const ref = React.createRef<any>();
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '0', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Please select a node as reference');
+    expect(result).toEqual({ checkResult: false, unReview: [] });
+    expect(mockGetLifeCycleModelDetail).not.toHaveBeenCalled();
+  });
+
   it('submits form data on save', async () => {
     const onData = jest.fn();
     const ref = React.createRef<any>();
@@ -448,5 +463,192 @@ describe('ToolbarEditInfo', () => {
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
     expect(result.checkResult).toBe(false);
     expect(Array.isArray(result.unReview)).toBe(true);
+  });
+
+  it('fails data check when the lifecycle model detail cannot be loaded', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({ success: false });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
+    expect(result).toEqual({ checkResult: false, unReview: [] });
+  });
+
+  it('blocks data check when the lifecycle model itself is already under review', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 30,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] } },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'This data set is under review and cannot be validated',
+    );
+    expect(result).toEqual({ checkResult: false, unReview: [] });
+  });
+
+  it('blocks review when referenced data is already under review', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] } },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+    mockDealModel.mockImplementation((_modelDetail: any, _unReview: any[], underReview: any[]) => {
+      underReview.push({
+        '@refObjectId': 'flow-1',
+        '@version': '1.0',
+        '@type': 'flow data set',
+      });
+    });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'Referenced data is under review, cannot initiate another review',
+    );
+    expect(result.checkResult).toBe(false);
+  });
+
+  it('submits a review successfully through the imperative handle', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] } },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let checkResult;
+    await act(async () => {
+      checkResult = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+    mockAntdMessage.success.mockClear();
+
+    await act(async () => {
+      await ref.current?.submitReview(checkResult.unReview);
+    });
+
+    expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalledWith(
+      'team-1',
+      {
+        id: 'model-1',
+        version: '1.0',
+        name: {},
+      },
+      'uuid-1',
+    );
+    expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalledWith(checkResult.unReview, 'uuid-1');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('stops the imperative review submission when creating the review record fails', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] } },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({});
+    mockUpdateReviewsAfterCheckData.mockResolvedValue({ error: { message: 'review failed' } });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let checkResult;
+    await act(async () => {
+      checkResult = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+    mockAntdMessage.success.mockClear();
+
+    await act(async () => {
+      await ref.current?.submitReview(checkResult.unReview);
+    });
+
+    expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalled();
+    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('hides the update-reference action outside edit mode', async () => {
+    render(<ToolbarEditInfo {...baseProps} action='create' />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+
+    expect(
+      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Update Reference' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
   });
 });
