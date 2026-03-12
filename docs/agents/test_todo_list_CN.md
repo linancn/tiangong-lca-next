@@ -10,33 +10,34 @@
 - 运行聚焦 Jest 套件，
 - `npm run lint` 必须通过，
 - 流程预期变化时同步更新文档。
+- 当测试工作流、覆盖率基线或 backlog 状态变化时，必须同步 `docs/agents/ai-testing-guide.md` 和本文件；若长期策略背景也变化，还要在同一 diff 中同步 `docs/agents/test_improvement_plan.md` 及 `_CN` 镜像。
 
-## 基线快照（2026年2月26日）
+## 基线快照（2026年3月12日）
 
-最新全量覆盖率运行（`npm run test:coverage`）：
+最新已验证全量覆盖率运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）：
 
-- Test suites：156 passed
-- Tests：1469 passed
+- Test suites：159 passed
+- Tests：1502 passed
 - 覆盖率：
-  - Statements: 63.60% (~10850/17059)
-  - Branches: 50.01% (4823/9645)
-  - Functions: 52.63% (1966/3735)
-  - Lines: 63.78% (10367/16253)
+  - Statements: 62.21% (11168/17950)
+  - Branches: 47.19% (4955/10500)
+  - Functions: 51.82% (2012/3882)
+  - Lines: 62.42% (10692/17129)
 - 当前全局 branch 门槛：50%
-- 门禁状态：**已通过**（余量很小，+0.01%）
+- 门禁状态：**未通过**（低于门槛 2.81 个百分点）
 
 ## 缺口评估
 
-1. branch 门禁已恢复，但余量非常小（50.01%），轻微回归就可能导致 CI 失败。
+1. branch 门禁当前未通过（47.19%，门槛为 50%），恢复全局 branch 覆盖率是当前首要阻塞项。
 2. 多个高分支页面文件仍是低覆盖或零分支覆盖。
 3. `src/pages/Review/**` 仍存在大量 zero-line 模块，回归风险依旧较高。
-4. 本轮 service 热点已明显改善： `src/services/processes/api.ts` 87.64%（241/275）、`src/services/unitgroups/api.ts` 82.96%（112/135）、`src/services/auth/api.ts` 96.00%（24/25）。
-5. `src/services/general/api.ts` branch 覆盖率已提升到 72.95%（143/196），不再是门禁阻塞项。
-6. `src/services/lciaMethods/util.ts`（94.91%）与 `src/services/reviews/api.ts`（67.45%）保持稳定。
+4. service 层近期补测仍然有价值，但当前全局数字再次主要被页面层和 UI helper 的分支缺口拖低。
+5. `src/services/general/api.ts` 已不再是首要门禁阻塞项；页面层和 utility 分支对恢复门禁更关键。
+6. `src/services/lciaMethods/util.ts` 与 `src/services/reviews/api.ts` 相比当前页面热点模块，整体更健康。
 
 ## 优先级待办
 
-### P0 – 先恢复覆盖率门禁（必须先做）
+### P0 – 恢复 Branch Coverage 门禁（必须先做）
 
 - [x] 为 `src/services/reviews/api.ts` 增加分支导向测试（最新 branch 67.45%）。
   - 已完成：在 `tests/unit/services/reviews/api.test.ts` 覆盖 review member/admin 列表分支、reject/process 过滤、notify count 过滤与 lifecycle subtable batch 分支。
@@ -50,14 +51,15 @@
   - 已完成：在 `tests/unit/services/unitgroups/api.test.ts` 覆盖 dataSource 过滤、rpc/edge 错误分支、中英文映射 fallback/catch 分支与 reference 查找 fallback 分支。
 - [x] 为 `src/services/auth/api.ts` 增加分支导向测试（最新 branch 96.00%）。
   - 已完成：在 `tests/unit/services/auth/api.test.ts` 覆盖空凭证 fallback、reauthenticate guest fallback 与 fresh metadata 获取分支。
-- [ ] 为以下高分支但零 branch 的页面模块补聚焦测试（用于扩大 50% 以上安全余量）：
+- [ ] 为以下高分支但零 branch 的页面模块补聚焦测试（先把 global branches 拉回 50% 以上，再建立安全余量）：
+  - `src/pages/Utils/index.tsx`（小型 helper 分支文件，低成本提高安全余量）
   - `src/pages/Contacts/Components/select/form.tsx` (BRF 84)
   - `src/pages/Flows/Components/edit.tsx` (BRF 85)
   - `src/pages/Flows/Components/select/form.tsx` (BRF 62)
 
 P0 完成定义：
 
-- global branches >= 50%（当前 50.01%）
+- global branches 恢复到 50% 以上，并具备可量化安全余量（当前 47.19%）
 - `npm run lint` 通过
 - 改动模块的聚焦套件通过
 
@@ -88,7 +90,7 @@ P1 完成定义：
 - [ ] 新功能 PR 最低要求：
   - service 分支逻辑对应 unit test，
   - UI 编排变更至少一条 integration workflow。
-- [ ] 每完成一项，及时更新本文件及英文镜像状态。
+- [ ] 每完成一项，及时更新本文件及英文镜像状态；若测试策略背景变化，再同步 `docs/agents/test_improvement_plan.md` 与 `docs/agents/ai-testing-guide.md`。
 
 ## 单项执行流程（每个任务）
 
@@ -108,13 +110,14 @@ npm run lint
 4. 每完成一批 P0 任务后，运行全量覆盖率：
 
 ```bash
-npm run test:coverage
+NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage
 ```
 
 5. 更新复选框状态并记录可量化增量。
+6. 若工作流、基线或 backlog 预期变化，同步更新 `docs/agents/ai-testing-guide.md`；若长期背景变化，再同步 `docs/agents/test_improvement_plan.md`。
 
 ## 备注
 
-- 未清空 P0 之前，不建议提高覆盖率阈值。
+- 在 P0 branch 门禁恢复前，不建议提高覆盖率阈值。
 - 优先做“确定性高”的分支测试，不要先扩展大范围快照。
 - 待办必须可执行，避免“多写点测试”这类泛化项。

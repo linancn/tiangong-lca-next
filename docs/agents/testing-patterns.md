@@ -11,6 +11,8 @@ This document provides compact, project-specific testing patterns:
 - how to use shared helpers,
 - what quality gates must pass before delivery.
 
+Before picking new coverage work, review `docs/agents/test_todo_list.md`; it is the actionable backlog source of truth.
+
 ## 1) Test Type Decision
 
 Use **unit tests** when:
@@ -39,6 +41,7 @@ Use **component tests** when:
 - Await async transitions (`await waitFor`, `findBy*`, awaited `userEvent`).
 - Prefer semantic queries (`getByRole`, `getByLabelText`) over implementation selectors.
 - Reuse helpers in `tests/helpers/**` and shared mocks in `tests/mocks/**`.
+- If backlog status changed, update `docs/agents/test_todo_list.md` in the same diff; if strategic testing context changed, update `docs/agents/test_improvement_plan.md` too.
 
 Do not:
 

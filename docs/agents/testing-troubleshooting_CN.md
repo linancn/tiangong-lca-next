@@ -81,6 +81,7 @@ beforeEach(() => {
 - 对 integration 覆盖不到的纯分支补 unit。
 - 对 feature flag/props 控制的 UI 分支补 component 测试。
 - 缩小 `collectCoverageFrom` 范围做针对性补洞。
+- 当某个缺口被关闭或优先级调整时，及时更新 `docs/agents/test_todo_list.md`；若长期策略摘要也变化，再同步 `docs/agents/test_improvement_plan.md`。
 
 ## 最终校验
 
@@ -89,4 +90,4 @@ beforeEach(() => {
 1. 重跑失败套件。
 2. 若行为波及邻近模块，补跑相关套件。
 3. 运行 `npm run lint`。
-4. 若流程变更，同步更新英文与 `_CN` 文档。
+4. 若流程或 backlog 变化，需同步 `test_todo_list.md` 与相关文档（英文 + `_CN`）；若长期背景也变化，再同步 `test_improvement_plan.md`。

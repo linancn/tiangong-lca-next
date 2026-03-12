@@ -11,6 +11,8 @@
 - 如何复用共享 helper，
 - 交付前必须通过哪些门禁。
 
+开始新的覆盖率补全前，先查看 `docs/agents/test_todo_list.md`；它是可执行 backlog 的事实来源。
+
 ## 1）测试类型选择
 
 以下场景用 **unit**：
@@ -39,6 +41,7 @@
 - 异步状态必须 `await`（`waitFor`、`findBy*`、`await userEvent`）。
 - 优先语义化查询（`getByRole`、`getByLabelText`）。
 - 复用 `tests/helpers/**` 与 `tests/mocks/**`。
+- 如果 backlog 状态有变化，需在同一 diff 中更新 `docs/agents/test_todo_list.md`；若测试策略背景也变化，再同步 `docs/agents/test_improvement_plan.md`。
 
 禁止：
 

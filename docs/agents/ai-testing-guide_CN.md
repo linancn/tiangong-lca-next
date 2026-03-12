@@ -12,7 +12,7 @@
 ## 快速流程（必做）
 
 1. 明确范围：功能、用户流程、测试类型（unit/integration/component）。
-2. 先看现有代码和测试（`src/pages/**`、`src/services/**`、`tests/**`）。
+2. 先看现有代码和测试（`src/pages/**`、`src/services/**`、`tests/**`），并检查 `docs/agents/test_todo_list.md` 里的当前 backlog。
 3. 复用 `testing-patterns.md` 的项目模式。
 4. 先 mock 服务，再 render。
 5. 用语义化断言（`getByRole`、`findByText`、`waitFor`）。
@@ -54,6 +54,8 @@ npm run lint
 
 - 方向目标：逐步接近 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
+- 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）的 global branch coverage 为 47.19%，因此 `docs/agents/test_todo_list.md` 中的 P0 仍是当前阻塞项。
+- 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - 覆盖率排查命令：
 
 ```bash
@@ -61,11 +63,14 @@ npm run test:coverage
 npm run test:coverage:report
 ```
 
+- 若本地全量 coverage 需要更多堆内存，使用 `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`，并记录你实际验证过的命令。
+
 ## 相关文档
 
 - `docs/agents/testing-patterns.md`：模板与可复用模式。
 - `docs/agents/testing-troubleshooting.md`：失败排障矩阵。
-- `docs/agents/test_improvement_plan.md`：剩余覆盖缺口优先级。
+- `docs/agents/test_todo_list.md`：可执行 backlog 与当前执行状态。
+- `docs/agents/test_improvement_plan.md`：长期背景与优先级方向。
 
 ## 交付清单
 
@@ -73,4 +78,4 @@ npm run test:coverage:report
 - `npm run lint` 通过。
 - 聚焦 Jest 命令通过。
 - 顽固套件可用 `--detectOpenHandles` 验证无句柄泄漏。
-- 若流程有变化，同步更新英文与 `_CN` 文档。
+- 若测试流程或 backlog 有变化，先同步 `test_todo_list.md`；若长期计划或基线摘要也变化，再同步 `test_improvement_plan.md`，并保持英文与 `_CN` 镜像一致。

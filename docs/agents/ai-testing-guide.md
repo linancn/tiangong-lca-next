@@ -12,7 +12,7 @@
 ## Fast Workflow (Required)
 
 1. Parse task scope: feature, workflow, and test type (unit/integration/component).
-2. Inspect existing code and tests (`src/pages/**`, `src/services/**`, `tests/**`).
+2. Inspect existing code and tests (`src/pages/**`, `src/services/**`, `tests/**`) and review `docs/agents/test_todo_list.md` for the active backlog.
 3. Reuse project patterns from `testing-patterns.md`.
 4. Mock services before render.
 5. Write semantic assertions (`getByRole`, `findByText`, `waitFor`).
@@ -54,6 +54,8 @@ npm run lint
 
 - Directional goal: move toward near-100% meaningful coverage.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
+- Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is at 47.19% global branch coverage, so treat P0 in `docs/agents/test_todo_list.md` as an active blocker.
+- Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - Use coverage runs to identify gaps:
 
 ```bash
@@ -61,11 +63,14 @@ npm run test:coverage
 npm run test:coverage:report
 ```
 
+- If local full coverage runs need more heap, use `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage` and record the command you validated with.
+
 ## Related Docs
 
 - `docs/agents/testing-patterns.md`: templates and reusable patterns.
 - `docs/agents/testing-troubleshooting.md`: failure diagnosis matrix.
-- `docs/agents/test_improvement_plan.md`: prioritized backlog for remaining gaps.
+- `docs/agents/test_todo_list.md`: actionable backlog and current execution status.
+- `docs/agents/test_improvement_plan.md`: longer-range context and priorities.
 
 ## Delivery Checklist
 
@@ -73,4 +78,4 @@ npm run test:coverage:report
 - `npm run lint` passes.
 - Focused Jest commands pass.
 - No leaked handles in stubborn suites (`--detectOpenHandles` when needed).
-- If workflow changed, sync docs (English + `_CN`).
+- If test workflow/backlog changed, sync `test_todo_list.md`; if long-term plan or baseline summary changed, sync `test_improvement_plan.md` too, plus `_CN` mirrors.

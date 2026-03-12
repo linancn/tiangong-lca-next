@@ -45,8 +45,8 @@ Read only what matches the current task:
 3. Lifecycle-model calculation changes
    - `docs/agents/util_calculate.md`
 4. Test coverage backlog tracking
-   - `docs/agents/test_todo_list.md` (actionable execution backlog)
-   - `docs/agents/test_improvement_plan.md` (long-term context)
+   - `docs/agents/test_todo_list.md` (actionable source of truth)
+   - `docs/agents/test_improvement_plan.md` (long-term context and strategy)
 5. Team/data audit process tasks
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
@@ -66,6 +66,7 @@ Read only what matches the current task:
 - Add/adjust tests matching scope.
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to the change.
+- If test engineering changed (commands, coverage baseline, backlog status, workflow), sync `docs/agents/ai-testing-guide.md`, `docs/agents/test_todo_list.md`, and when strategic context changed also `docs/agents/test_improvement_plan.md`, plus all `_CN` mirrors.
 - Keep diffs scoped; update docs when expectations or workflows change.
 
 ## Documentation Maintenance
@@ -76,3 +77,4 @@ When editing any English doc (`*.md` without `_CN`):
 2. Keep command examples executable against current scripts.
 3. Avoid duplicating long guidance across files; link back to the source doc.
 4. If workflow changed, update this file first (entry-point accuracy).
+5. For testing-related changes, update `docs/agents/test_todo_list.md` first; if the long-term plan or baseline summary changed, update `docs/agents/test_improvement_plan.md` too.

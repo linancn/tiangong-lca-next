@@ -45,8 +45,8 @@ npm run build
 3. 生命周期模型计算逻辑
    - `docs/agents/util_calculate.md`
 4. 覆盖率缺口与测试补全计划
-   - `docs/agents/test_todo_list.md`（可执行待办）
-   - `docs/agents/test_improvement_plan.md`（长期背景）
+   - `docs/agents/test_todo_list.md`（可执行事实来源）
+   - `docs/agents/test_improvement_plan.md`（长期背景与策略）
 5. 团队管理/数据审核流程
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
@@ -66,6 +66,7 @@ npm run build
 - 变更必须配套测试。
 - `npm run lint` 必须通过。
 - 运行与变更相关的聚焦 Jest 套件。
+- 如果测试工程发生变化（命令、覆盖率基线、backlog 状态、工作流），必须同步 `docs/agents/ai-testing-guide.md`、`docs/agents/test_todo_list.md`；若长期策略也变化，还要同步 `docs/agents/test_improvement_plan.md` 及全部 `_CN` 镜像。
 - 控制 diff 范围；行为或流程变化时同步更新文档。
 
 ## 文档维护规则
@@ -76,3 +77,4 @@ npm run build
 2. 命令示例必须能在当前脚本下直接执行。
 3. 避免跨文档复制长段说明，优先引用来源文档。
 4. 若工作流变化，优先更新本入口文档（保证入口准确）。
+5. 涉及测试相关变化时，优先更新 `docs/agents/test_todo_list.md`；若长期计划或基线摘要变化，再同步更新 `docs/agents/test_improvement_plan.md`。

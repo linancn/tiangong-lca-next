@@ -10,33 +10,34 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 - run focused Jest suites,
 - ensure `npm run lint` passes,
 - keep docs in sync when workflow expectations change.
+- when testing workflow/baseline/backlog changes, sync `docs/agents/ai-testing-guide.md` and this file; if strategic context changes too, sync `docs/agents/test_improvement_plan.md` and `_CN` mirrors in the same diff.
 
-## Snapshot Baseline (February 26, 2026)
+## Snapshot Baseline (March 12, 2026)
 
-Latest full run (`npm run test:coverage`):
+Latest verified full run (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`):
 
-- Test suites: 156 passed
-- Tests: 1469 passed
+- Test suites: 159 passed
+- Tests: 1502 passed
 - Coverage:
-  - Statements: 63.60% (~10850/17059)
-  - Branches: 50.01% (4823/9645)
-  - Functions: 52.63% (1966/3735)
-  - Lines: 63.78% (10367/16253)
+  - Statements: 62.21% (11168/17950)
+  - Branches: 47.19% (4955/10500)
+  - Functions: 51.82% (2012/3882)
+  - Lines: 62.42% (10692/17129)
 - Enforced global branch threshold: 50%
-- Gate status: **PASS** (buffer is minimal, +0.01%)
+- Gate status: **FAIL** (threshold miss: -2.81%)
 
 ## Gap Assessment
 
-1. Branch gate is recovered but margin is very thin (50.01%), so regressions can quickly fail CI.
+1. Branch gate is currently failing (47.19% vs required 50%), so restoring global branch coverage is the immediate blocker.
 2. Several high-branch page files still have low or zero branch coverage.
 3. `src/pages/Review/**` still has many zero-line files and remains a high regression-risk area.
-4. Service hotspots improved this cycle: `src/services/processes/api.ts` 87.64% (241/275), `src/services/unitgroups/api.ts` 82.96% (112/135), `src/services/auth/api.ts` 96.00% (24/25).
-5. `src/services/general/api.ts` branch coverage is now 72.95% (143/196), no longer a gate blocker.
-6. `src/services/lciaMethods/util.ts` (94.91%) and `src/services/reviews/api.ts` (67.45%) remain stable.
+4. Recent service-layer gains remain valuable, but page-level and UI helper branch gaps now dominate the global number again.
+5. `src/services/general/api.ts` is no longer the primary blocker; page-level and utility branches matter more for gate recovery.
+6. `src/services/lciaMethods/util.ts` and `src/services/reviews/api.ts` remain healthier than the current page-layer hotspots.
 
 ## Priority Backlog
 
-### P0 – Recover Coverage Gate (must-do first)
+### P0 – Recover Branch Coverage Gate (must-do first)
 
 - [x] Add branch-focused tests for `src/services/reviews/api.ts` (latest branch 67.45%).
   - Completed: covered review member/admin table branches, rejected/process filters, notify count filters, and lifecycle subtable batch branches in `tests/unit/services/reviews/api.test.ts`.
@@ -50,14 +51,15 @@ Latest full run (`npm run test:coverage`):
   - Completed: covered datasource filters, rpc/edge error branches, zh/en mapping fallback and catch branches, and reference lookup fallbacks in `tests/unit/services/unitgroups/api.test.ts`.
 - [x] Add branch-focused tests for `src/services/auth/api.ts` (latest branch 96.00%).
   - Completed: covered empty credential fallbacks, reauthenticate guest fallback, and fresh metadata retrieval branches in `tests/unit/services/auth/api.test.ts`.
-- [ ] Add focused tests for zero-branch page modules with high branch count (to build safety buffer above 50%):
+- [ ] Add focused tests for zero-branch page modules with high branch count (to restore global branches above 50%, then rebuild safety buffer):
+  - `src/pages/Utils/index.tsx` (small helper-branch file, low-cost buffer gain)
   - `src/pages/Contacts/Components/select/form.tsx` (BRF 84)
   - `src/pages/Flows/Components/edit.tsx` (BRF 85)
   - `src/pages/Flows/Components/select/form.tsx` (BRF 62)
 
 Definition of done for P0:
 
-- global branches >= 50% (currently 50.01%)
+- global branches are back above 50% with measurable safety buffer (currently 47.19%)
 - `npm run lint` passes
 - focused suites for touched modules pass
 
@@ -88,7 +90,7 @@ Definition of done for P1:
 - [ ] Ensure every new feature PR includes:
   - service-level unit tests for branch logic,
   - at least one integration workflow test when UI orchestration changes.
-- [ ] Keep this file and `_CN` mirror updated after each completed item.
+- [ ] Keep this file and `_CN` mirror updated after each completed item; when strategic testing context changes, sync `docs/agents/test_improvement_plan.md` and `docs/agents/ai-testing-guide.md` too.
 
 ## Execution Protocol (per task)
 
@@ -108,13 +110,14 @@ npm run lint
 4. After each P0 batch, run full coverage:
 
 ```bash
-npm run test:coverage
+NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage
 ```
 
 5. Update status checkboxes and note measurable deltas.
+6. If workflow/baseline/backlog expectations changed, sync `docs/agents/ai-testing-guide.md`; if strategic context changed, sync `docs/agents/test_improvement_plan.md` too.
 
 ## Notes
 
-- Do not raise coverage thresholds before clearing P0.
+- Do not raise coverage thresholds before recovering the P0 branch gate.
 - Prefer deterministic tests over broad snapshot expansion.
 - Keep backlog actionable; avoid generic "add more tests" tasks.
