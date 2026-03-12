@@ -19,9 +19,9 @@ jest.mock('@umijs/max', () => ({
   }),
 }));
 
-jest.mock('@/services/teams/api', () => ({
+jest.mock('@/services/roles/api', () => ({
   __esModule: true,
-  addTeamMemberApi: jest.fn(),
+  addSystemMemberApi: jest.fn(),
 }));
 
 jest.mock('antd', () => {
@@ -53,10 +53,6 @@ jest.mock('antd', () => {
       setValues({});
     }, []);
 
-    const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
-      setValues((previous) => ({ ...previous, ...fields }));
-    }, []);
-
     const validateFields = React.useCallback(async () => {
       const errors: any[] = [];
       Object.entries(rulesRef.current).forEach(([field, rules]) => {
@@ -85,7 +81,6 @@ jest.mock('antd', () => {
     React.useImperativeHandle(ref, () => ({
       validateFields,
       resetFields,
-      setFieldsValue,
     }));
 
     const contextValue = React.useMemo(
@@ -100,7 +95,6 @@ jest.mock('antd', () => {
     );
   });
   Form.displayName = 'MockForm';
-  Form.__Context = FormContext;
 
   const FormItem = ({ name, rules = [], label, children }: any) => {
     const context = React.useContext(FormContext);
@@ -168,8 +162,8 @@ jest.mock('antd', () => {
   };
 });
 
-import AddMemberModal from '@/pages/Teams/Components/AddMemberModal';
-import { addTeamMemberApi } from '@/services/teams/api';
+import AddMemberModal from '@/pages/ManageSystem/Components/AddMemberModal';
+import { addSystemMemberApi } from '@/services/roles/api';
 import { message } from 'antd';
 import {
   fireEvent,
@@ -179,7 +173,7 @@ import {
   within,
 } from '../../../helpers/testUtils';
 
-const mockAddTeamMemberApi = addTeamMemberApi as jest.MockedFunction<any>;
+const mockAddSystemMemberApi = addSystemMemberApi as jest.MockedFunction<any>;
 
 const renderModal = (props: any = {}) => {
   const onCancel = jest.fn();
@@ -189,18 +183,12 @@ const renderModal = (props: any = {}) => {
     onCancel,
     onSuccess,
     ...renderWithProviders(
-      <AddMemberModal
-        open
-        teamId='team-123'
-        onCancel={onCancel}
-        onSuccess={onSuccess}
-        {...props}
-      />,
+      <AddMemberModal open onCancel={onCancel} onSuccess={onSuccess} {...props} />,
     ),
   };
 };
 
-describe('AddMemberModal', () => {
+describe('ManageSystem AddMemberModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     Object.values(message).forEach((fn) => {
@@ -211,19 +199,19 @@ describe('AddMemberModal', () => {
   });
 
   it('submits email successfully and closes modal', async () => {
-    mockAddTeamMemberApi.mockResolvedValue({ error: null } as any);
+    mockAddSystemMemberApi.mockResolvedValue({ success: true } as any);
 
     const { onCancel, onSuccess } = renderModal();
 
     const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
     fireEvent.change(emailInput, {
-      target: { value: 'teammate@example.com' },
+      target: { value: 'member@example.com' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'ok' }));
 
     await waitFor(() => {
-      expect(mockAddTeamMemberApi).toHaveBeenCalledWith('team-123', 'teammate@example.com');
+      expect(mockAddSystemMemberApi).toHaveBeenCalledWith('member@example.com');
     });
 
     expect(message.success).toHaveBeenCalledWith('Member added successfully!');
@@ -231,91 +219,50 @@ describe('AddMemberModal', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('surfaces exists error without closing the modal', async () => {
-    mockAddTeamMemberApi.mockResolvedValue({
-      error: { message: 'exists' },
+  it('shows not registered error without closing the modal', async () => {
+    mockAddSystemMemberApi.mockResolvedValue({
+      success: false,
+      error: 'notRegistered',
     } as any);
 
     const { onCancel, onSuccess } = renderModal();
 
     const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
     fireEvent.change(emailInput, {
-      target: { value: 'duplicate@example.com' },
+      target: { value: 'unknown@example.com' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'ok' }));
 
     await waitFor(() => {
-      expect(mockAddTeamMemberApi).toHaveBeenCalledWith('team-123', 'duplicate@example.com');
-    });
-
-    expect(message.error).toHaveBeenCalledWith('User already exists in the team!');
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onCancel).not.toHaveBeenCalled();
-    expect(screen.getByTestId('modal')).toBeInTheDocument();
-  });
-
-  it('surfaces not-registered error without closing the modal', async () => {
-    mockAddTeamMemberApi.mockResolvedValue({
-      error: { message: 'notRegistered' },
-    } as any);
-
-    const { onCancel, onSuccess } = renderModal();
-
-    const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
-    fireEvent.change(emailInput, {
-      target: { value: 'missing@example.com' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
-
-    await waitFor(() => {
-      expect(mockAddTeamMemberApi).toHaveBeenCalledWith('team-123', 'missing@example.com');
+      expect(mockAddSystemMemberApi).toHaveBeenCalledWith('unknown@example.com');
     });
 
     expect(message.error).toHaveBeenCalledWith('User is not registered!');
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onCancel).not.toHaveBeenCalled();
+    expect(screen.getByTestId('modal')).toBeInTheDocument();
   });
 
-  it('surfaces generic failure without closing the modal', async () => {
-    mockAddTeamMemberApi.mockResolvedValue({
-      error: { message: 'boom' },
+  it('shows generic failure when the api rejects the add request', async () => {
+    mockAddSystemMemberApi.mockResolvedValue({
+      success: false,
+      error: 'unexpected',
     } as any);
 
-    const { onCancel, onSuccess } = renderModal();
+    renderModal();
 
     const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
     fireEvent.change(emailInput, {
-      target: { value: 'broken@example.com' },
+      target: { value: 'error@example.com' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'ok' }));
 
     await waitFor(() => {
-      expect(mockAddTeamMemberApi).toHaveBeenCalledWith('team-123', 'broken@example.com');
+      expect(mockAddSystemMemberApi).toHaveBeenCalledWith('error@example.com');
     });
 
     expect(message.error).toHaveBeenCalledWith('Failed to add member!');
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onCancel).not.toHaveBeenCalled();
-  });
-
-  it('does not call api when teamId is missing', async () => {
-    mockAddTeamMemberApi.mockResolvedValue({ error: null } as any);
-
-    renderModal({ teamId: null });
-
-    const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
-    fireEvent.change(emailInput, {
-      target: { value: 'no-team@example.com' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
-
-    await waitFor(() => {
-      expect(mockAddTeamMemberApi).not.toHaveBeenCalled();
-    });
-    expect(message.success).not.toHaveBeenCalled();
   });
 });
