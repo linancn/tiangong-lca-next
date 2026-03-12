@@ -54,7 +54,7 @@ npm run lint
 
 - 方向目标：逐步接近 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
-- 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）的 global branch coverage 为 58.11%，因此旧的 P0 门禁恢复项已关闭；当前请直接按照 `docs/agents/test_todo_list.md` 中的页面/工作流热点执行。
+- 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）是 `247 suites / 1920 tests`，global branch coverage 为 `66.86%`。因此当前不是“救门禁”，而是继续按 `docs/agents/test_todo_list.md` 中记录的 lifecycle-model 页面栈、wrapper 页面和 lifecycle utility 热点往下压。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - 覆盖率排查命令：
 
@@ -64,7 +64,7 @@ npm run test:coverage:report
 ```
 
 - 若本地全量 coverage 需要更多堆内存，使用 `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`，并记录你实际验证过的命令。
-- 不要在刚恢复门禁后立即提高覆盖率阈值；先按 `docs/agents/test_todo_list.md` 把最大的页面层 branch 热点继续压下去，稳定当前基线。
+- 现在还不要上调覆盖率阈值；先把当前接近 67% 的 branch 基线在 lifecycle-model 页面栈、wrapper 页面和剩余 service 热点上稳定下来。
 
 ## 相关文档
 
@@ -79,4 +79,4 @@ npm run test:coverage:report
 - `npm run lint` 通过。
 - 聚焦 Jest 命令通过。
 - 顽固套件可用 `--detectOpenHandles` 验证无句柄泄漏。
-- 若测试流程或 backlog 有变化，先同步 `test_todo_list.md`；若长期计划或基线摘要也变化，再同步 `test_improvement_plan.md`，并保持英文与 `_CN` 镜像一致。
+- 若测试流程、backlog 或基线有变化，先同步 `test_todo_list.md`；若长期计划或基线摘要也变化，再同步 `test_improvement_plan.md`，并保持英文与 `_CN` 镜像一致。

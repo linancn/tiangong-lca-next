@@ -5,13 +5,14 @@
 ## Current Baseline
 
 - Latest verified full run: `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`
+- Current full run footprint: 247 suites / 1920 tests
 - Current Jest coverage (full run):
-  - Statements: 72.79%
-  - Branches: 58.11%
-  - Functions: 63.29%
-  - Lines: 73.02%
+  - Statements: 80.56%
+  - Branches: 66.86%
+  - Functions: 74.31%
+  - Lines: 80.84%
 - Current enforced threshold in `jest.config.cjs`: 50% global (branches/functions/lines/statements).
-- Immediate issue: **the global gate is recovered, so the strategic problem has shifted from threshold recovery to reducing concentrated page-level workflow hotspots and the remaining lifecycle calculation branch debt**.
+- Immediate issue: **the suite is now well past gate recovery; the strategic problem is concentrated low-coverage lifecycle-model pages, thin wrapper pages, and the remaining lifecycle calculation utility debt**.
 
 ## Principles
 
@@ -19,20 +20,20 @@
 - Reuse `tests/helpers/**` and `tests/mocks/**`; avoid one-off mock wiring.
 - Keep test additions scoped and deterministic.
 - Always run `npm run lint` after test changes.
-- Do not raise coverage thresholds again until the current 58% branch baseline is stable across the main page-level hotspots.
+- Do not raise coverage thresholds again until the current 66.86% branch baseline is stable across the lifecycle-model page stack and wrapper hotspots.
 
 ## Priority Backlog
 
-- [x] Auth reset/forgot flows are now covered in unit tests.
+- [x] Auth reset/forgot flows are covered in unit tests.
 - [x] Core graph/context/request/supabase bootstrap tests are in place.
-- [x] Recover branch coverage above the global threshold and rebuild a measurable safety buffer (current branch coverage: 58.11%).
-- [x] Add direct tests for `src/pages/Utils/index.tsx` helper branches.
-- [ ] Expand tests around `src/pages/Utils/review.tsx` branch logic.
-- [x] Expand tests around `src/pages/Utils/updateReference.tsx` branch logic.
-- [x] Cover contact/source select form+drawer workflows and lifecycle-model view toolbars.
-- [ ] Focus next on page-heavy edit/workflow hotspots: `toolbar/editIndex.tsx`, `reviewProcess/tabsDetail.tsx`, `Processes/edit.tsx`, `ReviewProgress.tsx`, and unitgroup selectors.
-- [ ] Expand `src/services/lifeCycleModels/util_calculate.ts` branch coverage as the main remaining service-layer hotspot.
-- [ ] Continue targeted branch closure toward a higher-quality gate (next stabilization target: >= 60% branches, then push toward 65-70%).
+- [x] Recover branch coverage above the global threshold and grow a meaningful safety buffer (current branch coverage: 66.86%).
+- [x] Expand tests around `src/pages/Utils/index.tsx`, `src/pages/Utils/review.tsx`, and `src/pages/Utils/updateReference.tsx`.
+- [x] Cover contact/source/flow/flowproperty selector and drawer workflows plus lifecycle-model view/edit toolbars and the prior process/review workflow hotspots.
+- [x] Add direct coverage for `Flows/Components/Property/*`, login top actions, lifecycle toolbar utility helpers, required-fields maps, and add-member modals.
+- [ ] Focus next on the lifecycle-model page stack and thin wrappers: `src/pages/LifeCycleModels/Components/{create,edit,delete,form}.tsx`, `src/pages/LifeCycleModels/Components/modelResult/index.tsx`, and adjacent toolbar residual branch debt.
+- [ ] Expand wrapper/create/edit coverage for `src/pages/Sources/Components/*`, `src/pages/Contacts/Components/*`, `src/pages/Flowproperties/Components/edit.tsx`, `src/pages/Flows/Components/edit.tsx`, `src/pages/Account/index.tsx`, and `src/pages/Unitgroups/Components/form.tsx`.
+- [ ] Expand service hot spots: `src/services/lifeCycleModels/util_calculate.ts`, `src/services/unitgroups/util.ts`, `src/services/general/api.ts`, and adjacent lifecycle utilities.
+- [ ] Continue targeted branch closure toward a higher-quality gate (next stabilization target: >= 70% branches, then push toward 75%).
 
 ## Execution Loop
 
@@ -40,7 +41,7 @@
 2. Add focused tests for uncovered branches.
 3. Run focused suite via `npm run test:ci -- <pattern> --runInBand --testTimeout=... --no-coverage`.
 4. Run `npm run lint`.
-5. Re-run full coverage (latest verified local command: `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`), record deltas in `docs/agents/test_todo_list.md`, and update this file if strategic priorities changed.
+5. Re-run full coverage (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`), record deltas in `docs/agents/test_todo_list.md`, and update this file if the strategic hotspot ordering changed.
 
 ## Definition of Done (per item)
 

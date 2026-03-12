@@ -54,7 +54,7 @@ npm run lint
 
 - Directional goal: move toward near-100% meaningful coverage.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
-- Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is at 58.11% global branch coverage, so the old P0 gate-recovery blocker is closed; use `docs/agents/test_todo_list.md` for the current page/workflow hotspots instead.
+- Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is `247 suites / 1920 tests` with `66.86%` global branch coverage, so the branch gate is stable; current execution should target the remaining lifecycle-model page stack, thin wrapper pages, and lifecycle utility hotspots tracked in `docs/agents/test_todo_list.md`.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - Use coverage runs to identify gaps:
 
@@ -64,7 +64,7 @@ npm run test:coverage:report
 ```
 
 - If local full coverage runs need more heap, use `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage` and record the command you validated with.
-- Do not raise coverage thresholds immediately after recovering the gate; first use `docs/agents/test_todo_list.md` to reduce the biggest page-level branch hotspots and stabilize the current baseline.
+- Do not raise coverage thresholds yet; first stabilize the current ~67% branch baseline across the lifecycle-model page stack, wrapper pages, and the remaining service hotspots.
 
 ## Related Docs
 
@@ -79,4 +79,4 @@ npm run test:coverage:report
 - `npm run lint` passes.
 - Focused Jest commands pass.
 - No leaked handles in stubborn suites (`--detectOpenHandles` when needed).
-- If test workflow/backlog changed, sync `test_todo_list.md`; if long-term plan or baseline summary changed, sync `test_improvement_plan.md` too, plus `_CN` mirrors.
+- If test workflow/backlog or baseline changed, sync `test_todo_list.md`; if long-term plan or baseline summary changed, sync `test_improvement_plan.md` too, plus `_CN` mirrors.
