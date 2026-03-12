@@ -22,10 +22,12 @@ import {
   getAllTableTeams,
   getTeamById,
   getTeamMembersApi,
+  getTeamMessageApi,
   getTeams,
   getTeamsByKeyword,
   getUnrankedTeams,
   updateSort,
+  updateTeamRank,
 } from '@/services/teams/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import {
@@ -358,6 +360,48 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
     });
   });
 
+  describe('updateTeamRank', () => {
+    it('should update team rank via edge function', async () => {
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ success: true }),
+      );
+
+      const result = await updateTeamRank('team-123', 8);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_team', {
+        headers: {
+          Authorization: 'Bearer test-token',
+        },
+        body: { id: 'team-123', data: { rank: 8 } },
+        region: FunctionRegion.UsEast1,
+      });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should return undefined when no session exists', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await updateTeamRank('team-123', 8);
+
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('getTeamMessageApi', () => {
+    it('should fetch raw team message rows', async () => {
+      const builder = createQueryBuilder(createMockSuccessResponse([mockTeam]));
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getTeamMessageApi('team-123');
+
+      expect(supabase.from).toHaveBeenCalledWith('teams');
+      expect(builder.select).toHaveBeenCalledWith('*');
+      expect(builder.eq).toHaveBeenCalledWith('id', 'team-123');
+      expect(result).toEqual(createMockSuccessResponse([mockTeam]));
+    });
+  });
+
   describe('getTeamMembersApi', () => {
     it('should fetch team members with user details', async () => {
       const teamId = 'team-123';
@@ -426,6 +470,21 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
         data: null,
       });
     });
+
+    it('should return failure when user details request returns null', async () => {
+      const teamId = 'team-123';
+      const mockRoles = [createMockRole()];
+
+      getTeamRoles.mockResolvedValue({ error: null, data: mockRoles });
+      getUsersByIds.mockResolvedValue(null);
+
+      const result = await getTeamMembersApi(mockPaginationParams, mockSortOrder, teamId);
+
+      expect(result).toEqual({
+        success: false,
+        data: null,
+      });
+    });
   });
 
   describe('addTeamMemberApi', () => {
@@ -480,6 +539,23 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
           message: 'exists',
         },
       });
+      expect(addRoleApi).not.toHaveBeenCalled();
+    });
+
+    it('should return undefined when role lookup fails', async () => {
+      const teamId = 'team-123';
+      const email = 'lookup-error@example.com';
+      const userId = 'user-456';
+
+      getUserIdByEmail.mockResolvedValue(userId);
+      getRoleByuserId.mockResolvedValue({
+        data: null,
+        error: { message: 'Lookup failed' },
+      });
+
+      const result = await addTeamMemberApi(teamId, email);
+
+      expect(result).toBeUndefined();
       expect(addRoleApi).not.toHaveBeenCalled();
     });
   });
