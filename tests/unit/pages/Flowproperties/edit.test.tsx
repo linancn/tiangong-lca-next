@@ -101,6 +101,8 @@ jest.mock('antd', () => {
   };
 });
 
+const { message: mockAntdMessage } = jest.requireMock('antd');
+
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
@@ -315,5 +317,101 @@ describe('FlowpropertiesEdit', () => {
     expect(updateErrRef).toHaveBeenCalledWith(null);
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('marks the edited flow property as invalid when rule verification fails', async () => {
+    mockUpdateFlowproperties.mockResolvedValueOnce({
+      data: [{ rule_verification: false }],
+    });
+    const actionRef = { current: { reload: jest.fn() } };
+    const updateErrRef = jest.fn();
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesEdit
+          id='fp-1'
+          version='1.0.0'
+          buttonType='text'
+          actionRef={actionRef as any}
+          lang='en'
+          updateErrRef={updateErrRef}
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '1.0.0'));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(updateErrRef).toHaveBeenCalledWith({
+        id: 'fp-1',
+        version: '1.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      }),
+    );
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Saved successfully!');
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the open-data error when saving is blocked by state code 100', async () => {
+    mockUpdateFlowproperties.mockResolvedValueOnce({
+      data: null,
+      error: { state_code: 100, message: 'open data' },
+    });
+    const actionRef = { current: { reload: jest.fn() } };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesEdit
+          id='fp-1'
+          version='1.0.0'
+          buttonType='text'
+          actionRef={actionRef as any}
+          lang='en'
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '1.0.0'));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('This data is open data, save failed'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
+  });
+
+  it('shows the under-review error when saving is blocked by state code 20', async () => {
+    mockUpdateFlowproperties.mockResolvedValueOnce({
+      data: null,
+      error: { state_code: 20, message: 'under review' },
+    });
+    const actionRef = { current: { reload: jest.fn() } };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesEdit
+          id='fp-1'
+          version='1.0.0'
+          buttonType='text'
+          actionRef={actionRef as any}
+          lang='en'
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '1.0.0'));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
   });
 });
