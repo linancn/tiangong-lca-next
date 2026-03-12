@@ -51,6 +51,7 @@ jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CopyOutlined: () => <span>copy-icon</span>,
   DeleteOutlined: () => <span>delete-icon</span>,
+  ExportOutlined: () => <span>export-icon</span>,
   SaveOutlined: () => <span>save-icon</span>,
   SendOutlined: () => <span>send-icon</span>,
   CheckCircleOutlined: () => <span>check-icon</span>,
@@ -328,6 +329,16 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   createLifeCycleModel: (...args: any[]) => mockCreateLifeCycleModel(...args),
   getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
   updateLifeCycleModel: (...args: any[]) => mockUpdateLifeCycleModel(...args),
+}));
+
+const mockExportLcaModelBundle = jest.fn().mockResolvedValue({
+  blob: new Blob(['bundle']),
+  fileName: 'bundle.zip',
+  manifest: {},
+});
+jest.mock('@/services/lifeCycleModels/exportBundle', () => ({
+  __esModule: true,
+  exportLcaModelBundle: (...args: any[]) => mockExportLcaModelBundle(...args),
 }));
 
 const mockGenLifeCycleModelData = jest.fn().mockReturnValue({ json: {} });

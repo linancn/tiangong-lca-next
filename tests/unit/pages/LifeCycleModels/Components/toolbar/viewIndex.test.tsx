@@ -28,11 +28,23 @@ const { useGraphEvent: mockUseGraphEvent } = jest.requireMock('@/contexts/graphC
 jest.mock('antd', () => {
   const React = require('react');
 
+  const Button = ({ children, onClick, disabled = false, icon, htmlType = 'button' }: any) => (
+    <button
+      type={htmlType === 'submit' ? 'submit' : htmlType === 'reset' ? 'reset' : 'button'}
+      disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+  const Tooltip = ({ children }: any) => <>{children}</>;
   const Space = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ children }: any) => <div>{children}</div>;
   const message = {
     error: jest.fn(),
     success: jest.fn(),
+    loading: jest.fn(),
   };
   const theme = {
     useToken: () => ({
@@ -49,6 +61,8 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Button,
+    Tooltip,
     Space,
     Spin,
     message,
@@ -125,6 +139,12 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
 }));
 
+const mockExportLcaModelBundle = jest.fn();
+jest.mock('@/services/lifeCycleModels/exportBundle', () => ({
+  __esModule: true,
+  exportLcaModelBundle: (...args: any[]) => mockExportLcaModelBundle(...args),
+}));
+
 const mockGenLifeCycleModelInfoFromData = jest.fn();
 const mockGenLifeCycleModelData = jest.fn();
 const mockGenProcessName = jest.fn();
@@ -149,6 +169,11 @@ jest.mock('@/services/processes/api', () => ({
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
   genProcessName: (...args: any[]) => mockGenProcessName(...args),
+}));
+
+jest.mock('@ant-design/icons', () => ({
+  __esModule: true,
+  ExportOutlined: () => <span>export-icon</span>,
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -326,6 +351,11 @@ describe('ToolbarView', () => {
     });
     mockGetProcessesByIdAndVersion.mockResolvedValue({
       data: [{ id: 'proc-1', version: '1.0' }],
+    });
+    mockExportLcaModelBundle.mockResolvedValue({
+      blob: new Blob(['bundle']),
+      fileName: 'bundle.zip',
+      manifest: {},
     });
   });
 
