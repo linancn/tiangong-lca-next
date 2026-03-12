@@ -317,4 +317,146 @@ describe('AssignmentReview', () => {
       'view:review:review-2:hide',
     );
   });
+
+  it('loads assigned admin data and renders lifecycle review progress actions', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-3',
+          name: 'Assigned Model Review',
+          userName: 'Owner',
+          isFromLifeCycle: true,
+          comments: [{ state_code: 0 }, { state_code: 1 }, { state_code: -1 }],
+          json: {
+            data: { id: 'model-3', version: '3.0.0' },
+            user: { id: 'user-3' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='assigned'
+        actionRef={actionRef}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'assigned',
+        'en',
+      ),
+    );
+
+    await waitFor(() => expect(screen.getByTestId('row-review-3')).toBeInTheDocument());
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByTestId('review-lifecycle-detail')).toHaveTextContent(
+      'view:assigned:review-3',
+    );
+    expect(screen.getByTestId('review-progress')).toHaveTextContent('review-3:model');
+  });
+
+  it('renders rejected review tables as view-only actions for reviewer members', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-4',
+          name: 'Rejected Process Review',
+          userName: 'Reviewer',
+          isFromLifeCycle: false,
+          json: {
+            data: { id: 'process-4', version: '4.0.0' },
+            user: { id: 'user-4' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='reviewer-rejected'
+        actionRef={actionRef}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'reviewer-rejected',
+        'en',
+        undefined,
+      ),
+    );
+
+    await waitFor(() => expect(screen.getByTestId('row-review-4')).toBeInTheDocument());
+    expect(screen.getByTestId('review-process-detail')).toHaveTextContent(
+      'view:reviewer-rejected:review-4:hide',
+    );
+  });
+
+  it('renders admin rejected lifecycle items as view-only actions', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-5',
+          name: 'Rejected Model Review',
+          userName: 'Owner',
+          isFromLifeCycle: true,
+          json: {
+            data: { id: 'model-5', version: '5.0.0' },
+            user: { id: 'user-5' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='admin-rejected'
+        actionRef={actionRef}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'admin-rejected',
+        'en',
+      ),
+    );
+
+    await waitFor(() => expect(screen.getByTestId('row-review-5')).toBeInTheDocument());
+    expect(screen.getByTestId('review-lifecycle-detail')).toHaveTextContent(
+      'view:admin-rejected:review-5',
+    );
+  });
+
+  it('returns an empty table without hitting review APIs when user role is missing', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(<AssignmentReview userData={null} tableType='pending' actionRef={actionRef} />);
+
+    await waitFor(() => expect(screen.getByTestId('protable')).toBeInTheDocument());
+    expect(mockGetReviewsTableDataOfReviewAdmin).not.toHaveBeenCalled();
+    expect(mockGetReviewsTableDataOfReviewMember).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('row-review-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('row-review-2')).not.toBeInTheDocument();
+  });
 });

@@ -312,4 +312,44 @@ describe('SelectReviewer component', () => {
     ]);
     expect(message.success).toHaveBeenCalledWith('Save success');
   });
+
+  it('shows an error when temporary save fails', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    mockUpdateReviewApi.mockResolvedValueOnce({ error: new Error('failed') });
+
+    render(<SelectReviewer reviewIds={['review-1']} tabType='unassigned' actionRef={actionRef} />);
+
+    fireEvent.click(screen.getByTestId('icon-user').closest('button'));
+
+    await waitFor(() => expect(mockGetReviewerIdsApi).toHaveBeenCalledWith(['review-1']));
+    fireEvent.click(screen.getByText('select-row'));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
+    });
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Temporary save failed'));
+    expect(mockAddCommentApi).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('shows an error when reviewer assignment save fails', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    mockUpdateReviewApi.mockResolvedValueOnce({ error: new Error('failed') });
+
+    render(<SelectReviewer reviewIds={['review-1']} tabType='unassigned' actionRef={actionRef} />);
+
+    fireEvent.click(screen.getByTestId('icon-user').closest('button'));
+
+    await waitFor(() => expect(mockGetReviewerIdsApi).toHaveBeenCalled());
+    fireEvent.click(screen.getByText('select-row'));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Save failed'));
+    expect(mockAddCommentApi).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
 });

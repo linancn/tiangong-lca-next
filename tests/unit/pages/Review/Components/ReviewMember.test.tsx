@@ -222,6 +222,51 @@ describe('ReviewMember', () => {
     expect(message.success).toHaveBeenCalledWith('Action success!');
   });
 
+  it('opens the reviewed drawer variant when clicking reviewed counts', async () => {
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByText('5'));
+    expect(screen.getByTestId('assignment-review')).toHaveTextContent('"tableType":"reviewed"');
+    expect(screen.getByTestId('assignment-review')).toHaveTextContent(
+      '"actionFrom":"reviewMember"',
+    );
+  });
+
+  it('shows error feedback when role promotion fails', async () => {
+    mockUpdateRoleApi.mockResolvedValueOnce({ error: new Error('failed') });
+
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'crown' }));
+
+    await waitFor(() =>
+      expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-admin'),
+    );
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+  });
+
+  it('shows error feedback when deleting a member fails', async () => {
+    mockDelRoleApi.mockResolvedValueOnce({ error: new Error('failed') });
+
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'delete' }));
+    expect(Modal.confirm).toHaveBeenCalled();
+
+    await act(async () => {
+      await Modal.confirm.mock.calls[0][0].onOk();
+    });
+
+    await waitFor(() => expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2'));
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+  });
+
   it('keeps admin-only controls disabled for review members', async () => {
     render(<ReviewMember userData={{ user_id: 'member-1', role: 'review-member' }} />);
 

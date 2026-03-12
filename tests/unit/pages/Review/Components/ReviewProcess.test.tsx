@@ -1,5 +1,5 @@
 // @ts-nocheck
-import ReviewProcessDetail from '@/pages/Review/Components/reviewProcess';
+import ReviewProcessDetail, { getNewReviewJson } from '@/pages/Review/Components/reviewProcess';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -119,13 +119,18 @@ jest.mock('@ant-design/pro-components', () => ({
 
 jest.mock('@/pages/Review/Components/RejectReview', () => ({
   __esModule: true,
-  default: () => <button type='button'>Reject Stub</button>,
+  default: ({ onOk }: any) => (
+    <button type='button' onClick={() => onOk?.('Need more evidence')}>
+      Reject Stub
+    </button>
+  ),
 }));
 
 jest.mock('@/pages/Review/Components/reviewProcess/tabsDetail', () => ({
   __esModule: true,
-  TabsDetail: ({ onTabChange }: any) => (
+  TabsDetail: ({ onTabChange, rejectedComments, activeTabKey, type }: any) => (
     <div data-testid='tabs-detail'>
+      {JSON.stringify({ rejectedComments, activeTabKey, type })}
       <button type='button' onClick={() => onTabChange?.('processInformation')}>
         switch-tab
       </button>
@@ -139,6 +144,7 @@ const mockCheckReferences = jest.fn(() =>
   }),
 );
 const mockGetAllRefObj = jest.fn(() => []);
+const mockGetRejectedComments = jest.fn(() => Promise.resolve([]));
 const mockUpdateUnReviewToUnderReview = jest.fn(() => Promise.resolve());
 const mockUpdateReviewDataToPublic = jest.fn(() => Promise.resolve());
 
@@ -156,7 +162,7 @@ jest.mock('@/pages/Utils/review', () => ({
     add: jest.fn(async (fn: any) => fn()),
     waitForAll: jest.fn(() => Promise.resolve()),
   })),
-  getRejectedComments: jest.fn(() => Promise.resolve([])),
+  getRejectedComments: (...args: any[]) => mockGetRejectedComments(...args),
 }));
 
 const mockGetCommentApi = jest.fn();
@@ -231,6 +237,7 @@ describe('ReviewProcessDetail component', () => {
 
   const assignedCommentData = [
     {
+      review_id: 'review-1',
       state_code: 1,
       json: {
         modellingAndValidation: {
@@ -274,22 +281,44 @@ describe('ReviewProcessDetail component', () => {
     mockGetUserId.mockResolvedValue('user-1');
     mockGetUsersByIds.mockResolvedValue([{ id: 'user-1', display_name: 'Reviewer' }]);
     mockGetReviewsDetail.mockResolvedValue({ json: { logs: [] } });
+    mockGetRejectedComments.mockResolvedValue([]);
     mockUpdateReviewDataToPublic.mockResolvedValue(undefined);
     message.success.mockReset();
     message.error.mockReset();
   });
 
-  const renderComponent = (props: any) =>
+  const renderComponent = (props: any) => {
+    const actionRef = props.actionRef ?? { current: { reload: jest.fn() } };
     render(
       <ReviewProcessDetail
         id='process-1'
         reviewId='review-1'
         version='01'
         lang='en'
-        actionRef={{ current: { reload: jest.fn() } }}
+        actionRef={actionRef}
         {...props}
       />,
     );
+    return { actionRef };
+  };
+
+  it('builds review json logs with the current user context', async () => {
+    const result = await getNewReviewJson('submit_comments', 'review-1');
+
+    expect(mockGetUserId).toHaveBeenCalled();
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-1']);
+    expect(mockGetReviewsDetail).toHaveBeenCalledWith('review-1');
+    expect(result.logs).toHaveLength(1);
+    expect(result.logs[0]).toEqual(
+      expect.objectContaining({
+        action: 'submit_comments',
+        user: {
+          id: 'user-1',
+          display_name: 'Reviewer',
+        },
+      }),
+    );
+  });
 
   it('submits review form when reviewer saves', async () => {
     mockCheckReferences.mockResolvedValue({
@@ -331,5 +360,148 @@ describe('ReviewProcessDetail component', () => {
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Review submitted successfully'),
     );
+  });
+
+  it('temporarily saves review comments and refreshes the parent table', async () => {
+    proFormValues = {
+      modellingAndValidation: {
+        validation: { review: [{ '@type': 'peer-review' }] },
+        complianceDeclarations: { compliance: [{ foo: 'bar' }] },
+      },
+    };
+    const { actionRef } = renderComponent({ type: 'edit', tabType: 'review' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateCommentApi).toHaveBeenCalledWith(
+        'review-1',
+        {
+          json: {
+            modellingAndValidation: {
+              validation: { review: [{ '@type': 'peer-review' }] },
+              complianceDeclarations: { compliance: [{ foo: 'bar' }] },
+            },
+          },
+        },
+        'review',
+      ),
+    );
+    expect(mockUpdateReviewApi).toHaveBeenCalledWith(
+      ['review-1'],
+      expect.objectContaining({
+        json: expect.objectContaining({
+          logs: expect.any(Array),
+        }),
+      }),
+    );
+    await waitFor(() =>
+      expect(message.success).toHaveBeenCalledWith('Temporary save successfully'),
+    );
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('rejects a review with the provided reason and reloads the parent table', async () => {
+    const { actionRef } = renderComponent({ type: 'edit', tabType: 'review' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateCommentApi).toHaveBeenCalledWith(
+        'review-1',
+        {
+          json: expect.objectContaining({
+            modellingAndValidation: expect.any(Object),
+            comment: { message: 'Need more evidence' },
+          }),
+          state_code: -3,
+        },
+        'review',
+      ),
+    );
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('stops submission when reference checking returns problem nodes', async () => {
+    proFormValues = {
+      modellingAndValidation: {
+        validation: { review: [] },
+        complianceDeclarations: { compliance: [] },
+      },
+    };
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'ref-1',
+          '@version': '1.0.0',
+          ruleVerification: true,
+          nonExistent: false,
+        },
+      ],
+    });
+
+    renderComponent({ type: 'edit', tabType: 'review' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
+    expect(mockUpdateCommentApi).not.toHaveBeenCalledWith(
+      'review-1',
+      expect.objectContaining({ state_code: 1 }),
+      'review',
+    );
+    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+  });
+
+  it('seeds default review data for empty review comments and loads rejected comments', async () => {
+    mockGetCommentApi.mockResolvedValue({
+      data: [{ review_id: 'review-1' }],
+      error: null,
+    });
+    mockGetRejectedComments.mockResolvedValue([{ message: 'Needs revision' }]);
+
+    renderComponent({ type: 'edit', tabType: 'review' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGetRejectedComments).toHaveBeenCalledWith('process-1', '01'));
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const processData = mockGenProcessFromData.mock.calls[0][0];
+    expect(processData.modellingAndValidation.complianceDeclarations.compliance).toHaveLength(5);
+    expect(processData.modellingAndValidation.validation.review).toEqual([
+      {
+        'common:scope': [{ '@name': undefined }],
+      },
+    ]);
+    expect(screen.getByTestId('tabs-detail')).toHaveTextContent('Needs revision');
+  });
+
+  it('opens in view mode without reviewer action footer controls', async () => {
+    renderComponent({ type: 'view', tabType: 'assigned' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    expect(screen.getByText('View review')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Temporary Save' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reject Stub' })).not.toBeInTheDocument();
   });
 });
