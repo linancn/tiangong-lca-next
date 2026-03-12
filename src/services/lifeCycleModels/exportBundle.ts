@@ -96,10 +96,12 @@ export async function exportLcaModelBundle({
   }
 
   const modelJson = modelRecord.json_ordered;
-  const modelFilePayload = modelRecord.json_tg
+  const modelJsonTg =
+    'json_tg' in modelRecord ? (modelRecord as { json_tg?: unknown }).json_tg : undefined;
+  const modelFilePayload = modelJsonTg
     ? {
         ...modelRecord.json_ordered,
-        json_tg: modelRecord.json_tg,
+        json_tg: modelJsonTg,
       }
     : modelRecord.json_ordered;
   const modelUuid =
