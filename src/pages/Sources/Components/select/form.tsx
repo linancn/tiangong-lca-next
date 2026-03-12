@@ -293,7 +293,11 @@ const SourceSelectForm: FC<Props> = ({
           {id && (
             <Button
               onClick={() => {
-                formRef.current?.setFieldValue([...name], {});
+                if (parentName) {
+                  formRef.current?.setFieldValue([...parentName, ...name], {});
+                } else {
+                  formRef.current?.setFieldValue([...name], {});
+                }
                 onData();
                 validateRefObjectId(formRef, name, parentName);
               }}
