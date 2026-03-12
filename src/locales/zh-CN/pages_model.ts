@@ -298,4 +298,8 @@ export default {
   'pages.lifecyclemodel.review.processInstanceError': '请将节点数据补充完整',
   'pages.lifecyclemodel.checkData.inReview': '此数据集正在审核，无法校验',
   'pages.lifecyclemodel.notPublic': '模型尚未公开',
+  'pages.lifecyclemodel.exportBundle': '导出打包文件',
+  'pages.lifecyclemodel.exportBundle.loading': '正在导出打包文件...',
+  'pages.lifecyclemodel.exportBundle.success': '打包文件导出成功',
+  'pages.lifecyclemodel.exportBundle.error': '打包文件导出失败',
 };

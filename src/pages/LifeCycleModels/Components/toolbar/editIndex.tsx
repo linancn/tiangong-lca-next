@@ -28,6 +28,7 @@ import type {
   LifeCycleModelSelectedPortPayload,
   LifeCycleModelTargetAmount,
 } from '@/services/lifeCycleModels/data';
+import { exportLcaModelBundle } from '@/services/lifeCycleModels/exportBundle';
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
@@ -50,6 +51,7 @@ import {
   CheckCircleOutlined,
   CopyOutlined,
   DeleteOutlined,
+  ExportOutlined,
   SaveOutlined,
   SendOutlined,
 } from '@ant-design/icons';
@@ -1450,6 +1452,48 @@ const ToolbarEdit: FC<Props> = ({
   const quantitativeReferenceNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
   const hasSelectedCells =
     nodes.some((node) => node.selected) || edges.some((edge) => edge.selected);
+  const exportMessageKey = 'export-lca-bundle';
+
+  const handleExportBundle = async () => {
+    if (!thisId || !thisVersion) {
+      return;
+    }
+    message.loading({
+      content: intl.formatMessage({
+        id: 'pages.lifecyclemodel.exportBundle.loading',
+        defaultMessage: 'Exporting bundle...',
+      }),
+      key: exportMessageKey,
+    });
+    try {
+      const { blob, fileName } = await exportLcaModelBundle({
+        modelId: thisId,
+        modelVersion: thisVersion,
+      });
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = fileName;
+      anchor.click();
+      window.URL.revokeObjectURL(url);
+      message.success({
+        content: intl.formatMessage({
+          id: 'pages.lifecyclemodel.exportBundle.success',
+          defaultMessage: 'Bundle exported',
+        }),
+        key: exportMessageKey,
+      });
+    } catch (error) {
+      console.error(error);
+      message.error({
+        content: intl.formatMessage({
+          id: 'pages.lifecyclemodel.exportBundle.error',
+          defaultMessage: 'Bundle export failed',
+        }),
+        key: exportMessageKey,
+      });
+    }
+  };
 
   return (
     <Space
@@ -1480,6 +1524,20 @@ const ToolbarEdit: FC<Props> = ({
       />
 
       <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNodes} />
+      <Tooltip
+        title={
+          <FormattedMessage id='pages.lifecyclemodel.exportBundle' defaultMessage='Export Bundle' />
+        }
+        placement='left'
+      >
+        <Button
+          type='primary'
+          size='small'
+          icon={<ExportOutlined />}
+          style={{ boxShadow: 'none' }}
+          onClick={handleExportBundle}
+        />
+      </Tooltip>
       {/* <Tooltip
             title={
               <FormattedMessage

@@ -302,4 +302,8 @@ export default {
   'pages.lifecyclemodel.review.processInstanceError': 'Please complete the process instance data',
   'pages.lifecyclemodel.checkData.inReview': 'This data set is under review and cannot be validated',
   'pages.lifecyclemodel.notPublic': 'Model is not public',
+  'pages.lifecyclemodel.exportBundle': 'Export Bundle',
+  'pages.lifecyclemodel.exportBundle.loading': 'Exporting bundle...',
+  'pages.lifecyclemodel.exportBundle.success': 'Bundle exported',
+  'pages.lifecyclemodel.exportBundle.error': 'Bundle export failed',
 };

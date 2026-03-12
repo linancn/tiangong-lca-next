@@ -13,6 +13,7 @@ import type {
   LifeCycleModelPortItem,
   LifeCycleModelProcessInstance,
 } from '@/services/lifeCycleModels/data';
+import { exportLcaModelBundle } from '@/services/lifeCycleModels/exportBundle';
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
@@ -20,8 +21,9 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { genProcessName } from '@/services/processes/util';
+import { ExportOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { message, Space, Spin, theme } from 'antd';
+import { Button, message, Space, Spin, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
@@ -93,6 +95,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const [nodeCount, setNodeCount] = useState(0);
 
   const { token } = theme.useToken();
+  const exportMessageKey = 'export-lca-bundle';
 
   const inputFlowTool = {
     id: 'inputFlow',
@@ -542,11 +545,64 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     );
   };
 
+  const handleExportBundle = async () => {
+    if (!id || !version) {
+      return;
+    }
+    message.loading({
+      content: intl.formatMessage({
+        id: 'pages.lifecyclemodel.exportBundle.loading',
+        defaultMessage: 'Exporting bundle...',
+      }),
+      key: exportMessageKey,
+    });
+    try {
+      const { blob, fileName } = await exportLcaModelBundle({ modelId: id, modelVersion: version });
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = fileName;
+      anchor.click();
+      window.URL.revokeObjectURL(url);
+      message.success({
+        content: intl.formatMessage({
+          id: 'pages.lifecyclemodel.exportBundle.success',
+          defaultMessage: 'Bundle exported',
+        }),
+        key: exportMessageKey,
+      });
+    } catch (error) {
+      console.error(error);
+      message.error({
+        content: intl.formatMessage({
+          id: 'pages.lifecyclemodel.exportBundle.error',
+          defaultMessage: 'Bundle export failed',
+        }),
+        key: exportMessageKey,
+      });
+    }
+  };
+
   const selectedEdge = edges.find((edge) => edge.selected);
   const quantitativeReferenceNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
 
   return (
     <Space direction='vertical' size={'middle'}>
+      <Tooltip
+        title={intl.formatMessage({
+          id: 'pages.lifecyclemodel.exportBundle',
+          defaultMessage: 'Export Bundle',
+        })}
+        placement='left'
+      >
+        <Button
+          type='primary'
+          size='small'
+          icon={<ExportOutlined />}
+          style={{ boxShadow: 'none' }}
+          onClick={handleExportBundle}
+        />
+      </Tooltip>
       <ToolbarViewInfo
         lang={lang}
         data={infoData as FormLifeCycleModel & { id?: string; version?: string }}
