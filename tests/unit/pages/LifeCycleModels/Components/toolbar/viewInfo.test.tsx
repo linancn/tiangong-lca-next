@@ -50,7 +50,7 @@ jest.mock('@/pages/Processes/Components/Review/view', () => ({
   default: ({ data }: any) => <div data-testid='review-view'>{JSON.stringify(data)}</div>,
 }));
 
-const mockGetClassificationValues = jest.fn(() => ['class-a', 'class-b']);
+const mockGetClassificationValues = jest.fn();
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
   getClassificationValues: (...args: any[]) => mockGetClassificationValues(...args),
@@ -217,6 +217,7 @@ describe('ToolbarViewInfo', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetClassificationValues.mockImplementation(() => ['class-a', 'class-b']);
   });
 
   it('opens the drawer and renders life cycle model information by default', async () => {
@@ -254,5 +255,22 @@ describe('ToolbarViewInfo', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
     expect(screen.getByTestId('compliance-view')).toHaveTextContent('compliance-1');
+  });
+
+  it('uses empty classification fallback, renders modelling content, and closes the drawer', async () => {
+    mockGetClassificationValues.mockImplementation(() => undefined);
+
+    render(<ToolbarViewInfo lang='en' data={data as any} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    expect(screen.getByTestId('level-text')).toHaveTextContent('en:LifeCycleModel:[]');
+
+    await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
+    expect(screen.getByText('Use Advice For Data Set')).toBeInTheDocument();
+    expect(screen.getByTestId('lang-text')).toHaveTextContent('Use advice');
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

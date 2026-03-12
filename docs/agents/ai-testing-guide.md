@@ -54,7 +54,7 @@ npm run lint
 
 - Directional goal: move toward near-100% meaningful coverage.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
-- Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is at 47.79% global branch coverage, so treat P0 in `docs/agents/test_todo_list.md` as an active blocker.
+- Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is at 58.11% global branch coverage, so the old P0 gate-recovery blocker is closed; use `docs/agents/test_todo_list.md` for the current page/workflow hotspots instead.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - Use coverage runs to identify gaps:
 
@@ -64,6 +64,7 @@ npm run test:coverage:report
 ```
 
 - If local full coverage runs need more heap, use `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage` and record the command you validated with.
+- Do not raise coverage thresholds immediately after recovering the gate; first use `docs/agents/test_todo_list.md` to reduce the biggest page-level branch hotspots and stabilize the current baseline.
 
 ## Related Docs
 

@@ -16,35 +16,34 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 
 Latest verified full run (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`):
 
-- Test suites: 161 passed
-- Tests: 1516 passed
+- Test suites: 196 passed
+- Tests: 1718 passed
 - Coverage:
-  - Statements: 62.88% (11287/17950)
-  - Branches: 47.79% (5018/10500)
-  - Functions: 52.29% (2030/3882)
-  - Lines: 63.05% (10801/17129)
+  - Statements: 72.79% (13069/17954)
+  - Branches: 58.11% (6104/10504)
+  - Functions: 63.29% (2457/3882)
+  - Lines: 73.02% (12511/17133)
 - Delta vs previous documented baseline:
-  - Test suites: +2
-  - Tests: +14
-  - Statements: +0.67
-  - Branches: +0.60
-  - Functions: +0.47
-  - Lines: +0.63
+  - Test suites: +35
+  - Tests: +202
+  - Statements: +9.91
+  - Branches: +10.32
+  - Functions: +11.00
+  - Lines: +9.97
 - Enforced global branch threshold: 50%
-- Gate status: **FAIL** (threshold miss: -2.21%)
+- Gate status: **PASS** (+8.11% buffer above threshold)
 
 ## Gap Assessment
 
-1. Branch gate is still failing (47.79% vs required 50%), but the latest Utils batch reduced the gap and confirmed these low-cost helper targets move the global number.
-2. Several high-branch page files still have low or zero branch coverage.
-3. `src/pages/Review/**` still has many zero-line files and remains a high regression-risk area.
-4. Recent service-layer gains remain valuable, but page-level and UI helper branch gaps now dominate the global number again.
-5. `src/services/general/api.ts` is no longer the primary blocker; page-level and utility branches matter more for gate recovery.
-6. `src/services/lciaMethods/util.ts` and `src/services/reviews/api.ts` remain healthier than the current page-layer hotspots.
+1. Branch gate recovery is complete; the main problem is no longer threshold failure but concentrated page-level workflow debt.
+2. The biggest remaining branch gaps are now led by `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx`, `src/pages/Review/Components/reviewProcess/tabsDetail.tsx`, `src/pages/Processes/Components/edit.tsx`, `src/pages/Utils/review.tsx`, and `src/pages/Review/Components/ReviewProgress.tsx`.
+3. `src/pages/Review/**`, lifecycle-model editing, and process editing/view flows still represent the highest regression-risk UI area.
+4. Service-layer branch coverage is now broadly healthy; the main service hotspot that still deserves dedicated work is `src/services/lifeCycleModels/util_calculate.ts`.
+5. Contact/source reference selector form+drawer flows and lifecycle-model view toolbars are now covered enough to move out of the immediate blocker list.
 
 ## Priority Backlog
 
-### P0 – Recover Branch Coverage Gate (must-do first)
+### P0 – Recover Branch Coverage Gate (completed)
 
 - [x] Add branch-focused tests for `src/services/reviews/api.ts` (latest branch 67.45%).
   - Completed: covered review member/admin table branches, rejected/process filters, notify count filters, and lifecycle subtable batch branches in `tests/unit/services/reviews/api.test.ts`.
@@ -62,37 +61,44 @@ Latest verified full run (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:c
   - Completed in `tests/unit/pages/Utils/index.test.tsx`; file coverage is now 100% statements / 100% branches / 100% functions / 100% lines.
 - [x] Add focused tests for `src/pages/Utils/updateReference.tsx` as an adjacent low-risk utility branch target.
   - Completed in `tests/unit/pages/Utils/updateReference.test.ts`; file coverage is now 99.18% statements / 83.33% branches / 100% functions / 100% lines.
-- [ ] Add focused tests for `src/pages/Contacts/Components/select/form.tsx` (BRF 84).
-- [ ] Add focused tests for `src/pages/Flows/Components/edit.tsx` (BRF 85).
-- [ ] Add focused tests for `src/pages/Flows/Components/select/form.tsx` (BRF 62).
+- [x] Add focused tests for `src/pages/Contacts/Components/select/form.tsx` (BRF 84).
+  - Completed in `tests/unit/pages/Contacts/Components/select/form.test.tsx`; nested clear/update/ref-check branches are now covered.
+- [x] Add focused tests for `src/pages/Flows/Components/edit.tsx` (BRF 85).
+  - Completed in `tests/unit/pages/Flows/Components/edit.test.tsx`; edit, refs, and rejection-state paths are now covered.
+- [x] Add focused tests for `src/pages/Flows/Components/select/form.tsx` (BRF 62).
+  - Completed in `tests/unit/pages/Flows/Components/select/form.test.tsx`; select/reselect/update/clear branches are covered.
+- [x] Add focused tests for `src/pages/Sources/Components/select/form.tsx` and `src/pages/Sources/Components/select/drawer.tsx`.
+  - Completed in `tests/unit/pages/Sources/Components/select/form.test.tsx` and `tests/unit/pages/Sources/Components/select/drawer.test.tsx`; default-source, review-report tab restrictions, search, and nested clear flows are covered.
+- [x] Expand lifecycle-model view toolbar coverage (`src/pages/LifeCycleModels/Components/toolbar/viewInfo.tsx`, `src/pages/LifeCycleModels/Components/toolbar/viewIndex.tsx`).
+  - Completed in `tests/unit/pages/LifeCycleModels/Components/toolbar/viewInfo.test.tsx` and `tests/unit/pages/LifeCycleModels/Components/toolbar/viewIndex.test.tsx`; view-state fallback, tab switching, close flows, and selection handlers are covered.
 
 Definition of done for P0:
 
-- global branches are back above 50% with measurable safety buffer (currently 47.79%)
+- achieved: global branches are back above 50% with measurable safety buffer (current 58.11%)
 - `npm run lint` passes
 - focused suites for touched modules pass
 
-### P1 – High-Risk Workflow Hardening
+### P1 – Current Page/Workflow Hotspots
 
-- [ ] Cover zero-line review modules in `src/pages/Review/Components/**` first:
-  - `AddMemberModal.tsx`
-  - `Compliance/view.tsx`
-  - `Exchange/view.tsx`
-  - `reviewLifeCycleModels/Components/toolbar/*`
-- [ ] Add regression tests around lifecycle model view toolbars:
-  - `src/pages/LifeCycleModels/Components/toolbar/viewIndex.tsx`
-  - `src/pages/LifeCycleModels/Components/toolbar/viewInfo.tsx`
-  - `src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx`
-- [ ] Add minimal smoke tests for currently uncovered but user-facing pages:
-  - `src/pages/Admin.tsx`
-  - `src/pages/404.tsx`
+- [ ] Add focused tests for `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` (largest branch gap in the repo; current branch 14.36%).
+- [ ] Add focused tests for `src/pages/Review/Components/reviewProcess/tabsDetail.tsx` (current branch/line coverage 0%).
+- [ ] Expand tests for `src/pages/Processes/Components/edit.tsx` and `src/pages/Processes/Components/view.tsx`.
+- [ ] Expand tests for `src/pages/Utils/review.tsx` recursive/reference-heavy branch logic.
+- [ ] Add focused tests for `src/pages/Review/Components/ReviewProgress.tsx`.
+- [ ] Add focused tests for `src/pages/Unitgroups/Components/select/form.tsx`, `src/pages/Unitgroups/Components/select/formMini.tsx`, and `src/pages/Unitgroups/Components/edit.tsx`.
+- [ ] Add focused tests for `src/pages/Processes/Components/Exchange/view.tsx`.
 
 Definition of done for P1:
 
-- no zero-line coverage for critical review/lifecycle UI modules above
-- branch trend is increasing release-over-release
+- the highest-risk workflow pages above are no longer zero-line / near-zero-branch
+- the top five page-level branch-miss files trend down release-over-release
 
-### P2 – Test Engineering Quality Upgrades
+### P2 – Service/Utility Hotspots
+
+- [ ] Expand branch coverage for `src/services/lifeCycleModels/util_calculate.ts` (current branch 64.01%; largest remaining service hotspot).
+- [ ] Continue targeted branch closure in recursive lifecycle/reference helpers after page-level workflow hotspots start to shrink.
+
+### P3 – Test Engineering Quality Upgrades
 
 - [ ] Standardize new tests on shared helpers (`tests/helpers/mockBuilders.ts`, `testUtils.tsx`, `testData.ts`).
 - [ ] Remove or refactor noisy console-only assertions into behavior assertions where possible.
@@ -116,7 +122,7 @@ npm run test:ci -- <pattern> --runInBand --testTimeout=20000 --no-coverage
 npm run lint
 ```
 
-4. After each P0 batch, run full coverage:
+4. After each high-priority batch, run full coverage:
 
 ```bash
 NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage
@@ -127,6 +133,6 @@ NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage
 
 ## Notes
 
-- Do not raise coverage thresholds before recovering the P0 branch gate.
+- Do not raise coverage thresholds immediately after crossing 50%; first stabilize the current 58% branch baseline by reducing the biggest page-level hotspots.
 - Prefer deterministic tests over broad snapshot expansion.
 - Keep backlog actionable; avoid generic "add more tests" tasks.

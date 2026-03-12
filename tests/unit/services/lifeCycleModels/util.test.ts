@@ -10,6 +10,7 @@ import {
   genLifeCycleModelJsonOrdered,
   genNodeLabel,
   genPortLabel,
+  genReferenceToResultingProcess,
 } from '@/services/lifeCycleModels/util';
 
 const createLangText = (text: string, lang = 'en') => ({ '@xml:lang': lang, '#text': text });
@@ -237,6 +238,10 @@ describe('genNodeLabel', () => {
     expect(result.endsWith('...')).toBe(true);
     expect(result.length).toBeLessThan(label.length);
   });
+
+  it('should keep short labels unchanged', () => {
+    expect(genNodeLabel('Short label', 'en', 300)).toBe('Short label');
+  });
 });
 
 describe('genPortLabel', () => {
@@ -254,6 +259,71 @@ describe('genPortLabel', () => {
     const result = genPortLabel(label, 'zh', 240);
 
     expect(result.endsWith('...')).toBe(true);
+  });
+
+  it('should keep short port labels unchanged', () => {
+    expect(genPortLabel('Port', 'en', 300)).toBe('Port');
+  });
+});
+
+describe('genReferenceToResultingProcess', () => {
+  it('should return original data when process list is empty or data is missing', () => {
+    const data = {
+      lifeCycleModelDataSet: { lifeCycleModelInformation: { dataSetInformation: {} } },
+    };
+
+    expect(genReferenceToResultingProcess([], '01.00.000', data)).toBe(data);
+    expect(genReferenceToResultingProcess(null, '01.00.000', data)).toBe(data);
+    expect(
+      genReferenceToResultingProcess(
+        [{ modelInfo: { id: 'proc-1' }, data: {} }],
+        '01.00.000',
+        null,
+      ),
+    ).toBeNull();
+  });
+
+  it('should attach resulting process references with generated short descriptions', () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {},
+        },
+      },
+    };
+
+    const result = genReferenceToResultingProcess(
+      [
+        {
+          modelInfo: { id: 'proc-1' },
+          data: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: [createLangText('Process One')],
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      '01.00.000',
+      data,
+    );
+
+    expect(
+      result.lifeCycleModelDataSet.lifeCycleModelInformation.dataSetInformation
+        .referenceToResultingProcess,
+    ).toEqual([
+      expect.objectContaining({
+        '@refObjectId': 'proc-1',
+        '@type': 'process data set',
+        '@uri': '../processes/proc-1.xml',
+        '@version': '01.00.000',
+      }),
+    ]);
   });
 });
 
@@ -362,6 +432,37 @@ describe('genLifeCycleModelData', () => {
     expect(result.nodes[0].ports.items[0].tools).toEqual([{ id: 'portTool' }]);
     expect(result.edges).toEqual(sample.xflow.edges);
   });
+
+  it('should use fallback width, labels, and empty edge defaults', () => {
+    const sample = {
+      xflow: {
+        nodes: [
+          {
+            id: 'node-fallback',
+            data: {},
+            ports: {
+              items: [
+                {
+                  id: 'port-fallback',
+                  data: {},
+                  attrs: {
+                    text: {},
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    const result = genLifeCycleModelData(sample as any, 'en');
+
+    expect(result.nodes[0].label).toBe('-');
+    expect(result.nodes[0].ports.items[0].attrs.text.text).toBe('');
+    expect(result.nodes[0].ports.items[0].attrs.text.title).toBeUndefined();
+    expect(result.edges).toEqual([]);
+  });
 });
 
 describe('genEdgeExchangeTableData', () => {
@@ -400,6 +501,22 @@ describe('genEdgeExchangeTableData', () => {
     const result = genEdgeExchangeTableData(data, 'en');
 
     expect(result[0].targetInputFlowId).toBe('flow-b');
+  });
+
+  it('should generate fallback ids and targetInputFlowId defaults', () => {
+    const result = genEdgeExchangeTableData(
+      [
+        {
+          sourceOutputFlowName: [createLangText('Only source')],
+        },
+      ] as any,
+      'en',
+    );
+
+    expect(result[0].id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+    expect(result[0].targetInputFlowId).toBe('-');
   });
 
   it('should return empty array when input is nullish', () => {

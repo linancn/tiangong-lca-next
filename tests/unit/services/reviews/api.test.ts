@@ -445,6 +445,77 @@ describe('getReviewsTableDataOfReviewMember', () => {
     });
     expect(result.data[0].name).toContain('Model Base');
   });
+
+  it('falls back to review payload fields when no lifecycle model matches', async () => {
+    mockGetUserId.mockResolvedValueOnce('reviewer-fallback');
+    mockGetReviewedComment.mockResolvedValueOnce({
+      data: [
+        {
+          reviews: {
+            id: 'review-fallback',
+            created_at: '2024-06-01T00:00:00.000Z',
+            modified_at: '2024-06-02T00:00:00.000Z',
+            json: {
+              data: {
+                id: 'process-fallback',
+                version: '02.00.000',
+                name: {
+                  baseName: { en: 'Fallback Base' },
+                  treatmentStandardsRoutes: { en: 'Fallback Route' },
+                  mixAndLocationTypes: { en: 'Fallback Mix' },
+                  functionalUnitFlowProperties: { en: 'Fallback Unit' },
+                },
+              },
+              user: { email: 'fallback@example.com' },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      {} as any,
+      {},
+      'reviewed',
+      'en',
+    );
+
+    expect(mockGetReviewedComment).toHaveBeenCalledWith({} as any, {}, 'reviewer-fallback');
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'review-fallback',
+          id: 'review-fallback',
+          isFromLifeCycle: false,
+          name: 'Fallback Base; Fallback Route; Fallback Mix; Fallback Unit',
+          teamName: '-',
+          userName: 'fallback@example.com',
+          createAt: '2024-06-01T00:00:00.000Z',
+          modifiedAt: '2024-06-02T00:00:00.000Z',
+          deadline: undefined,
+          json: {
+            data: {
+              id: 'process-fallback',
+              version: '02.00.000',
+              name: {
+                baseName: { en: 'Fallback Base' },
+                treatmentStandardsRoutes: { en: 'Fallback Route' },
+                mixAndLocationTypes: { en: 'Fallback Mix' },
+                functionalUnitFlowProperties: { en: 'Fallback Unit' },
+              },
+            },
+            user: { email: 'fallback@example.com' },
+          },
+          modelData: null,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
 });
 
 describe('getReviewsTableDataOfReviewAdmin', () => {
@@ -527,6 +598,117 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
 
     expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
     expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it('maps admin-rejected rows with lifecycle model metadata and fallbacks', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'review-admin-model',
+          created_at: '2024-06-01T00:00:00.000Z',
+          modified_at: '2024-06-03T00:00:00.000Z',
+          deadline: '2024-06-20T00:00:00.000Z',
+          comments: [],
+          json: {
+            data: {
+              id: 'model-backed-process',
+              version: '03.00.000',
+              name: {
+                baseName: { en: 'Unused Base' },
+                treatmentStandardsRoutes: { en: 'Unused Route' },
+                mixAndLocationTypes: { en: 'Unused Mix' },
+                functionalUnitFlowProperties: { en: 'Unused Unit' },
+              },
+            },
+            user: { email: 'admin-fallback@example.com' },
+          },
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'model-backed-process',
+          version: '03.00.000',
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Model Admin Base' },
+                    treatmentStandardsRoutes: { en: 'Model Admin Route' },
+                    mixAndLocationTypes: { en: 'Model Admin Mix' },
+                    functionalUnitFlowProperties: { en: 'Model Admin Unit' },
+                  },
+                },
+              },
+            },
+          },
+          json_tg: { version: 'tg-admin' },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      {} as any,
+      {},
+      'admin-rejected',
+      'en',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'review-admin-model',
+          id: 'review-admin-model',
+          isFromLifeCycle: true,
+          name: 'Model Admin Base; Model Admin Route; Model Admin Mix; Model Admin Unit',
+          teamName: '-',
+          userName: 'admin-fallback@example.com',
+          createAt: '2024-06-01T00:00:00.000Z',
+          modifiedAt: '2024-06-03T00:00:00.000Z',
+          deadline: '2024-06-20T00:00:00.000Z',
+          json: {
+            data: {
+              id: 'model-backed-process',
+              version: '03.00.000',
+              name: {
+                baseName: { en: 'Unused Base' },
+                treatmentStandardsRoutes: { en: 'Unused Route' },
+                mixAndLocationTypes: { en: 'Unused Mix' },
+                functionalUnitFlowProperties: { en: 'Unused Unit' },
+              },
+            },
+            user: { email: 'admin-fallback@example.com' },
+          },
+          comments: [],
+          modelData: {
+            id: 'model-backed-process',
+            version: '03.00.000',
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {
+                    name: {
+                      baseName: { en: 'Model Admin Base' },
+                      treatmentStandardsRoutes: { en: 'Model Admin Route' },
+                      mixAndLocationTypes: { en: 'Model Admin Mix' },
+                      functionalUnitFlowProperties: { en: 'Model Admin Unit' },
+                    },
+                  },
+                },
+              },
+            },
+            json_tg: { version: 'tg-admin' },
+          },
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
   });
 });
 
@@ -623,6 +805,89 @@ describe('getNotifyReviews', () => {
 
     expect(result).toEqual({ data: [], success: false, total: 0 });
   });
+
+  it('maps lifecycle-backed notifications with page and total fallbacks', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'review-notify-model',
+          json: {
+            data: {
+              id: 'process-notify-model',
+              version: '04.00.000',
+              name: {
+                baseName: { en: 'Unused Notify Base' },
+                treatmentStandardsRoutes: { en: 'Unused Notify Route' },
+                mixAndLocationTypes: { en: 'Unused Notify Mix' },
+                functionalUnitFlowProperties: { en: 'Unused Notify Unit' },
+              },
+            },
+            user: {},
+          },
+          modified_at: '2024-06-05T12:00:00.000Z',
+          state_code: 2,
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'process-notify-model',
+          version: '04.00.000',
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Notify Model Base' },
+                    treatmentStandardsRoutes: { en: 'Notify Model Route' },
+                    mixAndLocationTypes: { en: 'Notify Model Mix' },
+                    functionalUnitFlowProperties: { en: 'Notify Model Unit' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getNotifyReviews({} as any, 'en', 0);
+
+    expect(builder.gte).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'review-notify-model',
+          id: 'review-notify-model',
+          isFromLifeCycle: true,
+          name: 'Notify Model Base; Notify Model Route; Notify Model Mix; Notify Model Unit',
+          teamName: '-',
+          userName: '-',
+          modifiedAt: '2024-06-05T12:00:00.000Z',
+          stateCode: 2,
+          json: {
+            data: {
+              id: 'process-notify-model',
+              version: '04.00.000',
+              name: {
+                baseName: { en: 'Unused Notify Base' },
+                treatmentStandardsRoutes: { en: 'Unused Notify Route' },
+                mixAndLocationTypes: { en: 'Unused Notify Mix' },
+                functionalUnitFlowProperties: { en: 'Unused Notify Unit' },
+              },
+            },
+            user: {},
+          },
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
 });
 
 describe('getNotifyReviewsCount', () => {
@@ -656,6 +921,18 @@ describe('getNotifyReviewsCount', () => {
 
     expect(builder.gte).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ success: false, total: 0 });
+  });
+
+  it('returns success without time predicates when filters are disabled', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({ count: 2, error: null });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getNotifyReviewsCount(0);
+
+    expect(builder.gt).not.toHaveBeenCalled();
+    expect(builder.gte).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true, total: 2 });
   });
 });
 
@@ -903,5 +1180,80 @@ describe('getLifeCycleModelSubTableDataBatch', () => {
       'processInstance',
     );
     expect(result.data['review-a'][0].name).toContain('Process');
+  });
+
+  it('skips empty model entries and keeps valid grouped process rows', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'process-valid',
+          version: '01.00.000',
+          state_code: 20,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getLifeCycleModelSubTableDataBatch(
+      [
+        {
+          reviewId: 'review-empty',
+          modelData: null as any,
+        },
+        {
+          reviewId: 'review-valid',
+          modelData: {
+            id: 'model-valid',
+            version: '01.00.000',
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  technology: {
+                    processes: {
+                      processInstance: [
+                        {
+                          referenceToProcess: {
+                            '@refObjectId': 'process-valid',
+                            '@version': '01.00.000',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            json_tg: {},
+          },
+        },
+      ],
+      'en',
+    );
+
+    expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalledWith([
+      { id: 'process-valid', version: '01.00.000' },
+    ]);
+    expect(result).toEqual({
+      data: {
+        'review-valid': [
+          {
+            key: 'process-valid',
+            id: 'process-valid',
+            version: '01.00.000',
+            name: '-',
+            sourceType: 'processInstance',
+            submodelType: undefined,
+          },
+        ],
+      },
+      success: true,
+    });
   });
 });

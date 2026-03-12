@@ -321,6 +321,44 @@ describe('ToolbarView', () => {
     await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Model is not public'));
   });
 
+  it('builds default view state without loading a model and keeps process and edge actions disabled', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        id: 'node-1',
+        selected: false,
+        size: { width: 300 },
+        data: {
+          id: 'proc-1',
+          version: '1.0',
+          label: 'Process One',
+          quantitativeReference: '0',
+        },
+        ports: { items: [] },
+      },
+    ];
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-1',
+        selected: false,
+        data: {
+          connection: {
+            outputExchange: {
+              '@flowUUID': 'flow-1',
+            },
+          },
+        },
+      },
+    ];
+
+    render(<ToolbarView id='' version='' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).not.toHaveBeenCalled());
+    expect(screen.getByTestId('toolbar-view-info')).toHaveTextContent('en::');
+    expect(screen.getByTestId('process-view')).toHaveTextContent('::toolIcon:true:en');
+    expect(screen.getByTestId('edge-exchange')).toHaveTextContent('true:none:en');
+    expect(screen.getByTestId('target-amount')).toHaveTextContent('none:false:en');
+  });
+
   it('registers graph handlers that toggle node and edge selection', () => {
     render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible={false} />);
 
@@ -361,5 +399,30 @@ describe('ToolbarView', () => {
 
     edgeAdded({ edge: { id: 'edge-new' } });
     expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-new']);
+  });
+
+  it('enforces exclusive node selection on plain clicks and ignores repeated edge clicks', () => {
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible={false} />);
+
+    const nodeClick = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:click',
+    )?.[1];
+    const edgeClick = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'edge:click',
+    )?.[1];
+
+    nodeClick({
+      node: {
+        id: 'node-2',
+        isNode: () => true,
+      },
+      e: {},
+    });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: true });
+
+    mockUpdateEdge.mockClear();
+    edgeClick({ edge: { id: 'edge-1' } });
+    expect(mockUpdateEdge).not.toHaveBeenCalled();
   });
 });
