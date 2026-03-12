@@ -1,7 +1,7 @@
 // @ts-nocheck
 import PropertyCreate from '@/pages/Flows/Components/Property/create';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -182,20 +182,24 @@ describe('FlowPropertyCreate', () => {
     expect(screen.getByRole('dialog', { name: /create flow property/i })).toBeInTheDocument();
 
     await waitFor(() => expect(lastFormApi).not.toBeNull());
-    lastFormApi.setFieldsValue({
-      referenceToFlowPropertyDataSet: { '@refObjectId': 'fp-1' },
-      meanValue: '10',
-      quantitativeReference: true,
+    await act(async () => {
+      lastFormApi.setFieldsValue({
+        referenceToFlowPropertyDataSet: { '@refObjectId': 'fp-1' },
+        meanValue: '10',
+        quantitativeReference: true,
+      });
     });
 
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
-    expect(onData).toHaveBeenCalledWith(
-      expect.objectContaining({
-        referenceToFlowPropertyDataSet: { '@refObjectId': 'fp-1' },
-        meanValue: '10',
-        quantitativeReference: true,
-      }),
+    await waitFor(() =>
+      expect(onData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          referenceToFlowPropertyDataSet: { '@refObjectId': 'fp-1' },
+          meanValue: '10',
+          quantitativeReference: true,
+        }),
+      ),
     );
     expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();
   });

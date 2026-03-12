@@ -1,7 +1,7 @@
 // @ts-nocheck
 import PropertyEdit from '@/pages/Flows/Components/Property/edit';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -199,22 +199,26 @@ describe('FlowPropertyEdit', () => {
     await waitFor(() => expect(lastFormApi).not.toBeNull());
     expect(lastFormApi.getFieldsValue()).toEqual(expect.objectContaining({ meanValue: '10' }));
 
-    lastFormApi.setFieldsValue({
-      '@dataSetInternalID': '1',
-      meanValue: '42',
-      quantitativeReference: true,
+    await act(async () => {
+      lastFormApi.setFieldsValue({
+        '@dataSetInternalID': '1',
+        meanValue: '42',
+        quantitativeReference: true,
+      });
     });
 
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
-    expect(onData).toHaveBeenCalledWith([
-      { '@dataSetInternalID': '0', meanValue: '1' },
-      expect.objectContaining({
-        '@dataSetInternalID': '1',
-        meanValue: '42',
-        quantitativeReference: true,
-      }),
-    ]);
+    await waitFor(() =>
+      expect(onData).toHaveBeenCalledWith([
+        { '@dataSetInternalID': '0', meanValue: '1' },
+        expect.objectContaining({
+          '@dataSetInternalID': '1',
+          meanValue: '42',
+          quantitativeReference: true,
+        }),
+      ]),
+    );
     expect(actionRef.current.reload).toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: /edit flow property/i })).not.toBeInTheDocument();
   });
