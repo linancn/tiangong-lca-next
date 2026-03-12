@@ -147,6 +147,13 @@ export default [
         component: './LifeCycleModels',
       },
       {
+        name: 'processAnalysis',
+        icon: 'BarChartOutlined',
+        path: '/mydata/processes/analysis',
+        component: './Processes/Analysis',
+        hideInMenu: true,
+      },
+      {
         name: 'processes',
         icon: 'ShareAltOutlined',
         path: '/mydata/processes',

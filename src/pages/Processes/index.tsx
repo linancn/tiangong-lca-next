@@ -5,10 +5,11 @@ import {
   getProcessTablePgroongaSearch,
   process_hybrid_search,
 } from '@/services/processes/api';
+import { BarChartOutlined } from '@ant-design/icons';
 
-import { Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
@@ -441,6 +442,15 @@ const TableList: FC = () => {
   const handleImportData = (jsonData: ProcessImportData) => {
     setImportData(jsonData);
   };
+
+  const applyProcessTableResult = (result?: {
+    data?: ProcessTable[];
+    success?: boolean;
+    total?: number;
+  }) => {
+    return result ?? { data: [], success: false, total: 0 };
+  };
+
   return (
     <PageContainer
       header={{
@@ -490,13 +500,25 @@ const TableList: FC = () => {
             return settings;
           }
           const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
+          const analysisPageOption = (
+            <Button
+              key='lca-analysis-page-option'
+              icon={<BarChartOutlined />}
+              onClick={() => {
+                history.push('/mydata/processes/analysis');
+              }}
+            >
+              <FormattedMessage id='pages.process.lca.page.title' defaultMessage='LCA Analysis' />
+            </Button>
+          );
           const reloadIndex = settings.findIndex((item) => item.key === 'reload');
           if (reloadIndex < 0) {
-            return [...settings, calcOption];
+            return [...settings, calcOption, analysisPageOption];
           }
           return [
             ...settings.slice(0, reloadIndex + 1),
             calcOption,
+            analysisPageOption,
             ...settings.slice(reloadIndex + 1),
           ];
         }}
@@ -552,7 +574,20 @@ const TableList: FC = () => {
               }
             }
             if (openAI) {
-              return process_hybrid_search(
+              return applyProcessTableResult(
+                await process_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  keyWord,
+                  {},
+                  stateCode,
+                  typeOfDataSet,
+                ),
+              );
+            }
+            return applyProcessTableResult(
+              await getProcessTablePgroongaSearch(
                 params,
                 lang,
                 dataSource,
@@ -560,17 +595,8 @@ const TableList: FC = () => {
                 {},
                 stateCode,
                 typeOfDataSet,
-              );
-            }
-            return getProcessTablePgroongaSearch(
-              params,
-              lang,
-              dataSource,
-              keyWord,
-              {},
-              stateCode,
-              typeOfDataSet,
-              orderBy,
+                orderBy,
+              ),
             );
           }
 
@@ -590,14 +616,16 @@ const TableList: FC = () => {
             }
           }
 
-          return getProcessTableAll(
-            params,
-            convertedSort,
-            lang,
-            dataSource,
-            tid ?? '',
-            stateCode,
-            typeOfDataSet,
+          return applyProcessTableResult(
+            await getProcessTableAll(
+              params,
+              convertedSort,
+              lang,
+              dataSource,
+              tid ?? '',
+              stateCode,
+              typeOfDataSet,
+            ),
           );
         }}
         columns={processColumns}

@@ -23,10 +23,10 @@
     "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx ",
     "lint:fix": "eslint --fix --cache --ext .js,.jsx,.ts,.tsx --format=stylish ./src ./tests",
     "lint:js": "eslint --cache --ext .js,.jsx,.ts,.tsx --format=stylish ./src ./tests",
-    "lint:prettier": "prettier -c --write \"**/**.{js,jsx,tsx,ts,less,md,json}\"",
+    "lint:prettier": "prettier -c --write \"{src,tests,docs,config,scripts,types}/**/*.{js,jsx,tsx,ts,less,md,json}\" \"*.{js,jsx,tsx,ts,less,md,json}\"",
     "openapi": "max openapi",
     "prepare": "husky",
-    "prettier": "prettier -c --write \"**/**.{js,jsx,tsx,ts,less,md,json}\"",
+    "prettier": "prettier -c --write \"{src,tests,docs,config,scripts,types}/**/*.{js,jsx,tsx,ts,less,md,json}\" \"*.{js,jsx,tsx,ts,less,md,json}\"",
     "preview": "npm run build && max preview --port 8000",
     "record": "cross-env NODE_ENV=development REACT_APP_ENV=test max record --scene=login",
     "serve": "umi-serve",
@@ -60,6 +60,7 @@
     "not ie <= 10"
   ],
   "dependencies": {
+    "@ant-design/charts": "^2.6.7",
     "@ant-design/icons": "^6.1.0",
     "@ant-design/pro-components": "^2.8.10",
     "@ant-design/pro-table": "^3.21.0",

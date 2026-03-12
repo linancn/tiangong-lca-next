@@ -183,27 +183,44 @@ export const createAntdMock = () => {
     options = [],
     children,
     placeholder,
+    mode,
+    showSearch,
+    optionFilterProp,
     ...rest
-  }: any) => (
-    <select
-      value={(value ?? defaultValue ?? '') as any}
-      onChange={(event) => onChange?.(event.target.value, event)}
-      aria-label={rest['aria-label']}
-      {...rest}
-    >
-      {placeholder ? (
-        <option value='' disabled={true}>
-          {placeholder}
-        </option>
-      ) : null}
-      {options.map((option: any) => (
-        <option key={option.value ?? option.label} value={option.value}>
-          {option.label ?? option.value}
-        </option>
-      ))}
-      {children}
-    </select>
-  );
+  }: any) => {
+    void showSearch;
+    void optionFilterProp;
+    return (
+      <select
+        multiple={mode === 'multiple'}
+        value={(value ?? defaultValue ?? (mode === 'multiple' ? [] : '')) as any}
+        onChange={(event) => {
+          if (mode === 'multiple') {
+            const nextValue = Array.from(event.target.selectedOptions).map(
+              (option) => option.value,
+            );
+            onChange?.(nextValue, event);
+            return;
+          }
+          onChange?.(event.target.value, event);
+        }}
+        aria-label={rest['aria-label']}
+        {...rest}
+      >
+        {placeholder && mode !== 'multiple' ? (
+          <option value='' disabled={true}>
+            {placeholder}
+          </option>
+        ) : null}
+        {options.map((option: any) => (
+          <option key={option.value ?? option.label} value={option.value}>
+            {option.label ?? option.value}
+          </option>
+        ))}
+        {children}
+      </select>
+    );
+  };
   (Select as any).Option = ({ value: optionValue, children: optionChildren, ...rest }: any) => (
     <option value={optionValue} {...rest}>
       {toText(optionChildren)}
@@ -283,6 +300,17 @@ export const createAntdMock = () => {
     </div>
   );
 
+  const Progress = ({ percent = 0, showInfo = true, status, ...rest }: any) => (
+    <div
+      data-testid='progress'
+      data-percent={String(percent)}
+      data-status={status ?? 'normal'}
+      {...rest}
+    >
+      {showInfo ? `${percent}%` : null}
+    </div>
+  );
+
   const Image = ({ src, alt = '', preview, ...rest }: any) => {
     void preview;
     return <img src={src} alt={alt} data-testid='image' {...rest} />;
@@ -306,11 +334,18 @@ export const createAntdMock = () => {
 
   const Alert = ({ message: alertMessage }: any) => <div role='alert'>{alertMessage}</div>;
 
-  const Descriptions = ({ children, ...rest }: any) => (
-    <div data-testid='descriptions' {...rest}>
-      {children}
-    </div>
-  );
+  const Descriptions = ({ children, ...restProps }: any) => {
+    const rest = { ...restProps };
+    delete rest.bordered;
+    delete rest.size;
+    delete rest.column;
+
+    return (
+      <div data-testid='descriptions' {...rest}>
+        {children}
+      </div>
+    );
+  };
   (Descriptions as any).Item = ({ label, children, ...rest }: any) => (
     <div data-testid='descriptions-item' {...rest}>
       <strong>{toText(label)}</strong>
@@ -328,6 +363,8 @@ export const createAntdMock = () => {
   const Card = ({
     children,
     cover,
+    title,
+    extra,
     tabList,
     activeTabKey,
     onTabChange,
@@ -338,6 +375,8 @@ export const createAntdMock = () => {
     if (tabList && tabList.length) {
       return (
         <div data-testid='mock-card' {...rest}>
+          {title ? <div data-testid='card-title'>{title}</div> : null}
+          {extra ? <div data-testid='card-extra'>{extra}</div> : null}
           <div data-testid='mock-card-tabs'>
             {tabList.map((tab: any) => (
               <button
@@ -361,6 +400,8 @@ export const createAntdMock = () => {
         tabIndex={rest?.onClick ? 0 : undefined}
         {...rest}
       >
+        {title ? <div data-testid='card-title'>{title}</div> : null}
+        {extra ? <div data-testid='card-extra'>{extra}</div> : null}
         {cover}
         <div>{children}</div>
       </div>
@@ -404,6 +445,43 @@ export const createAntdMock = () => {
       </div>
     );
   };
+
+  const Table = ({ columns = [], dataSource = [], rowKey }: any) => (
+    <table data-testid='table'>
+      <thead>
+        <tr>
+          {columns.map((column: any, index: number) => (
+            <th key={column.key ?? column.dataIndex ?? index}>{toText(column.title)}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {(dataSource ?? []).map((row: any, rowIndex: number) => {
+          const resolvedRowKey =
+            typeof rowKey === 'function'
+              ? rowKey(row)
+              : typeof rowKey === 'string'
+                ? row?.[rowKey]
+                : (row?.key ?? rowIndex);
+
+          return (
+            <tr key={resolvedRowKey}>
+              {columns.map((column: any, columnIndex: number) => {
+                const dataIndex = column?.dataIndex;
+                const value = Array.isArray(dataIndex)
+                  ? dataIndex.reduce((current, key) => current?.[key], row)
+                  : dataIndex
+                    ? row?.[dataIndex]
+                    : undefined;
+                const content = column?.render ? column.render(value, row, rowIndex) : value;
+                return <td key={column.key ?? dataIndex ?? columnIndex}>{content}</td>;
+              })}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
 
   const Modal = ({ open, onCancel, onOk, children, title, width, okText, cancelText }: any) => {
     if (!open) return null;
@@ -588,11 +666,13 @@ export const createAntdMock = () => {
     const currentValue =
       fieldName !== undefined && fieldName !== null ? context?.values?.[fieldName] : undefined;
     const valueProps =
-      currentValue !== undefined
-        ? { [valuePropName]: currentValue }
-        : valuePropName === 'checked'
-          ? { checked: false }
-          : { [valuePropName]: '' };
+      fieldName !== undefined && fieldName !== null
+        ? currentValue !== undefined
+          ? { [valuePropName]: currentValue }
+          : valuePropName === 'checked'
+            ? { checked: false }
+            : { [valuePropName]: '' }
+        : {};
 
     const handleChange = (eventOrValue: any) => {
       let nextValue = eventOrValue;
@@ -674,6 +754,7 @@ export const createAntdMock = () => {
     InputNumber,
     Layout,
     Modal,
+    Progress,
     Skeleton,
     Row,
     Select,
@@ -681,6 +762,7 @@ export const createAntdMock = () => {
     Spin,
     Statistic,
     Switch,
+    Table,
     Tabs,
     Tooltip,
     Typography,

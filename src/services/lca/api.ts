@@ -118,11 +118,15 @@ export type LcaResultResponse = {
 };
 
 export type LcaQueryMode = 'process_all_impacts' | 'processes_one_impact';
+export type LcaHotspotSortBy = 'absolute_value' | 'value' | 'process_index';
+export type LcaSortDirection = 'asc' | 'desc';
+export type LcaDataScope = 'current_user' | 'open_data' | 'all_data';
 
 export type LcaQueryRequest =
   | {
       scope?: string;
       snapshot_id?: string;
+      data_scope?: LcaDataScope;
       mode: 'process_all_impacts';
       process_id: string;
       process_version?: string;
@@ -131,10 +135,28 @@ export type LcaQueryRequest =
   | {
       scope?: string;
       snapshot_id?: string;
+      data_scope?: LcaDataScope;
       mode: 'processes_one_impact';
       process_ids: string[];
       impact_id: string;
       allow_fallback?: boolean;
+      top_n?: never;
+      offset?: never;
+      sort_by?: never;
+      sort_direction?: never;
+    }
+  | {
+      scope?: string;
+      snapshot_id?: string;
+      data_scope?: LcaDataScope;
+      mode: 'processes_one_impact';
+      process_ids?: never;
+      impact_id: string;
+      allow_fallback?: boolean;
+      top_n?: number;
+      offset?: number;
+      sort_by?: LcaHotspotSortBy;
+      sort_direction?: LcaSortDirection;
     };
 
 export type LcaQueryResponse = {

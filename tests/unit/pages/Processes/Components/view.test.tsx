@@ -166,8 +166,9 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Card = ({ tabList = [], activeTabKey, onTabChange, children }: any) => (
+  const Card = ({ tabList = [], activeTabKey, onTabChange, title, children }: any) => (
     <div data-testid='card' data-active-key={activeTabKey}>
+      {title ? <div>{toText(title)}</div> : null}
       {tabList.map((item: any) => (
         <button type='button' key={item.key} onClick={() => onTabChange?.(item.key)}>
           {toText(item.tab)}
@@ -186,11 +187,54 @@ jest.mock('antd', () => {
   );
 
   const Space = ({ children }: any) => <div>{children}</div>;
+  const Row = ({ children }: any) => <div>{children}</div>;
+  const Col = ({ children }: any) => <div>{children}</div>;
   const Descriptions = ({ children }: any) => <div>{children}</div>;
   Descriptions.Item = ({ children }: any) => <div>{children}</div>;
   const Divider = ({ children }: any) => <div>{children}</div>;
+  const Statistic = ({ title, value, formatter }: any) => (
+    <div>
+      <div>{toText(title)}</div>
+      <div>{formatter ? formatter(value) : value}</div>
+    </div>
+  );
+  const Progress = ({ percent = 0, showInfo = true }: any) => (
+    <div data-testid='progress'>{showInfo ? `${percent}%` : null}</div>
+  );
+  const Table = ({ columns = [], dataSource = [], rowKey }: any) => (
+    <table data-testid='table'>
+      <thead>
+        <tr>
+          {columns.map((column: any, index: number) => (
+            <th key={column.key ?? column.dataIndex ?? index}>{toText(column.title)}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {(dataSource ?? []).map((row: any, rowIndex: number) => {
+          const resolvedRowKey =
+            typeof rowKey === 'function'
+              ? rowKey(row)
+              : typeof rowKey === 'string'
+                ? row?.[rowKey]
+                : (row?.key ?? rowIndex);
+
+          return (
+            <tr key={resolvedRowKey}>
+              {columns.map((column: any, columnIndex: number) => {
+                const value = column?.dataIndex ? row?.[column.dataIndex] : undefined;
+                const content = column?.render ? column.render(value, row, rowIndex) : value;
+                return <td key={column.key ?? column.dataIndex ?? columnIndex}>{content}</td>;
+              })}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
   const Typography = {
     Text: ({ children }: any) => <span>{children}</span>,
+    Paragraph: ({ children }: any) => <p>{children}</p>,
   };
   return {
     __esModule: true,
@@ -201,8 +245,13 @@ jest.mock('antd', () => {
     Card,
     Collapse,
     Space,
+    Row,
+    Col,
     Descriptions,
     Divider,
+    Statistic,
+    Progress,
+    Table,
     Typography,
     Input: {
       TextArea: ({ children, ...props }: any) => <textarea {...props}>{children}</textarea>,
@@ -258,9 +307,19 @@ describe('ProcessView component', () => {
     mockQueryLcaResults.mockResolvedValue({
       snapshot_id: 'snapshot-1',
       result_id: 'result-1',
-      source: 'latest_ready',
+      source: 'all_unit',
       meta: { computed_at: '2026-03-09T00:00:00Z' },
-      data: { values: [] },
+      data: {
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 0,
+            impact_name: 'Climate change',
+            unit: 'kg CO2-eq',
+            value: 42,
+          },
+        ],
+      },
     });
   });
 
@@ -288,6 +347,10 @@ describe('ProcessView component', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('card')).toHaveAttribute('data-active-key', 'lciaResults');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('LCIA Profile')).toBeInTheDocument();
     });
   });
 

@@ -55,6 +55,7 @@ import {
 import ReviewItemView from './Review/view';
 
 import { getExchangeColumns } from './Exchange/column';
+import LcaProfileSummary from './lcaProfileSummary';
 import {
   copyrightOptions,
   LCIMethodApproachOptions,
@@ -1943,6 +1944,7 @@ const ProcessView: FC<Props> = ({
             />
           </Typography.Text>
         )}
+        <LcaProfileSummary rows={lciaResultDataSource} lang={lang} loading={solverLciaLoading} />
         <ProTable<LCIAResultTable, ListPagination>
           rowKey={(row) => row.referenceToLCIAMethodDataSet?.['@refObjectId'] || row.key}
           loading={solverLciaLoading}
