@@ -1,6 +1,6 @@
 // @ts-nocheck
 import RejectReview from '@/pages/Review/Components/RejectReview';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -125,10 +125,12 @@ jest.mock('@/pages/Utils/review', () => ({
 }));
 
 const mockGetCommentApi = jest.fn();
+const mockUpdateCommentApi = jest.fn();
 
 jest.mock('@/services/comments/api', () => ({
   __esModule: true,
   getCommentApi: (...args: any[]) => mockGetCommentApi(...args),
+  updateCommentApi: (...args: any[]) => mockUpdateCommentApi(...args),
 }));
 
 const mockGetRefData = jest.fn();
@@ -186,6 +188,7 @@ describe('RejectReview component', () => {
     jest.clearAllMocks();
     formApi = null;
     mockGetCommentApi.mockReset();
+    mockUpdateCommentApi.mockReset();
     mockGetRefData.mockReset();
     mockUpdateDateToReviewState.mockReset();
     mockGetLifeCycleModelDetail.mockReset();
@@ -202,12 +205,13 @@ describe('RejectReview component', () => {
     mockConcurrencyAdd.mockClear();
     mockConcurrencyWait.mockClear();
     mockGetCommentApi.mockResolvedValue({ data: [], error: null });
+    mockUpdateCommentApi.mockResolvedValue({ error: null });
     mockUpdateUnderReviewToUnReview.mockResolvedValue(undefined);
     message.success.mockReset();
     message.error.mockReset();
   });
 
-  const renderComponent = () =>
+  const renderComponent = (props: any = {}) =>
     render(
       <RejectReview
         reviewId='review-1'
@@ -216,6 +220,7 @@ describe('RejectReview component', () => {
         isModel={false}
         actionRef={{ current: { reload: jest.fn() } }}
         buttonType='text'
+        {...props}
       />,
     );
 
@@ -277,5 +282,102 @@ describe('RejectReview component', () => {
 
     await waitFor(() => expect(message.error).toHaveBeenCalled());
     expect(mockUpdateReviewApi).not.toHaveBeenCalled();
+  });
+
+  it('delegates to custom onOk handlers without touching review services', async () => {
+    const onOk = jest.fn().mockResolvedValue(undefined);
+    const reload = jest.fn();
+
+    render(
+      <RejectReview
+        reviewId='review-1'
+        dataId='process-1'
+        dataVersion='01'
+        isModel={false}
+        actionRef={{ current: { reload } }}
+        buttonType='icon'
+        onOk={onOk}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Custom rejection' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    await waitFor(() => expect(onOk).toHaveBeenCalledWith('Custom rejection'));
+    expect(mockUpdateReviewApi).not.toHaveBeenCalled();
+    await waitFor(() => expect(reload).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
+  });
+
+  it('rejects lifecycle models, resets assigned comments, and updates referenced under-review items', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 1,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '01',
+        stateCode: 30,
+        json_tg: {
+          submodels: [{ id: 'submodel-1' }],
+        },
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({
+      data: { id: 'model-1', version: '01', stateCode: 30 },
+    });
+    mockGetUserTeamId.mockResolvedValue('team-1');
+    mockGetCommentApi.mockResolvedValue({ data: [], error: null });
+    mockDealModel.mockImplementation((_, __, underReview) => {
+      underReview.push({
+        '@refObjectId': 'model-ref-1',
+        '@version': '01',
+        '@type': 'process data set',
+      });
+    });
+    mockDealProcress.mockImplementation(() => undefined);
+    mockGetAllRefObj.mockReturnValue([]);
+
+    renderComponent({ isModel: true, dataId: 'model-1' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Model rejected' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateReviewApi).toHaveBeenCalledWith(
+        ['review-1'],
+        expect.objectContaining({
+          state_code: -1,
+          json: expect.objectContaining({
+            comment: { message: 'Model rejected' },
+          }),
+        }),
+      ),
+    );
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '01');
+    expect(mockGetProcessDetail).toHaveBeenCalledWith('model-1', '01');
+    expect(mockUpdateDateToReviewState).toHaveBeenCalledWith('model-ref-1', '01', 'processes', {
+      state_code: 0,
+    });
+    expect(mockUpdateDateToReviewState).toHaveBeenCalledWith('submodel-1', '01', 'processes', {
+      state_code: 0,
+    });
+    expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'assigned');
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
   });
 });

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ProcessView from '@/pages/Processes/Components/view';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -20,12 +20,15 @@ const mockGenProcessFromData = jest.fn();
 const mockGenProcessExchangeTableData = jest.fn();
 const mockProcessExchangeView = jest.fn();
 const mockQueryLcaResults = jest.fn();
+const mockIsLcaFunctionInvokeError = jest.fn(() => false);
 const mockCacheAndDecompressMethod = jest.fn();
 const mockGetDecompressedMethod = jest.fn();
 const mockGetReferenceQuantityFromMethod = jest.fn();
 const mockJsonToList = jest.fn((value: any) =>
   Array.isArray(value) ? value : value ? [value] : [],
 );
+const mockGetRejectedComments = jest.fn();
+const mockMergeCommentsToData = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -60,6 +63,7 @@ jest.mock('@/services/flows/api', () => ({
 jest.mock('@/services/lca', () => ({
   __esModule: true,
   queryLcaResults: (...args: any[]) => mockQueryLcaResults(...args),
+  isLcaFunctionInvokeError: (...args: any[]) => mockIsLcaFunctionInvokeError(...args),
 }));
 
 jest.mock('@/services/lciaMethods/util', () => ({
@@ -117,15 +121,42 @@ jest.mock('@/pages/Sources/Components/select/description', () => ({
   default: () => <div data-testid='source-description'>source</div>,
 }));
 
+jest.mock('@/pages/Utils', () => ({
+  __esModule: true,
+  getClassificationValues: jest.fn(() => []),
+}));
+
+jest.mock('@/pages/Utils/review', () => ({
+  __esModule: true,
+  getRejectedComments: (...args: any[]) => mockGetRejectedComments(...args),
+  mergeCommentsToData: (...args: any[]) => mockMergeCommentsToData(...args),
+}));
+
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ request }: any) => {
+  const ProTable = ({ request, dataSource = [], columns = [] }: any) => {
     if (request) {
       void request({ current: 1, pageSize: 10 });
     }
 
-    return <div data-testid='pro-table'>table</div>;
+    return (
+      <div data-testid='pro-table'>
+        {dataSource.map((row: any, index: number) => (
+          <div key={row.key ?? row.referenceToLCIAMethodDataSet?.['@refObjectId'] ?? index}>
+            {columns.map((column: any, columnIndex: number) => (
+              <div key={column.key ?? column.dataIndex ?? columnIndex}>
+                {toText(
+                  column.render
+                    ? column.render(row[column.dataIndex], row, index)
+                    : row[column.dataIndex],
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return {
@@ -244,6 +275,7 @@ const processDataSet = {
 describe('ProcessView component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
     mockGetProcessDetail.mockResolvedValue({
       data: { json: { processDataSet: processDataSet } },
     });
@@ -255,6 +287,7 @@ describe('ProcessView component', () => {
     mockGetReferenceQuantityFromMethod.mockResolvedValue(undefined);
     mockGetDecompressedMethod.mockResolvedValue({ files: [] });
     mockCacheAndDecompressMethod.mockResolvedValue(true);
+    mockGetRejectedComments.mockResolvedValue([]);
     mockQueryLcaResults.mockResolvedValue({
       snapshot_id: 'snapshot-1',
       result_id: 'result-1',
@@ -295,5 +328,162 @@ describe('ProcessView component', () => {
     render(<ProcessView {...defaultProps} buttonType='toolIcon' disabled />);
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
+  });
+
+  it('disables the result icon button when no process id is available', () => {
+    render(<ProcessView {...defaultProps} id='' buttonType='toolResultIcon' />);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+
+  it('merges rejected comments into form data for under-review processes', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: { stateCode: 50, json: { processDataSet } },
+    });
+    mockGetRejectedComments.mockResolvedValueOnce([{ message: 'Rejected once' }]);
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(mockGetRejectedComments).toHaveBeenCalledWith('process-1', '1.0.0'));
+    expect(mockMergeCommentsToData).toHaveBeenCalledWith(
+      [{ message: 'Rejected once' }],
+      processDataSet,
+    );
+  });
+
+  it('shows solver metadata when latest LCIA results load successfully', async () => {
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(mockQueryLcaResults).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        mode: 'process_all_impacts',
+        process_id: 'process-1',
+        process_version: '1.0.0',
+        allow_fallback: false,
+      }),
+    );
+    expect(
+      screen.getByText(/source=latest_ready, snapshot=snapshot-1, result=result-1/),
+    ).toBeInTheDocument();
+  });
+
+  it('refreshes solver LCIA results on demand even after initial load completed', async () => {
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh latest calculated results' }));
+
+    await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
+  });
+
+  it('shows a solver error message when latest LCIA query fails', async () => {
+    mockQueryLcaResults.mockRejectedValueOnce(new Error('solver failed'));
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
+  });
+
+  it('retries automatically when LCIA snapshot building is queued', async () => {
+    jest.useFakeTimers();
+    const queuedError = {
+      code: 'snapshot_build_queued',
+      body: {
+        build_job_id: 'job-1',
+        build_snapshot_id: 'snapshot-pending',
+      },
+    };
+    mockIsLcaFunctionInvokeError.mockImplementation(
+      (error: any) => error?.code === 'snapshot_build_queued',
+    );
+    mockQueryLcaResults.mockRejectedValueOnce(queuedError).mockResolvedValueOnce({
+      snapshot_id: 'snapshot-ready',
+      result_id: 'result-ready',
+      source: 'latest_ready',
+      meta: { computed_at: '2026-03-12T00:00:00Z' },
+      data: { values: [] },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Snapshot is rebuilding (job {jobId}). Retrying automatically...'),
+      ).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/source=latest_ready, snapshot=snapshot-ready, result=result-ready/),
+      ).toBeInTheDocument(),
+    );
+    jest.useRealTimers();
+  });
+
+  it('loads both input and output exchange tables with flow state lookups', async () => {
+    mockGetProcessExchange.mockResolvedValue({
+      data: [
+        {
+          id: 'exchange-1',
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '1.0',
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+    mockGetUnitData.mockImplementation(async (_type, data) => data);
+    mockGetFlowStateCode.mockResolvedValue({
+      error: null,
+      data: [
+        {
+          id: 'flow-1',
+          version: '1.0',
+          stateCode: 20,
+          classification: 'Class A',
+        },
+      ],
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+
+    await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalledTimes(2));
+    expect(mockGetProcessExchange).toHaveBeenNthCalledWith(1, [{ id: 'row-1' }], 'Input', {
+      current: 1,
+      pageSize: 10,
+    });
+    expect(mockGetProcessExchange).toHaveBeenNthCalledWith(2, [{ id: 'row-1' }], 'Output', {
+      current: 1,
+      pageSize: 10,
+    });
+    expect(mockGetUnitData.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(mockGetFlowStateCode.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(
+      mockGetFlowStateCode.mock.calls.some(
+        (call) =>
+          JSON.stringify(call[0]) === JSON.stringify([{ id: 'flow-1', version: '1.0' }]) &&
+          call[1] === 'en',
+      ),
+    ).toBe(true);
   });
 });

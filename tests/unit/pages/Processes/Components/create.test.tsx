@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ProcessCreate from '@/pages/Processes/Components/create';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -291,5 +291,126 @@ describe('ProcessCreate component', () => {
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
       expect.stringContaining('Allocated fraction total of output is greater than 100%'),
     );
+  });
+
+  it('loads existing data and overrides the version when creating a new version', async () => {
+    mockGetProcessDetail.mockResolvedValue({
+      data: {
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: 'Existing process',
+              },
+            },
+          },
+        },
+      },
+    });
+    mockGenProcessFromData.mockReturnValue({
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.01.000',
+        },
+      },
+      exchanges: {
+        exchange: [{ '@dataSetInternalID': '0' }],
+      },
+    });
+
+    render(
+      <ProcessCreate
+        {...baseProps}
+        actionType='createVersion'
+        id='process-1'
+        version='1.0.0'
+        newVersion='02.00.000'
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'create' }));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
+    await waitFor(() =>
+      expect(
+        proFormApi?.getFieldValue([
+          'administrativeInformation',
+          'publicationAndOwnership',
+          'common:dataSetVersion',
+        ]),
+      ).toBe('02.00.000'),
+    );
+    expect(latestProcessFormProps.formType).toBe('createVersion');
+    expect(latestProcessFormProps.exchangeDataSource).toEqual([{ '@dataSetInternalID': '0' }]);
+  });
+
+  it('shows the duplicate-id error when createProcess returns a unique constraint violation', async () => {
+    mockCreateProcess.mockResolvedValue({
+      data: null,
+      error: { code: '23505', message: 'duplicate key value violates unique constraint' },
+    });
+
+    render(<ProcessCreate {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'create' }));
+
+    const currentValues = proFormApi?.getFieldsValue() ?? {};
+    await act(async () => {
+      proFormApi?.setFieldsValue({ processInformation: { name: 'Duplicate process' } });
+      triggerValuesChange?.(
+        {},
+        { ...currentValues, processInformation: { name: 'Duplicate process' } },
+      );
+    });
+
+    await act(async () => {
+      await proFormApi?.submit();
+    });
+
+    expect(mockCreateProcess).toHaveBeenCalledWith('generated-id', expect.any(Object));
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.');
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('opens automatically from imported data and reuses the imported UUID on submit', async () => {
+    const importedId = '123e4567-e89b-12d3-a456-426614174000';
+    mockGenProcessFromData.mockReturnValue({
+      processInformation: {
+        dataSetInformation: {
+          name: 'Imported process',
+        },
+      },
+      exchanges: {
+        exchange: [],
+      },
+    });
+
+    render(
+      <ProcessCreate
+        {...baseProps}
+        importData={[
+          {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  'common:UUID': importedId,
+                },
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Create process' })).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      await proFormApi?.submit();
+    });
+
+    expect(mockCreateProcess).toHaveBeenCalledWith(importedId, expect.any(Object));
+    expect(mockAntdMessage.success).toHaveBeenCalled();
   });
 });
