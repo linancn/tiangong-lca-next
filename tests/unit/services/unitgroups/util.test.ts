@@ -226,6 +226,24 @@ describe('Unit Group Utility Functions', () => {
         },
       ]);
     });
+
+    it('should keep all units as non-reference when no reference unit is defined', () => {
+      const sample = createSampleUnitGroupData();
+      delete sample.unitGroupInformation.quantitativeReference;
+
+      const result = genUnitGroupFromData(sample);
+
+      expect(result.units?.unit).toEqual([
+        expect.objectContaining({
+          '@dataSetInternalID': 'u-0',
+          quantitativeReference: false,
+        }),
+        expect.objectContaining({
+          '@dataSetInternalID': 'u-1',
+          quantitativeReference: false,
+        }),
+      ]);
+    });
   });
 
   describe('genUnitGroupJsonOrdered', () => {
@@ -337,6 +355,27 @@ describe('Unit Group Utility Functions', () => {
 
     it('should return an empty object when no unit data is supplied', () => {
       expect(genUnitTableData(undefined, 'en')).toEqual({});
+    });
+
+    it('should fall back to placeholder values for sparse unit rows', () => {
+      const rows = genUnitTableData(
+        [
+          {
+            '@dataSetInternalID': 'u-2',
+          },
+        ],
+        'en',
+      );
+
+      expect(rows).toEqual([
+        {
+          dataSetInternalID: 'u-2',
+          name: '-',
+          generalComment: '-',
+          quantitativeReference: false,
+          meanValue: '-',
+        },
+      ]);
     });
   });
 

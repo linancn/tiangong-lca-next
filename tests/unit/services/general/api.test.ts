@@ -334,6 +334,81 @@ describe('getRefData', () => {
       'state_code,json,rule_verification,user_id,team_id',
     );
   });
+
+  it('should prefer the matching team record when a non-default team id is provided', async () => {
+    const payload = {
+      data: [
+        {
+          team_id: 'team-1',
+          state_code: 100,
+          json: { source: 'team-1' },
+          rule_verification: 'ok',
+          user_id: 'user-1',
+        },
+        {
+          team_id: 'team-2',
+          state_code: 200,
+          json: { source: 'team-2' },
+          rule_verification: 'pending',
+          user_id: 'user-2',
+        },
+      ],
+    };
+    const builder = createQueryBuilder(payload);
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.getRefData(sampleId, sampleVersion, 'flows', 'team-2');
+
+    expect(result).toEqual({
+      data: {
+        stateCode: 200,
+        json: { source: 'team-2' },
+        ruleVerification: 'pending',
+        userId: 'user-2',
+      },
+      success: true,
+    });
+  });
+
+  it('should keep the first record when the provided team id is the default placeholder', async () => {
+    const payload = {
+      data: [
+        {
+          team_id: 'team-1',
+          state_code: 100,
+          json: { source: 'first' },
+          rule_verification: 'ok',
+          user_id: 'user-1',
+        },
+        {
+          team_id: '00000000-0000-0000-0000-000000000000',
+          state_code: 300,
+          json: { source: 'default-team' },
+          rule_verification: 'review',
+          user_id: 'user-2',
+        },
+      ],
+    };
+    const builder = createQueryBuilder(payload);
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.getRefData(
+      sampleId,
+      sampleVersion,
+      'flows',
+      '00000000-0000-0000-0000-000000000000',
+    );
+
+    expect(result).toEqual({
+      data: {
+        stateCode: 100,
+        json: { source: 'first' },
+        ruleVerification: 'ok',
+        userId: 'user-1',
+      },
+      success: true,
+    });
+  });
 });
 
 describe('updateStateCodeApi', () => {
@@ -585,6 +660,54 @@ describe('getAllVersions', () => {
 
     expect(result).toEqual({ data: [], success: false, total: 0 });
   });
+
+  it('should filter te data by the current team id', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
+    const versionsBuilder = createQueryBuilder({ data: [], count: 0, error: null });
+    const rolesBuilder = createQueryBuilder({
+      data: [{ user_id: 'user-1', team_id: 'team-123', role: 'member' }],
+    });
+    mockFrom.mockReturnValueOnce(versionsBuilder).mockReturnValueOnce(rolesBuilder);
+
+    const result = await generalApi.getAllVersions(
+      'name',
+      'contacts',
+      sampleId,
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'te',
+    );
+
+    expect(versionsBuilder.eq).toHaveBeenCalledWith('team_id', 'team-123');
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('should return failure when te data has no resolved team id', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
+    const versionsBuilder = createQueryBuilder({ data: [], count: 0, error: null });
+    const rolesBuilder = createQueryBuilder({
+      data: [{ user_id: 'user-1', team_id: 'team-123', role: 'is_invited' }],
+    });
+    mockFrom.mockReturnValueOnce(versionsBuilder).mockReturnValueOnce(rolesBuilder);
+
+    const result = await generalApi.getAllVersions(
+      'name',
+      'contacts',
+      sampleId,
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'te',
+    );
+
+    expect(result).toEqual({ data: [], success: false, total: 0 });
+  });
 });
 
 describe('getAISuggestion', () => {
@@ -685,6 +808,25 @@ describe('translateZhTextToEnglish', () => {
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
+  });
+
+  it('should return a plain string translation when the function returns raw text', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-8' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: '  Steel manufacturing  ',
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('钢铁制造');
+
+    expect(result).toBe('Steel manufacturing');
+  });
+
+  it('should short-circuit blank source text before invoking translation', async () => {
+    const result = await generalApi.translateZhTextToEnglish('   ');
+
+    expect(result).toBeUndefined();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
   });
 });
 

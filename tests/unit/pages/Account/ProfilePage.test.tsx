@@ -518,6 +518,136 @@ describe('Account profile page (unit)', () => {
     );
   });
 
+  it('shows backend feedback when profile update returns a business error', async () => {
+    mockSetProfile.mockResolvedValueOnce({ status: 'error', message: 'Update denied' } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
+    await user.clear(nicknameField);
+    await user.type(nicknameField, 'Alice Denied');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Update denied'));
+    expect(mockSetInitialState).not.toHaveBeenCalled();
+  });
+
+  it('changes password successfully and resets the password form', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    const currentPassword = screen.getByLabelText('Current Password') as HTMLInputElement;
+    const newPassword = screen.getByLabelText('New Password') as HTMLInputElement;
+    const confirmNewPassword = screen.getByLabelText('Confirm New Password') as HTMLInputElement;
+
+    await user.type(currentPassword, 'Abcdefg1!');
+    await user.type(newPassword, 'Abcdefg2!');
+    await user.type(confirmNewPassword, 'Abcdefg2!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(mockCognitoChangePassword).toHaveBeenCalledWith('Abcdefg2!'));
+    expect(mockChangePassword).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentPassword: 'Abcdefg1!',
+        newPassword: 'Abcdefg2!',
+        confirmNewPassword: 'Abcdefg2!',
+      }),
+    );
+    expect(message.success).toHaveBeenCalledWith('Password changed successfully!');
+    expect(currentPassword.value).toBe('');
+    expect(newPassword.value).toBe('');
+    expect(confirmNewPassword.value).toBe('');
+  });
+
+  it('shows specific feedback when password change reports invalid current password', async () => {
+    mockChangePassword.mockResolvedValueOnce({
+      status: 'error',
+      message: 'Password incorrect',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Invalid current password'));
+  });
+
+  it('changes email successfully after cognito update', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+
+    await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
+    await user.type(screen.getByLabelText('Confirm New Email'), 'alice.next@example.com');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() =>
+      expect(mockCognitoChangeEmail).toHaveBeenCalledWith('alice.next@example.com'),
+    );
+    expect(mockChangeEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newEmail: 'alice.next@example.com',
+        confirmNewEmail: 'alice.next@example.com',
+      }),
+    );
+    expect(message.success).toHaveBeenCalledWith(
+      'Verification email sent successfully! Please update your email via the email link.',
+    );
+  });
+
+  it('shows backend feedback when email change fails', async () => {
+    mockChangeEmail.mockResolvedValueOnce({
+      status: 'error',
+      message: 'Email already exists',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+
+    await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
+    await user.type(screen.getByLabelText('Confirm New Email'), 'alice.next@example.com');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Email already exists'));
+  });
+
   it('generates an API key after validating credentials successfully', async () => {
     const user = userEvent.setup();
 
@@ -575,6 +705,28 @@ describe('Account profile page (unit)', () => {
     await waitFor(() => expect(mockLogin).toHaveBeenCalledTimes(1));
     expect(message.error).toHaveBeenCalledWith('Invalid credentials. Please check your password.');
     expect(mockCognitoSignUp).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('API Key')).not.toBeInTheDocument();
+  });
+
+  it('shows a generic error when API key generation throws after login succeeds', async () => {
+    mockCognitoSignUp.mockRejectedValueOnce(new Error('cognito failed'));
+
+    const user = userEvent.setup();
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+
+    const generateButton = screen.getByRole('button', { name: 'Generate Key' });
+    await user.click(generateButton);
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'A system error occurred while generating the API key. Please try again later.',
+      ),
+    );
     expect(screen.queryByLabelText('API Key')).not.toBeInTheDocument();
   });
 });
