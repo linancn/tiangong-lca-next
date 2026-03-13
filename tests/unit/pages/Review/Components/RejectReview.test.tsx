@@ -314,6 +314,30 @@ describe('RejectReview component', () => {
     await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
   });
 
+  it('shows a generic error when review update fails', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer', email: 'a@b.com' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: new Error('failed') });
+
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Not acceptable' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to reject, please try again!'),
+    );
+    expect(mockGetCommentApi).not.toHaveBeenCalled();
+    expect(mockDealProcress).not.toHaveBeenCalled();
+  });
+
   it('rejects lifecycle models, resets assigned comments, and updates referenced under-review items', async () => {
     mockGetReviewsDetail.mockResolvedValue({
       json: { logs: [] },
@@ -379,5 +403,18 @@ describe('RejectReview component', () => {
     });
     expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'assigned');
     expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+  });
+
+  it('closes the modal without calling services when cancel is clicked', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    expect(screen.getByTestId('modal')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
+
+    await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
+    expect(mockUpdateReviewApi).not.toHaveBeenCalled();
+    expect(mockDealProcress).not.toHaveBeenCalled();
   });
 });

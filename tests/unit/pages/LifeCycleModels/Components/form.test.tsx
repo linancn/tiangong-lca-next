@@ -216,6 +216,19 @@ describe('LifeCycleModelForm', () => {
     );
   });
 
+  it('keeps dataset version editable and does not inject the create default source otherwise', () => {
+    renderWithProviders(
+      <LifeCycleModelForm
+        {...baseProps}
+        activeTabKey='administrativeInformation'
+        formType='edit'
+      />,
+    );
+
+    expect(screen.getAllByRole('textbox')[1]).not.toBeDisabled();
+    expect(screen.getByTestId('source-select')).not.toHaveTextContent('ILCD format');
+  });
+
   it('renders validation and compliance child forms with lifecycle paths', () => {
     const { rerender } = renderWithProviders(
       <LifeCycleModelForm {...baseProps} activeTabKey='validation' showRules />,
@@ -251,5 +264,13 @@ describe('LifeCycleModelForm', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
     expect(onTabChange).toHaveBeenCalledWith('complianceDeclarations');
+  });
+
+  it('adds schema-driven rules on information fields when showRules is enabled', () => {
+    renderWithProviders(
+      <LifeCycleModelForm {...baseProps} activeTabKey='lifeCycleModelInformation' showRules />,
+    );
+
+    expect(screen.getAllByTestId('lang-text-form')[0]).not.toHaveTextContent('"rulesCount":0');
   });
 });

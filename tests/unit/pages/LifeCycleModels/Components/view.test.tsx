@@ -152,4 +152,52 @@ describe('LifeCycleModelView', () => {
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('opens from the tool icon entry when enabled', async () => {
+    renderWithProviders(
+      <LifeCycleModelView id='model-2' version='2.0.0' buttonType='toolIcon' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /lifecycle model infomation/i }));
+
+    expect(screen.getByRole('dialog', { name: /view model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        id: 'model-2',
+        version: '2.0.0',
+      }),
+    );
+  });
+
+  it('opens from the iconModel entry when enabled', async () => {
+    renderWithProviders(
+      <LifeCycleModelView id='model-3' version='3.0.0' buttonType='iconModel' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view/i }));
+
+    expect(screen.getByRole('dialog', { name: /view model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        id: 'model-3',
+        version: '3.0.0',
+      }),
+    );
+  });
+
+  it('opens from the default text button entry', async () => {
+    renderWithProviders(
+      <LifeCycleModelView id='model-4' version='4.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^view$/i }));
+
+    expect(screen.getByRole('dialog', { name: /view model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        id: 'model-4',
+        version: '4.0.0',
+      }),
+    );
+  });
 });

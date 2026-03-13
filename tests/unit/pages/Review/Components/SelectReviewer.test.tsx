@@ -352,4 +352,19 @@ describe('SelectReviewer component', () => {
     expect(mockAddCommentApi).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
+
+  it('closes without saving when cancel is clicked', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(<SelectReviewer reviewIds={['review-1']} tabType='unassigned' actionRef={actionRef} />);
+
+    fireEvent.click(screen.getByTestId('icon-user').closest('button'));
+    await waitFor(() => screen.getByTestId('drawer'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+    expect(mockUpdateReviewApi).not.toHaveBeenCalled();
+    expect(mockAddCommentApi).not.toHaveBeenCalled();
+  });
 });

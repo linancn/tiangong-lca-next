@@ -331,6 +331,23 @@ describe('UnitGroupForm', () => {
     expect(screen.getByTestId('contact-select')).toHaveTextContent('"showRequiredLabel":true');
   });
 
+  it('keeps non-create administrative fields editable and skips create-only default sources', () => {
+    const { rerender } = renderWithProviders(
+      <UnitGroupForm {...baseProps} activeTabKey='modellingAndValidation' formType='edit' />,
+    );
+
+    expect(
+      screen.getAllByTestId('source-select').every((node) => !node.textContent?.includes('ILCD')),
+    ).toBe(true);
+
+    rerender(
+      <UnitGroupForm {...baseProps} activeTabKey='administrativeInformation' formType='edit' />,
+    );
+
+    expect(screen.getAllByRole('textbox')[1]).not.toBeDisabled();
+    expect(screen.getAllByTestId('source-select')[0]).not.toHaveTextContent('ILCD format');
+  });
+
   it('renders the units table and forwards unit create callbacks', async () => {
     renderWithProviders(<UnitGroupForm {...baseProps} activeTabKey='units' />);
 
@@ -359,5 +376,13 @@ describe('UnitGroupForm', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
     expect(baseProps.onTabChange).toHaveBeenCalledWith('administrativeInformation');
+  });
+
+  it('adds schema-driven rules on the information tab when showRules is enabled', () => {
+    renderWithProviders(
+      <UnitGroupForm {...baseProps} activeTabKey='unitGroupInformation' showRules />,
+    );
+
+    expect(screen.getAllByTestId('lang-text-form')[0]).not.toHaveTextContent('"rulesCount":0');
   });
 });

@@ -703,6 +703,44 @@ describe('Unitgroups unit components', () => {
     expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
   });
 
+  it('shows the backend error and keeps the drawer open on generic create failure', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateUnitGroup.mockResolvedValue({
+      data: null,
+      error: { message: 'Create unit group failed' },
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
+
+    renderWithProviders(<UnitGroupCreate lang='en' actionRef={actionRef} />);
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Create unit group failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
+  });
+
+  it('closes unit group creation without saving when cancelled', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(<UnitGroupCreate lang='en' actionRef={actionRef} />);
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
+
+    expect(screen.queryByRole('dialog', { name: /create/i })).not.toBeInTheDocument();
+    expect(mockCreateUnitGroup).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
   it('collects unit data during creation', async () => {
     const user = userEvent.setup();
     const onData = jest.fn();

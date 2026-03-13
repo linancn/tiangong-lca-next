@@ -234,6 +234,53 @@ describe('ReviewMember', () => {
     );
   });
 
+  it('lets admins demote review admins back to members', async () => {
+    mockGetUserManageTableData.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          email: 'admin@example.com',
+          pendingCount: 1,
+          reviewedCount: 3,
+          display_name: 'Admin One',
+          role: 'review-admin',
+          user_id: 'user-3',
+          team_id: 'team-2',
+        },
+      ],
+      total: 1,
+    });
+
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'user' }));
+
+    await waitFor(() =>
+      expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-2', 'user-3', 'review-member'),
+    );
+    expect(message.success).toHaveBeenCalledWith('Action success!');
+  });
+
+  it('closes the add-member modal and review drawer through cancel and close actions', async () => {
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'plus' }));
+    expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
+    expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByText('2'));
+    expect(screen.getByTestId('drawer')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+  });
+
   it('shows error feedback when role promotion fails', async () => {
     mockUpdateRoleApi.mockResolvedValueOnce({ error: new Error('failed') });
 

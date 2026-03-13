@@ -197,6 +197,8 @@ jest.mock('antd', () => {
 const mockMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
 
 describe('ReviewAddMemberModal', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
   const renderModal = (props: any = {}) => {
     const onCancel = jest.fn();
     const onSuccess = jest.fn();
@@ -208,6 +210,7 @@ describe('ReviewAddMemberModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockGetContactDetail.mockResolvedValue({
       data: {
         version: '2.0.0',
@@ -225,6 +228,10 @@ describe('ReviewAddMemberModal', () => {
         },
       },
     });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('shows an error when querying without an email', async () => {
@@ -281,6 +288,64 @@ describe('ReviewAddMemberModal', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
+  it('shows user-not-found error when query returns no user', async () => {
+    renderModal();
+
+    mockGetUserInfoByEmail.mockResolvedValue({
+      success: false,
+    });
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'missing@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => expect(mockGetUserInfoByEmail).toHaveBeenCalledWith('missing@example.com'));
+    expect(mockMessage.error).toHaveBeenCalledWith('User not found');
+    expect(screen.queryByText('No contact information')).not.toBeInTheDocument();
+  });
+
+  it('shows query failed when querying throws', async () => {
+    renderModal();
+
+    mockGetUserInfoByEmail.mockRejectedValue(new Error('boom'));
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'broken@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Query failed'));
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('keeps ok disabled when queried user has no contact info', async () => {
+    renderModal();
+
+    mockGetUserInfoByEmail.mockResolvedValue({
+      success: true,
+      user: {
+        id: 'user-2',
+        raw_user_meta_data: {
+          email: 'new-reviewer@example.com',
+          display_name: 'Reviewer Two',
+        },
+      },
+      contact: null,
+    });
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'new-reviewer@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => expect(screen.getByText('No contact information')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ok' })).toBeDisabled();
+  });
+
   it('loads contact from the contact picker and reports duplicate-member errors', async () => {
     renderModal();
 
@@ -319,5 +384,51 @@ describe('ReviewAddMemberModal', () => {
     await waitFor(() => expect(mockAddReviewMemberApi).toHaveBeenCalledWith('user-2'));
     expect(mockMessage.error).toHaveBeenCalledWith('User already exists');
     expect(mockUpdateUserContact).not.toHaveBeenCalled();
+  });
+
+  it('shows generic failure when updating associated contact fails', async () => {
+    renderModal();
+
+    const contactInfo = {
+      '@refObjectId': 'contact-1',
+      '@type': 'contact data set',
+      '@uri': '../contacts/contact-1.xml',
+      '@version': '1.0.0',
+      'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Primary contact' }],
+    };
+
+    mockGetUserInfoByEmail.mockResolvedValue({
+      success: true,
+      user: {
+        id: 'user-1',
+        raw_user_meta_data: {
+          email: 'reviewer@example.com',
+          display_name: 'Reviewer One',
+        },
+      },
+      contact: contactInfo,
+    });
+    mockAddReviewMemberApi.mockResolvedValue({ success: true });
+    mockUpdateUserContact.mockResolvedValue({ error: { message: 'update failed' } });
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'reviewer@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() => expect(screen.getByText('Primary contact')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: 'ok' }));
+
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Failed to add member!'));
+  });
+
+  it('invokes onCancel when cancel button is clicked', async () => {
+    const { onCancel } = renderModal();
+
+    await userEvent.click(screen.getByRole('button', { name: 'cancel' }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(mockAddReviewMemberApi).not.toHaveBeenCalled();
   });
 });

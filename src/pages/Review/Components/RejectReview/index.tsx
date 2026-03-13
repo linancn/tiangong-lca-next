@@ -268,23 +268,25 @@ const RejectReview: React.FC<RejectReviewProps> = ({
         },
       });
 
+      if (error) {
+        throw error;
+      }
+
       await updateUnderReviewCommentRefToRejected();
 
-      if (!error) {
-        if (isModel) {
-          await hendleRejectModel();
-        } else {
-          await hendleRejectProcress();
-        }
-        message.success(
-          intl.formatMessage({
-            id: 'component.rejectReview.success',
-            defaultMessage: 'Rejected successfully!',
-          }),
-        );
-        formRef?.current?.resetFields();
-        setOpen(false);
+      if (isModel) {
+        await hendleRejectModel();
+      } else {
+        await hendleRejectProcress();
       }
+      message.success(
+        intl.formatMessage({
+          id: 'component.rejectReview.success',
+          defaultMessage: 'Rejected successfully!',
+        }),
+      );
+      formRef?.current?.resetFields();
+      setOpen(false);
     } catch (error) {
       message.error(
         intl.formatMessage({

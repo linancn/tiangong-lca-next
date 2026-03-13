@@ -166,6 +166,23 @@ describe('LifeCycleModelEdit', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('opens from the tool icon entry when enabled', async () => {
+    renderWithProviders(
+      <LifeCycleModelEdit id='model-2' version='2.0.0' buttonType='toolIcon' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /lifecycle model infomation/i }));
+
+    expect(screen.getByRole('dialog', { name: /edit model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        id: 'model-2',
+        version: '2.0.0',
+        action: 'edit',
+      }),
+    );
+  });
+
   it('closes without reload when edit drawer is dismissed unsaved', async () => {
     const actionRef = { current: { reload: jest.fn() } };
 
@@ -183,6 +200,26 @@ describe('LifeCycleModelEdit', () => {
     expect(screen.getByRole('dialog', { name: /edit model/i })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
+
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes through the close icon without reload when unsaved', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <LifeCycleModelEdit
+        id='model-1'
+        version='1.0.0'
+        buttonType='pages.button.edit'
+        lang='en'
+        actionRef={actionRef as any}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
 
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

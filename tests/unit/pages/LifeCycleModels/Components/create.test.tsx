@@ -155,6 +155,58 @@ describe('LifeCycleModelCreate', () => {
     );
   });
 
+  it('opens from the copy icon trigger when buttonType is icon', async () => {
+    renderWithProviders(
+      <LifeCycleModelCreate
+        buttonType='icon'
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='model-copy'
+        version='2.0.0'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+
+    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        actionType: 'copy',
+        id: 'model-copy',
+        version: '2.0.0',
+      }),
+    );
+  });
+
+  it('forwards createVersion props and onClose through the toolbar entry', async () => {
+    const onClose = jest.fn();
+
+    renderWithProviders(
+      <LifeCycleModelCreate
+        buttonType='icon'
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='createVersion'
+        id='model-version'
+        version='3.0.0'
+        onClose={onClose}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+
+    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        actionType: 'createVersion',
+        id: 'model-version',
+        version: '3.0.0',
+        onClose,
+      }),
+    );
+  });
+
   it('auto-opens with import data and reloads after a saved close', async () => {
     const actionRef = { current: { reload: jest.fn() } };
 
@@ -190,6 +242,22 @@ describe('LifeCycleModelCreate', () => {
     expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
+
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes through the close icon without reloading when unsaved', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <LifeCycleModelCreate buttonType='text' lang='en' actionRef={actionRef as any} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
 
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
