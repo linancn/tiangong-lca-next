@@ -424,4 +424,111 @@ describe('genLifeCycleModelProcesses', () => {
       }),
     );
   });
+
+  it('uses model node data.index mapping for graph ids and reference target amount', async () => {
+    const data = createLifeCycleModelData();
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+
+    mockLCIAResultCalculation
+      .mockResolvedValueOnce([{ '@id': 'LCIA_PRIMARY' }])
+      .mockResolvedValueOnce([{ '@id': 'LCIA_SECONDARY' }]);
+
+    const modelNodes = [
+      {
+        id: 'graph-node-a',
+        data: {
+          index: 'nodeA',
+          quantitativeReference: '1',
+          targetAmount: 12,
+        },
+      },
+      {
+        id: 'graph-node-b',
+        data: {
+          index: 'nodeB',
+        },
+      },
+      {
+        id: 'graph-node-c',
+        data: {
+          index: 'nodeC',
+        },
+      },
+    ];
+
+    const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-indexed',
+      modelNodes as any,
+      data,
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
+
+    expect(
+      primary?.data?.processDataSet?.exchanges?.exchange?.find(
+        (exchange: any) => exchange?.quantitativeReference,
+      )?.meanAmount,
+    ).toBe(12);
+
+    expect(up2DownEdges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          upstreamId: 'nodeB',
+          upstreamNodeId: 'graph-node-b',
+          downstreamId: 'nodeA',
+          downstreamNodeId: 'graph-node-a',
+        }),
+      ]),
+    );
+  });
+
+  it('creates a new secondary id when the matched previous secondary has an empty id', async () => {
+    const data = createLifeCycleModelData();
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+
+    mockLCIAResultCalculation
+      .mockResolvedValueOnce([{ '@id': 'LCIA_PRIMARY' }])
+      .mockResolvedValueOnce([{ '@id': 'LCIA_SECONDARY' }]);
+
+    const oldSubmodels = [
+      {
+        id: '',
+        type: 'secondary',
+        finalId: {
+          nodeId: 'nodeC',
+          processId: 'procC',
+          allocatedExchangeFlowId: 'flow-C-final',
+          allocatedExchangeDirection: 'OUTPUT',
+        },
+      },
+    ];
+
+    const modelNodes = [
+      {
+        '@dataSetInternalID': 'nodeA',
+        id: 'graph-node-a',
+      },
+      {
+        '@dataSetInternalID': 'nodeB',
+        id: 'graph-node-b',
+      },
+      {
+        '@dataSetInternalID': 'nodeC',
+        id: 'graph-node-c',
+      },
+    ];
+
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-empty-old-id',
+      modelNodes as any,
+      data,
+      oldSubmodels,
+    );
+
+    const secondary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'secondary');
+
+    expect(secondary?.option).toBe('create');
+    expect(secondary?.modelInfo?.id).toBe('generated-secondary-id');
+  });
 });

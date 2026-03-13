@@ -358,6 +358,54 @@ describe('genLifeCycleModelJsonOrdered', () => {
     expect(firstOutput.downstreamProcess['@id']).toBe('1');
     expect(firstOutput.downstreamProcess['@flowUUID']).toBe('flow-2');
   });
+
+  it('should group multiple downstream processes under one output flow UUID', () => {
+    const data = {
+      ...baseModelData,
+      model: {
+        nodes: [
+          ...baseModelData.model.nodes,
+          {
+            id: 'node-c',
+            data: {
+              index: '2',
+              id: 'proc-c',
+              version: '03.00.000',
+              shortDescription: [createLangText('Process C')],
+            },
+          },
+        ],
+        edges: [
+          ...baseModelData.model.edges,
+          {
+            source: { cell: 'node-a' },
+            target: { cell: 'node-c' },
+            data: {
+              connection: {
+                outputExchange: {
+                  '@flowUUID': 'flow-1',
+                  downstreamProcess: {
+                    '@flowUUID': 'flow-3',
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    const result = genLifeCycleModelJsonOrdered('model-123', data);
+    const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+      .processInstance as any[];
+    const groupedOutput = processes[0].connections.outputExchange;
+
+    expect(groupedOutput['@flowUUID']).toBe('flow-1');
+    expect(groupedOutput.downstreamProcess).toEqual([
+      expect.objectContaining({ '@id': '1', '@flowUUID': 'flow-2' }),
+      expect.objectContaining({ '@id': '2', '@flowUUID': 'flow-3' }),
+    ]);
+  });
 });
 
 describe('genLifeCycleModelInfoFromData', () => {
@@ -382,6 +430,33 @@ describe('genLifeCycleModelInfoFromData', () => {
     const classificationList = classification as { id?: string[]; value?: string[] };
     expect(classificationList.value).toEqual(['Systems', 'Unspecific parts']);
     expect(classificationList.id).toEqual(['class-0', 'class-1']);
+  });
+
+  it('should preserve review and compliance collections after round-tripping', () => {
+    const ordered = genLifeCycleModelJsonOrdered('model-789', baseModelData);
+
+    const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
+    const reviewList = Array.isArray(result.modellingAndValidation.validation.review)
+      ? result.modellingAndValidation.validation.review
+      : [result.modellingAndValidation.validation.review];
+    const complianceList = Array.isArray(
+      result.modellingAndValidation.complianceDeclarations.compliance,
+    )
+      ? result.modellingAndValidation.complianceDeclarations.compliance
+      : [result.modellingAndValidation.complianceDeclarations.compliance];
+    const review = reviewList[0] as any;
+    const compliance = complianceList[0] as any;
+
+    expect(review['@type']).toBe('internal');
+    expect(review['common:scope']).toEqual([
+      expect.objectContaining({
+        '@name': 'scope-1',
+        'common:method': expect.objectContaining({ '@name': 'method-1' }),
+      }),
+    ]);
+    expect(review['common:referenceToCompleteReviewReport']['@refObjectId']).toBe('report-1');
+    expect(compliance['common:referenceToComplianceSystem']['@refObjectId']).toBe('system-1');
+    expect(compliance['common:approvalOfOverallCompliance']).toBe('approved');
   });
 });
 
@@ -463,6 +538,43 @@ describe('genLifeCycleModelData', () => {
     expect(result.nodes[0].ports.items[0].attrs.text.title).toBeUndefined();
     expect(result.edges).toEqual([]);
   });
+
+  it('should prefer node.size.width and attrs text when textLang is missing', () => {
+    const sample = {
+      xflow: {
+        nodes: [
+          {
+            id: 'node-sized',
+            width: 400,
+            size: { width: 84, height: 40 },
+            data: {
+              label: {
+                baseName: [createLangText('Compact label that should truncate')],
+              },
+            },
+            ports: {
+              items: [
+                {
+                  id: 'port-sized',
+                  attrs: {
+                    text: {
+                      text: 'Fallback port name',
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    const result = genLifeCycleModelData(sample as any, 'en');
+
+    expect(result.nodes[0].label).toBe('Compact ...');
+    expect(result.nodes[0].ports.items[0].attrs.text.text).toBe('Fa...');
+    expect(result.nodes[0].ports.items[0].attrs.text.title).toBe('Fallback port name');
+  });
 });
 
 describe('genEdgeExchangeTableData', () => {
@@ -521,5 +633,6 @@ describe('genEdgeExchangeTableData', () => {
 
   it('should return empty array when input is nullish', () => {
     expect(genEdgeExchangeTableData(undefined, 'en')).toEqual([]);
+    expect(genEdgeExchangeTableData(null, 'en')).toEqual([]);
   });
 });

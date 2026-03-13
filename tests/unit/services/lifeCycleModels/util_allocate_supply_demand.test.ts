@@ -45,4 +45,54 @@ describe('allocateSupplyToDemand - tiny magnitude cases', () => {
     expect(res.remaining_supply.s).toBeCloseTo(0, 18);
     expect(res.remaining_demand.d).toBeCloseTo(0, 18);
   });
+
+  test('respects custom edge capacities provided as a Map', () => {
+    const supplies = { s: 5 };
+    const demands = { d: 5 };
+    const edges: Array<[string, string]> = [['s', 'd']];
+    const edgeCaps = new Map([['s→d', 2]]);
+
+    const res = allocateSupplyToDemand(supplies, demands, edges, edgeCaps);
+
+    expect(res.total_delivered).toBe(2);
+    expect(res.allocations).toEqual({ s: { d: 2 } });
+    expect(res.remaining_supply).toEqual({ s: 3 });
+    expect(res.remaining_demand).toEqual({ d: 3 });
+  });
+
+  test('deduplicates duplicate edges instead of allocating the same route twice', () => {
+    const supplies = { s: 3 };
+    const demands = { d: 3 };
+    const edges: Array<[string, string]> = [
+      ['s', 'd'],
+      ['s', 'd'],
+    ];
+
+    const res = allocateSupplyToDemand(supplies, demands, edges);
+
+    expect(res.total_delivered).toBe(3);
+    expect(res.allocations).toEqual({ s: { d: 3 } });
+    expect(res.remaining_supply).toEqual({ s: 0 });
+    expect(res.remaining_demand).toEqual({ d: 0 });
+  });
+
+  test('skips zero-capacity edges from Record capacities and uses remaining available routes', () => {
+    const supplies = { s1: 2, s2: 2 };
+    const demands = { d: 4 };
+    const edges: Array<[string, string]> = [
+      ['s1', 'd'],
+      ['s2', 'd'],
+    ];
+    const edgeCaps = {
+      's1→d': 0,
+      's2→d': 10,
+    };
+
+    const res = allocateSupplyToDemand(supplies, demands, edges, edgeCaps);
+
+    expect(res.total_delivered).toBe(2);
+    expect(res.allocations).toEqual({ s2: { d: 2 } });
+    expect(res.remaining_supply).toEqual({ s1: 2, s2: 0 });
+    expect(res.remaining_demand).toEqual({ d: 2 });
+  });
 });
