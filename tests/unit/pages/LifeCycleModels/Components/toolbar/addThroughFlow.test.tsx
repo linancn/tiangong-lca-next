@@ -259,6 +259,31 @@ describe('ModelToolbarAddThroughFlow', () => {
     );
   });
 
+  it('runs keyword search for TianGong tab when AI search is disabled', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+    mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+
+    const searchInput = screen.getByRole('textbox', { name: 'tg' });
+    await userEvent.clear(searchInput);
+    await userEvent.type(searchInput, 'oxygen');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+
+    await waitFor(() => expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalled());
+    expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      'en',
+      'tg',
+      'oxygen',
+      {},
+    );
+    expect(mockFlowHybridSearch).not.toHaveBeenCalled();
+  });
+
   it('searches My Data tab with keyword', async () => {
     mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
     mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
@@ -322,5 +347,20 @@ describe('ModelToolbarAddThroughFlow', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
     expect(onData).toHaveBeenCalledWith(['flow:1']);
+  });
+
+  it('closes without submitting when cancel is clicked', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+    const onData = jest.fn();
+
+    render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
   });
 });

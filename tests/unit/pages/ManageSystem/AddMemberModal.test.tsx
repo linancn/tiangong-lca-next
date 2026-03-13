@@ -189,13 +189,20 @@ const renderModal = (props: any = {}) => {
 };
 
 describe('ManageSystem AddMemberModal', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     Object.values(message).forEach((fn) => {
       if (typeof fn === 'function' && 'mockClear' in fn) {
         fn.mockClear();
       }
     });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('submits email successfully and closes modal', async () => {
@@ -264,5 +271,45 @@ describe('ManageSystem AddMemberModal', () => {
     });
 
     expect(message.error).toHaveBeenCalledWith('Failed to add member!');
+  });
+
+  it('does not call api when email is missing', async () => {
+    renderModal();
+
+    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
+
+    await waitFor(() => {
+      expect(mockAddSystemMemberApi).not.toHaveBeenCalled();
+    });
+    expect(message.success).not.toHaveBeenCalled();
+    expect(message.error).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('does not call api when email format is invalid', async () => {
+    renderModal();
+
+    const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
+    fireEvent.change(emailInput, {
+      target: { value: 'invalid-email' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
+
+    await waitFor(() => {
+      expect(mockAddSystemMemberApi).not.toHaveBeenCalled();
+    });
+    expect(message.success).not.toHaveBeenCalled();
+    expect(message.error).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('invokes onCancel when cancel button is clicked', async () => {
+    const { onCancel } = renderModal();
+
+    fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(mockAddSystemMemberApi).not.toHaveBeenCalled();
   });
 });

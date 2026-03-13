@@ -184,6 +184,46 @@ describe('ConnectableProcesses', () => {
     );
   });
 
+  it('reloads when switching to Business Data tab', async () => {
+    render(<ConnectableProcesses {...baseProps} />);
+    await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+
+    await waitFor(() =>
+      expect(mockGetConnectableProcessesTable.mock.calls.length).toBeGreaterThanOrEqual(2),
+    );
+    expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'co',
+      '',
+      'input:flow-1',
+      '1.0',
+    );
+  });
+
+  it('reloads when switching to Team Data tab', async () => {
+    render(<ConnectableProcesses {...baseProps} />);
+    await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
+
+    await waitFor(() =>
+      expect(mockGetConnectableProcessesTable.mock.calls.length).toBeGreaterThanOrEqual(2),
+    );
+    expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'te',
+      '',
+      'input:flow-1',
+      '1.0',
+    );
+  });
+
   it('submits selected processes on confirm', async () => {
     const onData = jest.fn();
     render(<ConnectableProcesses {...baseProps} onData={onData} />);
@@ -197,5 +237,15 @@ describe('ConnectableProcesses', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() => expect(onData).toHaveBeenCalledWith([{ id: 'proc-1', version: '1.0' }]));
+  });
+
+  it('hides selection controls in read-only mode', async () => {
+    render(<ConnectableProcesses {...baseProps} readOnly />);
+
+    await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
+
+    expect(latestProTableProps?.rowSelection).toBe(false);
+    expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
   });
 });
