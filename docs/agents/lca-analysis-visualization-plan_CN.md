@@ -226,7 +226,6 @@ LCIA category 通常单位不同、量级不同。
 图表/组件建议：
 
 - Ant Design `Statistic`
-- 如果后续引入快照趋势，再加微型趋势图
 
 典型指标：
 
@@ -236,7 +235,7 @@ LCIA category 通常单位不同、量级不同。
 - 百分位，
 - 与 benchmark 的差值。
 
-## 5.2 二期：聚合分析与跨快照分析
+## 5.2 二期：聚合分析
 
 二期应在一期稳定之后再启动。
 
@@ -256,23 +255,6 @@ LCIA category 通常单位不同、量级不同。
 - `Heatmap`：展示 `group x impact`
 - `Treemap`：展示组内占比
 - `Bar`：展示排序后的 group ranking
-
-### B. Snapshot Compare
-
-目标：
-
-- 比较同一 process 或 group 在两个 snapshot 之间的变化。
-
-依赖：
-
-- 多 snapshot 选择能力，
-- 稳定的对比语义，
-- 对 process 变化/缺失的清晰处理。
-
-图表建议：
-
-- 分组 `Bar` / `Column`
-- 可选 delta 概要卡片
 
 ## 5.3 三期：路径分析与不确定性分析
 
@@ -391,7 +373,6 @@ LCIA category 通常单位不同、量级不同。
 二期任务：
 
 - 新增 grouped aggregation 接口，
-- 支持跨 snapshot 对比。
 
 三期任务：
 

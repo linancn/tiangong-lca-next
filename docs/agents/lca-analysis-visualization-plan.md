@@ -227,7 +227,6 @@ Goal:
 Charts/components:
 
 - Ant Design `Statistic`,
-- optional tiny trend graphic if later snapshots are available.
 
 Use cases:
 
@@ -237,7 +236,7 @@ Use cases:
 - percentile,
 - delta vs selected benchmark.
 
-## 5.2 Phase 2: Aggregation and cross-snapshot analysis
+## 5.2 Phase 2: Aggregation analysis
 
 Phase 2 should start only after Phase 1 is stable.
 
@@ -257,23 +256,6 @@ Charts:
 - `Heatmap` for `group x impact`,
 - `Treemap` for within-group share,
 - `Bar` for sorted grouped ranking.
-
-### B. Snapshot Compare
-
-Goal:
-
-- compare the same process or group across two snapshots.
-
-Needs:
-
-- multi-snapshot selection,
-- stable comparison semantics,
-- clear handling of changed process availability.
-
-Charts:
-
-- grouped `Bar` / `Column`,
-- optional compact delta cards.
 
 ## 5.3 Phase 3: Path and uncertainty analysis
 
@@ -392,7 +374,6 @@ Phase 1 work:
 Phase 2 work:
 
 - add grouped aggregation endpoints,
-- add cross-snapshot comparison support.
 
 Phase 3 work:
 

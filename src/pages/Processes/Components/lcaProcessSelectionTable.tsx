@@ -16,6 +16,7 @@ type LcaProcessSelectionTableProps = {
   titleMessage: IntlMessageDescriptor;
   hintMessage: IntlMessageDescriptor;
   emptyMessage: IntlMessageDescriptor;
+  selectionType?: 'checkbox' | 'radio';
   onSelectionChange: (selectedProcessIds: string[]) => void;
 };
 
@@ -38,6 +39,7 @@ const LcaProcessSelectionTable = ({
   titleMessage,
   hintMessage,
   emptyMessage,
+  selectionType = 'checkbox',
   onSelectionChange,
 }: LcaProcessSelectionTableProps) => {
   const intl = useIntl();
@@ -86,6 +88,7 @@ const LcaProcessSelectionTable = ({
           }),
         }}
         rowSelection={{
+          type: selectionType,
           preserveSelectedRowKeys: true,
           selectedRowKeys: selectedProcessIds,
           onChange: (selectedRowKeys) => {

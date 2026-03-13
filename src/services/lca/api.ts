@@ -172,6 +172,73 @@ export type LcaQueryResponse = {
   };
 };
 
+export type LcaContributionPathRequest = {
+  scope?: string;
+  snapshot_id?: string;
+  data_scope?: LcaDataScope;
+  process_id: string;
+  process_version?: string;
+  impact_id: string;
+  amount?: number;
+  options?: {
+    max_depth?: number;
+    top_k_children?: number;
+    cutoff_share?: number;
+    max_nodes?: number;
+  };
+  print_level?: number;
+};
+
+export type LcaContributionPathSubmitResponse =
+  | {
+      mode: 'queued' | 'in_progress';
+      snapshot_id: string;
+      cache_key: string;
+      job_id: string;
+      result_id?: never;
+    }
+  | {
+      mode: 'cache_hit';
+      snapshot_id: string;
+      cache_key: string;
+      result_id: string;
+      job_id?: never;
+    }
+  | {
+      mode: 'snapshot_building';
+      snapshot_id: string;
+      build_job_id: string;
+      build_snapshot_id: string;
+      cache_key?: never;
+      job_id?: never;
+      result_id?: never;
+    };
+
+export type LcaContributionPathResultResponse = {
+  result_id: string;
+  snapshot_id: string;
+  created_at: string;
+  diagnostics: unknown;
+  artifact: {
+    artifact_url: string | null;
+    artifact_format: string | null;
+    artifact_byte_size: number | null;
+    artifact_sha256: string | null;
+  };
+  job: {
+    job_id: string;
+    job_type: string;
+    status: LcaJobStatus;
+    timestamps: {
+      created_at: string;
+      started_at: string | null;
+      finished_at: string | null;
+      updated_at: string;
+    };
+  };
+  data: unknown;
+};
+
 type PollOptions = {
   timeoutMs?: number;
   intervalsMs?: number[];
@@ -181,7 +248,13 @@ type PollOptions = {
 
 const DEFAULT_POLL_INTERVALS_MS = [1000, 2000, 3000, 5000];
 const DEFAULT_POLL_TIMEOUT_MS = 120000;
-type LcaFunctionName = 'lca_solve' | 'lca_jobs' | 'lca_results' | 'lca_query_results';
+type LcaFunctionName =
+  | 'lca_solve'
+  | 'lca_jobs'
+  | 'lca_results'
+  | 'lca_query_results'
+  | 'lca_contribution_path'
+  | 'lca_contribution_path_result';
 
 type InvokeErrorBody = {
   error?: unknown;
@@ -358,6 +431,51 @@ export async function queryLcaResults(request: LcaQueryRequest): Promise<LcaQuer
     'lca_query_results',
     request as Record<string, unknown>,
   );
+}
+
+export async function submitLcaContributionPath(
+  request: LcaContributionPathRequest,
+  options?: { idempotencyKey?: string },
+): Promise<LcaContributionPathSubmitResponse> {
+  const idempotencyKey = options?.idempotencyKey ?? fallbackIdempotencyKey();
+  try {
+    return await invokeLcaFn<LcaContributionPathSubmitResponse>(
+      'lca_contribution_path',
+      request as Record<string, unknown>,
+      {
+        'X-Idempotency-Key': idempotencyKey,
+      },
+    );
+  } catch (error) {
+    if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_build_queued') {
+      const buildJobId =
+        typeof error.body?.build_job_id === 'string' ? error.body.build_job_id.trim() : '';
+      const buildSnapshotId =
+        typeof error.body?.build_snapshot_id === 'string'
+          ? error.body.build_snapshot_id.trim()
+          : '';
+      if (buildJobId && buildSnapshotId) {
+        return {
+          mode: 'snapshot_building',
+          snapshot_id: buildSnapshotId,
+          build_job_id: buildJobId,
+          build_snapshot_id: buildSnapshotId,
+        };
+      }
+    }
+    throw error;
+  }
+}
+
+export async function getLcaContributionPathResult(
+  resultId: string,
+): Promise<LcaContributionPathResultResponse> {
+  if (!resultId?.trim()) {
+    throw new Error('result_id_required');
+  }
+  return await invokeLcaFn<LcaContributionPathResultResponse>('lca_contribution_path_result', {
+    result_id: resultId.trim(),
+  });
 }
 
 export async function pollLcaJobUntilTerminal(
