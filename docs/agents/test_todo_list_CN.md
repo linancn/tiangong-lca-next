@@ -33,6 +33,10 @@
 - 当前全局 branch 门槛：50%
 - 门禁状态：**已通过**（高于门槛 16.86 个百分点）
 
+工作流说明（2026年3月13日）：
+
+- 共享 `npm test` runner 现在会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避 macOS 全量本地运行和 pre-push 中出现的 Jest worker 偶发 `SIGSEGV` 崩溃。
+
 ## 缺口评估
 
 1. branch 门禁恢复已经不是当前主线；现在的阶段是“收口”，整体 branch 已来到 66.86%。

@@ -33,6 +33,9 @@
 # 全量本地门禁（与 CI 风格一致）
 npm test
 
+# 共享 runner 实际使用的全量 unit/src 阶段命令
+npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
+
 # 聚焦集成测试
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 
@@ -54,6 +57,7 @@ npm run lint
 
 - 方向目标：逐步接近 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
+- 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
 - 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）是 `247 suites / 1920 tests`，global branch coverage 为 `66.86%`。因此当前不是“救门禁”，而是继续按 `docs/agents/test_todo_list.md` 中记录的 lifecycle-model 页面栈、wrapper 页面和 lifecycle utility 热点往下压。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - 覆盖率排查命令：

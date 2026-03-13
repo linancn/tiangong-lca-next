@@ -30,6 +30,7 @@ npm run build
 Notes:
 
 - `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
+- The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
 - For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
 
 ## Token-Efficient Doc Routing

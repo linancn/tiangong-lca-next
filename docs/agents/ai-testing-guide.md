@@ -33,6 +33,9 @@
 # Full local gate (same as CI style)
 npm test
 
+# Equivalent full unit/src phase used by the shared runner
+npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
+
 # Focused integration suite
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 
@@ -54,6 +57,7 @@ npm run lint
 
 - Directional goal: move toward near-100% meaningful coverage.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
+- Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
 - Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is `247 suites / 1920 tests` with `66.86%` global branch coverage, so the branch gate is stable; current execution should target the remaining lifecycle-model page stack, thin wrapper pages, and lifecycle utility hotspots tracked in `docs/agents/test_todo_list.md`.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - Use coverage runs to identify gaps:

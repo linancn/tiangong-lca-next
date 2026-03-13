@@ -33,6 +33,10 @@ Latest verified full run (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:c
 - Enforced global branch threshold: 50%
 - Gate status: **PASS** (+16.86% buffer above threshold)
 
+Workflow note (March 13, 2026):
+
+- The shared `npm test` runner now caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker `SIGSEGV` crashes seen during full local and pre-push runs on macOS.
+
 ## Gap Assessment
 
 1. Branch-gate recovery is no longer the primary story; the suite is now in consolidation mode with overall branches at 66.86%.

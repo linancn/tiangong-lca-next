@@ -30,6 +30,7 @@ npm run build
 说明：
 
 - `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
+- 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
 - 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
 
 ## 按需文档路由（省 token）
