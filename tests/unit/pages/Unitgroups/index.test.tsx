@@ -1,5 +1,5 @@
 // @ts-nocheck
-import LifeCycleModelsPage from '@/pages/LifeCycleModels';
+import UnitgroupsPage from '@/pages/Unitgroups';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
@@ -15,18 +15,19 @@ const toText = (node: any): string => {
 
 let latestReloadMock: jest.Mock | null = null;
 let mockLocation = {
-  pathname: '/mydata/lifecyclemodels',
+  pathname: '/mydata/unitgroups',
   search: '?tid=team-1',
 };
 
+const mockContributeSource = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
-const mockGetLifeCycleModelTableAll = jest.fn();
-const mockGetLifeCycleModelTablePgroongaSearch = jest.fn();
-const mockLifeCycleModelHybridSearch = jest.fn();
-const mockContributeLifeCycleModel = jest.fn();
+const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
+const mockGetUnitGroupTableAll = jest.fn();
+const mockGetUnitGroupTablePgroongaSearch = jest.fn();
+const mockUnitgroupHybridSearch = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -38,6 +39,11 @@ jest.mock('umi', () => ({
   useLocation: () => mockLocation,
 }));
 
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  contributeSource: (...args: any[]) => mockContributeSource(...args),
+}));
+
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
@@ -45,13 +51,9 @@ jest.mock('@/services/general/util', () => ({
   getLangText: (...args: any[]) => mockGetLangText(...args),
 }));
 
-jest.mock('@/services/lifeCycleModels/api', () => ({
+jest.mock('@/services/roles/api', () => ({
   __esModule: true,
-  contributeLifeCycleModel: (...args: any[]) => mockContributeLifeCycleModel(...args),
-  getLifeCycleModelTableAll: (...args: any[]) => mockGetLifeCycleModelTableAll(...args),
-  getLifeCycleModelTablePgroongaSearch: (...args: any[]) =>
-    mockGetLifeCycleModelTablePgroongaSearch(...args),
-  lifeCycleModel_hybrid_search: (...args: any[]) => mockLifeCycleModelHybridSearch(...args),
+  getRoleByUserId: (...args: any[]) => mockGetRoleByUserId(...args),
 }));
 
 jest.mock('@/services/teams/api', () => ({
@@ -59,10 +61,25 @@ jest.mock('@/services/teams/api', () => ({
   getTeamById: (...args: any[]) => mockGetTeamById(...args),
 }));
 
+jest.mock('@/services/unitgroups/api', () => ({
+  __esModule: true,
+  getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
+  getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  unitgroup_hybrid_search: (...args: any[]) => mockUnitgroupHybridSearch(...args),
+}));
+
+jest.mock('@/components/AlignedNumber', () => ({
+  __esModule: true,
+  toSuperscript: jest.fn((value: string) => `super(${value})`),
+}));
+
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>{addVersionComponent?.({ newVersion: '02.00.000' })}</div>
+  default: ({ addVersionComponent, disabled }: any) => (
+    <div data-testid='all-versions'>
+      <span>{`versions-disabled:${String(disabled)}`}</span>
+      {addVersionComponent?.({ newVersion: '02.00.000' })}
+    </div>
   ),
 }));
 
@@ -84,8 +101,12 @@ jest.mock('@/components/ExportData', () => ({
 
 jest.mock('@/components/ImportData', () => ({
   __esModule: true,
-  default: ({ onJsonData }: any) => (
-    <button type='button' onClick={() => onJsonData?.([{ id: 'import-1' }])}>
+  default: ({ onJsonData, disabled }: any) => (
+    <button
+      type='button'
+      disabled={disabled}
+      onClick={() => onJsonData?.([{ unitGroupDataSet: { unitGroupInformation: {} } }])}
+    >
       import-data
     </button>
   ),
@@ -93,8 +114,8 @@ jest.mock('@/components/ImportData', () => ({
 
 jest.mock('@/components/TableFilter', () => ({
   __esModule: true,
-  default: ({ onChange }: any) => (
-    <button type='button' onClick={() => onChange?.('20')}>
+  default: ({ onChange, disabled }: any) => (
+    <button type='button' disabled={disabled} onClick={() => onChange?.('20')}>
       table-filter
     </button>
   ),
@@ -106,32 +127,33 @@ jest.mock('@/pages/Utils', () => ({
   getDataTitle: jest.fn(() => 'My Data'),
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/create', () => ({
+jest.mock('@/pages/Unitgroups/Components/create', () => ({
   __esModule: true,
-  default: ({ actionType = 'create', importData, newVersion }: any) => (
-    <div data-testid='lifecycle-create'>
+  default: ({ actionType = 'create', importData, newVersion, disabled }: any) => (
+    <div data-testid='unitgroup-create'>
       {JSON.stringify({
         actionType,
         importCount: importData?.length ?? 0,
         newVersion,
+        disabled: !!disabled,
       })}
     </div>
   ),
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/delete', () => ({
+jest.mock('@/pages/Unitgroups/Components/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-delete'>{`delete:${id}`}</div>,
+  default: ({ id }: any) => <div data-testid='unitgroup-delete'>{`delete:${id}`}</div>,
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
+jest.mock('@/pages/Unitgroups/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-edit'>{`edit:${id}`}</div>,
+  default: ({ id }: any) => <div data-testid='unitgroup-edit'>{`edit:${id}`}</div>,
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
+jest.mock('@/pages/Unitgroups/Components/view', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-view'>{`view:${id}`}</div>,
+  default: ({ id }: any) => <div data-testid='unitgroup-view'>{`view:${id}`}</div>,
 }));
 
 jest.mock('antd', () => {
@@ -142,7 +164,10 @@ jest.mock('antd', () => {
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ title, children }: any) => {
+    const label = toText(title);
+    return <div title={label}>{children}</div>;
+  };
 
   const Checkbox = ({ children, onChange }: any) => {
     const [checked, setChecked] = React.useState(false);
@@ -163,17 +188,14 @@ jest.mock('antd', () => {
     );
   };
 
-  const Search = ({ onSearch, placeholder }: any) => {
-    return (
-      <div>
-        <input aria-label='search-input' placeholder={placeholder} />
-        <button type='button' onClick={() => onSearch?.('steel')}>
-          search
-        </button>
-      </div>
-    );
-  };
-
+  const Search = ({ onSearch, placeholder, disabled }: any) => (
+    <div>
+      <input aria-label='search-input' disabled={disabled} placeholder={placeholder} />
+      <button type='button' disabled={disabled} onClick={() => onSearch?.('density')}>
+        search
+      </button>
+    </div>
+  );
   const Input = { Search };
 
   const message = {
@@ -185,6 +207,8 @@ jest.mock('antd', () => {
     useToken: () => ({
       token: {
         colorPrimary: '#1677ff',
+        red: '#ff4d4f',
+        fontSize: 14,
       },
     }),
   };
@@ -268,12 +292,12 @@ jest.mock('@ant-design/pro-components', () => {
   };
 });
 
-describe('LifeCycleModelsPage', () => {
+describe('UnitgroupsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     latestReloadMock = null;
     mockLocation = {
-      pathname: '/mydata/lifecyclemodels',
+      pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
     };
     mockGetDataSource.mockReturnValue('my');
@@ -283,43 +307,86 @@ describe('LifeCycleModelsPage', () => {
       data: [
         {
           json: {
-            title: [{ '@xml:lang': 'en', '#text': 'Team Alpha' }],
+            title: [{ '@xml:lang': 'en', '#text': 'Unit Team' }],
           },
         },
       ],
     });
-    mockGetLifeCycleModelTableAll.mockResolvedValue({
+    mockGetUnitGroupTableAll.mockResolvedValue({
       data: [
         {
-          id: 'model-1',
+          id: 'ug-1',
           version: '1.0.0',
-          name: 'Lifecycle model 1',
-          generalComment: 'General comment',
-          classification: 'Class A',
+          name: 'Length units',
+          refUnitName: 'm2',
+          refUnitGeneralComment: 'Area unit',
+          classification: 'Physical',
           modifiedAt: '2024-01-01',
           teamId: '',
         },
       ],
       success: true,
     });
-    mockGetLifeCycleModelTablePgroongaSearch.mockResolvedValue({
-      data: [],
+    mockGetUnitGroupTablePgroongaSearch.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-1',
+          version: '1.0.0',
+          name: 'Length units',
+          refUnitName: 'm2',
+          refUnitGeneralComment: 'Area unit',
+          classification: 'Physical',
+          modifiedAt: '2024-01-01',
+          teamId: '',
+        },
+      ],
       success: true,
     });
-    mockLifeCycleModelHybridSearch.mockResolvedValue({
-      data: [],
+    mockUnitgroupHybridSearch.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-1',
+          version: '1.0.0',
+          name: 'Length units',
+          refUnitName: 'm2',
+          refUnitGeneralComment: 'Area unit',
+          classification: 'Physical',
+          modifiedAt: '2024-01-01',
+          teamId: '',
+        },
+      ],
       success: true,
     });
-    mockContributeLifeCycleModel.mockResolvedValue({ error: null });
+    mockContributeSource.mockResolvedValue({ error: null });
   });
 
-  it('loads the default my-data table, team title, and toolbar actions', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
+  it('returns an empty locked table for non-admin my-data users', async () => {
+    mockGetRoleByUserId.mockResolvedValue([]);
+
+    renderWithProviders(<UnitgroupsPage />);
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
-    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /search/i })).toBeDisabled());
 
-    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
+    expect(mockGetUnitGroupTableAll).not.toHaveBeenCalled();
+    expect(screen.getByText(/please contact the administrator/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
+    expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"disabled":true');
+  });
+
+  it('loads admin data, supports pgroonga and hybrid search, and contributes successfully', async () => {
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
+    expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
       { pageSize: 10, current: 1 },
       {},
       'en',
@@ -328,23 +395,17 @@ describe('LifeCycleModelsPage', () => {
       'all',
     );
 
-    expect(screen.getByRole('heading', { name: 'Team Alpha' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: /ai search/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
-    expect(screen.getAllByTestId('lifecycle-create')[0]).toHaveTextContent('"actionType":"create"');
-    expect(screen.getByTestId('lifecycle-view')).toHaveTextContent('view:model-1');
-    expect(screen.getByTestId('lifecycle-edit')).toHaveTextContent('edit:model-1');
-    expect(screen.getByTestId('lifecycle-delete')).toHaveTextContent('delete:model-1');
-  });
-
-  it('switches to pgroonga search and hybrid search from the same page workflow', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
-    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('view:ug-1'),
+    );
+    expect(screen.getByTestId('unitgroup-edit')).toHaveTextContent('edit:ug-1');
+    expect(screen.getByTestId('unitgroup-delete')).toHaveTextContent('delete:ug-1');
+    expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"disabled":false');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
-      expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
+      expect(mockGetUnitGroupTableAll).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         {},
         'en',
@@ -355,39 +416,28 @@ describe('LifeCycleModelsPage', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
-
     await waitFor(() =>
-      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',
-        'steel',
+        'density',
         {},
         '20',
-        undefined,
       ),
     );
 
     await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
-
     await waitFor(() =>
-      expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
+      expect(mockUnitgroupHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',
-        'steel',
+        'density',
         {},
         '20',
       ),
-    );
-  });
-
-  it('contributes a row and reloads after success', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
-
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: /contribute-action/i })).toBeInTheDocument(),
     );
 
     await act(async () => {
@@ -395,27 +445,33 @@ describe('LifeCycleModelsPage', () => {
     });
 
     await waitFor(() =>
-      expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-1', '1.0.0'),
+      expect(mockContributeSource).toHaveBeenCalledWith('unitgroups', 'ug-1', '1.0.0'),
     );
-
     const { message } = jest.requireMock('antd');
     expect(message.success).toHaveBeenCalledWith('Contribute successfully');
     expect(latestReloadMock).toHaveBeenCalled();
   });
 
-  it('persists imported json into the create action and reloads when the filter changes', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
+  it('persists imported json into create and reloads when the state filter changes', async () => {
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+
+    renderWithProviders(<UnitgroupsPage />);
 
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument(),
     );
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
-    expect(screen.getAllByTestId('lifecycle-create')[0]).toHaveTextContent('"importCount":1');
+    expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"importCount":1');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
-      expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
+      expect(mockGetUnitGroupTableAll).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         {},
         'en',

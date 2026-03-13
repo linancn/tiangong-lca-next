@@ -1,5 +1,5 @@
 // @ts-nocheck
-import LifeCycleModelsPage from '@/pages/LifeCycleModels';
+import ContactsPage from '@/pages/Contacts';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
@@ -15,18 +15,29 @@ const toText = (node: any): string => {
 
 let latestReloadMock: jest.Mock | null = null;
 let mockLocation = {
-  pathname: '/mydata/lifecyclemodels',
+  pathname: '/mydata/contacts',
   search: '?tid=team-1',
 };
 
+const mockContributeSource = jest.fn();
+const mockGetContactTableAll = jest.fn();
+const mockGetContactTablePgroongaSearch = jest.fn();
+const mockContactHybridSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
-const mockGetLifeCycleModelTableAll = jest.fn();
-const mockGetLifeCycleModelTablePgroongaSearch = jest.fn();
-const mockLifeCycleModelHybridSearch = jest.fn();
-const mockContributeLifeCycleModel = jest.fn();
 const mockGetTeamById = jest.fn();
+
+const baseContactRow = {
+  id: 'contact-1',
+  version: '1.0.0',
+  shortName: 'Alice',
+  name: 'Alice Team Contact',
+  classification: 'Stakeholder',
+  email: 'alice@example.com',
+  modifiedAt: '2024-01-01',
+  teamId: '',
+};
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -38,20 +49,23 @@ jest.mock('umi', () => ({
   useLocation: () => mockLocation,
 }));
 
+jest.mock('@/services/contacts/api', () => ({
+  __esModule: true,
+  contact_hybrid_search: (...args: any[]) => mockContactHybridSearch(...args),
+  getContactTableAll: (...args: any[]) => mockGetContactTableAll(...args),
+  getContactTablePgroongaSearch: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
+}));
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  contributeSource: (...args: any[]) => mockContributeSource(...args),
+}));
+
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
-}));
-
-jest.mock('@/services/lifeCycleModels/api', () => ({
-  __esModule: true,
-  contributeLifeCycleModel: (...args: any[]) => mockContributeLifeCycleModel(...args),
-  getLifeCycleModelTableAll: (...args: any[]) => mockGetLifeCycleModelTableAll(...args),
-  getLifeCycleModelTablePgroongaSearch: (...args: any[]) =>
-    mockGetLifeCycleModelTablePgroongaSearch(...args),
-  lifeCycleModel_hybrid_search: (...args: any[]) => mockLifeCycleModelHybridSearch(...args),
 }));
 
 jest.mock('@/services/teams/api', () => ({
@@ -85,7 +99,7 @@ jest.mock('@/components/ExportData', () => ({
 jest.mock('@/components/ImportData', () => ({
   __esModule: true,
   default: ({ onJsonData }: any) => (
-    <button type='button' onClick={() => onJsonData?.([{ id: 'import-1' }])}>
+    <button type='button' onClick={() => onJsonData?.([{ contactDataSet: {} }])}>
       import-data
     </button>
   ),
@@ -106,10 +120,10 @@ jest.mock('@/pages/Utils', () => ({
   getDataTitle: jest.fn(() => 'My Data'),
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/create', () => ({
+jest.mock('@/pages/Contacts/Components/create', () => ({
   __esModule: true,
   default: ({ actionType = 'create', importData, newVersion }: any) => (
-    <div data-testid='lifecycle-create'>
+    <div data-testid='contact-create'>
       {JSON.stringify({
         actionType,
         importCount: importData?.length ?? 0,
@@ -119,19 +133,19 @@ jest.mock('@/pages/LifeCycleModels/Components/create', () => ({
   ),
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/delete', () => ({
+jest.mock('@/pages/Contacts/Components/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-delete'>{`delete:${id}`}</div>,
+  default: ({ id }: any) => <div data-testid='contact-delete'>{`delete:${id}`}</div>,
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
+jest.mock('@/pages/Contacts/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-edit'>{`edit:${id}`}</div>,
+  default: ({ id }: any) => <div data-testid='contact-edit'>{`edit:${id}`}</div>,
 }));
 
-jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
+jest.mock('@/pages/Contacts/Components/view', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-view'>{`view:${id}`}</div>,
+  default: ({ id }: any) => <div data-testid='contact-view'>{`view:${id}`}</div>,
 }));
 
 jest.mock('antd', () => {
@@ -142,7 +156,7 @@ jest.mock('antd', () => {
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ title, children }: any) => <div title={toText(title)}>{children}</div>;
 
   const Checkbox = ({ children, onChange }: any) => {
     const [checked, setChecked] = React.useState(false);
@@ -163,17 +177,14 @@ jest.mock('antd', () => {
     );
   };
 
-  const Search = ({ onSearch, placeholder }: any) => {
-    return (
-      <div>
-        <input aria-label='search-input' placeholder={placeholder} />
-        <button type='button' onClick={() => onSearch?.('steel')}>
-          search
-        </button>
-      </div>
-    );
-  };
-
+  const Search = ({ onSearch, placeholder }: any) => (
+    <div>
+      <input aria-label='search-input' placeholder={placeholder} />
+      <button type='button' onClick={() => onSearch?.('alice')}>
+        search
+      </button>
+    </div>
+  );
   const Input = { Search };
 
   const message = {
@@ -248,7 +259,7 @@ jest.mock('@ant-design/pro-components', () => {
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
         <div>{toolBarRender?.()}</div>
-        {rows.map((row, rowIndex) => (
+        {rows.map((row: any, rowIndex: number) => (
           <div key={`${row.id}-${rowIndex}`}>
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
@@ -268,58 +279,33 @@ jest.mock('@ant-design/pro-components', () => {
   };
 });
 
-describe('LifeCycleModelsPage', () => {
+describe('ContactsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     latestReloadMock = null;
     mockLocation = {
-      pathname: '/mydata/lifecyclemodels',
+      pathname: '/mydata/contacts',
       search: '?tid=team-1',
     };
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? 'Team title');
     mockGetTeamById.mockResolvedValue({
-      data: [
-        {
-          json: {
-            title: [{ '@xml:lang': 'en', '#text': 'Team Alpha' }],
-          },
-        },
-      ],
+      data: [{ json: { title: [{ '@xml:lang': 'en', '#text': 'Contact Team' }] } }],
     });
-    mockGetLifeCycleModelTableAll.mockResolvedValue({
-      data: [
-        {
-          id: 'model-1',
-          version: '1.0.0',
-          name: 'Lifecycle model 1',
-          generalComment: 'General comment',
-          classification: 'Class A',
-          modifiedAt: '2024-01-01',
-          teamId: '',
-        },
-      ],
-      success: true,
-    });
-    mockGetLifeCycleModelTablePgroongaSearch.mockResolvedValue({
-      data: [],
-      success: true,
-    });
-    mockLifeCycleModelHybridSearch.mockResolvedValue({
-      data: [],
-      success: true,
-    });
-    mockContributeLifeCycleModel.mockResolvedValue({ error: null });
+    mockGetContactTableAll.mockResolvedValue({ data: [baseContactRow], success: true });
+    mockGetContactTablePgroongaSearch.mockResolvedValue({ data: [baseContactRow], success: true });
+    mockContactHybridSearch.mockResolvedValue({ data: [baseContactRow], success: true });
+    mockContributeSource.mockResolvedValue({ error: null });
   });
 
-  it('loads the default my-data table, team title, and toolbar actions', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
+  it('loads the default table and row actions', async () => {
+    renderWithProviders(<ContactsPage />);
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
-    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalled());
 
-    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
+    expect(mockGetContactTableAll).toHaveBeenCalledWith(
       { pageSize: 10, current: 1 },
       {},
       'en',
@@ -328,23 +314,21 @@ describe('LifeCycleModelsPage', () => {
       'all',
     );
 
-    expect(screen.getByRole('heading', { name: 'Team Alpha' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: /ai search/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
-    expect(screen.getAllByTestId('lifecycle-create')[0]).toHaveTextContent('"actionType":"create"');
-    expect(screen.getByTestId('lifecycle-view')).toHaveTextContent('view:model-1');
-    expect(screen.getByTestId('lifecycle-edit')).toHaveTextContent('edit:model-1');
-    expect(screen.getByTestId('lifecycle-delete')).toHaveTextContent('delete:model-1');
+    expect(screen.getByRole('heading', { name: 'Contact Team' })).toBeInTheDocument();
+    expect(await screen.findByTestId('contact-view')).toHaveTextContent('view:contact-1');
+    expect(screen.getByTestId('contact-edit')).toHaveTextContent('edit:contact-1');
+    expect(screen.getByTestId('contact-delete')).toHaveTextContent('delete:contact-1');
+    expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"actionType":"create"');
   });
 
-  it('switches to pgroonga search and hybrid search from the same page workflow', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
-    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+  it('supports pgroonga search, AI search, and contribute flows', async () => {
+    renderWithProviders(<ContactsPage />);
+
+    await screen.findByTestId('contact-view');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
-      expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
+      expect(mockGetContactTableAll).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         {},
         'en',
@@ -354,68 +338,52 @@ describe('LifeCycleModelsPage', () => {
       ),
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-
-    await waitFor(() =>
-      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
-        'en',
-        'my',
-        'steel',
-        {},
-        '20',
-        undefined,
-      ),
-    );
-
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-
-    await waitFor(() =>
-      expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
-        'en',
-        'my',
-        'steel',
-        {},
-        '20',
-      ),
-    );
-  });
-
-  it('contributes a row and reloads after success', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
-
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: /contribute-action/i })).toBeInTheDocument(),
-    );
-
     await act(async () => {
       await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
     });
 
     await waitFor(() =>
-      expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-1', '1.0.0'),
+      expect(mockContributeSource).toHaveBeenCalledWith('contacts', 'contact-1', '1.0.0'),
     );
-
     const { message } = jest.requireMock('antd');
     expect(message.success).toHaveBeenCalledWith('Contribute successfully');
     expect(latestReloadMock).toHaveBeenCalled();
-  });
 
-  it('persists imported json into the create action and reloads when the filter changes', async () => {
-    renderWithProviders(<LifeCycleModelsPage />);
-
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument(),
+      expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'alice',
+        {},
+        '20',
+      ),
     );
 
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockContactHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'alice',
+        {},
+        '20',
+      ),
+    );
+  });
+
+  it('persists imported json into create and reloads with the selected state filter', async () => {
+    renderWithProviders(<ContactsPage />);
+
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
-    expect(screen.getAllByTestId('lifecycle-create')[0]).toHaveTextContent('"importCount":1');
+    expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"importCount":1');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
-      expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
+      expect(mockGetContactTableAll).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         {},
         'en',

@@ -52,6 +52,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const keyWordRef = useRef<string>('');
+  const stateCodeRef = useRef<string | number>('all');
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -279,6 +281,7 @@ const TableList: FC = () => {
   }, []);
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -338,8 +341,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -362,17 +366,26 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
+          if (currentKeyWord.length > 0) {
             if (openAI) {
-              return flowproperty_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
+              return flowproperty_hybrid_search(
+                params,
+                lang,
+                dataSource,
+                currentKeyWord,
+                {},
+                currentStateCode,
+              );
             }
             return getFlowpropertyTablePgroongaSearch(
               params,
               lang,
               dataSource,
-              keyWord,
+              currentKeyWord,
               {},
-              stateCode,
+              currentStateCode,
             ).then((res) => {
               return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
                 return {
@@ -382,16 +395,21 @@ const TableList: FC = () => {
               });
             });
           }
-          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode).then(
-            (res) => {
-              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
-                return {
-                  ...res,
-                  data: refUnitGroupResp ?? [],
-                };
-              });
-            },
-          );
+          return getFlowpropertyTableAll(
+            params,
+            sort,
+            lang,
+            dataSource,
+            tid ?? '',
+            currentStateCode,
+          ).then((res) => {
+            return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
+              return {
+                ...res,
+                data: refUnitGroupResp ?? [],
+              };
+            });
+          });
         }}
         columns={flowpropertiesColumns}
       />

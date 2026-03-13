@@ -49,6 +49,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const keyWordRef = useRef('');
+  const stateCodeRef = useRef<string | number>('all');
   const processColumns: ProColumns<LifeCycleModelTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -229,6 +231,7 @@ const TableList: FC = () => {
   ];
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -300,8 +303,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -325,7 +329,9 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
+          if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
               | undefined;
@@ -343,19 +349,33 @@ const TableList: FC = () => {
               }
             }
             if (openAI) {
-              return lifeCycleModel_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
+              return lifeCycleModel_hybrid_search(
+                params,
+                lang,
+                dataSource,
+                currentKeyWord,
+                {},
+                currentStateCode,
+              );
             }
             return getLifeCycleModelTablePgroongaSearch(
               params,
               lang,
               dataSource,
-              keyWord,
+              currentKeyWord,
               {},
-              stateCode,
+              currentStateCode,
               orderBy,
             );
           }
-          return getLifeCycleModelTableAll(params, sort, lang, dataSource, tid ?? '', stateCode);
+          return getLifeCycleModelTableAll(
+            params,
+            sort,
+            lang,
+            dataSource,
+            tid ?? '',
+            currentStateCode,
+          );
         }}
         columns={processColumns}
       />

@@ -56,6 +56,8 @@ const TableList: FC = () => {
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
+  const keyWordRef = useRef<string>('');
+  const stateCodeRef = useRef<string | number>('all');
 
   const parseClassificationFilter = (
     values?: (string | number | boolean)[] | null,
@@ -342,6 +344,7 @@ const TableList: FC = () => {
   }, [lang]);
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -401,8 +404,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -426,13 +430,15 @@ const TableList: FC = () => {
           sort,
           filter,
         ) => {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
           const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
           const classificationFilter = parseClassificationFilter(filter?.classification);
           const searchFilters = {
             flowType: flowTypeFilter,
             ...(classificationFilter.length > 0 ? { classification: classificationFilter } : {}),
           };
-          if (keyWord.length > 0) {
+          if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
               | undefined;
@@ -452,18 +458,18 @@ const TableList: FC = () => {
                 params,
                 lang,
                 dataSource,
-                keyWord,
+                currentKeyWord,
                 searchFilters,
-                stateCode,
+                currentStateCode,
               );
             }
             return getFlowTablePgroongaSearch(
               params,
               lang,
               dataSource,
-              keyWord,
+              currentKeyWord,
               searchFilters,
-              stateCode,
+              currentStateCode,
               orderBy,
             );
           }
@@ -489,7 +495,7 @@ const TableList: FC = () => {
             dataSource,
             tid ?? '',
             searchFilters,
-            stateCode,
+            currentStateCode,
           );
         }}
         columns={flowsColumns}

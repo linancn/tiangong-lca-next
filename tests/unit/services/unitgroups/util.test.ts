@@ -334,5 +334,21 @@ describe('Unit Group Utility Functions', () => {
         },
       ]);
     });
+
+    it('should return an empty object when no unit data is supplied', () => {
+      expect(genUnitTableData(undefined, 'en')).toEqual({});
+    });
+  });
+
+  describe('additional edge cases', () => {
+    it('should omit quantitativeReference when no unit is marked as reference in ordered output', () => {
+      const sample = createSampleUnitGroupData();
+      sample.unitGroupInformation.quantitativeReference.referenceToReferenceUnit = 'missing';
+
+      const formData = genUnitGroupFromData(sample);
+      const result = genUnitGroupJsonOrdered('new-unit-group-id', formData);
+
+      expect(result.unitGroupDataSet.unitGroupInformation.quantitativeReference).toBeUndefined();
+    });
   });
 });

@@ -69,8 +69,12 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const keyWordRef = useRef('');
+  const stateCodeRef = useRef<string | number>('all');
+  const typeOfDataSetRef = useRef<string>('all');
   const typeOfDataSetFilter = () => {
     const onChange = (value: string) => {
+      typeOfDataSetRef.current = value;
       setTypeOfDataSet(value);
       actionRef.current?.reloadAndRest?.();
     };
@@ -434,6 +438,7 @@ const TableList: FC = () => {
   };
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -510,8 +515,9 @@ const TableList: FC = () => {
               <span key={3}>{typeOfDataSetFilter()}</span>,
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -534,7 +540,10 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
+          const currentTypeOfDataSet = typeOfDataSetRef.current || typeOfDataSet;
+          if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
               | undefined;
@@ -556,20 +565,20 @@ const TableList: FC = () => {
                 params,
                 lang,
                 dataSource,
-                keyWord,
+                currentKeyWord,
                 {},
-                stateCode,
-                typeOfDataSet,
+                currentStateCode,
+                currentTypeOfDataSet,
               );
             }
             return getProcessTablePgroongaSearch(
               params,
               lang,
               dataSource,
-              keyWord,
+              currentKeyWord,
               {},
-              stateCode,
-              typeOfDataSet,
+              currentStateCode,
+              currentTypeOfDataSet,
               orderBy,
             );
           }
@@ -596,8 +605,8 @@ const TableList: FC = () => {
             lang,
             dataSource,
             tid ?? '',
-            stateCode,
-            typeOfDataSet,
+            currentStateCode,
+            currentTypeOfDataSet,
           );
         }}
         columns={processColumns}
