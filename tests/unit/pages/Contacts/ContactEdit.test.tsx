@@ -573,4 +573,66 @@ describe('ContactEdit component', () => {
     });
     expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
   });
+
+  it('shows an under-review error when saving is rejected with state_code 20', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockUpdateContact.mockResolvedValue({
+      data: null,
+      error: { state_code: 20, message: 'under review' },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
+  });
+
+  it('shows the backend error message when saving fails for another reason', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockUpdateContact.mockResolvedValue({
+      data: null,
+      error: { message: 'save failed' },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('save failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
+  });
 });

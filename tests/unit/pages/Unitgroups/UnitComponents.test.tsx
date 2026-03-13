@@ -492,6 +492,10 @@ jest.mock('@/pages/Unitgroups/Components/form', () => {
 });
 
 const { message } = jest.requireMock('antd');
+const {
+  getImportedId: mockGetImportedId,
+  isSupabaseDuplicateKeyError: mockIsSupabaseDuplicateKeyError,
+} = jest.requireMock('@/services/general/util');
 
 describe('Unitgroups unit components', () => {
   beforeEach(() => {
@@ -534,6 +538,8 @@ describe('Unitgroups unit components', () => {
         refUnitGeneralComment: { en: 'Mass unit' },
       },
     });
+    mockGetImportedId.mockReturnValue(undefined);
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
   });
 
   it('creates a unit group and reloads table', async () => {
@@ -572,6 +578,129 @@ describe('Unitgroups unit components', () => {
 
     expect(message.success).toHaveBeenCalledWith('Created successfully!');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('reuses the original id for createVersion and updates the dataset version', async () => {
+    const user = userEvent.setup();
+
+    mockGenUnitGroupFromData.mockReturnValue({
+      unitGroupInformation: {},
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.00.000',
+        },
+      },
+      units: {
+        unit: [
+          {
+            '@dataSetInternalID': '0',
+            name: 'Existing unit',
+            quantitativeReference: true,
+            meanValue: '1',
+          },
+        ],
+      },
+    });
+
+    renderWithProviders(
+      <UnitGroupCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='createVersion'
+        id='unit-group-1'
+        version='1.0.0'
+        newVersion='02.00.000'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await waitFor(() =>
+      expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unit-group-1', '1.0.0'),
+    );
+
+    await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockCreateUnitGroup).toHaveBeenCalledWith(
+        'unit-group-1',
+        expect.objectContaining({
+          administrativeInformation: expect.objectContaining({
+            publicationAndOwnership: expect.objectContaining({
+              'common:dataSetVersion': '02.00.000',
+            }),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('auto-opens imported data and uses the imported id when saving', async () => {
+    const user = userEvent.setup();
+
+    mockGetImportedId.mockReturnValue('imported-unit-group-id');
+    mockGenUnitGroupFromData.mockReturnValue({
+      unitGroupInformation: {},
+      units: {
+        unit: [
+          {
+            '@dataSetInternalID': '0',
+            name: 'Imported unit',
+            quantitativeReference: true,
+            meanValue: '1',
+          },
+        ],
+      },
+    });
+
+    renderWithProviders(
+      <UnitGroupCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        importData={[{ unitGroupDataSet: {} }] as any}
+      />,
+    );
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    expect(within(drawer).getByText('Units: 1')).toBeInTheDocument();
+
+    await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockCreateUnitGroup).toHaveBeenCalledWith(
+        'imported-unit-group-id',
+        expect.objectContaining({
+          units: expect.objectContaining({
+            unit: expect.arrayContaining([expect.objectContaining({ name: 'Imported unit' })]),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('shows the duplicate-id error and does not reload on create failure', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateUnitGroup.mockResolvedValue({
+      data: null,
+      error: { message: 'duplicate' },
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
+
+    renderWithProviders(<UnitGroupCreate lang='en' actionRef={actionRef} />);
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Data with the same ID already exists.'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
   });
 
   it('collects unit data during creation', async () => {
@@ -735,5 +864,33 @@ describe('Unitgroups unit components', () => {
       expect(screen.getByText(/Kilogram/)).toBeInTheDocument();
       expect(screen.getByText('kg')).toBeInTheDocument();
     });
+  });
+
+  it('resolves reference unit for flowproperty sources', async () => {
+    renderWithProviders(
+      <ReferenceUnit id='flowproperty-id' version='1.0' idType='flowproperty' lang='en' />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('flowproperty-id', '1.0');
+      expect(mockGetReferenceUnit).toHaveBeenCalledWith('ref-ug-id', '1.0');
+    });
+
+    expect(mockGetReferenceProperty).not.toHaveBeenCalled();
+    expect(screen.getByText(/Kilogram/)).toBeInTheDocument();
+  });
+
+  it('resolves reference unit directly for unitgroup sources', async () => {
+    renderWithProviders(
+      <ReferenceUnit id='unitgroup-id' version='1.0' idType='unitgroup' lang='en' />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceUnit).toHaveBeenCalledWith('unitgroup-id', '1.0');
+    });
+
+    expect(mockGetReferenceProperty).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnitGroup).not.toHaveBeenCalled();
+    expect(screen.getByText('kg')).toBeInTheDocument();
   });
 });

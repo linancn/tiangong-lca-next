@@ -210,4 +210,31 @@ describe('ModelResult', () => {
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('requests an empty submodel table when only the main model is present', async () => {
+    renderWithProviders(
+      <ModelResult
+        submodels={[{ id: 'model-1', version: '0.9.0' }]}
+        modelId='model-1'
+        modelVersion='1.0.0'
+        lang='en'
+        actionType='view'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+
+    expect(await screen.findByRole('dialog', { name: /model results/i })).toBeInTheDocument();
+
+    await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledTimes(2));
+    expect(mockGetProcessesByIdAndVersion).toHaveBeenNthCalledWith(
+      1,
+      [{ id: 'model-1', version: '1.0.0' }],
+      'en',
+    );
+    expect(mockGetProcessesByIdAndVersion).toHaveBeenNthCalledWith(2, [], 'en');
+
+    await waitFor(() => expect(screen.getAllByTestId('process-view')).toHaveLength(1));
+    expect(screen.queryByTestId('process-edit')).not.toBeInTheDocument();
+  });
 });

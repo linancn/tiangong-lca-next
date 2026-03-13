@@ -26,6 +26,13 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'uuid-contact-create'),
 }));
 
+jest.mock('@/services/general/util', () => ({
+  __esModule: true,
+  formatDateTime: jest.fn(() => '2024-01-01T00:00:00Z'),
+  getImportedId: jest.fn(() => undefined),
+  isSupabaseDuplicateKeyError: jest.fn(() => false),
+}));
+
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CloseOutlined: () => <span>close</span>,
@@ -290,12 +297,35 @@ jest.mock('@/services/contacts/util', () => ({
   genContactFromData: jest.fn(() => ({})),
 }));
 
-const { createContact: mockCreateContact } = jest.requireMock('@/services/contacts/api');
+const { createContact: mockCreateContact, getContactDetail: mockGetContactDetail } =
+  jest.requireMock('@/services/contacts/api');
+const { genContactFromData: mockGenContactFromData } = jest.requireMock('@/services/contacts/util');
+const {
+  getImportedId: mockGetImportedId,
+  isSupabaseDuplicateKeyError: mockIsSupabaseDuplicateKeyError,
+} = jest.requireMock('@/services/general/util');
 
 describe('ContactCreate component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateContact.mockResolvedValue({ data: [{ id: 'contact-new' }] });
+    mockGetContactDetail.mockResolvedValue({
+      data: { json: { contactDataSet: {} } },
+    });
+    mockGenContactFromData.mockReturnValue({
+      contactInformation: {
+        dataSetInformation: {
+          'common:shortName': 'Existing Contact',
+        },
+      },
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.00.000',
+        },
+      },
+    });
+    mockGetImportedId.mockReturnValue(undefined);
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -337,5 +367,138 @@ describe('ContactCreate component', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Create Contact' })).not.toBeInTheDocument(),
     );
+  });
+
+  it('loads the existing record for createVersion and reuses the original id', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <ContactCreate
+        lang='en'
+        actionRef={actionRef as any}
+        actionType='createVersion'
+        id='contact-1'
+        version='1.0.0'
+        newVersion='02.00.000'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Version' });
+    await waitFor(() => expect(mockGetContactDetail).toHaveBeenCalledWith('contact-1', '1.0.0'));
+
+    expect(within(drawer).getByLabelText('Short Name')).toHaveValue('Existing Contact');
+
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockCreateContact).toHaveBeenCalledWith(
+        'contact-1',
+        expect.objectContaining({
+          contactInformation: expect.objectContaining({
+            dataSetInformation: expect.objectContaining({
+              'common:shortName': 'Existing Contact',
+            }),
+          }),
+          administrativeInformation: expect.objectContaining({
+            publicationAndOwnership: expect.objectContaining({
+              'common:dataSetVersion': '02.00.000',
+            }),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('auto-opens for imported data and uses the imported id when saving', async () => {
+    const user = userEvent.setup();
+
+    mockGetImportedId.mockReturnValue('imported-contact-id');
+    mockGenContactFromData.mockReturnValue({
+      contactInformation: {
+        dataSetInformation: {
+          'common:shortName': 'Imported Contact',
+        },
+      },
+    });
+
+    renderWithProviders(
+      <ContactCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        importData={[{ contactDataSet: {} }] as any}
+      />,
+    );
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Contact' });
+    expect(within(drawer).getByLabelText('Short Name')).toHaveValue('Imported Contact');
+
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockCreateContact).toHaveBeenCalledWith(
+        'imported-contact-id',
+        expect.objectContaining({
+          contactInformation: expect.objectContaining({
+            dataSetInformation: expect.objectContaining({
+              'common:shortName': 'Imported Contact',
+            }),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('shows the duplicate-id error and keeps the drawer open on failure', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateContact.mockResolvedValue({
+      data: null,
+      error: { message: 'duplicate' },
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
+
+    renderWithProviders(
+      <ContactCreate lang='en' actionRef={actionRef as any} onClose={jest.fn()} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'Data with the same ID already exists.',
+      ),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Create Contact' })).toBeInTheDocument();
+  });
+
+  it('shows the backend error message when create fails for another reason', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateContact.mockResolvedValue({
+      data: null,
+      error: { message: 'create failed' },
+    });
+
+    renderWithProviders(
+      <ContactCreate lang='en' actionRef={actionRef as any} onClose={jest.fn()} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('create failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Create Contact' })).toBeInTheDocument();
   });
 });

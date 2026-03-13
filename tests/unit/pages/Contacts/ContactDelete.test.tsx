@@ -148,4 +148,59 @@ describe('ContactDelete component', () => {
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
   });
+
+  it('closes the confirmation modal when cancelled', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactDelete
+        id='contact-delete'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('alertdialog', { name: 'Delete Contact' });
+    await user.click(within(modal).getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog', { name: 'Delete Contact' })).not.toBeInTheDocument(),
+    );
+    expect(mockDeleteContact).not.toHaveBeenCalled();
+  });
+
+  it('shows the backend error when deletion fails', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    mockDeleteContact.mockResolvedValue({
+      status: 400,
+      error: { message: 'delete failed' },
+    });
+
+    renderWithProviders(
+      <ContactDelete
+        id='contact-delete'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={setViewDrawerVisible}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('alertdialog', { name: 'Delete Contact' });
+    await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('delete failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(setViewDrawerVisible).not.toHaveBeenCalled();
+    expect(screen.getByRole('alertdialog', { name: 'Delete Contact' })).toBeInTheDocument();
+  });
 });

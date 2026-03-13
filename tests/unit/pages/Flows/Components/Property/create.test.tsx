@@ -1,7 +1,13 @@
 // @ts-nocheck
 import PropertyCreate from '@/pages/Flows/Components/Property/create';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import {
+  act,
+  renderWithProviders,
+  screen,
+  waitFor,
+  within,
+} from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -211,6 +217,19 @@ describe('FlowPropertyCreate', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /create/i }));
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();
+  });
+
+  it('closes without saving when the close icon is clicked', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<PropertyCreate lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    const drawer = screen.getByRole('dialog', { name: /create flow property/i });
+    await userEvent.click(within(drawer).getAllByRole('button', { name: /close/i })[0]);
 
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();

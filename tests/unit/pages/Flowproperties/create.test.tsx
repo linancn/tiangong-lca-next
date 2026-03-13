@@ -369,4 +369,28 @@ describe('FlowpropertiesCreate', () => {
     );
     expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
+
+  it('shows the backend error message for non-duplicate create failures', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+    mockCreateFlowproperties.mockResolvedValue({
+      data: null,
+      error: { message: 'create failed' },
+    });
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate actionRef={actionRef} lang='en' onClose={jest.fn()} />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    const nameInput = await screen.findByLabelText(/flow property name/i);
+    await userEvent.type(nameInput, 'Broken property');
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    const { message } = jest.requireMock('antd');
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('create failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /create flow property/i })).toBeInTheDocument();
+  });
 });

@@ -1,7 +1,13 @@
 // @ts-nocheck
 import PropertyEdit from '@/pages/Flows/Components/Property/edit';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import {
+  act,
+  renderWithProviders,
+  screen,
+  waitFor,
+  within,
+} from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -245,5 +251,31 @@ describe('FlowPropertyEdit', () => {
 
     expect(onData).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('closes without saving when the close icon is clicked', async () => {
+    const onData = jest.fn();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    renderWithProviders(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={setViewDrawerVisible}
+        onData={onData}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    const drawer = screen.getByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(within(drawer).getAllByRole('button', { name: /close/i })[0]);
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /edit flow property/i })).not.toBeInTheDocument();
   });
 });

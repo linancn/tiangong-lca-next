@@ -329,6 +329,52 @@ describe('SourceForm component', () => {
     });
   });
 
+  it('loads the original file url when previewing an existing image', async () => {
+    renderForm({
+      fileList: [{ uid: 'existing-image', name: 'existing.png', url: 'https://cdn/existing.png' }],
+    });
+
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+
+    await waitFor(() => {
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('existing-image', 'existing.png');
+    });
+    expect(mockGetBase64).not.toHaveBeenCalled();
+  });
+
+  it('opens non-image files in a new window when previewed', async () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null as any);
+    mockIsImage.mockReturnValue(false);
+
+    renderForm({
+      fileList: [{ uid: 'doc-1', name: 'document.pdf', url: 'https://cdn/document.pdf' }],
+    });
+
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+
+    await waitFor(() => {
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('doc-1', 'document.pdf');
+    });
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalledWith('https://example.com/file', '_blank');
+    });
+
+    openSpy.mockRestore();
+  });
+
+  it('does not inject the default source name outside create mode', () => {
+    renderForm({ formType: 'edit' });
+
+    const dataSetFormatCall = mockSourceSelectForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') ===
+          'administrativeInformation.dataEntryBy.common:referenceToDataSetFormat',
+    );
+
+    expect(dataSetFormatCall?.[0]?.defaultSourceName).toBeUndefined();
+  });
+
   it('applies validation rules when showRules is true', () => {
     renderForm({ showRules: true });
 

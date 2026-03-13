@@ -414,4 +414,32 @@ describe('FlowpropertiesEdit', () => {
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
   });
+
+  it('shows the backend error message for non-state-code save failures', async () => {
+    mockUpdateFlowproperties.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'save failed' },
+    });
+    const actionRef = { current: { reload: jest.fn() } };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesEdit
+          id='fp-1'
+          version='1.0.0'
+          buttonType='text'
+          actionRef={actionRef as any}
+          lang='en'
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '1.0.0'));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('save failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
+  });
 });

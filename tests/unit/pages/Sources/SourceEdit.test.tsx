@@ -54,6 +54,11 @@ jest.mock('umi', () => ({
   }),
 }));
 
+jest.mock('uuid', () => ({
+  __esModule: true,
+  v4: jest.fn(() => 'uuid-source-edit'),
+}));
+
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CloseOutlined: () => <span>close</span>,
@@ -280,7 +285,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    SourceForm: ({ onData }: any) => {
+    SourceForm: ({ onData, setFileList, setLoadFiles }: any) => {
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -301,6 +306,23 @@ jest.mock('@/pages/Sources/Components/form', () => {
               onData?.();
             }}
           />
+          <button
+            type='button'
+            onClick={() => {
+              setFileList?.([{ uid: 'new-file', name: 'new-file.pdf' }]);
+              setLoadFiles?.([{ uid: 'new-file', name: 'new-file.pdf' }]);
+            }}
+          >
+            add-file
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              setFileList?.([]);
+            }}
+          >
+            clear-files
+          </button>
         </div>
       );
     },
@@ -365,6 +387,11 @@ jest.mock('@/services/supabase/key', () => ({
 
 const { getSourceDetail: mockGetSourceDetail, updateSource: mockUpdateSource } =
   jest.requireMock('@/services/sources/api');
+const {
+  getThumbFileUrls: mockGetThumbFileUrls,
+  removeFile: mockRemoveFile,
+  uploadFile: mockUploadFile,
+} = jest.requireMock('@/services/supabase/storage');
 
 describe('SourceEdit component', () => {
   beforeEach(() => {
@@ -379,6 +406,11 @@ describe('SourceEdit component', () => {
     mockUpdateSource.mockResolvedValue({
       data: [{ rule_verification: true }],
     });
+    mockGetThumbFileUrls.mockResolvedValue([
+      { uid: '../sources/file-existing.pdf', name: 'file-existing.pdf', url: 'https://cdn/file' },
+    ]);
+    mockRemoveFile.mockResolvedValue({ error: null });
+    mockUploadFile.mockResolvedValue({ error: null });
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -430,5 +462,179 @@ describe('SourceEdit component', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Edit Source' })).not.toBeInTheDocument(),
     );
+  });
+
+  it('uploads newly attached files after a successful save', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'add-file' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockUploadFile).toHaveBeenCalledWith(
+        'uuid-source-edit.pdf',
+        expect.objectContaining({ uid: 'new-file', name: 'new-file.pdf' }),
+      ),
+    );
+  });
+
+  it('removes deleted existing files before saving', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'clear-files' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(mockRemoveFile).toHaveBeenCalledWith(['file-existing.pdf']));
+  });
+
+  it('shows an open-data error when the update is rejected with state_code 100', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockUpdateSource.mockResolvedValue({
+      data: null,
+      error: { state_code: 100, message: 'open data' },
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'This data is open data, save failed',
+      ),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Edit Source' })).toBeInTheDocument();
+  });
+
+  it('shows an under-review error when the update is rejected with state_code 20', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockUpdateSource.mockResolvedValue({
+      data: null,
+      error: { state_code: 20, message: 'under review' },
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Edit Source' })).toBeInTheDocument();
+  });
+
+  it('shows the backend error message for other save failures', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockUpdateSource.mockResolvedValue({
+      data: null,
+      error: { message: 'save failed' },
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('save failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Edit Source' })).toBeInTheDocument();
+  });
+
+  it('shows file-removal errors but still attempts to save the source', async () => {
+    const user = userEvent.setup();
+
+    mockRemoveFile.mockResolvedValueOnce({ error: { message: 'remove failed' } });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'clear-files' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(mockRemoveFile).toHaveBeenCalledWith(['file-existing.pdf']));
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('remove failed'));
+    expect(mockUpdateSource).toHaveBeenCalledTimes(1);
   });
 });

@@ -389,6 +389,52 @@ describe('FlowsEdit', () => {
     );
   });
 
+  it('keeps current reference versions when requested from the refs drawer', async () => {
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({
+      newRefs: [
+        {
+          key: 'ref-1',
+          id: 'source-1',
+          type: 'source data set',
+          currentVersion: '1.0.0',
+          newVersion: '2.0.0',
+        },
+      ],
+      oldRefs,
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    expect(await screen.findByTestId('flow-form')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /keep-current/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+  });
+
   it('shows an open-data error when the save request is rejected by state code', async () => {
     mockUpdateFlows.mockResolvedValueOnce({
       data: undefined,
@@ -416,5 +462,60 @@ describe('FlowsEdit', () => {
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith('This data is open data, save failed'),
     );
+  });
+
+  it('shows an under-review error when the save request is rejected by state code 20', async () => {
+    mockUpdateFlows.mockResolvedValueOnce({
+      data: undefined,
+      error: {
+        state_code: 20,
+        message: 'under review',
+      },
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    expect(await screen.findByTestId('flow-form')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+  });
+
+  it('shows the backend message for other save failures', async () => {
+    mockUpdateFlows.mockResolvedValueOnce({
+      data: undefined,
+      error: {
+        message: 'save failed',
+      },
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    expect(await screen.findByTestId('flow-form')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('save failed'));
   });
 });

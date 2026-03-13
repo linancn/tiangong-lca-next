@@ -1,7 +1,7 @@
 // @ts-nocheck
 import UnitGroupEdit from '@/pages/Unitgroups/Components/edit';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -382,5 +382,67 @@ describe('UnitGroupEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Please select unit'));
+  });
+
+  it('shows an open-data error when save is rejected with state_code 100', async () => {
+    const reload = jest.fn();
+
+    mockUpdateUnitGroup.mockResolvedValue({
+      data: null,
+      error: { state_code: 100, message: 'open data' },
+    });
+
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        actionRef={{ current: { reload } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /edit/i });
+
+    await userEvent.click(within(drawer).getByRole('button', { name: /^save$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('This data is open data, save failed'),
+    );
+    expect(reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('shows an under-review error when save is rejected with state_code 20', async () => {
+    const reload = jest.fn();
+
+    mockUpdateUnitGroup.mockResolvedValue({
+      data: null,
+      error: { state_code: 20, message: 'under review' },
+    });
+
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        actionRef={{ current: { reload } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /edit/i });
+
+    await userEvent.click(within(drawer).getByRole('button', { name: /^save$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+    expect(reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
   });
 });

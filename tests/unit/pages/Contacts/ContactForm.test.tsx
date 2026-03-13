@@ -174,6 +174,19 @@ describe('ContactForm component', () => {
     ).toBe(true);
   });
 
+  it('does not inject the default source name outside create mode', () => {
+    renderForm({ formType: 'edit' });
+
+    const dataSetFormatCall = mockSourceSelectForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') ===
+          'administrativeInformation.dataEntryBy.common:referenceToDataSetFormat',
+    );
+
+    expect(dataSetFormatCall?.[0]?.defaultSourceName).toBeUndefined();
+  });
+
   it('applies validation rules when showRules is true', () => {
     renderForm({ showRules: true });
 
