@@ -290,6 +290,47 @@ describe('Source Utility Functions', () => {
         }),
       );
     });
+
+    it('should stamp current time and derive permanent dataset URI from id and version', () => {
+      const result = genSourceJsonOrdered('source-time', {
+        sourceInformation: { dataSetInformation: {} },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '02.05.008',
+          },
+        },
+      });
+
+      expect(mockFormatDateTime).toHaveBeenCalled();
+      expect(result.sourceDataSet.administrativeInformation.dataEntryBy['common:timeStamp']).toBe(
+        '2024-05-12T00:00:00Z',
+      );
+      expect(
+        result.sourceDataSet.administrativeInformation.publicationAndOwnership[
+          'common:permanentDataSetURI'
+        ],
+      ).toBe(
+        'https://lcdn.tiangong.earth/datasetdetail/source.xhtml?uuid=source-time&version=02.05.008',
+      );
+    });
+
+    it('should keep multiple digital file references when listToJson returns an array', () => {
+      const digitalFilesInput = [{ '@uri': '../docs/a.pdf' }, { '@uri': '../docs/b.pdf' }];
+      mockListToJson.mockImplementation((value) => value);
+
+      const result = genSourceJsonOrdered('source-files', {
+        sourceInformation: {
+          dataSetInformation: {
+            referenceToDigitalFile: digitalFilesInput,
+          },
+        },
+      });
+
+      expect(mockListToJson).toHaveBeenCalledWith(digitalFilesInput);
+      expect(
+        result.sourceDataSet.sourceInformation.dataSetInformation.referenceToDigitalFile,
+      ).toEqual(digitalFilesInput);
+    });
   });
 
   describe('genSourceFromData', () => {
@@ -476,6 +517,37 @@ describe('Source Utility Functions', () => {
             dataSetInformation: expect.objectContaining({
               'common:UUID': 'minimal-id',
               'common:shortName': [],
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('should forward the converted UTC timestamp into the TIDAS payload', () => {
+      mockConvertToUTCISOString.mockReturnValueOnce('2024-05-10T08:00:00Z');
+
+      genSourceFromData({
+        sourceInformation: {
+          dataSetInformation: {
+            'common:UUID': 'source-ts',
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': 'raw-time',
+          },
+          publicationAndOwnership: {},
+        },
+      });
+
+      expect(mockConvertToUTCISOString).toHaveBeenCalledWith('raw-time');
+      expect(mockCreateSource).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sourceDataSet: expect.objectContaining({
+            administrativeInformation: expect.objectContaining({
+              dataEntryBy: expect.objectContaining({
+                'common:timeStamp': '2024-05-10T08:00:00Z',
+              }),
             }),
           }),
         }),
