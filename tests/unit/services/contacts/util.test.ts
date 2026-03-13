@@ -13,6 +13,7 @@ describe('Contacts Util Service', () => {
     getLangList,
     classificationToJsonList,
     classificationToStringList,
+    convertToUTCISOString,
     removeEmptyObjects,
     formatDateTime,
   } = jest.requireMock('@/services/general/util');
@@ -26,6 +27,7 @@ describe('Contacts Util Service', () => {
     getLangList.mockImplementation((value: any) => value || []);
     classificationToJsonList.mockImplementation((value: any) => value || []);
     classificationToStringList.mockImplementation((value: any) => value || []);
+    convertToUTCISOString.mockImplementation((value: any) => value);
     removeEmptyObjects.mockImplementation((obj: any) => obj);
     formatDateTime.mockReturnValue('2023-01-01T00:00:00Z');
   });
@@ -157,6 +159,31 @@ describe('Contacts Util Service', () => {
         'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
       );
     });
+
+    it('should stamp current time and derive permanent dataset URI from id and version', async () => {
+      const { genContactJsonOrdered } = require('@/services/contacts/util');
+
+      const result = genContactJsonOrdered('contact-777', {
+        contactInformation: { dataSetInformation: {} },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '02.03.004',
+          },
+        },
+      });
+
+      expect(formatDateTime).toHaveBeenCalled();
+      expect(
+        result.contactDataSet?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+      ).toBe('2023-01-01T00:00:00Z');
+      expect(
+        result.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
+          'common:permanentDataSetURI'
+        ],
+      ).toBe(
+        'https://lcdn.tiangong.earth/datasetdetail/contact.xhtml?uuid=contact-777&version=02.03.004',
+      );
+    });
   });
 
   describe('genContactFromData', () => {
@@ -248,6 +275,41 @@ describe('Contacts Util Service', () => {
 
       expect(result).toBeDefined();
       expect(formatDateTime).toHaveBeenCalled();
+    });
+
+    it('should fall back to formatDateTime when UTC conversion returns undefined', async () => {
+      const { genContactFromData } = require('@/services/contacts/util');
+
+      convertToUTCISOString.mockReturnValueOnce(undefined);
+
+      const result = genContactFromData({
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-fallback',
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': 'raw-ts',
+          },
+          publicationAndOwnership: {},
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(convertToUTCISOString).toHaveBeenCalledWith('raw-ts');
+      expect(formatDateTime).toHaveBeenCalled();
+      expect(createTidasContact).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contactDataSet: expect.objectContaining({
+            administrativeInformation: expect.objectContaining({
+              dataEntryBy: expect.objectContaining({
+                'common:timeStamp': '2023-01-01T00:00:00Z',
+              }),
+            }),
+          }),
+        }),
+      );
     });
 
     it('should handle complex reference structures', async () => {
