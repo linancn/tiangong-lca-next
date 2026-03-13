@@ -37,6 +37,11 @@ jest.mock('@/services/lciaMethods/util', () => ({
   default: jest.fn(),
 }));
 
+jest.mock('uuid', () => ({
+  __esModule: true,
+  v4: jest.fn(() => 'generated-secondary-id'),
+}));
+
 const mockLCIAResultCalculation = jest.requireMock('@/services/lciaMethods/util')
   .default as jest.Mock;
 
@@ -364,6 +369,59 @@ describe('genLifeCycleModelProcesses', () => {
           referenceToFlowDataSet: expect.objectContaining({ '@refObjectId': 'flow-C-final' }),
         }),
       ]),
+    );
+  });
+
+  it('creates a new secondary id and falls back to database reference amount when target amount is missing', async () => {
+    const data = createLifeCycleModelData();
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+
+    mockLCIAResultCalculation
+      .mockResolvedValueOnce([{ '@id': 'LCIA_PRIMARY' }])
+      .mockResolvedValueOnce([{ '@id': 'LCIA_SECONDARY' }]);
+
+    const modelNodes = [
+      {
+        '@dataSetInternalID': 'nodeA',
+        id: 'graph-node-a',
+      },
+      {
+        '@dataSetInternalID': 'nodeB',
+        id: 'graph-node-b',
+      },
+      {
+        '@dataSetInternalID': 'nodeC',
+        id: 'graph-node-c',
+      },
+    ];
+
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-999',
+      modelNodes as any,
+      data,
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
+    const secondary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'secondary');
+
+    expect(primary?.option).toBe('update');
+    expect(primary?.modelInfo?.id).toBe('model-999');
+    expect(
+      primary?.data?.processDataSet?.exchanges?.exchange?.find(
+        (exchange: any) => exchange?.quantitativeReference,
+      )?.meanAmount,
+    ).toBe(5);
+
+    expect(secondary?.option).toBe('create');
+    expect(secondary?.modelInfo?.id).toBe('generated-secondary-id');
+    expect(secondary?.modelInfo?.finalId).toEqual(
+      expect.objectContaining({
+        nodeId: 'nodeC',
+        processId: 'procC',
+        allocatedExchangeFlowId: 'flow-C-final',
+        allocatedExchangeDirection: 'OUTPUT',
+      }),
     );
   });
 });
