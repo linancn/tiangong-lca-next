@@ -39,6 +39,15 @@ describe('optiondata (src/pages/Flows/Components/optiondata.tsx)', () => {
     ]);
   });
 
+  it('keeps custom flow type options as a strict subset of the full flow types', () => {
+    const fullValues = flowTypeOptions.map((opt) => opt.value);
+
+    myFlowTypeOptions.forEach((option) => {
+      expect(fullValues).toContain(option.value);
+      expect((option.label as any).props.id).toContain('typeOfDataSet');
+    });
+  });
+
   it('keeps formatted message ids aligned with the option values', () => {
     expect((dataDerivationTypeStatusOptions[0].label as any).props.id).toBe(
       'pages.flow.view.flowProperties.dataDerivationType.measured',

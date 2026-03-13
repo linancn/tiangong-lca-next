@@ -1,6 +1,8 @@
 import type {
   FlowPropertyUnitGroupData,
+  UnitDraft,
   UnitGroupDetailResponse,
+  UnitGroupImportItem,
   UnitGroupRefFormValue,
   UnitGroupTable,
   UnitReferenceData,
@@ -76,5 +78,28 @@ describe('unitgroups data shapes', () => {
     expect(refForm.refUnit?.name).toBe('MJ');
     expect(flowPropUnitGroup.refUnitGroupId).toBe('ug-2');
     expect(response.data?.ruleVerification).toBe(true);
+  });
+
+  it('supports drafts and import items used before unit groups are persisted', () => {
+    const draft: UnitDraft = {
+      name: 'kWh',
+      meanValue: '3.6',
+      generalComment: [{ '@xml:lang': 'en', '#text': 'Kilowatt hour' }],
+      quantitativeReference: false,
+    };
+    const importItem: UnitGroupImportItem = {
+      unitGroupDataSet: {
+        unitGroupInformation: {
+          dataSetInformation: {
+            'common:UUID': 'ug-import-1',
+          },
+        } as any,
+      } as any,
+    };
+
+    expect(draft.name).toBe('kWh');
+    expect(
+      importItem.unitGroupDataSet?.unitGroupInformation?.dataSetInformation?.['common:UUID'],
+    ).toBe('ug-import-1');
   });
 });

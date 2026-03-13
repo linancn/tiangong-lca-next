@@ -1,6 +1,8 @@
 import type {
   FormSource,
+  SourceDataSetObjectKeys,
   SourceDetailResponse,
+  SourceImportData,
   SourceReference,
   SourceTable,
 } from '@/services/sources/data';
@@ -60,5 +62,36 @@ describe('sources data shapes', () => {
 
     expect(response.data?.json?.sourceDataSet).toBe(formState);
     expect(response.data?.ruleVerification).toBe(true);
+  });
+
+  it('supports source references as arrays, import payloads, and form object keys', () => {
+    const refs: SourceReference = [
+      {
+        '@refObjectId': 'source-3',
+        '@type': 'source data set',
+        '@uri': '../sources/source-3.xml',
+        '@version': '03.00.000',
+      },
+    ];
+    const importData: SourceImportData = [
+      {
+        sourceDataSet: {
+          sourceInformation: {
+            dataSetInformation: {
+              'common:UUID': 'source-import-1',
+            },
+          } as any,
+        } as any,
+      },
+    ];
+    const key: SourceDataSetObjectKeys = 'administrativeInformation';
+
+    expect(
+      ((refs as SourceReference[])[0] as Exclude<SourceReference, SourceReference[]>)['@version'],
+    ).toBe('03.00.000');
+    expect(importData[0].sourceDataSet.sourceInformation?.dataSetInformation?.['common:UUID']).toBe(
+      'source-import-1',
+    );
+    expect(key).toBe('administrativeInformation');
   });
 });

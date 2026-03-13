@@ -72,4 +72,35 @@ describe('reviews data shapes', () => {
     expect(row.isFromLifeCycle).toBe(false);
     expect(row.modelData).toBeNull();
   });
+
+  it('supports rows without optional comment state arrays or timestamps', () => {
+    const row: ReviewsTable = {
+      key: 'review-3',
+      id: 'review-3',
+      name: 'Review C',
+      teamName: 'Team Gamma',
+      userName: 'Carol',
+      isFromLifeCycle: false,
+      json: {
+        data: {
+          id: 'process-3',
+          version: '03.00.000',
+          name: { baseName: [{ '@xml:lang': 'en', '#text': 'Process C' }] },
+        },
+        team: {
+          id: 'team-3',
+          name: 'Team Gamma',
+        },
+        user: {
+          id: 'user-3',
+          name: 'Carol',
+          email: 'carol@example.com',
+        },
+      },
+    };
+
+    expect(row.comments).toBeUndefined();
+    expect(row.modifiedAt).toBeUndefined();
+    expect((row.json.data.name as any).baseName[0]['#text']).toBe('Process C');
+  });
 });

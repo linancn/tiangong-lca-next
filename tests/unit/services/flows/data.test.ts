@@ -5,10 +5,15 @@
 
 import type {
   FlowDataSetObjectKeys,
+  FlowDetailResponse,
+  FlowImportData,
   FlowModelTable,
+  FlowPropertyData,
   FlowpropertyTabTable,
+  FlowRefUnitDisplay,
   FlowTable,
   FormFlow,
+  FormFlowWithId,
 } from '@/services/flows/data';
 import { genFlowPropertyTabTableData } from '@/services/flows/util';
 import { createMockTableResponse } from '../../../helpers/testData';
@@ -113,6 +118,29 @@ describe('Flows Data Types (src/services/flows/data.ts)', () => {
 
       expect(mockFlowProp.refUnitRes).toBeUndefined();
     });
+
+    it('should support optional flow-property reference display helpers', () => {
+      const refUnitDisplay: FlowRefUnitDisplay = {
+        name: [{ '@xml:lang': 'en', '#text': 'Mass' }],
+        refUnitName: 'kg',
+        refUnitGeneralComment: [{ '@xml:lang': 'en', '#text': 'Reference unit' }],
+      };
+      const propertyData: FlowPropertyData = {
+        '@dataSetInternalID': '1',
+        referenceToFlowPropertyDataSet: {
+          '@refObjectId': 'flowprop-1',
+          '@version': '01.00.000',
+        },
+        meanValue: '1',
+        relativeStandardDeviation95In: 0.1,
+        quantitativeReference: true,
+        generalComment: [{ '@xml:lang': 'en', '#text': 'Measured' }],
+      };
+
+      expect(refUnitDisplay.refUnitName).toBe('kg');
+      expect(propertyData.referenceToFlowPropertyDataSet?.['@refObjectId']).toBe('flowprop-1');
+      expect(propertyData.relativeStandardDeviation95In).toBe(0.1);
+    });
   });
 
   describe('FlowDataSetObjectKeys type', () => {
@@ -174,6 +202,57 @@ describe('Flows Data Types (src/services/flows/data.ts)', () => {
 
       expect(formFlow.flowProperties).toBeDefined();
       expect(formFlow.flowProperties?.flowProperty).toBeDefined();
+    });
+
+    it('should support import payloads, detail responses, and form ids', () => {
+      const formWithId: Partial<FormFlowWithId> = {
+        id: 'flow-1',
+        flowInformation: {
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Water' }],
+            },
+          },
+        } as any,
+      };
+      const formState: Partial<FormFlow> = {
+        flowInformation: {
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Water' }],
+            },
+          },
+        } as any,
+      };
+      const importData: FlowImportData = [
+        {
+          flowDataSet: {
+            flowInformation: {
+              dataSetInformation: {
+                'common:UUID': 'flow-import-1',
+              },
+            } as any,
+          } as any,
+        },
+      ];
+      const response: FlowDetailResponse = {
+        success: true,
+        data: {
+          id: 'flow-1',
+          version: '01.00.000',
+          json: { flowDataSet: formState as any },
+          modifiedAt: '2026-03-13T00:00:00Z',
+          stateCode: 20,
+          ruleVerification: true,
+          userId: 'user-1',
+        },
+      };
+
+      expect(formWithId.id).toBe('flow-1');
+      expect(importData[0].flowDataSet.flowInformation?.dataSetInformation?.['common:UUID']).toBe(
+        'flow-import-1',
+      );
+      expect(response.data?.json?.flowDataSet).toBe(formState);
     });
   });
 

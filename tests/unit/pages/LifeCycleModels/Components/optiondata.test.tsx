@@ -32,4 +32,13 @@ describe('LifeCycleModels optiondata', () => {
     );
     expect((licenseTypeOptions[4].label as any).props.defaultMessage).toBe('Other');
   });
+
+  it('keeps each license choice mapped to a unique translation id', () => {
+    const labelIds = licenseTypeOptions.map((option) => (option.label as any).props.id);
+
+    expect(new Set(labelIds).size).toBe(licenseTypeOptions.length);
+    expect(labelIds[3]).toBe(
+      'pages.lifeCycleModel.administrativeInformation.licenseType.licenseFee',
+    );
+  });
 });

@@ -39,4 +39,20 @@ describe('teams data shapes', () => {
     expect(team.is_public).toBe(true);
     expect(team.ownerEmail).toBe('owner@example.com');
   });
+
+  it('allows custom team json keys and members without display names', () => {
+    const member: TeamMemberTable = {
+      user_id: 'user-2',
+      team_id: 'team-2',
+      role: 'member',
+      email: 'member@example.com',
+    };
+    const json: TeamJson = {
+      title: [{ '@xml:lang': 'zh', '#text': '团队 Beta' }],
+      customTheme: 'green',
+    };
+
+    expect(member.display_name).toBeUndefined();
+    expect(json.customTheme).toBe('green');
+  });
 });

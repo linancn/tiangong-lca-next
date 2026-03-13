@@ -26,8 +26,23 @@ describe('Sources optiondata', () => {
     ]);
   });
 
+  it('keeps publication type labels wired to their message ids', () => {
+    expect((publicationTypeOptions[0].label as any).props.id).toBe(
+      'pages.source.view.sourceInformation.publicationType.undefined',
+    );
+    expect((publicationTypeOptions[4].label as any).props.defaultMessage).toBe(
+      'Direct measurement',
+    );
+    expect((publicationTypeOptions[publicationTypeOptions.length - 1].label as any).props.id).toBe(
+      'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature',
+    );
+  });
+
   it('returns the matching label or a fallback dash', () => {
     expect((getPublicationTypeLabel('Monograph') as any).props.defaultMessage).toBe('Monograph');
+    expect((getPublicationTypeLabel('Undefined') as any).props.id).toBe(
+      'pages.source.view.sourceInformation.publicationType.undefined',
+    );
     expect(getPublicationTypeLabel('missing')).toBe('-');
   });
 });

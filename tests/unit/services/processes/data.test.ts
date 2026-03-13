@@ -1,7 +1,13 @@
 import type {
+  ProcessComplianceItem,
+  ProcessDetailByVersionResponse,
   ProcessDetailResponse,
   ProcessExchangeTable,
+  ProcessFormState,
+  ProcessReviewDataQualityIndicatorItem,
+  ProcessReviewItem,
   ProcessReviewRecord,
+  ProcessReviewScopeItem,
   ProcessTable,
 } from '@/services/processes/data';
 
@@ -73,5 +79,83 @@ describe('processes data shapes', () => {
 
     expect(response.data?.reviews?.[0].json?.logs?.[0].action).toBe('approved');
     expect(response.data?.teamId).toBe('team-2');
+  });
+
+  it('supports review and compliance payload fragments used inside process forms', () => {
+    const scope: ProcessReviewScopeItem = {
+      '@name': 'Goal and scope definition',
+      'common:method': [{ '@name': 'Validation of data sources' }],
+    };
+    const dqi: ProcessReviewDataQualityIndicatorItem = {
+      '@name': 'Overall quality',
+      '@value': 'Good',
+    };
+    const review: ProcessReviewItem = {
+      '@type': 'Internal',
+      'common:scope': [scope],
+      'common:dataQualityIndicators': {
+        'common:dataQualityIndicator': [dqi],
+      },
+      'common:reviewDetails': [{ '@xml:lang': 'en', '#text': 'Review details' }],
+    };
+    const compliance: ProcessComplianceItem = {
+      'common:referenceToComplianceSystem': {
+        '@refObjectId': 'source-1',
+      },
+      'common:approvalOfOverallCompliance': 'Fully compliant',
+      'common:qualityCompliance': 'Fully compliant',
+    };
+    const formState: ProcessFormState = {
+      id: 'proc-3',
+      stateCode: 20,
+      ruleVerification: true,
+      processInformation: {
+        dataSetInformation: {
+          'common:UUID': 'proc-3',
+        },
+      } as any,
+      modellingAndValidation: {} as any,
+      administrativeInformation: {} as any,
+      exchanges: {} as any,
+    };
+
+    expect(review['common:scope']).toHaveLength(1);
+    expect(
+      (review['common:dataQualityIndicators']?.['common:dataQualityIndicator'] as any[])[0][
+        '@value'
+      ],
+    ).toBe('Good');
+    expect(compliance['common:approvalOfOverallCompliance']).toBe('Fully compliant');
+    expect(formState.id).toBe('proc-3');
+  });
+
+  it('supports detail-by-version responses used by version drawers', () => {
+    const response: ProcessDetailByVersionResponse = {
+      success: true,
+      data: [
+        {
+          id: 'proc-4',
+          version: '03.00.000',
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  'common:UUID': 'proc-4',
+                },
+              },
+            } as any,
+          },
+          modified_at: '2026-03-13T00:00:00Z',
+          state_code: 30,
+        },
+      ],
+    };
+
+    expect(response.data[0].state_code).toBe(30);
+    expect(
+      response.data[0].json?.processDataSet?.processInformation?.dataSetInformation?.[
+        'common:UUID'
+      ],
+    ).toBe('proc-4');
   });
 });
