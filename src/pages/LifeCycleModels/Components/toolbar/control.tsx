@@ -206,7 +206,14 @@ const Control = (props: ControlIProps) => {
         graph.zoomTo(zoomNum);
         break;
       case ControlEnum.AutoLayoutLR: {
-        const didLayout = applyDagreLayout(graph, 'LR');
+        let didLayout = false;
+        if (typeof graph.batchUpdate === 'function') {
+          graph.batchUpdate('auto-layout', () => {
+            didLayout = applyDagreLayout(graph, 'LR');
+          });
+        } else {
+          didLayout = applyDagreLayout(graph, 'LR');
+        }
         if (didLayout) {
           graph.zoomToFit({ maxScale: 1 });
         }

@@ -94,6 +94,7 @@ describe('LifeCycleModelToolbarControl', () => {
       canUndo: jest.fn(() => false),
       canRedo: jest.fn(() => false),
       isClipboardEmpty: jest.fn(() => true),
+      batchUpdate: jest.fn((_name: string, callback: () => void) => callback()),
     };
   });
 
@@ -148,10 +149,24 @@ describe('LifeCycleModelToolbarControl', () => {
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(0.5);
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(1.5);
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(1);
+    expect(mockGraph.batchUpdate).toHaveBeenNthCalledWith(1, 'auto-layout', expect.any(Function));
+    expect(mockGraph.batchUpdate).toHaveBeenNthCalledWith(2, 'auto-layout', expect.any(Function));
     expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(1, mockGraph, 'LR');
     expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(2, mockGraph, 'LR');
     await waitFor(() => expect(mockGraph.zoomToFit).toHaveBeenCalledTimes(2));
     expect(mockGraph.zoomToFit).toHaveBeenNthCalledWith(1, { maxScale: 1 });
+  });
+
+  it('falls back to direct auto layout when graph batching is unavailable', async () => {
+    mockApplyDagreLayout.mockReturnValueOnce(true);
+    delete mockGraph.batchUpdate;
+
+    render(<Control items={[ControlEnum.AutoLayoutLR]} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'partition' }));
+
+    expect(mockApplyDagreLayout).toHaveBeenCalledWith(mockGraph, 'LR');
+    expect(mockGraph.zoomToFit).toHaveBeenCalledWith({ maxScale: 1 });
   });
 
   it('refreshes editor command state and dispatches editing actions', async () => {
