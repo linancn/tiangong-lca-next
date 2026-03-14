@@ -1,5 +1,6 @@
 // @ts-nocheck
 import UnitGroupCreate from '@/pages/Unitgroups/Components/create';
+import UnitGroupDelete from '@/pages/Unitgroups/Components/delete';
 import UnitCreate from '@/pages/Unitgroups/Components/Unit/create';
 import UnitDelete from '@/pages/Unitgroups/Components/Unit/delete';
 import UnitEdit from '@/pages/Unitgroups/Components/Unit/edit';
@@ -84,16 +85,17 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 const mockCreateUnitGroup = jest.fn();
+const mockDeleteUnitGroup = jest.fn();
 const mockGetUnitGroupDetail = jest.fn();
 const mockGetReferenceUnit = jest.fn();
 
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   createUnitGroup: (...args: any[]) => mockCreateUnitGroup(...args),
+  deleteUnitGroup: (...args: any[]) => mockDeleteUnitGroup(...args),
   getUnitGroupDetail: (...args: any[]) => mockGetUnitGroupDetail(...args),
   getReferenceUnit: (...args: any[]) => mockGetReferenceUnit(...args),
   updateUnitGroup: jest.fn(),
-  deleteUnitGroup: jest.fn(),
 }));
 
 const mockGenUnitGroupFromData = jest.fn(() => ({
@@ -213,8 +215,9 @@ jest.mock('antd', () => {
 
   const Space = ({ children }: any) => <div>{children}</div>;
 
-  const Drawer = ({ open, onClose, title, extra, footer, children }: any) => {
+  const Drawer = ({ open, onClose, title, extra, footer, children, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     return (
       <div role='dialog' aria-label={toText(title) || 'drawer'}>
         <div>{extra}</div>
@@ -504,6 +507,10 @@ describe('Unitgroups unit components', () => {
       data: [{ id: 'generated-unit-group-id', version: '1.0' }],
       error: null,
     });
+    mockDeleteUnitGroup.mockResolvedValue({
+      status: 204,
+      error: null,
+    });
     mockGetUnitGroupDetail.mockResolvedValue({
       data: {
         json: {
@@ -725,6 +732,51 @@ describe('Unitgroups unit components', () => {
     expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
   });
 
+  it('opens copy mode, falls back to promise scheduling, and saves with a generated id', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const originalQueueMicrotask = globalThis.queueMicrotask;
+
+    globalThis.queueMicrotask = undefined as any;
+
+    try {
+      renderWithProviders(
+        <UnitGroupCreate
+          lang='en'
+          actionRef={actionRef}
+          actionType='copy'
+          id='unit-group-copy'
+          version='1.0.0'
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /create/i }));
+
+      const drawer = await screen.findByRole('dialog', { name: /create/i });
+      await waitFor(() =>
+        expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unit-group-copy', '1.0.0'),
+      );
+
+      const nameInput = within(drawer).getByLabelText('Unit group name');
+      await user.clear(nameInput);
+      await user.type(nameInput, 'Copied unit group');
+
+      await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+      await waitFor(() =>
+        expect(mockCreateUnitGroup).toHaveBeenCalledWith(
+          'generated-unit-group-id',
+          expect.objectContaining({
+            unitGroupName: 'Copied unit group',
+          }),
+        ),
+      );
+      expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    } finally {
+      globalThis.queueMicrotask = originalQueueMicrotask;
+    }
+  });
+
   it('closes unit group creation without saving when cancelled', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -739,6 +791,86 @@ describe('Unitgroups unit components', () => {
     expect(screen.queryByRole('dialog', { name: /create/i })).not.toBeInTheDocument();
     expect(mockCreateUnitGroup).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('deletes a unit group successfully and reloads the parent table', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    renderWithProviders(
+      <UnitGroupDelete
+        id='unit-group-1'
+        version='1.0.0'
+        buttonType='icon'
+        actionRef={actionRef}
+        setViewDrawerVisible={setViewDrawerVisible}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+
+    const modal = await screen.findByRole('dialog', { name: /delete/i });
+    await user.click(within(modal).getByRole('button', { name: /confirm/i }));
+
+    await waitFor(() => expect(mockDeleteUnitGroup).toHaveBeenCalledWith('unit-group-1', '1.0.0'));
+    expect(message.success).toHaveBeenCalledWith('Selected record has been deleted.');
+    expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows backend feedback when unit group deletion fails and does not reload', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    mockDeleteUnitGroup.mockResolvedValueOnce({
+      status: 400,
+      error: { message: 'Cannot delete unit group' },
+    });
+
+    renderWithProviders(
+      <UnitGroupDelete
+        id='unit-group-1'
+        version='1.0.0'
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={setViewDrawerVisible}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+
+    const modal = await screen.findByRole('dialog', { name: /delete/i });
+    await user.click(within(modal).getByRole('button', { name: /confirm/i }));
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Cannot delete unit group'));
+    expect(setViewDrawerVisible).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /delete/i })).toBeInTheDocument();
+  });
+
+  it('cancels unit group deletion without calling the api', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <UnitGroupDelete
+        id='unit-group-1'
+        version='1.0.0'
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+
+    const modal = await screen.findByRole('dialog', { name: /delete/i });
+    await user.click(within(modal).getByRole('button', { name: /cancel/i }));
+
+    expect(mockDeleteUnitGroup).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /delete/i })).not.toBeInTheDocument();
   });
 
   it('collects unit data during creation', async () => {
@@ -772,6 +904,34 @@ describe('Unitgroups unit components', () => {
       expect(onData).toHaveBeenCalledTimes(1);
     });
 
+    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+  });
+
+  it('resets unit creation state when closed and reopened', async () => {
+    const user = userEvent.setup();
+    const onData = jest.fn();
+
+    renderWithProviders(<UnitCreate onData={onData} />);
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    let drawer = await screen.findByRole('dialog', { name: /unit create/i });
+    await user.type(within(drawer).getByLabelText('Name of unit'), 'Temporary unit');
+    await user.type(within(drawer).getByLabelText('Mean value (of unit)'), '99');
+
+    await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    drawer = await screen.findByRole('dialog', { name: /unit create/i });
+    expect((within(drawer).getByLabelText('Name of unit') as HTMLInputElement).value).toBe('');
+    expect((within(drawer).getByLabelText('Mean value (of unit)') as HTMLInputElement).value).toBe(
+      '',
+    );
+
+    await user.click(within(drawer).getByRole('button', { name: 'Close' }));
+    expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
   });
 
@@ -835,6 +995,44 @@ describe('Unitgroups unit components', () => {
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
   });
 
+  it('supports text-button unit edit and closes without saving', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={onData}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+
+    let drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    await user.click(within(drawer).getByRole('button', { name: 'Close' }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+  });
+
   it('deletes a unit and reindexes remaining entries', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -887,6 +1085,39 @@ describe('Unitgroups unit components', () => {
     ]);
     expect(message.success).toHaveBeenCalledWith('Selected record has been deleted.');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports text-button unit deletion and can be cancelled', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <UnitDelete
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={onData}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+
+    const modal = await screen.findByRole('dialog', { name: /delete/i });
+    await user.click(within(modal).getByRole('button', { name: /cancel/i }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /delete/i })).not.toBeInTheDocument();
   });
 
   it('resolves reference unit for flow sources', async () => {

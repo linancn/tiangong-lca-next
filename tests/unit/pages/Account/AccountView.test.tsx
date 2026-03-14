@@ -85,8 +85,14 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
-    open ? (
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
+    if (!open) {
+      return null;
+    }
+
+    getContainer?.();
+
+    return (
       <div data-testid='drawer'>
         <div>
           <h2>{toText(title)}</h2>
@@ -97,7 +103,8 @@ jest.mock('antd', () => {
           hidden-close
         </button>
       </div>
-    ) : null;
+    );
+  };
 
   const Spin = ({ spinning, children }: any) => (
     <div data-testid='spin' data-spinning={spinning ? 'true' : 'false'}>
@@ -200,5 +207,26 @@ describe('AccountView component', () => {
     const accountInfo = descriptions[1];
     const fallbackValues = within(accountInfo).getAllByText('-', { exact: true });
     expect(fallbackValues).toHaveLength(2);
+  });
+
+  it('falls back to placeholders for an empty lookup result and closes through drawer onClose', async () => {
+    mockGetUsersByIds.mockResolvedValueOnce([] as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<AccountView userId='missing-user' />);
+
+    await user.click(screen.getByRole('button', { name: 'View Account' }));
+
+    await waitFor(() => expect(mockGetUsersByIds).toHaveBeenCalledWith(['missing-user']));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    expect(screen.getAllByText('-', { exact: true })).toHaveLength(3);
+
+    await user.click(screen.getByText('hidden-close'));
+
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
   });
 });

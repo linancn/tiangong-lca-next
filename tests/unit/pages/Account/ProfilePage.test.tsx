@@ -107,9 +107,9 @@ jest.mock('antd', () => {
 
     const validateFields = React.useCallback(async () => {
       const errors: any[] = [];
-      Object.entries(rulesRef.current).forEach(([field, rules]) => {
+      for (const [field, rules] of Object.entries(rulesRef.current)) {
         const value = values[field];
-        (rules ?? []).forEach((rule) => {
+        for (const rule of rules ?? []) {
           const messageText = toText(rule?.message) || 'Validation failed';
           if (
             rule?.required &&
@@ -120,8 +120,25 @@ jest.mock('antd', () => {
           if (rule?.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
             errors.push({ name: [field], errors: [messageText] });
           }
-        });
-      });
+          if (
+            rule?.type === 'email' &&
+            typeof value === 'string' &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ) {
+            errors.push({ name: [field], errors: [messageText] });
+          }
+          if (typeof rule?.validator === 'function') {
+            try {
+              await rule.validator({}, value);
+            } catch (error: any) {
+              errors.push({
+                name: [field],
+                errors: [error?.message || messageText],
+              });
+            }
+          }
+        }
+      }
       if (errors.length) {
         const submitError: any = new Error('Validation failed');
         submitError.errorFields = errors;
@@ -334,8 +351,15 @@ jest.mock('@ant-design/pro-components', () => {
 
     const handleSubmit = async (event?: any) => {
       event?.preventDefault?.();
-      const values = (await internalFormRef.current?.validateFields?.()) ?? {};
-      await onFinish?.(values);
+      try {
+        if (formRef) {
+          formRef.current = internalFormRef.current;
+        }
+        const values = (await internalFormRef.current?.validateFields?.()) ?? {};
+        await onFinish?.(values);
+      } catch (error) {
+        return false;
+      }
     };
 
     const submitText = submitter?.searchConfig?.submitText ?? 'submit';
@@ -372,11 +396,23 @@ jest.mock('@ant-design/pro-components', () => {
     </Form.Item>
   );
 
-  ProFormText.Password = ({ fieldProps, ...rest }: any) => (
-    <Form.Item {...rest}>
-      <Input.Password {...sanitizeFieldProps(fieldProps)} placeholder={rest.placeholder} />
-    </Form.Item>
-  );
+  const ProFormPassword = ({ fieldProps, ...rest }: any) => {
+    const context = React.useContext(Form.__Context);
+    const fieldValue = context?.values?.[rest.name];
+    const statusNode =
+      typeof fieldProps?.statusRender === 'function' ? fieldProps.statusRender(fieldValue) : null;
+
+    return (
+      <>
+        <Form.Item {...rest}>
+          <Input.Password {...sanitizeFieldProps(fieldProps)} placeholder={rest.placeholder} />
+        </Form.Item>
+        {statusNode ? <div data-testid={`status-${rest.name}`}>{toText(statusNode)}</div> : null}
+      </>
+    );
+  };
+  ProFormPassword.displayName = 'MockProFormPassword';
+  ProFormText.Password = ProFormPassword;
 
   const PageContainer = ({ title, children }: any) => (
     <div data-testid='page-container'>
@@ -644,6 +680,72 @@ describe('Account profile page (unit)', () => {
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Password policy rejected'));
   });
 
+  it('shows a generic error when password change throws unexpectedly', async () => {
+    mockCognitoChangePassword.mockRejectedValueOnce(new Error('cognito password failed'));
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'A system error occurred while changing the password. Please try again later.',
+      ),
+    );
+    expect(mockChangePassword).not.toHaveBeenCalled();
+  });
+
+  it('blocks password submission when the new password matches the current password', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('New Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg1!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(mockCognitoChangePassword).not.toHaveBeenCalled());
+    expect(mockChangePassword).not.toHaveBeenCalled();
+  });
+
+  it('blocks password submission when the confirmation does not match', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg3!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(mockCognitoChangePassword).not.toHaveBeenCalled());
+    expect(mockChangePassword).not.toHaveBeenCalled();
+  });
+
   it('changes email successfully after cognito update', async () => {
     const user = userEvent.setup();
 
@@ -717,6 +819,55 @@ describe('Account profile page (unit)', () => {
       expect(message.error).toHaveBeenCalledWith('An error occurred while changing the email.'),
     );
     expect(mockChangeEmail).not.toHaveBeenCalled();
+  });
+
+  it('blocks email submission when the confirmation email does not match', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+
+    await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
+    await user.type(screen.getByLabelText('Confirm New Email'), 'alice.other@example.com');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(mockCognitoChangeEmail).not.toHaveBeenCalled());
+    expect(mockChangeEmail).not.toHaveBeenCalled();
+  });
+
+  it('renders password strength feedback in the password and API key tabs', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Weak');
+
+    const newPassword = screen.getByLabelText('New Password');
+    await user.type(newPassword, 'Abcdefg1!');
+    expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Medium');
+
+    await user.type(newPassword, 'More1!');
+    expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Strong');
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+
+    expect(screen.getByTestId('status-currentPassword')).toHaveTextContent('Strength: Weak');
+
+    const currentPassword = screen.getByLabelText('Current Password');
+    await user.type(currentPassword, 'Abcdefg1!');
+    expect(screen.getByTestId('status-currentPassword')).toHaveTextContent('Strength: Medium');
+
+    await user.type(currentPassword, 'More1!');
+    expect(screen.getByTestId('status-currentPassword')).toHaveTextContent('Strength: Strong');
   });
 
   it('generates an API key after validating credentials successfully', async () => {
