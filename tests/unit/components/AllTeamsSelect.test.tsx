@@ -306,6 +306,24 @@ describe('SelectTeams component', () => {
     expect(mockGetUnrankedTeams.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
+  it('adds selected teams without a parent action ref', async () => {
+    const user = userEvent.setup();
+
+    render(<SelectTeams buttonType='default' />);
+
+    await user.click(screen.getByRole('button', { name: /select team/i }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Alpha Team' }));
+    await user.click(await screen.findByRole('button', { name: /confirm/i }));
+
+    await waitFor(() => {
+      expect(mockUpdateSort).toHaveBeenCalledWith([{ id: 'team-1', rank: 1 }]);
+    });
+    expect(getMessageMock().success).toHaveBeenCalledWith('Team added successfully');
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
   it('shows an error message when the update fails', async () => {
     const user = userEvent.setup();
     mockUpdateSort.mockResolvedValueOnce({ error: { message: 'fail' } });
@@ -364,5 +382,23 @@ describe('SelectTeams component', () => {
     await user.click(screen.getByRole('button', { name: /select team/i }));
     const alphaCheckbox = await screen.findByRole('checkbox', { name: 'Alpha Team' });
     expect(alphaCheckbox).not.toBeChecked();
+  });
+
+  it('closes the drawer through the close icon without mutating selection state', async () => {
+    const user = userEvent.setup();
+    renderSelectTeams();
+
+    await user.click(screen.getByRole('button', { name: /select team/i }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Alpha Team' }));
+    await user.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /select team/i }));
+    expect(
+      (await screen.findByRole('checkbox', { name: 'Alpha Team' })) as HTMLInputElement,
+    ).not.toBeChecked();
   });
 });

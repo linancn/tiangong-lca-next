@@ -100,6 +100,13 @@ describe('ContributeData Component', () => {
         content: 'Are you sure you want to contribute this data?',
         okText: 'Confirm',
         cancelText: 'Cancel',
+        okButtonProps: expect.objectContaining({ type: 'primary' }),
+        cancelButtonProps: expect.objectContaining({
+          style: expect.objectContaining({
+            borderColor: expect.any(String),
+            color: expect.any(String),
+          }),
+        }),
         onOk: defaultProps.onOk,
       }),
     );

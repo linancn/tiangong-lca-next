@@ -153,6 +153,7 @@ describe('ImportData Component', () => {
   beforeEach(() => {
     latestDraggerProps = undefined;
     jest.clearAllMocks();
+    (global as any).FileReader = originalFileReader;
 
     onJsonDataMock = jest.fn();
   });
@@ -251,6 +252,27 @@ describe('ImportData Component', () => {
     });
   });
 
+  it('closes the modal and clears the selected file when the user cancels', async () => {
+    setup();
+    openModal();
+
+    const file = new File(['{}'], 'data.json', { type: 'application/json' });
+
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
+
+    await waitFor(() => {
+      expect(latestDraggerProps?.fileList).toHaveLength(1);
+    });
+
+    fireEvent.click(screen.getByTestId('modal-cancel'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('import-modal')).not.toBeInTheDocument();
+    });
+  });
+
   it('shows an error when JSON parsing fails', async () => {
     mockFileReader({ content: 'not json' });
     setup();
@@ -312,6 +334,43 @@ describe('ImportData Component', () => {
     expect(result).toBe(false);
     expect(message.error).toHaveBeenCalledWith('Only JSON files are supported');
     expect(latestDraggerProps?.fileList).toHaveLength(0);
+  });
+
+  it('accepts files with a .json extension even when the mime type is not application/json', async () => {
+    setup();
+    openModal();
+
+    const file = new File(['{}'], 'data.json', { type: 'text/plain' });
+
+    await act(async () => {
+      expect(latestDraggerProps?.beforeUpload?.(file as any)).toBe(false);
+    });
+
+    await waitFor(() => {
+      expect(message.error).not.toHaveBeenCalled();
+      expect(latestDraggerProps?.fileList).toHaveLength(1);
+    });
+  });
+
+  it('shows a generic import error when FileReader creation throws', async () => {
+    (global as any).FileReader = jest.fn(() => {
+      throw new Error('constructor failed');
+    });
+
+    setup();
+    openModal();
+
+    const file = new File(['{}'], 'data.json', { type: 'application/json' });
+
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
+
+    fireEvent.click(screen.getByTestId('modal-ok'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Import failed');
+    });
   });
 
   test.failing('treats uppercase JSON extensions as valid uploads', () => {

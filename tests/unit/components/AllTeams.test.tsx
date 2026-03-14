@@ -446,6 +446,25 @@ describe('AllTeams component', () => {
     });
   });
 
+  it('logs errors when saving ranks throws unexpectedly', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockUpdateSort.mockRejectedValueOnce(new Error('save failed'));
+
+    renderAllTeams();
+
+    const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
+    fireEvent.click(dragButton);
+
+    const saveIcon = await screen.findByRole('img', { name: /save/i });
+    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('prevents drag operations when user lacks permission', async () => {
     renderAllTeams({ systemUserRole: undefined });
 
@@ -492,6 +511,26 @@ describe('AllTeams component', () => {
 
     await waitFor(() => {
       expect(getMessageMock().error).toHaveBeenCalledWith('Failed to remove team');
+    });
+  });
+
+  it('resets pagination to the first page before searching', async () => {
+    renderAllTeams();
+
+    await screen.findByText('Alpha Team');
+    const actionRef = getLastActionRef();
+
+    act(() => {
+      actionRef?.current?.setPageInfo?.({ current: 3, pageSize: 10 });
+    });
+
+    const searchBox = await screen.findByRole('searchbox');
+    fireEvent.change(searchBox, { target: { value: 'gamma' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => {
+      expect(actionRef.current.pageInfo.current).toBe(1);
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('gamma');
     });
   });
 });

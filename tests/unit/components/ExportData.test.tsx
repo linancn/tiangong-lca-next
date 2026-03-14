@@ -252,6 +252,22 @@ describe('ExportData Component', () => {
     });
   });
 
+  it('shows error feedback when the export request throws', async () => {
+    mockedExportDataApi.mockRejectedValue(new Error('network down'));
+
+    renderComponent();
+    clickExportButton();
+
+    await waitFor(() => {
+      expect(mockMessage.error).toHaveBeenCalledWith('Export data failed');
+    });
+
+    expect(mockMessage.success).not.toHaveBeenCalled();
+    expect(blobMock).not.toHaveBeenCalled();
+    expect(createObjectURLSpy).not.toHaveBeenCalled();
+    expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
+  });
+
   it('does not create a download when the export returns no data', async () => {
     mockedExportDataApi.mockResolvedValue({
       data: [],

@@ -56,4 +56,13 @@ describe('RequiredMark Component', () => {
 
     expect(screen.getByText('English is a required language!')).toBeInTheDocument();
   });
+
+  it('applies inline error spacing styles when showing the default error', () => {
+    renderComponent({ showError: true });
+
+    expect(screen.getByText('English is a required language!').parentElement).toHaveStyle({
+      fontWeight: 'normal',
+      marginLeft: '5px',
+    });
+  });
 });

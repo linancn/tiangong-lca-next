@@ -558,6 +558,23 @@ describe('TeamNotification Component', () => {
     });
   });
 
+  it('falls back to Unknown Team when the team title is missing', async () => {
+    mockGetTeamById.mockResolvedValue({
+      success: true,
+      data: [{ ...mockTeamData.data[0], json: { title: [] } }],
+    });
+
+    render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+    });
+  });
+
   it('should refresh data after successful action', async () => {
     render(
       <ConfigProvider>

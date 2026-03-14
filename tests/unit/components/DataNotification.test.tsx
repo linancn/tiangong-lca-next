@@ -448,4 +448,31 @@ describe('DataNotification Component', () => {
       expect(screen.getByText('Test Process')).toBeInTheDocument();
     });
   });
+
+  it('does not call onDataLoaded when only pagination changes', async () => {
+    const paginatedData = {
+      ...mockReviewData,
+      total: 25,
+      page: 1,
+    };
+    mockGetNotifyReviews.mockResolvedValue(paginatedData);
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(onDataLoadedMock).toHaveBeenCalledTimes(1);
+    });
+
+    const nextButton = await screen.findByTitle('Next Page');
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+      expect(mockGetNotifyReviews).toHaveBeenCalledWith({ pageSize: 10, current: 2 }, 'en', 3);
+    });
+    expect(onDataLoadedMock).toHaveBeenCalledTimes(1);
+  });
 });

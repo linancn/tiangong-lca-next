@@ -163,13 +163,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
       <Drawer
         styles={{ body: { paddingTop: 0 } }}
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onClose} />}
         title={
           <FormattedMessage id='component.allTeams.select.title' defaultMessage='Select Team' />
         }
