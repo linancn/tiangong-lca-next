@@ -221,6 +221,46 @@ describe('ExchangeSelect', () => {
     );
   });
 
+  it('updates the selected source and target rows before submit', async () => {
+    const onData = jest.fn();
+    const sourceAlt = {
+      '@dataSetInternalID': 'source-2',
+      exchangeDirection: 'output',
+      referenceToFlowDataSet: 'Source Flow 2',
+    };
+    const targetAlt = {
+      '@dataSetInternalID': 'target-2',
+      exchangeDirection: 'input',
+      referenceToFlowDataSet: 'Target Flow 2',
+    };
+
+    mockGenProcessFromData.mockImplementation((data: any) => {
+      if (data.type === 'source') {
+        return { exchanges: { exchange: [sourceExchange, sourceAlt] } };
+      }
+      if (data.type === 'target') {
+        return { exchanges: { exchange: [targetExchange, targetAlt] } };
+      }
+      return { exchanges: { exchange: [] } };
+    });
+
+    render(<ExchangeSelect {...baseProps} onData={onData} sourceRowKeys={[]} targetRowKeys={[]} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-source-2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'select-target-2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    expect(onData).toHaveBeenCalledWith({
+      id: 'edge-1',
+      selectedSource: sourceAlt,
+      selectedTarget: targetAlt,
+    });
+  });
+
   it('disables submit button when selections are missing', async () => {
     render(<ExchangeSelect {...baseProps} sourceRowKeys={[]} targetRowKeys={[]} />);
 
@@ -230,5 +270,49 @@ describe('ExchangeSelect', () => {
 
     const submitButton = screen.getByRole('button', { name: 'Submit' });
     expect(submitButton).toBeDisabled();
+  });
+
+  it('renders the edit trigger, filters rows by exchange direction, and closes on cancel', async () => {
+    const sourceInput = {
+      '@dataSetInternalID': 'source-input',
+      exchangeDirection: 'input',
+      referenceToFlowDataSet: 'Hidden Source Input',
+    };
+    const targetOutput = {
+      '@dataSetInternalID': 'target-output',
+      exchangeDirection: 'output',
+      referenceToFlowDataSet: 'Hidden Target Output',
+    };
+
+    mockGenProcessFromData.mockImplementation((data: any) => {
+      if (data.type === 'source') {
+        return { exchanges: { exchange: [sourceExchange, sourceInput] } };
+      }
+      if (data.type === 'target') {
+        return { exchanges: { exchange: [targetExchange, targetOutput] } };
+      }
+      return { exchanges: { exchange: [] } };
+    });
+
+    render(<ExchangeSelect {...baseProps} buttonType='text' optionType='edit' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Edit exchange relation' })).toBeInTheDocument(),
+    );
+
+    expect(screen.getByText('Source Flow')).toBeInTheDocument();
+    expect(screen.queryByText('Hidden Source Input')).not.toBeInTheDocument();
+    expect(screen.getByText('Target Flow')).toBeInTheDocument();
+    expect(screen.queryByText('Hidden Target Output')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Edit exchange relation' }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });

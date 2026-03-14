@@ -106,10 +106,40 @@ jest.mock('antd', () => {
 
 const { message: mockAntdMessage } = jest.requireMock('antd');
 
+let latestRefsDrawerProps: any = null;
+const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
+const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
+const mockUpdateRefsData = jest.fn((data: any) => data);
+
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CloseOutlined: () => <span>close-icon</span>,
   InfoOutlined: () => <span>info-icon</span>,
+}));
+
+jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    latestRefsDrawerProps = props;
+    if (!props.open) return null;
+    return (
+      <div data-testid='refs-drawer'>
+        <button type='button' onClick={props.onKeep}>
+          keep-current
+        </button>
+        <button type='button' onClick={() => props.onUpdate(props.dataSource)}>
+          update-latest
+        </button>
+      </div>
+    );
+  },
+}));
+
+jest.mock('@/pages/Utils/updateReference', () => ({
+  __esModule: true,
+  getRefsOfCurrentVersion: (...args: any[]) => mockGetRefsOfCurrentVersion(...args),
+  getRefsOfNewVersion: (...args: any[]) => mockGetRefsOfNewVersion(...args),
+  updateRefsData: (...args: any[]) => mockUpdateRefsData(...args),
 }));
 
 jest.mock('@ant-design/pro-components', () => {
@@ -330,6 +360,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 
 beforeEach(() => {
   Object.values(mockAntdMessage).forEach((fn) => fn.mockReset());
+  latestRefsDrawerProps = null;
   mockCheckReferences.mockReset();
   mockCheckRequiredFields.mockReset().mockReturnValue({ checkResult: true, tabName: '' });
   mockDealModel.mockReset();
@@ -341,6 +372,9 @@ beforeEach(() => {
   mockGetProcessDetail.mockReset();
   mockGetUserTeamId.mockReset().mockResolvedValue('team-1');
   mockGenLifeCycleModelJsonOrdered.mockReset().mockReturnValue({});
+  mockGetRefsOfCurrentVersion.mockReset().mockResolvedValue({ oldRefs: [] });
+  mockGetRefsOfNewVersion.mockReset().mockResolvedValue({ newRefs: [], oldRefs: [] });
+  mockUpdateRefsData.mockReset().mockImplementation((data: any) => data);
   mockUpdateReviewsAfterCheckData.mockReset().mockResolvedValue({});
   mockUpdateUnReviewToUnderReview.mockReset().mockResolvedValue({});
 });
@@ -410,6 +444,83 @@ describe('ToolbarEditInfo', () => {
 
     expect(onData).toHaveBeenCalledWith(expect.any(Object));
     expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+  });
+
+  it('opens the refs drawer and keeps the current reference versions', async () => {
+    mockGetRefsOfNewVersion.mockResolvedValue({
+      newRefs: [{ id: 'new-ref', version: '2.0.0' }],
+      oldRefs: [{ id: 'old-ref', version: '1.0.0' }],
+    });
+
+    render(<ToolbarEditInfo {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+    expect(latestRefsDrawerProps.dataSource).toEqual([{ id: 'new-ref', version: '2.0.0' }]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'keep-current' }));
+
+    expect(mockUpdateRefsData).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'model-1', version: '1.0' }),
+      [{ id: 'old-ref', version: '1.0.0' }],
+      false,
+    );
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('updates references inline when no newer versions are available', async () => {
+    mockGetRefsOfNewVersion.mockResolvedValue({
+      newRefs: [],
+      oldRefs: [{ id: 'old-ref', version: '1.0.0' }],
+    });
+
+    render(<ToolbarEditInfo {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    expect(mockUpdateRefsData).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'model-1', version: '1.0' }),
+      [{ id: 'old-ref', version: '1.0.0' }],
+      false,
+    );
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('updates reference descriptions through the imperative handle', async () => {
+    const ref = React.createRef<any>();
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await act(async () => {
+      await ref.current?.updateReferenceDescription({
+        id: 'model-1',
+        version: '1.0',
+        lifeCycleModelInformation: { dataSetInformation: { name: { en: 'model' } } },
+      });
+    });
+
+    expect(mockGetRefsOfCurrentVersion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'model-1',
+        version: '1.0',
+      }),
+    );
+    expect(mockUpdateRefsData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'model-1',
+        version: '1.0',
+      }),
+      [],
+      false,
+    );
   });
 
   it('returns review metadata when nodes and edges pass validation', async () => {
@@ -638,6 +749,92 @@ describe('ToolbarEditInfo', () => {
     expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalled();
     expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('surfaces process-instance validation issues separately from tab-level errors', async () => {
+    const ref = React.createRef<any>();
+    const tidasSdk = jest.requireMock('@tiangong-lca/tidas-sdk');
+    tidasSdk.createLifeCycleModel.mockImplementationOnce(() => ({
+      validateEnhanced: jest.fn(() => ({
+        success: false,
+        error: {
+          issues: [{ path: ['lifeCycleModelDataSet', 'processInstance'] }],
+        },
+      })),
+    }));
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] } },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Please complete the process instance data');
+    expect(result.checkResult).toBe(false);
+  });
+
+  it('shows a main-product error when rule verification fails on the model process', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] }, submodels: [] },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+    mockDealModel.mockImplementation(
+      (_modelDetail: any, _unReview: any[], _underReview: any[], unRuleVerification: any[]) => {
+        unRuleVerification.push({
+          '@refObjectId': 'model-1',
+          '@version': '1.0',
+          '@type': 'process data set',
+        });
+      },
+    );
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'Please complete the main product process data in the model results',
+    );
+    expect(result.checkResult).toBe(false);
   });
 
   it('hides the update-reference action outside edit mode', async () => {

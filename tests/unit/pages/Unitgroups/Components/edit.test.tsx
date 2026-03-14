@@ -320,6 +320,37 @@ describe('UnitGroupEdit', () => {
     );
   });
 
+  it('updates to the latest reference versions when requested', async () => {
+    mockGetRefsOfNewVersion.mockResolvedValue({
+      newRefs: [{ id: 'new-ref', version: '2.0.0' }],
+      oldRefs: [{ id: 'old-ref', version: '1.0.0' }],
+    });
+
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog', { name: /edit/i });
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+    await screen.findByTestId('refs-drawer');
+
+    await userEvent.click(screen.getByRole('button', { name: /update-latest/i }));
+
+    expect(mockUpdateRefsData).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'unitgroup-1' }),
+      [{ id: 'new-ref', version: '2.0.0' }],
+      true,
+    );
+  });
+
   it('saves successfully, closes the drawer, reloads the table, and clears ref errors', async () => {
     const reload = jest.fn();
     const actionRef = { current: { reload } };
@@ -443,6 +474,31 @@ describe('UnitGroupEdit', () => {
       expect(mockAntdMessage.error).toHaveBeenCalledWith('Data is under review, save failed'),
     );
     expect(reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('shows the backend error message when save fails for another reason', async () => {
+    mockUpdateUnitGroup.mockResolvedValue({
+      data: null,
+      error: { state_code: 500, message: 'save exploded' },
+    });
+
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /edit/i });
+
+    await userEvent.click(within(drawer).getByRole('button', { name: /^save$/i }));
+
+    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('save exploded'));
     expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
   });
 });

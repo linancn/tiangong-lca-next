@@ -208,6 +208,10 @@ jest.mock('@ant-design/pro-components', () => {
     }, [request]);
 
     const reload = jest.fn(async () => requestRef.current?.({ pageSize: 10, current: 1 }, {}, {}));
+    const requestWith = jest.fn(
+      async (sort: Record<string, string> = {}, filter: Record<string, any> = {}) =>
+        requestRef.current?.({ pageSize: 10, current: 1 }, sort, filter),
+    );
 
     React.useEffect(() => {
       if (actionRef) {
@@ -223,6 +227,23 @@ jest.mock('@ant-design/pro-components', () => {
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
         <div>{toolBarRender?.()}</div>
+        <button
+          type='button'
+          onClick={() =>
+            requestWith(
+              { name: 'ascend' },
+              {
+                flowType: ['ELEMENTARY_FLOW'],
+                classification: ['classification:class-1', 'elementary:elem-1', 'broken', 'x:'],
+              },
+            )
+          }
+        >
+          request-filter-sort
+        </button>
+        <button type='button' onClick={() => requestWith({ modifiedAt: 'descend' }, {})}>
+          request-unknown-sort
+        </button>
       </section>
     );
   };
@@ -336,5 +357,61 @@ describe('FlowsPage', () => {
         '20',
       ),
     );
+  });
+
+  it('parses classification filters and converts sort fields for table requests', async () => {
+    renderWithProviders(<FlowsPage />);
+
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: /request-filter-sort/i }));
+
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        { 'json->flowDataSet->flowInformation->dataSetInformation->name': 'ascend' },
+        'en',
+        'my',
+        'team-1',
+        {
+          flowType: 'ELEMENTARY_FLOW',
+          classification: [
+            { scope: 'classification', code: 'class-1' },
+            { scope: 'elementary', code: 'elem-1' },
+          ],
+        },
+        'all',
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /request-unknown-sort/i }));
+
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        { modifiedAt: 'descend' },
+        'en',
+        'my',
+        'team-1',
+        { flowType: '' },
+        'all',
+      ),
+    );
+  });
+
+  it('omits my-data toolbar actions for non-my data sources', async () => {
+    mockLocation = {
+      pathname: '/tgdata/flows',
+      search: '',
+    };
+    mockGetDataSource.mockReturnValue('tg');
+
+    renderWithProviders(<FlowsPage />);
+
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+
+    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flow-create')).not.toBeInTheDocument();
   });
 });

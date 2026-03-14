@@ -405,6 +405,82 @@ describe('RejectReview component', () => {
     expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
   });
 
+  it('updates assigned-comment references once even when duplicate process refs are returned', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetCommentApi.mockResolvedValue({
+      data: [{ id: 'comment-1', kind: 'assigned-comment' }],
+      error: null,
+    });
+    mockGetProcessDetail.mockResolvedValue({ data: null });
+    mockGetUserTeamId.mockResolvedValue('team-1');
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: { id: 'proc-ref', version: '2.0', stateCode: 10, kind: 'under-review-ref' },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: { id: 'model-shadow', version: '2.0', stateCode: 30, kind: 'same-model' },
+    });
+    mockGetAllRefObj.mockImplementation((payload: any) => {
+      if (Array.isArray(payload)) {
+        return [
+          { '@type': 'process data set', '@refObjectId': 'proc-ref', '@version': '2.0' },
+          { '@type': 'process data set', '@refObjectId': 'proc-ref', '@version': '2.0' },
+        ];
+      }
+      return [];
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Duplicate refs' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateDateToReviewState).toHaveBeenCalledWith('model-shadow', '2.0', 'processes', {
+        state_code: 0,
+      }),
+    );
+    expect(mockGetRefData).toHaveBeenCalledTimes(1);
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('proc-ref', '2.0');
+    expect(mockDealProcress).not.toHaveBeenCalled();
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+  });
+
+  it('still rejects successfully when the process detail cannot be loaded', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer', email: 'a@b.com' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetProcessDetail.mockResolvedValue({ data: null });
+
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Process missing' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+
+    await waitFor(() => expect(message.success).toHaveBeenCalledWith('Rejected successfully!'));
+    expect(mockGetUserTeamId).not.toHaveBeenCalled();
+    expect(mockUpdateDateToReviewState).not.toHaveBeenCalled();
+  });
+
   it('closes the modal without calling services when cancel is clicked', async () => {
     renderComponent();
 

@@ -58,7 +58,13 @@ const mockGetFlowpropertyTableAll = jest.fn(
         id: `flowproperty-${dataSource}`,
         version: '1.0.0',
         name: `${dataSource} flowproperty`,
+        classification: `${dataSource} classification`,
         generalComment: `${dataSource} comment`,
+        refUnitRes: {
+          name: [{ '@xml:lang': 'en', '#text': `${dataSource} unit group` }],
+          refUnitName: `${dataSource} unit`,
+          refUnitGeneralComment: `${dataSource} unit comment`,
+        },
       },
     ],
     success: true,
@@ -72,7 +78,13 @@ const mockGetFlowpropertyTablePgroongaSearch = jest.fn(
         id: `flowproperty-${dataSource}-search`,
         version: '2.0.0',
         name: `${dataSource}:${keyword}`,
+        classification: `${dataSource} search classification`,
         generalComment: `${dataSource}:${keyword}`,
+        refUnitRes: {
+          name: [{ '@xml:lang': 'en', '#text': `${dataSource} search unit group` }],
+          refUnitName: `${dataSource} search unit`,
+          refUnitGeneralComment: `${dataSource} search unit comment`,
+        },
       },
     ],
     success: true,
@@ -179,7 +191,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, toolBarRender }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, toolBarRender, columns = [] }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
     latestRequestRef.current = request;
@@ -208,13 +220,21 @@ jest.mock('@ant-design/pro-components', () => {
       <div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
-          <button
-            key={`${row.id}:${row.version}`}
-            type='button'
-            onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
-          >
-            {row.name}
-          </button>
+          <div key={`${row.id}:${row.version}`}>
+            {columns.map((column: any, index: number) => (
+              <div key={`${row.id}:${row.version}:${column.dataIndex ?? index}`}>
+                {column.render
+                  ? column.render(row[column.dataIndex], row, index)
+                  : row[column.dataIndex]}
+              </div>
+            ))}
+            <button
+              type='button'
+              onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
+            >
+              {row.name}
+            </button>
+          </div>
         ))}
       </div>
     );
@@ -256,6 +276,8 @@ describe('FlowpropertySelectDrawer', () => {
       'data-active',
       'true',
     );
+    expect(screen.getByText('view flowproperty-tg:1.0.0')).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes('unitgroup'))).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
 
@@ -269,6 +291,8 @@ describe('FlowpropertySelectDrawer', () => {
       ),
     );
     expect(screen.getByText('create-flowproperty')).toBeInTheDocument();
+    expect(screen.getByText('edit flowproperty-my:1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('delete flowproperty-my:1.0.0')).toBeInTheDocument();
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
@@ -288,5 +312,68 @@ describe('FlowpropertySelectDrawer', () => {
 
     expect(onData).toHaveBeenCalledWith('flowproperty-my-search', '2.0.0');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('searches tg/co/te datasets and clears the selected row when reopened', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<FlowpropertySelectDrawer buttonType='icon' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button'));
+
+    await screen.findByRole('dialog', { name: 'Selete Flow property' });
+
+    await userEvent.type(screen.getByLabelText('tg'), 'beta');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'tg',
+        'beta',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
+    await userEvent.type(screen.getByLabelText('co'), 'gamma');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'co',
+        'gamma',
+        {},
+      ),
+    );
+    expect(screen.queryByText('edit flowproperty-co:1.0.0')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /TE Data/i }));
+    await userEvent.type(screen.getByLabelText('te'), 'delta');
+    await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
+
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'te',
+        'delta',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'te:delta' }));
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
   });
 });
