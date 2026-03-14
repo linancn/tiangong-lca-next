@@ -40,6 +40,7 @@ Latest verified full run (`npm run test:coverage`):
 - `<50% branch` bucket: `2 -> 0`
 - `50%-70% branch` bucket: `46 -> 24`
 - Recent queue files closed to `100/100/100/100` include `TableFilter`, `FileViewer/upload`, `Unitgroups edit`, `Processes edit`, `Processes Exchange create/edit/select`, `Flows Property create/edit`, `ReviewForm/view`, and `Processes Compliance/view`.
+- Additional locally verified closure after the March 14 baseline: `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` plus its shared X6 editor support files now sit at `100/100/100/100` under focused coverage (`X6Graph`, `graphContext`, `toolbar/control`, `toolbar/utils/editGraph`).
 
 ## All-File Inventory
 
@@ -96,7 +97,6 @@ Current repo-wide status from the same run:
 - [ ] `src/pages/Processes/Components/create.tsx` — stmt `83.45%`, line `84.61%`, branch `65.27%`, func `56.66%`
 - [ ] `src/components/LevelTextItem/form.tsx` — stmt `77.90%`, line `77.64%`, branch `65.57%`, func `77.77%`
 - [ ] `src/pages/Unitgroups/Components/select/formMini.tsx` — stmt `94.73%`, line `94.59%`, branch `65.71%`, func `83.33%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` — stmt `98.81%`, line `99.15%`, branch `65.85%`, func `96.19%`
 - [ ] `src/pages/Processes/Components/view.tsx` — stmt `84.55%`, line `84.91%`, branch `66.51%`, func `80.00%`
 - [ ] `src/pages/Contacts/Components/delete.tsx` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`
 - [ ] `src/pages/Processes/Components/delete.tsx` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`

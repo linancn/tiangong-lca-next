@@ -207,4 +207,32 @@ describe('LifeCycleModelToolbarControl', () => {
     expect(editorActions.paste).toHaveBeenCalledTimes(1);
     expect(editorActions.duplicate).toHaveBeenCalledTimes(1);
   });
+
+  it('falls back to disabled command state when no graph instance is available', () => {
+    mockGraph = null;
+
+    render(
+      <Control
+        items={[ControlEnum.Undo, ControlEnum.Redo, ControlEnum.Paste, ControlEnum.Duplicate]}
+        canDuplicate={false}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'undo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'redo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'paste' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'copy' })).toBeDisabled();
+  });
+
+  it('no-ops action handlers when a visible control is clicked without a graph instance', async () => {
+    mockGraph = null;
+
+    render(<Control items={[ControlEnum.ZoomIn, ControlEnum.ZoomOut, ControlEnum.ZoomToFit]} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'plus' }));
+    await userEvent.click(screen.getByRole('button', { name: 'minus' }));
+    await userEvent.click(screen.getByRole('button', { name: 'compress' }));
+
+    expect(mockApplyDagreLayout).not.toHaveBeenCalled();
+  });
 });

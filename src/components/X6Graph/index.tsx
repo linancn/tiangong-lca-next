@@ -65,10 +65,8 @@ const X6GraphComponent = ({
   const setGraph = useGraphStore((state) => state.setGraph);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
     const graph = new Graph({
-      container: containerRef.current,
+      container: containerRef.current!,
       autoResize: true,
       panning: pannable,
       mousewheel: zoomable

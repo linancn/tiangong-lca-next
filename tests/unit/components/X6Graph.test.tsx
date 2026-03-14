@@ -206,4 +206,44 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     );
     expect(beforeAddCommand).toHaveBeenCalledWith('cell:added', { options: {} });
   });
+
+  it('falls back to default plugin flags when optional settings are omitted', () => {
+    const { Clipboard, Keyboard, Transform, __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(
+      <X6GraphComponent
+        clipboardOptions={{ enabled: true }}
+        keyboardOptions={{ enabled: true }}
+        transformOptions={{ rotating: true }}
+      />,
+    );
+
+    const instance = __graphInstances[0];
+    const clipboardPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Clipboard,
+    )?.[0];
+    const keyboardPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Keyboard,
+    )?.[0];
+    const transformPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Transform,
+    )?.[0];
+
+    expect(clipboardPlugin.options.useLocalStorage).toBe(false);
+    expect(keyboardPlugin.options.global).toBe(false);
+    expect(transformPlugin.options).toEqual({ resizing: false, rotating: true });
+  });
+
+  it('falls back to a non-rotating transform when only resizing is enabled', () => {
+    const { Transform, __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(<X6GraphComponent transformOptions={{ resizing: true }} />);
+
+    const instance = __graphInstances[0];
+    const transformPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Transform,
+    )?.[0];
+
+    expect(transformPlugin.options).toEqual({ resizing: true, rotating: false });
+  });
 });

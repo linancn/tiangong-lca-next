@@ -40,6 +40,7 @@
 - `<50% branch` 桶：`2 -> 0`
 - `50%-70% branch` 桶：`46 -> 24`
 - 最近清到 `100/100/100/100` 的队头文件包括 `TableFilter`、`FileViewer/upload`、`Unitgroups edit`、`Processes edit`、`Processes Exchange create/edit/select`、`Flows Property create/edit`、`ReviewForm/view`、`Processes Compliance/view`。
+- 在 2026 年 3 月 14 日基线之后额外本地确认补齐：`src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` 以及它共享的 X6 编辑器支撑文件（`X6Graph`、`graphContext`、`toolbar/control`、`toolbar/utils/editGraph`）在聚焦覆盖率下已达到 `100/100/100/100`。
 
 ## 全文件库存
 
@@ -96,7 +97,6 @@
 - [ ] `src/pages/Processes/Components/create.tsx` — stmt `83.45%`，line `84.61%`，branch `65.27%`，func `56.66%`
 - [ ] `src/components/LevelTextItem/form.tsx` — stmt `77.90%`，line `77.64%`，branch `65.57%`，func `77.77%`
 - [ ] `src/pages/Unitgroups/Components/select/formMini.tsx` — stmt `94.73%`，line `94.59%`，branch `65.71%`，func `83.33%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` — stmt `98.81%`，line `99.15%`，branch `65.85%`，func `96.19%`
 - [ ] `src/pages/Processes/Components/view.tsx` — stmt `84.55%`，line `84.91%`，branch `66.51%`，func `80.00%`
 - [ ] `src/pages/Contacts/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
 - [ ] `src/pages/Processes/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`

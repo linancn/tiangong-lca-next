@@ -288,7 +288,7 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect', ()
 
 jest.mock('@/pages/Processes/Components/edit', () => ({
   __esModule: true,
-  default: ({ id, version, updateNodeCb }: any) => (
+  default: ({ id, version, updateNodeCb, setViewDrawerVisible }: any) => (
     <div>
       <span>{`process-edit:${id}:${version}`}</span>
       {updateNodeCb ? (
@@ -303,6 +303,11 @@ jest.mock('@/pages/Processes/Components/edit', () => ({
           }
         >
           run-process-update-node
+        </button>
+      ) : null}
+      {setViewDrawerVisible ? (
+        <button type='button' onClick={() => setViewDrawerVisible(true)}>
+          open-process-view-drawer
         </button>
       ) : null}
     </div>
@@ -430,6 +435,8 @@ beforeEach(() => {
   mockGetAllRefObj.mockReset().mockReturnValue([]);
   mockGetRefTableName.mockReset().mockReturnValue('process');
   mockUseGraphEvent.mockClear();
+  mockGenNodeLabel.mockReset().mockReturnValue('Node Label');
+  mockGenPortLabel.mockReset().mockReturnValue('Port Label');
   mockGetProcessDetail.mockReset().mockResolvedValue({
     data: {
       version: '2.0',
@@ -445,6 +452,8 @@ beforeEach(() => {
     },
   });
   mockGenProcessFromData.mockReset().mockReturnValue({ exchanges: { exchange: [] } });
+  mockGenProcessName.mockReset().mockReturnValue('Updated Process');
+  mockGenProcessNameJson.mockReset().mockReturnValue('updated-process');
   mockGetProcessDetailByIdAndVersion.mockReset().mockResolvedValue({ data: [] });
   mockGetLifeCycleModelDetail.mockReset().mockResolvedValue({
     success: true,
@@ -606,6 +615,25 @@ describe('ToolbarEdit', () => {
     });
   });
 
+  it('falls back to empty ids when updating target amounts for sparse reference nodes', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      id: undefined,
+    };
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-target-amount' }));
+
+    expect(mockUpdateNode).toHaveBeenCalledWith('', {
+      data: expect.objectContaining({
+        targetAmount: 20,
+        originalAmount: 10,
+        scalingFactor: '2',
+      }),
+    });
+  });
+
   it('refreshes node data when update reference is triggered', async () => {
     mockGetProcessDetail.mockResolvedValue({
       data: {
@@ -640,6 +668,42 @@ describe('ToolbarEdit', () => {
     expect(mockGetProcessDetail).toHaveBeenCalledWith('proc-1', '1.0');
     expect(mockGetProcessDetail).toHaveBeenCalledWith('proc-2', '1.0');
     expect(mockUpdateNode).toHaveBeenCalled();
+  });
+
+  it('refreshes sparse node references with empty process ids and versions', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        id: undefined,
+        data: {
+          quantitativeReference: '1',
+        },
+        tools: [],
+        ports: {
+          items: [],
+        },
+      },
+    ];
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {
+        json: {
+          processDataSet: {},
+        },
+      },
+    });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'copy-icon' }));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('', ''));
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({
+        data: expect.objectContaining({
+          version: '',
+        }),
+      }),
+    );
   });
 
   it('toggles node selection when modifier key is pressed', () => {
@@ -762,6 +826,15 @@ describe('ToolbarEdit', () => {
     expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+c', 'ctrl+c'], expect.any(Function));
     expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+v', 'ctrl+v'], expect.any(Function));
     expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+d', 'ctrl+d'], expect.any(Function));
+
+    const shortcutHandlers = mockGraph.bindKey.mock.calls.map(
+      ([, handler]: [string[], (event: { preventDefault: () => void }) => boolean]) => handler,
+    );
+    const preventDefault = jest.fn();
+    shortcutHandlers.forEach((handler: (event: { preventDefault: () => void }) => boolean) => {
+      expect(handler({ preventDefault })).toBe(false);
+    });
+    expect(preventDefault).toHaveBeenCalledTimes(shortcutHandlers.length);
   });
 
   it('marks visual-only node refreshes to ignore history', () => {
@@ -827,6 +900,80 @@ describe('ToolbarEdit', () => {
     expect(mockSyncGraphData).toHaveBeenCalled();
   });
 
+  it('copies selected cells and skips non-node or non-reference clipboard pastes', async () => {
+    const selectedCell = { id: 'node-1' };
+    const pastedEdge = {
+      isNode: () => false,
+    };
+    const pastedNonReferenceNode = {
+      isEdge: () => false,
+      isNode: () => true,
+      getData: jest.fn(() => ({
+        label: [{ '@xml:lang': 'en', '#text': 'Copied Process' }],
+        quantitativeReference: '0',
+      })),
+      setData: jest.fn(),
+      addTools: jest.fn(),
+      getSize: jest.fn(() => ({ width: 280 })),
+    };
+
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGraph.getSelectedCells.mockReturnValue([selectedCell]);
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    const copyHandler = mockGraph.bindKey.mock.calls.find(([keys]: [string[]]) =>
+      keys.includes('meta+c'),
+    )?.[1];
+    const pasteHandler = mockGraph.bindKey.mock.calls.find(([keys]: [string[]]) =>
+      keys.includes('meta+v'),
+    )?.[1];
+
+    act(() => {
+      copyHandler({ preventDefault: jest.fn() });
+    });
+    expect(mockGraph.copy).toHaveBeenCalledWith([selectedCell], {
+      deep: true,
+      useLocalStorage: false,
+    });
+
+    mockGraph.isClipboardEmpty.mockReturnValue(false);
+    mockGraph.paste
+      .mockReturnValueOnce([])
+      .mockReturnValueOnce([pastedEdge, pastedNonReferenceNode]);
+
+    act(() => {
+      pasteHandler({ preventDefault: jest.fn() });
+    });
+    expect(mockGraph.paste).toHaveBeenCalledWith({
+      offset: { dx: 32, dy: 32 },
+      useLocalStorage: false,
+    });
+
+    act(() => {
+      pasteHandler({ preventDefault: jest.fn() });
+    });
+
+    expect(pastedNonReferenceNode.setData).not.toHaveBeenCalled();
+    expect(pastedNonReferenceNode.addTools).not.toHaveBeenCalled();
+    expect(mockGraph.cleanSelection).toHaveBeenCalled();
+    expect(mockGraph.select).toHaveBeenCalledWith([pastedEdge, pastedNonReferenceNode]);
+  });
+
+  it('executes undo and redo when history commands are available', async () => {
+    mockGraph.canUndo.mockReturnValue(true);
+    mockGraph.canRedo.mockReturnValue(true);
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'control-undo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'control-redo' }));
+
+    expect(mockGraph.undo).toHaveBeenCalledTimes(1);
+    expect(mockGraph.redo).toHaveBeenCalledTimes(1);
+    expect(mockSyncGraphData).toHaveBeenCalledTimes(2);
+  });
+
   it('updates saved edit edge labels and preserves edges without targets during save', async () => {
     mockGraphStoreState.edges = [
       {
@@ -885,6 +1032,35 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('saves from store snapshots when the graph instance is unavailable', async () => {
+    mockGraphStoreState.graph = undefined;
+    mockGraphStoreState.nodes = [{ id: 'store-node', data: { label: 'Store Node' } }];
+    mockGraphStoreState.edges = [{ id: 'store-edge' }];
+    mockUpdateLifeCycleModel.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'model-1',
+          version: '1.1',
+        },
+      ],
+    });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: {
+            nodes: [{ id: 'store-node', data: { label: 'Store Node', index: '0' } }],
+            edges: [{ id: 'store-edge' }],
+          },
+        }),
+      ),
+    );
+  });
+
   it('runs footer data-check through the edit info ref after saving', async () => {
     render(<ToolbarEdit {...baseProps} />);
 
@@ -920,6 +1096,18 @@ describe('ToolbarEdit', () => {
     expect(mockToolbarSubmitReview).toHaveBeenCalledWith([
       { '@refObjectId': 'proc-1', '@version': '1.0', '@type': 'process data set' },
     ]);
+  });
+
+  it('falls back to empty review queues when validation omits them', async () => {
+    mockToolbarHandleCheckData.mockResolvedValueOnce({
+      checkResult: true,
+    });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() => expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]));
   });
 
   it('does not submit a review when review validation fails and hides the button when requested', async () => {
@@ -1018,6 +1206,41 @@ describe('ToolbarEdit', () => {
               expect.objectContaining({
                 id: 'OUTPUT:existing-output',
                 args: expect.objectContaining({ y: 85 }),
+              }),
+            ]),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('uses zh-specific truncation rules when rebuilding port labels', async () => {
+    mockGetLangText.mockReturnValue('这是一个特别长特别长的流名称用于测试中文截断');
+    mockGraphStoreState.nodes[0].size.width = 120;
+
+    render(<ToolbarEdit {...baseProps} lang='zh' />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    await act(async () => {
+      await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    mockUpdateNode.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          ports: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                attrs: expect.objectContaining({
+                  text: expect.objectContaining({
+                    text: expect.stringContaining('...'),
+                    title: expect.any(String),
+                  }),
+                }),
               }),
             ]),
           }),
@@ -1129,6 +1352,82 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('falls back to empty ids when switching sparse quantitative reference nodes', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        ...mockGraphStoreState.nodes[0],
+        id: undefined,
+      },
+      {
+        ...mockGraphStoreState.nodes[1],
+        id: undefined,
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nonRefTool = mockUpdateNode.mock.calls
+      .flatMap(([, payload]: [string, any]) => (payload?.tools ? payload.tools : []))
+      .find((tool: any) => tool?.id === 'nonRef');
+    expect(nonRefTool).toBeTruthy();
+
+    mockUpdateNode.mockClear();
+
+    await act(async () => {
+      await nonRefTool.args.onClick({
+        cell: {
+          store: {
+            data: mockGraphStoreState.nodes[1],
+          },
+        },
+      });
+    });
+
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({
+        data: expect.objectContaining({ quantitativeReference: '1' }),
+      }),
+    );
+  });
+
+  it('falls back to empty ids for sibling nodes when switching quantitative references', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        ...mockGraphStoreState.nodes[0],
+        id: undefined,
+      },
+      {
+        ...mockGraphStoreState.nodes[1],
+        id: 'node-2',
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nonRefTool = getNodeTool('node-2', 'nonRef');
+    expect(nonRefTool).toBeTruthy();
+
+    mockUpdateNode.mockClear();
+
+    await act(async () => {
+      await nonRefTool.args.onClick({
+        cell: {
+          store: {
+            data: mockGraphStoreState.nodes[1],
+          },
+        },
+      });
+    });
+
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({
+        data: expect.objectContaining({ quantitativeReference: '0' }),
+      }),
+    );
+  });
+
   it('updates info data through the toolbar form and highlights problem nodes after data checks', async () => {
     render(<ToolbarEdit {...baseProps} />);
 
@@ -1158,6 +1457,62 @@ describe('ToolbarEdit', () => {
           attrs: expect.objectContaining({
             body: expect.objectContaining({
               stroke: '#ff4d4f',
+            }),
+          }),
+        }),
+        { ignoreHistory: true },
+      ),
+    );
+  });
+
+  it('applies problem-node highlights with empty ids and falls back to empty check results', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      id: undefined,
+    };
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    mockUpdateNode.mockClear();
+    mockToolbarHandleCheckData
+      .mockResolvedValueOnce({
+        problemNodes: [
+          {
+            '@refObjectId': 'proc-1',
+            '@version': '1.0',
+            '@type': 'process data set',
+          },
+        ],
+      })
+      .mockResolvedValueOnce(undefined);
+
+    await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            body: expect.objectContaining({
+              stroke: '#ff4d4f',
+            }),
+          }),
+        }),
+        { ignoreHistory: true },
+      ),
+    );
+
+    mockUpdateNode.mockClear();
+
+    await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            body: expect.objectContaining({
+              stroke: '#1890ff',
             }),
           }),
         }),
@@ -1250,6 +1605,29 @@ describe('ToolbarEdit', () => {
     expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { labels: [] }, { ignoreHistory: true });
   });
 
+  it('clears edge labels with empty ids when deleting sparse connected selections', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      id: 'node-sparse',
+      selected: true,
+    };
+    mockGraphStoreState.nodes[1].selected = false;
+    mockGraphStoreState.edges = [
+      {
+        id: undefined,
+        source: { cell: 'node-sparse' },
+        labels: [{ attrs: {} }],
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'delete-icon' }));
+
+    await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['']));
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { labels: [] }, { ignoreHistory: true });
+  });
+
   it('deletes selected edges when no node is selected', async () => {
     mockGraphStoreState.nodes[0].selected = false;
     mockGraphStoreState.nodes[1].selected = false;
@@ -1267,6 +1645,56 @@ describe('ToolbarEdit', () => {
 
     await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-2']));
     expect(mockUpdateEdge).toHaveBeenCalledWith('edge-2', { labels: [] }, { ignoreHistory: true });
+  });
+
+  it('deletes selected cells without batching when the graph instance is unavailable', async () => {
+    mockGraphStoreState.graph = null;
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-no-graph',
+        selected: true,
+        source: { cell: 'node-1' },
+        target: { cell: 'node-2' },
+        labels: [{ attrs: {} }],
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} onClose={undefined} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'control-undo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'control-redo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'control-paste' }));
+    await userEvent.click(screen.getByRole('button', { name: 'control-duplicate' }));
+    await userEvent.click(screen.getByRole('button', { name: 'delete-icon' }));
+
+    expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-no-graph']);
+    expect(mockRemoveNodes).toHaveBeenCalledWith(['node-1']);
+    expect(mockUpdateEdge).toHaveBeenCalledWith(
+      'edge-no-graph',
+      { labels: [] },
+      { ignoreHistory: true },
+    );
+  });
+
+  it('deletes edge-only selections without a graph instance', async () => {
+    mockGraphStoreState.graph = null;
+    mockGraphStoreState.nodes[0].selected = false;
+    mockGraphStoreState.nodes[1].selected = false;
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-only-no-graph',
+        selected: true,
+        labels: [{ attrs: {} }],
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'delete-icon' }));
+
+    expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-only-no-graph']);
+    expect(mockRemoveNodes).not.toHaveBeenCalled();
   });
 
   it('creates a lifecycle model from the empty-create state and applies saved edge labels', async () => {
@@ -1372,6 +1800,65 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('uses the existing id for create-version saves and tolerates sparse saved edges', async () => {
+    mockCreateLifeCycleModel.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'model-1',
+          version: '2.0',
+          json_tg: {},
+        },
+      ],
+    });
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        action='create'
+        actionType='createVersion'
+        drawerVisible={true}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockCreateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'model-1',
+        }),
+      ),
+    );
+    expect(mockUpdateEdge).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ labels: expect.anything() }),
+      expect.anything(),
+    );
+  });
+
+  it('falls back to a generic create error when the backend omits a message', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    mockCreateLifeCycleModel.mockResolvedValueOnce({
+      data: undefined,
+      error: {},
+    });
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        id=''
+        version=''
+        action='create'
+        drawerVisible={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() => expect(antMessage.error).toHaveBeenCalledWith('Error'));
+  });
+
   it('shows open-data, under-review, and generic errors when edit saves fail', async () => {
     const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
 
@@ -1434,6 +1921,10 @@ describe('ToolbarEdit', () => {
           target: { cell: 'imported-node', x: 1, y: 2 },
           data: { connection: { unbalancedAmount: 5, exchangeAmount: 6 } },
         },
+        {
+          id: 'imported-edge-without-target',
+          data: { connection: { unbalancedAmount: 0, exchangeAmount: 0 } },
+        },
       ],
     });
 
@@ -1459,11 +1950,38 @@ describe('ToolbarEdit', () => {
               id: 'imported-edge',
               labels: [expect.anything()],
             }),
+            expect.objectContaining({
+              id: 'imported-edge-without-target',
+            }),
           ]),
         }),
       ),
     );
     expect(screen.getByText('toolbar-edit-info:create:7.7.7')).toBeInTheDocument();
+  });
+
+  it('initializes sparse imported models without optional callbacks', async () => {
+    mockGenLifeCycleModelData.mockReturnValueOnce({});
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        id=''
+        version=''
+        action='create'
+        drawerVisible={true}
+        importData={[{ lifeCycleModelDataSet: {} }]}
+        updateNodeCb={undefined as any}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockInitData).toHaveBeenCalledWith({
+        nodes: [],
+        edges: [],
+      }),
+    );
+    expect(screen.getByText('toolbar-edit-info:create:1.0')).toBeInTheDocument();
   });
 
   it('loads existing models, applies createVersion overrides, and renders ownership-specific model actions', async () => {
@@ -1519,6 +2037,29 @@ describe('ToolbarEdit', () => {
     expect(screen.getByText('toolbar-edit-info:edit:9.9.9')).toBeInTheDocument();
     expect(screen.getByText('life-cycle-model-edit:child-model:1.0')).toBeInTheDocument();
     expect(screen.getByText('model-result:model-1:1.0:edit')).toBeInTheDocument();
+  });
+
+  it('loads sparse existing models and falls back to empty editor payloads', async () => {
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {},
+    });
+    mockGenLifeCycleModelInfoFromData.mockReturnValueOnce({
+      administrativeInformation: {
+        publicationAndOwnership: {},
+      },
+    });
+    mockGenLifeCycleModelData.mockReturnValueOnce({});
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0'));
+    await waitFor(() =>
+      expect(mockInitData).toHaveBeenCalledWith({
+        nodes: [],
+        edges: [],
+      }),
+    );
   });
 
   it('hydrates loaded graph ports and keeps edges without targets unchanged', async () => {
@@ -1673,6 +2214,83 @@ describe('ToolbarEdit', () => {
     await waitFor(() =>
       expect(screen.getByText('life-cycle-model-view:child-model:1.0')).toBeInTheDocument(),
     );
+  });
+
+  it('falls back to empty versions in non-owned model-backed process views', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      selected: true,
+      data: {
+        id: undefined,
+        version: undefined,
+        label: 'Node 1',
+        quantitativeReference: '1',
+      },
+    };
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [{ id: 'child-model' }],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: undefined, version: undefined, userId: 'someone-else', modelId: 'child-model' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() =>
+      expect(screen.getByText('life-cycle-model-view:child-model:')).toBeInTheDocument(),
+    );
+  });
+
+  it('ignores empty process-instance responses and falls back to empty selected-node ids', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      selected: true,
+      data: {
+        id: undefined,
+        version: undefined,
+        label: 'Node 1',
+        quantitativeReference: '1',
+      },
+    };
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({});
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() =>
+      expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith([
+        { id: 'proc-1', version: '1.0' },
+      ]),
+    );
+    await waitFor(() => expect(screen.getByText('process-view::')).toBeInTheDocument());
   });
 
   it('shows an error when the existing model is not public', async () => {
@@ -1894,6 +2512,204 @@ describe('ToolbarEdit', () => {
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
   });
 
+  it('handles sparse event payloads and default fallbacks in graph handlers', async () => {
+    jest.useFakeTimers();
+    mockGraphStoreState.nodes = [
+      {
+        id: 'node-1',
+        width: 220,
+        selected: false,
+        data: {
+          id: 'proc-1',
+          version: '1.0',
+          label: undefined,
+          quantitativeReference: '0',
+        },
+        tools: [],
+        ports: {
+          items: [],
+        },
+      },
+      {
+        id: undefined,
+        selected: true,
+        data: {
+          id: 'proc-2',
+          version: '1.0',
+          label: undefined,
+          quantitativeReference: '1',
+        },
+        tools: [],
+        ports: {
+          items: [],
+        },
+      },
+      {
+        id: 'node-3',
+        selected: false,
+        data: {
+          id: undefined,
+          version: undefined,
+          label: undefined,
+          quantitativeReference: '0',
+        },
+        tools: [],
+        ports: {
+          items: [],
+        },
+      },
+    ];
+    mockGraphStoreState.edges = [
+      {
+        id: undefined,
+        labels: [{ attrs: {} }],
+        selected: true,
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const edgeAddedHandler = getGraphHandler('edge:added');
+    const edgeClickHandler = getGraphHandler('edge:click');
+    const nodeResizeHandler = getGraphHandler('node:change:size');
+    const nodeClickHandler = getGraphHandler('node:click');
+    const blankClickHandler = getGraphHandler('blank:click');
+
+    edgeAddedHandler({
+      edge: { id: 'edge-new-sparse' },
+    });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { labels: [] }, { ignoreHistory: true });
+
+    const resizeNode = {
+      data: { label: undefined, quantitativeReference: '0' },
+      getSize: () => ({ width: 200 }),
+      getPorts: () => [
+        {
+          id: 'INPUT:flow-resize',
+          group: 'groupInput',
+          attrs: { text: {} },
+          data: {},
+        },
+      ],
+      setAttrByPath: jest.fn(),
+      prop: jest.fn(),
+      addTools: jest.fn(),
+    };
+    mockGenProcessName.mockReturnValueOnce(undefined);
+    mockGenNodeLabel.mockReturnValueOnce('');
+    mockGetLangText.mockReturnValueOnce(undefined);
+    mockGenPortLabel.mockReturnValueOnce('');
+    nodeResizeHandler({ node: resizeNode });
+    act(() => {
+      jest.runAllTimers();
+    });
+    expect(resizeNode.setAttrByPath).toHaveBeenCalledWith('label/text', '', {
+      ignoreHistory: true,
+    });
+    expect(resizeNode.addTools).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ id: 'nonRef' })]),
+      { ignoreHistory: true, reset: true },
+    );
+
+    const textTarget = document.createElement('text');
+    textTarget.textContent = 'Sparse Flow';
+    const portParent = document.createElement('g');
+    const portGrandParent = document.createElement('g');
+    const portCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    portCircle.setAttribute('port', 'OUTPUT:flow-sparse');
+    portGrandParent.appendChild(portCircle);
+    portGrandParent.appendChild(portParent);
+    portParent.appendChild(textTarget);
+
+    await act(async () => {
+      nodeClickHandler({
+        node: {
+          id: 'node-1',
+          isNode: () => true,
+          getPorts: () => [{ id: 'OUTPUT:flow-sparse' }],
+        },
+        e: { target: textTarget },
+      });
+    });
+    expect(screen.getByText('connectable:OUTPUT:flow-sparse:')).toBeInTheDocument();
+
+    mockUpdateEdge.mockClear();
+    mockUpdateNode.mockClear();
+
+    nodeClickHandler({
+      node: {
+        id: 'node-1',
+        isNode: () => true,
+        getPorts: () => [],
+      },
+      e: { target: document.createElement('div') },
+    });
+
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
+
+    mockUpdateEdge.mockClear();
+    mockUpdateNode.mockClear();
+
+    edgeClickHandler({
+      edge: { id: undefined },
+    });
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateEdge).not.toHaveBeenCalledWith('', { selected: false });
+
+    mockUpdateEdge.mockClear();
+    mockUpdateNode.mockClear();
+
+    blankClickHandler();
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
+  });
+
+  it('falls back to template widths and empty titles when refreshing node tools', () => {
+    mockGraphStoreState.nodes = [
+      {
+        id: 'node-template-width',
+        data: {
+          id: 'proc-template',
+          version: '1.0',
+          label: undefined,
+          quantitativeReference: '0',
+        },
+        tools: [],
+        ports: {
+          items: [],
+        },
+      },
+    ];
+    mockGenProcessName.mockReturnValueOnce(undefined);
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-template-width',
+      expect.objectContaining({
+        tools: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'nodeTitle',
+            args: expect.objectContaining({
+              markup: expect.arrayContaining([
+                expect.objectContaining({
+                  attrs: expect.objectContaining({
+                    width: 350,
+                  }),
+                }),
+                expect.objectContaining({
+                  textContent: '',
+                }),
+              ]),
+            }),
+          }),
+        ]),
+      }),
+      { ignoreHistory: true },
+    );
+  });
+
   it('runs the selected-node update callback through the result action components', async () => {
     mockGraphStoreState.nodes[0].selected = true;
     mockGetLifeCycleModelDetail.mockResolvedValue({
@@ -1927,5 +2743,198 @@ describe('ToolbarEdit', () => {
     );
     expect(mockGetUserTeamId).toHaveBeenCalled();
     expect(mockCheckReferences).toHaveBeenCalled();
+  });
+
+  it('falls back to empty versions in owned model result action components', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      selected: true,
+      data: {
+        id: undefined,
+        version: undefined,
+        label: 'Node 1',
+        quantitativeReference: '1',
+      },
+    };
+
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [{ id: 'child-model' }],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: undefined, version: undefined, userId: 'user-1', modelId: 'child-model' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() =>
+      expect(screen.getByText('life-cycle-model-edit:child-model:')).toBeInTheDocument(),
+    );
+  });
+
+  it('falls back to empty ids and versions in owned process result action components', async () => {
+    mockGraphStoreState.nodes[0] = {
+      ...mockGraphStoreState.nodes[0],
+      selected: true,
+      data: {
+        id: undefined,
+        version: undefined,
+        label: 'Node 1',
+        quantitativeReference: '1',
+      },
+    };
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: undefined, version: undefined, userId: 'user-1' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() => expect(screen.getByText('process-edit::')).toBeInTheDocument());
+  });
+
+  it('invokes default optional callbacks through owned process result actions', async () => {
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: 'proc-1', version: '1.0', userId: 'user-1' }],
+    });
+
+    const { rerender } = render(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={true}
+        onClose={undefined as any}
+        updateNodeCb={undefined as any}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText('process-edit:proc-1:1.0')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: 'open-process-view-drawer' }));
+    await userEvent.click(screen.getByRole('button', { name: 'run-process-update-node' }));
+
+    rerender(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={false}
+        onClose={undefined as any}
+        updateNodeCb={undefined as any}
+      />,
+    );
+  });
+
+  it('invokes the default update callback when saving without an external handler', async () => {
+    render(<ToolbarEdit {...baseProps} updateNodeCb={undefined as any} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() => expect(mockUpdateLifeCycleModel).toHaveBeenCalled());
+  });
+
+  it('clears resolved problem nodes after refreshing the selected node reference', async () => {
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValue({
+      data: [{ id: 'proc-1', version: '1.0', userId: 'user-1' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    mockUpdateNode.mockClear();
+    mockToolbarHandleCheckData.mockResolvedValueOnce({
+      problemNodes: [
+        {
+          '@refObjectId': 'proc-1',
+          '@version': '1.0',
+          '@type': 'process data set',
+        },
+      ],
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            body: expect.objectContaining({ stroke: '#ff4d4f' }),
+          }),
+        }),
+        { ignoreHistory: true },
+      ),
+    );
+
+    mockUpdateNode.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'run-process-update-node' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            body: expect.objectContaining({ stroke: '#1890ff' }),
+          }),
+        }),
+        { ignoreHistory: true },
+      ),
+    );
   });
 });
