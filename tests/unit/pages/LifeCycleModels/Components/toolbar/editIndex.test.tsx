@@ -9,6 +9,7 @@ const mockRemoveNodes = jest.fn();
 const mockRemoveEdges = jest.fn();
 const mockUpdateEdge = jest.fn();
 const mockInitData = jest.fn();
+const mockSyncGraphData = jest.fn();
 const mockToolbarHandleCheckData = jest.fn();
 const mockToolbarSubmitReview = jest.fn();
 const mockToolbarUpdateReferenceDescription = jest.fn();
@@ -26,6 +27,8 @@ const mockGetAllRefObj = jest.fn().mockReturnValue([]);
 const mockGetRefTableName = jest.fn().mockReturnValue('process');
 
 let mockGraphStoreState: any = { nodes: [], edges: [] };
+let lastControlProps: any;
+let mockGraph: any;
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -39,6 +42,7 @@ jest.mock('@/contexts/graphContext', () => ({
   __esModule: true,
   useGraphStore: (selector: any) => selector(mockGraphStoreState),
   useGraphEvent: jest.fn(),
+  useGraphInstance: () => mockGraphStoreState.graph,
 }));
 
 const { useGraphEvent: mockUseGraphEvent } = jest.requireMock('@/contexts/graphContext');
@@ -139,7 +143,26 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/add', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/control', () => ({
   __esModule: true,
-  Control: () => <div>control</div>,
+  Control: (props: any) => {
+    lastControlProps = props;
+    return (
+      <div>
+        <div data-testid='control-items'>{props.items?.join(',')}</div>
+        <button type='button' onClick={() => props.editorActions?.undo?.()}>
+          control-undo
+        </button>
+        <button type='button' onClick={() => props.editorActions?.redo?.()}>
+          control-redo
+        </button>
+        <button type='button' onClick={() => props.editorActions?.paste?.()}>
+          control-paste
+        </button>
+        <button type='button' onClick={() => props.editorActions?.duplicate?.()}>
+          control-duplicate
+        </button>
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/eidtInfo', () => {
@@ -392,6 +415,7 @@ beforeEach(() => {
   mockToolbarSubmitReview.mockReset().mockResolvedValue(undefined);
   mockToolbarUpdateReferenceDescription.mockReset().mockResolvedValue(undefined);
   mockUpdateNodeCb.mockReset().mockResolvedValue(undefined);
+  mockSyncGraphData.mockReset();
   mockGetRefData.mockReset().mockResolvedValue({ data: { ruleVerification: true } });
   mockGetProcessesByIdAndVersion.mockReset().mockResolvedValue({ data: [] });
   mockGetImportedId.mockReset().mockReturnValue(undefined);
@@ -475,6 +499,26 @@ beforeEach(() => {
   const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
   antMessage.success.mockReset();
   antMessage.error.mockReset();
+  lastControlProps = undefined;
+  mockGraph = {
+    bindKey: jest.fn(),
+    unbindKey: jest.fn(),
+    canUndo: jest.fn(() => false),
+    canRedo: jest.fn(() => false),
+    cleanClipboard: jest.fn(),
+    cleanHistory: jest.fn(),
+    cleanSelection: jest.fn(),
+    copy: jest.fn(),
+    getEdges: jest.fn(() => mockGraphStoreState.edges),
+    getNodes: jest.fn(() => mockGraphStoreState.nodes),
+    getSelectedCells: jest.fn(() => []),
+    isClipboardEmpty: jest.fn(() => true),
+    paste: jest.fn(() => []),
+    redo: jest.fn(),
+    select: jest.fn(),
+    undo: jest.fn(),
+    batchUpdate: jest.fn((_name: string, callback: () => void) => callback()),
+  };
   mockGraphStoreState = {
     initData: mockInitData,
     addNodes: mockAddNodes,
@@ -482,6 +526,8 @@ beforeEach(() => {
     removeNodes: mockRemoveNodes,
     removeEdges: mockRemoveEdges,
     updateEdge: mockUpdateEdge,
+    syncGraphData: mockSyncGraphData,
+    graph: mockGraph,
     nodes: [
       {
         id: 'node-1',
@@ -700,6 +746,87 @@ describe('ToolbarEdit', () => {
     });
   });
 
+  it('wires editor controls and keyboard shortcuts to graph actions', () => {
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    expect(screen.getByTestId('control-items')).toHaveTextContent(
+      'undo,redo,paste,duplicate,zoomOut,zoomTo,zoomIn,zoomToFit,zoomToOrigin,autoLayoutLR',
+    );
+    expect(lastControlProps?.canDuplicate).toBe(false);
+    expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+z', 'ctrl+z'], expect.any(Function));
+    expect(mockGraph.bindKey).toHaveBeenCalledWith(
+      ['meta+shift+z', 'ctrl+shift+z', 'ctrl+y'],
+      expect.any(Function),
+    );
+    expect(mockGraph.bindKey).toHaveBeenCalledWith(['backspace', 'delete'], expect.any(Function));
+    expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+c', 'ctrl+c'], expect.any(Function));
+    expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+v', 'ctrl+v'], expect.any(Function));
+    expect(mockGraph.bindKey).toHaveBeenCalledWith(['meta+d', 'ctrl+d'], expect.any(Function));
+  });
+
+  it('marks visual-only node refreshes to ignore history', () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({
+        tools: expect.any(Array),
+      }),
+      { ignoreHistory: true },
+    );
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({
+        attrs: expect.any(Object),
+      }),
+      { ignoreHistory: true },
+    );
+  });
+
+  it('duplicates selected cells from the control actions and syncs graph state', async () => {
+    const selectedCell = { id: 'node-1' };
+    const pastedReferenceNode = {
+      id: 'node-copy',
+      isEdge: () => false,
+      isNode: () => true,
+      getData: jest.fn(() => ({
+        label: [{ '@xml:lang': 'en', '#text': 'Copied Process' }],
+        quantitativeReference: '1',
+      })),
+      setData: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+      getSize: jest.fn(() => ({ width: 350 })),
+    };
+
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGraph.getSelectedCells.mockReturnValue([selectedCell]);
+    mockGraph.isClipboardEmpty.mockReturnValue(false);
+    mockGraph.paste.mockReturnValue([pastedReferenceNode]);
+    mockGraph.getNodes.mockReturnValue([...mockGraphStoreState.nodes, { id: 'node-copy' }]);
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'control-duplicate' }));
+
+    expect(mockGraph.copy).toHaveBeenCalledWith([selectedCell], {
+      deep: true,
+      useLocalStorage: false,
+    });
+    expect(mockGraph.batchUpdate).toHaveBeenCalledWith('clipboard-paste', expect.any(Function));
+    expect(mockGraph.paste).toHaveBeenCalledWith({
+      offset: { dx: 32, dy: 32 },
+      useLocalStorage: false,
+    });
+    expect(pastedReferenceNode.setData).toHaveBeenCalledWith({
+      label: [{ '@xml:lang': 'en', '#text': 'Copied Process' }],
+      quantitativeReference: '0',
+    });
+    expect(mockGraph.cleanSelection).toHaveBeenCalled();
+    expect(mockGraph.select).toHaveBeenCalledWith([pastedReferenceNode]);
+    expect(mockSyncGraphData).toHaveBeenCalled();
+  });
+
   it('updates saved edit edge labels and preserves edges without targets during save', async () => {
     mockGraphStoreState.edges = [
       {
@@ -751,7 +878,11 @@ describe('ToolbarEdit', () => {
         }),
       ),
     );
-    expect(mockUpdateEdge).toHaveBeenCalledWith('saved-edit-edge', { labels: [expect.anything()] });
+    expect(mockUpdateEdge).toHaveBeenCalledWith(
+      'saved-edit-edge',
+      { labels: [expect.anything()] },
+      { ignoreHistory: true },
+    );
   });
 
   it('runs footer data-check through the edit info ref after saving', async () => {
@@ -1030,6 +1161,7 @@ describe('ToolbarEdit', () => {
             }),
           }),
         }),
+        { ignoreHistory: true },
       ),
     );
   });
@@ -1095,12 +1227,17 @@ describe('ToolbarEdit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'add-processes' }));
 
-    await waitFor(() => expect(mockAddNodes).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockAddNodes).toHaveBeenCalledTimes(1));
     expect(mockAddNodes).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
           data: expect.objectContaining({
             id: 'proc-a',
+          }),
+        }),
+        expect.objectContaining({
+          data: expect.objectContaining({
+            id: 'proc-b',
           }),
         }),
       ]),
@@ -1110,7 +1247,7 @@ describe('ToolbarEdit', () => {
 
     await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-1']));
     expect(mockRemoveNodes).toHaveBeenCalledWith(['node-1']);
-    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { labels: [] });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { labels: [] }, { ignoreHistory: true });
   });
 
   it('deletes selected edges when no node is selected', async () => {
@@ -1129,11 +1266,16 @@ describe('ToolbarEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: 'delete-icon' }));
 
     await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-2']));
-    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-2', { labels: [] });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-2', { labels: [] }, { ignoreHistory: true });
   });
 
   it('creates a lifecycle model from the empty-create state and applies saved edge labels', async () => {
     mockGraphStoreState.graph = {
+      bindKey: jest.fn(),
+      unbindKey: jest.fn(),
+      cleanClipboard: jest.fn(),
+      cleanHistory: jest.fn(),
+      cleanSelection: jest.fn(),
       getNodes: () => [
         {
           toJSON: () => ({
@@ -1197,7 +1339,11 @@ describe('ToolbarEdit', () => {
         }),
       ),
     );
-    expect(mockUpdateEdge).toHaveBeenCalledWith('saved-edge', { labels: [expect.anything()] });
+    expect(mockUpdateEdge).toHaveBeenCalledWith(
+      'saved-edge',
+      { labels: [expect.anything()] },
+      { ignoreHistory: true },
+    );
   });
 
   it('shows a duplicate-id error when create mode hits a unique conflict', async () => {
@@ -1652,8 +1798,13 @@ describe('ToolbarEdit', () => {
     expect(mockUpdateEdge).toHaveBeenCalledWith(
       'edge-new',
       expect.objectContaining({ attrs: expect.any(Object) }),
+      { ignoreHistory: true },
     );
-    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-existing', { labels: [] });
+    expect(mockUpdateEdge).toHaveBeenCalledWith(
+      'edge-existing',
+      { labels: [] },
+      { ignoreHistory: true },
+    );
 
     const validEdge = {
       id: 'edge-valid',

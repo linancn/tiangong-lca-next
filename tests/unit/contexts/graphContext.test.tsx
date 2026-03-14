@@ -200,6 +200,10 @@ class MockGraph {
     return this.edges;
   }
 
+  getSelectedCells() {
+    return [...this.nodes, ...this.edges].filter((cell) => cell.selected);
+  }
+
   clearCells() {
     this.nodes = [];
     this.edges = [];
@@ -358,6 +362,8 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
 
     graph.addNode({ id: 'sync-node', data: { synced: true }, attrs: { color: 'green' } });
     graph.addEdge({ id: 'sync-edge', data: { synced: true }, attrs: { color: 'blue' } });
+    graph.select(graph.getCellById('sync-node'));
+    graph.select(graph.getCellById('sync-edge'));
 
     act(() => {
       result.current.syncGraphData();
@@ -366,12 +372,12 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     expect(result.current.nodes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: 'init-node' }),
-        expect.objectContaining({ id: 'sync-node', data: { synced: true } }),
+        expect.objectContaining({ id: 'sync-node', data: { synced: true }, selected: true }),
       ]),
     );
     expect(result.current.nodes).toHaveLength(2);
     expect(result.current.edges).toEqual([
-      expect.objectContaining({ id: 'sync-edge', data: { synced: true } }),
+      expect.objectContaining({ id: 'sync-edge', data: { synced: true }, selected: true }),
     ]);
   });
 

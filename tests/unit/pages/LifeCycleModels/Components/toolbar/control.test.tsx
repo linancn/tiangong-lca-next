@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { act, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 let graphZoom = 1;
-let scaleHandler: any;
+let mockEventHandlers: Record<string, any>;
 let mockGraph: any;
 
 const mockApplyDagreLayout = jest.fn();
@@ -17,9 +17,7 @@ jest.mock('umi', () => ({
 jest.mock('@/contexts/graphContext', () => ({
   __esModule: true,
   useGraphEvent: jest.fn((event: string, handler: any) => {
-    if (event === 'scale') {
-      scaleHandler = handler;
-    }
+    mockEventHandlers[event] = handler;
   }),
   useGraphInstance: () => mockGraph,
 }));
@@ -33,10 +31,14 @@ jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   AimOutlined: () => <span>aim</span>,
   CompressOutlined: () => <span>compress</span>,
+  CopyOutlined: () => <span>copy</span>,
   ExpandOutlined: () => <span>expand</span>,
   MinusOutlined: () => <span>minus</span>,
   PartitionOutlined: () => <span>partition</span>,
   PlusOutlined: () => <span>plus</span>,
+  RedoOutlined: () => <span>redo</span>,
+  SnippetsOutlined: () => <span>paste</span>,
+  UndoOutlined: () => <span>undo</span>,
 }));
 
 jest.mock('antd', () => {
@@ -75,7 +77,7 @@ describe('LifeCycleModelToolbarControl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     graphZoom = 1;
-    scaleHandler = undefined;
+    mockEventHandlers = {};
     mockGraph = {
       zoom: jest.fn((delta?: number) => {
         if (typeof delta === 'number') {
@@ -89,6 +91,9 @@ describe('LifeCycleModelToolbarControl', () => {
       zoomToFit: jest.fn(() => {
         graphZoom = 1;
       }),
+      canUndo: jest.fn(() => false),
+      canRedo: jest.fn(() => false),
+      isClipboardEmpty: jest.fn(() => true),
     };
   });
 
@@ -103,12 +108,12 @@ describe('LifeCycleModelToolbarControl', () => {
     expect(screen.getAllByRole('button', { name: '100%' })[0]).toBeInTheDocument();
 
     act(() => {
-      scaleHandler?.({ sx: 1.5 });
+      mockEventHandlers['scale']?.({ sx: 1.5 });
     });
     expect(screen.getByRole('button', { name: 'plus' })).toBeDisabled();
 
     act(() => {
-      scaleHandler?.({ sx: 0.5 });
+      mockEventHandlers['scale']?.({ sx: 0.5 });
     });
     expect(screen.getByRole('button', { name: 'minus' })).toBeDisabled();
   });
@@ -147,5 +152,59 @@ describe('LifeCycleModelToolbarControl', () => {
     expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(2, mockGraph, 'LR');
     await waitFor(() => expect(mockGraph.zoomToFit).toHaveBeenCalledTimes(2));
     expect(mockGraph.zoomToFit).toHaveBeenNthCalledWith(1, { maxScale: 1 });
+  });
+
+  it('refreshes editor command state and dispatches editing actions', async () => {
+    const editorActions = {
+      undo: jest.fn(),
+      redo: jest.fn(),
+      paste: jest.fn(),
+      duplicate: jest.fn(),
+    };
+
+    const { rerender } = render(
+      <Control
+        items={[ControlEnum.Undo, ControlEnum.Redo, ControlEnum.Paste, ControlEnum.Duplicate]}
+        editorActions={editorActions}
+        canDuplicate={false}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'undo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'redo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'paste' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'copy' })).toBeDisabled();
+
+    mockGraph.canUndo.mockReturnValue(true);
+    mockGraph.canRedo.mockReturnValue(true);
+    mockGraph.isClipboardEmpty.mockReturnValue(false);
+
+    act(() => {
+      mockEventHandlers['history:change']?.({});
+      mockEventHandlers['clipboard:changed']?.({});
+    });
+
+    expect(screen.getByRole('button', { name: 'undo' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'redo' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'paste' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'copy' })).toBeDisabled();
+
+    rerender(
+      <Control
+        items={[ControlEnum.Undo, ControlEnum.Redo, ControlEnum.Paste, ControlEnum.Duplicate]}
+        editorActions={editorActions}
+        canDuplicate={true}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'undo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'redo' }));
+    await userEvent.click(screen.getByRole('button', { name: 'paste' }));
+    await userEvent.click(screen.getByRole('button', { name: 'copy' }));
+
+    expect(editorActions.undo).toHaveBeenCalledTimes(1);
+    expect(editorActions.redo).toHaveBeenCalledTimes(1);
+    expect(editorActions.paste).toHaveBeenCalledTimes(1);
+    expect(editorActions.duplicate).toHaveBeenCalledTimes(1);
   });
 });

@@ -24,37 +24,54 @@ jest.mock('@antv/x6', () => {
     return instance;
   });
 
-  return { __esModule: true, Graph, __graphInstances: graphInstances };
-});
-
-jest.mock('@antv/x6-plugin-snapline', () => {
   class Snapline {
     options: any;
     constructor(options: any) {
       this.options = options;
     }
   }
-  return { __esModule: true, Snapline };
-});
-
-jest.mock('@antv/x6-plugin-selection', () => {
+  class History {
+    options: any;
+    constructor(options: any) {
+      this.options = options;
+    }
+  }
+  class Clipboard {
+    options: any;
+    constructor(options: any) {
+      this.options = options;
+    }
+  }
+  class Keyboard {
+    options: any;
+    constructor(options: any) {
+      this.options = options;
+    }
+  }
   class Selection {
     options: any;
     constructor(options: any) {
       this.options = options;
     }
   }
-  return { __esModule: true, Selection };
-});
-
-jest.mock('@antv/x6-plugin-transform', () => {
   class Transform {
     options: any;
     constructor(options: any) {
       this.options = options;
     }
   }
-  return { __esModule: true, Transform };
+
+  return {
+    __esModule: true,
+    Graph,
+    Snapline,
+    History,
+    Clipboard,
+    Keyboard,
+    Selection,
+    Transform,
+    __graphInstances: graphInstances,
+  };
 });
 
 describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
@@ -66,9 +83,7 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
   });
 
   it('creates graph with default options and plugins', () => {
-    const { Graph, __graphInstances } = jest.requireMock('@antv/x6');
-    const { Snapline } = jest.requireMock('@antv/x6-plugin-snapline');
-    const { Selection } = jest.requireMock('@antv/x6-plugin-selection');
+    const { Graph, Snapline, Selection, __graphInstances } = jest.requireMock('@antv/x6');
 
     render(<X6GraphComponent />);
 
@@ -101,9 +116,8 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
   });
 
   it('applies custom options and cleans up on unmount', () => {
-    const { Graph, __graphInstances } = jest.requireMock('@antv/x6');
-    const { Snapline } = jest.requireMock('@antv/x6-plugin-snapline');
-    const { Transform } = jest.requireMock('@antv/x6-plugin-transform');
+    const { Graph, Clipboard, History, Keyboard, Snapline, Transform, __graphInstances } =
+      jest.requireMock('@antv/x6');
 
     const { unmount } = render(
       <X6GraphComponent
@@ -122,6 +136,9 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
         }}
         gridOptions={{ visible: false }}
         transformOptions={{ resizing: true, rotating: true }}
+        historyOptions={{ enabled: true }}
+        clipboardOptions={{ enabled: true, useLocalStorage: false }}
+        keyboardOptions={{ enabled: true, global: false }}
       />,
     );
 
@@ -140,13 +157,53 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     });
     expect(instance.options.grid).toBe(false);
 
-    expect(instance.use).toHaveBeenCalledTimes(2);
+    expect(instance.use).toHaveBeenCalledTimes(5);
+    expect(instance.use).toHaveBeenCalledWith(expect.any(History));
+    expect(instance.use).toHaveBeenCalledWith(expect.any(Clipboard));
+    expect(instance.use).toHaveBeenCalledWith(expect.any(Keyboard));
     expect(instance.use).toHaveBeenCalledWith(expect.any(Snapline));
     expect(instance.use).toHaveBeenCalledWith(expect.any(Transform));
+
+    const historyPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof History,
+    )?.[0];
+
+    expect(historyPlugin.options.beforeAddCommand('cell:change:tools', { options: {} })).toBe(true);
+    expect(
+      historyPlugin.options.beforeAddCommand('cell:change:tools', {
+        options: { ignoreHistory: true },
+      }),
+    ).toBe(false);
 
     unmount();
 
     expect(instance.dispose).toHaveBeenCalledTimes(1);
     expect(mockSetGraph).toHaveBeenLastCalledWith(null);
+  });
+
+  it('delegates history filtering to a custom beforeAddCommand when provided', () => {
+    const { History, __graphInstances } = jest.requireMock('@antv/x6');
+    const beforeAddCommand = jest.fn(() => 'custom-result');
+
+    render(
+      <X6GraphComponent
+        historyOptions={{
+          enabled: true,
+          beforeAddCommand,
+        }}
+        clipboardOptions={{ enabled: true, useLocalStorage: true }}
+        keyboardOptions={{ enabled: true, global: true }}
+      />,
+    );
+
+    const instance = __graphInstances[0];
+    const historyPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof History,
+    )?.[0];
+
+    expect(historyPlugin.options.beforeAddCommand('cell:added', { options: {} })).toBe(
+      'custom-result',
+    );
+    expect(beforeAddCommand).toHaveBeenCalledWith('cell:added', { options: {} });
   });
 });

@@ -156,6 +156,16 @@ const LifeCycleModelEdit: FC<Props> = ({
                     resizing: true,
                     rotating: true,
                   }}
+                  historyOptions={{
+                    enabled: true,
+                  }}
+                  clipboardOptions={{
+                    enabled: true,
+                    useLocalStorage: false,
+                  }}
+                  keyboardOptions={{
+                    enabled: true,
+                  }}
                 />
               </Content>
             </Layout>

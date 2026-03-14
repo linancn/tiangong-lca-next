@@ -1,12 +1,16 @@
 import {
   AimOutlined,
   CompressOutlined,
+  CopyOutlined,
   ExpandOutlined,
   MinusOutlined,
   PartitionOutlined,
   PlusOutlined,
+  RedoOutlined,
+  SnippetsOutlined,
+  UndoOutlined,
 } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
 
 import { useGraphEvent, useGraphInstance } from '@/contexts/graphContext';
@@ -16,6 +20,10 @@ import { FormattedMessage } from 'umi';
 import './styles/index.less';
 
 export enum ControlEnum {
+  Undo = 'undo',
+  Redo = 'redo',
+  Paste = 'paste',
+  Duplicate = 'duplicate',
   ZoomTo = 'zoomTo',
   ZoomIn = 'zoomIn',
   ZoomOut = 'zoomOut',
@@ -48,6 +56,10 @@ const dropDownItems = [
 ];
 
 const ControlActionList = [
+  'undo',
+  'redo',
+  'paste',
+  'duplicate',
   'zoomTo',
   'zoomIn',
   'zoomOut',
@@ -58,30 +70,77 @@ const ControlActionList = [
 
 type ControlAction = (typeof ControlActionList)[number];
 
+interface ControlEditorActions {
+  undo?: () => void;
+  redo?: () => void;
+  paste?: () => void;
+  duplicate?: () => void;
+}
+
 interface ControlIProps {
   items: ControlAction[];
   direction?: 'horizontal' | 'vertical';
   placement?: 'top' | 'right' | 'bottom' | 'left';
+  editorActions?: ControlEditorActions;
+  canDuplicate?: boolean;
 }
 
 const Control = (props: ControlIProps) => {
-  const { items } = props;
+  const { items, editorActions, canDuplicate = false } = props;
 
   const graph = useGraphInstance();
 
   const [zoom, setZoom] = useState(1);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const [canPaste, setCanPaste] = useState(false);
+
+  const refreshCommandState = useCallback(() => {
+    if (!graph) {
+      setCanUndo(false);
+      setCanRedo(false);
+      setCanPaste(false);
+      return;
+    }
+
+    setCanUndo(graph.canUndo());
+    setCanRedo(graph.canRedo());
+    setCanPaste(!graph.isClipboardEmpty({ useLocalStorage: false }));
+  }, [graph]);
 
   useGraphEvent('scale', ({ sx }: { sx: number }) => {
     setZoom(sx);
   });
 
+  useGraphEvent('history:change', refreshCommandState);
+  useGraphEvent('clipboard:changed', refreshCommandState);
+
   useEffect(() => {
     if (graph) {
       setZoom(graph.zoom());
     }
-  }, [graph, props]);
+    refreshCommandState();
+  }, [graph, refreshCommandState]);
 
   const ControlToolMap = {
+    [ControlEnum.Undo]: {
+      label: <FormattedMessage id='pages.button.model.undo' defaultMessage='Undo' />,
+      icon: <UndoOutlined />,
+    },
+    [ControlEnum.Redo]: {
+      label: <FormattedMessage id='pages.button.model.redo' defaultMessage='Redo' />,
+      icon: <RedoOutlined />,
+    },
+    [ControlEnum.Paste]: {
+      label: <FormattedMessage id='pages.button.model.paste' defaultMessage='Paste' />,
+      icon: <SnippetsOutlined />,
+    },
+    [ControlEnum.Duplicate]: {
+      label: (
+        <FormattedMessage id='pages.button.model.duplicate' defaultMessage='Duplicate selection' />
+      ),
+      icon: <CopyOutlined />,
+    },
     [ControlEnum.ZoomIn]: {
       label: <FormattedMessage id='pages.button.model.zoomIn' defaultMessage='Zoom In' />,
       icon: <PlusOutlined />,
@@ -110,11 +169,23 @@ const Control = (props: ControlIProps) => {
     },
   };
 
-  const changeZoom = (type: ControlAction, args?: string) => {
+  const handleAction = (type: ControlAction, args?: string) => {
     if (!graph) return;
     const key = parseInt(args || '1', 10);
     const zoomNum = (0.25 * (key + 1)) as number;
     switch (type) {
+      case ControlEnum.Undo:
+        editorActions?.undo?.();
+        break;
+      case ControlEnum.Redo:
+        editorActions?.redo?.();
+        break;
+      case ControlEnum.Paste:
+        editorActions?.paste?.();
+        break;
+      case ControlEnum.Duplicate:
+        editorActions?.duplicate?.();
+        break;
       case ControlEnum.ZoomIn:
         if (zoom < 1.5) {
           graph.zoom(0.25);
@@ -141,14 +212,21 @@ const Control = (props: ControlIProps) => {
         }
         break;
       }
-      default:
-        break;
     }
     setZoom(graph.zoom());
+    refreshCommandState();
   };
 
   const isToolButtonEnabled = (type: ControlEnum) => {
-    if (type === ControlEnum.ZoomIn) {
+    if (type === ControlEnum.Undo) {
+      return canUndo;
+    } else if (type === ControlEnum.Redo) {
+      return canRedo;
+    } else if (type === ControlEnum.Paste) {
+      return canPaste;
+    } else if (type === ControlEnum.Duplicate) {
+      return canDuplicate;
+    } else if (type === ControlEnum.ZoomIn) {
       return zoom < 1.5;
     } else if (type === ControlEnum.ZoomOut) {
       return zoom > 0.51;
@@ -174,7 +252,7 @@ const Control = (props: ControlIProps) => {
                       <Button
                         key={item.key}
                         style={{ width: '50px' }}
-                        onClick={() => changeZoom(tool, item.key)}
+                        onClick={() => handleAction(tool, item.key)}
                       >
                         {item.label}
                       </Button>
@@ -188,7 +266,7 @@ const Control = (props: ControlIProps) => {
               <Button
                 type='primary'
                 size='small'
-                onClick={() => changeZoom(tool)}
+                onClick={() => handleAction(tool)}
                 disabled={!isToolButtonEnabled(tool as ControlEnum)}
                 style={{ fontSize: '8px', padding: '0', width: '24px', boxShadow: 'none' }}
               >
@@ -204,7 +282,7 @@ const Control = (props: ControlIProps) => {
                 size='small'
                 style={{ boxShadow: 'none' }}
                 icon={ControlToolMap[tool].icon}
-                onClick={() => changeZoom(tool)}
+                onClick={() => handleAction(tool)}
                 disabled={!isToolButtonEnabled(tool as ControlEnum)}
               />
             </Tooltip>

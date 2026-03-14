@@ -94,6 +94,8 @@ type Props = {
   newVersion?: string;
 };
 
+const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
+
 const ToolbarEdit: FC<Props> = ({
   id,
   version,
@@ -131,6 +133,7 @@ const ToolbarEdit: FC<Props> = ({
   const removeNodes = useGraphStore((state) => state.removeNodes);
   const removeEdges = useGraphStore((state) => state.removeEdges);
   const updateEdge = useGraphStore((state) => state.updateEdge);
+  const syncGraphData = useGraphStore((state) => state.syncGraphData);
   const graph = useGraphStore((state) => state.graph);
   const intl = useIntl();
   const [userId, setUserId] = useState<string>('');
@@ -461,6 +464,139 @@ const ToolbarEdit: FC<Props> = ({
     setIsSave(true);
   }, [isSave, setIsSave]);
 
+  const resetGraphCommandState = useCallback(() => {
+    graph?.cleanSelection?.();
+    graph?.cleanClipboard?.();
+    graph?.cleanHistory?.();
+  }, [graph]);
+
+  const syncGraphSnapshot = useCallback(() => {
+    if (!graph) {
+      return;
+    }
+
+    syncGraphData();
+    setNodeCount(graph.getNodes().length);
+  }, [graph, syncGraphData]);
+
+  const buildNodeTools = useCallback(
+    (nodeLabel: any, nodeWidth: number, isReference: boolean) => [
+      isReference ? refTool : nonRefTool,
+      nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? '', token, lang),
+      inputFlowTool,
+      outputFlowTool,
+    ],
+    [inputFlowTool, lang, nonRefTool, outputFlowTool, refTool, token],
+  );
+
+  const normalizePastedCells = useCallback(
+    (cells: Array<X6Node | X6Edge>) => {
+      cells.forEach((cell) => {
+        if (!cell.isNode()) {
+          return;
+        }
+
+        const node = cell as X6Node;
+        const nodeData = node.getData() as LifeCycleModelGraphNode['data'] | undefined;
+        if (nodeData?.quantitativeReference !== '1') {
+          return;
+        }
+
+        const nodeWidth = node.getSize().width || nodeTemplate.width || 350;
+        node.setData({
+          ...nodeData,
+          quantitativeReference: '0',
+        });
+        node.addTools(buildNodeTools(nodeData?.label, nodeWidth, false), { reset: true });
+      });
+    },
+    [buildNodeTools],
+  );
+
+  const copySelection = useCallback(() => {
+    if (!graph) {
+      return;
+    }
+
+    const selectedCells = graph.getSelectedCells();
+    if (selectedCells.length === 0) {
+      return;
+    }
+
+    graph.copy(selectedCells, {
+      deep: true,
+      useLocalStorage: false,
+    });
+  }, [graph]);
+
+  const pasteSelection = useCallback(
+    (offset: { dx: number; dy: number } = { dx: 32, dy: 32 }) => {
+      if (!graph || graph.isClipboardEmpty({ useLocalStorage: false })) {
+        return;
+      }
+
+      graph.batchUpdate('clipboard-paste', () => {
+        const pastedCells = graph.paste({
+          offset,
+          useLocalStorage: false,
+        });
+        if (pastedCells.length === 0) {
+          return;
+        }
+
+        normalizePastedCells(pastedCells as Array<X6Node | X6Edge>);
+        graph.cleanSelection();
+        graph.select(pastedCells);
+      });
+
+      syncGraphSnapshot();
+    },
+    [graph, normalizePastedCells, syncGraphSnapshot],
+  );
+
+  const duplicateSelection = useCallback(() => {
+    if (!graph) {
+      return;
+    }
+
+    const selectedCells = graph.getSelectedCells();
+    if (selectedCells.length === 0) {
+      return;
+    }
+
+    graph.copy(selectedCells, {
+      deep: true,
+      useLocalStorage: false,
+    });
+    pasteSelection({ dx: 32, dy: 32 });
+  }, [graph, pasteSelection]);
+
+  const undoGraph = useCallback(() => {
+    if (!graph || !graph.canUndo()) {
+      return;
+    }
+
+    graph.undo();
+    syncGraphSnapshot();
+  }, [graph, syncGraphSnapshot]);
+
+  const redoGraph = useCallback(() => {
+    if (!graph || !graph.canRedo()) {
+      return;
+    }
+
+    graph.redo();
+    syncGraphSnapshot();
+  }, [graph, syncGraphSnapshot]);
+
+  const refreshEdgeLabels = useCallback(() => {
+    edges.forEach((edge) => {
+      if (edge?.labels?.length > 0) {
+        updateEdge(edge.id ?? '', { labels: [] }, VISUAL_ONLY_MUTATION_OPTIONS);
+      }
+    });
+  }, [edges, updateEdge]);
+
   const updateInfoData = (data: LifeCycleModelEditorFormState) => {
     setInfoData({ ...data, id: thisId, version: thisVersion });
   };
@@ -578,97 +714,91 @@ const ToolbarEdit: FC<Props> = ({
     setSpinning(true);
     if (processes.length > 1) {
     }
-    getProcessDetailByIdAndVersion(processes).then(
-      async (result: ProcessDetailByVersionResponse) => {
-        const dealData = (data: ProcessDetailByVersionItem, index: number) => {
-          const exchange = (genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges
-            ?.exchange ?? []) as ProcessExchangeData[];
-          const refExchange = exchange.find(
-            (i: ProcessExchangeData) => i?.quantitativeReference === true,
-          );
-          const refFlow = Array.isArray(refExchange?.referenceToFlowDataSet)
-            ? refExchange?.referenceToFlowDataSet[0]
-            : refExchange?.referenceToFlowDataSet;
-          const direction = refExchange?.exchangeDirection ?? '';
-          const inOrOut = direction.toUpperCase() === 'INPUT';
-          const text = getLangText(refFlow?.['common:shortDescription'], lang);
-          const textWithAllocation = getPortLabelWithAllocation(
-            text ?? '',
-            refExchange?.allocations,
-            direction,
-          );
-          const refPortItem = {
-            id: (inOrOut ? 'INPUT' : 'OUTPUT') + ':' + (refFlow?.['@refObjectId'] ?? '-'),
-            args: { x: inOrOut ? 0 : '100%', y: 65 },
-            attrs: {
-              text: {
-                text: `${genPortLabel(textWithAllocation ?? '', lang, nodeTemplate.width)}`,
-                title: textWithAllocation,
-                cursor: 'pointer',
-                fill: getPortTextColor(
-                  refExchange?.quantitativeReference,
-                  refExchange?.allocations,
-                  token,
-                ),
-                'font-weight': getPortTextStyle(refExchange?.quantitativeReference),
-              },
+    getProcessDetailByIdAndVersion(processes).then((result: ProcessDetailByVersionResponse) => {
+      const dealData = (data: ProcessDetailByVersionItem, index: number) => {
+        const exchange = (genProcessFromData(data?.json?.processDataSet ?? {})?.exchanges
+          ?.exchange ?? []) as ProcessExchangeData[];
+        const refExchange = exchange.find(
+          (i: ProcessExchangeData) => i?.quantitativeReference === true,
+        );
+        const refFlow = Array.isArray(refExchange?.referenceToFlowDataSet)
+          ? refExchange?.referenceToFlowDataSet[0]
+          : refExchange?.referenceToFlowDataSet;
+        const direction = refExchange?.exchangeDirection ?? '';
+        const inOrOut = direction.toUpperCase() === 'INPUT';
+        const text = getLangText(refFlow?.['common:shortDescription'], lang);
+        const textWithAllocation = getPortLabelWithAllocation(
+          text ?? '',
+          refExchange?.allocations,
+          direction,
+        );
+        const refPortItem = {
+          id: (inOrOut ? 'INPUT' : 'OUTPUT') + ':' + (refFlow?.['@refObjectId'] ?? '-'),
+          args: { x: inOrOut ? 0 : '100%', y: 65 },
+          attrs: {
+            text: {
+              text: `${genPortLabel(textWithAllocation ?? '', lang, nodeTemplate.width)}`,
+              title: textWithAllocation,
+              cursor: 'pointer',
+              fill: getPortTextColor(
+                refExchange?.quantitativeReference,
+                refExchange?.allocations,
+                token,
+              ),
+              'font-weight': getPortTextStyle(refExchange?.quantitativeReference),
             },
-            group:
-              (refExchange?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
-                ? 'groupOutput'
-                : 'groupInput',
-            data: {
-              textLang: refFlow?.['common:shortDescription'],
-              flowId: refFlow?.['@refObjectId'],
-              flowVersion: refFlow?.['@version'],
-              quantitativeReference: refExchange?.quantitativeReference,
-              allocations: refExchange?.allocations,
-            },
-          } satisfies LifeCycleModelPortItem;
+          },
+          group:
+            (refExchange?.exchangeDirection ?? '').toUpperCase() === 'OUTPUT'
+              ? 'groupOutput'
+              : 'groupInput',
+          data: {
+            textLang: refFlow?.['common:shortDescription'],
+            flowId: refFlow?.['@refObjectId'],
+            flowVersion: refFlow?.['@version'],
+            quantitativeReference: refExchange?.quantitativeReference,
+            allocations: refExchange?.allocations,
+          },
+        } satisfies LifeCycleModelPortItem;
 
-          const processDataSet = data?.json?.processDataSet;
-          const name = processDataSet?.processInformation?.dataSetInformation?.name ?? {};
-          const quantitativeReference = nodeCount === 0 && index === 0 ? '1' : '0';
-          addNodes([
-            {
-              ...nodeTemplate,
-              id: v4(),
-              data: {
-                id: data.id,
-                version: data?.version,
-                label: name,
-                shortDescription: genProcessNameJson(name),
-                quantitativeReference: quantitativeReference,
-              },
-              tools: [
-                nodeTitleTool(
-                  nodeTemplate.width ?? 350,
-                  genProcessName(name, lang) ?? '',
-                  token,
-                  lang,
-                ),
-                quantitativeReference === '1' ? refTool : nonRefTool,
-                inputFlowTool,
-                outputFlowTool,
-              ],
-              ports: {
-                ...ports,
-                items: [refPortItem],
-              },
-            },
-          ]);
+        const processDataSet = data?.json?.processDataSet;
+        const name = processDataSet?.processInformation?.dataSetInformation?.name ?? {};
+        const quantitativeReference = nodeCount === 0 && index === 0 ? '1' : '0';
+        return {
+          ...nodeTemplate,
+          id: v4(),
+          data: {
+            id: data.id,
+            version: data?.version,
+            label: name,
+            shortDescription: genProcessNameJson(name),
+            quantitativeReference: quantitativeReference,
+          },
+          tools: [
+            nodeTitleTool(nodeTemplate.width ?? 350, genProcessName(name, lang) ?? '', token, lang),
+            quantitativeReference === '1' ? refTool : nonRefTool,
+            inputFlowTool,
+            outputFlowTool,
+          ],
+          ports: {
+            ...ports,
+            items: [refPortItem],
+          },
         };
+      };
 
-        if (result && result.data) {
-          result?.data.forEach(async (item: ProcessDetailByVersionItem, index: number) => {
-            await dealData(item, index);
-            await setNodeCount(nodeCount + 1);
-          });
+      if (result && result.data) {
+        const newNodes = result.data.map((item: ProcessDetailByVersionItem, index: number) =>
+          dealData(item, index),
+        );
+        if (newNodes.length > 0) {
+          addNodes(newNodes);
+          setNodeCount((prev) => prev + newNodes.length);
         }
+      }
 
-        setSpinning(false);
-      },
-    );
+      setSpinning(false);
+    });
   };
 
   const updateReference = async (setLoadingData: boolean) => {
@@ -782,38 +912,58 @@ const ToolbarEdit: FC<Props> = ({
     if (setLoadingData) setSpinning(false);
   };
 
-  const deleteCell = async () => {
-    const selectedNodes = nodes.filter((node) => node.selected);
-    if (selectedNodes.length > 0) {
-      selectedNodes.forEach(async (node) => {
-        const selectedEdges = edges.filter(
-          (edge) =>
-            (edge.source as { cell?: string } | undefined)?.cell === node.id ||
-            (edge.target as { cell?: string } | undefined)?.cell === node.id,
-        );
-        await removeEdges(selectedEdges.map((e) => e.id ?? ''));
-        // if (node.data?.quantitativeReference === '1') {
-        // }
-        await removeNodes([node.id ?? '']);
-        setNodeCount(nodeCount - 1);
-        edges.forEach((e) => {
-          if (e?.labels?.length > 0) {
-            updateEdge(e.id ?? '', { labels: [] });
-          }
-        });
+  const deleteCell = useCallback(() => {
+    const selectedNodeIds = nodes
+      .filter((node) => node.selected)
+      .map((node) => node.id ?? '')
+      .filter(Boolean);
+    const selectedEdgeIds = new Set(
+      edges
+        .filter((edge) => edge.selected)
+        .map((edge) => edge.id ?? '')
+        .filter(Boolean),
+    );
+
+    if (selectedNodeIds.length > 0) {
+      const selectedNodeIdSet = new Set(selectedNodeIds);
+      edges.forEach((edge) => {
+        const sourceCell = (edge.source as { cell?: string } | undefined)?.cell;
+        const targetCell = (edge.target as { cell?: string } | undefined)?.cell;
+        if (
+          (sourceCell && selectedNodeIdSet.has(sourceCell)) ||
+          (targetCell && selectedNodeIdSet.has(targetCell))
+        ) {
+          selectedEdgeIds.add(edge.id ?? '');
+        }
       });
-    } else {
-      const selectedEdges = edges.filter((edge) => edge.selected);
-      if (selectedEdges.length > 0) {
-        await removeEdges(selectedEdges.map((e) => e.id ?? ''));
-        edges.forEach((e) => {
-          if (e?.labels?.length > 0) {
-            updateEdge(e.id ?? '', { labels: [] });
-          }
-        });
-      }
     }
-  };
+
+    if (selectedNodeIds.length === 0 && selectedEdgeIds.size === 0) {
+      return;
+    }
+
+    const applyDelete = () => {
+      if (selectedEdgeIds.size > 0) {
+        removeEdges(Array.from(selectedEdgeIds));
+      }
+
+      if (selectedNodeIds.length > 0) {
+        removeNodes(selectedNodeIds);
+      }
+    };
+
+    if (graph) {
+      graph.batchUpdate('delete-selection', applyDelete);
+      setNodeCount(graph.getNodes().length);
+    } else if (selectedNodeIds.length > 0) {
+      setNodeCount((prev) => Math.max(prev - selectedNodeIds.length, 0));
+      applyDelete();
+    } else {
+      applyDelete();
+    }
+
+    refreshEdgeLabels();
+  }, [edges, graph, nodes, refreshEdgeLabels, removeEdges, removeNodes]);
 
   const saveData = async (setLoadingData = true) => {
     if (setLoadingData) setSpinning(true);
@@ -823,10 +973,22 @@ const ToolbarEdit: FC<Props> = ({
 
       // 直接从图中获取最新的节点和边数据
       const currentNodes: LifeCycleModelGraphNode[] = graph
-        ? graph.getNodes().map((node: X6Node) => node.toJSON() as LifeCycleModelGraphNode)
+        ? graph
+            .getNodes()
+            .map((node: X6Node | LifeCycleModelGraphNode) =>
+              typeof (node as X6Node).toJSON === 'function'
+                ? ((node as X6Node).toJSON() as LifeCycleModelGraphNode)
+                : (node as LifeCycleModelGraphNode),
+            )
         : (nodes as LifeCycleModelGraphNode[]);
       const currentEdges: LifeCycleModelGraphEdge[] = graph
-        ? graph.getEdges().map((edge: X6Edge) => edge.toJSON() as LifeCycleModelGraphEdge)
+        ? graph
+            .getEdges()
+            .map((edge: X6Edge | LifeCycleModelGraphEdge) =>
+              typeof (edge as X6Edge).toJSON === 'function'
+                ? ((edge as X6Edge).toJSON() as LifeCycleModelGraphEdge)
+                : (edge as LifeCycleModelGraphEdge),
+            )
         : (edges as LifeCycleModelGraphEdge[]);
 
       const newEdges = currentEdges.map((edge: LifeCycleModelGraphEdge) => {
@@ -872,7 +1034,7 @@ const ToolbarEdit: FC<Props> = ({
               edge?.data?.connection?.unbalancedAmount as number,
               edge?.data?.connection?.exchangeAmount as number,
             );
-            updateEdge(edge.id, { labels: [label] });
+            updateEdge(edge.id, { labels: [label] }, VISUAL_ONLY_MUTATION_OPTIONS);
           });
 
           saveCallback();
@@ -917,7 +1079,7 @@ const ToolbarEdit: FC<Props> = ({
               edge?.data?.connection?.unbalancedAmount as number,
               edge?.data?.connection?.exchangeAmount as number,
             );
-            updateEdge(edge.id, { labels: [label] });
+            updateEdge(edge.id, { labels: [label] }, VISUAL_ONLY_MUTATION_OPTIONS);
           });
 
           saveCallback();
@@ -940,10 +1102,10 @@ const ToolbarEdit: FC<Props> = ({
 
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
-    updateEdge(edge.id, edgeTemplate);
+    updateEdge(edge.id, edgeTemplate, VISUAL_ONLY_MUTATION_OPTIONS);
     edges.forEach((e) => {
       if (e?.labels?.length > 0) {
-        updateEdge(e.id ?? '', { labels: [] });
+        updateEdge(e.id ?? '', { labels: [] }, VISUAL_ONLY_MUTATION_OPTIONS);
       }
     });
   });
@@ -1045,18 +1207,23 @@ const ToolbarEdit: FC<Props> = ({
       };
     });
 
-    node.setAttrByPath('label/text', genNodeLabel(label ?? '', lang, nodeWidth));
-    node.prop('ports/items', newItems);
-
-    node.removeTools();
+    node.setAttrByPath(
+      'label/text',
+      genNodeLabel(label ?? '', lang, nodeWidth),
+      VISUAL_ONLY_MUTATION_OPTIONS,
+    );
+    node.prop('ports/items', newItems, VISUAL_ONLY_MUTATION_OPTIONS);
 
     setTimeout(() => {
-      node.addTools([
-        node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-        nodeTitleTool(nodeWidth, label ?? '', token, lang),
-        inputFlowTool,
-        outputFlowTool,
-      ]);
+      node.addTools(
+        [
+          node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+          nodeTitleTool(nodeWidth, label ?? '', token, lang),
+          inputFlowTool,
+          outputFlowTool,
+        ],
+        { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
+      );
     }, 0);
   });
 
@@ -1144,6 +1311,35 @@ const ToolbarEdit: FC<Props> = ({
     });
   });
 
+  useEffect(() => {
+    if (!graph || typeof graph.bindKey !== 'function' || typeof graph.unbindKey !== 'function') {
+      return;
+    }
+
+    const shortcuts: Array<{ keys: string[]; handler: () => void }> = [
+      { keys: ['meta+z', 'ctrl+z'], handler: undoGraph },
+      { keys: ['meta+shift+z', 'ctrl+shift+z', 'ctrl+y'], handler: redoGraph },
+      { keys: ['backspace', 'delete'], handler: deleteCell },
+      { keys: ['meta+c', 'ctrl+c'], handler: copySelection },
+      { keys: ['meta+v', 'ctrl+v'], handler: pasteSelection },
+      { keys: ['meta+d', 'ctrl+d'], handler: duplicateSelection },
+    ];
+
+    shortcuts.forEach(({ keys, handler }) => {
+      graph.bindKey(keys, (event: any) => {
+        event?.preventDefault?.();
+        handler();
+        return false;
+      });
+    });
+
+    return () => {
+      shortcuts.forEach(({ keys }) => {
+        graph.unbindKey(keys);
+      });
+    };
+  }, [copySelection, deleteCell, duplicateSelection, graph, pasteSelection, redoGraph, undoGraph]);
+
   const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
     const userId = await getUserId();
     setUserId(userId);
@@ -1172,6 +1368,7 @@ const ToolbarEdit: FC<Props> = ({
       setProblemNodes([]);
       setJsonTg({});
       modelData({ nodes: [], edges: [] });
+      resetGraphCommandState();
       return;
     }
 
@@ -1257,6 +1454,7 @@ const ToolbarEdit: FC<Props> = ({
       });
 
       setNodeCount(initNodes.length);
+      resetGraphCommandState();
       return;
     }
 
@@ -1361,6 +1559,7 @@ const ToolbarEdit: FC<Props> = ({
         });
 
         setNodeCount(initNodes.length);
+        resetGraphCommandState();
         getProcessInstances(result.data?.json_tg ?? {})
           .then(() => {})
           .finally(() => {
@@ -1410,24 +1609,29 @@ const ToolbarEdit: FC<Props> = ({
         edges: [],
       });
       setNodeCount(0);
+      resetGraphCommandState();
     }
   }, [drawerVisible]);
 
   useEffect(() => {
     nodes.forEach((node) => {
-      updateNode(node.id ?? '', {
-        tools: [
-          node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-          nodeTitleTool(
-            node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350,
-            genProcessName(node?.data?.label, lang) ?? '',
-            token,
-            lang,
-          ),
-          inputFlowTool,
-          outputFlowTool,
-        ],
-      });
+      updateNode(
+        node.id ?? '',
+        {
+          tools: [
+            node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
+            nodeTitleTool(
+              node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350,
+              genProcessName(node?.data?.label, lang) ?? '',
+              token,
+              lang,
+            ),
+            inputFlowTool,
+            outputFlowTool,
+          ],
+        },
+        VISUAL_ONLY_MUTATION_OPTIONS,
+      );
     });
   }, [nodeCount]);
 
@@ -1438,25 +1642,33 @@ const ToolbarEdit: FC<Props> = ({
           item['@refObjectId'] === node.data.id && item['@version'] === node.data.version,
       );
       if (isErrNode) {
-        updateNode(node.id ?? '', {
-          attrs: {
-            ...nodeAttrs,
-            body: {
-              ...nodeAttrs.body,
-              stroke: token.colorError,
+        updateNode(
+          node.id ?? '',
+          {
+            attrs: {
+              ...nodeAttrs,
+              body: {
+                ...nodeAttrs.body,
+                stroke: token.colorError,
+              },
             },
           },
-        });
+          VISUAL_ONLY_MUTATION_OPTIONS,
+        );
       } else {
-        updateNode(node.id ?? '', {
-          attrs: {
-            ...nodeAttrs,
-            body: {
-              ...nodeAttrs.body,
-              stroke: token.colorPrimary,
+        updateNode(
+          node.id ?? '',
+          {
+            attrs: {
+              ...nodeAttrs,
+              body: {
+                ...nodeAttrs.body,
+                stroke: token.colorPrimary,
+              },
             },
           },
-        });
+          VISUAL_ONLY_MUTATION_OPTIONS,
+        );
       }
     });
   }, [problemNodes]);
@@ -1596,6 +1808,8 @@ const ToolbarEdit: FC<Props> = ({
 
   const selectedEdge = edges.find((edge) => edge.selected);
   const quantitativeReferenceNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
+  const hasSelectedCells =
+    nodes.some((node) => node.selected) || edges.some((edge) => edge.selected);
 
   return (
     <Space
@@ -1740,7 +1954,25 @@ const ToolbarEdit: FC<Props> = ({
         </Tooltip>
       ) : null}
       <Control
-        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
+        items={[
+          'undo',
+          'redo',
+          'paste',
+          'duplicate',
+          'zoomOut',
+          'zoomTo',
+          'zoomIn',
+          'zoomToFit',
+          'zoomToOrigin',
+          'autoLayoutLR',
+        ]}
+        editorActions={{
+          undo: undoGraph,
+          redo: redoGraph,
+          paste: pasteSelection,
+          duplicate: duplicateSelection,
+        }}
+        canDuplicate={hasSelectedCells}
       />
       <Spin spinning={spinning} fullscreen />
       <IoPortSelect

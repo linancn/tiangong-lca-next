@@ -1,8 +1,5 @@
 import { useGraphStore } from '@/contexts/graphContext';
-import { Graph } from '@antv/x6';
-import { Selection } from '@antv/x6-plugin-selection';
-import { Snapline } from '@antv/x6-plugin-snapline';
-import { Transform } from '@antv/x6-plugin-transform';
+import { Clipboard, Graph, History, Keyboard, Selection, Snapline, Transform } from '@antv/x6';
 import { useEffect, useRef } from 'react';
 
 interface X6GraphProps {
@@ -37,6 +34,19 @@ interface X6GraphProps {
     resizing?: boolean;
     rotating?: boolean;
   };
+  historyOptions?: {
+    enabled?: boolean;
+    stackSize?: number;
+    beforeAddCommand?: (event: string, args: any) => any;
+  };
+  clipboardOptions?: {
+    enabled?: boolean;
+    useLocalStorage?: boolean;
+  };
+  keyboardOptions?: {
+    enabled?: boolean;
+    global?: boolean;
+  };
 }
 
 const X6GraphComponent = ({
@@ -47,6 +57,9 @@ const X6GraphComponent = ({
   connectionOptions,
   gridOptions,
   transformOptions,
+  historyOptions,
+  clipboardOptions,
+  keyboardOptions,
 }: X6GraphProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const setGraph = useGraphStore((state) => state.setGraph);
@@ -102,6 +115,46 @@ const X6GraphComponent = ({
         },
       },
     });
+
+    if (historyOptions?.enabled) {
+      const userBeforeAddCommand = historyOptions.beforeAddCommand;
+      graph.use(
+        new History({
+          ...historyOptions,
+          enabled: true,
+          beforeAddCommand: (event, args) => {
+            const historyEventArgs = args as { options?: Record<string, any> } | undefined;
+            if (historyEventArgs?.options?.ignoreHistory) {
+              return false;
+            }
+
+            if (typeof userBeforeAddCommand === 'function') {
+              return userBeforeAddCommand(event, args);
+            }
+
+            return true;
+          },
+        }),
+      );
+    }
+
+    if (clipboardOptions?.enabled) {
+      graph.use(
+        new Clipboard({
+          enabled: true,
+          useLocalStorage: clipboardOptions.useLocalStorage ?? false,
+        }),
+      );
+    }
+
+    if (keyboardOptions?.enabled) {
+      graph.use(
+        new Keyboard({
+          enabled: true,
+          global: keyboardOptions.global ?? false,
+        }),
+      );
+    }
 
     // 启用 snapline 插件
     graph.use(
