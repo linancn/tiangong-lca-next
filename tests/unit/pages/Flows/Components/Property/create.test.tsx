@@ -86,7 +86,7 @@ jest.mock('@ant-design/pro-components', () => {
     return next;
   };
 
-  const ProForm = ({ formRef, onValuesChange, onFinish, children }: any) => {
+  const ProForm = ({ formRef, onValuesChange, onFinish, children, submitter }: any) => {
     const [values, setValues] = React.useState<any>({});
 
     React.useEffect(() => {
@@ -106,7 +106,12 @@ jest.mock('@ant-design/pro-components', () => {
       lastFormApi = formRef.current;
     }, [formRef, onValuesChange, onFinish, values]);
 
-    return <form>{children}</form>;
+    return (
+      <form>
+        {children}
+        {submitter?.render?.()}
+      </form>
+    );
   };
 
   return {
@@ -125,8 +130,10 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, footer, onClose, children }: any) =>
-    open ? (
+  const Drawer = ({ open, title, extra, footer, onClose, children, getContainer }: any) => {
+    if (!open) return null;
+    getContainer?.();
+    return (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>{extra}</header>
         <div>{children}</div>
@@ -135,7 +142,8 @@ jest.mock('antd', () => {
           close
         </button>
       </section>
-    ) : null;
+    );
+  };
 
   const Card = ({ children, title }: any) => (
     <section>
@@ -195,6 +203,7 @@ describe('FlowPropertyCreate', () => {
         quantitativeReference: true,
       });
     });
+    await userEvent.click(screen.getByRole('button', { name: /select-flowproperty/i }));
 
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 

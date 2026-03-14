@@ -85,6 +85,7 @@ jest.mock('@/services/sources/api', () => ({
 }));
 
 jest.mock('antd', () => {
+  const React = require('react');
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Button = ({ children, onClick, disabled, icon, type }: any) => (
     <button
@@ -98,7 +99,15 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ title, children }: any) => {
+    const label = toText(title);
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children, {
+        'aria-label': children.props['aria-label'] ?? label,
+      });
+    }
+    return <>{children}</>;
+  };
 
   const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
     open ? (
@@ -168,7 +177,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, toolBarRender }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, toolBarRender, columns = [] }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
     latestRequestRef.current = request;
@@ -197,13 +206,21 @@ jest.mock('@ant-design/pro-components', () => {
       <div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
-          <button
-            key={`${row.id}:${row.version}`}
-            type='button'
-            onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
-          >
-            {row.shortName}
-          </button>
+          <div key={`${row.id}:${row.version}`}>
+            {columns.map((column: any, index: number) => (
+              <div key={`${row.id}:${row.version}:${column.dataIndex ?? index}`}>
+                {column.render
+                  ? column.render(row[column.dataIndex], row, index)
+                  : row[column.dataIndex]}
+              </div>
+            ))}
+            <button
+              type='button'
+              onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
+            >
+              {row.shortName}
+            </button>
+          </div>
         ))}
       </div>
     );
@@ -247,6 +264,7 @@ describe('SourceSelectDrawer', () => {
     expect(screen.queryByRole('button', { name: /Business Data/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /My Data/i })).toHaveAttribute('data-active', 'true');
     expect(screen.getByText('create-source')).toBeInTheDocument();
+    expect(screen.getByText('view source-my:0.0.1')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /TE Data/i }));
 
@@ -279,5 +297,69 @@ describe('SourceSelectDrawer', () => {
 
     expect(onData).toHaveBeenCalledWith('source-te-search', '2.0.0');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens all source tabs, supports tg/co search, and clears selection when reopened', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <SourceSelectDrawer buttonType='icon' buttonText='pick-source' lang='en' onData={onData} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
+
+    await waitFor(() =>
+      expect(mockGetSourceTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+    expect(screen.getByRole('button', { name: /TianGong Data/i })).toHaveAttribute(
+      'data-active',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /Business Data/i })).toBeInTheDocument();
+    expect(screen.getByText('view source-tg:1.0.0')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('tg'), 'beta');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'tg',
+        'beta',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
+    await userEvent.type(screen.getByLabelText('co'), 'gamma');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'co',
+        'gamma',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'co:gamma' }));
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
+    await screen.findByRole('dialog', { name: 'Select Source' });
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
   });
 });

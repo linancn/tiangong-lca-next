@@ -80,6 +80,7 @@ jest.mock('@/services/contacts/api', () => ({
 }));
 
 jest.mock('antd', () => {
+  const React = require('react');
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Button = ({ children, onClick, disabled, icon, type }: any) => (
     <button
@@ -93,7 +94,15 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ title, children }: any) => {
+    const label = toText(title);
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children, {
+        'aria-label': children.props['aria-label'] ?? label,
+      });
+    }
+    return <>{children}</>;
+  };
 
   const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
     open ? (
@@ -163,7 +172,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, toolBarRender }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, toolBarRender, columns = [] }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
     latestRequestRef.current = request;
@@ -192,13 +201,21 @@ jest.mock('@ant-design/pro-components', () => {
       <div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
-          <button
-            key={`${row.id}:${row.version}`}
-            type='button'
-            onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
-          >
-            {row.shortName}
-          </button>
+          <div key={`${row.id}:${row.version}`}>
+            {columns.map((column: any, index: number) => (
+              <div key={`${row.id}:${row.version}:${column.dataIndex ?? index}`}>
+                {column.render
+                  ? column.render(row[column.dataIndex], row, index)
+                  : row[column.dataIndex]}
+              </div>
+            ))}
+            <button
+              type='button'
+              onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
+            >
+              {row.shortName}
+            </button>
+          </div>
         ))}
       </div>
     );
@@ -255,6 +272,7 @@ describe('ContactSelectDrawer', () => {
       ),
     );
     expect(screen.getByText('create-contact')).toBeInTheDocument();
+    expect(screen.getByText('view contact-my:1.0.0')).toBeInTheDocument();
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
@@ -274,5 +292,69 @@ describe('ContactSelectDrawer', () => {
 
     expect(onData).toHaveBeenCalledWith('contact-my-search', '2.0.0');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens all tabs by default, searches tg/team datasets, and clears selection when reopened', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <ContactSelectDrawer buttonType='icon' buttonText='pick-contact' lang='en' onData={onData} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
+
+    await waitFor(() =>
+      expect(mockGetContactTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+    expect(screen.getByRole('button', { name: /TianGong Data/i })).toHaveAttribute(
+      'data-active',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /Team Data/i })).toBeInTheDocument();
+    expect(screen.getByText('view contact-tg:1.0.0')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('tg'), 'beta');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+
+    await waitFor(() =>
+      expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'tg',
+        'beta',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
+    await userEvent.type(screen.getByLabelText('te'), 'delta');
+    await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
+
+    await waitFor(() =>
+      expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'te',
+        'delta',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'te:delta' }));
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
+    await screen.findByRole('dialog', { name: 'Selete Contact' });
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
   });
 });
