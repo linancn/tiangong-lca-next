@@ -16,103 +16,116 @@
 
 最新已验证全量覆盖率运行（`npm run test:coverage`）：
 
-- Test suites：275 passed
-- Tests：2248 passed
+- Test suites：276 passed
+- Tests：2350 passed
 - 覆盖率：
-  - Statements: 84.83% (15617/18408)
-  - Branches: 71.60% (7689/10738)
-  - Functions: 80.07% (3138/3919)
-  - Lines: 85.15% (14965/17573)
+  - Statements: 91.48% (16840/18408)
+  - Branches: 78.17% (8394/10738)
+  - Functions: 87.36% (3424/3919)
+  - Lines: 91.78% (16130/17573)
 - 相比上一版已记录基线的增量：
-  - Test suites：+28
-  - Tests：+328
-  - Statements：+4.27
-  - Branches：+4.74
-  - Functions：+5.76
-  - Lines：+4.31
+  - Test suites：+1
+  - Tests：+102
+  - Statements：+6.65
+  - Branches：+6.57
+  - Functions：+7.29
+  - Lines：+6.63
 - 当前全局 branch 门槛：50%
-- 门禁状态：**已通过**（高于门槛 21.60 个百分点）
+- 门禁状态：**已通过**（高于门槛 28.17 个百分点）
 
-工作流说明（2026年3月14日）：
+## 全文件库存
+
+同一轮运行得到的全仓逐文件状态：
+
+- 追踪的源码文件：300
+- 已全满文件（`100/100/100/100`）：115
+- 仍有缺口的文件：185
+- Branch 分桶：
+  - `<50`：2 个文件
+  - `50-70`：46 个文件
+  - `70-90`：101 个文件
+  - `90-<100`：25 个文件
+- `line=100` 但 `branch<100`：49 个文件
+- 分类平均值：
+  - components：`96.81%` lines / `85.69%` branches / `95.08%` functions
+  - services：`95.90%` lines / `86.72%` branches / `97.17%` functions
+  - pages：`94.27%` lines / `81.47%` branches / `87.48%` functions
+  - others：`99.53%` lines / `98.96%` branches / `99.45%` functions
+
+## 报告工作流
 
 - 共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避 macOS 全量本地运行和 pre-push 中出现的 Jest worker 偶发 `SIGSEGV` 崩溃。
-- `npm run test:coverage` 和 `npm run test:coverage:report` 现在都已内置所需堆内存，全量覆盖率直接用脚本即可。
-- `npm run test:coverage:report` 现在是默认 review 产物：输出全局摘要、分类摘要、branch hotspots、line hotspots 和未覆盖行范围。只有在重排 backlog 或某个热点桶快扫完时，才用 `node scripts/test-coverage-report.js --full`。
+- `npm run test:coverage` 和 `npm run test:coverage:report` 都已内置所需堆内存，全量覆盖率直接用脚本即可。
+- `npm run test:coverage:report` 是默认 review 产物，默认输出：
+  - 全局摘要，
+  - 分类摘要，
+  - 清零队列摘要，
+  - 共享夹具批次，
+  - 下一个 25 个有序未完成文件。
+- `node scripts/test-coverage-report.js --full` 会输出所有剩余文件的完整有序未完成队列。
+- 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
 
-## 缺口评估
+## 执行策略
 
-1. branch 门禁恢复已经完成；当前阶段是“按顺序清热点”，整体 branch 已来到 71.60%。
-2. 页面层编排仍是主要债务来源。当前最低的 branch 热点是 `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx`（18.15%）、`src/pages/Flowproperties/Components/edit.tsx`（25.00%）、`src/pages/Flows/Components/edit.tsx`（26.96%）、`src/pages/User/Login/password_reset.tsx`（27.77%）、`src/pages/Sources/Components/edit.tsx`（33.78%）和 `src/pages/Review/Components/RejectReview/index.tsx`（35.71%）。
-3. 共享组件层的缺口已经明显收窄。当前最主要的 component 热点是 `src/components/AISuggestion/index.tsx`（42.22% lines / 29.19% branches）；其余大多已在 80-100% 区间。
-4. service 层后续工作现在主要由 `src/services/lifeCycleModels/util_calculate.ts`（76.96% lines / 64.20% branches）领头，其后是 `src/services/lifeCycleModels/util.ts`（69.60% branches）、`src/services/general/api.ts`（71.12% branches）、`src/services/unitgroups/util.ts`（73.17% branches）、`src/services/lifeCycleModels/api.ts`（75.98% branches）和 `src/services/lifeCycleModels/util_allocate_supply_demand.ts`（77.22% branches）。
-5. 覆盖率 review 现在应该由报告驱动，而不是靠直觉挑模块。默认只看热点摘要，只有在 backlog 顺序需要变化时才展开 `--full`。
+1. 不再按主观“哪个收益更高”重新排工作优先级。
+2. 直接拿有序清零队列的第一个文件，尽量把该文件推进到 `100/100/100/100` 后再移动。
+3. `node scripts/test-coverage-report.js --full` 里的完整队列是所有剩余文件的事实来源；下方列表只是一份当前队头快照。
+4. 允许的成批例外：当前文件和紧邻文件共享同一套 mock/fixture/test harness 时，可围绕最早的那个文件一起收口。
+5. 允许的基础设施例外：如果共享测试 blocker 卡住当前文件或紧邻文件，可先修 blocker，再恢复队列顺序。
+6. 需要保留 wrapper/page 层编排测试，不能只靠子组件覆盖抬数。
 
-## 优先级待办
+## 当前有序清零队列（队头快照）
 
-### P0 – 报告工作流（已完成）
+- [ ] `src/components/TableFilter/index.tsx` — stmt `100.00%`，line `100.00%`，branch `0.00%`，func `100.00%`
+- [ ] `src/pages/Unitgroups/Components/edit.tsx` — stmt `70.27%`，line `71.50%`，branch `46.91%`，func `56.75%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/Exchange/index.tsx` — stmt `92.85%`，line `92.85%`，branch `50.00%`，func `75.00%`
+- [ ] `src/components/FileViewer/upload.tsx` — stmt `100.00%`，line `100.00%`，branch `50.00%`，func `100.00%`
+- [ ] `src/pages/Review/Components/ReviewProgress.tsx` — stmt `74.13%`，line `75.29%`，branch `50.43%`，func `82.92%`
+- [ ] `src/pages/Processes/index.tsx` — stmt `75.51%`，line `75.52%`，branch `51.51%`，func `80.00%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewInfo.tsx` — stmt `94.28%`，line `93.75%`，branch `52.63%`，func `81.81%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortView.tsx` — stmt `97.72%`，line `97.56%`，branch `52.94%`，func `94.44%`
+- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/ioPortSelect.tsx` — stmt `98.00%`，line `97.87%`，branch `54.54%`，func `95.00%`
+- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx` — stmt `87.12%`，line `86.77%`，branch `54.83%`，func `83.78%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx` — stmt `72.30%`，line `72.42%`，branch `54.96%`，func `56.81%`
+- [ ] `src/pages/Processes/Components/edit.tsx` — stmt `71.26%`，line `71.60%`，branch `56.14%`，func `58.92%`
+- [ ] `src/pages/Unitgroups/Components/select/drawer.tsx` — stmt `81.15%`，line `80.59%`，branch `56.25%`，func `57.89%`
+- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/ioPortView.tsx` — stmt `97.61%`，line `97.43%`，branch `57.14%`，func `94.11%`
+- [ ] `src/pages/Processes/Components/Exchange/edit.tsx` — stmt `79.48%`，line `78.66%`，branch `58.53%`，func `51.85%`
+- [ ] `src/pages/Processes/Components/Exchange/create.tsx` — stmt `77.14%`，line `76.47%`，branch `58.82%`，func `45.83%`
+- [ ] `src/pages/Processes/Components/Exchange/select.tsx` — stmt `91.54%`，line `91.30%`，branch `60.00%`，func `72.72%`
+- [ ] `src/pages/Flows/Components/Property/edit.tsx` — stmt `91.83%`，line `91.30%`，branch `60.00%`，func `75.00%`
+- [ ] `src/pages/Flows/Components/Property/create.tsx` — stmt `97.43%`，line `97.29%`，branch `60.00%`，func `92.30%`
+- [ ] `src/pages/Review/Components/ReviewForm/view.tsx` — stmt `100.00%`，line `100.00%`，branch `60.00%`，func `100.00%`
 
-- [x] 全量 coverage 脚本现在默认带稳定的堆内存配置。
-- [x] 默认覆盖率报告现在输出热点导向摘要，而不是无差别长列表。
-- [x] 全量逐文件明细仍保留在 `node scripts/test-coverage-report.js --full`。
+查看全部 185 个未完成文件，请运行 `node scripts/test-coverage-report.js --full`。
 
-P0 完成定义：
+## 共享夹具批次候选
 
-- `npm run test:coverage` 和 `npm run test:coverage:report` 成为默认全量命令
-- 热点摘要不打开 `coverage/index.html` 也能直接排 backlog
-- 需要时仍能切到全量明细
+只有这些簇，才构成成批推进队列的正当理由：
 
-### P1 – Branch 热点清扫（低于 50%，按此顺序执行）
+- `src/pages/Review/Components` — 21 个未完成文件，最低 branch `50.43%`，平均 branch `77.68%`
+- `src/pages/LifeCycleModels/Components` — 20 个未完成文件，最低 branch `50.00%`，平均 branch `75.67%`
+- `src/pages/Processes/Components` — 17 个未完成文件，最低 branch `56.14%`，平均 branch `70.99%`
+- `src/pages/Unitgroups/Components` — 14 个未完成文件，最低 branch `46.91%`，平均 branch `74.11%`
+- `src/pages/Flows/Components` — 11 个未完成文件，最低 branch `60.00%`，平均 branch `79.14%`
+- `src/pages/Sources/Components` — 8 个未完成文件，最低 branch `65.00%`，平均 branch `76.08%`
+- `src/pages/Flowproperties/Components` — 8 个未完成文件，最低 branch `65.21%`，平均 branch `82.95%`
+- `src/pages/Contacts/Components` — 8 个未完成文件，最低 branch `66.66%`，平均 branch `81.19%`
+- `src/services/auth` — 4 个未完成文件，最低 branch `66.66%`，平均 branch `76.08%`
+- `src/services/lifeCycleModels` — 4 个未完成文件，最低 branch `69.60%`，平均 branch `76.74%`
+- `src/pages/User` — 4 个未完成文件，最低 branch `71.42%`，平均 branch `85.22%`
+- `src/components/AllTeams` — 4 个未完成文件，最低 branch `72.50%`，平均 branch `82.26%`
 
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` – 40.12% lines / 18.15% branches
-- [ ] `src/pages/Flowproperties/Components/edit.tsx` – 52.12% lines / 25.00% branches
-- [ ] `src/pages/Flows/Components/edit.tsx` – 60.53% lines / 26.96% branches
-- [ ] `src/pages/User/Login/password_reset.tsx` – 74.62% lines / 27.77% branches
-- [ ] `src/components/AISuggestion/index.tsx` – 42.22% lines / 29.19% branches
-- [ ] `src/pages/Sources/Components/edit.tsx` – 62.87% lines / 33.78% branches
-- [ ] `src/pages/Review/Components/RejectReview/index.tsx` – 76.11% lines / 35.71% branches
-- [ ] `src/pages/Contacts/Components/edit.tsx` – 62.44% lines / 40.77% branches
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx` – 59.19% lines / 42.74% branches
-- [ ] `src/pages/Flowproperties/Components/select/drawer.tsx` – 62.29% lines / 45.00% branches
-- [ ] `src/pages/Unitgroups/Components/edit.tsx` – 68.71% lines / 45.67% branches
-- [ ] `src/pages/Processes/Components/Exchange/select.tsx` – 84.05% lines / 45.71% branches
-- [ ] `src/pages/Flows/index.tsx` – 67.60% lines / 46.77% branches
+## 测试工程质量规则
 
-P1 完成定义：
-
-- 上面这组热点里不再存在 branch 低于 50% 的文件
-- 每个关闭的热点都至少有一条 wrapper/page 层编排测试，不只是子组件覆盖
-- 默认热点报告里的未覆盖行范围能明显缩短，而不只是百分比好看
-
-### P2 – 下一层热点桶（50%-70% branches / 低 line 异常）
-
-- [ ] `src/pages/Flows/Components/Property/create.tsx` – 89.18% lines / 50.00% branches
-- [ ] `src/pages/Sources/Components/select/drawer.tsx` – 69.38% lines / 50.00% branches
-- [ ] `src/pages/Processes/Components/form.tsx` – 62.79% lines / 54.05% branches
-- [ ] `src/pages/Contacts/Components/select/drawer.tsx` – 68.62% lines / 56.52% branches
-- [ ] `src/pages/Processes/Components/edit.tsx` – 71.60% lines / 56.14% branches
-- [ ] `src/global.tsx` – 73.33% lines / 61.53% branches
-- [ ] `src/services/lifeCycleModels/util_calculate.ts` – 76.96% lines / 64.20% branches
-- [ ] `src/services/lifeCycleModels/util.ts` – 100.00% lines / 69.60% branches
-
-### P3 – Service / Utility 收口
-
-- [ ] `src/services/general/api.ts` – 80.18% lines / 71.12% branches
-- [ ] `src/services/unitgroups/util.ts` – 100.00% lines / 73.17% branches
-- [ ] `src/services/lifeCycleModels/api.ts` – 89.30% lines / 75.98% branches
-- [ ] `src/services/lifeCycleModels/util_allocate_supply_demand.ts` – 98.76% lines / 77.22% branches
-- [ ] 继续按报告顺序清理剩余 service 文件，直到 service bucket 接近 100%。
-
-### P4 – 测试工程质量提升
-
-- [ ] 新增测试统一复用共享 helper（`tests/helpers/mockBuilders.ts`、`testUtils.tsx`、`testData.ts`）。
-- [ ] 将“仅 console 输出验证”的噪音测试尽量重构为行为断言。
-- [ ] 如果页面 wrapper 存在于已测试子组件之上，至少补一条 wrapper 层测试，让覆盖率反映真实页面编排，而不是仅靠子组件抬数。
-- [ ] 每完成一批，及时更新本文件及 `_CN` 镜像；若基线发生变化，重新跑全量 coverage，并同步 `docs/agents/ai-testing-guide.md` 与 `docs/agents/test_improvement_plan.md`。
-- [ ] 保持默认报告简洁。只有当额外默认明细会改变执行顺序时，才增加默认输出；否则深度明细继续放在 `--full`。
+- 新增测试在适用时统一复用共享 helper（`tests/helpers/mockBuilders.ts`、`testUtils.tsx`、`testData.ts`）。
+- 尽量把“只验证 console 输出”的测试重构成行为断言。
+- 如果页面 wrapper 存在于已测试子组件之上，至少补一条 wrapper 层测试，让覆盖率反映真实页面编排，而不是只靠子组件抬数。
+- 保持默认报告简洁；只有当额外默认明细会改变执行顺序时，才增加默认输出。深度逐文件明细继续放在 `--full`。
 
 ## 单项执行流程（每个任务）
 
-1. 一次只做一个模块，并按上面的热点顺序推进。
+1. 一次只做一个队列文件，并按上面的有序清零队列推进。
 2. 运行聚焦命令：
 
 ```bash
@@ -131,13 +144,13 @@ npm run lint
 npm run test:coverage
 ```
 
-5. 看默认热点报告：
+5. 看默认清零报告：
 
 ```bash
 npm run test:coverage:report
 ```
 
-6. 只有当 backlog 顺序需要变化时，才展开到全量明细：
+6. 只有在需要查看完整剩余文件状态或刷新队列快照时，才展开到全量明细：
 
 ```bash
 node scripts/test-coverage-report.js --full
@@ -148,6 +161,6 @@ node scripts/test-coverage-report.js --full
 
 ## 备注
 
-- 现在还不建议提高覆盖率阈值；先持续缩短当前热点列表。
+- 现在还不建议提高覆盖率阈值；先持续缩短当前有序清零队列。
 - 优先做“确定性高”的分支测试，不要先扩展大范围快照。
 - 待办必须可执行，避免“多写点测试”这类泛化项。

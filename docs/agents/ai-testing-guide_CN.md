@@ -62,18 +62,28 @@ npm run lint
 - 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
-- 截至 2026年3月14日，最新已验证全量运行（`npm run test:coverage`）是 `275 suites / 2248 tests`，全局覆盖率为：
-  - Statements: `84.83%` (15617/18408)
-  - Branches: `71.60%` (7689/10738)
-  - Functions: `80.07%` (3138/3919)
-  - Lines: `85.15%` (14965/17573)
-- branch 门禁已经稳定，执行方式也切到“按热点顺序收口”，不再是“救门禁”模式。
+- 截至 2026年3月14日，最新已验证全量运行（`npm run test:coverage`）是 `276 suites / 2350 tests`，全局覆盖率为：
+  - Statements: `91.48%` (16840/18408)
+  - Branches: `78.17%` (8394/10738)
+  - Functions: `87.36%` (3424/3919)
+  - Lines: `91.78%` (16130/17573)
+- 同一轮运行得到的逐文件库存摘要：
+  - 追踪的源码文件：`300`
+  - 已全满文件（`100/100/100/100`）：`115`
+  - 仍有缺口的文件：`185`
+  - Branch 分桶：`<50 = 2`、`50-70 = 46`、`70-90 = 101`、`90-<100 = 25`
+  - `line=100` 但 `branch<100` 的文件：`49`
+- branch 门禁已经稳定，执行方式也切到“按文件有序清零”，不再是“救门禁”模式。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
 - 报告粒度规则：
-  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、branch hotspots、line hotspots，以及每个热点文件的未覆盖行范围。
-  - `node scripts/test-coverage-report.js --full`：看全量逐文件清单。只有在 backlog 顺序需要变化，或某个热点桶快清空时才展开到这一层。
-  - 后续补测顺序以报告本身为准，而不是主观判断“哪个收益更高”：先清 branch 低于 50% 的热点，再清 50%-70%，最后扫剩余 line hotspots 和 service/util 文件。
+  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件。
+  - `node scripts/test-coverage-report.js --full`：看完整的有序未完成文件队列，用于查看全量逐文件状态或刷新 backlog 快照。
+  - 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
+- 队列执行规则：
+  - 不再按主观“哪个收益更高”重新排优先级。
+  - 直接拿有序队列的第一个文件，尽量把该文件推进到 `100/100/100/100` 后再移动。
+  - 允许的例外很少：相邻文件共享同一套 mock/fixture/test harness 时可成批推进；当前文件或紧邻文件被共享测试基础设施问题卡住时，可先修 blocker。
 - 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自持续缩小热点列表，而不是把门槛抬上去。
 
 ## 相关文档

@@ -354,7 +354,158 @@ function printCategorySummary(categorizedFiles) {
   }
 }
 
-function printHotspots(title, files) {
+function printQueueSummary(allFiles, orderedQueue) {
+  console.log(
+    '\n' +
+      colorize(
+        '═══════════════════════════════════════════════════════════════════════════════',
+        'cyan',
+      ),
+  );
+  console.log(
+    colorize('                         Closure Queue Summary                     ', 'cyan'),
+  );
+  console.log(
+    colorize(
+      '═══════════════════════════════════════════════════════════════════════════════',
+      'cyan',
+    ),
+  );
+  console.log();
+  const completeFiles = allFiles.length - orderedQueue.length;
+  const bucketCounts = {
+    branchLt50: 0,
+    branch50To70: 0,
+    branch70To90: 0,
+    branch90To100: 0,
+    line100BranchLt100: 0,
+  };
+
+  orderedQueue.forEach((file) => {
+    const branch = file.coverage.branches.pct;
+    if (branch < 50) bucketCounts.branchLt50 += 1;
+    else if (branch < 70) bucketCounts.branch50To70 += 1;
+    else if (branch < 90) bucketCounts.branch70To90 += 1;
+    else if (branch < 100) bucketCounts.branch90To100 += 1;
+
+    if (file.coverage.lines.pct === 100 && branch < 100) {
+      bucketCounts.line100BranchLt100 += 1;
+    }
+  });
+
+  console.log(`  Source files tracked:      ${colorize(String(allFiles.length), 'blue')}`);
+  console.log(`  Fully covered files:       ${colorize(String(completeFiles), 'green')}`);
+  console.log(`  Files with remaining gaps: ${colorize(String(orderedQueue.length), 'yellow')}`);
+  console.log(
+    `  Branch buckets:            <50 ${bucketCounts.branchLt50} | 50-70 ${bucketCounts.branch50To70} | ` +
+      `70-90 ${bucketCounts.branch70To90} | 90-<100 ${bucketCounts.branch90To100}`,
+  );
+  console.log(
+    `  Line=100, branch<100:      ${colorize(String(bucketCounts.line100BranchLt100), 'yellow')}`,
+  );
+}
+
+function hasCoverageGap(file) {
+  return (
+    file.coverage.lines.pct < 100 ||
+    file.coverage.branches.pct < 100 ||
+    file.coverage.functions.pct < 100 ||
+    file.coverage.statements.pct < 100 ||
+    file.uncoveredLines.length > 0
+  );
+}
+
+function getOrderedClosureQueue(files) {
+  return [...files]
+    .filter((file) => hasCoverageGap(file))
+    .sort(
+      (a, b) =>
+        a.coverage.branches.pct - b.coverage.branches.pct ||
+        a.coverage.lines.pct - b.coverage.lines.pct ||
+        a.coverage.statements.pct - b.coverage.statements.pct ||
+        a.coverage.functions.pct - b.coverage.functions.pct ||
+        a.path.localeCompare(b.path),
+    );
+}
+
+function getPlanningClusterKey(filePath) {
+  const parts = filePath.split('/');
+  if (parts[1] === 'pages') return parts.slice(0, 4).join('/');
+  if (parts[1] === 'services') return parts.slice(0, 3).join('/');
+  if (parts[1] === 'components') return parts.slice(0, 3).join('/');
+  return parts.slice(0, 2).join('/');
+}
+
+function getBatchCandidates(orderedQueue) {
+  const clusters = new Map();
+
+  orderedQueue.forEach((file) => {
+    const key = getPlanningClusterKey(file.path);
+    if (!clusters.has(key)) {
+      clusters.set(key, {
+        key,
+        count: 0,
+        minBranch: 100,
+        avgBranchTotal: 0,
+      });
+    }
+
+    const cluster = clusters.get(key);
+    cluster.count += 1;
+    cluster.minBranch = Math.min(cluster.minBranch, file.coverage.branches.pct);
+    cluster.avgBranchTotal += file.coverage.branches.pct;
+  });
+
+  return [...clusters.values()]
+    .map((cluster) => ({
+      ...cluster,
+      avgBranch: cluster.count ? cluster.avgBranchTotal / cluster.count : 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.minBranch - b.minBranch || a.key.localeCompare(b.key))
+    .slice(0, 12);
+}
+
+function printBatchCandidates(clusters) {
+  console.log(
+    '\n' +
+      colorize(
+        '═══════════════════════════════════════════════════════════════════════════════',
+        'cyan',
+      ),
+  );
+  console.log(
+    colorize('                         Shared-Fixture Batches                    ', 'cyan'),
+  );
+  console.log(
+    colorize(
+      '═══════════════════════════════════════════════════════════════════════════════',
+      'cyan',
+    ),
+  );
+  console.log();
+
+  if (!clusters.length) {
+    console.log(colorize('  No batching candidates found.', 'gray'));
+    return;
+  }
+
+  printDivider();
+  console.log(
+    colorize('  Cluster                             Files   Min Branch   Avg Branch', 'gray'),
+  );
+  printDivider();
+
+  clusters.forEach((cluster) => {
+    const label =
+      cluster.key.length > 34 ? `...${cluster.key.slice(-31)}` : cluster.key.padEnd(34, ' ');
+    console.log(
+      `  ${label} ${String(cluster.count).padStart(5, ' ')}     ` +
+        `${formatPercent(cluster.minBranch)}%      ${formatPercent(cluster.avgBranch)}%`,
+    );
+  });
+}
+
+function printOrderedQueue(title, files, limit = files.length) {
   console.log(
     '\n' +
       colorize(
@@ -372,60 +523,28 @@ function printHotspots(title, files) {
   console.log();
 
   if (!files.length) {
-    console.log(colorize('  No files matched this hotspot filter.', 'gray'));
+    console.log(colorize('  No files with remaining coverage gaps.', 'gray'));
     return;
   }
 
   printDivider();
   console.log(
-    colorize('  File                                  Line   Branch   Func   Uncovered', 'gray'),
+    colorize(
+      '  File                                  Stmt   Line   Branch   Func   Uncovered',
+      'gray',
+    ),
   );
   printDivider();
 
-  files.forEach((file) => {
+  files.slice(0, limit).forEach((file) => {
     const fileName =
       file.path.length > 36 ? `...${file.path.slice(-33)}` : file.path.padEnd(36, ' ');
-    const uncovered = truncate(compressRanges(file.uncoveredLines), 70);
+    const uncovered = truncate(compressRanges(file.uncoveredLines), 58);
     console.log(
-      `  ${fileName} ${formatPercent(file.coverage.lines.pct)}% ${formatPercent(file.coverage.branches.pct)}% ${formatPercent(file.coverage.functions.pct)}%   ${uncovered}`,
+      `  ${fileName} ${formatPercent(file.coverage.statements.pct)}% ${formatPercent(file.coverage.lines.pct)}% ` +
+        `${formatPercent(file.coverage.branches.pct)}% ${formatPercent(file.coverage.functions.pct)}%   ${uncovered}`,
     );
   });
-}
-
-function printFullDetails(title, files) {
-  console.log(colorize(`\n━━━ ${title} (${files.length} files) ━━━`, 'blue'));
-  printDivider();
-  console.log(colorize('  Status   Line    Branch   Func     File', 'gray'));
-  printDivider();
-
-  [...files]
-    .sort((a, b) => a.coverage.lines.pct - b.coverage.lines.pct)
-    .forEach((file) => {
-      const icon = getCoverageIcon(file.coverage.lines.pct);
-      console.log(
-        `  ${icon}  ${colorize(`${formatPercent(file.coverage.lines.pct)}%`, getCoverageLevel(file.coverage.lines.pct))}  ` +
-          `${colorize(`${formatPercent(file.coverage.branches.pct)}%`, getCoverageLevel(file.coverage.branches.pct))}  ` +
-          `${colorize(`${formatPercent(file.coverage.functions.pct)}%`, getCoverageLevel(file.coverage.functions.pct))}  ` +
-          `${colorize(file.path, 'gray')}`,
-      );
-    });
-}
-
-function hasCoverageGap(file) {
-  return (
-    file.coverage.lines.pct < 100 ||
-    file.coverage.branches.pct < 100 ||
-    file.coverage.functions.pct < 100 ||
-    file.uncoveredLines.length > 0
-  );
-}
-
-function isLowSignalBranchOnlyFile(file) {
-  return (
-    file.coverage.lines.pct === 100 &&
-    file.coverage.functions.pct === 100 &&
-    file.uncoveredLines.length === 0
-  );
 }
 
 function generateReport() {
@@ -458,49 +577,28 @@ function generateReport() {
   }
 
   const allFiles = Object.values(categorizedFiles).flat();
-  const branchHotspots = allFiles
-    .filter(
-      (file) =>
-        file.coverage.branches.found > 0 &&
-        hasCoverageGap(file) &&
-        !isLowSignalBranchOnlyFile(file),
-    )
-    .sort(
-      (a, b) =>
-        a.coverage.branches.pct - b.coverage.branches.pct ||
-        a.coverage.lines.pct - b.coverage.lines.pct,
-    )
-    .slice(0, 15);
-
-  const lineHotspots = [...allFiles]
-    .filter((file) => hasCoverageGap(file))
-    .sort(
-      (a, b) =>
-        a.coverage.lines.pct - b.coverage.lines.pct ||
-        a.coverage.branches.pct - b.coverage.branches.pct,
-    )
-    .slice(0, 15);
+  const orderedQueue = getOrderedClosureQueue(allFiles);
+  const batchCandidates = getBatchCandidates(orderedQueue);
 
   printGlobalSummary(coverageData.total, coverageData.source);
   printCategorySummary(categorizedFiles);
-  printHotspots('Branch Hotspots', branchHotspots);
-  printHotspots('Line Hotspots', lineHotspots);
+  printQueueSummary(allFiles, orderedQueue);
+  printBatchCandidates(batchCandidates);
+  printOrderedQueue(
+    SHOW_FULL ? 'Ordered Closure Queue (Full)' : 'Ordered Closure Queue (Next 25)',
+    orderedQueue,
+    SHOW_FULL ? orderedQueue.length : 25,
+  );
 
   if (!SHOW_FULL) {
     console.log(
       '\n' +
         colorize(
-          'Tip: run node scripts/test-coverage-report.js --full for the full file list.',
+          'Tip: run node scripts/test-coverage-report.js --full for the full ordered incomplete-file queue.',
           'gray',
         ),
     );
-    return;
   }
-
-  printFullDetails('Components', categorizedFiles.components);
-  printFullDetails('Services', categorizedFiles.services);
-  printFullDetails('Pages', categorizedFiles.pages);
-  printFullDetails('Others', categorizedFiles.others);
 }
 
 try {
