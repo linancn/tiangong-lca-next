@@ -33,12 +33,12 @@ jest.mock('@ant-design/icons', () => ({
   CompressOutlined: () => <span>compress</span>,
   CopyOutlined: () => <span>copy</span>,
   ExpandOutlined: () => <span>expand</span>,
-  MinusOutlined: () => <span>minus</span>,
   PartitionOutlined: () => <span>partition</span>,
-  PlusOutlined: () => <span>plus</span>,
   RedoOutlined: () => <span>redo</span>,
   SnippetsOutlined: () => <span>paste</span>,
   UndoOutlined: () => <span>undo</span>,
+  ZoomInOutlined: () => <span>zoom-in</span>,
+  ZoomOutOutlined: () => <span>zoom-out</span>,
 }));
 
 jest.mock('antd', () => {
@@ -111,12 +111,12 @@ describe('LifeCycleModelToolbarControl', () => {
     act(() => {
       mockEventHandlers['scale']?.({ sx: 1.5 });
     });
-    expect(screen.getByRole('button', { name: 'plus' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'zoom-in' })).toBeDisabled();
 
     act(() => {
       mockEventHandlers['scale']?.({ sx: 0.5 });
     });
-    expect(screen.getByRole('button', { name: 'minus' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'zoom-out' })).toBeDisabled();
   });
 
   it('runs zoom and layout operations for supported tools', async () => {
@@ -135,8 +135,8 @@ describe('LifeCycleModelToolbarControl', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: 'plus' }));
-    await userEvent.click(screen.getByRole('button', { name: 'minus' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-out' }));
     await userEvent.click(screen.getAllByRole('button', { name: '100%' })[0]);
     await userEvent.click(screen.getByRole('button', { name: '150%' }));
     await userEvent.click(screen.getByRole('button', { name: 'compress' }));
@@ -244,8 +244,8 @@ describe('LifeCycleModelToolbarControl', () => {
 
     render(<Control items={[ControlEnum.ZoomIn, ControlEnum.ZoomOut, ControlEnum.ZoomToFit]} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'plus' }));
-    await userEvent.click(screen.getByRole('button', { name: 'minus' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-out' }));
     await userEvent.click(screen.getByRole('button', { name: 'compress' }));
 
     expect(mockApplyDagreLayout).not.toHaveBeenCalled();

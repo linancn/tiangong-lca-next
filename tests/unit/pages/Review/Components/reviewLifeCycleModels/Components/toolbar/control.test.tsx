@@ -37,9 +37,9 @@ jest.mock('@ant-design/icons', () => ({
   AimOutlined: () => <span>aim</span>,
   CompressOutlined: () => <span>compress</span>,
   ExpandOutlined: () => <span>expand</span>,
-  MinusOutlined: () => <span>minus</span>,
   PartitionOutlined: () => <span>partition</span>,
-  PlusOutlined: () => <span>plus</span>,
+  ZoomInOutlined: () => <span>zoom-in</span>,
+  ZoomOutOutlined: () => <span>zoom-out</span>,
 }));
 
 jest.mock('antd', () => {
@@ -108,12 +108,12 @@ describe('ReviewLifeCycleModelToolbarControl', () => {
     act(() => {
       scaleHandler?.({ sx: 1.5 });
     });
-    expect(screen.getByRole('button', { name: 'plus' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'zoom-in' })).toBeDisabled();
 
     act(() => {
       scaleHandler?.({ sx: 0.5 });
     });
-    expect(screen.getByRole('button', { name: 'minus' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'zoom-out' })).toBeDisabled();
   });
 
   it('runs zoom and layout operations for supported tools', async () => {
@@ -132,8 +132,8 @@ describe('ReviewLifeCycleModelToolbarControl', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: 'plus' }));
-    await userEvent.click(screen.getByRole('button', { name: 'minus' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-out' }));
     await userEvent.click(screen.getAllByRole('button', { name: '100%' })[0]);
     await userEvent.click(screen.getByRole('button', { name: '150%' }));
     await userEvent.click(screen.getByRole('button', { name: 'compress' }));

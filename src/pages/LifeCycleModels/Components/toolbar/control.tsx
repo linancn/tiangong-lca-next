@@ -3,12 +3,12 @@ import {
   CompressOutlined,
   CopyOutlined,
   ExpandOutlined,
-  MinusOutlined,
   PartitionOutlined,
-  PlusOutlined,
   RedoOutlined,
   SnippetsOutlined,
   UndoOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
 } from '@ant-design/icons';
 import { useCallback, useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
@@ -143,11 +143,11 @@ const Control = (props: ControlIProps) => {
     },
     [ControlEnum.ZoomIn]: {
       label: <FormattedMessage id='pages.button.model.zoomIn' defaultMessage='Zoom In' />,
-      icon: <PlusOutlined />,
+      icon: <ZoomInOutlined />,
     },
     [ControlEnum.ZoomOut]: {
       label: <FormattedMessage id='pages.button.model.zoomOut' defaultMessage='Zoom Out' />,
-      icon: <MinusOutlined />,
+      icon: <ZoomOutOutlined />,
     },
     [ControlEnum.ZoomTo]: {
       label: <FormattedMessage id='pages.button.model.zoomTo' defaultMessage='Zoom To' />,
