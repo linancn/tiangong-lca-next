@@ -525,6 +525,130 @@ describe('AISuggestion Component', () => {
     messageErrorSpy.mockRestore();
   });
 
+  it('handles single accept/reject actions and undo callbacks', async () => {
+    const messageSuccessSpy = jest.spyOn(message, 'success').mockImplementation(() => ({}) as any);
+    const messageWarningSpy = jest.spyOn(message, 'warning').mockImplementation(() => ({}) as any);
+    mockDiffResult = {
+      processDataSet: {
+        name: ['Test Process', 'AI Suggested Process'],
+      },
+    };
+
+    render(
+      <ConfigProvider>
+        <AISuggestion {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.action\.accept/i }),
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.onAcceptChange).toHaveBeenCalledWith(
+        'processDataSet.name',
+        'AI Suggested Process',
+      );
+      expect(messageSuccessSpy).toHaveBeenCalledWith(
+        expect.stringContaining('processDataSet.name'),
+      );
+    });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.undo/i }),
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.onRejectChange).toHaveBeenCalledWith('processDataSet.name');
+    });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.action\.reject/i }),
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.onRejectChange).toHaveBeenCalledWith('processDataSet.name');
+      expect(messageWarningSpy).toHaveBeenCalledWith(
+        expect.stringContaining('processDataSet.name'),
+      );
+    });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.undo/i }),
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.onAcceptChange).toHaveBeenLastCalledWith(
+        'processDataSet.name',
+        'AI Suggested Process',
+      );
+    });
+
+    messageSuccessSpy.mockRestore();
+    messageWarningSpy.mockRestore();
+  });
+
+  it('parses added and removed array deltas and reports copy success for AI data', async () => {
+    const messageSuccessSpy = jest.spyOn(message, 'success').mockImplementation(() => ({}) as any);
+    mockDiffResult = {
+      processDataSet: {
+        tags: {
+          _t: 'a',
+          0: ['added-tag'],
+          '1_1': ['removed-tag', 0, 3],
+        },
+      },
+    };
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              id: 'test-process',
+              tags: ['removed-tag'],
+            },
+          }}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    expect(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.acceptAll/i }),
+    ).toHaveTextContent('(2)');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.copyAI/i }),
+    );
+
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        JSON.stringify(
+          {
+            processDataSet: {
+              id: 'test-process',
+              name: 'AI Suggested Process',
+            },
+          },
+          null,
+          2,
+        ),
+      );
+      expect(messageSuccessSpy).toHaveBeenCalledWith(
+        expect.stringContaining('component.aiSuggestion.message.copySuccess'),
+      );
+    });
+
+    messageSuccessSpy.mockRestore();
+  });
+
   it('should render with correct button attributes', () => {
     render(
       <ConfigProvider>

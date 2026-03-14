@@ -245,6 +245,812 @@ const createSupabaseProcesses = () => [
   },
 ];
 
+const createSelectionFallbackModelData = () => ({
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
+      },
+      dataSetInformation: {
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Selection Model' }],
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-A-final',
+                  downstreamProcess: [],
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-B-to-A',
+                    downstreamProcess: {
+                      '@id': 'nodeA',
+                    },
+                  },
+                  {
+                    '@flowUUID': 'flow-B-extra',
+                    downstreamProcess: [],
+                  },
+                ],
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeD',
+              referenceToProcess: {
+                '@refObjectId': 'procD',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process D' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-D-to-A',
+                  downstreamProcess: {
+                    '@id': 'nodeA',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+const createSelectionFallbackSupabaseProcesses = () => [
+  {
+    id: 'procA',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exA_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-to-A',
+        },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exA_in_D',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-D-to-A',
+        },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+      {
+        '@dataSetInternalID': 'exA_out',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-A-final',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'A final' }],
+        },
+        meanAmount: '5',
+        resultingAmount: '5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exA_in_B',
+    },
+  },
+  {
+    id: 'procB',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exB_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-to-A',
+        },
+        meanAmount: '2',
+        resultingAmount: '2',
+        allocations: {
+          allocation: {
+            '@allocatedFraction': '40%',
+          },
+        },
+      },
+      {
+        '@dataSetInternalID': 'exB_out_extra',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-extra',
+        },
+        meanAmount: '6',
+        resultingAmount: '6',
+        allocations: {
+          allocation: {
+            '@allocatedFraction': '60%',
+          },
+        },
+      },
+      {
+        '@dataSetInternalID': 'exB_ref_other',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-ref-other',
+        },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exB_ref_other',
+    },
+  },
+  {
+    id: 'procD',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exD_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-D-to-A',
+        },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exD_out_A',
+    },
+  },
+];
+
+const createCycleModelData = () => ({
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
+      },
+      dataSetInformation: {
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Cycle Model' }],
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-A-to-B',
+                    downstreamProcess: {
+                      '@id': 'nodeB',
+                    },
+                  },
+                  {
+                    '@flowUUID': 'flow-A-final',
+                    downstreamProcess: [],
+                  },
+                ],
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-B-to-A',
+                  downstreamProcess: {
+                    '@id': 'nodeA',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+const createCycleSupabaseProcesses = () => [
+  {
+    id: 'procA',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exA_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-to-A',
+        },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+      {
+        '@dataSetInternalID': 'exA_out_B',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-A-to-B',
+        },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exA_out_final',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-A-final',
+        },
+        meanAmount: '5',
+        resultingAmount: '5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exA_out_B',
+    },
+  },
+  {
+    id: 'procB',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exB_in_A',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-A-to-B',
+        },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exB_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-to-A',
+        },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+      {
+        '@dataSetInternalID': 'exB_ref_other',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-B-final',
+        },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exB_ref_other',
+    },
+  },
+];
+
+const createDownstreamPruneModelData = () => ({
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
+      },
+      dataSetInformation: {
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Downstream Prune Model' }],
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-A-final',
+                  downstreamProcess: [],
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-B-to-A',
+                    downstreamProcess: { '@id': 'nodeA' },
+                  },
+                  {
+                    '@flowUUID': 'flow-B-to-C',
+                    downstreamProcess: { '@id': 'nodeC' },
+                  },
+                ],
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeC',
+              referenceToProcess: {
+                '@refObjectId': 'procC',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process C' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-C-to-A',
+                  downstreamProcess: { '@id': 'nodeA' },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+const createDownstreamPruneSupabaseProcesses = () => [
+  {
+    id: 'procA',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exA_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exA_in_C',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-A' },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+      {
+        '@dataSetInternalID': 'exA_out',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-A-final' },
+        meanAmount: '5',
+        resultingAmount: '5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exA_out',
+    },
+  },
+  {
+    id: 'procB',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exB_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+        meanAmount: '2',
+        resultingAmount: '2',
+        allocations: { allocation: { '@allocatedFraction': '40%' } },
+      },
+      {
+        '@dataSetInternalID': 'exB_out_C',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-C' },
+        meanAmount: '3',
+        resultingAmount: '3',
+        allocations: { allocation: { '@allocatedFraction': '60%' } },
+      },
+      {
+        '@dataSetInternalID': 'exB_ref_other',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-other' },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exB_ref_other',
+    },
+  },
+  {
+    id: 'procC',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exC_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-A' },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exC_out_A',
+    },
+  },
+];
+
+const createUpstreamPruneModelData = () => ({
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
+      },
+      dataSetInformation: {
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Upstream Prune Model' }],
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-A-final',
+                  downstreamProcess: [],
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-B-to-A',
+                    downstreamProcess: { '@id': 'nodeA' },
+                  },
+                  {
+                    '@flowUUID': 'flow-B-to-D',
+                    downstreamProcess: { '@id': 'nodeD' },
+                  },
+                ],
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeC',
+              referenceToProcess: {
+                '@refObjectId': 'procC',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process C' }],
+              },
+              connections: {
+                outputExchange: [
+                  {
+                    '@flowUUID': 'flow-C-to-A',
+                    downstreamProcess: { '@id': 'nodeA' },
+                  },
+                  {
+                    '@flowUUID': 'flow-C-to-D',
+                    downstreamProcess: { '@id': 'nodeD' },
+                  },
+                ],
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeD',
+              referenceToProcess: {
+                '@refObjectId': 'procD',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process D' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-D-final',
+                  downstreamProcess: [],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+const createUpstreamPruneSupabaseProcesses = () => [
+  {
+    id: 'procA',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exA_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exA_in_C',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-A' },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+      {
+        '@dataSetInternalID': 'exA_out',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-A-final',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'A final' }],
+        },
+        meanAmount: '5',
+        resultingAmount: '5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exA_out',
+    },
+  },
+  {
+    id: 'procB',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exB_in_raw',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-shared-raw' },
+        meanAmount: '10',
+        resultingAmount: '10',
+      },
+      {
+        '@dataSetInternalID': 'exB_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exB_out_D',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-D' },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exB_in_raw',
+    },
+  },
+  {
+    id: 'procC',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exC_in_raw',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-shared-raw' },
+        meanAmount: '20',
+        resultingAmount: '20',
+      },
+      {
+        '@dataSetInternalID': 'exC_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-A' },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+      {
+        '@dataSetInternalID': 'exC_out_D',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-D' },
+        meanAmount: '1.5',
+        resultingAmount: '1.5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exC_in_raw',
+    },
+  },
+  {
+    id: 'procD',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exD_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-D' },
+        meanAmount: '1',
+        resultingAmount: '1',
+        allocations: { allocation: { '@allocatedFraction': '40%' } },
+      },
+      {
+        '@dataSetInternalID': 'exD_in_C',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-D' },
+        meanAmount: '1.5',
+        resultingAmount: '1.5',
+        allocations: { allocation: { '@allocatedFraction': '60%' } },
+      },
+      {
+        '@dataSetInternalID': 'exD_out',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-D-final' },
+        meanAmount: '2.5',
+        resultingAmount: '2.5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'missing-input-ref',
+    },
+  },
+];
+
+const createUpstreamCycleModelData = () => ({
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
+      },
+      dataSetInformation: {
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Upstream Cycle Model' }],
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-A-to-B',
+                  downstreamProcess: { '@id': 'nodeB' },
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-B-to-C',
+                  downstreamProcess: { '@id': 'nodeC' },
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeC',
+              referenceToProcess: {
+                '@refObjectId': 'procC',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process C' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-C-to-B',
+                  downstreamProcess: { '@id': 'nodeB' },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+const createUpstreamCycleSupabaseProcesses = () => [
+  {
+    id: 'procA',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exA_out_B',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-A-to-B' },
+        meanAmount: '5',
+        resultingAmount: '5',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exA_out_B',
+    },
+  },
+  {
+    id: 'procB',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exB_in_A',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-A-to-B' },
+        meanAmount: '5',
+        resultingAmount: '5',
+      },
+      {
+        '@dataSetInternalID': 'exB_out_C',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-C' },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exB_out_C',
+    },
+  },
+  {
+    id: 'procC',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exC_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-C' },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+      {
+        '@dataSetInternalID': 'exC_out_B',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-B' },
+        meanAmount: '1',
+        resultingAmount: '1',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exC_in_B',
+    },
+  },
+];
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockSelect.mockImplementation(() => ({ or: mockOr }));
@@ -530,5 +1336,359 @@ describe('genLifeCycleModelProcesses', () => {
 
     expect(secondary?.option).toBe('create');
     expect(secondary?.modelInfo?.id).toBe('generated-secondary-id');
+  });
+
+  it('selects reference input flows and max allocated output flows when reference outputs do not match model edges', async () => {
+    mockOr.mockResolvedValue({ data: clone(createSelectionFallbackSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      {
+        id: 'graph-node-a',
+        data: {
+          index: 'nodeA',
+          quantitativeReference: '1',
+          targetAmount: 5,
+        },
+      },
+      {
+        id: 'graph-node-b',
+        data: {
+          index: 'nodeB',
+        },
+      },
+      {
+        id: 'graph-node-d',
+        data: {
+          index: 'nodeD',
+        },
+      },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-selection-fallback',
+      modelNodes as any,
+      createSelectionFallbackModelData(),
+      [],
+    );
+
+    const fromBToA = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeA:flow-B-to-A');
+    const fromDToA = up2DownEdges.find((edge) => edge.id === 'nodeD->nodeA:flow-D-to-A');
+
+    expect(fromBToA).toEqual(
+      expect.objectContaining({
+        mainOutputFlowUUID: 'flow-B-extra',
+        mainInputFlowUUID: 'flow-B-to-A',
+      }),
+    );
+    expect(fromDToA).toEqual(
+      expect.objectContaining({
+        mainInputFlowUUID: 'flow-B-to-A',
+      }),
+    );
+  });
+
+  it('breaks mixed-priority cycles by cutting the non-reference edge', async () => {
+    mockOr.mockResolvedValue({ data: clone(createCycleSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      {
+        id: 'graph-node-a',
+        data: {
+          index: 'nodeA',
+          quantitativeReference: '1',
+          targetAmount: 2,
+        },
+      },
+      {
+        id: 'graph-node-b',
+        data: {
+          index: 'nodeB',
+        },
+      },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-cycle',
+      modelNodes as any,
+      createCycleModelData(),
+      [],
+    );
+
+    const cutEdge = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeA:flow-B-to-A');
+    const keptEdge = up2DownEdges.find((edge) => edge.id === 'nodeA->nodeB:flow-A-to-B');
+
+    expect(cutEdge).toEqual(
+      expect.objectContaining({
+        isCycle: true,
+        dependence: 'none',
+        mainDependence: 'downstream',
+      }),
+    );
+    expect(keptEdge?.flowIsRef).toBe(true);
+  });
+
+  it('falls back to the max allocated input flow when the database reference input is missing from model edges', async () => {
+    const data = createSelectionFallbackModelData();
+    const dbProcesses = clone(createSelectionFallbackSupabaseProcesses()) as any[];
+    dbProcesses[0].quantitativeReference.referenceToReferenceFlow = 'missing-input-ref';
+    dbProcesses[0].exchange[0].allocations = {
+      allocation: {
+        '@allocatedFraction': '40%',
+      },
+    };
+    dbProcesses[0].exchange[1].allocations = {
+      allocation: {
+        '@allocatedFraction': '60%',
+      },
+    };
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      {
+        id: 'graph-node-a',
+        data: {
+          index: 'nodeA',
+          quantitativeReference: '1',
+          targetAmount: 5,
+        },
+      },
+      {
+        id: 'graph-node-b',
+        data: {
+          index: 'nodeB',
+        },
+      },
+      {
+        id: 'graph-node-d',
+        data: {
+          index: 'nodeD',
+        },
+      },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-input-fallback',
+      modelNodes as any,
+      data,
+      [],
+    );
+
+    const fromBToA = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeA:flow-B-to-A');
+    const fromDToA = up2DownEdges.find((edge) => edge.id === 'nodeD->nodeA:flow-D-to-A');
+
+    expect(fromBToA?.mainInputFlowUUID).toBe('flow-D-to-A');
+    expect(fromDToA?.mainInputFlowUUID).toBe('flow-D-to-A');
+  });
+
+  it('prunes non-main downstream edges when one upstream node feeds multiple downstream nodes in the output phase', async () => {
+    mockOr.mockResolvedValue({ data: clone(createDownstreamPruneSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      { id: 'graph-node-a', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 } },
+      { id: 'graph-node-b', data: { index: 'nodeB' } },
+      { id: 'graph-node-c', data: { index: 'nodeC' } },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-downstream-prune',
+      modelNodes as any,
+      createDownstreamPruneModelData(),
+      [],
+    );
+
+    const edgeBToA = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeA:flow-B-to-A');
+    const edgeBToC = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeC:flow-B-to-C');
+
+    expect(edgeBToA).toEqual(
+      expect.objectContaining({
+        dependence: 'none',
+        mainDependence: 'downstream',
+      }),
+    );
+    expect(edgeBToC).toEqual(
+      expect.objectContaining({
+        dependence: 'downstream',
+      }),
+    );
+  });
+
+  it('prunes non-main upstream edges and carries unallocated child processes through recursion', async () => {
+    mockOr.mockResolvedValue({ data: clone(createUpstreamPruneSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      { id: 'graph-node-a', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 } },
+      { id: 'graph-node-b', data: { index: 'nodeB' } },
+      { id: 'graph-node-c', data: { index: 'nodeC' } },
+      { id: 'graph-node-d', data: { index: 'nodeD' } },
+    ];
+
+    const { up2DownEdges, lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-upstream-prune',
+      modelNodes as any,
+      createUpstreamPruneModelData(),
+      [],
+    );
+
+    const edgeBToD = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeD:flow-B-to-D');
+    const edgeCToD = up2DownEdges.find((edge) => edge.id === 'nodeC->nodeD:flow-C-to-D');
+
+    expect(edgeBToD).toEqual(
+      expect.objectContaining({
+        dependence: 'none',
+        mainDependence: 'upstream',
+      }),
+    );
+    expect(edgeCToD).toEqual(
+      expect.objectContaining({
+        dependence: 'upstream',
+      }),
+    );
+
+    const primary = lifeCycleModelProcesses.find(
+      (process) => process?.modelInfo?.type === 'primary',
+    );
+    const mergedSharedRaw = primary?.data?.processDataSet?.exchanges?.exchange?.find(
+      (exchange: any) =>
+        exchange?.referenceToFlowDataSet?.['@refObjectId'] === 'flow-shared-raw' &&
+        exchange?.exchangeDirection === 'INPUT',
+    );
+
+    expect(mergedSharedRaw?.meanAmount).toBeGreaterThan(20);
+  });
+
+  it('breaks upstream cycles by cutting the non-reference edge in the cycle', async () => {
+    mockOr.mockResolvedValue({ data: clone(createUpstreamCycleSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      { id: 'graph-node-a', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 } },
+      { id: 'graph-node-b', data: { index: 'nodeB' } },
+      { id: 'graph-node-c', data: { index: 'nodeC' } },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-upstream-cycle',
+      modelNodes as any,
+      createUpstreamCycleModelData(),
+      [],
+    );
+
+    const edgeCToB = up2DownEdges.find((edge) => edge.id === 'nodeC->nodeB:flow-C-to-B');
+    const edgeBToC = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeC:flow-B-to-C');
+
+    expect(edgeCToB).toEqual(
+      expect.objectContaining({
+        isCycle: true,
+        dependence: 'none',
+        mainDependence: 'upstream',
+      }),
+    );
+    expect(edgeBToC?.flowIsRef).toBe(true);
+  });
+
+  it('keeps a non-main upstream edge when a reverse edge exists on the local loop', async () => {
+    const data = clone(createUpstreamPruneModelData());
+    const nodeD: any =
+      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.find(
+        (process: any) => process['@dataSetInternalID'] === 'nodeD',
+      );
+    nodeD.connections.outputExchange = {
+      '@flowUUID': 'flow-D-to-B',
+      downstreamProcess: { '@id': 'nodeB' },
+    };
+
+    const dbProcesses = clone(createUpstreamPruneSupabaseProcesses()) as any[];
+    const procD = dbProcesses.find((process) => process.id === 'procD');
+    procD.exchange.push({
+      '@dataSetInternalID': 'exD_out_B',
+      exchangeDirection: 'OUTPUT',
+      referenceToFlowDataSet: { '@refObjectId': 'flow-D-to-B' },
+      meanAmount: '1',
+      resultingAmount: '1',
+    });
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      { id: 'graph-node-a', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 } },
+      { id: 'graph-node-b', data: { index: 'nodeB' } },
+      { id: 'graph-node-c', data: { index: 'nodeC' } },
+      { id: 'graph-node-d', data: { index: 'nodeD' } },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-reverse-edge-guard',
+      modelNodes as any,
+      data,
+      [],
+    );
+
+    const edgeBToD = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeD:flow-B-to-D');
+    const reverseEdge = up2DownEdges.find((edge) => edge.id === 'nodeD->nodeB:flow-D-to-B');
+    expect(edgeBToD?.mainInputFlowUUID).toBe('flow-C-to-D');
+    expect(reverseEdge).toBeDefined();
+    expect(['upstream', 'none']).toContain(edgeBToD?.dependence);
+  });
+
+  it('merges duplicate process exchange entries when one downstream node is reached twice via the same flow', async () => {
+    const data = clone(createUpstreamPruneModelData());
+    const dbProcesses = clone(createUpstreamPruneSupabaseProcesses()) as any[];
+
+    const nodeB: any =
+      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.find(
+        (process: any) => process['@dataSetInternalID'] === 'nodeB',
+      );
+    const nodeC: any =
+      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.find(
+        (process: any) => process['@dataSetInternalID'] === 'nodeC',
+      );
+    (nodeB.connections.outputExchange as any[])[1]['@flowUUID'] = 'flow-shared-to-D';
+    (nodeC.connections.outputExchange as any[])[1]['@flowUUID'] = 'flow-shared-to-D';
+
+    const procB = dbProcesses.find((process) => process.id === 'procB');
+    const procC = dbProcesses.find((process) => process.id === 'procC');
+    const procD = dbProcesses.find((process) => process.id === 'procD');
+    procB.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exB_out_D',
+    ).referenceToFlowDataSet['@refObjectId'] = 'flow-shared-to-D';
+    procC.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exC_out_D',
+    ).referenceToFlowDataSet['@refObjectId'] = 'flow-shared-to-D';
+    procD.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exD_in_B',
+    ).referenceToFlowDataSet['@refObjectId'] = 'flow-shared-to-D';
+    procD.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exD_in_C',
+    ).referenceToFlowDataSet['@refObjectId'] = 'flow-shared-to-D';
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      { id: 'graph-node-a', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 } },
+      { id: 'graph-node-b', data: { index: 'nodeB' } },
+      { id: 'graph-node-c', data: { index: 'nodeC' } },
+      { id: 'graph-node-d', data: { index: 'nodeD' } },
+    ];
+
+    const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-duplicate-merge',
+      modelNodes as any,
+      data,
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find(
+      (process) => process?.modelInfo?.type === 'primary',
+    );
+    expect(up2DownEdges.filter((edge) => edge?.flowUUID === 'flow-shared-to-D')).toHaveLength(2);
+    expect(primary?.refProcesses).toHaveLength(3);
   });
 });

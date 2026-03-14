@@ -50,6 +50,7 @@ describe('global runtime side effects', () => {
     getRegistrations,
     getRegistration,
     cacheKeys = [],
+    cacheKeyError,
     reloadSpy,
   }: any) => {
     const addEventListenerSpy = jest
@@ -84,7 +85,9 @@ describe('global runtime side effects', () => {
     Object.defineProperty(window, 'caches', {
       configurable: true,
       value: {
-        keys: jest.fn().mockResolvedValue(cacheKeys),
+        keys: cacheKeyError
+          ? jest.fn().mockRejectedValue(cacheKeyError)
+          : jest.fn().mockResolvedValue(cacheKeys),
         delete: jest.fn().mockResolvedValue(true),
       },
     });
@@ -99,9 +102,16 @@ describe('global runtime side effects', () => {
         getRegistration: jest.fn().mockResolvedValue(getRegistration ?? null),
       },
     });
+    const locationValue = reloadSpy
+      ? {
+          protocol: originalLocation.protocol,
+          reload: reloadSpy ?? jest.fn(),
+        }
+      : originalLocation;
+
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: reloadSpy ? { reload: reloadSpy } : originalLocation,
+      value: locationValue,
     });
     Object.defineProperty(global, 'MessageChannel', {
       configurable: true,
@@ -161,6 +171,67 @@ describe('global runtime side effects', () => {
     expect(window.caches.keys).toHaveBeenCalled();
     expect(window.caches.delete).toHaveBeenCalledWith('cache-a');
     expect(reloadSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the app open when no waiting service worker exists and exposes a no-op onClose', async () => {
+    const eventHandlers: Record<string, any> = {};
+    const reloadSpy = jest.fn();
+
+    await loadGlobalModule({
+      pwa: true,
+      eventHandlers,
+      cacheKeys: ['cache-a'],
+      reloadSpy,
+    });
+
+    eventHandlers['sw.updated']({
+      detail: {},
+    });
+
+    expect(mockNotification.open).toHaveBeenCalledTimes(1);
+    const openPayload = mockNotification.open.mock.calls[0][0];
+
+    await expect(openPayload.onClose()).resolves.toBeNull();
+
+    openPayload.btn.props.onClick();
+    await flushAsync();
+
+    expect(mockNotification.destroy).toHaveBeenCalledWith(openPayload.key);
+    expect(window.caches.keys).not.toHaveBeenCalled();
+    expect(reloadSpy).not.toHaveBeenCalled();
+  });
+
+  it('logs cache cleanup failures during service worker update reload', async () => {
+    const eventHandlers: Record<string, any> = {};
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const reloadSpy = jest.fn();
+
+    await loadGlobalModule({
+      pwa: true,
+      eventHandlers,
+      cacheKeyError: new Error('cache failed'),
+      reloadSpy,
+    });
+
+    const waitingWorker = {
+      postMessage: jest.fn((_msg: any, [port]: any[]) => {
+        port.__peer.onmessage({ data: {} });
+      }),
+    };
+
+    eventHandlers['sw.updated']({
+      detail: {
+        waiting: waitingWorker,
+      },
+    });
+
+    const openPayload = mockNotification.open.mock.calls[0][0];
+    openPayload.btn.props.onClick();
+    await flushAsync();
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+    consoleSpy.mockRestore();
   });
 
   it('does not unregister service workers when PWA is disabled on non-https origins', async () => {

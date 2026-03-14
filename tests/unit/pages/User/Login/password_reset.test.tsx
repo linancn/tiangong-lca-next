@@ -272,4 +272,16 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
       'The two passwords do not match!',
     );
   });
+
+  it('keeps the form in loading state when the current user is unavailable', async () => {
+    mockGetCurrentUser.mockResolvedValueOnce({ userid: '', email: 'ghost@test.com' });
+
+    render(<PasswordReset />);
+
+    await waitFor(() => {
+      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(screen.getByTestId('fields')).toHaveTextContent('[]');
+      expect(screen.getByTestId('spin')).toBeInTheDocument();
+    });
+  });
 });

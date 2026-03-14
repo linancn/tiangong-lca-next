@@ -155,7 +155,25 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/eidtInfo', () => {
       }));
       const version =
         props?.data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'];
-      return <div>{`toolbar-edit-info:${props.action}:${version ?? '-'}`}</div>;
+      return (
+        <div>
+          <div>{`toolbar-edit-info:${props.action}:${version ?? '-'}`}</div>
+          <button
+            type='button'
+            onClick={() =>
+              props.onData?.({
+                administrativeInformation: {
+                  publicationAndOwnership: {
+                    'common:dataSetVersion': '2.2.2',
+                  },
+                },
+              })
+            }
+          >
+            emit-info-data
+          </button>
+        </div>
+      );
     }),
   };
 });
@@ -682,6 +700,60 @@ describe('ToolbarEdit', () => {
     });
   });
 
+  it('updates saved edit edge labels and preserves edges without targets during save', async () => {
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-with-target',
+        target: { cell: 'node-1', x: 10, y: 20 },
+      },
+      {
+        id: 'edge-without-target',
+        data: { connection: { exchangeAmount: 0, unbalancedAmount: 0 } },
+      },
+    ];
+    mockUpdateLifeCycleModel.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'model-1',
+          version: '1.1',
+          json_tg: {
+            xflow: {
+              edges: [
+                {
+                  id: 'saved-edit-edge',
+                  data: { connection: { unbalancedAmount: 7, exchangeAmount: 9 } },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: expect.objectContaining({
+            edges: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'edge-with-target',
+                target: { cell: 'node-1' },
+              }),
+              expect.objectContaining({
+                id: 'edge-without-target',
+              }),
+            ]),
+          }),
+        }),
+      ),
+    );
+    expect(mockUpdateEdge).toHaveBeenCalledWith('saved-edit-edge', { labels: [expect.anything()] });
+  });
+
   it('runs footer data-check through the edit info ref after saving', async () => {
     render(<ToolbarEdit {...baseProps} />);
 
@@ -785,6 +857,72 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('repositions existing output ports when new input ports are selected', async () => {
+    mockGraphStoreState.nodes[0].ports.items = [
+      {
+        id: 'OUTPUT:existing-output',
+        group: 'groupOutput',
+        args: { y: 65 },
+        attrs: { text: {} },
+        data: { textLang: [], allocations: null },
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    await act(async () => {
+      await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    mockUpdateNode.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          ports: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'OUTPUT:existing-output',
+                args: expect.objectContaining({ y: 85 }),
+              }),
+            ]),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('skips port updates when the selected node has no width and clears selected edges on node clicks', async () => {
+    mockGraphStoreState.nodes[0].size = undefined;
+    mockGraphStoreState.edges = [{ id: 'edge-selected', selected: true }];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    await act(async () => {
+      await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    mockUpdateNode.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+    expect(mockUpdateNode).not.toHaveBeenCalled();
+
+    const nodeClickHandler = getGraphHandler('node:click');
+    nodeClickHandler({
+      node: {
+        id: 'node-1',
+        isNode: () => true,
+        getPorts: () => [],
+      },
+      e: { target: document.createElement('div') },
+    });
+
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-selected', { selected: false });
+  });
+
   it('toggles reference tools and opens the target amount drawer', async () => {
     render(<ToolbarEdit {...baseProps} />);
 
@@ -821,6 +959,78 @@ describe('ToolbarEdit', () => {
       expect.objectContaining({
         data: expect.objectContaining({ quantitativeReference: '0' }),
       }),
+    );
+  });
+
+  it('replaces ref and non-ref tool definitions when switching the quantitative reference node', async () => {
+    mockGraphStoreState.nodes[0].tools = [{ id: 'ref' }, { id: 'inputFlow' }];
+    mockGraphStoreState.nodes[1].tools = [{ id: 'nonRef' }, { id: 'outputFlow' }];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nonRefTool = getNodeTool('node-2', 'nonRef');
+    expect(nonRefTool).toBeTruthy();
+
+    mockUpdateNode.mockClear();
+
+    await act(async () => {
+      await nonRefTool.args.onClick({
+        cell: {
+          store: {
+            data: mockGraphStoreState.nodes[1],
+          },
+        },
+      });
+    });
+
+    const node1Payload = mockUpdateNode.mock.calls
+      .filter(([id]: [string]) => id === 'node-1')
+      .pop()?.[1];
+    const node2Payload = mockUpdateNode.mock.calls
+      .filter(([id]: [string]) => id === 'node-2')
+      .pop()?.[1];
+
+    expect(node2Payload.tools).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'ref' })]),
+    );
+    expect(node1Payload.tools).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'nonRef' })]),
+    );
+  });
+
+  it('updates info data through the toolbar form and highlights problem nodes after data checks', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'emit-info-data' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('toolbar-edit-info:edit:2.2.2')).toBeInTheDocument();
+    });
+
+    mockUpdateNode.mockClear();
+    mockToolbarHandleCheckData.mockResolvedValueOnce({
+      problemNodes: [
+        {
+          '@refObjectId': 'proc-1',
+          '@version': '1.0',
+          '@type': 'process data set',
+        },
+      ],
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            body: expect.objectContaining({
+              stroke: '#ff4d4f',
+            }),
+          }),
+        }),
+      ),
     );
   });
 
@@ -1016,6 +1226,30 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('shows open-data, under-review, and generic errors when edit saves fail', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    mockUpdateLifeCycleModel
+      .mockResolvedValueOnce({ error: { state_code: 100 } })
+      .mockResolvedValueOnce({ error: { state_code: 20 } })
+      .mockResolvedValueOnce({ error: { message: 'generic failure' } });
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+    await waitFor(() =>
+      expect(antMessage.error).toHaveBeenCalledWith('This data is open data, save failed'),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+    await waitFor(() =>
+      expect(antMessage.error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+    await waitFor(() => expect(antMessage.error).toHaveBeenCalledWith('generic failure'));
+  });
+
   it('initializes imported models when the drawer opens', async () => {
     mockGenLifeCycleModelInfoFromData.mockReturnValue({
       administrativeInformation: {
@@ -1141,6 +1375,104 @@ describe('ToolbarEdit', () => {
     expect(screen.getByText('model-result:model-1:1.0:edit')).toBeInTheDocument();
   });
 
+  it('hydrates loaded graph ports and keeps edges without targets unchanged', async () => {
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {},
+          submodels: [],
+        },
+      },
+    });
+    mockGenLifeCycleModelInfoFromData.mockReturnValue({
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '1.0',
+        },
+      },
+    });
+    mockGenLifeCycleModelData.mockReturnValue({
+      nodes: [
+        {
+          id: 'loaded-node',
+          size: { width: 280 },
+          data: {
+            id: 'proc-loaded',
+            version: '1.0',
+            label: [{ '@xml:lang': 'en', '#text': 'Loaded Node' }],
+            quantitativeReference: '0',
+          },
+          ports: {
+            items: [
+              {
+                id: 'OUTPUT:flow-loaded',
+                group: 'groupOutput',
+                attrs: { text: { text: 'old-text' } },
+                data: {
+                  textLang: [{ '@xml:lang': 'en', '#text': 'Loaded Flow' }],
+                  allocations: [{ allocatedFraction: '0.5' }],
+                  quantitativeReference: true,
+                },
+              },
+            ],
+          },
+        },
+      ],
+      edges: [
+        {
+          id: 'loaded-edge',
+          target: { cell: 'loaded-node', x: 10, y: 20 },
+          data: { connection: { unbalancedAmount: 1, exchangeAmount: 2 } },
+        },
+        {
+          id: 'loaded-edge-without-target',
+          data: { connection: { unbalancedAmount: 0, exchangeAmount: 0 } },
+        },
+      ],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() =>
+      expect(mockInitData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nodes: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'loaded-node',
+              ports: expect.objectContaining({
+                items: expect.arrayContaining([
+                  expect.objectContaining({
+                    id: 'OUTPUT:flow-loaded',
+                    attrs: expect.objectContaining({
+                      text: expect.objectContaining({
+                        title: 'Flow Name',
+                      }),
+                    }),
+                  }),
+                ]),
+              }),
+            }),
+          ]),
+          edges: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'loaded-edge',
+              target: { cell: 'loaded-node' },
+              labels: [expect.anything()],
+            }),
+            expect.objectContaining({
+              id: 'loaded-edge-without-target',
+            }),
+          ]),
+        }),
+      ),
+    );
+  });
+
   it('renders process-view actions for non-owned process instances', async () => {
     mockGraphStoreState.nodes[0].selected = true;
     mockGetLifeCycleModelDetail.mockResolvedValue({
@@ -1166,6 +1498,35 @@ describe('ToolbarEdit', () => {
     render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
 
     await waitFor(() => expect(screen.getByText('process-view:proc-1:1.0')).toBeInTheDocument());
+  });
+
+  it('renders lifecycle-model view actions for non-owned model-backed process instances', async () => {
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [{ id: 'child-model' }],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValue({
+      data: [{ id: 'proc-1', version: '1.0', userId: 'someone-else', modelId: 'child-model' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() =>
+      expect(screen.getByText('life-cycle-model-view:child-model:1.0')).toBeInTheDocument(),
+    );
   });
 
   it('shows an error when the existing model is not public', async () => {

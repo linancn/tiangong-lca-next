@@ -60,6 +60,11 @@ jest.mock('@/services/processes/util', () => ({
   genProcessExchangeTableData: (data: any[]) => data,
 }));
 
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  getProcessExchange: jest.fn(() => Promise.resolve({ error: null, data: [] })),
+}));
+
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
   getFlowStateCodeByIdsAndVersions: jest.fn(() => Promise.resolve({ error: null, data: [] })),
@@ -84,6 +89,13 @@ jest.mock('@/services/lciaMethods/util', () => {
 });
 
 const { default: mockLCIAResultCalculation } = jest.requireMock('@/services/lciaMethods/util');
+const { getReferenceQuantityFromMethod: mockGetReferenceQuantityFromMethod } = jest.requireMock(
+  '@/services/lciaMethods/util',
+);
+const { getProcessExchange: mockGetProcessExchange } = jest.requireMock('@/services/processes/api');
+const { getFlowStateCodeByIdsAndVersions: mockGetFlowStateCodeByIdsAndVersions } =
+  jest.requireMock('@/services/flows/api');
+const { getUnitData: mockGetUnitData } = jest.requireMock('@/services/general/util');
 
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
@@ -457,6 +469,175 @@ describe('ProcessForm component', () => {
     await waitFor(() => {
       expect(mockLCIAResultCalculation).toHaveBeenCalledWith(exchangeData);
       expect(onLciaResults).toHaveBeenCalledWith([{ key: '1', meanAmount: 12 }]);
+    });
+  });
+
+  it('loads input exchanges, resolves units, and injects flow state metadata', async () => {
+    mockGetProcessExchange.mockResolvedValueOnce({
+      data: [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '1.0',
+          meanAmount: 1,
+          resultingAmount: 1,
+          dataDerivationTypeStatus: 'provided',
+        },
+      ],
+      total: 1,
+    });
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: 1,
+        dataDerivationTypeStatus: 'provided',
+      },
+    ]);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({
+      error: null,
+      data: [
+        {
+          id: 'flow-1',
+          version: '1.0',
+          stateCode: 20,
+          classification: 'class-a',
+        },
+      ],
+    });
+
+    render(<ProcessForm {...defaultProps} activeTabKey='exchanges' />);
+
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
+
+    const result = await proTableInstances[0].request({ pageSize: 10, current: 1 });
+
+    expect(mockGetProcessExchange).toHaveBeenCalledWith(
+      expect.any(Array),
+      'Input',
+      expect.objectContaining({ pageSize: 10, current: 1 }),
+    );
+    expect(mockGetUnitData).toHaveBeenCalledWith(
+      'flow',
+      expect.arrayContaining([
+        expect.objectContaining({
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '1.0',
+        }),
+      ]),
+    );
+    expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
+      [{ id: 'flow-1', version: '1.0' }],
+      'en',
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: true,
+        total: 1,
+        data: [
+          expect.objectContaining({
+            referenceToFlowDataSetId: 'flow-1',
+            referenceToFlowDataSetVersion: '1.0',
+            stateCode: 20,
+            classification: 'class-a',
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('leaves exchange rows unchanged when flow state lookup fails', async () => {
+    mockGetProcessExchange.mockResolvedValueOnce({
+      data: [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '1.0',
+          classification: 'legacy-classification',
+        },
+      ],
+      total: 1,
+    });
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        classification: 'legacy-classification',
+      },
+    ]);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({
+      error: new Error('lookup failed'),
+      data: [
+        {
+          id: 'flow-1',
+          version: '1.0',
+          stateCode: 100,
+          classification: 'new-classification',
+        },
+      ],
+    });
+
+    render(<ProcessForm {...defaultProps} activeTabKey='exchanges' />);
+
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
+
+    const result = await proTableInstances[1].request({ pageSize: 10, current: 1 });
+
+    expect(mockGetProcessExchange).toHaveBeenCalledWith(
+      expect.any(Array),
+      'Output',
+      expect.objectContaining({ pageSize: 10, current: 1 }),
+    );
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        classification: 'legacy-classification',
+      }),
+    ]);
+    expect(result.data[0].stateCode).toBeUndefined();
+  });
+
+  it('syncs reference quantities whenever lciaResults prop changes', async () => {
+    const initialResults = [
+      {
+        key: 'lcia-1',
+        referenceToLCIAMethodDataSet: {
+          '@version': '1.0',
+        },
+      },
+    ];
+
+    const { rerender } = render(
+      <ProcessForm {...defaultProps} activeTabKey='lciaResults' lciaResults={initialResults} />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceQuantityFromMethod).toHaveBeenCalledWith([
+        expect.objectContaining({ key: 'lcia-1' }),
+      ]);
+    });
+
+    const nextResults = [
+      {
+        key: 'lcia-2',
+        referenceToLCIAMethodDataSet: {
+          '@version': '2.0',
+        },
+      },
+    ];
+
+    rerender(
+      <ProcessForm {...defaultProps} activeTabKey='lciaResults' lciaResults={nextResults} />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceQuantityFromMethod).toHaveBeenCalledWith([
+        expect.objectContaining({ key: 'lcia-2' }),
+      ]);
     });
   });
 });
