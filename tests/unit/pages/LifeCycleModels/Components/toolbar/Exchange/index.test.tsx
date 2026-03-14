@@ -26,6 +26,9 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/view', () => ({
         props.sourceOutputFlowID,
         props.targetInputFlowID,
       ].join('|')}
+      <button type='button' onClick={props.onDrawerClose}>
+        close-edge-drawer
+      </button>
     </div>
   ),
 }));
@@ -81,6 +84,12 @@ describe('LifeCycleModelEdgeExchangeButton', () => {
     expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent(
       'true|process-source|1.0.0|process-target|2.0.0|flow-source|flow-target',
     );
+
+    await userEvent.click(screen.getByRole('button', { name: /close-edge-drawer/i }));
+
+    expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent(
+      'false|process-source|1.0.0|process-target|2.0.0|flow-source|flow-target',
+    );
   });
 
   it('keeps the drawer closed while the trigger is disabled', async () => {
@@ -89,5 +98,11 @@ describe('LifeCycleModelEdgeExchangeButton', () => {
     await userEvent.click(screen.getByRole('button', { name: 'arrow-right' }));
 
     expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent('false|process-source');
+  });
+
+  it('falls back to empty identifiers when the edge payload is incomplete', () => {
+    render(<EdgeExchange lang='en' disabled={false} edge={{} as any} />);
+
+    expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent('false||||||');
   });
 });

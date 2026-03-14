@@ -81,18 +81,21 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
-    open ? (
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
+    const container = getContainer?.();
+    return open ? (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
           <div>{extra}</div>
-          <button type='button' onClick={onClose}>
+          <button type='button' data-testid='drawer-on-close' onClick={onClose}>
             close
           </button>
         </header>
+        <div data-testid='drawer-container'>{container ? 'has-container' : 'other'}</div>
         <div>{children}</div>
       </section>
     ) : null;
+  };
 
   const Card = ({ children, title, tabList, activeTabKey, onTabChange }: any) => (
     <section>
@@ -215,6 +218,21 @@ describe('ToolbarViewInfo', () => {
     },
   };
 
+  const sparseData = {
+    lifeCycleModelInformation: {
+      dataSetInformation: {
+        classificationInformation: {},
+      },
+      technology: {},
+    },
+    modellingAndValidation: {
+      dataSourcesTreatmentEtc: {},
+    },
+    administrativeInformation: {
+      publicationAndOwnership: {},
+    },
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetClassificationValues.mockImplementation(() => ['class-a', 'class-b']);
@@ -269,8 +287,56 @@ describe('ToolbarViewInfo', () => {
     await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
     expect(screen.getByText('Use Advice For Data Set')).toBeInTheDocument();
     expect(screen.getByTestId('lang-text')).toHaveTextContent('Use advice');
+    expect(screen.getByTestId('drawer-container')).toHaveTextContent('has-container');
 
     await userEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('supports drawer onClose after reopening', async () => {
+    render(<ToolbarViewInfo lang='en' data={data as any} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await screen.findByRole('dialog');
+
+    await userEvent.click(screen.getByTestId('drawer-on-close'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('renders sparse data fallbacks across all tabs', async () => {
+    render(<ToolbarViewInfo lang='en' data={sparseData as any} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    const lifeCycleLangText = screen.getAllByTestId('lang-text');
+    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(
+      lifeCycleLangText.filter((item) => item.textContent?.includes('-')).length,
+    ).toBeGreaterThanOrEqual(5);
+    expect(screen.getAllByTestId('source-description')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ textContent: expect.stringContaining('en:none:') }),
+        expect.objectContaining({ textContent: expect.stringContaining('en:none:') }),
+      ]),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
+    expect(screen.getAllByTestId('lang-text').at(-1)).toHaveTextContent('-');
+
+    await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByText('Copyright?')).toBeInTheDocument();
+    expect(screen.getByText('License type')).toBeInTheDocument();
+    expect(screen.getAllByTestId('contact-description')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ textContent: expect.stringContaining('en:none:') }),
+      ]),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^Validation$/i }));
+    expect(screen.getByTestId('review-view')).toHaveTextContent('[]');
+
+    await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
+    expect(screen.getByTestId('compliance-view')).toHaveTextContent('[]');
   });
 });

@@ -79,7 +79,6 @@ const renderComponent = (overrideProps: Partial<TableFilterProps> = {}) => {
   const onChange = overrideProps.onChange ?? jest.fn();
   const props: TableFilterProps = {
     onChange,
-    disabled: overrideProps.disabled ?? false,
     ...overrideProps,
   };
 

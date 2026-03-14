@@ -126,7 +126,7 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, children, onClose, footer }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, footer, getContainer }: any) =>
     open ? (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
@@ -135,6 +135,7 @@ jest.mock('antd', () => {
             close
           </button>
         </header>
+        <div data-testid='drawer-container'>{getContainer?.() ? 'has-container' : 'missing'}</div>
         <div>{children}</div>
         <footer>{footer}</footer>
       </section>
@@ -247,6 +248,7 @@ describe('ReviewLifeCycleModelIoPortSelect', () => {
       ),
     );
 
+    expect(screen.getByTestId('drawer-container')).toHaveTextContent('has-container');
     expect(screen.getByText('exchange-view:exchange-1:en:icon')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'select:INPUT:flow-two' }));
@@ -281,5 +283,81 @@ describe('ReviewLifeCycleModelIoPortSelect', () => {
 
     expect(mockGetProcessDetail).not.toHaveBeenCalled();
     expect(mockGetProcessExchange).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty process payloads and missing port ids', async () => {
+    const onData = jest.fn();
+
+    mockGetProcessDetail.mockResolvedValue({
+      data: {
+        json: {},
+      },
+    });
+    mockGenProcessFromData.mockReturnValue({});
+
+    render(
+      <IoPortSelect
+        node={{ data: {}, ports: { items: [{}] } } as any}
+        lang='en'
+        direction='Input'
+        drawerVisible
+        onData={onData}
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith(undefined, undefined));
+    await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalled());
+
+    expect(screen.getByTestId('selected-keys')).toHaveTextContent('[[]]');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onData).toHaveBeenCalledWith({ selectedRowData: [] });
+  });
+
+  it('submits fallback exchange keys when direction and flow refs are missing', async () => {
+    const onData = jest.fn();
+
+    mockGenProcessFromData.mockReturnValue({
+      exchanges: {
+        exchange: [{}],
+      },
+    });
+    mockGetProcessExchange.mockResolvedValue({
+      data: [
+        {
+          selectionKey: '-:-',
+          dataSetInternalID: 'exchange-fallback',
+          referenceToFlowDataSet: 'Fallback flow',
+          referenceToFlowDataSetVersion: '0.0.0',
+          meanAmount: 0,
+          resultingAmount: 0,
+          dataDerivationTypeStatus: 'unknown',
+          quantitativeReference: false,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+
+    render(
+      <IoPortSelect
+        node={{ data: { id: 'process-1', version: '1.0.0' }, ports: { items: [] } } as any}
+        lang='en'
+        direction='Output'
+        drawerVisible
+        onData={onData}
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'select:-:-' }));
+    await waitFor(() => expect(screen.getByTestId('selected-keys')).toHaveTextContent('["-:-"]'));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onData).toHaveBeenCalledWith({ selectedRowData: [{}] });
   });
 });

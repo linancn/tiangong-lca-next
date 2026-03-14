@@ -124,7 +124,7 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
@@ -133,6 +133,7 @@ jest.mock('antd', () => {
             close
           </button>
         </header>
+        <div data-testid='drawer-container'>{getContainer?.() ? 'has-container' : 'missing'}</div>
         <div>{children}</div>
       </section>
     ) : null;
@@ -227,6 +228,7 @@ describe('LifeCycleModelIoPortView', () => {
       ]),
     );
     expect(screen.getByTestId('selected-keys')).toHaveTextContent('["port-1","port-2"]');
+    expect(screen.getByTestId('drawer-container')).toHaveTextContent('has-container');
     expect(screen.getByText('type:product')).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
@@ -253,5 +255,68 @@ describe('LifeCycleModelIoPortView', () => {
 
     expect(mockGetProcessDetail).not.toHaveBeenCalled();
     expect(mockGetProcessExchange).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty ids, empty exchange payloads, and default type labels', async () => {
+    mockGetProcessDetail.mockResolvedValue({
+      data: {
+        json: {},
+      },
+    });
+    mockGenProcessFromData.mockReturnValue({});
+    mockGetProcessExchange.mockResolvedValue({
+      data: [
+        {
+          dataSetInternalID: 'exchange-fallback',
+          referenceToFlowDataSet: 'Flow fallback',
+          referenceToFlowDataSetVersion: '',
+          meanAmount: 0,
+          resultingAmount: 0,
+          dataDerivationTypeStatus: 'estimated',
+          quantitativeReference: false,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    mockGetUnitData.mockImplementation(async (_type: string, data: any[]) => data);
+
+    render(
+      <IoPortView
+        node={{ data: {}, ports: { items: [{}, { id: 'port-2' }] } } as any}
+        lang='en'
+        direction='Input'
+        drawerVisible
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('', ''));
+    await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalled());
+
+    expect(screen.getByTestId('selected-keys')).toHaveTextContent('["","port-2"]');
+    expect(mockGetFolwypeOfDataSetOptions).toHaveBeenCalledWith('');
+    expect(screen.getByText('type:')).toBeInTheDocument();
+    expect(screen.getByText('quantitative-no')).toBeInTheDocument();
+  });
+
+  it('falls back to empty selected keys and unit rows when lookups return nothing', async () => {
+    mockGetUnitData.mockResolvedValue(undefined);
+
+    render(
+      <IoPortView
+        node={{ data: { id: 'process-1', version: '1.0.0' } } as any}
+        lang='en'
+        direction='Output'
+        drawerVisible
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalled());
+
+    expect(screen.getByTestId('selected-keys')).toHaveTextContent('[]');
+    expect(screen.queryByText('exchange-view:exchange-1:en:icon')).not.toBeInTheDocument();
   });
 });

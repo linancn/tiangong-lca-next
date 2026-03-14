@@ -770,18 +770,7 @@ export default function ReviewProgress({
                 actionRef={tableRef}
               />,
             ]}
-            request={async () => {
-              try {
-                return await fetchTableData();
-              } catch (error) {
-                console.error(error);
-                return {
-                  data: [],
-                  success: true,
-                  total: 0,
-                };
-              }
-            }}
+            request={fetchTableData}
             actionRef={tableRef}
           />
         </Spin>

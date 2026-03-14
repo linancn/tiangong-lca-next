@@ -3,7 +3,7 @@ import ToolbarEditInfo from '@/pages/LifeCycleModels/Components/toolbar/eidtInfo
 import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { render, screen } from '../../../../../helpers/testUtils';
+import { render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 jest.mock('@tiangong-lca/tidas-sdk', () => ({
   __esModule: true,
@@ -35,8 +35,40 @@ jest.mock('@/pages/LifeCycleModels/Components/form', () => {
   const React = require('react');
   return {
     __esModule: true,
-    LifeCycleModelForm: ({ children }: any) => (
-      <div data-testid='life-cycle-model-form'>{children}</div>
+    LifeCycleModelForm: ({ children, onTabChange, onData, formRef, activeTabKey }: any) => (
+      <div data-testid='life-cycle-model-form'>
+        {children}
+        <div data-testid='active-tab'>{activeTabKey}</div>
+        <button type='button' onClick={() => onTabChange?.('validation')}>
+          switch-validation
+        </button>
+        <button type='button' onClick={() => onTabChange?.('complianceDeclarations')}>
+          switch-compliance
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            formRef?.current?.setFieldValue(['modellingAndValidation', 'validation'], {
+              review: [{ id: 'validation-review' }],
+            })
+          }
+        >
+          set-validation-value
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            formRef?.current?.setFieldValue(['modellingAndValidation', 'complianceDeclarations'], {
+              compliance: [{ id: 'compliance-review' }],
+            })
+          }
+        >
+          set-compliance-value
+        </button>
+        <button type='button' onClick={() => onData?.()}>
+          sync-form-data
+        </button>
+      </div>
     ),
   };
 });
@@ -472,6 +504,30 @@ describe('ToolbarEditInfo', () => {
     expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
   });
 
+  it('updates to the latest reference versions from the refs drawer', async () => {
+    mockGetRefsOfNewVersion.mockResolvedValue({
+      newRefs: [{ id: 'new-ref', version: '2.0.0' }],
+      oldRefs: [{ id: 'old-ref', version: '1.0.0' }],
+    });
+
+    render(<ToolbarEditInfo {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'update-latest' }));
+
+    expect(mockUpdateRefsData).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'model-1', version: '1.0' }),
+      [{ id: 'new-ref', version: '2.0.0' }],
+      true,
+    );
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
   it('updates references inline when no newer versions are available', async () => {
     mockGetRefsOfNewVersion.mockResolvedValue({
       newRefs: [],
@@ -520,6 +576,58 @@ describe('ToolbarEditInfo', () => {
       }),
       [],
       false,
+    );
+  });
+
+  it('merges validation tab data into reference updates', async () => {
+    const ref = React.createRef<any>();
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'switch-validation' }));
+    await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('validation'));
+    await userEvent.click(screen.getByRole('button', { name: 'set-validation-value' }));
+    await userEvent.click(screen.getByRole('button', { name: 'sync-form-data' }));
+    await act(async () => {
+      await ref.current?.updateReferenceDescription({ id: 'model-1', version: '1.0' });
+    });
+
+    expect(mockGetRefsOfCurrentVersion).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        modellingAndValidation: expect.objectContaining({
+          validation: { review: [{ id: 'validation-review' }] },
+        }),
+      }),
+    );
+  });
+
+  it('merges compliance tab data into reference updates', async () => {
+    const ref = React.createRef<any>();
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'switch-compliance' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('active-tab')).toHaveTextContent('complianceDeclarations'),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'set-compliance-value' }));
+    await userEvent.click(screen.getByRole('button', { name: 'sync-form-data' }));
+    await act(async () => {
+      await ref.current?.updateReferenceDescription({ id: 'model-1', version: '1.0' });
+    });
+
+    expect(mockGetRefsOfCurrentVersion).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        modellingAndValidation: expect.objectContaining({
+          complianceDeclarations: { compliance: [{ id: 'compliance-review' }] },
+        }),
+      }),
     );
   });
 
