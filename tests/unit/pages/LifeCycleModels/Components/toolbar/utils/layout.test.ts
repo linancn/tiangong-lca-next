@@ -1,9 +1,12 @@
-import { applyDagreLayout } from '@/pages/LifeCycleModels/Components/toolbar/utils/layout';
+import {
+  applyDagreLayout,
+  applyDagreLayoutWithHistory,
+} from '@/pages/LifeCycleModels/Components/toolbar/utils/layout';
 
 type MockNode = {
   id: string;
   getSize: () => { width: number; height: number };
-  position: (x: number, y: number) => void;
+  position: (x?: number, y?: number) => { x: number; y: number } | void;
 };
 
 type MockEdge = {
@@ -20,8 +23,13 @@ const createNode = (
 ): MockNode => ({
   id,
   getSize: () => ({ width, height }),
-  position: (x: number, y: number) => {
-    positions[id] = { x, y };
+  position: (x?: number, y?: number) => {
+    if (typeof x === 'number' && typeof y === 'number') {
+      positions[id] = { x, y };
+      return;
+    }
+
+    return positions[id] ?? { x: 0, y: 0 };
   },
 });
 
@@ -85,5 +93,48 @@ describe('applyDagreLayout (src/pages/LifeCycleModels/Components/toolbar/utils/l
     expect(didLayout).toBe(true);
     expect(positions.A).toBeDefined();
     expect(positions.B).toBeDefined();
+  });
+
+  it('applies auto layout as a single history snapshot command', () => {
+    const positions: Record<string, { x: number; y: number }> = {};
+    const nodeA = createNode('A', positions);
+    const nodeB = createNode('B', positions);
+    const edgeAB = createEdge('edge-ab', 'A', 'B');
+    const history = {
+      disabled: false,
+      redoStack: [],
+      undoStackPush: jest.fn(),
+      consolidateCommands: jest.fn(),
+      notify: jest.fn(),
+    };
+    const graph = {
+      getNodes: () => [nodeA, nodeB],
+      getEdges: () => [edgeAB],
+      getPlugin: jest.fn(() => history),
+    } as any;
+
+    const didLayout = applyDagreLayoutWithHistory(graph, 'LR');
+
+    expect(didLayout).toBe(true);
+    expect(history.undoStackPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'x6:auto-layout',
+        data: expect.objectContaining({
+          before: expect.objectContaining({
+            A: expect.any(Object),
+            B: expect.any(Object),
+          }),
+          after: expect.objectContaining({
+            A: expect.any(Object),
+            B: expect.any(Object),
+          }),
+        }),
+      }),
+    );
+    expect(history.notify).toHaveBeenCalledWith(
+      'add',
+      expect.objectContaining({ event: 'x6:auto-layout' }),
+      { reason: 'auto-layout' },
+    );
   });
 });

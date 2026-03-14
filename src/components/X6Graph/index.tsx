@@ -1,3 +1,4 @@
+import { executeX6HistoryCommand } from '@/components/X6Graph/history';
 import { useGraphStore } from '@/contexts/graphContext';
 import { Clipboard, Graph, History, Keyboard, Selection, Snapline, Transform } from '@antv/x6';
 import { useEffect, useRef } from 'react';
@@ -38,6 +39,7 @@ interface X6GraphProps {
     enabled?: boolean;
     stackSize?: number;
     beforeAddCommand?: (event: string, args: any) => any;
+    executeCommand?: (cmd: any, revert: boolean, options: Record<string, any>) => any;
   };
   clipboardOptions?: {
     enabled?: boolean;
@@ -116,6 +118,7 @@ const X6GraphComponent = ({
 
     if (historyOptions?.enabled) {
       const userBeforeAddCommand = historyOptions.beforeAddCommand;
+      const userExecuteCommand = historyOptions.executeCommand;
       graph.use(
         new History({
           ...historyOptions,
@@ -131,6 +134,15 @@ const X6GraphComponent = ({
             }
 
             return true;
+          },
+          executeCommand: (cmd, revert, options) => {
+            if (executeX6HistoryCommand(graph, cmd, revert, options)) {
+              return;
+            }
+
+            if (typeof userExecuteCommand === 'function') {
+              return userExecuteCommand(cmd, revert, options);
+            }
           },
         }),
       );

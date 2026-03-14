@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
 
 import { useGraphEvent, useGraphInstance } from '@/contexts/graphContext';
-import { applyDagreLayout } from '@/pages/LifeCycleModels/Components/toolbar/utils/layout';
+import { applyDagreLayoutWithHistory } from '@/pages/LifeCycleModels/Components/toolbar/utils/layout';
 import { Button, Space, Tooltip } from 'antd';
 import { FormattedMessage } from 'umi';
 import './styles/index.less';
@@ -206,14 +206,7 @@ const Control = (props: ControlIProps) => {
         graph.zoomTo(zoomNum);
         break;
       case ControlEnum.AutoLayoutLR: {
-        let didLayout = false;
-        if (typeof graph.batchUpdate === 'function') {
-          graph.batchUpdate('auto-layout', () => {
-            didLayout = applyDagreLayout(graph, 'LR');
-          });
-        } else {
-          didLayout = applyDagreLayout(graph, 'LR');
-        }
+        const didLayout = applyDagreLayoutWithHistory(graph, 'LR');
         if (didLayout) {
           graph.zoomToFit({ maxScale: 1 });
         }

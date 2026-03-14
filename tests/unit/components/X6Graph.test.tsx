@@ -19,6 +19,7 @@ jest.mock('@antv/x6', () => {
       dispose: jest.fn(),
       on: jest.fn(),
       off: jest.fn(),
+      getNodes: jest.fn(() => []),
     };
     graphInstances.push(instance);
     return instance;
@@ -205,6 +206,66 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
       'custom-result',
     );
     expect(beforeAddCommand).toHaveBeenCalledWith('cell:added', { options: {} });
+  });
+
+  it('handles custom auto-layout history commands before delegating executeCommand', () => {
+    const { History, __graphInstances } = jest.requireMock('@antv/x6');
+    const executeCommand = jest.fn();
+    const position = { x: 0, y: 0 };
+    const fakeNode = {
+      id: 'node-1',
+      position: jest.fn((x?: number, y?: number, options?: Record<string, any>) => {
+        if (typeof x === 'number' && typeof y === 'number') {
+          position.x = x;
+          position.y = y;
+          return options;
+        }
+
+        return { ...position };
+      }),
+    };
+
+    render(
+      <X6GraphComponent
+        historyOptions={{
+          enabled: true,
+          executeCommand,
+        }}
+      />,
+    );
+
+    const instance = __graphInstances[0];
+    instance.getNodes.mockReturnValue([fakeNode]);
+
+    const historyPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof History,
+    )?.[0];
+
+    historyPlugin.options.executeCommand(
+      {
+        event: 'x6:auto-layout',
+        data: {
+          before: { 'node-1': { x: 0, y: 0 } },
+          after: { 'node-1': { x: 48, y: 96 } },
+        },
+      },
+      false,
+      { propertyPath: 'position' },
+    );
+
+    expect(fakeNode.position).toHaveBeenCalledWith(48, 96, {
+      propertyPath: 'position',
+      ignoreHistory: true,
+    });
+    expect(executeCommand).not.toHaveBeenCalled();
+
+    historyPlugin.options.executeCommand({ event: 'custom:event', data: {} }, false, {
+      foo: 'bar',
+    });
+
+    expect(executeCommand).toHaveBeenCalledWith({ event: 'custom:event', data: {} }, false, {
+      foo: 'bar',
+    });
   });
 
   it('falls back to default plugin flags when optional settings are omitted', () => {

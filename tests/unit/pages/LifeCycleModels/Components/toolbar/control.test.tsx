@@ -7,7 +7,7 @@ let graphZoom = 1;
 let mockEventHandlers: Record<string, any>;
 let mockGraph: any;
 
-const mockApplyDagreLayout = jest.fn();
+const mockApplyDagreLayoutWithHistory = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -24,7 +24,7 @@ jest.mock('@/contexts/graphContext', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/utils/layout', () => ({
   __esModule: true,
-  applyDagreLayout: (...args: any[]) => mockApplyDagreLayout(...args),
+  applyDagreLayoutWithHistory: (...args: any[]) => mockApplyDagreLayoutWithHistory(...args),
 }));
 
 jest.mock('@ant-design/icons', () => ({
@@ -120,7 +120,7 @@ describe('LifeCycleModelToolbarControl', () => {
   });
 
   it('runs zoom and layout operations for supported tools', async () => {
-    mockApplyDagreLayout.mockReturnValueOnce(true).mockReturnValueOnce(false);
+    mockApplyDagreLayoutWithHistory.mockReturnValueOnce(true).mockReturnValueOnce(false);
 
     render(
       <Control
@@ -149,23 +149,20 @@ describe('LifeCycleModelToolbarControl', () => {
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(0.5);
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(1.5);
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(1);
-    expect(mockGraph.batchUpdate).toHaveBeenNthCalledWith(1, 'auto-layout', expect.any(Function));
-    expect(mockGraph.batchUpdate).toHaveBeenNthCalledWith(2, 'auto-layout', expect.any(Function));
-    expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(1, mockGraph, 'LR');
-    expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(2, mockGraph, 'LR');
+    expect(mockApplyDagreLayoutWithHistory).toHaveBeenNthCalledWith(1, mockGraph, 'LR');
+    expect(mockApplyDagreLayoutWithHistory).toHaveBeenNthCalledWith(2, mockGraph, 'LR');
     await waitFor(() => expect(mockGraph.zoomToFit).toHaveBeenCalledTimes(2));
     expect(mockGraph.zoomToFit).toHaveBeenNthCalledWith(1, { maxScale: 1 });
   });
 
-  it('falls back to direct auto layout when graph batching is unavailable', async () => {
-    mockApplyDagreLayout.mockReturnValueOnce(true);
-    delete mockGraph.batchUpdate;
+  it('runs auto layout without native graph batching when history helper is used', async () => {
+    mockApplyDagreLayoutWithHistory.mockReturnValueOnce(true);
 
     render(<Control items={[ControlEnum.AutoLayoutLR]} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'partition' }));
 
-    expect(mockApplyDagreLayout).toHaveBeenCalledWith(mockGraph, 'LR');
+    expect(mockApplyDagreLayoutWithHistory).toHaveBeenCalledWith(mockGraph, 'LR');
     expect(mockGraph.zoomToFit).toHaveBeenCalledWith({ maxScale: 1 });
   });
 
@@ -248,6 +245,6 @@ describe('LifeCycleModelToolbarControl', () => {
     await userEvent.click(screen.getByRole('button', { name: 'zoom-out' }));
     await userEvent.click(screen.getByRole('button', { name: 'compress' }));
 
-    expect(mockApplyDagreLayout).not.toHaveBeenCalled();
+    expect(mockApplyDagreLayoutWithHistory).not.toHaveBeenCalled();
   });
 });

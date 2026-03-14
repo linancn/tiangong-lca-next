@@ -10,7 +10,7 @@ let graphZoom = 1;
 let scaleHandler: any;
 let mockGraph: any;
 
-const mockApplyDagreLayout = jest.fn();
+const mockApplyDagreLayoutWithHistory = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -29,7 +29,7 @@ jest.mock('@/contexts/graphContext', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/utils/layout', () => ({
   __esModule: true,
-  applyDagreLayout: (...args: any[]) => mockApplyDagreLayout(...args),
+  applyDagreLayoutWithHistory: (...args: any[]) => mockApplyDagreLayoutWithHistory(...args),
 }));
 
 jest.mock('@ant-design/icons', () => ({
@@ -117,7 +117,7 @@ describe('ReviewLifeCycleModelToolbarControl', () => {
   });
 
   it('runs zoom and layout operations for supported tools', async () => {
-    mockApplyDagreLayout.mockReturnValueOnce(true).mockReturnValueOnce(false);
+    mockApplyDagreLayoutWithHistory.mockReturnValueOnce(true).mockReturnValueOnce(false);
 
     render(
       <Control
@@ -146,8 +146,8 @@ describe('ReviewLifeCycleModelToolbarControl', () => {
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(0.5);
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(1.5);
     expect(mockGraph.zoomTo).toHaveBeenCalledWith(1);
-    expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(1, mockGraph, 'LR');
-    expect(mockApplyDagreLayout).toHaveBeenNthCalledWith(2, mockGraph, 'LR');
+    expect(mockApplyDagreLayoutWithHistory).toHaveBeenNthCalledWith(1, mockGraph, 'LR');
+    expect(mockApplyDagreLayoutWithHistory).toHaveBeenNthCalledWith(2, mockGraph, 'LR');
     await waitFor(() => expect(mockGraph.zoomToFit).toHaveBeenCalledTimes(2));
     expect(mockGraph.zoomToFit).toHaveBeenNthCalledWith(1, { maxScale: 1 });
   });
