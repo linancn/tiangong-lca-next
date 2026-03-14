@@ -14,10 +14,19 @@ const toText = (node: any): string => {
 
 let proFormApi: any = null;
 let triggerValuesChange: ((_: any, values: any) => void) | null = null;
+let mockSourceListAdd = jest.fn();
+let mockSourceListRemove = jest.fn();
+let mockSourceFields: Array<{ key: string; name: number }> = [];
 
 beforeEach(() => {
   proFormApi = null;
   triggerValuesChange = null;
+  mockSourceListAdd = jest.fn();
+  mockSourceListRemove = jest.fn();
+  mockSourceFields = [
+    { key: '0', name: 0 },
+    { key: '1', name: 1 },
+  ];
 });
 
 jest.mock('umi', () => ({
@@ -26,6 +35,23 @@ jest.mock('umi', () => ({
 }));
 
 const mockUnitConvertState: { visible: boolean; onOk?: (value: any) => void } = { visible: false };
+const mockGetRules = jest.fn(() => [{ required: true }]);
+
+jest.mock('@/pages/Utils', () => ({
+  __esModule: true,
+  getRules: (...args: any[]) => mockGetRules(...args),
+}));
+
+jest.mock('@ant-design/icons', () => ({
+  __esModule: true,
+  CaretRightOutlined: ({ rotate }: any) => <span>{`caret-${rotate ?? 0}`}</span>,
+  CloseOutlined: (props: any) => (
+    <span data-testid={props.onClick ? 'close-action' : 'close-icon'} onClick={props.onClick}>
+      close-outlined
+    </span>
+  ),
+  FormOutlined: () => <span>edit-icon</span>,
+}));
 
 jest.mock('@/components/UnitConvert', () => ({
   __esModule: true,
@@ -35,10 +61,10 @@ jest.mock('@/components/UnitConvert', () => ({
     return visible ? (
       <div data-testid='unit-convert'>
         <button type='button' onClick={() => onOk?.('88')}>
-          convert
+          convert-unit
         </button>
         <button type='button' onClick={onCancel}>
-          close
+          close-unit
         </button>
       </div>
     ) : null;
@@ -47,16 +73,41 @@ jest.mock('@/components/UnitConvert', () => ({
 
 jest.mock('@/pages/Flows/Components/select/form', () => ({
   __esModule: true,
-  default: ({ onData }: any) => (
-    <button type='button' onClick={() => onData({ referenceToFlowDataSet: 'Flow Item' })}>
-      trigger-flow
-    </button>
-  ),
+  default: ({ onData, formRef, name, asInput }: any) => {
+    const fieldName = name ?? ['referenceToFlowDataSet'];
+    return (
+      <div>
+        <span data-testid='flow-select-mode'>{String(asInput)}</span>
+        <button
+          type='button'
+          onClick={() => {
+            formRef?.current?.setFieldValue(fieldName, { '@refObjectId': 'flow-1' });
+            onData?.();
+          }}
+        >
+          trigger-flow
+        </button>
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Sources/Components/select/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='source-select'>source</div>,
+  default: ({ parentName = [], name = [], formRef, onData, label }: any) => {
+    const fieldPath = [...parentName, ...name];
+    return (
+      <button
+        type='button'
+        onClick={() => {
+          formRef?.current?.setFieldValue(fieldPath, { '@refObjectId': `source-${name[0] ?? 0}` });
+          onData?.();
+        }}
+      >
+        {toText(label)}
+      </button>
+    );
+  },
 }));
 
 jest.mock('@/components/LangTextItem/form', () => ({
@@ -67,21 +118,37 @@ jest.mock('@/components/LangTextItem/form', () => ({
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, onClick, disabled, icon }: any) => (
-    <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick}>
-      {icon ? <span data-testid='button-icon'>{icon}</span> : null}
-      {toText(children)}
-    </button>
-  );
+  const Button = (props: any) => {
+    const { children, onClick, disabled, icon, type, ...rest } = props;
+    delete rest.block;
+    return (
+      <button
+        type='button'
+        data-button-type={type}
+        disabled={disabled}
+        onClick={disabled ? undefined : onClick}
+        {...rest}
+      >
+        {icon ? <span data-testid='button-icon'>{icon}</span> : null}
+        {toText(children)}
+      </button>
+    );
+  };
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, footer, children }: any) => {
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     const label = toText(title) || 'drawer';
     return (
       <section role='dialog' aria-label={label}>
-        <header>{extra}</header>
+        <header>
+          {extra}
+          <button type='button' onClick={onClose}>
+            close
+          </button>
+        </header>
         <div>{children}</div>
         <footer>{footer}</footer>
       </section>
@@ -140,17 +207,21 @@ jest.mock('antd', () => {
     );
   };
   FormComponent.List = ({ children }: any) => {
-    const fields = [{ key: '0', name: 0 }];
-    return children(fields, {
-      add: jest.fn(),
-      remove: jest.fn(),
+    return children(mockSourceFields, {
+      add: (...args: any[]) => mockSourceListAdd(...args),
+      remove: (...args: any[]) => mockSourceListRemove(...args),
     });
   };
 
-  const Collapse = ({ items }: any) => (
+  const Collapse = ({ items, expandIcon }: any) => (
     <div>
       {items?.map((item: any) => (
-        <div key={item.key}>{item.children}</div>
+        <div key={item.key}>
+          <div>{expandIcon?.({ isActive: true })}</div>
+          <div>{expandIcon?.({ isActive: false })}</div>
+          <div>{toText(item.label)}</div>
+          {item.children}
+        </div>
       ))}
     </div>
   );
@@ -191,7 +262,14 @@ jest.mock('@ant-design/pro-components', () => {
     return path.reduce((acc, key) => (acc ? acc[key] : undefined), source);
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onFinish, onValuesChange, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onFinish,
+    onValuesChange,
+    children,
+    submitter,
+  }: any) => {
     const valuesRef = React.useRef({ ...initialValues });
 
     const buildApi = React.useCallback(() => {
@@ -241,6 +319,7 @@ jest.mock('@ant-design/pro-components', () => {
         }}
       >
         {typeof children === 'function' ? children(valuesRef.current) : children}
+        {submitter?.render?.() ?? null}
       </form>
     );
   };
@@ -333,6 +412,136 @@ describe('ProcessExchangeEdit', () => {
 
     await waitFor(() => {
       expect(proFormApi?.getFieldValue('meanAmount')).toBe('200');
+    });
+  });
+
+  it('opens from the text trigger, updates flow and source references, and saves from the footer', async () => {
+    const onData = jest.fn();
+    render(<ProcessExchangeEdit {...defaultProps} buttonType='text' onData={onData} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    expect(screen.getByTestId('flow-select-mode')).toHaveTextContent('false');
+    fireEvent.change(screen.getByTestId('exchangeDirection'), { target: { value: 'input' } });
+    await act(async () => {
+      proFormApi?.setFieldValue('exchangeDirection', 'input');
+      triggerValuesChange?.({}, proFormApi?.getFieldsValue());
+    });
+    expect(screen.getByTestId('flow-select-mode')).toHaveTextContent('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'trigger-flow' }));
+    fireEvent.click(screen.getByRole('button', { name: /Data source\(s\)1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Add.*Data source\(s\).*Item/i }));
+    fireEvent.click(screen.getAllByTestId('close-action')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockSourceListAdd).toHaveBeenCalledWith({});
+      expect(mockSourceListRemove).toHaveBeenCalledWith(0);
+      expect(onData).toHaveBeenCalledWith([
+        expect.objectContaining({
+          '@dataSetInternalID': '0',
+          exchangeDirection: 'input',
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+        }),
+        defaultProps.data[1],
+      ]);
+    });
+  });
+
+  it('shows conditional uncertainty and quantitative-reference sections after form changes', async () => {
+    render(<ProcessExchangeEdit {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await act(async () => {
+      proFormApi?.setFieldValue('uncertaintyDistributionType', 'triangular');
+      triggerValuesChange?.({}, proFormApi?.getFieldsValue());
+    });
+
+    expect(screen.getByTestId('minimumAmount')).toBeInTheDocument();
+    expect(screen.getByTestId('maximumAmount')).toBeInTheDocument();
+
+    await act(async () => {
+      proFormApi?.setFieldValue('uncertaintyDistributionType', 'log-normal');
+      triggerValuesChange?.({}, proFormApi?.getFieldsValue());
+    });
+
+    expect(screen.getByTestId('relativeStandardDeviation95In')).toBeInTheDocument();
+
+    await act(async () => {
+      proFormApi?.setFieldValue('quantitativeReference', true);
+      triggerValuesChange?.({}, proFormApi?.getFieldsValue());
+    });
+
+    expect(screen.getAllByTestId('lang-form')).toHaveLength(2);
+  });
+
+  it('closes the unit converter and the drawer through icon, header, and cancel actions', async () => {
+    render(<ProcessExchangeEdit {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByTestId('resultingAmount'));
+    expect(screen.getByTestId('unit-convert')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'close-unit' }));
+    await waitFor(() => expect(screen.queryByTestId('unit-convert')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /close-outlined/i }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'close' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('falls back to an empty initial exchange when the target id is missing and showRules is omitted', async () => {
+    render(
+      <ProcessExchangeEdit
+        id='missing'
+        data={exchangeList}
+        lang='en'
+        buttonType='icon'
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(proFormApi?.getFieldsValue()).toEqual({});
+    });
+  });
+
+  it('uses rule-enabled rendering and falls back to empty objects for undefined form values', async () => {
+    const onData = jest.fn();
+    render(<ProcessExchangeEdit {...defaultProps} onData={onData} showRules />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(mockGetRules).toHaveBeenCalled();
+
+    await act(async () => {
+      triggerValuesChange?.({}, undefined);
+    });
+
+    proFormApi.getFieldsValue = () => undefined;
+    fireEvent.click(screen.getByRole('button', { name: 'trigger-flow' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(onData).toHaveBeenCalledWith([{}, defaultProps.data[1]]);
     });
   });
 });

@@ -399,8 +399,8 @@ const ProcessEdit: FC<Props> = ({
       }, 200);
     } else {
       const exchanges = fromData?.exchanges;
-      const exchangeList = (exchanges?.exchange ?? []) as ProcessExchangeData[];
-      if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+      const exchangeList = exchanges?.exchange as ProcessExchangeData[] | undefined;
+      if (!exchangeList || exchangeList.length === 0) {
         message.error(
           intl.formatMessage({
             id: 'pages.process.validator.exchanges.required',

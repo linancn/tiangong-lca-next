@@ -3,6 +3,7 @@ import ToolbarEditInfo from '@/pages/LifeCycleModels/Components/toolbar/eidtInfo
 import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { toText } from '../../../../../helpers/nodeToText';
 import { render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 jest.mock('@tiangong-lca/tidas-sdk', () => ({
@@ -45,6 +46,9 @@ jest.mock('@/pages/LifeCycleModels/Components/form', () => {
         <button type='button' onClick={() => onTabChange?.('complianceDeclarations')}>
           switch-compliance
         </button>
+        <button type='button' onClick={() => onTabChange?.('technology')}>
+          switch-technology
+        </button>
         <button
           type='button'
           onClick={() =>
@@ -64,6 +68,20 @@ jest.mock('@/pages/LifeCycleModels/Components/form', () => {
           }
         >
           set-compliance-value
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            formRef?.current?.setFieldValue(['lifeCycleModelInformation'], {
+              dataSetInformation: {
+                name: {
+                  en: 'generic-name',
+                },
+              },
+            })
+          }
+        >
+          set-generic-value
         </button>
         <button type='button' onClick={() => onData?.()}>
           sync-form-data
@@ -95,8 +113,9 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     const label = toText(title) || 'drawer';
     return (
       <section role='dialog' aria-label={label}>
@@ -161,6 +180,9 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
         </button>
         <button type='button' onClick={() => props.onUpdate(props.dataSource)}>
           update-latest
+        </button>
+        <button type='button' onClick={props.onCancel}>
+          cancel-refs
         </button>
       </div>
     );
@@ -248,6 +270,36 @@ jest.mock('@ant-design/pro-components', () => {
           void onFinish?.({ ...valuesRef.current });
         }}
       >
+        <button
+          type='button'
+          onClick={() =>
+            onValuesChange?.(
+              {},
+              setNestedValue(valuesRef.current, ['modellingAndValidation', 'validation'], {
+                review: [{ id: 'validation-review' }],
+              }),
+            )
+          }
+        >
+          trigger-validation-change
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            onValuesChange?.(
+              {},
+              setNestedValue(
+                valuesRef.current,
+                ['modellingAndValidation', 'complianceDeclarations'],
+                {
+                  compliance: [{ id: 'compliance-review' }],
+                },
+              ),
+            )
+          }
+        >
+          trigger-compliance-change
+        </button>
         {typeof children === 'function' ? children(valuesRef.current) : children}
         {submitter?.render?.() ?? null}
       </form>
@@ -418,6 +470,23 @@ describe('ToolbarEditInfo', () => {
     onData: jest.fn(),
     action: 'edit',
   };
+  const createModelDetail = (overrides: Record<string, any> = {}) => ({
+    success: true,
+    data: {
+      id: 'model-1',
+      version: '1.0',
+      stateCode: 10,
+      teamId: 'team-1',
+      json_tg: { xflow: { nodes: [], edges: [] }, submodels: [] },
+      json: {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+        },
+      },
+      ruleVerification: [],
+      ...overrides,
+    },
+  });
 
   it('validates missing nodes when checking data', async () => {
     const ref = React.createRef<any>();
@@ -604,6 +673,19 @@ describe('ToolbarEditInfo', () => {
     );
   });
 
+  it('handles validation tab value changes through the form value change handler', async () => {
+    render(<ToolbarEditInfo {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'switch-validation' }));
+    await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('validation'));
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-validation-change' }));
+
+    expect(screen.getByTestId('active-tab')).toHaveTextContent('validation');
+  });
+
   it('merges compliance tab data into reference updates', async () => {
     const ref = React.createRef<any>();
 
@@ -627,6 +709,70 @@ describe('ToolbarEditInfo', () => {
         modellingAndValidation: expect.objectContaining({
           complianceDeclarations: { compliance: [{ id: 'compliance-review' }] },
         }),
+      }),
+    );
+  });
+
+  it('handles compliance tab value changes through the form value change handler', async () => {
+    render(<ToolbarEditInfo {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'switch-compliance' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('active-tab')).toHaveTextContent('complianceDeclarations'),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-compliance-change' }));
+
+    expect(screen.getByTestId('active-tab')).toHaveTextContent('complianceDeclarations');
+  });
+
+  it('merges generic tab data into reference updates', async () => {
+    const ref = React.createRef<any>();
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'set-generic-value' }));
+    await userEvent.click(screen.getByRole('button', { name: 'sync-form-data' }));
+    await act(async () => {
+      await ref.current?.updateReferenceDescription({ id: 'model-1', version: '1.0' });
+    });
+
+    expect(mockGetRefsOfCurrentVersion).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        lifeCycleModelInformation: {
+          dataSetInformation: {
+            name: {
+              en: 'generic-name',
+            },
+          },
+        },
+      }),
+    );
+  });
+
+  it('falls back to an empty object when syncing a generic tab without form data', async () => {
+    const ref = React.createRef<any>();
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'switch-technology' }));
+    await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('technology'));
+    await userEvent.click(screen.getByRole('button', { name: 'sync-form-data' }));
+    await act(async () => {
+      await ref.current?.updateReferenceDescription({ id: 'model-1', version: '1.0' });
+    });
+
+    expect(mockGetRefsOfCurrentVersion).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        technology: {},
       }),
     );
   });
@@ -698,6 +844,27 @@ describe('ToolbarEditInfo', () => {
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
     expect(result).toEqual({ checkResult: false, unReview: [] });
+  });
+
+  it('falls back to empty id and version when the current model identity is missing', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} data={{}} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('', '');
+    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith('', expect.any(Object));
+    expect(mockGetProcessDetail).toHaveBeenCalledWith('', '');
+    expect(mockCheckReferences).toHaveBeenCalledTimes(1);
+    expect(result.checkResult).toBe(true);
   });
 
   it('blocks data check when the lifecycle model itself is already under review', async () => {
@@ -772,6 +939,83 @@ describe('ToolbarEditInfo', () => {
       'Referenced data is under review, cannot initiate another review',
     );
     expect(result.checkResult).toBe(false);
+  });
+
+  it('blocks review when referenced process or model versions are already under review', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'model-ref',
+          '@version': '1.0',
+          '@type': 'lifeCycleModel data set',
+          underReviewVersion: '2.0',
+        },
+        {
+          '@refObjectId': 'process-ref',
+          '@version': '3.0',
+          '@type': 'process data set',
+          underReviewVersion: '4.0',
+        },
+      ],
+    });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+
+    const renderedMessage = toText(mockAntdMessage.error.mock.calls.at(-1)?.[0]);
+    expect(renderedMessage).toContain(
+      'The model data set {id} already has version {underReviewVersion} under review.',
+    );
+    expect(renderedMessage).toContain(
+      'The process data set {id} already has version {underReviewVersion} under review.',
+    );
+    expect(result.checkResult).toBe(false);
+    expect(result.problemNodes).toHaveLength(2);
+  });
+
+  it('blocks review when referenced process or model versions are older than published TG versions', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'model-ref',
+          '@version': '1.0',
+          '@type': 'lifeCycleModel data set',
+          versionIsInTg: true,
+        },
+        {
+          '@refObjectId': 'process-ref',
+          '@version': '3.0',
+          '@type': 'process data set',
+          versionIsInTg: true,
+        },
+      ],
+    });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+
+    const renderedMessage = toText(mockAntdMessage.error.mock.calls.at(-1)?.[0]);
+    expect(renderedMessage).toContain('lower than the published version');
+    expect(renderedMessage).toContain('model {id}');
+    expect(renderedMessage).toContain('process {id}');
+    expect(result.checkResult).toBe(false);
+    expect(result.problemNodes).toHaveLength(2);
   });
 
   it('submits a review successfully through the imperative handle', async () => {
@@ -859,6 +1103,19 @@ describe('ToolbarEditInfo', () => {
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
   });
 
+  it('fails imperative review submission when no model detail has been checked yet', async () => {
+    const ref = React.createRef<any>();
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await act(async () => {
+      await ref.current?.submitReview([]);
+    });
+
+    expect(mockUpdateReviewsAfterCheckData).not.toHaveBeenCalled();
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed');
+  });
+
   it('surfaces process-instance validation issues separately from tab-level errors', async () => {
     const ref = React.createRef<any>();
     const tidasSdk = jest.requireMock('@tiangong-lca/tidas-sdk');
@@ -943,6 +1200,277 @@ describe('ToolbarEditInfo', () => {
       'Please complete the main product process data in the model results',
     );
     expect(result.checkResult).toBe(false);
+  });
+
+  it('shows tab-level validation errors and reopens the drawer for correction', async () => {
+    jest.useFakeTimers();
+    const ref = React.createRef<any>();
+    const tidasSdk = jest.requireMock('@tiangong-lca/tidas-sdk');
+    tidasSdk.createLifeCycleModel.mockImplementationOnce(() => ({
+      validateEnhanced: jest.fn(() => ({
+        success: false,
+        error: {
+          issues: [{ path: ['lifeCycleModelDataSet', 'lifeCycleModelInformation'] }],
+        },
+      })),
+    }));
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockDealModel.mockImplementation(
+      (
+        _modelDetail: any,
+        _unReview: any[],
+        _underReview: any[],
+        unRuleVerification: any[],
+        nonExistentRef: any[],
+      ) => {
+        nonExistentRef.push({
+          '@refObjectId': 'flow-1',
+          '@version': '1.0',
+          '@type': 'flow data set',
+          refTab: 'administrativeInformation',
+        });
+        unRuleVerification.push({
+          '@refObjectId': 'source-1',
+          '@version': '1.0',
+          '@type': 'source data set',
+          refTab: 'modellingAndValidation',
+        });
+      },
+    );
+    mockGetErrRefTab.mockImplementation((item: any) => item.refTab ?? null);
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'contact-1',
+          '@version': '1.0',
+          '@type': 'contact data set',
+          refTab: 'technology',
+        },
+      ],
+    });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+    await act(async () => {
+      jest.runAllTimers();
+    });
+    jest.useRealTimers();
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'lifeCycleModelInformation，administrativeInformation，modellingAndValidation，technology：Data check failed!',
+    );
+    expect(
+      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+    ).toBeInTheDocument();
+    expect(result.checkResult).toBe(false);
+  });
+
+  it('shows a sub-product error when a secondary process fails rule verification', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(
+      createModelDetail({
+        json_tg: {
+          xflow: { nodes: [], edges: [] },
+          submodels: [{ id: 'secondary-1', type: 'secondary' }],
+        },
+      }),
+    );
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+    mockDealModel.mockImplementation(
+      (_modelDetail: any, _unReview: any[], _underReview: any[], unRuleVerification: any[]) => {
+        unRuleVerification.push({
+          '@refObjectId': 'secondary-1',
+          '@version': '1.0',
+          '@type': 'process data set',
+        });
+      },
+    );
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'Please complete the sub product process data in the model results',
+    );
+    expect(result.checkResult).toBe(false);
+  });
+
+  it('adds secondary submodels to unreviewed refs when data check succeeds', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(
+      createModelDetail({
+        json_tg: {
+          xflow: { nodes: [], edges: [] },
+          submodels: [
+            { id: 'secondary-1', type: 'secondary' },
+            { id: 'main-1', type: 'main' },
+          ],
+        },
+      }),
+    );
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(result).toEqual({
+      checkResult: true,
+      problemNodes: [],
+      unReview: [
+        {
+          '@refObjectId': 'secondary-1',
+          '@type': 'process data set',
+          '@version': '1.0',
+        },
+      ],
+    });
+  });
+
+  it('falls back to an empty version when secondary submodels are added from a versionless model', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(
+      createModelDetail({
+        json_tg: {
+          xflow: { nodes: [], edges: [] },
+          submodels: [{ id: 'secondary-1', type: 'secondary' }],
+        },
+      }),
+    );
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} data={{ id: 'model-1' }} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(result.unReview).toEqual([
+      {
+        '@refObjectId': 'secondary-1',
+        '@type': 'process data set',
+        '@version': '',
+      },
+    ]);
+  });
+
+  it('closes the drawer from the icon button, header close, cancel action, and refs cancel', async () => {
+    mockGetRefsOfNewVersion.mockResolvedValue({
+      newRefs: [{ id: 'new-ref', version: '2.0.0' }],
+      oldRefs: [{ id: 'old-ref', version: '1.0.0' }],
+    });
+
+    render(<ToolbarEditInfo {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    expect(
+      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
+    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'cancel-refs' }));
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('falls back to a generic data-check error when validation issues have a non-string tab path', async () => {
+    const ref = React.createRef<any>();
+    const tidasSdk = jest.requireMock('@tiangong-lca/tidas-sdk');
+    tidasSdk.createLifeCycleModel.mockImplementationOnce(() => ({
+      validateEnhanced: jest.fn(() => ({
+        success: false,
+        error: {
+          issues: [{ path: ['lifeCycleModelDataSet', { tab: 'invalid' }] }],
+        },
+      })),
+    }));
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
+    expect(result.checkResult).toBe(false);
+  });
+
+  it('falls back to empty team and name metadata when submitting a review without them', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(
+      createModelDetail({
+        teamId: undefined,
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+      }),
+    );
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let checkResult;
+    await act(async () => {
+      checkResult = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+    mockAntdMessage.success.mockClear();
+
+    await act(async () => {
+      await ref.current?.submitReview(checkResult.unReview);
+    });
+
+    expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalledWith(
+      '',
+      {
+        id: 'model-1',
+        version: '1.0',
+        name: {},
+      },
+      'uuid-1',
+    );
   });
 
   it('hides the update-reference action outside edit mode', async () => {

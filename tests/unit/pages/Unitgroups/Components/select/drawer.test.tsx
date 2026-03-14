@@ -82,21 +82,33 @@ jest.mock('@/services/unitgroups/api', () => ({
 }));
 
 jest.mock('antd', () => {
+  const React = require('react');
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
-  const Button = ({ children, onClick, disabled, icon, type }: any) => (
+  const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => (
     <button
       type='button'
       data-button-type={type}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
+      {...rest}
     >
       {icon}
       {toText(children)}
     </button>
   );
-  const Tooltip = ({ children }: any) => <>{children}</>;
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
-    open ? (
+  const Tooltip = ({ title, children }: any) => {
+    const label = toText(title);
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children, {
+        'aria-label': children.props['aria-label'] ?? label,
+      });
+    }
+    return <>{children}</>;
+  };
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
+    if (!open) return null;
+    getContainer?.();
+    return (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
           <div>{extra}</div>
@@ -107,7 +119,8 @@ jest.mock('antd', () => {
         <div>{children}</div>
         <footer>{footer}</footer>
       </section>
-    ) : null;
+    );
+  };
   const Card = ({ children, tabList, activeTabKey, onTabChange }: any) => (
     <section>
       <div>
@@ -156,7 +169,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, columns = [] }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
     latestRequestRef.current = request;
@@ -184,13 +197,24 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <div>
         {rows.map((row) => (
-          <button
-            key={`${row.id}:${row.version}`}
-            type='button'
-            onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
-          >
-            {row.name}
-          </button>
+          <div key={`${row.id}:${row.version}`}>
+            {columns.map((column: any, index: number) => (
+              <div key={`${row.id}:${row.version}:${column.dataIndex ?? index}`}>
+                {column.render
+                  ? column.render(row[column.dataIndex], row, index)
+                  : row[column.dataIndex]}
+              </div>
+            ))}
+            <button
+              type='button'
+              data-selected={String(
+                (rowSelection?.selectedRowKeys ?? []).includes(`${row.id}:${row.version}`),
+              )}
+              onClick={() => rowSelection?.onChange?.([`${row.id}:${row.version}`])}
+            >
+              {row.name}
+            </button>
+          </div>
         ))}
       </div>
     );
@@ -231,6 +255,8 @@ describe('UnitgroupsSelectDrawer', () => {
       'data-active',
       'true',
     );
+    expect(screen.getByText('view unit-group-tg:1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('sup:kg')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
 
@@ -264,5 +290,126 @@ describe('UnitgroupsSelectDrawer', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
     );
+  });
+
+  it('supports icon trigger, tg search, reopen reset, and all close paths', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <UnitgroupsSelectDrawer
+        buttonType='icon'
+        buttonText='pick-unitgroup'
+        lang='en'
+        onData={onData}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /pick-unitgroup/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    mockGetUnitGroupTableAll.mockClear();
+    mockGetUnitGroupTablePgroongaSearch.mockClear();
+
+    await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'co',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /TianGong Data/i }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.type(screen.getByLabelText('tg'), 'alpha');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'tg',
+        'alpha',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'tg:alpha' }));
+    expect(screen.getByRole('button', { name: 'tg:alpha' })).toHaveAttribute(
+      'data-selected',
+      'true',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /pick-unitgroup/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'tg:alpha' })).toHaveAttribute(
+        'data-selected',
+        'false',
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /pick-unitgroup/i }));
+    await screen.findByRole('dialog', { name: /Selete Unit group/i });
+    await userEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+    );
+    expect(onData).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the default icon tooltip text and placeholder reference unit', async () => {
+    mockGetUnitGroupTableAll.mockImplementation(
+      async (_params: any, _sort: any, _lang: string, dataSource: string) => ({
+        data: [
+          {
+            id: `unit-group-${dataSource}`,
+            version: '1.0.0',
+            name: `${dataSource} unit group`,
+            refUnitName: undefined,
+            refUnitGeneralComment: undefined,
+            classification: 'classification',
+            modifiedAt: '2024-01-01',
+          },
+        ],
+        success: true,
+      }),
+    );
+
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='icon' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    expect(await screen.findByText('sup:-')).toBeInTheDocument();
   });
 });
