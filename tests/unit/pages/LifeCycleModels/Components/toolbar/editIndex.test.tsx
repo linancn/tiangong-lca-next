@@ -601,6 +601,14 @@ describe('ToolbarEdit', () => {
     updateNodeCb: mockUpdateNodeCb,
   };
 
+  const renderVisibleToolbarEdit = async (props: Record<string, unknown> = {}) => {
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} {...props} />);
+
+    expect(screen.getByTestId('spin')).toBeInTheDocument();
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0'));
+    await waitFor(() => expect(screen.queryByTestId('spin')).not.toBeInTheDocument());
+  };
+
   it('updates reference node target amounts via TargetAmount callback', async () => {
     render(<ToolbarEdit {...baseProps} />);
 
@@ -810,8 +818,8 @@ describe('ToolbarEdit', () => {
     });
   });
 
-  it('wires editor controls and keyboard shortcuts to graph actions', () => {
-    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+  it('wires editor controls and keyboard shortcuts to graph actions', async () => {
+    await renderVisibleToolbarEdit();
 
     expect(screen.getByTestId('control-items')).toHaveTextContent(
       'undo,redo,paste,duplicate,zoomOut,zoomTo,zoomIn,zoomToFit,zoomToOrigin,autoLayoutLR',
@@ -920,7 +928,7 @@ describe('ToolbarEdit', () => {
     mockGraphStoreState.nodes[0].selected = true;
     mockGraph.getSelectedCells.mockReturnValue([selectedCell]);
 
-    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+    await renderVisibleToolbarEdit();
 
     const copyHandler = mockGraph.bindKey.mock.calls.find(([keys]: [string[]]) =>
       keys.includes('meta+c'),
