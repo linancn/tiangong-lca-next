@@ -74,6 +74,15 @@ function getEdgeCapacity(
   return typeof val === 'number' ? val : defaultCap;
 }
 
+function validateNonNegativeAmounts(
+  amounts: Record<string, number>,
+  label: 'Supply' | 'Demand',
+): void {
+  if (Object.values(amounts).some((amount) => !Number.isFinite(amount) || amount < 0)) {
+    throw new Error(`${label} amounts must be non-negative`);
+  }
+}
+
 /**
  * buildCapacityGraph
  * zh-CN：构建最大流容量图：SOURCE→供给；需求→SINK；加入业务边容量（默认= max(totalSupply,totalDemand)）。
@@ -86,13 +95,8 @@ function buildCapacityGraph(
   edgeCapacities?: EdgeCapacities,
   tolerance: number = 1e-9,
 ): { capacity: CapacityGraph; source: string; sink: string; edgeList: Edge[] } {
-  // basic numeric validation
-  if (Object.values(supplies).some((a) => !Number.isFinite(a) || a < 0)) {
-    throw new Error('Supply amounts must be non-negative');
-  }
-  if (Object.values(demands).some((a) => !Number.isFinite(a) || a < 0)) {
-    throw new Error('Demand amounts must be non-negative');
-  }
+  validateNonNegativeAmounts(supplies, 'Supply');
+  validateNonNegativeAmounts(demands, 'Demand');
 
   const totalSupply = Object.values(supplies).reduce((a, b) => a + b, 0);
   const totalDemand = Object.values(demands).reduce((a, b) => a + b, 0);
@@ -339,6 +343,9 @@ export function allocateSupplyToDemand(
   remaining_demand: Record<string, number>;
   total_delivered: number;
 } {
+  validateNonNegativeAmounts(supplies, 'Supply');
+  validateNonNegativeAmounts(demands, 'Demand');
+
   const absTol = Number.isFinite(opts?.tolerance ?? NaN) ? Math.max(0, opts!.tolerance!) : 1e-9;
   const relTol = Number.isFinite(opts?.relTolerance ?? NaN) ? Math.max(0, opts!.relTolerance!) : 0;
 

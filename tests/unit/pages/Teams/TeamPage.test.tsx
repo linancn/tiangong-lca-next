@@ -732,6 +732,34 @@ describe('Team page validations', () => {
     expect(mockHistory.replace).not.toHaveBeenCalled();
   });
 
+  it('logs thrown submit errors from team creation', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      setWindowLocation('?action=create');
+      mockCreateTeamMessage.mockRejectedValueOnce(new Error('create crashed'));
+
+      renderWithProviders(<Team />);
+
+      fireEvent.change(screen.getByLabelText('Team Name'), {
+        target: { value: 'Exploding Team' },
+      });
+      fireEvent.change(screen.getByLabelText('Team Description'), {
+        target: { value: 'Exploding description' },
+      });
+
+      fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+      await waitFor(() => {
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(Error));
+      });
+      expect(message.success).not.toHaveBeenCalled();
+      expect(mockHistory.replace).not.toHaveBeenCalled();
+    } finally {
+      consoleLogSpy.mockRestore();
+    }
+  });
+
   it('loads existing team details and submits edit updates successfully', async () => {
     setWindowLocation('?action=edit');
     mockGetUserRoles.mockResolvedValueOnce({
