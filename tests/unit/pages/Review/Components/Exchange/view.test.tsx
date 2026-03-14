@@ -187,4 +187,34 @@ describe('ReviewExchangeView', () => {
         .some((element) => element.textContent?.includes('Exchange comment')),
     ).toBe(true);
   });
+
+  it('renders log-normal distribution details, fallback labels, and closes the drawer', async () => {
+    render(
+      <ProcessExchangeView
+        id='ex-1'
+        data={[
+          {
+            ...baseExchange,
+            functionType: 'unknown-function',
+            dataSourceType: 'unknown-source',
+            dataDerivationTypeStatus: 'unknown-status',
+            uncertaintyDistributionType: 'log-normal',
+            relativeStandardDeviation95In: 1.25,
+            quantitativeReference: false,
+          },
+        ]}
+        lang='en'
+        buttonType='icon'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view-icon/i }));
+
+    expect(screen.getByText('1.25')).toBeInTheDocument();
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getByText('quantitative-no')).toBeInTheDocument();
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });

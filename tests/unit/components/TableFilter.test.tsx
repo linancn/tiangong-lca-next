@@ -104,6 +104,12 @@ describe('TableFilter Component', () => {
       'Reviewing',
       'Reviewed',
     ]);
+    expect(options.map((option) => option.getAttribute('title'))).toEqual([
+      'Type of review',
+      'Unreviewed',
+      'Reviewing',
+      'Reviewed',
+    ]);
   });
 
   it('notifies about selection changes using the provided callback', () => {
@@ -115,6 +121,18 @@ describe('TableFilter Component', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(0);
     expect(select).toHaveValue('0');
+  });
+
+  it('maps reviewing and reviewed options back to numeric state codes', () => {
+    const { onChange } = renderComponent();
+    const select = screen.getByRole('combobox') as HTMLSelectElement;
+
+    fireEvent.change(select, { target: { value: '20' } });
+    fireEvent.change(select, { target: { value: '100' } });
+
+    expect(onChange).toHaveBeenNthCalledWith(1, 20);
+    expect(onChange).toHaveBeenNthCalledWith(2, 100);
+    expect(select).toHaveValue('100');
   });
 
   it('respects the disabled state and prevents interaction', () => {

@@ -122,4 +122,24 @@ describe('ProcessReviewView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to raw review types and dash placeholders when values are missing', () => {
+    render(
+      <ReviewItemView
+        data={[
+          {
+            '@type': 'peer-review',
+            'common:scope': [],
+            'common:dataQualityIndicators': {},
+          },
+          {},
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('peer-review')).toBeInTheDocument();
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('scope-view')).toHaveLength(2);
+    expect(screen.getAllByTestId('dqi-view')).toHaveLength(2);
+  });
 });

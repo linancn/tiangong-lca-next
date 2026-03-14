@@ -388,4 +388,49 @@ describe('LcaSolveToolbar component', () => {
       expect(message.error).toHaveBeenCalledWith('Calculation request failed: boom');
     });
   });
+
+  it('shows an error when loading the process list returns an unsuccessful response', async () => {
+    mockListMyProcessesForLca.mockResolvedValueOnce({
+      success: false,
+      data: [],
+    });
+
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to load your process list');
+    });
+  });
+
+  it('requires a valid process reference in single-demand mode before submitting', async () => {
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByTestId('field-process_ref'), {
+      target: { value: 'invalid-ref' },
+    });
+    fireEvent.click(screen.getByTestId('lca-modal-ok'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Please select a process');
+    });
+    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
+  });
+
+  it('closes the modal from the cancel action when not submitting', async () => {
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    fireEvent.click(screen.getByTestId('lca-modal-cancel'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('lca-modal')).not.toBeInTheDocument();
+    });
+  });
 });

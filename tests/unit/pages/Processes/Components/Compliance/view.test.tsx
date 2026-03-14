@@ -100,4 +100,23 @@ describe('ProcessComplianceView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to dash placeholders when mapped compliance values are missing', () => {
+    render(
+      <ComplianceItemView
+        data={[
+          {
+            'common:approvalOfOverallCompliance': undefined,
+            'common:nomenclatureCompliance': undefined,
+            'common:methodologicalCompliance': undefined,
+            'common:reviewCompliance': undefined,
+            'common:documentationCompliance': undefined,
+            'common:qualityCompliance': undefined,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+  });
 });

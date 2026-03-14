@@ -328,6 +328,31 @@ describe('Login page', () => {
     expect(screen.getByRole('button', { name: 'Sign Up' })).toBeDisabled();
   });
 
+  it('shows the register validation alert when sign-up returns a generic error status', async () => {
+    mockSignUp.mockResolvedValueOnce({ status: 'error', type: 'register' });
+
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Validation email failed to send.');
+    expect(mockMessageApi.open).not.toHaveBeenCalled();
+  });
+
+  it('shows a generic login failure toast when the login request throws', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('network down'));
+
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => {
+      expect(mockMessageApi.error).toHaveBeenCalledWith('Login failed, please try again!');
+    });
+    expect(mockHistory.push).not.toHaveBeenCalled();
+  });
+
   it('toggles dark mode from the top actions and persists the updated preference', async () => {
     render(<LoginPage />);
 

@@ -281,6 +281,28 @@ describe('ManageSystem page', () => {
     });
   });
 
+  it('closes the add-member modal without reloading when the user cancels', async () => {
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({ user_id: 'owner-1', role: 'owner' });
+
+    render(<ManageSystemPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+
+    await waitFor(() => {
+      expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+    });
+    expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(1);
+  });
+
   it('allows owners to promote, demote, and remove members from the member table', async () => {
     mockGetSystemUserRoleApi.mockResolvedValueOnce({ user_id: 'owner-1', role: 'owner' });
 
@@ -349,5 +371,19 @@ describe('ManageSystem page', () => {
     await waitFor(() => {
       expect(mockGetManageSystemState().message.error).toHaveBeenCalledTimes(2);
     });
+  });
+
+  it('logs auth-loading failures and keeps rendering the teams tab', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetSystemUserRoleApi.mockRejectedValueOnce(new Error('auth failed'));
+
+    render(<ManageSystemPage />);
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
+    expect(screen.getByTestId('all-teams')).toHaveTextContent('manageSystem:none');
+    consoleErrorSpy.mockRestore();
   });
 });

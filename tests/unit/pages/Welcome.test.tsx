@@ -6,6 +6,8 @@ import { getTeams } from '@/services/teams/api';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
+let mockLocale = 'en-US';
+
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
   PageContainer: ({ children }: any) => <div data-testid='page-container'>{children}</div>,
@@ -20,7 +22,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
 }));
@@ -77,6 +79,7 @@ describe('Welcome page', () => {
     jest.clearAllMocks();
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
+    mockLocale = 'en-US';
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => {
       if (Array.isArray(value)) {
@@ -152,5 +155,24 @@ describe('Welcome page', () => {
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(2));
     expect(mockGetThumbFileUrls).not.toHaveBeenCalled();
     expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
+  });
+
+  it('switches to localized dark-mode TIDAS assets for zh locales', async () => {
+    const user = userEvent.setup();
+    mockLocale = 'zh-CN';
+    mockGetLang.mockReturnValue('zh');
+    localStorage.setItem('isDarkMode', 'true');
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TIDAS 数据体系架构' }));
+
+    const tidasImage = await screen.findByAltText(/天工LCA数据平台/);
+    expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN-dark.svg');
+    expect(screen.getByRole('link', { name: '了解更多' })).toHaveAttribute(
+      'href',
+      'https://tidas.tiangong.earth/docs/intro',
+    );
   });
 });

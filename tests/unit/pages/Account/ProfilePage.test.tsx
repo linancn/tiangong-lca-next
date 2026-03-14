@@ -596,6 +596,54 @@ describe('Account profile page (unit)', () => {
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Invalid current password'));
   });
 
+  it('shows specific feedback when password change reports a missing user', async () => {
+    mockChangePassword.mockResolvedValueOnce({
+      status: 'error',
+      message: 'User not found',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('User not found'));
+  });
+
+  it('falls back to backend text when password change returns an unknown business error', async () => {
+    mockChangePassword.mockResolvedValueOnce({
+      status: 'error',
+      message: 'Password policy rejected',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Password policy rejected'));
+  });
+
   it('changes email successfully after cognito update', async () => {
     const user = userEvent.setup();
 
@@ -646,6 +694,29 @@ describe('Account profile page (unit)', () => {
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Email already exists'));
+  });
+
+  it('shows a generic error when email change throws unexpectedly', async () => {
+    mockCognitoChangeEmail.mockRejectedValueOnce(new Error('cognito email failed'));
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+
+    await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
+    await user.type(screen.getByLabelText('Confirm New Email'), 'alice.next@example.com');
+
+    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('An error occurred while changing the email.'),
+    );
+    expect(mockChangeEmail).not.toHaveBeenCalled();
   });
 
   it('generates an API key after validating credentials successfully', async () => {
@@ -728,5 +799,34 @@ describe('Account profile page (unit)', () => {
       ),
     );
     expect(screen.queryByLabelText('API Key')).not.toBeInTheDocument();
+  });
+
+  it('clears the generated API key when leaving the API key tab', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Make sure to copy it to a secure location. This key will not be shown again.',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Basic Information' }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText(
+          'Make sure to copy it to a secure location. This key will not be shown again.',
+        ),
+      ).not.toBeInTheDocument();
+    });
   });
 });

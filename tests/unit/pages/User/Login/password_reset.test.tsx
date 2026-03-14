@@ -55,9 +55,10 @@ jest.mock('@umijs/max', () => {
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
-  const LoginForm = ({ children, onFinish, submitter, fields }: any) => (
+  const LoginForm = ({ children, onFinish, submitter, fields, logo }: any) => (
     <div data-testid='login-form'>
       <div data-testid='fields'>{JSON.stringify(fields)}</div>
+      <div data-testid='logo'>{String(logo ?? '')}</div>
       {children}
       <button
         type='button'
@@ -139,6 +140,15 @@ jest.mock('@/components', () => ({
   Footer: () => <div data-testid='footer' />,
 }));
 
+jest.mock('@/pages/User/Login/Components/LoginTopActions', () => ({
+  __esModule: true,
+  default: ({ onDarkModeToggle, isDarkMode }: any) => (
+    <button type='button' data-testid='toggle-dark-mode' onClick={onDarkModeToggle}>
+      {isDarkMode ? 'dark' : 'light'}
+    </button>
+  ),
+}));
+
 const PasswordReset = require('@/pages/User/Login/password_reset').default;
 const umiModule = require('umi');
 if (umiModule.useIntl) {
@@ -155,6 +165,8 @@ umiModule.default = { ...(umiModule.default || {}), useIntl: umiModule.useIntl }
 describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
+    localStorage.setItem('isDarkMode', 'false');
     mockSetPassword.mockResolvedValue({ status: 'ok' });
     mockGetCurrentUser.mockResolvedValue({ userid: 'u1', email: 'user@test.com' });
   });
@@ -180,6 +192,25 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
         duration: 3,
       });
       expect(mockHistory.push).toHaveBeenCalledWith('/');
+    });
+  });
+
+  it('hydrates the email field payload and toggles dark mode branding', async () => {
+    render(<PasswordReset />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('fields')).toHaveTextContent('user@test.com');
+    });
+
+    const initialLogo = screen.getByTestId('logo').textContent;
+    expect(initialLogo).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId('toggle-dark-mode'));
+
+    await waitFor(() => {
+      expect(localStorage.getItem('isDarkMode')).toBe('true');
+      expect(screen.getByTestId('logo').textContent).not.toBe(initialLogo);
+      expect(screen.getByTestId('toggle-dark-mode')).toHaveTextContent('dark');
     });
   });
 

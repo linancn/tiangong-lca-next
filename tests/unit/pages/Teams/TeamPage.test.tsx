@@ -451,6 +451,7 @@ jest.mock('@ant-design/pro-components', () => {
 import Team from '@/pages/Teams';
 import { createTeamMessage, getUserRoles } from '@/services/roles/api';
 import { editTeamMessage, getTeamMembersApi, getTeamMessageApi } from '@/services/teams/api';
+import { history } from '@umijs/max';
 import { message } from 'antd';
 import { fireEvent, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
@@ -459,6 +460,7 @@ const mockGetUserRoles = getUserRoles as jest.MockedFunction<any>;
 const mockGetTeamMessageApi = getTeamMessageApi as jest.MockedFunction<any>;
 const mockEditTeamMessage = editTeamMessage as jest.MockedFunction<any>;
 const mockGetTeamMembersApi = getTeamMembersApi as jest.MockedFunction<any>;
+const mockHistory = history as { replace: jest.Mock; push: jest.Mock };
 
 const setWindowLocation = (search: string) => {
   const path = `/team${search.startsWith('?') ? search : `?${search}`}`;
@@ -532,5 +534,97 @@ describe('Team page validations', () => {
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('Failed to get details, please refresh!');
     });
+  });
+
+  it('creates a team successfully and redirects back into edit mode', async () => {
+    setWindowLocation('?action=create');
+    const originalLocation = window.location;
+    const reloadSpy = jest.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...window.location,
+        reload: reloadSpy,
+      },
+    });
+    mockCreateTeamMessage.mockResolvedValueOnce(null);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Created Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Fresh team description' },
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockCreateTeamMessage).toHaveBeenCalledWith(
+        'unit-test-team-id',
+        expect.objectContaining({
+          title: [{ '#text': 'Created Team', '@xml:lang': 'en' }],
+          description: [{ '#text': 'Fresh team description', '@xml:lang': 'en' }],
+        }),
+        undefined,
+        undefined,
+      );
+    });
+    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(mockHistory.replace).toHaveBeenCalledWith('/team?action=edit');
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
+  it('loads existing team details and submits edit updates successfully', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockEditTeamMessage.mockResolvedValueOnce({ error: null } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockEditTeamMessage).toHaveBeenCalledWith(
+        'team-123',
+        expect.objectContaining({
+          title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+          description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+          lightLogo: 'logos/light.png',
+          darkLogo: 'logos/dark.png',
+        }),
+        -1,
+        true,
+      );
+    });
+    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
   });
 });

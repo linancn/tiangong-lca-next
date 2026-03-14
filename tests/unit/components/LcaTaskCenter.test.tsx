@@ -226,4 +226,113 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
   });
+
+  it('renders failed, building, and submitting summaries with their status labels', () => {
+    const nowSpy = jest
+      .spyOn(Date, 'now')
+      .mockReturnValue(new Date('2026-03-12T12:10:00.000Z').valueOf());
+    mockTasks = [
+      {
+        id: 'task-build',
+        sequence: 3,
+        mode: 'single',
+        scope: 'team',
+        state: 'running',
+        phase: 'building_snapshot',
+        message: 'build message',
+        createdAt: '2026-03-12T12:09:59.500Z',
+        updatedAt: '2026-03-12T12:10:00.000Z',
+        buildJobId: 'build-3',
+        phaseTimeline: [
+          {
+            phase: 'building_snapshot',
+            startedAt: '2026-03-12T12:09:59.500Z',
+          },
+        ],
+      },
+      {
+        id: 'task-submit',
+        sequence: 4,
+        mode: 'single',
+        scope: 'private',
+        state: 'running',
+        phase: 'submitting',
+        message: 'submit message',
+        createdAt: '2026-03-12T12:09:00.000Z',
+        updatedAt: '2026-03-12T12:10:00.000Z',
+        phaseTimeline: [
+          {
+            phase: 'submitting',
+            startedAt: '2026-03-12T12:09:00.000Z',
+          },
+        ],
+      },
+      {
+        id: 'task-failed',
+        sequence: 5,
+        mode: 'all_unit',
+        scope: 'prod',
+        state: 'failed',
+        phase: 'failed',
+        message: 'failed message',
+        error: 'Server failure',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:01:00.000Z',
+        phaseTimeline: [],
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+
+    expect(screen.getByTestId('badge-count')).toHaveTextContent('2');
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getByText('Building snapshot (build-3)')).toBeInTheDocument();
+    expect(screen.getByText('Submitting task')).toBeInTheDocument();
+    expect(screen.getByText('Task failed')).toBeInTheDocument();
+    expect(screen.getByText('Building snapshot')).toBeInTheDocument();
+    expect(screen.getByText('Submitting')).toBeInTheDocument();
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'Elapsed 500 ms'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText((_, element) => element?.textContent === 'Elapsed 1m 0s').length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('Server failure')).toBeInTheDocument();
+    nowSpy.mockRestore();
+  });
+
+  it('shows completed tasks without result ids and falls back to raw invalid timestamps', () => {
+    mockTasks = [
+      {
+        id: 'task-no-result',
+        sequence: 6,
+        mode: 'single',
+        scope: 'demo',
+        state: 'completed',
+        phase: 'completed',
+        message: 'completed without result',
+        createdAt: 'not-a-date',
+        updatedAt: 'still-not-a-date',
+        phaseTimeline: [],
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(screen.getByText('Stage duration')).toBeInTheDocument();
+    expect(screen.getByText('Total 0 ms')).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'created_at: not-a-date'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'updated_at: still-not-a-date'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'Elapsed 0 ms'),
+    ).toBeInTheDocument();
+  });
 });

@@ -60,6 +60,9 @@ jest.mock('@ant-design/pro-components', () => ({
       <button type='button' onClick={() => rowSelection?.onSelectAll?.(true, dataSource)}>
         select-all
       </button>
+      <button type='button' onClick={() => rowSelection?.onSelectAll?.(false, dataSource)}>
+        unselect-all
+      </button>
       {dataSource.map((row: any) => {
         const selected = rowSelection?.selectedRowKeys?.includes(row.key);
         return (
@@ -148,8 +151,11 @@ describe('RefsOfNewVersionDrawer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Keep current versions' }));
     expect(onKeep).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'close-icon' }));
     expect(onCancel).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+    expect(onCancel).toHaveBeenCalledTimes(2);
   });
 
   it('replaces older selections with newer rows that share the same id before updating', () => {
@@ -197,5 +203,45 @@ describe('RefsOfNewVersionDrawer', () => {
       expect.objectContaining({ key: 'contact-v2', id: 'contact-1' }),
       expect.objectContaining({ key: 'source-v1', id: 'source-1' }),
     ]);
+  });
+
+  it('removes selections when a row is toggled off again', () => {
+    render(
+      <RefsOfNewVersionDrawer
+        open
+        dataSource={rows}
+        onCancel={jest.fn()}
+        onKeep={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    const updateButton = screen.getByRole('button', { name: 'Update to latest versions' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-source-v1' }));
+    expect(updateButton).not.toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'unselect-source-v1' }));
+    expect(updateButton).toBeDisabled();
+  });
+
+  it('clears all selections when select-all is undone', () => {
+    render(
+      <RefsOfNewVersionDrawer
+        open
+        dataSource={rows}
+        onCancel={jest.fn()}
+        onKeep={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    const updateButton = screen.getByRole('button', { name: 'Update to latest versions' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-all' }));
+    expect(updateButton).not.toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'unselect-all' }));
+    expect(updateButton).toBeDisabled();
   });
 });
