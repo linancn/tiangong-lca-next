@@ -5,16 +5,16 @@
 ## Current Baseline
 
 - Latest verified full run: `npm run test:coverage`
-- Current full run footprint: 276 suites / 2350 tests
+- Current full run footprint: 276 suites / 2481 tests
 - Current Jest coverage (full run):
-  - Statements: 91.48%
-  - Branches: 78.17%
-  - Functions: 87.36%
-  - Lines: 91.78%
-- Current file inventory: 300 tracked source files, 115 fully covered, 185 still incomplete.
-- Current branch buckets: `<50 = 2`, `50-70 = 46`, `70-90 = 101`, `90-<100 = 25`.
+  - Statements: 93.93%
+  - Branches: 82.32%
+  - Functions: 91.09%
+  - Lines: 94.26%
+- Current file inventory: 300 tracked source files, 140 fully covered, 160 still incomplete.
+- Current branch buckets: `<50 = 0`, `50-70 = 24`, `70-90 = 101`, `90-<100 = 24`.
 - Current enforced threshold in `jest.config.cjs`: 50% global (branches/functions/lines/statements).
-- Immediate issue: **the suite is well past gate recovery; the strategic problem is now systematic closure of the ordered file queue, with page-layer clusters still dominating the remaining debt**.
+- Immediate issue: **the suite is well past gate recovery and has fully cleared the `<50% branch` bucket; the strategic problem is now systematic closure of the `50%-70%` bucket and the remaining branch-only gaps in page-layer clusters**.
 
 ## Principles
 
@@ -22,6 +22,7 @@
 - Use the coverage report queue as the ordering source of truth; do not re-rank by subjective “highest ROI” judgments.
 - Execute one queue file at a time and try to close it to `100/100/100/100` before moving on.
 - Allowed strategy exceptions are narrow: batch adjacent files that share the same mock/fixture/test harness, and fix shared test-infrastructure blockers first only when they block the current file or its immediate neighbors.
+- If a queued branch is proven unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests.
 - Reuse `tests/helpers/**` and `tests/mocks/**`; avoid one-off mock wiring.
 - Keep test additions scoped and deterministic.
 - Always run `npm run lint` after test changes.
@@ -31,22 +32,23 @@
 
 - [x] Auth reset/forgot flows are covered in unit tests.
 - [x] Core graph/context/request/supabase bootstrap tests are in place.
-- [x] Recover branch coverage above the global threshold and grow a meaningful safety buffer (current branch coverage: 78.17%).
+- [x] Recover branch coverage above the global threshold and grow a meaningful safety buffer (current branch coverage: 82.32%).
 - [x] Expand tests around `src/pages/Utils/index.tsx`, `src/pages/Utils/review.tsx`, and `src/pages/Utils/updateReference.tsx`.
 - [x] Cover contact/source/flow/flowproperty selector and drawer workflows plus lifecycle-model view/edit toolbars and the prior process/review workflow hotspots.
 - [x] Add direct coverage for `Flows/Components/Property/*`, login top actions, lifecycle toolbar utility helpers, required-fields maps, and add-member modals.
 - [x] Replace the old monolithic coverage dump workflow with a queue-first default report plus `--full` full-queue escape hatch.
-- [ ] Close the two remaining `<50% branch` files in strict queue order: `src/components/TableFilter/index.tsx` then `src/pages/Unitgroups/Components/edit.tsx`.
-- [ ] Clear the current `50%-70%` bucket in queue order, starting with the head snapshot in `docs/agents/test_todo_list.md`.
+- [x] Close the last `<50% branch` queue files in strict order (`src/components/TableFilter/index.tsx` and `src/pages/Unitgroups/Components/edit.tsx`).
+- [ ] Clear the current `50%-70%` bucket in strict queue order, starting with `src/pages/Unitgroups/Components/Unit/reference.tsx`, `src/components/LocationTextItem/form.tsx`, and `src/pages/Flows/index.tsx`.
+- [ ] Burn down the `line=100` but `branch<100` cluster in queue order, using dead-branch cleanup when behaviorally safe.
 - [ ] Continue page-cluster closure with the largest shared-fixture groups: `src/pages/Review/Components`, `src/pages/LifeCycleModels/Components`, `src/pages/Processes/Components`, and `src/pages/Unitgroups/Components`.
 - [ ] Continue service closure in queue order, led by `src/services/lifeCycleModels/util.ts`, `src/services/general/api.ts`, `src/services/lifeCycleModels/api.ts`, and `src/services/lifeCycleModels/util_allocate_supply_demand.ts`.
-- [ ] Push from the current 78.17% branch baseline toward complete closure by repeatedly shrinking the ordered queue rather than redefining priorities.
+- [ ] Push from the current 82.32% branch baseline toward complete closure by repeatedly shrinking the ordered queue rather than redefining priorities.
 
 ## Execution Loop
 
 1. Take the first file from the current ordered closure queue in `docs/agents/test_todo_list.md`.
 2. If its immediate neighbors share the same mock/fixture/test harness, batch them under the same setup work; otherwise stay on the single file.
-3. Add focused tests for uncovered branches and missing orchestration paths.
+3. Add focused tests for uncovered branches and missing orchestration paths; if the remaining branch is provably dead, remove it without changing behavior and continue.
 4. Run focused suite via `npm run test:ci -- <pattern> --runInBand --testTimeout=... --no-coverage`.
 5. Run `npm run lint`.
 6. Re-run full coverage (`npm run test:coverage`).

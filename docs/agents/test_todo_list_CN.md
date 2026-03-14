@@ -17,39 +17,47 @@
 最新已验证全量覆盖率运行（`npm run test:coverage`）：
 
 - Test suites：276 passed
-- Tests：2350 passed
+- Tests：2481 passed
 - 覆盖率：
-  - Statements: 91.48% (16840/18408)
-  - Branches: 78.17% (8394/10738)
-  - Functions: 87.36% (3424/3919)
-  - Lines: 91.78% (16130/17573)
+  - Statements: 93.93% (17286/18402)
+  - Branches: 82.32% (8819/10712)
+  - Functions: 91.09% (3569/3918)
+  - Lines: 94.26% (16559/17567)
 - 相比上一版已记录基线的增量：
-  - Test suites：+1
-  - Tests：+102
-  - Statements：+6.65
-  - Branches：+6.57
-  - Functions：+7.29
-  - Lines：+6.63
+  - Test suites：+0
+  - Tests：+131
+  - Statements：+2.45
+  - Branches：+4.15
+  - Functions：+3.73
+  - Lines：+2.48
 - 当前全局 branch 门槛：50%
-- 门禁状态：**已通过**（高于门槛 28.17 个百分点）
+- 门禁状态：**已通过**（高于门槛 32.32 个百分点）
+
+## 最近收口增量
+
+- 已全满文件：`115 -> 140`（`+25`）
+- 仍有缺口的文件：`185 -> 160`（`-25`）
+- `<50% branch` 桶：`2 -> 0`
+- `50%-70% branch` 桶：`46 -> 24`
+- 最近清到 `100/100/100/100` 的队头文件包括 `TableFilter`、`FileViewer/upload`、`Unitgroups edit`、`Processes edit`、`Processes Exchange create/edit/select`、`Flows Property create/edit`、`ReviewForm/view`、`Processes Compliance/view`。
 
 ## 全文件库存
 
 同一轮运行得到的全仓逐文件状态：
 
 - 追踪的源码文件：300
-- 已全满文件（`100/100/100/100`）：115
-- 仍有缺口的文件：185
+- 已全满文件（`100/100/100/100`）：140
+- 仍有缺口的文件：160
 - Branch 分桶：
-  - `<50`：2 个文件
-  - `50-70`：46 个文件
+  - `<50`：0 个文件
+  - `50-70`：24 个文件
   - `70-90`：101 个文件
-  - `90-<100`：25 个文件
-- `line=100` 但 `branch<100`：49 个文件
+  - `90-<100`：24 个文件
+- `line=100` 但 `branch<100`：43 个文件
 - 分类平均值：
-  - components：`96.81%` lines / `85.69%` branches / `95.08%` functions
+  - components：`96.81%` lines / `89.64%` branches / `95.08%` functions
   - services：`95.90%` lines / `86.72%` branches / `97.17%` functions
-  - pages：`94.27%` lines / `81.47%` branches / `87.48%` functions
+  - pages：`96.15%` lines / `87.70%` branches / `90.81%` functions
   - others：`99.53%` lines / `98.96%` branches / `99.45%` functions
 
 ## 报告工作流
@@ -72,42 +80,43 @@
 3. `node scripts/test-coverage-report.js --full` 里的完整队列是所有剩余文件的事实来源；下方列表只是一份当前队头快照。
 4. 允许的成批例外：当前文件和紧邻文件共享同一套 mock/fixture/test harness 时，可围绕最早的那个文件一起收口。
 5. 允许的基础设施例外：如果共享测试 blocker 卡住当前文件或紧邻文件，可先修 blocker，再恢复队列顺序。
-6. 需要保留 wrapper/page 层编排测试，不能只靠子组件覆盖抬数。
+6. 如果剩余分支被证明不可达或业务上无效，优先在不改变行为的前提下删除死分支，而不是为了抬覆盖率去编造测试。
+7. 需要保留 wrapper/page 层编排测试，不能只靠子组件覆盖抬数。
 
 ## 当前有序清零队列（队头快照）
 
-- [ ] `src/components/TableFilter/index.tsx` — stmt `100.00%`，line `100.00%`，branch `0.00%`，func `100.00%`
-- [ ] `src/pages/Unitgroups/Components/edit.tsx` — stmt `70.27%`，line `71.50%`，branch `46.91%`，func `56.75%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/Exchange/index.tsx` — stmt `92.85%`，line `92.85%`，branch `50.00%`，func `75.00%`
-- [ ] `src/components/FileViewer/upload.tsx` — stmt `100.00%`，line `100.00%`，branch `50.00%`，func `100.00%`
-- [ ] `src/pages/Review/Components/ReviewProgress.tsx` — stmt `74.13%`，line `75.29%`，branch `50.43%`，func `82.92%`
-- [ ] `src/pages/Processes/index.tsx` — stmt `75.51%`，line `75.52%`，branch `51.51%`，func `80.00%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewInfo.tsx` — stmt `94.28%`，line `93.75%`，branch `52.63%`，func `81.81%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortView.tsx` — stmt `97.72%`，line `97.56%`，branch `52.94%`，func `94.44%`
-- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/ioPortSelect.tsx` — stmt `98.00%`，line `97.87%`，branch `54.54%`，func `95.00%`
-- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx` — stmt `87.12%`，line `86.77%`，branch `54.83%`，func `83.78%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx` — stmt `72.30%`，line `72.42%`，branch `54.96%`，func `56.81%`
-- [ ] `src/pages/Processes/Components/edit.tsx` — stmt `71.26%`，line `71.60%`，branch `56.14%`，func `58.92%`
-- [ ] `src/pages/Unitgroups/Components/select/drawer.tsx` — stmt `81.15%`，line `80.59%`，branch `56.25%`，func `57.89%`
-- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/ioPortView.tsx` — stmt `97.61%`，line `97.43%`，branch `57.14%`，func `94.11%`
-- [ ] `src/pages/Processes/Components/Exchange/edit.tsx` — stmt `79.48%`，line `78.66%`，branch `58.53%`，func `51.85%`
-- [ ] `src/pages/Processes/Components/Exchange/create.tsx` — stmt `77.14%`，line `76.47%`，branch `58.82%`，func `45.83%`
-- [ ] `src/pages/Processes/Components/Exchange/select.tsx` — stmt `91.54%`，line `91.30%`，branch `60.00%`，func `72.72%`
-- [ ] `src/pages/Flows/Components/Property/edit.tsx` — stmt `91.83%`，line `91.30%`，branch `60.00%`，func `75.00%`
-- [ ] `src/pages/Flows/Components/Property/create.tsx` — stmt `97.43%`，line `97.29%`，branch `60.00%`，func `92.30%`
-- [ ] `src/pages/Review/Components/ReviewForm/view.tsx` — stmt `100.00%`，line `100.00%`，branch `60.00%`，func `100.00%`
+- [ ] `src/pages/Unitgroups/Components/Unit/reference.tsx` — stmt `100.00%`，line `100.00%`，branch `62.50%`，func `100.00%`
+- [ ] `src/components/LocationTextItem/form.tsx` — stmt `100.00%`，line `100.00%`，branch `63.63%`，func `100.00%`
+- [ ] `src/pages/Flows/index.tsx` — stmt `79.72%`，line `80.28%`，branch `64.51%`，func `61.29%`
+- [ ] `src/pages/LifeCycleModels/index.tsx` — stmt `87.35%`，line `87.20%`，branch `64.70%`，func `89.47%`
+- [ ] `src/pages/Processes/Components/form.tsx` — stmt `84.73%`，line `85.27%`，branch `64.86%`，func `70.73%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewIndex.tsx` — stmt `92.46%`，line `91.72%`，branch `65.00%`，func `86.48%`
+- [ ] `src/pages/Sources/Components/select/description.tsx` — stmt `100.00%`，line `100.00%`，branch `65.00%`，func `100.00%`
+- [ ] `src/pages/Flowproperties/Components/form.tsx` — stmt `100.00%`，line `100.00%`，branch `65.21%`，func `100.00%`
+- [ ] `src/pages/Processes/Components/create.tsx` — stmt `83.45%`，line `84.61%`，branch `65.27%`，func `56.66%`
+- [ ] `src/components/LevelTextItem/form.tsx` — stmt `77.90%`，line `77.64%`，branch `65.57%`，func `77.77%`
+- [ ] `src/pages/Unitgroups/Components/select/formMini.tsx` — stmt `94.73%`，line `94.59%`，branch `65.71%`，func `83.33%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` — stmt `98.81%`，line `99.15%`，branch `65.85%`，func `96.19%`
+- [ ] `src/pages/Processes/Components/view.tsx` — stmt `84.55%`，line `84.91%`，branch `66.51%`，func `80.00%`
+- [ ] `src/pages/Contacts/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
+- [ ] `src/pages/Processes/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
+- [ ] `src/pages/Processes/Components/Exchange/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
+- [ ] `src/services/auth/cognito.ts` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
+- [ ] `src/services/auth/password.ts` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
+- [ ] `src/pages/Review/Components/SelectReviewer.tsx` — stmt `89.14%`，line `88.88%`，branch `67.44%`，func `76.00%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx` — stmt `97.05%`，line `96.87%`，branch `67.64%`，func `87.50%`
 
-查看全部 185 个未完成文件，请运行 `node scripts/test-coverage-report.js --full`。
+查看全部 160 个未完成文件，请运行 `node scripts/test-coverage-report.js --full`。
 
 ## 共享夹具批次候选
 
 只有这些簇，才构成成批推进队列的正当理由：
 
-- `src/pages/Review/Components` — 21 个未完成文件，最低 branch `50.43%`，平均 branch `77.68%`
-- `src/pages/LifeCycleModels/Components` — 20 个未完成文件，最低 branch `50.00%`，平均 branch `75.67%`
-- `src/pages/Processes/Components` — 17 个未完成文件，最低 branch `56.14%`，平均 branch `70.99%`
-- `src/pages/Unitgroups/Components` — 14 个未完成文件，最低 branch `46.91%`，平均 branch `74.11%`
-- `src/pages/Flows/Components` — 11 个未完成文件，最低 branch `60.00%`，平均 branch `79.14%`
+- `src/pages/Review/Components` — 16 个未完成文件，最低 branch `67.44%`，平均 branch `84.65%`
+- `src/pages/LifeCycleModels/Components` — 15 个未完成文件，最低 branch `65.00%`，平均 branch `80.70%`
+- `src/pages/Processes/Components` — 12 个未完成文件，最低 branch `64.86%`，平均 branch `75.90%`
+- `src/pages/Unitgroups/Components` — 10 个未完成文件，最低 branch `62.50%`，平均 branch `81.18%`
+- `src/pages/Flows/Components` — 8 个未完成文件，最低 branch `77.35%`，平均 branch `86.12%`
 - `src/pages/Sources/Components` — 8 个未完成文件，最低 branch `65.00%`，平均 branch `76.08%`
 - `src/pages/Flowproperties/Components` — 8 个未完成文件，最低 branch `65.21%`，平均 branch `82.95%`
 - `src/pages/Contacts/Components` — 8 个未完成文件，最低 branch `66.66%`，平均 branch `81.19%`
@@ -121,6 +130,7 @@
 - 新增测试在适用时统一复用共享 helper（`tests/helpers/mockBuilders.ts`、`testUtils.tsx`、`testData.ts`）。
 - 尽量把“只验证 console 输出”的测试重构成行为断言。
 - 如果页面 wrapper 存在于已测试子组件之上，至少补一条 wrapper 层测试，让覆盖率反映真实页面编排，而不是只靠子组件抬数。
+- 当队列文件只剩死分支或业务无效分支时，优先做不改变行为的分支清理，而不是堆 synthetic test scaffolding。
 - 保持默认报告简洁；只有当额外默认明细会改变执行顺序时，才增加默认输出。深度逐文件明细继续放在 `--full`。
 
 ## 单项执行流程（每个任务）

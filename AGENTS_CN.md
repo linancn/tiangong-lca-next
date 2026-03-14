@@ -74,6 +74,7 @@ npm run build
 - 运行与变更相关的聚焦 Jest 套件。
 - 如果目标是把覆盖率推向 100%，按 `docs/agents/test_todo_list.md` / `npm run test:coverage:report` 的有序清零队列逐文件推进。
 - 允许的队列例外只有两类：相邻文件共享同一套 mock/fixture/test harness 时可成批处理；当前文件或紧邻文件被测试基础设施问题卡住时，可先修 blocker。
+- 如果当前队列文件里存在可证明不可达或业务上无效的分支，优先在不改变行为的前提下删除死分支，而不是为了抬覆盖率去编造测试，然后再继续队列顺序。
 - 如果测试工程发生变化（命令、覆盖率基线、backlog 状态、工作流），必须同步 `docs/agents/ai-testing-guide.md`、`docs/agents/test_todo_list.md`；若长期策略也变化，还要同步 `docs/agents/test_improvement_plan.md` 及全部 `_CN` 镜像。
 - 控制 diff 范围；行为或流程变化时同步更新文档。
 

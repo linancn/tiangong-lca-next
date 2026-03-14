@@ -62,17 +62,17 @@ npm run lint
 - Directional goal: move toward 100% meaningful coverage across `src/**`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
-- Latest verified full run on March 14, 2026 (`npm run test:coverage`) is `276 suites / 2350 tests` with:
-  - Statements: `91.48%` (16840/18408)
-  - Branches: `78.17%` (8394/10738)
-  - Functions: `87.36%` (3424/3919)
-  - Lines: `91.78%` (16130/17573)
+- Latest verified full run on March 14, 2026 (`npm run test:coverage`) is `276 suites / 2481 tests` with:
+  - Statements: `93.93%` (17286/18402)
+  - Branches: `82.32%` (8819/10712)
+  - Functions: `91.09%` (3569/3918)
+  - Lines: `94.26%` (16559/17567)
 - Current all-file inventory from the same run:
   - Source files tracked: `300`
-  - Fully covered files (`100/100/100/100`): `115`
-  - Files with remaining gaps: `185`
-  - Branch buckets: `<50 = 2`, `50-70 = 46`, `70-90 = 101`, `90-<100 = 25`
-  - `line=100` but `branch<100`: `49`
+  - Fully covered files (`100/100/100/100`): `140`
+  - Files with remaining gaps: `160`
+  - Branch buckets: `<50 = 0`, `50-70 = 24`, `70-90 = 101`, `90-<100 = 24`
+  - `line=100` but `branch<100`: `43`
 - The branch gate is healthy. Execution is now an ordered file-closure workflow rather than gate recovery.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
@@ -84,6 +84,7 @@ npm run lint
   - Do not re-rank work by ad hoc “highest ROI” judgments.
   - Pick the first file in the ordered closure queue and drive it toward `100/100/100/100` where meaningful before moving on.
   - Allowed queue exceptions are narrow: batch adjacent files that share the same mock/fixture/test harness, or fix a shared test-infrastructure blocker first if it blocks the current file or its immediate neighbors.
+  - If a queued branch is provably unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests just to satisfy coverage.
 - Do not raise coverage thresholds yet; the next quality gain should come from shrinking the hotspot list, not from moving the gate.
 
 ## Related Docs

@@ -74,6 +74,7 @@ Read only what matches the current task:
 - Run focused Jest suites relevant to the change.
 - For coverage-to-100 work, follow the ordered closure queue in `docs/agents/test_todo_list.md` / `npm run test:coverage:report` one file at a time.
 - Allowed queue exceptions: batch adjacent files that share the same mock/fixture/test harness, and fix blocking test-infrastructure issues first when they block the current file or its immediate neighbors.
+- If a queued file contains a provably unreachable or business-invalid branch, remove the dead branch without changing behavior instead of inventing synthetic tests, then continue queue order.
 - If test engineering changed (commands, coverage baseline, backlog status, workflow), sync `docs/agents/ai-testing-guide.md`, `docs/agents/test_todo_list.md`, and when strategic context changed also `docs/agents/test_improvement_plan.md`, plus all `_CN` mirrors.
 - Keep diffs scoped; update docs when expectations or workflows change.
 
