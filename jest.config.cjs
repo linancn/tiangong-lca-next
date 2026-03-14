@@ -49,7 +49,7 @@ module.exports = async () => {
         statements: 50,
       },
     },
-    coverageReporters: ['text', 'lcov', 'html'],
+    coverageReporters: ['text', 'text-summary', 'json', 'json-summary', 'lcov', 'html'],
     testMatch: [
       '<rootDir>/tests/**/*.test.{ts,tsx,js,jsx}',
       '<rootDir>/src/**/*.test.{ts,tsx,js,jsx}',

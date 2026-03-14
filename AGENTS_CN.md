@@ -23,6 +23,8 @@ npm install
 npm start
 npm run lint
 npm test
+npm run test:coverage
+npm run test:coverage:report
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
@@ -31,6 +33,8 @@ npm run build
 
 - `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
 - 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
+- `npm run test:coverage` 和 `npm run test:coverage:report` 已内置 `NODE_OPTIONS=--max-old-space-size=8192`，全量覆盖率直接用脚本即可。
+- `npm run test:coverage:report` 是默认的覆盖率 review 产物。只有在重排 backlog 或深挖某个热点桶时，才使用 `node scripts/test-coverage-report.js --full`。
 - 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
 
 ## 按需文档路由（省 token）

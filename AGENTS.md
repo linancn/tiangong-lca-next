@@ -23,6 +23,8 @@ npm install
 npm start
 npm run lint
 npm test
+npm run test:coverage
+npm run test:coverage:report
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
@@ -31,6 +33,8 @@ Notes:
 
 - `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
 - The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
+- `npm run test:coverage` and `npm run test:coverage:report` already include `NODE_OPTIONS=--max-old-space-size=8192`; use the scripts directly for full coverage work.
+- `npm run test:coverage:report` is the default coverage review artifact. Use `node scripts/test-coverage-report.js --full` only when reprioritizing the backlog or drilling into a hotspot bucket.
 - For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
 
 ## Token-Efficient Doc Routing

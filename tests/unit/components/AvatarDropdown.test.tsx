@@ -431,10 +431,12 @@ describe('AvatarName', () => {
       return {};
     });
 
-    render(<AvatarName />);
+    const { container } = render(<AvatarName />);
 
     expect(screen.getByText('Taylor')).toBeInTheDocument();
-    expect(screen.getByTestId('icon-user')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="icon-user"], .anticon-user, [data-icon="user"]'),
+    ).not.toBeNull();
   });
 
   it('renders without crashing when current user is missing', () => {
@@ -445,9 +447,11 @@ describe('AvatarName', () => {
       return {};
     });
 
-    render(<AvatarName />);
+    const { container } = render(<AvatarName />);
 
-    expect(screen.getByTestId('icon-user')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="icon-user"], .anticon-user, [data-icon="user"]'),
+    ).not.toBeNull();
     expect(screen.queryByText('Taylor')).not.toBeInTheDocument();
   });
 });

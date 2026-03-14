@@ -33,6 +33,10 @@
 # Full local gate (same as CI style)
 npm test
 
+# Full coverage
+npm run test:coverage
+npm run test:coverage:report
+
 # Equivalent full unit/src phase used by the shared runner
 npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
 
@@ -55,20 +59,22 @@ npm run lint
 
 ## Coverage Expectations
 
-- Directional goal: move toward near-100% meaningful coverage.
+- Directional goal: move toward 100% meaningful coverage across `src/**`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
-- Latest verified full run on March 12, 2026 (`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`) is `247 suites / 1920 tests` with `66.86%` global branch coverage, so the branch gate is stable; current execution should target the remaining lifecycle-model page stack, thin wrapper pages, and lifecycle utility hotspots tracked in `docs/agents/test_todo_list.md`.
+- Latest verified full run on March 14, 2026 (`npm run test:coverage`) is `275 suites / 2248 tests` with:
+  - Statements: `84.83%` (15617/18408)
+  - Branches: `71.60%` (7689/10738)
+  - Functions: `80.07%` (3138/3919)
+  - Lines: `85.15%` (14965/17573)
+- The branch gate is healthy. Execution is now a hotspot-ordered closure workflow rather than gate recovery.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
-- Use coverage runs to identify gaps:
-
-```bash
-npm run test:coverage
-npm run test:coverage:report
-```
-
-- If local full coverage runs need more heap, use `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage` and record the command you validated with.
-- Do not raise coverage thresholds yet; first stabilize the current ~67% branch baseline across the lifecycle-model page stack, wrapper pages, and the remaining service hotspots.
+- `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
+- Report detail policy:
+  - `npm run test:coverage:report`: default review output. It prints global summary, category summary, top branch hotspots, top line hotspots, and uncovered line ranges for each hotspot.
+  - `node scripts/test-coverage-report.js --full`: full per-file listing. Use this only when the backlog order itself needs to change or when one hotspot bucket is nearly closed and the next bucket must be selected.
+  - Keep future work ordered by the report itself, not by ad hoc “highest ROI” judgments: clear branch hotspots below 50% first, then 50%-70%, then remaining line hotspots and service/util files.
+- Do not raise coverage thresholds yet; the next quality gain should come from shrinking the hotspot list, not from moving the gate.
 
 ## Related Docs
 

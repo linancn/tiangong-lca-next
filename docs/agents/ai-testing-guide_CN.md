@@ -33,6 +33,10 @@
 # 全量本地门禁（与 CI 风格一致）
 npm test
 
+# 全量覆盖率
+npm run test:coverage
+npm run test:coverage:report
+
 # 共享 runner 实际使用的全量 unit/src 阶段命令
 npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
 
@@ -55,20 +59,22 @@ npm run lint
 
 ## 覆盖率预期
 
-- 方向目标：逐步接近 100% 的有效覆盖。
+- 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
-- 截至 2026年3月12日，最新已验证全量运行（`NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`）是 `247 suites / 1920 tests`，global branch coverage 为 `66.86%`。因此当前不是“救门禁”，而是继续按 `docs/agents/test_todo_list.md` 中记录的 lifecycle-model 页面栈、wrapper 页面和 lifecycle utility 热点往下压。
+- 截至 2026年3月14日，最新已验证全量运行（`npm run test:coverage`）是 `275 suites / 2248 tests`，全局覆盖率为：
+  - Statements: `84.83%` (15617/18408)
+  - Branches: `71.60%` (7689/10738)
+  - Functions: `80.07%` (3138/3919)
+  - Lines: `85.15%` (14965/17573)
+- branch 门禁已经稳定，执行方式也切到“按热点顺序收口”，不再是“救门禁”模式。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
-- 覆盖率排查命令：
-
-```bash
-npm run test:coverage
-npm run test:coverage:report
-```
-
-- 若本地全量 coverage 需要更多堆内存，使用 `NODE_OPTIONS=--max-old-space-size=8192 npm run test:coverage`，并记录你实际验证过的命令。
-- 现在还不要上调覆盖率阈值；先把当前接近 67% 的 branch 基线在 lifecycle-model 页面栈、wrapper 页面和剩余 service 热点上稳定下来。
+- `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
+- 报告粒度规则：
+  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、branch hotspots、line hotspots，以及每个热点文件的未覆盖行范围。
+  - `node scripts/test-coverage-report.js --full`：看全量逐文件清单。只有在 backlog 顺序需要变化，或某个热点桶快清空时才展开到这一层。
+  - 后续补测顺序以报告本身为准，而不是主观判断“哪个收益更高”：先清 branch 低于 50% 的热点，再清 50%-70%，最后扫剩余 line hotspots 和 service/util 文件。
+- 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自持续缩小热点列表，而不是把门槛抬上去。
 
 ## 相关文档
 
