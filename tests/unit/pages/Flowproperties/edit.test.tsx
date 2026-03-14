@@ -1,7 +1,14 @@
 // @ts-nocheck
 import FlowpropertiesEdit from '@/pages/Flowproperties/Components/edit';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import {
+  act,
+  fireEvent,
+  renderWithProviders,
+  screen,
+  waitFor,
+  within,
+} from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -59,8 +66,9 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, footer, onClose, children }: any) => {
+  const Drawer = ({ open, title, extra, footer, onClose, children, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     return (
       <div role='dialog' aria-label={toText(title) || 'drawer'}>
         <div>{extra}</div>
@@ -127,7 +135,14 @@ jest.mock('@ant-design/pro-components', () => {
     return next;
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onFinish, onValuesChange, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onFinish,
+    onValuesChange,
+    submitter,
+    children,
+  }: any) => {
     const [values, setValues] = React.useState<any>(initialValues ?? {});
 
     const setFieldValue = React.useCallback(
@@ -148,7 +163,11 @@ jest.mock('@ant-design/pro-components', () => {
           await onFinish?.();
         },
         setFieldsValue: (next: any) => {
-          setValues((prev: any) => ({ ...prev, ...next }));
+          setValues((prev: any) => {
+            const merged = { ...prev, ...next };
+            onValuesChange?.({}, merged);
+            return merged;
+          });
         },
         resetFields: () => {
           setValues(initialValues ?? {});
@@ -161,11 +180,13 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <form
+        data-testid='flowproperty-edit-form'
         onSubmit={(event) => {
           event.preventDefault();
           void onFinish?.();
         }}
       >
+        {submitter?.render?.()}
         {typeof children === 'function' ? children(values) : children}
       </form>
     );
@@ -500,6 +521,25 @@ describe('FlowpropertiesEdit', () => {
     expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
   });
 
+  it('stops data checks when the background save fails', async () => {
+    mockUpdateFlowproperties.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'check blocked' },
+    });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
+    expect(mockCheckData).not.toHaveBeenCalled();
+    expect(screen.queryByText('rules-visible')).not.toBeInTheDocument();
+  });
+
   it('opens the refs drawer and lets the user update or keep versions', async () => {
     const newRefs = [
       {
@@ -646,6 +686,102 @@ describe('FlowpropertiesEdit', () => {
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
+  });
+
+  it('shows the generic data-check error when issues have no tab mapping', async () => {
+    mockValidateEnhanced.mockReturnValue({
+      success: false,
+      error: {
+        issues: [{ path: ['flowPropertyDataSet'] }],
+      },
+    });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!'));
+  });
+
+  it('closes the refs drawer and main drawer from cancel and onClose actions', async () => {
+    const newRefs = [
+      {
+        key: 'ref-1',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '2.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs: [] });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+
+    await act(async () => {
+      latestRefsDrawerProps.onCancel();
+    });
+
+    await waitFor(() => expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument());
+
+    const drawerCloseButton = within(drawer)
+      .getAllByRole('button')
+      .find((button) => button.textContent === 'Close');
+    expect(drawerCloseButton).toBeTruthy();
+
+    await userEvent.click(drawerCloseButton!);
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('submits through the embedded form and closes from icon and cancel actions', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <FlowpropertiesEdit
+        id='fp-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        actionRef={actionRef as any}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+
+    await act(async () => {
+      fireEvent.submit(screen.getByTestId('flowproperty-edit-form'));
+    });
+
+    await waitFor(() => expect(mockUpdateFlowproperties).toHaveBeenCalled());
+    expect(actionRef.current.reload).toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const iconClosedDrawer = await screen.findByRole('dialog', { name: /edit flow property/i });
+    const iconCloseButton = within(iconClosedDrawer)
+      .getAllByRole('button', { name: /close/i })
+      .find((button) => button.textContent === 'close');
+    expect(iconCloseButton).toBeTruthy();
+    await userEvent.click(iconCloseButton!);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const cancelDrawer = await screen.findByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(within(cancelDrawer).getByRole('button', { name: /cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('resets loaded data and closes from both cancel and close icon actions', async () => {
