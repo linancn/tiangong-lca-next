@@ -276,6 +276,20 @@ describe('Login page', () => {
     });
   });
 
+  it('redirects to the redirect query parameter after a successful login', async () => {
+    window.history.pushState({}, '', '/login?redirect=%2Ftedata%2Fprocesses');
+
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => {
+      expect(mockHistory.push).toHaveBeenCalledWith('/tedata/processes');
+    });
+
+    window.history.pushState({}, '', '/');
+  });
+
   it('shows the login error alert when the login service returns an error status', async () => {
     mockLogin.mockResolvedValueOnce({ status: 'error', type: 'login' });
 

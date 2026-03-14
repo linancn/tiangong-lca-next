@@ -373,6 +373,37 @@ describe('ManageSystem page', () => {
     });
   });
 
+  it('short-circuits member loading when the authenticated role is missing', async () => {
+    mockGetSystemUserRoleApi.mockResolvedValueOnce(null);
+
+    render(<ManageSystemPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+    });
+    expect(mockGetSystemMembersApi).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+  });
+
+  it('logs member-loading failures and falls back to an empty table', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({ user_id: 'owner-1', role: 'owner' });
+    mockGetSystemMembersApi.mockRejectedValueOnce(new Error('member load failed'));
+
+    render(<ManageSystemPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+    expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('logs auth-loading failures and keeps rendering the teams tab', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockGetSystemUserRoleApi.mockRejectedValueOnce(new Error('auth failed'));

@@ -261,6 +261,19 @@ describe('TeamEdit component', () => {
     mockIsImage.mockReturnValue(true);
   });
 
+  it('does not open from the icon trigger when disabled', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(<TeamEdit id='team-1' buttonType='icon' actionRef={actionRef as any} disabled />);
+
+    const trigger = screen.getByRole('button', { name: /edit/i });
+    expect(trigger).toBeDisabled();
+
+    await user.click(trigger);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('opens the drawer and loads existing team data', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -353,6 +366,84 @@ describe('TeamEdit component', () => {
 
     await waitFor(() => {
       expect(mockRemoveLogoApi).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('reuses existing logo paths without uploading again', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(
+      <TeamEdit id='team-1' buttonType='icon' actionRef={actionRef as any} disabled={false} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => {
+      expect(mockEditTeamMessage).toHaveBeenCalled();
+    });
+
+    const payload = mockEditTeamMessage.mock.calls.at(-1)?.[1];
+    expect(payload.lightLogo).toBe('existing/light.png');
+    expect(payload.darkLogo).toBe('existing/dark.png');
+    expect(mockUploadLogoApi).not.toHaveBeenCalled();
+  });
+
+  it('supports text button mode and closes the drawer from the cancel action', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(<TeamEdit id='team-1' buttonType='custom.edit.label' actionRef={actionRef as any} />);
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('closes the drawer from the drawer close action', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(
+      <TeamEdit id='team-1' buttonType='icon' actionRef={actionRef as any} disabled={false} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /close drawer/i }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('closes the linked view drawer after a successful save when callback is provided', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    render(
+      <TeamEdit
+        id='team-1'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={setViewDrawerVisible}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => {
+      expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
     });
   });
 

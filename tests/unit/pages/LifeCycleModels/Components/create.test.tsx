@@ -123,6 +123,19 @@ describe('LifeCycleModelCreate', () => {
     latestToolbarProps = null;
   });
 
+  it('does not auto-open when import data is empty', () => {
+    renderWithProviders(
+      <LifeCycleModelCreate
+        buttonType='text'
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        importData={[]}
+      />,
+    );
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('opens the drawer and forwards create metadata to toolbar edit', async () => {
     const actionRef = { current: { reload: jest.fn() } };
 
@@ -226,6 +239,23 @@ describe('LifeCycleModelCreate', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /mark-save/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('reloads after a saved mask close', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <LifeCycleModelCreate buttonType='text' lang='en' actionRef={actionRef as any} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /mark-save/i }));
+    await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
 
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

@@ -23,6 +23,7 @@ describe('AlignedNumber Component', () => {
       expect(toSuperscript('')).toBe('');
       expect(toSuperscript(null as any)).toBe('');
       expect(toSuperscript(undefined as any)).toBe('');
+      expect(toSuperscript(123 as any)).toBe('');
     });
 
     it('should handle mixed characters', () => {
@@ -115,6 +116,21 @@ describe('AlignedNumber Component', () => {
       // Should use scientific notation
       const text = screen.getByText(/×10/);
       expect(text).toHaveTextContent('×10');
+    });
+
+    it('should use scientific notation at the positive threshold and trim plus signs', () => {
+      render(<AlignedNumber value={1000000} precision={2} />);
+      const text = screen.getByText(/×10/);
+      expect(text).toHaveTextContent('1×10⁶');
+      expect(text).not.toHaveTextContent('+');
+    });
+
+    it('should show placeholder for non-finite values', () => {
+      const { rerender } = render(<AlignedNumber value={Infinity} />);
+      expect(screen.getByText('-')).toBeInTheDocument();
+
+      rerender(<AlignedNumber value={'   '} />);
+      expect(screen.getByText('-')).toBeInTheDocument();
     });
 
     it('should apply correct styling for empty values', () => {

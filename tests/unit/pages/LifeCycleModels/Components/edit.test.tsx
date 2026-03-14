@@ -183,6 +183,27 @@ describe('LifeCycleModelEdit', () => {
     );
   });
 
+  it('reloads when a saved edit drawer is closed through mask-close', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <LifeCycleModelEdit
+        id='model-mask'
+        version='2.1.0'
+        buttonType='pages.button.edit'
+        lang='en'
+        actionRef={actionRef as any}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /mark-save/i }));
+    await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
+
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('closes without reload when edit drawer is dismissed unsaved', async () => {
     const actionRef = { current: { reload: jest.fn() } };
 

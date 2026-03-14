@@ -59,6 +59,7 @@ describe('Footer Component', () => {
     );
     screen.getAllByRole('link').forEach((anchor) => {
       expect(anchor).toHaveAttribute('target', '_blank');
+      expect(anchor).toHaveAttribute('rel', 'noreferrer');
     });
   });
 });

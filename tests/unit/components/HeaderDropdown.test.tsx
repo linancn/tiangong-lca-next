@@ -53,4 +53,16 @@ describe('HeaderDropdown', () => {
     expect(props.menu).toBe(menu);
     expect(props.trigger).toEqual(['click']);
   });
+
+  it('uses only the generated class when no overlayClassName is provided', () => {
+    render(
+      <HeaderDropdown placement='bottomLeft'>
+        <span>Trigger</span>
+      </HeaderDropdown>,
+    );
+
+    const props = mockDropdown.mock.calls[0][0];
+    expect(props.overlayClassName).toBe('generated-dropdown-class');
+    expect(props.placement).toBe('bottomLeft');
+  });
 });

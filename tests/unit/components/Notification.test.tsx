@@ -278,6 +278,24 @@ describe('Notification Component', () => {
     });
   });
 
+  it('falls back to zero unread counts when count APIs report unsuccessful results', async () => {
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: false, total: 99 });
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: false, total: 99 });
+
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('img', { hidden: true })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('img', { hidden: true }));
+    expect(screen.getByTestId('team-notification')).toHaveTextContent('Team Notification 3');
+  });
+
   it('should show badge dot on team tab when team notification exists', async () => {
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 1 });
     mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
@@ -398,5 +416,30 @@ describe('Notification Component', () => {
     await waitFor(() => expect(mockUpdateDataNotificationTime).toHaveBeenCalledTimes(1));
     fireEvent.click(screen.getByTestId('data-notification'));
     await waitFor(() => expect(mockUpdateDataNotificationTime).toHaveBeenCalledTimes(1));
+  });
+
+  it('applies the all-time filter value to both tabs after reopening', async () => {
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    const icon = await screen.findByRole('img', { hidden: true });
+    fireEvent.click(icon);
+
+    const timeFilter = screen.getByRole('combobox');
+    fireEvent.mouseDown(timeFilter);
+    fireEvent.click(screen.getByText('All'));
+
+    expect(await screen.findByTestId('team-notification')).toHaveTextContent('Team Notification 0');
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    fireEvent.click(icon);
+    fireEvent.click(screen.getByText('Data Notifications'));
+
+    expect(await screen.findByTestId('data-notification')).toHaveTextContent('Data Notification 0');
   });
 });

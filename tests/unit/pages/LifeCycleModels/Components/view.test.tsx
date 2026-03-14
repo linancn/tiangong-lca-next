@@ -108,6 +108,24 @@ describe('LifeCycleModelView', () => {
     latestToolbarProps = null;
   });
 
+  it('does not open the tool icon entry when disabled', async () => {
+    renderWithProviders(
+      <LifeCycleModelView
+        id='model-tool'
+        version='1.0.0'
+        buttonType='toolIcon'
+        lang='en'
+        disabled
+      />,
+    );
+
+    const trigger = screen.getByRole('button', { name: /lifecycle model infomation/i });
+    expect(trigger).toBeDisabled();
+
+    await userEvent.click(trigger);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('does not open the iconModel entry when disabled', async () => {
     renderWithProviders(
       <LifeCycleModelView id='model-1' version='1.0.0' buttonType='iconModel' lang='en' disabled />,
@@ -199,5 +217,17 @@ describe('LifeCycleModelView', () => {
         version: '4.0.0',
       }),
     );
+  });
+
+  it('closes through the drawer mask-close action', async () => {
+    renderWithProviders(
+      <LifeCycleModelView id='model-5' version='5.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^view$/i }));
+    expect(screen.getByRole('dialog', { name: /view model/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

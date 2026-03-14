@@ -149,6 +149,10 @@ describe('ConnectableProcesses', () => {
     onData: jest.fn(),
   };
 
+  afterEach(() => {
+    window.history.pushState({}, '', '/');
+  });
+
   it('loads TianGong processes when drawer opens', async () => {
     render(<ConnectableProcesses {...baseProps} />);
 
@@ -226,17 +230,26 @@ describe('ConnectableProcesses', () => {
 
   it('submits selected processes on confirm', async () => {
     const onData = jest.fn();
-    render(<ConnectableProcesses {...baseProps} onData={onData} />);
+    const setDrawerVisible = jest.fn();
+    render(
+      <ConnectableProcesses {...baseProps} onData={onData} setDrawerVisible={setDrawerVisible} />,
+    );
     await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
 
     expect(latestProTableProps?.rowSelection?.onChange).toBeDefined();
     await act(async () => {
-      latestProTableProps?.rowSelection?.onChange?.(['proc-1:1.0'], []);
+      latestProTableProps?.rowSelection?.onChange?.(['proc-1:1.0', 'proc-2:2.0'], []);
     });
 
     await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
 
-    await waitFor(() => expect(onData).toHaveBeenCalledWith([{ id: 'proc-1', version: '1.0' }]));
+    await waitFor(() =>
+      expect(onData).toHaveBeenCalledWith([
+        { id: 'proc-1', version: '1.0' },
+        { id: 'proc-2', version: '2.0' },
+      ]),
+    );
+    expect(setDrawerVisible).toHaveBeenCalledWith(false);
   });
 
   it('hides selection controls in read-only mode', async () => {
@@ -247,5 +260,35 @@ describe('ConnectableProcesses', () => {
     expect(latestProTableProps?.rowSelection).toBe(false);
     expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+  });
+
+  it('closes through cancel and drawer close actions', async () => {
+    const setDrawerVisible = jest.fn();
+    render(<ConnectableProcesses {...baseProps} setDrawerVisible={setDrawerVisible} />);
+
+    await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(setDrawerVisible).toHaveBeenCalledWith(false);
+
+    await userEvent.click(screen.getByText('close'));
+    expect(setDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('passes tid from the current URL into the table request', async () => {
+    window.history.pushState({}, '', '/?tid=team-9');
+
+    render(<ConnectableProcesses {...baseProps} />);
+
+    await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
+    expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'tg',
+      'team-9',
+      'input:flow-1',
+      '1.0',
+    );
   });
 });

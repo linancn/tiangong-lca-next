@@ -179,6 +179,35 @@ describe('LifeCycleModelDelete', () => {
     expect(setViewDrawerVisible).not.toHaveBeenCalled();
   });
 
+  it('supports the icon trigger and closes the modal after a successful delete', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    await act(async () => {
+      renderWithProviders(
+        <LifeCycleModelDelete
+          id='model-icon'
+          version='3.0.0'
+          buttonType='icon'
+          actionRef={actionRef as any}
+          setViewDrawerVisible={setViewDrawerVisible}
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+    expect(screen.getByRole('dialog', { name: /delete/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /confirm/i }));
+
+    await waitFor(() =>
+      expect(mockDeleteLifeCycleModel).toHaveBeenCalledWith('model-icon', '3.0.0'),
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
   it('closes the modal without deleting when cancelled', async () => {
     const actionRef = { current: { reload: jest.fn() } };
     const setViewDrawerVisible = jest.fn();

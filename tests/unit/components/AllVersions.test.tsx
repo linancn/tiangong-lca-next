@@ -119,6 +119,7 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
     expect(button).not.toBeDisabled();
+    expect(mockGetDataSource).toHaveBeenCalledWith('/test-path');
   });
 
   it('should render disabled button when disabled prop is true', () => {
@@ -377,6 +378,7 @@ describe('AllVersionsList Component', () => {
     await waitFor(() => {
       expect(screen.getByTestId('children')).toBeInTheDocument();
     });
+    expect(mockAddVersionComponent).toHaveBeenCalled();
   });
 
   it('should compute the next version from the highest loaded version after reopening', async () => {

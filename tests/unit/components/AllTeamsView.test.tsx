@@ -210,4 +210,38 @@ describe('TeamView component', () => {
     await user.click(trigger);
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
+
+  it('renders non-public display text when rank is zero', async () => {
+    const user = userEvent.setup();
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          ...teamResponse.data[0],
+          rank: 0,
+        },
+      ],
+    });
+
+    render(<TeamView id='team-2' buttonType='icon' />);
+
+    await user.click(screen.getByRole('button', { name: /view/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    expect(await screen.findByText('Not Public Display')).toBeInTheDocument();
+  });
+
+  it('keeps placeholders when no team data is returned', async () => {
+    const user = userEvent.setup();
+    mockGetTeamMessageApi.mockResolvedValueOnce({ data: [] });
+
+    render(<TeamView id='missing-team' buttonType='icon' />);
+
+    await user.click(screen.getByRole('button', { name: /view/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await waitFor(() => expect(mockGetTeamMessageApi).toHaveBeenCalledWith('missing-team'));
+    await waitFor(() => expect(screen.getByTestId('spinner-idle')).toBeInTheDocument());
+    expect(screen.queryByAltText('Light Logo')).not.toBeInTheDocument();
+    expect(screen.queryByAltText('Dark Logo')).not.toBeInTheDocument();
+  });
 });

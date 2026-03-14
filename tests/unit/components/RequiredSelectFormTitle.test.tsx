@@ -150,4 +150,13 @@ describe('RequiredSelectFormTitle Component', () => {
     expect(screen.queryByText('Data does not exist')).not.toBeInTheDocument();
     expect(screen.queryByText('Under review')).not.toBeInTheDocument();
   });
+
+  it('renders only the label when there is no errRef and rules are satisfied', () => {
+    renderComponent({ ruleErrorState: false, errRef: undefined });
+
+    expect(screen.getByText('Data Source')).toBeInTheDocument();
+    expect(screen.queryByText('Data is incomplete')).not.toBeInTheDocument();
+    expect(screen.queryByText('Data does not exist')).not.toBeInTheDocument();
+    expect(screen.queryByText('Under review')).not.toBeInTheDocument();
+  });
 });

@@ -237,4 +237,31 @@ describe('ModelResult', () => {
     await waitFor(() => expect(screen.getAllByTestId('process-view')).toHaveLength(1));
     expect(screen.queryByTestId('process-edit')).not.toBeInTheDocument();
   });
+
+  it('reloads both tables again when reopened after closing', async () => {
+    renderWithProviders(
+      <ModelResult
+        submodels={[
+          { id: 'model-1', version: '0.9.0' },
+          { id: 'sub-1', version: '0.8.0' },
+        ]}
+        modelId='model-1'
+        modelVersion='1.0.0'
+        lang='en'
+        actionType='view'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    expect(await screen.findByRole('dialog', { name: /model results/i })).toBeInTheDocument();
+    await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledTimes(2));
+
+    await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    expect(await screen.findByRole('dialog', { name: /model results/i })).toBeInTheDocument();
+
+    await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledTimes(6));
+  });
 });

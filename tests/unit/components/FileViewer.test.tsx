@@ -120,6 +120,17 @@ describe('FileGallery component', () => {
     expect(mockedGetThumbFileUrls).not.toHaveBeenCalled();
   });
 
+  it('renders placeholder when data is an empty array', async () => {
+    mockedGetThumbFileUrls.mockResolvedValue([]);
+
+    render(<FileGallery data={[]} />);
+
+    expect(screen.getByText('-')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockedGetThumbFileUrls).toHaveBeenCalledWith([]);
+    });
+  });
+
   it('renders image thumbnails and updates preview URL when opened', async () => {
     const digitalFiles = [{ '@uri': '../bucket/file.png' }];
     const thumbEntry = {
@@ -201,6 +212,7 @@ describe('FileGallery component', () => {
     const linkLabel = await screen.findByText(thumbEntry.name);
     const link = linkLabel.closest('a');
     expect(link).not.toBeNull();
+    expect(link).toHaveAttribute('title', 'Download file');
     fireEvent.click(link!);
 
     await waitFor(() => {
@@ -212,6 +224,27 @@ describe('FileGallery component', () => {
     });
 
     windowOpenSpy.mockRestore();
+  });
+
+  it('renders a fallback image when a thumbnail entry does not have a url', async () => {
+    const digitalFiles = [{ '@uri': '../bucket/broken-file.bin' }];
+
+    mockedGetThumbFileUrls.mockResolvedValue([
+      {
+        uid: '../bucket/broken-file.bin',
+        name: 'broken-file.bin',
+        thumbUrl: '',
+        url: '',
+      },
+    ]);
+
+    render(<FileGallery data={digitalFiles} />);
+
+    await waitFor(() => {
+      expect(mockedGetThumbFileUrls).toHaveBeenCalledWith(digitalFiles);
+    });
+
+    expect(screen.getByTestId('file-gallery-image')).toHaveAttribute('data-thumb-src', 'error');
   });
 });
 
