@@ -16,7 +16,9 @@ import AISuggestion from '@/components/AISuggestion';
 import { getAISuggestion } from '@/services/general/api';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, message } from 'antd';
+
+let mockDiffResult: any = null;
 
 // Mock dependencies
 jest.mock('@/services/general/api', () => ({
@@ -48,7 +50,7 @@ jest.mock('umi', () => ({
 // Mock jsondiffpatch
 jest.mock('jsondiffpatch', () => ({
   create: jest.fn(() => ({
-    diff: jest.fn(() => null),
+    diff: jest.fn(() => mockDiffResult),
   })),
 }));
 
@@ -73,6 +75,7 @@ describe('AISuggestion Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockDiffResult = null;
     mockGetAISuggestion.mockResolvedValue({
       success: true,
       data: {
@@ -80,6 +83,12 @@ describe('AISuggestion Component', () => {
           id: 'test-process',
           name: 'AI Suggested Process',
         },
+      },
+    });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: jest.fn().mockResolvedValue(undefined),
       },
     });
   });
@@ -404,13 +413,116 @@ describe('AISuggestion Component', () => {
   it('skips AI requests when getTidasData returns null for unsupported types', async () => {
     render(
       <ConfigProvider>
-        <AISuggestion {...({ ...defaultProps, type: 'unsupported' } as any)} />
+        <AISuggestion
+          {...({
+            ...defaultProps,
+            type: 'unsupported',
+            originJson: { unsupportedDataSet: {} },
+          } as any)}
+        />
       </ConfigProvider>,
     );
 
     await userEvent.click(screen.getByRole('button'));
     expect(await screen.findByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
     expect(mockGetAISuggestion).not.toHaveBeenCalled();
+  });
+
+  it('accepts all suggested changes and can undo them', async () => {
+    mockDiffResult = {
+      processDataSet: {
+        name: ['Test Process', 'AI Suggested Process'],
+      },
+    };
+
+    render(
+      <ConfigProvider>
+        <AISuggestion {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+
+    const acceptAllButton = await screen.findByRole('button', {
+      name: /component\.aiSuggestion\.button\.acceptAll/i,
+    });
+    await userEvent.click(acceptAllButton);
+
+    await waitFor(() =>
+      expect(defaultProps.onAcceptChange).toHaveBeenCalledWith(
+        'processDataSet.name',
+        'AI Suggested Process',
+      ),
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.undo/i }),
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.onRejectChange).toHaveBeenCalledWith('processDataSet.name');
+    });
+  });
+
+  it('rejects all suggested changes and can undo them back to accepted values', async () => {
+    mockDiffResult = {
+      processDataSet: {
+        name: ['Test Process', 'AI Suggested Process'],
+      },
+    };
+
+    render(
+      <ConfigProvider>
+        <AISuggestion {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+
+    const rejectAllButton = await screen.findByRole('button', {
+      name: /component\.aiSuggestion\.button\.rejectAll/i,
+    });
+    await userEvent.click(rejectAllButton);
+
+    await waitFor(() => {
+      expect(defaultProps.onRejectChange).toHaveBeenCalledWith('processDataSet.name');
+    });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.undo/i }),
+    );
+
+    await waitFor(() =>
+      expect(defaultProps.onAcceptChange).toHaveBeenCalledWith(
+        'processDataSet.name',
+        'AI Suggested Process',
+      ),
+    );
+  });
+
+  it('reports clipboard copy failures', async () => {
+    const messageErrorSpy = jest.spyOn(message, 'error').mockImplementation(() => ({}) as any);
+    (navigator.clipboard.writeText as jest.Mock).mockRejectedValueOnce(new Error('copy failed'));
+
+    render(
+      <ConfigProvider>
+        <AISuggestion {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.copyOriginal/i }),
+    );
+
+    await waitFor(() => {
+      expect(messageErrorSpy).toHaveBeenCalledWith('component.aiSuggestion.message.copyFailed');
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
+    messageErrorSpy.mockRestore();
   });
 
   it('should render with correct button attributes', () => {

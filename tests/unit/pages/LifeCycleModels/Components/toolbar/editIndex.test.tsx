@@ -1,7 +1,7 @@
 // @ts-nocheck
 import ToolbarEdit from '@/pages/LifeCycleModels/Components/toolbar/editIndex';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
 const mockAddNodes = jest.fn();
@@ -13,6 +13,17 @@ const mockToolbarHandleCheckData = jest.fn();
 const mockToolbarSubmitReview = jest.fn();
 const mockToolbarUpdateReferenceDescription = jest.fn();
 const mockUpdateNodeCb = jest.fn();
+const mockGetRefData = jest.fn();
+const mockGetProcessesByIdAndVersion = jest.fn().mockResolvedValue({ data: [] });
+const mockGetImportedId = jest.fn().mockReturnValue(undefined);
+const mockIsSupabaseDuplicateKeyError = jest.fn().mockReturnValue(false);
+const mockGetLangText = jest.fn().mockReturnValue('Flow Name');
+const mockFormatDateTime = jest.fn(() => '2024-01-01 00:00');
+const mockGetUserTeamId = jest.fn().mockResolvedValue('team-1');
+const mockGetUserId = jest.fn().mockResolvedValue('user-1');
+const mockCheckReferences = jest.fn();
+const mockGetAllRefObj = jest.fn().mockReturnValue([]);
+const mockGetRefTableName = jest.fn().mockReturnValue('process');
 
 let mockGraphStoreState: any = { nodes: [], edges: [] };
 
@@ -96,19 +107,34 @@ jest.mock('antd', () => {
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/editTargetAmount', () => ({
   __esModule: true,
-  default: ({ onData }: any) => (
-    <button
-      type='button'
-      onClick={() => onData({ targetAmount: 20, originalAmount: 10, scalingFactor: '2' })}
-    >
-      trigger-target-amount
-    </button>
+  default: ({ onData, drawerVisible }: any) => (
+    <div>
+      {drawerVisible ? <span>target-amount-open</span> : null}
+      <button
+        type='button'
+        onClick={() => onData({ targetAmount: 20, originalAmount: 10, scalingFactor: '2' })}
+      >
+        trigger-target-amount
+      </button>
+    </div>
   ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/add', () => ({
   __esModule: true,
-  default: () => <div>model-toolbar-add</div>,
+  default: ({ onData }: any) => (
+    <button
+      type='button'
+      onClick={() =>
+        onData([
+          { id: 'proc-a', version: '1.0' },
+          { id: 'proc-b', version: '1.1' },
+        ])
+      }
+    >
+      add-processes
+    </button>
+  ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/control', () => ({
@@ -127,29 +153,60 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/eidtInfo', () => {
         updateReferenceDescription: (...args: any[]) =>
           mockToolbarUpdateReferenceDescription(...args),
       }));
-      return <div>toolbar-edit-info</div>;
+      const version =
+        props?.data?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'];
+      return <div>{`toolbar-edit-info:${props.action}:${version ?? '-'}`}</div>;
     }),
   };
 });
 
 jest.mock('@/pages/LifeCycleModels/Components/connectableProcesses', () => ({
   __esModule: true,
-  default: () => <div>connectable-processes</div>,
+  default: ({ drawerVisible, portId, flowVersion, onData }: any) => (
+    <div>
+      {drawerVisible ? <span>{`connectable:${portId}:${flowVersion}`}</span> : null}
+      {drawerVisible ? (
+        <button type='button' onClick={() => onData([{ id: 'proc-connected', version: '3.0' }])}>
+          connect-processes
+        </button>
+      ) : null}
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
   __esModule: true,
-  default: () => <div>life-cycle-model-edit</div>,
+  default: ({ id, version, updateNodeCb }: any) => (
+    <div>
+      <span>{`life-cycle-model-edit:${id}:${version}`}</span>
+      {updateNodeCb ? (
+        <button
+          type='button'
+          onClick={() =>
+            updateNodeCb({
+              '@refObjectId': 'ref-proc-1',
+              '@version': '2.0',
+              '@type': 'process data set',
+            })
+          }
+        >
+          run-model-update-node
+        </button>
+      ) : null}
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/modelResult', () => ({
   __esModule: true,
-  default: () => <div>model-result</div>,
+  default: ({ modelId, modelVersion, actionType }: any) => (
+    <div>{`model-result:${modelId}:${modelVersion}:${actionType}`}</div>
+  ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
   __esModule: true,
-  default: () => <div>life-cycle-model-view</div>,
+  default: ({ id, version }: any) => <div>{`life-cycle-model-view:${id}:${version}`}</div>,
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/index', () => ({
@@ -159,17 +216,61 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/index', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect', () => ({
   __esModule: true,
-  default: () => <div>io-port-select</div>,
+  default: ({ drawerVisible, direction, node, onData }: any) => (
+    <div>
+      {drawerVisible ? <span>{`io-port:${direction}:${node?.id}`}</span> : null}
+      {drawerVisible ? (
+        <button
+          type='button'
+          onClick={() =>
+            onData({
+              selectedRowData: [
+                {
+                  referenceToFlowDataSet: {
+                    '@refObjectId': `flow-${direction.toLowerCase()}`,
+                    '@version': '1.0',
+                    'common:shortDescription': [],
+                  },
+                  allocations: [{ allocatedFraction: '0.5' }],
+                  quantitativeReference: true,
+                },
+              ],
+            })
+          }
+        >
+          apply-io-port
+        </button>
+      ) : null}
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Processes/Components/edit', () => ({
   __esModule: true,
-  default: () => <div>process-edit</div>,
+  default: ({ id, version, updateNodeCb }: any) => (
+    <div>
+      <span>{`process-edit:${id}:${version}`}</span>
+      {updateNodeCb ? (
+        <button
+          type='button'
+          onClick={() =>
+            updateNodeCb({
+              '@refObjectId': 'ref-proc-1',
+              '@version': '2.0',
+              '@type': 'process data set',
+            })
+          }
+        >
+          run-process-update-node
+        </button>
+      ) : null}
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
-  default: () => <div>process-view</div>,
+  default: ({ id, version }: any) => <div>{`process-view:${id}:${version}`}</div>,
 }));
 
 const mockCreateLifeCycleModel = jest.fn().mockResolvedValue({});
@@ -203,6 +304,7 @@ jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
   getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
+  getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion(...args),
 }));
 
 const mockGenProcessFromData = jest.fn().mockReturnValue({ exchanges: { exchange: [] } });
@@ -218,7 +320,7 @@ jest.mock('@/services/processes/util', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
-  getRefData: jest.fn().mockResolvedValue({ data: {} }),
+  getRefData: (...args: any[]) => mockGetRefData(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -228,27 +330,32 @@ jest.mock('@/services/general/data', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  formatDateTime: () => '2024-01-01 00:00',
-  getImportedId: () => undefined,
-  isSupabaseDuplicateKeyError: () => false,
-  getLangText: () => 'Flow Name',
+  formatDateTime: (...args: any[]) => mockFormatDateTime(...args),
+  getImportedId: (...args: any[]) => mockGetImportedId(...args),
+  isSupabaseDuplicateKeyError: (...args: any[]) => mockIsSupabaseDuplicateKeyError(...args),
+  getLangText: (...args: any[]) => mockGetLangText(...args),
 }));
 
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
-  getUserTeamId: jest.fn().mockResolvedValue('team-1'),
+  getUserTeamId: (...args: any[]) => mockGetUserTeamId(...args),
 }));
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
-  checkReferences: jest.fn(),
-  getAllRefObj: jest.fn().mockReturnValue([]),
-  getRefTableName: jest.fn().mockReturnValue('process'),
+  checkReferences: (...args: any[]) => mockCheckReferences(...args),
+  getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
+  getRefTableName: (...args: any[]) => mockGetRefTableName(...args),
   ReffPath: class {
     findProblemNodes() {
       return [];
     }
   },
+}));
+
+jest.mock('@/services/users/api', () => ({
+  __esModule: true,
+  getUserId: (...args: any[]) => mockGetUserId(...args),
 }));
 
 jest.mock('uuid', () => ({
@@ -267,6 +374,19 @@ beforeEach(() => {
   mockToolbarSubmitReview.mockReset().mockResolvedValue(undefined);
   mockToolbarUpdateReferenceDescription.mockReset().mockResolvedValue(undefined);
   mockUpdateNodeCb.mockReset().mockResolvedValue(undefined);
+  mockGetRefData.mockReset().mockResolvedValue({ data: { ruleVerification: true } });
+  mockGetProcessesByIdAndVersion.mockReset().mockResolvedValue({ data: [] });
+  mockGetImportedId.mockReset().mockReturnValue(undefined);
+  mockIsSupabaseDuplicateKeyError.mockReset().mockReturnValue(false);
+  mockGetLangText.mockReset().mockReturnValue('Flow Name');
+  mockFormatDateTime.mockReset().mockReturnValue('2024-01-01 00:00');
+  mockGetUserTeamId.mockReset().mockResolvedValue('team-1');
+  mockGetUserId.mockReset().mockResolvedValue('user-1');
+  mockCheckReferences.mockReset().mockResolvedValue({
+    findProblemNodes: () => [],
+  });
+  mockGetAllRefObj.mockReset().mockReturnValue([]);
+  mockGetRefTableName.mockReset().mockReturnValue('process');
   mockUseGraphEvent.mockClear();
   mockGetProcessDetail.mockReset().mockResolvedValue({
     data: {
@@ -283,10 +403,48 @@ beforeEach(() => {
     },
   });
   mockGenProcessFromData.mockReset().mockReturnValue({ exchanges: { exchange: [] } });
+  mockGetProcessDetailByIdAndVersion.mockReset().mockResolvedValue({ data: [] });
+  mockGetLifeCycleModelDetail.mockReset().mockResolvedValue({
+    success: true,
+    data: {
+      version: '1.0',
+      json: {
+        lifeCycleModelDataSet: {},
+      },
+      json_tg: {
+        xflow: {
+          nodes: [],
+          edges: [],
+          submodels: [],
+        },
+      },
+    },
+  });
+  mockGenLifeCycleModelData.mockReset().mockReturnValue({ nodes: [], edges: [] });
+  mockGenLifeCycleModelInfoFromData.mockReset().mockReturnValue({
+    administrativeInformation: {
+      publicationAndOwnership: {
+        'common:dataSetVersion': '1.0',
+      },
+    },
+  });
   mockUpdateLifeCycleModel.mockReset().mockResolvedValue({
     data: [
       {
         id: 'model-1',
+        version: '1.1',
+        json_tg: {
+          xflow: {
+            edges: [],
+          },
+        },
+      },
+    ],
+  });
+  mockCreateLifeCycleModel.mockReset().mockResolvedValue({
+    data: [
+      {
+        id: 'created-model',
         version: '1.1',
         json_tg: {
           xflow: {
@@ -339,6 +497,23 @@ beforeEach(() => {
     edges: [],
   };
 });
+
+afterEach(() => {
+  jest.useRealTimers();
+});
+
+const getGraphHandler = (eventName: string) => {
+  const call = mockUseGraphEvent.mock.calls.find((item: any[]) => item[0] === eventName);
+  return call?.[1];
+};
+
+const getNodeTool = (nodeId: string, toolId: string) => {
+  const calls = mockUpdateNode.mock.calls.filter(
+    ([id, payload]: [string, any]) => id === nodeId && payload?.tools,
+  );
+  const latestTools = calls[calls.length - 1]?.[1]?.tools ?? [];
+  return latestTools.find((tool: any) => tool?.id === toolId);
+};
 
 describe('ToolbarEdit', () => {
   const baseProps = {
@@ -561,5 +736,684 @@ describe('ToolbarEdit', () => {
     rerender(<ToolbarEdit {...baseProps} hideReviewButton />);
 
     expect(screen.queryByRole('button', { name: 'send-icon' })).not.toBeInTheDocument();
+  });
+
+  it('opens input/output selectors from node tools and updates ports for both directions', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    expect(inputTool).toBeTruthy();
+
+    await act(async () => {
+      await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    expect(screen.getByText('io-port:Input:node-1')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          ports: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'INPUT:flow-input',
+              }),
+            ]),
+          }),
+        }),
+      ),
+    );
+
+    const outputTool = getNodeTool('node-1', 'outputFlow');
+    expect(outputTool).toBeTruthy();
+
+    await act(async () => {
+      await outputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    expect(screen.getByText('io-port:Output:node-1')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({
+        width: 350,
+        height: expect.any(Number),
+      }),
+    );
+  });
+
+  it('toggles reference tools and opens the target amount drawer', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const refTool = getNodeTool('node-1', 'ref');
+    const nonRefTool = getNodeTool('node-2', 'nonRef');
+    expect(refTool).toBeTruthy();
+    expect(nonRefTool).toBeTruthy();
+
+    act(() => {
+      refTool.args.onClick();
+    });
+    expect(screen.getByText('target-amount-open')).toBeInTheDocument();
+
+    mockUpdateNode.mockClear();
+
+    await act(async () => {
+      await nonRefTool.args.onClick({
+        cell: {
+          store: {
+            data: mockGraphStoreState.nodes[1],
+          },
+        },
+      });
+    });
+
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-2',
+      expect.objectContaining({
+        data: expect.objectContaining({ quantitativeReference: '1' }),
+      }),
+    );
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({
+        data: expect.objectContaining({ quantitativeReference: '0' }),
+      }),
+    );
+  });
+
+  it('adds process nodes from the toolbar and deletes selected nodes with connected edges', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValue({
+      data: [
+        {
+          id: 'proc-a',
+          version: '1.0',
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: [{ '@xml:lang': 'en', '#text': 'Process A' }],
+                },
+              },
+            },
+          },
+        },
+        {
+          id: 'proc-b',
+          version: '1.1',
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: [{ '@xml:lang': 'en', '#text': 'Process B' }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+    mockGenProcessFromData.mockReturnValue({
+      exchanges: {
+        exchange: [
+          {
+            quantitativeReference: true,
+            exchangeDirection: 'output',
+            allocations: [{ allocatedFraction: '1' }],
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-add',
+              '@version': '1.0',
+              'common:shortDescription': [],
+            },
+          },
+        ],
+      },
+    });
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-1',
+        source: { cell: 'node-1' },
+        target: { cell: 'node-2' },
+        labels: [{ attrs: {} }],
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'add-processes' }));
+
+    await waitFor(() => expect(mockAddNodes).toHaveBeenCalledTimes(2));
+    expect(mockAddNodes).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({
+            id: 'proc-a',
+          }),
+        }),
+      ]),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'delete-icon' }));
+
+    await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-1']));
+    expect(mockRemoveNodes).toHaveBeenCalledWith(['node-1']);
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { labels: [] });
+  });
+
+  it('deletes selected edges when no node is selected', async () => {
+    mockGraphStoreState.nodes[0].selected = false;
+    mockGraphStoreState.nodes[1].selected = false;
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-2',
+        selected: true,
+        labels: [{ attrs: {} }],
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'delete-icon' }));
+
+    await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-2']));
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-2', { labels: [] });
+  });
+
+  it('creates a lifecycle model from the empty-create state and applies saved edge labels', async () => {
+    mockGraphStoreState.graph = {
+      getNodes: () => [
+        {
+          toJSON: () => ({
+            id: 'graph-node-1',
+            data: { id: 'proc-1', version: '1.0', label: [], quantitativeReference: '1' },
+          }),
+        },
+      ],
+      getEdges: () => [
+        {
+          toJSON: () => ({
+            id: 'graph-edge-1',
+            target: { cell: 'graph-node-1', x: 10, y: 20 },
+            data: { connection: { unbalancedAmount: 1, exchangeAmount: 2 } },
+          }),
+        },
+      ],
+    };
+    mockCreateLifeCycleModel.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'created-model',
+          version: '1.1',
+          json_tg: {
+            xflow: {
+              edges: [
+                {
+                  id: 'saved-edge',
+                  data: { connection: { unbalancedAmount: 3, exchangeAmount: 4 } },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    });
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        id=''
+        version=''
+        action='create'
+        drawerVisible={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('toolbar-edit-info:create:1.0')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockCreateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'uuid-123',
+          model: expect.objectContaining({
+            nodes: expect.any(Array),
+            edges: expect.any(Array),
+          }),
+        }),
+      ),
+    );
+    expect(mockUpdateEdge).toHaveBeenCalledWith('saved-edge', { labels: [expect.anything()] });
+  });
+
+  it('shows a duplicate-id error when create mode hits a unique conflict', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    mockCreateLifeCycleModel.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'duplicate' },
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        id=''
+        version=''
+        action='create'
+        drawerVisible={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(antMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.'),
+    );
+  });
+
+  it('initializes imported models when the drawer opens', async () => {
+    mockGenLifeCycleModelInfoFromData.mockReturnValue({
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '7.7.7',
+        },
+      },
+    });
+    mockGenLifeCycleModelData.mockReturnValue({
+      nodes: [
+        {
+          id: 'imported-node',
+          size: { width: 360 },
+          width: 360,
+          data: {
+            id: 'proc-imported',
+            version: '1.0',
+            label: [{ '@xml:lang': 'en', '#text': 'Imported' }],
+            quantitativeReference: '1',
+          },
+          ports: {
+            items: [
+              {
+                id: 'OUTPUT:flow-imported',
+                group: 'groupOutput',
+                attrs: { text: {} },
+                data: { textLang: [], allocations: [{ allocatedFraction: '1' }] },
+              },
+            ],
+          },
+        },
+      ],
+      edges: [
+        {
+          id: 'imported-edge',
+          target: { cell: 'imported-node', x: 1, y: 2 },
+          data: { connection: { unbalancedAmount: 5, exchangeAmount: 6 } },
+        },
+      ],
+    });
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        action='create'
+        drawerVisible={true}
+        importData={[{ lifeCycleModelDataSet: {}, json_tg: {} }]}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockInitData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nodes: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'imported-node',
+            }),
+          ]),
+          edges: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'imported-edge',
+              labels: [expect.anything()],
+            }),
+          ]),
+        }),
+      ),
+    );
+    expect(screen.getByText('toolbar-edit-info:create:7.7.7')).toBeInTheDocument();
+  });
+
+  it('loads existing models, applies createVersion overrides, and renders ownership-specific model actions', async () => {
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [
+              {
+                id: 'edge-loaded',
+                target: { cell: 'node-1', x: 10, y: 20 },
+                data: { connection: { unbalancedAmount: 1, exchangeAmount: 2 } },
+              },
+            ],
+          },
+          submodels: [{ id: 'submodel-1' }],
+        },
+      },
+    });
+    mockGenLifeCycleModelInfoFromData.mockReturnValue({
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '1.0',
+        },
+      },
+    });
+    mockGenLifeCycleModelData.mockReturnValue({
+      nodes: [],
+      edges: [],
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: 'proc-1', version: '1.0', userId: 'user-1', modelId: 'child-model' }],
+    });
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={true}
+        actionType='createVersion'
+        newVersion='9.9.9'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0'));
+    await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalled());
+    expect(screen.getByText('toolbar-edit-info:edit:9.9.9')).toBeInTheDocument();
+    expect(screen.getByText('life-cycle-model-edit:child-model:1.0')).toBeInTheDocument();
+    expect(screen.getByText('model-result:model-1:1.0:edit')).toBeInTheDocument();
+  });
+
+  it('renders process-view actions for non-owned process instances', async () => {
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValue({
+      data: [{ id: 'proc-1', version: '1.0', userId: 'someone-else' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() => expect(screen.getByText('process-view:proc-1:1.0')).toBeInTheDocument());
+  });
+
+  it('shows an error when the existing model is not public', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: false,
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() => expect(antMessage.error).toHaveBeenCalledWith('Model is not public'));
+  });
+
+  it('refreshes references with matched and unmatched exchanges', async () => {
+    mockGraphStoreState.nodes[0].ports.items = [
+      {
+        id: 'INPUT:flow-1',
+        group: 'groupInput',
+        attrs: { text: {} },
+        data: { textLang: [], allocations: null },
+      },
+    ];
+    mockGraphStoreState.nodes[1].ports.items = [
+      {
+        id: 'OUTPUT:missing-flow',
+        group: 'groupOutput',
+        attrs: { text: {} },
+        data: { textLang: [], allocations: null },
+      },
+    ];
+    mockGetProcessDetail.mockResolvedValue({
+      data: {
+        version: '2.0',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: [{ '@xml:lang': 'en', '#text': 'Updated Process' }],
+              },
+            },
+          },
+        },
+      },
+    });
+    mockGenProcessFromData.mockReturnValue({
+      exchanges: {
+        exchange: [
+          {
+            exchangeDirection: 'input',
+            quantitativeReference: true,
+            allocations: [{ allocatedFraction: '1' }],
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+              '@version': '2.0',
+              'common:shortDescription': [],
+            },
+          },
+        ],
+      },
+    });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'copy-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          ports: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                data: expect.objectContaining({
+                  flowVersion: '2.0',
+                }),
+              }),
+            ]),
+          }),
+        }),
+      ),
+    );
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-2',
+      expect.objectContaining({
+        ports: expect.objectContaining({
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              attrs: expect.objectContaining({
+                text: expect.objectContaining({
+                  text: '-',
+                }),
+              }),
+            }),
+          ]),
+        }),
+      }),
+    );
+  });
+
+  it('handles edge and node graph events, including invalid connections and port clicks', async () => {
+    jest.useFakeTimers();
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGraphStoreState.edges = [
+      {
+        id: 'edge-existing',
+        labels: [{ attrs: {} }],
+        selected: true,
+      },
+    ];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const edgeAddedHandler = getGraphHandler('edge:added');
+    const edgeConnectedHandler = getGraphHandler('edge:connected');
+    const edgeClickHandler = getGraphHandler('edge:click');
+    const nodeResizeHandler = getGraphHandler('node:change:size');
+    const nodeClickHandler = getGraphHandler('node:click');
+    const blankClickHandler = getGraphHandler('blank:click');
+
+    edgeAddedHandler({
+      edge: { id: 'edge-new' },
+    });
+    expect(mockUpdateEdge).toHaveBeenCalledWith(
+      'edge-new',
+      expect.objectContaining({ attrs: expect.any(Object) }),
+    );
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-existing', { labels: [] });
+
+    const validEdge = {
+      id: 'edge-valid',
+      getSourcePortId: () => 'OUTPUT:flow-a',
+      getTargetPortId: () => 'INPUT:flow-a',
+      getSourceCellId: () => 'node-1',
+      getTargetCellId: () => 'node-2',
+    };
+    edgeConnectedHandler({ edge: validEdge });
+    expect(mockUpdateEdge).toHaveBeenCalledWith(
+      'edge-valid',
+      expect.objectContaining({
+        data: expect.objectContaining({
+          connection: expect.any(Object),
+        }),
+      }),
+    );
+
+    const invalidEdge = {
+      id: 'edge-invalid',
+      getSourcePortId: () => 'OUTPUT:flow-a',
+      getTargetPortId: () => 'INPUT:flow-b',
+    };
+    edgeConnectedHandler({ edge: invalidEdge });
+    expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-invalid']);
+
+    const resizeNode = {
+      data: { label: [{ '@xml:lang': 'en', '#text': 'Resizable' }], quantitativeReference: '1' },
+      getSize: () => ({ width: 420 }),
+      getPorts: () => [
+        {
+          id: 'OUTPUT:flow-resize',
+          group: 'groupOutput',
+          attrs: { text: {} },
+          data: { textLang: [], allocations: null },
+        },
+      ],
+      setAttrByPath: jest.fn(),
+      prop: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+    };
+    nodeResizeHandler({ node: resizeNode });
+    act(() => {
+      jest.runAllTimers();
+    });
+    expect(resizeNode.setAttrByPath).toHaveBeenCalled();
+    expect(resizeNode.prop).toHaveBeenCalled();
+    expect(resizeNode.addTools).toHaveBeenCalled();
+
+    const target = document.createElement('text');
+    target.textContent = 'Flow Name';
+    const parent = document.createElement('g');
+    const grandParent = document.createElement('g');
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('port', 'OUTPUT:flow-a');
+    grandParent.appendChild(circle);
+    grandParent.appendChild(parent);
+    parent.appendChild(target);
+
+    const clickableNode = {
+      id: 'node-1',
+      isNode: () => true,
+      getPorts: () => [{ id: 'OUTPUT:flow-a', data: { flowVersion: '3.0' } }],
+    };
+
+    await act(async () => {
+      nodeClickHandler({
+        node: clickableNode,
+        e: { target },
+      });
+    });
+
+    expect(screen.getByText('connectable:OUTPUT:flow-a:3.0')).toBeInTheDocument();
+    act(() => {
+      screen.getByRole('button', { name: 'connect-processes' }).click();
+    });
+    await waitFor(() => expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalled());
+
+    edgeClickHandler({
+      edge: { id: 'edge-clicked' },
+    });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-existing', { selected: false });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-clicked', { selected: true });
+
+    blankClickHandler();
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+  });
+
+  it('runs the selected-node update callback through the result action components', async () => {
+    mockGraphStoreState.nodes[0].selected = true;
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        version: '1.0',
+        json: {
+          lifeCycleModelDataSet: {},
+        },
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+            edges: [],
+          },
+          submodels: [],
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValue({
+      data: [{ id: 'proc-1', version: '1.0', userId: 'user-1' }],
+    });
+
+    render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+
+    await waitFor(() => expect(screen.getByText('process-edit:proc-1:1.0')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: 'run-process-update-node' }));
+
+    await waitFor(() =>
+      expect(mockGetRefData).toHaveBeenCalledWith('ref-proc-1', '2.0', 'process'),
+    );
+    expect(mockGetUserTeamId).toHaveBeenCalled();
+    expect(mockCheckReferences).toHaveBeenCalled();
   });
 });

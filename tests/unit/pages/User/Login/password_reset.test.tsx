@@ -19,6 +19,8 @@ var mockSetPassword: any;
 var mockGetCurrentUser: any;
 // eslint-disable-next-line no-var
 var mockHistory: any;
+// eslint-disable-next-line no-var
+var mockLatestPasswordFields: Record<string, any>;
 
 jest.mock('umi', () => {
   const React = require('react');
@@ -55,6 +57,7 @@ jest.mock('@umijs/max', () => {
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
+  mockLatestPasswordFields = {};
   const LoginForm = ({ children, onFinish, submitter, fields, logo }: any) => (
     <div data-testid='login-form'>
       <div data-testid='fields'>{JSON.stringify(fields)}</div>
@@ -81,9 +84,10 @@ jest.mock('@ant-design/pro-components', () => {
     <input placeholder={toText(placeholder)} disabled={disabled} />
   );
   const ProLayout = ({ children }: any) => <div>{children}</div>;
-  ProFormText.Password = ({ placeholder }: any) => (
-    <input placeholder={toText(placeholder)} type='password' />
-  );
+  ProFormText.Password = (props: any) => {
+    mockLatestPasswordFields[props.name] = props;
+    return <input placeholder={toText(props.placeholder)} type='password' />;
+  };
   return { __esModule: true, LoginForm, ProConfigProvider, ProFormText, ProLayout };
 });
 
@@ -240,5 +244,32 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
       expect(mockMessageApi.error).toHaveBeenCalledWith('Password reset failed, please try again.');
     });
     expect(mockHistory.push).not.toHaveBeenCalled();
+  });
+
+  it('renders weak, medium and strong password strength states', async () => {
+    render(<PasswordReset />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+
+    const statusRender = mockLatestPasswordFields.newPassword.fieldProps.statusRender;
+    expect(toText(statusRender('Ab1!'))).toContain('Strength: Weak');
+    expect(toText(statusRender('Abcdefg1!'))).toContain('Strength: Medium');
+    expect(toText(statusRender('Abcdefghijk1!'))).toContain('Strength: Strong');
+  });
+
+  it('validates confirmation password matches the new password', async () => {
+    render(<PasswordReset />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+
+    const confirmRuleFactory = mockLatestPasswordFields.confirmNewPassword.rules[1];
+    const confirmRule = confirmRuleFactory({
+      getFieldValue: (name: string) => (name === 'newPassword' ? 'NewPassword1!' : ''),
+    });
+
+    await expect(confirmRule.validator({}, 'NewPassword1!')).resolves.toBeUndefined();
+    await expect(confirmRule.validator({}, 'Mismatch1!')).rejects.toThrow(
+      'The two passwords do not match!',
+    );
   });
 });

@@ -17,6 +17,15 @@ const mockIntl = {
   locale: 'en-US',
   formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
 };
+let latestRefsDrawerProps: any = null;
+const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
+const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
+const mockUpdateRefsData = jest.fn((data: any) => data);
+const mockCheckData = jest.fn(async () => {});
+const mockFindProblemNodes = jest.fn(() => []);
+const mockGetErrRefTab = jest.fn(() => '');
+const mockGenFlowpropertyJsonOrdered = jest.fn(() => ({ mocked: true }));
+const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -180,7 +189,7 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
 
   return {
     __esModule: true,
-    FlowpropertyForm: ({ formRef }: any) => {
+    FlowpropertyForm: ({ formRef, onData, onTabChange, showRules }: any) => {
       const [name, setName] = React.useState('');
 
       React.useEffect(() => {
@@ -201,11 +210,36 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
+          <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
+            switch-flowproperty-tab
+          </button>
+          <button type='button' onClick={() => onData?.()}>
+            sync-flowproperty-data
+          </button>
+          {showRules ? <span>rules-visible</span> : null}
         </div>
       );
     },
   };
 });
+
+jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    latestRefsDrawerProps = props;
+    if (!props.open) return null;
+    return (
+      <div data-testid='refs-drawer'>
+        <button type='button' onClick={props.onKeep}>
+          keep-current
+        </button>
+        <button type='button' onClick={() => props.onUpdate(props.dataSource)}>
+          update-latest
+        </button>
+      </div>
+    );
+  },
+}));
 
 const mockGetFlowpropertyDetail = jest.fn(async () => ({
   data: {
@@ -235,6 +269,7 @@ jest.mock('@/services/flowproperties/api', () => ({
 jest.mock('@/services/flowproperties/util', () => ({
   __esModule: true,
   genFlowpropertyFromData: jest.fn((payload: any) => payload ?? {}),
+  genFlowpropertyJsonOrdered: (...args: any[]) => mockGenFlowpropertyJsonOrdered(...args),
 }));
 
 const refCheckContextValue = { refCheckData: [] };
@@ -250,11 +285,11 @@ jest.mock('@/contexts/refCheckContext', () => {
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
-  checkData: jest.fn(),
+  checkData: (...args: any[]) => mockCheckData(...args),
   ReffPath: jest.fn(() => ({
-    findProblemNodes: () => [],
+    findProblemNodes: () => mockFindProblemNodes(),
   })),
-  getErrRefTab: jest.fn(() => ''),
+  getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   getAllRefObj: jest.fn(() => []),
   getRefTableName: jest.fn((type: string) => {
     const tableDict: Record<string, string> = {
@@ -270,9 +305,31 @@ jest.mock('@/pages/Utils/review', () => ({
   }),
 }));
 
+jest.mock('@/pages/Utils/updateReference', () => ({
+  __esModule: true,
+  getRefsOfCurrentVersion: (...args: any[]) => mockGetRefsOfCurrentVersion(...args),
+  getRefsOfNewVersion: (...args: any[]) => mockGetRefsOfNewVersion(...args),
+  updateRefsData: (...args: any[]) => mockUpdateRefsData(...args),
+}));
+
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createFlowProperty: jest.fn(() => ({
+    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+  })),
+}));
+
 describe('FlowpropertiesEdit', () => {
   beforeEach(() => {
+    latestRefsDrawerProps = null;
     jest.clearAllMocks();
+    mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
+    mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
+    mockUpdateRefsData.mockImplementation((data: any) => data);
+    mockCheckData.mockResolvedValue(undefined);
+    mockFindProblemNodes.mockReturnValue([]);
+    mockGetErrRefTab.mockReturnValue('');
+    mockValidateEnhanced.mockReturnValue({ success: true });
   });
 
   it('updates flow property and reloads list on success', async () => {
@@ -441,5 +498,173 @@ describe('FlowpropertiesEdit', () => {
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('save failed'));
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
+  });
+
+  it('opens the refs drawer and lets the user update or keep versions', async () => {
+    const newRefs = [
+      {
+        key: 'ref-1',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '2.0.0',
+      },
+    ];
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+    expect(latestRefsDrawerProps.dataSource).toEqual(newRefs);
+
+    await userEvent.click(screen.getByRole('button', { name: /update-latest/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), newRefs, true),
+    );
+
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs });
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /keep-current/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+  });
+
+  it('updates references inline when no newer version exists', async () => {
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs: [], oldRefs });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('runs data check successfully and keeps the drawer open', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <FlowpropertiesEdit
+        id='fp-1'
+        version='1.0.0'
+        buttonType='text'
+        actionRef={actionRef as any}
+        lang='en'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /switch-flowproperty-tab/i }));
+    await userEvent.click(screen.getByRole('button', { name: /sync-flowproperty-data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() => expect(mockUpdateFlowproperties).toHaveBeenCalled());
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockGenFlowpropertyJsonOrdered).toHaveBeenCalled();
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByText('rules-visible')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
+  });
+
+  it('reports data-check errors from references and schema issues', async () => {
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
+      unRule.push({
+        '@refObjectId': 'flow-1',
+        '@version': '1.0.0',
+      });
+      nonExistent.push({
+        '@refObjectId': 'source-2',
+        '@version': '2.0.0',
+      });
+    });
+    mockFindProblemNodes.mockReturnValue([
+      {
+        '@refObjectId': 'process-1',
+        '@version': '3.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockGetErrRefTab.mockReturnValue('administrativeInformation');
+    mockValidateEnhanced.mockReturnValue({
+      success: false,
+      error: {
+        issues: [{ path: ['flowPropertyDataSet', 'modellingAndValidation'] }],
+      },
+    });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        expect.stringContaining('Data check failed!'),
+      ),
+    );
+    expect(mockGetErrRefTab).toHaveBeenCalled();
+  });
+
+  it('resets loaded data and closes from both cancel and close icon actions', async () => {
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+
+    await userEvent.click(screen.getByRole('button', { name: /reset/i }));
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledTimes(2));
+
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

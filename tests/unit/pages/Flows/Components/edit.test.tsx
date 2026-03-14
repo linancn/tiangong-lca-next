@@ -15,6 +15,14 @@ const toText = (node: any): string => {
 
 let latestRefsDrawerProps: any = null;
 const mockParentRefCheckContext = { refCheckData: [] as any[] };
+const mockCheckData = jest.fn(async () => {});
+const mockGetErrRefTab = jest.fn(() => '');
+const mockValidateEnhanced = jest.fn(() => ({ success: true }));
+const mockJsonToList = jest.fn((value: any) => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+});
+let latestFlowFormProps: any = null;
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -155,10 +163,24 @@ jest.mock('@ant-design/pro-components', () => {
 
 jest.mock('@/components/AISuggestion', () => ({
   __esModule: true,
-  default: ({ onClose }: any) => (
-    <button type='button' onClick={() => onClose?.()}>
-      ai-suggestion
-    </button>
+  default: ({ onClose, onLatestJsonChange }: any) => (
+    <div>
+      <button
+        type='button'
+        onClick={() =>
+          onLatestJsonChange?.({
+            flowDataSet: {
+              ai: true,
+            },
+          })
+        }
+      >
+        set-ai-json
+      </button>
+      <button type='button' onClick={() => onClose?.()}>
+        ai-suggestion
+      </button>
+    </div>
   ),
 }));
 
@@ -282,8 +304,13 @@ jest.mock('@/pages/Utils/review', () => ({
   ReffPath: jest.fn(() => ({
     findProblemNodes: () => [],
   })),
-  checkData: jest.fn(async () => {}),
-  getErrRefTab: jest.fn(() => ''),
+  checkData: (...args: any[]) => mockCheckData(...args),
+  getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
+}));
+
+jest.mock('@/services/general/util', () => ({
+  __esModule: true,
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 jest.mock('@/style/custom.less', () => ({
@@ -296,19 +323,85 @@ jest.mock('@/style/custom.less', () => ({
 jest.mock('@tiangong-lca/tidas-sdk', () => ({
   __esModule: true,
   createFlow: jest.fn(() => ({
-    validateEnhanced: () => ({ success: true }),
+    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
   })),
 }));
 
 jest.mock('@/pages/Flows/Components/form', () => ({
   __esModule: true,
-  FlowForm: () => <div data-testid='flow-form'>flow-form</div>,
+  FlowForm: (props: any) => {
+    latestFlowFormProps = props;
+    return (
+      <div data-testid='flow-form'>
+        <div data-testid='flow-type'>{String(props.flowType ?? '')}</div>
+        <div data-testid='property-count'>{String(props.propertyDataSource?.length ?? 0)}</div>
+        <button type='button' onClick={() => props.onTabChange?.('modellingAndValidation')}>
+          switch-flow-tab
+        </button>
+        <button type='button' onClick={() => props.onData?.()}>
+          sync-flow-data
+        </button>
+        <button type='button' onClick={() => props.onPropertyData?.([])}>
+          clear-flow-properties
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            props.onPropertyData?.([
+              {
+                quantitativeReference: false,
+                referenceToFlowPropertyDataSet: {
+                  '@refObjectId': 'fp-1',
+                  '@version': '1.0.0',
+                  'common:shortDescription': [],
+                },
+              },
+              {
+                quantitativeReference: false,
+                referenceToFlowPropertyDataSet: {
+                  '@refObjectId': 'fp-2',
+                  '@version': '1.0.0',
+                  'common:shortDescription': [],
+                },
+              },
+            ])
+          }
+        >
+          set-non-quant-properties
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            props.onPropertyDataCreate?.({
+              quantitativeReference: false,
+              referenceToFlowPropertyDataSet: {
+                '@refObjectId': 'fp-new',
+                '@version': '3.0.0',
+                'common:shortDescription': [],
+              },
+            })
+          }
+        >
+          append-property
+        </button>
+        {props.showRules ? <span>flow-rules-visible</span> : null}
+      </div>
+    );
+  },
 }));
 
 describe('FlowsEdit', () => {
   beforeEach(() => {
     latestRefsDrawerProps = null;
+    latestFlowFormProps = null;
     jest.clearAllMocks();
+    mockCheckData.mockResolvedValue(undefined);
+    mockGetErrRefTab.mockReturnValue('');
+    mockValidateEnhanced.mockReturnValue({ success: true });
+    mockJsonToList.mockImplementation((value: any) => {
+      if (!value) return [];
+      return Array.isArray(value) ? value : [value];
+    });
   });
 
   it('loads flow detail and saves successfully', async () => {
@@ -517,5 +610,189 @@ describe('FlowsEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('save failed'));
+  });
+
+  it('updates references inline when there are no newer versions and refreshes property metadata', async () => {
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs: [], oldRefs });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '2.0.0'));
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('runs flow data check successfully without closing the drawer', async () => {
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /switch-flow-tab/i }));
+    await userEvent.click(screen.getByRole('button', { name: /sync-flow-data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /append-property/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() => expect(mockUpdateFlows).toHaveBeenCalled());
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockValidateEnhanced).toHaveBeenCalled();
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(screen.getByText('flow-rules-visible')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('blocks data check when no flow properties are selected', async () => {
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /clear-flow-properties/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Please select flow properties'),
+    );
+  });
+
+  it('blocks data check when quantitative references are invalid', async () => {
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /set-non-quant-properties/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Flow property needs to have exactly one quantitative reference open',
+      ),
+    );
+  });
+
+  it('stops before saving when form validation fails', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+
+    latestFlowFormProps.formRef.current.validateFields = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('invalid'));
+
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(consoleLogSpy).toHaveBeenCalledWith('err', expect.any(Error)));
+    expect(mockUpdateFlows).not.toHaveBeenCalled();
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('hydrates form state from AI suggestions when the assistant panel closes', async () => {
+    const aiFlowData = {
+      flowInformation: {
+        dataSetInformation: {
+          name: { baseName: [{ '@xml:lang': 'en', '#text': 'AI Flow' }] },
+        },
+      },
+      flowProperties: {
+        flowProperty: [
+          {
+            quantitativeReference: true,
+            referenceToFlowPropertyDataSet: {
+              '@refObjectId': 'fp-ai',
+              '@version': '4.0.0',
+              'common:shortDescription': [],
+            },
+          },
+          {
+            quantitativeReference: false,
+            referenceToFlowPropertyDataSet: {
+              '@refObjectId': 'fp-ai-2',
+              '@version': '4.1.0',
+              'common:shortDescription': [],
+            },
+          },
+        ],
+      },
+    };
+    const flowUtils = jest.requireMock('@/services/flows/util');
+    flowUtils.genFlowFromData
+      .mockImplementationOnce(() => loadedFlowData)
+      .mockImplementationOnce(() => aiFlowData);
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /set-ai-json/i }));
+    await userEvent.click(screen.getByRole('button', { name: /ai-suggestion/i }));
+
+    await waitFor(() => expect(screen.getByTestId('property-count')).toHaveTextContent('2'));
+    expect(flowUtils.genFlowFromData).toHaveBeenCalledWith({ ai: true });
   });
 });

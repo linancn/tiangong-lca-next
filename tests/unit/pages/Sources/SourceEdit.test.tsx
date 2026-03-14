@@ -13,6 +13,16 @@ const toText = (node: any): string => {
   return '';
 };
 
+let latestRefsDrawerProps: any = null;
+const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
+const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
+const mockUpdateRefsData = jest.fn((data: any) => data);
+const mockCheckData = jest.fn(async () => {});
+const mockGetErrRefTab = jest.fn(() => 'sourceInformation');
+const mockFindProblemNodes = jest.fn(() => []);
+const mockGenSourceJsonOrdered = jest.fn(() => ({ mocked: true }));
+const mockValidateEnhanced = jest.fn(() => ({ success: true }));
+
 jest.mock('@supabase/supabase-js', () => {
   const supabaseQueryBuilder: any = {};
   supabaseQueryBuilder.select = jest.fn().mockResolvedValue({ data: [], error: null });
@@ -285,7 +295,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    SourceForm: ({ onData, setFileList, setLoadFiles }: any) => {
+    SourceForm: ({ onData, onTabChange, setFileList, setLoadFiles, showRules }: any) => {
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -323,19 +333,41 @@ jest.mock('@/pages/Sources/Components/form', () => {
           >
             clear-files
           </button>
+          <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
+            switch-source-tab
+          </button>
+          {showRules ? <span>source-rules-visible</span> : null}
         </div>
       );
     },
   };
 });
 
+jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    latestRefsDrawerProps = props;
+    if (!props.open) return null;
+    return (
+      <div data-testid='refs-drawer'>
+        <button type='button' onClick={props.onKeep}>
+          keep-current
+        </button>
+        <button type='button' onClick={() => props.onUpdate(props.dataSource)}>
+          update-latest
+        </button>
+      </div>
+    );
+  },
+}));
+
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   ReffPath: jest.fn().mockImplementation(() => ({
-    findProblemNodes: () => [],
+    findProblemNodes: () => mockFindProblemNodes(),
   })),
-  checkData: jest.fn(() => Promise.resolve()),
-  getErrRefTab: jest.fn(() => 'sourceInformation'),
+  checkData: (...args: any[]) => mockCheckData(...args),
+  getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   getAllRefObj: jest.fn(() => []),
   getRefTableName: jest.fn((type: string) => {
     const tableDict: Record<string, string> = {
@@ -349,6 +381,13 @@ jest.mock('@/pages/Utils/review', () => ({
     };
     return tableDict[type];
   }),
+}));
+
+jest.mock('@/pages/Utils/updateReference', () => ({
+  __esModule: true,
+  getRefsOfCurrentVersion: (...args: any[]) => mockGetRefsOfCurrentVersion(...args),
+  getRefsOfNewVersion: (...args: any[]) => mockGetRefsOfNewVersion(...args),
+  updateRefsData: (...args: any[]) => mockUpdateRefsData(...args),
 }));
 
 jest.mock('@/services/sources/api', () => ({
@@ -367,6 +406,7 @@ jest.mock('@/services/sources/util', () => ({
       },
     },
   })),
+  genSourceJsonOrdered: (...args: any[]) => mockGenSourceJsonOrdered(...args),
 }));
 
 jest.mock('@/services/supabase/storage', () => ({
@@ -385,6 +425,13 @@ jest.mock('@/services/supabase/key', () => ({
   supabaseStorageBucket: 'sources',
 }));
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createSource: jest.fn(() => ({
+    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+  })),
+}));
+
 const { getSourceDetail: mockGetSourceDetail, updateSource: mockUpdateSource } =
   jest.requireMock('@/services/sources/api');
 const {
@@ -395,6 +442,7 @@ const {
 
 describe('SourceEdit component', () => {
   beforeEach(() => {
+    latestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockGetSourceDetail.mockResolvedValue({
       data: {
@@ -411,6 +459,14 @@ describe('SourceEdit component', () => {
     ]);
     mockRemoveFile.mockResolvedValue({ error: null });
     mockUploadFile.mockResolvedValue({ error: null });
+    mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
+    mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
+    mockUpdateRefsData.mockImplementation((data: any) => data);
+    mockCheckData.mockResolvedValue(undefined);
+    mockGetErrRefTab.mockReturnValue('sourceInformation');
+    mockFindProblemNodes.mockReturnValue([]);
+    mockGenSourceJsonOrdered.mockReturnValue({ mocked: true });
+    mockValidateEnhanced.mockReturnValue({ success: true });
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -636,5 +692,164 @@ describe('SourceEdit component', () => {
     await waitFor(() => expect(mockRemoveFile).toHaveBeenCalledWith(['file-existing.pdf']));
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('remove failed'));
     expect(mockUpdateSource).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the refs drawer and supports both update and keep flows', async () => {
+    const user = userEvent.setup();
+    const newRefs = [
+      {
+        key: 'ref-1',
+        id: 'contact-1',
+        type: 'contact data set',
+        currentVersion: '1.0.0',
+        newVersion: '2.0.0',
+      },
+    ];
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'contact-1',
+        type: 'contact data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+
+    await user.click(within(drawer).getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+    expect(latestRefsDrawerProps.dataSource).toEqual(newRefs);
+
+    await user.click(screen.getByRole('button', { name: 'update-latest' }));
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), newRefs, true),
+    );
+
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs });
+    await user.click(within(drawer).getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'keep-current' }));
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+  });
+
+  it('updates references inline when there is no newer version', async () => {
+    const user = userEvent.setup();
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'contact-1',
+        type: 'contact data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs: [], oldRefs });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Update Reference' }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('runs source data check successfully without closing the drawer', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+
+    await user.click(within(drawer).getByRole('button', { name: 'switch-source-tab' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockUpdateSource).toHaveBeenCalled());
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockGenSourceJsonOrdered).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+    expect(screen.getByText('source-rules-visible')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Edit Source' })).toBeInTheDocument();
+  });
+
+  it('shows source data-check errors when references or schema issues remain', async () => {
+    const user = userEvent.setup();
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
+      unRule.push({ '@refObjectId': 'contact-1', '@version': '1.0.0' });
+      nonExistent.push({ '@refObjectId': 'source-2', '@version': '2.0.0' });
+    });
+    mockFindProblemNodes.mockReturnValue([
+      {
+        '@refObjectId': 'process-1',
+        '@version': '3.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockValidateEnhanced.mockReturnValue({
+      success: false,
+      error: { issues: [{ path: ['sourceDataSet', 'administrativeInformation'] }] },
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        expect.stringContaining('Data check failed!'),
+      ),
+    );
+    expect(mockGetErrRefTab).toHaveBeenCalled();
   });
 });

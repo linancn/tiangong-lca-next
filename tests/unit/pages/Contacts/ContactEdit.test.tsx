@@ -13,6 +13,16 @@ const toText = (node: any): string => {
   return '';
 };
 
+let mockLatestRefsDrawerProps: any = null;
+const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
+const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
+const mockUpdateRefsData = jest.fn((data: any) => data);
+const mockCheckData = jest.fn(async () => {});
+const mockGetErrRefTab = jest.fn(() => 'contactInformation');
+const mockFindProblemNodes = jest.fn(() => []);
+const mockGenContactJsonOrdered = jest.fn(() => ({ mocked: true }));
+const mockValidateEnhanced = jest.fn(() => ({ success: true }));
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -221,7 +231,7 @@ jest.mock('@/pages/Contacts/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    ContactForm: () => {
+    ContactForm: ({ onData, onTabChange, showRules }: any) => {
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -253,17 +263,44 @@ jest.mock('@/pages/Contacts/Components/form', () => {
               )
             }
           />
+          <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
+            switch-contact-tab
+          </button>
+          <button type='button' onClick={() => onData?.()}>
+            sync-contact-data
+          </button>
+          {showRules ? <span>contact-rules-visible</span> : null}
         </div>
       );
     },
   };
 });
 
+jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockLatestRefsDrawerProps = props;
+    if (!props.open) return null;
+    return (
+      <div data-testid='refs-drawer'>
+        <button type='button' onClick={props.onKeep}>
+          keep-current
+        </button>
+        <button type='button' onClick={() => props.onUpdate(props.dataSource)}>
+          update-latest
+        </button>
+      </div>
+    );
+  },
+}));
+
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
-  ReffPath: jest.fn().mockImplementation(() => ({ findProblemNodes: () => [] })),
-  checkData: jest.fn(),
-  getErrRefTab: jest.fn(),
+  ReffPath: jest
+    .fn()
+    .mockImplementation(() => ({ findProblemNodes: () => mockFindProblemNodes() })),
+  checkData: (...args: any[]) => mockCheckData(...args),
+  getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   getAllRefObj: jest.fn(() => []),
   getRefTableName: jest.fn((type: string) => {
     const tableDict: Record<string, string> = {
@@ -277,6 +314,13 @@ jest.mock('@/pages/Utils/review', () => ({
     };
     return tableDict[type];
   }),
+}));
+
+jest.mock('@/pages/Utils/updateReference', () => ({
+  __esModule: true,
+  getRefsOfCurrentVersion: (...args: any[]) => mockGetRefsOfCurrentVersion(...args),
+  getRefsOfNewVersion: (...args: any[]) => mockGetRefsOfNewVersion(...args),
+  updateRefsData: (...args: any[]) => mockUpdateRefsData(...args),
 }));
 
 jest.mock('@/services/contacts/api', () => ({
@@ -296,6 +340,7 @@ jest.mock('@/services/contacts/util', () => ({
       },
     },
   })),
+  genContactJsonOrdered: (...args: any[]) => mockGenContactJsonOrdered(...args),
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -324,6 +369,13 @@ jest.mock('@/services/roles/api', () => ({
   getUserTeamId: jest.fn(() => Promise.resolve('team-1')),
 }));
 
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createContact: jest.fn(() => ({
+    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+  })),
+}));
+
 const { getContactDetail: mockGetContactDetail, updateContact: mockUpdateContact } =
   jest.requireMock('@/services/contacts/api');
 const { getRefData: mockGetRefData, updateStateCodeApi: mockUpdateStateCodeApi } =
@@ -334,6 +386,7 @@ const { getAllRefObj: mockGetAllRefObj } = jest.requireMock('@/pages/Utils/revie
 
 describe('ContactEdit component', () => {
   beforeEach(() => {
+    mockLatestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockGetContactDetail.mockResolvedValue({
       data: {
@@ -373,6 +426,14 @@ describe('ContactEdit component', () => {
     mockGetReviewUserRoleApi.mockResolvedValue(null);
     mockGetUserTeamId.mockResolvedValue('team-1');
     mockGetAllRefObj.mockReturnValue([]);
+    mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
+    mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
+    mockUpdateRefsData.mockImplementation((data: any) => data);
+    mockCheckData.mockResolvedValue(undefined);
+    mockGetErrRefTab.mockReturnValue('contactInformation');
+    mockFindProblemNodes.mockReturnValue([]);
+    mockGenContactJsonOrdered.mockReturnValue({ mocked: true });
+    mockValidateEnhanced.mockReturnValue({ success: true });
     mockGetRefData.mockResolvedValue({
       success: true,
       data: {
@@ -634,5 +695,219 @@ describe('ContactEdit component', () => {
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('save failed'));
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
+  });
+
+  it('opens the refs drawer and supports both update and keep flows', async () => {
+    const user = userEvent.setup();
+    const newRefs = [
+      {
+        key: 'ref-1',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '2.0.0',
+      },
+    ];
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+
+    await user.click(within(drawer).getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+    expect(mockLatestRefsDrawerProps.dataSource).toEqual(newRefs);
+
+    await user.click(screen.getByRole('button', { name: 'update-latest' }));
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), newRefs, true),
+    );
+
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs, oldRefs });
+    await user.click(within(drawer).getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'keep-current' }));
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+  });
+
+  it('updates references inline when there is no newer version', async () => {
+    const user = userEvent.setup();
+    const oldRefs = [
+      {
+        key: 'ref-1-current',
+        id: 'source-1',
+        type: 'source data set',
+        currentVersion: '1.0.0',
+        newVersion: '1.0.0',
+      },
+    ];
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs: [], oldRefs });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Update Reference' }));
+
+    await waitFor(() =>
+      expect(mockUpdateRefsData).toHaveBeenCalledWith(expect.any(Object), oldRefs, false),
+    );
+    expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument();
+  });
+
+  it('runs contact data check successfully without closing the drawer', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+
+    await user.click(within(drawer).getByRole('button', { name: 'switch-contact-tab' }));
+    await user.click(within(drawer).getByRole('button', { name: 'sync-contact-data' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockUpdateContact).toHaveBeenCalled());
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockGenContactJsonOrdered).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+    expect(screen.getByText('contact-rules-visible')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
+  });
+
+  it('shows contact data-check errors when references or schema issues remain', async () => {
+    const user = userEvent.setup();
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
+      unRule.push({ '@refObjectId': 'source-1', '@version': '1.0.0' });
+      nonExistent.push({ '@refObjectId': 'contact-9', '@version': '9.0.0' });
+    });
+    mockFindProblemNodes.mockReturnValue([
+      {
+        '@refObjectId': 'process-1',
+        '@version': '3.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockValidateEnhanced.mockReturnValue({
+      success: false,
+      error: { issues: [{ path: ['contactDataSet', 'administrativeInformation'] }] },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        expect.stringContaining('Data check failed!'),
+      ),
+    );
+    expect(mockGetErrRefTab).toHaveBeenCalled();
+  });
+
+  it('blocks sync when contact references point to a different contact record', async () => {
+    const user = userEvent.setup();
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@type': 'contact data set',
+        '@refObjectId': 'contact-999',
+        '@version': '99.00.000',
+      },
+    ]);
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'Contact reference {id}({version}) must match the current contact ID and version.',
+      ),
+    );
+    expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
+  });
+
+  it('shows an action error when state-code update fails during sync', async () => {
+    const user = userEvent.setup();
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockUpdateStateCodeApi.mockResolvedValueOnce(null);
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Action failed'));
   });
 });
