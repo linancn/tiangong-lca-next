@@ -56,6 +56,10 @@ jest.mock('@/pages/Utils', () => ({
   getRules: jest.fn(() => []),
 }));
 
+const { getRules } = jest.requireMock('@/pages/Utils') as {
+  getRules: jest.Mock;
+};
+
 jest.mock('@/pages/Flows/Components/optiondata', () => ({
   __esModule: true,
   dataDerivationTypeStatusOptions: [{ value: 'measured', label: 'Measured' }],
@@ -77,7 +81,14 @@ jest.mock('@ant-design/pro-components', () => {
     return next;
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onValuesChange, onFinish, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onValuesChange,
+    onFinish,
+    submitter,
+    children,
+  }: any) => {
     const [values, setValues] = React.useState<any>(initialValues ?? {});
 
     React.useEffect(() => {
@@ -91,6 +102,10 @@ jest.mock('@ant-design/pro-components', () => {
         resetFields: () => setValues(initialValues ?? {}),
         getFieldsValue: () => values,
         setFieldsValue: (next: any) => {
+          if (next === undefined) {
+            onValuesChange?.({}, undefined);
+            return;
+          }
           setValues((prev: any) => {
             const merged = mergeDeep(prev, next);
             onValuesChange?.({}, merged);
@@ -101,7 +116,12 @@ jest.mock('@ant-design/pro-components', () => {
       lastFormApi = formRef.current;
     }, [formRef, initialValues, onValuesChange, onFinish, values]);
 
-    return <form>{children}</form>;
+    return (
+      <form>
+        {children}
+        {submitter?.render?.()}
+      </form>
+    );
   };
 
   return {
@@ -121,8 +141,10 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, footer, onClose, children }: any) =>
-    open ? (
+  const Drawer = ({ open, title, extra, footer, onClose, children, getContainer }: any) => {
+    if (!open) return null;
+    getContainer?.();
+    return (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>{extra}</header>
         <div>{children}</div>
@@ -131,7 +153,8 @@ jest.mock('antd', () => {
           close
         </button>
       </section>
-    ) : null;
+    );
+  };
 
   const Tooltip = ({ children }: any) => <>{children}</>;
   const Card = ({ children, title }: any) => (
@@ -276,6 +299,61 @@ describe('FlowPropertyEdit', () => {
 
     expect(onData).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /edit flow property/i })).not.toBeInTheDocument();
+  });
+
+  it('supports rules rendering and falls back to an empty object from the selector callback', async () => {
+    const onData = jest.fn();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={onData}
+        showRules
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+    lastFormApi.getFieldsValue = jest.fn(() => undefined);
+
+    await userEvent.click(screen.getByRole('button', { name: /select-flowproperty/i }));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(onData).toHaveBeenCalledWith([{}]));
+    expect(getRules).toHaveBeenCalled();
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('handles missing data, nullish value changes, and drawer onClose', async () => {
+    renderWithProviders(
+      <PropertyEdit
+        id='missing'
+        data={undefined as any}
+        lang='en'
+        buttonType='text'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+
+    await act(async () => {
+      lastFormApi.setFieldsValue(undefined);
+    });
+
+    const drawer = screen.getByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(within(drawer).getAllByRole('button', { name: /close/i })[1]);
+
     expect(screen.queryByRole('dialog', { name: /edit flow property/i })).not.toBeInTheDocument();
   });
 });

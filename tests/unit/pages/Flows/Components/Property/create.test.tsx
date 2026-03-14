@@ -65,6 +65,10 @@ jest.mock('@/pages/Utils', () => ({
   getRules: jest.fn(() => []),
 }));
 
+const { getRules } = jest.requireMock('@/pages/Utils') as {
+  getRules: jest.Mock;
+};
+
 jest.mock('@/pages/Flows/Components/optiondata', () => ({
   __esModule: true,
   dataDerivationTypeStatusOptions: [{ value: 'measured', label: 'Measured' }],
@@ -96,6 +100,10 @@ jest.mock('@ant-design/pro-components', () => {
         resetFields: () => setValues({}),
         getFieldsValue: () => values,
         setFieldsValue: (next: any) => {
+          if (next === undefined) {
+            onValuesChange?.({}, undefined);
+            return;
+          }
           setValues((prev: any) => {
             const merged = mergeDeep(prev, next);
             onValuesChange?.({}, merged);
@@ -239,6 +247,41 @@ describe('FlowPropertyCreate', () => {
     await userEvent.click(screen.getByRole('button', { name: /create/i }));
     const drawer = screen.getByRole('dialog', { name: /create flow property/i });
     await userEvent.click(within(drawer).getAllByRole('button', { name: /close/i })[0]);
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();
+  });
+
+  it('supports rules rendering and falls back to an empty object from the selector callback', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<PropertyCreate lang='en' onData={onData} showRules />);
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+    lastFormApi.getFieldsValue = jest.fn(() => undefined);
+
+    await userEvent.click(screen.getByRole('button', { name: /select-flowproperty/i }));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(onData).toHaveBeenCalledWith({}));
+    expect(getRules).toHaveBeenCalled();
+  });
+
+  it('handles nullish value changes and drawer onClose', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<PropertyCreate lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+
+    await act(async () => {
+      lastFormApi.setFieldsValue(undefined);
+    });
+
+    const drawer = screen.getByRole('dialog', { name: /create flow property/i });
+    await userEvent.click(within(drawer).getAllByRole('button', { name: /close/i })[1]);
 
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();

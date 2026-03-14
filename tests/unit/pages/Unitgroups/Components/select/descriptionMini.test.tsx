@@ -115,4 +115,51 @@ describe('UnitGroupDescriptionMini', () => {
     expect(mockGetReferenceProperty).not.toHaveBeenCalled();
     expect(mockGetReferenceUnit).toHaveBeenCalledWith('ug-1', '2.0');
   });
+
+  it('falls back to empty ids and placeholder values when reference data is missing', async () => {
+    mockGetReferenceProperty.mockResolvedValue({ data: null });
+    mockGetReferenceUnitGroup.mockResolvedValue({ data: null });
+    mockGetReferenceUnit.mockResolvedValue({ data: null });
+
+    renderWithProviders(<UnitGroupDescriptionMini id='flow-2' version={undefined} idType='flow' />);
+
+    await waitFor(() => expect(mockGetReferenceProperty).toHaveBeenCalledWith('flow-2', ''));
+    expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('', '');
+    expect(mockGetReferenceUnit).toHaveBeenCalledWith('', '');
+    await waitFor(() => {
+      expect(screen.getByText('-')).toBeInTheDocument();
+      expect(screen.getAllByTestId('lang-desc')[0]).toHaveTextContent('');
+      expect(screen.getAllByTestId('lang-desc')[1]).toHaveTextContent('');
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+  });
+
+  it('does not request references when id is missing', () => {
+    renderWithProviders(
+      <UnitGroupDescriptionMini id={undefined} version='1.0' idType='unitgroup' />,
+    );
+
+    expect(mockGetReferenceProperty).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnitGroup).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnit).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty ids when flowproperty references are missing', async () => {
+    mockGetReferenceUnitGroup.mockResolvedValue({ data: null });
+    mockGetReferenceUnit.mockResolvedValue({ data: null });
+
+    renderWithProviders(
+      <UnitGroupDescriptionMini id='flow-property-2' version={undefined} idType='flowproperty' />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('flow-property-2', ''),
+    );
+    expect(mockGetReferenceProperty).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnit).toHaveBeenCalledWith('', '');
+    await waitFor(() => {
+      expect(screen.getByText('-')).toBeInTheDocument();
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+  });
 });

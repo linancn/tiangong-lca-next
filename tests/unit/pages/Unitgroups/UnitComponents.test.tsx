@@ -6,7 +6,7 @@ import UnitDelete from '@/pages/Unitgroups/Components/Unit/delete';
 import UnitEdit from '@/pages/Unitgroups/Components/Unit/edit';
 import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -88,6 +88,7 @@ const mockCreateUnitGroup = jest.fn();
 const mockDeleteUnitGroup = jest.fn();
 const mockGetUnitGroupDetail = jest.fn();
 const mockGetReferenceUnit = jest.fn();
+let lastUnitEditFormApi: any = null;
 
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
@@ -393,7 +394,14 @@ jest.mock('@ant-design/pro-components', () => {
     return next;
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onFinish, onValuesChange, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onFinish,
+    onValuesChange,
+    submitter,
+    children,
+  }: any) => {
     const [values, setValues] = React.useState<any>(initialValues ?? {});
 
     const updateValues = React.useCallback(
@@ -422,6 +430,10 @@ jest.mock('@ant-design/pro-components', () => {
           return true;
         },
         setFieldsValue: (next: any) => {
+          if (next === undefined) {
+            onValuesChange?.({}, undefined);
+            return;
+          }
           setValues((prev: any) => ({ ...prev, ...next }));
         },
         resetFields: () => {
@@ -430,6 +442,7 @@ jest.mock('@ant-design/pro-components', () => {
         getFieldsValue: () => ({ ...values }),
         setFieldValue,
       };
+      lastUnitEditFormApi = formRef.current;
     }, [formRef, initialValues, onFinish, setFieldValue, values]);
 
     return (
@@ -440,6 +453,7 @@ jest.mock('@ant-design/pro-components', () => {
         }}
       >
         {typeof children === 'function' ? children(values) : children}
+        {submitter?.render?.()}
       </form>
     );
   };
@@ -503,6 +517,7 @@ const {
 describe('Unitgroups unit components', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    lastUnitEditFormApi = null;
     mockCreateUnitGroup.mockResolvedValue({
       data: [{ id: 'generated-unit-group-id', version: '1.0' }],
       error: null,
@@ -1026,10 +1041,72 @@ describe('Unitgroups unit components', () => {
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
     drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    await user.click(within(drawer).getAllByRole('button')[0]);
+    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    drawer = await screen.findByRole('dialog', { name: /unit edit/i });
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
 
     expect(onData).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+  });
+
+  it('falls back to an empty object when unit-edit form updates resolve to undefined', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={onData}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await waitFor(() => expect(lastUnitEditFormApi).not.toBeNull());
+
+    await act(async () => {
+      lastUnitEditFormApi.setFieldsValue(undefined);
+    });
+
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(onData).toHaveBeenCalledWith([{}]));
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens unit edit safely when the backing unit data is missing', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <UnitEdit
+        id='missing'
+        data={undefined as any}
+        buttonType='text'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
+
     expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
   });
 

@@ -128,4 +128,18 @@ describe('ReviewFormView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to a dash when review type is missing', () => {
+    render(<ReviewItemView data={[{}]} />);
+
+    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByTestId('scope-view')).toHaveTextContent('0');
+    expect(screen.getByTestId('dqi-view')).toHaveTextContent('0');
+  });
+
+  it('uses the default empty array when data is omitted', () => {
+    const { container } = render(<ReviewItemView {...({} as any)} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });
