@@ -244,6 +244,20 @@ describe('Unit Group Utility Functions', () => {
         }),
       ]);
     });
+
+    it('should default missing UUIDs and preserve permanent dataset URIs from persisted data', () => {
+      const sample = createSampleUnitGroupData();
+      delete sample.unitGroupInformation.dataSetInformation['common:UUID'];
+      sample.administrativeInformation.publicationAndOwnership['common:permanentDataSetURI'] =
+        'https://lcdn.tiangong.earth/unitgroups/original';
+
+      const result = genUnitGroupFromData(sample);
+
+      expect(result.unitGroupInformation?.dataSetInformation?.['common:UUID']).toBe('-');
+      expect(
+        result.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
+      ).toBe('https://lcdn.tiangong.earth/unitgroups/original');
+    });
   });
 
   describe('genUnitGroupJsonOrdered', () => {
@@ -388,6 +402,21 @@ describe('Unit Group Utility Functions', () => {
       const result = genUnitGroupJsonOrdered('new-unit-group-id', formData);
 
       expect(result.unitGroupDataSet.unitGroupInformation.quantitativeReference).toBeUndefined();
+    });
+
+    it('should keep an existing permanentDataSetURI untouched in ordered output', () => {
+      const sample = createSampleUnitGroupData();
+      sample.administrativeInformation.publicationAndOwnership['common:permanentDataSetURI'] =
+        'https://lcdn.tiangong.earth/unitgroups/ug-1';
+
+      const formData = genUnitGroupFromData(sample);
+      const result = genUnitGroupJsonOrdered('new-unit-group-id', formData);
+
+      expect(
+        result.unitGroupDataSet.administrativeInformation?.publicationAndOwnership?.[
+          'common:permanentDataSetURI'
+        ],
+      ).toBe('https://lcdn.tiangong.earth/unitgroups/ug-1');
     });
   });
 });

@@ -30,6 +30,7 @@ import {
   getLangText,
   getLangValidationErrorMessage,
   getUnitData,
+  isSupabaseDuplicateKeyError,
   isValidURL,
   jsonToList,
   listToJson,
@@ -355,6 +356,30 @@ describe('General Utility Functions', () => {
           },
         },
       });
+    });
+
+    it('should preserve array entries while removing empty nested objects inside them', () => {
+      const obj = {
+        list: [{ keep: 'value', empty: {} }, {}, { nested: { value: 1, drop: undefined } }],
+      };
+
+      const result = removeEmptyObjects(obj);
+
+      expect(result).toEqual({
+        list: [{ keep: 'value' }, undefined, { nested: { value: 1 } }],
+      });
+    });
+  });
+
+  describe('isSupabaseDuplicateKeyError', () => {
+    it('should detect duplicate key errors by postgres code', () => {
+      expect(isSupabaseDuplicateKeyError({ code: '23505' })).toBe(true);
+    });
+
+    it('should reject non-duplicate and missing error payloads', () => {
+      expect(isSupabaseDuplicateKeyError({ code: '22001' })).toBe(false);
+      expect(isSupabaseDuplicateKeyError(null)).toBe(false);
+      expect(isSupabaseDuplicateKeyError(undefined)).toBe(false);
     });
   });
 

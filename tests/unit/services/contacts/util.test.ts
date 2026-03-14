@@ -379,5 +379,57 @@ describe('Contacts Util Service', () => {
         }),
       );
     });
+
+    it('should preserve permanentDataSetURI and normalize owner/reference short descriptions', async () => {
+      const { genContactFromData } = require('@/services/contacts/util');
+
+      const result = genContactFromData({
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-permalink',
+            referenceToContact: {
+              '@refObjectId': 'linked-contact',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Linked contact' },
+            },
+            referenceToLogo: {
+              '@refObjectId': 'linked-logo',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Linked logo' },
+            },
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': '2023-01-02T00:00:00Z',
+            'common:referenceToDataSetFormat': {
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'ILCD format' },
+            },
+          },
+          publicationAndOwnership: {
+            'common:dataSetVersion': '02.00.000',
+            'common:permanentDataSetURI': 'https://lcdn.tiangong.earth/contact-permalink',
+            'common:referenceToOwnershipOfDataSet': {
+              '@refObjectId': 'owner-1',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Owner 1' },
+            },
+            'common:referenceToPrecedingDataSetVersion': {
+              '@refObjectId': 'prev-1',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Prev 1' },
+            },
+          },
+        },
+      });
+
+      expect(getLangList).toHaveBeenCalledWith({ '@xml:lang': 'en', '#text': 'Linked contact' });
+      expect(getLangList).toHaveBeenCalledWith({ '@xml:lang': 'en', '#text': 'Linked logo' });
+      expect(getLangList).toHaveBeenCalledWith({ '@xml:lang': 'en', '#text': 'Owner 1' });
+      expect(
+        result?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
+      ).toBe('https://lcdn.tiangong.earth/contact-permalink');
+      expect(
+        result?.contactInformation?.dataSetInformation?.referenceToContact?.[
+          'common:shortDescription'
+        ],
+      ).toEqual({ '@xml:lang': 'en', '#text': 'Linked contact' });
+    });
   });
 });

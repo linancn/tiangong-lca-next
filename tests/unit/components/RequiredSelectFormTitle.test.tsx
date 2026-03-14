@@ -16,13 +16,29 @@ type RequiredSelectFormTitleProps = {
     ruleVerification?: boolean;
     nonExistent?: boolean;
     stateCode?: number;
+    underReviewVersion?: string;
+    version?: string;
+    versionUnderReview?: boolean;
+    versionIsInTg?: boolean;
   };
 };
 
 jest.mock('umi', () => ({
-  FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
-    <>{defaultMessage ?? id}</>
-  ),
+  FormattedMessage: ({
+    id,
+    defaultMessage,
+    values,
+  }: {
+    id: string;
+    defaultMessage?: string;
+    values?: Record<string, string>;
+  }) => {
+    const text = Object.entries(values ?? {}).reduce((message, [key, value]) => {
+      return message.replace(`{${key}}`, value);
+    }, defaultMessage ?? id);
+
+    return <>{text}</>;
+  },
 }));
 
 jest.mock('antd', () => {
@@ -86,6 +102,45 @@ describe('RequiredSelectFormTitle Component', () => {
     renderComponent({ ruleErrorState: false, errRef: { stateCode: 20 } });
 
     expect(screen.getByText('Under review')).toBeInTheDocument();
+  });
+
+  it('shows under review message when the same version is already under review', () => {
+    renderComponent({
+      ruleErrorState: false,
+      errRef: { version: '01.00.000', underReviewVersion: '01.00.000' },
+    });
+
+    expect(screen.getByText('Under review')).toBeInTheDocument();
+  });
+
+  it('shows version-under-review details when another version is already under review', () => {
+    renderComponent({
+      ruleErrorState: false,
+      errRef: {
+        versionUnderReview: true,
+        version: '01.00.000',
+        underReviewVersion: '02.00.000',
+      },
+    });
+
+    expect(
+      screen.getByText(
+        'The current dataset already has version 02.00.000 under review. Your version 01.00.000 cannot be submitted.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('shows published-version warning when current version is lower than TG version', () => {
+    renderComponent({
+      ruleErrorState: false,
+      errRef: { versionIsInTg: true },
+    });
+
+    expect(
+      screen.getByText(
+        'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('renders without extra feedback when there are no errors', () => {

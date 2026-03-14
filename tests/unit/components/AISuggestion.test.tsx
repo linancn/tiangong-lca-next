@@ -55,6 +55,7 @@ jest.mock('jsondiffpatch', () => ({
 const mockGetAISuggestion = getAISuggestion as jest.MockedFunction<any>;
 
 describe('AISuggestion Component', () => {
+  const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
   const defaultProps = {
     type: 'process' as const,
     originJson: {
@@ -81,6 +82,10 @@ describe('AISuggestion Component', () => {
         },
       },
     });
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('should render correctly with given props', () => {
@@ -288,6 +293,7 @@ describe('AISuggestion Component', () => {
     await waitFor(() => {
       expect(screen.getByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
     });
+    expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
   it('should handle empty AI response', async () => {
@@ -372,6 +378,39 @@ describe('AISuggestion Component', () => {
     await user.click(button);
 
     expect(await screen.findByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
+  });
+
+  it('reuses the original json when the expected dataset payload is missing', async () => {
+    const onLatestJsonChange = jest.fn();
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{ customPayload: { foo: 'bar' } }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetAISuggestion).not.toHaveBeenCalled();
+      expect(onLatestJsonChange).toHaveBeenCalledWith({ customPayload: { foo: 'bar' } });
+    });
+  });
+
+  it('skips AI requests when getTidasData returns null for unsupported types', async () => {
+    render(
+      <ConfigProvider>
+        <AISuggestion {...({ ...defaultProps, type: 'unsupported' } as any)} />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    expect(await screen.findByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
+    expect(mockGetAISuggestion).not.toHaveBeenCalled();
   });
 
   it('should render with correct button attributes', () => {
