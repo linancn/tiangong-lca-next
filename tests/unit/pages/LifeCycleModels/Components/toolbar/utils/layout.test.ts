@@ -13,6 +13,11 @@ type MockEdge = {
   id: string;
   getSourceCellId: () => string | null;
   getTargetCellId: () => string | null;
+  getSource: jest.Mock;
+  getTarget: jest.Mock;
+  setSource: jest.Mock;
+  setTarget: jest.Mock;
+  findView: jest.Mock;
 };
 
 const createNode = (
@@ -37,6 +42,11 @@ const createEdge = (id: string, source: string | null, target: string | null): M
   id,
   getSourceCellId: () => source,
   getTargetCellId: () => target,
+  getSource: jest.fn(() => ({ cell: source, port: `${source}-out`, x: 10, y: 20 })),
+  getTarget: jest.fn(() => ({ cell: target, port: `${target}-in`, x: 30, y: 40 })),
+  setSource: jest.fn(),
+  setTarget: jest.fn(),
+  findView: jest.fn(() => ({ update: jest.fn() })),
 });
 
 describe('applyDagreLayout (src/pages/LifeCycleModels/Components/toolbar/utils/layout.ts)', () => {
@@ -73,6 +83,14 @@ describe('applyDagreLayout (src/pages/LifeCycleModels/Components/toolbar/utils/l
     expect(positions.A).toBeDefined();
     expect(positions.B).toBeDefined();
     expect(positions.B.x).toBeGreaterThan(positions.A.x);
+    expect(edgeAB.setSource).toHaveBeenCalledWith(
+      { cell: 'A', port: 'A-out' },
+      { ignoreHistory: true },
+    );
+    expect(edgeAB.setTarget).toHaveBeenCalledWith(
+      { cell: 'B', port: 'B-in' },
+      { ignoreHistory: true },
+    );
   });
 
   it('uses the default rank direction when rankdir is omitted', () => {

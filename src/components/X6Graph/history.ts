@@ -1,4 +1,5 @@
 import type { Graph } from '@antv/x6';
+import { refreshGraphEdgeAnchors } from './edgeRouting';
 
 export const AUTO_LAYOUT_HISTORY_EVENT = 'x6:auto-layout';
 
@@ -78,6 +79,11 @@ export const applyNodePositions = (
       ...options,
       ignoreHistory: true,
     });
+  });
+
+  refreshGraphEdgeAnchors(graph, {
+    ...options,
+    ignoreHistory: true,
   });
 };
 

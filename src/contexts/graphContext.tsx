@@ -1,3 +1,4 @@
+import { scheduleGraphEdgeAnchorRefresh } from '@/components/X6Graph/edgeRouting';
 import { Graph } from '@antv/x6';
 import { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
@@ -46,10 +47,15 @@ const GraphContext = createContext<GraphContextValue | null>(null);
 
 export const GraphProvider = ({ children }: { children: ReactNode }) => {
   const graphRef = useRef<Graph | null>(null);
+  const pendingEdgeAnchorRefreshRef = useRef<(() => void) | null>(null);
   const [nodes, setNodesState] = useState<any[]>([]);
   const [edges, setEdgesState] = useState<any[]>([]);
 
   const setGraph = (graph: Graph | null) => {
+    if (!graph) {
+      pendingEdgeAnchorRefreshRef.current?.();
+      pendingEdgeAnchorRefreshRef.current = null;
+    }
     graphRef.current = graph;
   };
 
@@ -217,6 +223,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
 
   const initData = (data: { nodes: any[]; edges: any[] }) => {
     if (graphRef.current) {
+      pendingEdgeAnchorRefreshRef.current?.();
       graphRef.current.clearCells();
       if (data.nodes && data.nodes.length > 0) {
         graphRef.current.addNodes(data.nodes);
@@ -224,6 +231,9 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
       if (data.edges && data.edges.length > 0) {
         graphRef.current.addEdges(data.edges);
       }
+      pendingEdgeAnchorRefreshRef.current = scheduleGraphEdgeAnchorRefresh(graphRef.current, {
+        ignoreHistory: true,
+      });
       setNodesState(data.nodes || []);
       setEdgesState(data.edges || []);
     }
@@ -266,6 +276,14 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
     initData,
     syncGraphData,
   };
+
+  useEffect(
+    () => () => {
+      pendingEdgeAnchorRefreshRef.current?.();
+      pendingEdgeAnchorRefreshRef.current = null;
+    },
+    [],
+  );
 
   return <GraphContext.Provider value={value}>{children}</GraphContext.Provider>;
 };

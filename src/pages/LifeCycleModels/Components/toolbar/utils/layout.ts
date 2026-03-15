@@ -1,3 +1,4 @@
+import { refreshGraphEdgeAnchors } from '@/components/X6Graph/edgeRouting';
 import { captureNodePositions, pushAutoLayoutHistoryCommand } from '@/components/X6Graph/history';
 import type { Graph } from '@antv/x6';
 import dagre from '@dagrejs/dagre';
@@ -72,6 +73,11 @@ export const applyDagreLayout = (
       layoutNode.y - layoutNode.height / 2,
       options,
     );
+  });
+
+  refreshGraphEdgeAnchors(graph, {
+    ...options,
+    ignoreHistory: true,
   });
 
   return true;

@@ -91,6 +91,7 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     expect(Graph).toHaveBeenCalledTimes(1);
     const instance = __graphInstances[0];
     expect(instance.options.container).toBeInstanceOf(HTMLElement);
+    expect(instance.options.async).toBe(false);
     expect(instance.options.panning).toBe(true);
     expect(instance.options.mousewheel).toEqual({ enabled: true, minScale: 0.5, maxScale: 1.5 });
     expect(instance.options.connecting).toMatchObject({

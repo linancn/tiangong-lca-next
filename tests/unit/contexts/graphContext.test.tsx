@@ -8,6 +8,11 @@ import {
   useGraphStore,
 } from '@/contexts/graphContext';
 
+const mockScheduleGraphEdgeAnchorRefresh = jest.fn((...args: any[]) => {
+  void args;
+  return jest.fn();
+});
+
 class MockNode {
   id: string;
   data: any;
@@ -268,7 +273,16 @@ jest.mock('@antv/x6', () => ({
   Graph: MockGraph,
 }));
 
+jest.mock('@/components/X6Graph/edgeRouting', () => ({
+  __esModule: true,
+  scheduleGraphEdgeAnchorRefresh: (...args: any[]) => mockScheduleGraphEdgeAnchorRefresh(...args),
+}));
+
 describe('graphContext (src/contexts/graphContext.tsx)', () => {
+  beforeEach(() => {
+    mockScheduleGraphEdgeAnchorRefresh.mockClear();
+  });
+
   it('throws when hooks are used outside the provider', () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const useStoreOutside = () =>
@@ -346,6 +360,9 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     expect(graph.getEdges()).toHaveLength(1);
     expect(result.current.nodes).toEqual([{ id: 'init-node' }]);
     expect(result.current.edges).toEqual([{ id: 'edge-1', data: { existing: true } }]);
+    expect(mockScheduleGraphEdgeAnchorRefresh).toHaveBeenCalledWith(graph, {
+      ignoreHistory: true,
+    });
 
     act(() => {
       result.current.updateEdge('edge-1', {

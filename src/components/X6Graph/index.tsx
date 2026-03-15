@@ -70,6 +70,7 @@ const X6GraphComponent = ({
     const graph = new Graph({
       container: containerRef.current!,
       autoResize: true,
+      async: false,
       panning: pannable,
       mousewheel: zoomable
         ? {
