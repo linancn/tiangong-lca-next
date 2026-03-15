@@ -67,6 +67,7 @@ jest.mock('@/services/ilcd/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  normalizeLangPayloadForSave: jest.fn(),
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
@@ -75,6 +76,7 @@ const { getLangText, classificationToString, jsonToList, genClassificationZH } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
 const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
+const { normalizeLangPayloadForSave } = jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
@@ -83,6 +85,10 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    normalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
+      payload,
+      validationError: undefined,
+    }));
     // Setup default SDK mock behavior
     mockCreateFlowProperty.mockReturnValue({
       validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -153,6 +159,28 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         ]),
       );
     });
+
+    it('should return a language validation error when normalization fails', async () => {
+      genFlowpropertyJsonOrdered.mockReturnValue({ ordered: true });
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: { ordered: true },
+        validationError: 'invalid multilingual payload',
+      });
+
+      const result = await createFlowproperties('test-id', {});
+
+      expect(result).toEqual({
+        data: null,
+        error: expect.objectContaining({
+          message: 'invalid multilingual payload',
+          code: 'LANG_VALIDATION_ERROR',
+        }),
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
+      });
+      expect(supabase.from).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateFlowproperties', () => {
@@ -219,6 +247,54 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
 
       expect(supabase.functions.invoke).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
+    });
+
+    it('should return a language validation error before invoking the edge function', async () => {
+      genFlowpropertyJsonOrdered.mockReturnValue({ ordered: true });
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: { ordered: true },
+        validationError: 'invalid update payload',
+      });
+
+      const result = await updateFlowproperties('id', 'version', {});
+
+      expect(result).toEqual({
+        data: null,
+        error: expect.objectContaining({
+          message: 'invalid update payload',
+          code: 'LANG_VALIDATION_ERROR',
+        }),
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
+      });
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+    });
+
+    it('should invoke update_data with an empty bearer token when the session token is missing', async () => {
+      supabase.auth.getSession.mockResolvedValueOnce({
+        data: {
+          session: {
+            access_token: undefined,
+            user: {
+              id: 'user-123',
+            },
+          },
+        },
+      });
+      genFlowpropertyJsonOrdered.mockReturnValue({});
+      supabase.functions.invoke.mockResolvedValue({ data: { success: true }, error: null });
+
+      await updateFlowproperties('id', '01.00.000', {});
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith(
+        'update_data',
+        expect.objectContaining({
+          headers: {
+            Authorization: 'Bearer ',
+          },
+        }),
+      );
     });
   });
 
@@ -510,6 +586,78 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
 
       consoleErrorSpy.mockRestore();
     });
+
+    it('should use default pagination and placeholder reference fields when optional values are missing', async () => {
+      const builder = createQueryBuilder({
+        data: [
+          {
+            id: 'fp-defaults',
+            version: '01.00.000',
+            'common:name': [],
+            'common:class': [],
+            'common:generalComment': [],
+            '@refObjectId': undefined,
+            'common:shortDescription': undefined,
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+        count: null,
+      });
+      supabase.from.mockReturnValue(builder);
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('');
+      getLangText.mockReturnValue('');
+
+      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
+
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual({
+        data: [
+          expect.objectContaining({
+            id: 'fp-defaults',
+            refUnitGroupId: '-',
+            refUnitGroup: '',
+          }),
+        ],
+        page: 1,
+        success: true,
+        total: 0,
+      });
+    });
+
+    it('should fallback to id-only rows when zh table mapping throws', async () => {
+      const builder = createQueryBuilder({
+        data: [
+          {
+            id: 'fp-zh-bad',
+            version: '01.00.000',
+            'common:class': [],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      });
+      supabase.from.mockReturnValue(builder);
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      jsonToList.mockImplementationOnce(() => {
+        throw new Error('zh parse error');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getFlowpropertyTableAll({}, {}, 'zh', 'tg', [], undefined);
+
+      expect(result).toEqual({
+        data: [{ id: 'fp-zh-bad' }],
+        page: 1,
+        success: true,
+        total: 1,
+      });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe('getFlowpropertyTablePgroongaSearch', () => {
@@ -746,6 +894,101 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         success: true,
         total: 1,
       });
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should use default pagination and placeholder fields for zh search rows with missing payloads', async () => {
+      supabase.rpc.mockResolvedValue({
+        data: [
+          {
+            id: 'fp-zh-defaults',
+            version: '01.00.010',
+            json: {
+              flowPropertyDataSet: {
+                flowPropertiesInformation: {},
+              },
+            },
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+      });
+      jsonToList.mockReturnValue([]);
+      genClassificationZH.mockReturnValue([]);
+      classificationToString.mockReturnValue('');
+      getLangText.mockReturnValue('');
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+
+      const result = await getFlowpropertyTablePgroongaSearch(
+        {},
+        'zh',
+        'tg',
+        '质量',
+        {},
+        undefined,
+      );
+
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties', {
+        query_text: '质量',
+        filter_condition: {},
+        page_size: 10,
+        page_current: 1,
+        data_source: 'tg',
+        this_user_id: 'user-123',
+      });
+      expect(result).toEqual({
+        data: [
+          {
+            key: 'fp-zh-defaults:01.00.010',
+            id: 'fp-zh-defaults',
+            name: '',
+            classification: '',
+            generalComment: '',
+            refUnitGroupId: '-',
+            refUnitGroup: '',
+            version: '01.00.010',
+            modifiedAt: new Date('2024-01-01T00:00:00Z'),
+            teamId: 'team-1',
+          },
+        ],
+        page: 1,
+        success: true,
+        total: 0,
+      });
+    });
+
+    it('should fallback to id-only rows when zh search mapping throws', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      supabase.rpc.mockResolvedValue({
+        data: [
+          {
+            id: 'fp-zh-search-bad',
+            version: '01.00.011',
+            json: {
+              flowPropertyDataSet: {
+                flowPropertiesInformation: {},
+              },
+            },
+            total_count: 1,
+          },
+        ],
+        error: null,
+      });
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      jsonToList.mockImplementationOnce(() => {
+        throw new Error('zh search parse failed');
+      });
+
+      const result = await getFlowpropertyTablePgroongaSearch({}, 'zh', 'tg', '坏', {}, undefined);
+
+      expect(result).toEqual({
+        data: [{ id: 'fp-zh-search-bad' }],
+        page: 1,
+        success: true,
+        total: 1,
+      });
+      expect(consoleErrorSpy).toHaveBeenCalled();
       consoleErrorSpy.mockRestore();
     });
   });
@@ -994,6 +1237,84 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       });
       consoleErrorSpy.mockRestore();
     });
+
+    it('should use default pagination and placeholder fields for zh hybrid rows with missing payloads', async () => {
+      const hybridResult: any = [
+        {
+          id: 'fp-hybrid-zh-defaults',
+          version: '01.00.020',
+          json: {
+            flowPropertyDataSet: {
+              flowPropertiesInformation: {},
+            },
+          },
+          modified_at: '2024-01-01T00:00:00Z',
+          team_id: 'team-1',
+        },
+      ];
+      hybridResult.total_count = undefined;
+
+      supabase.functions.invoke.mockResolvedValue({ data: { data: hybridResult }, error: null });
+      jsonToList.mockReturnValue([]);
+      genClassificationZH.mockReturnValue([]);
+      classificationToString.mockReturnValue('');
+      getLangText.mockReturnValue('');
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+
+      const result = await flowproperty_hybrid_search({}, 'zh', 'tg', '测试', {}, undefined);
+
+      expect(result).toEqual({
+        data: [
+          {
+            key: 'fp-hybrid-zh-defaults:01.00.020',
+            id: 'fp-hybrid-zh-defaults',
+            name: '',
+            classification: '',
+            generalComment: '',
+            refUnitGroupId: '-',
+            refUnitGroup: '',
+            version: '01.00.020',
+            modifiedAt: new Date('2024-01-01T00:00:00Z'),
+            teamId: 'team-1',
+          },
+        ],
+        page: 1,
+        success: true,
+        total: 0,
+      });
+    });
+
+    it('should fallback to id-only rows when zh hybrid mapping throws', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const hybridResult: any = [
+        {
+          id: 'fp-hybrid-zh-bad',
+          version: '01.00.021',
+          json: {
+            flowPropertyDataSet: {
+              flowPropertiesInformation: {},
+            },
+          },
+        },
+      ];
+      hybridResult.total_count = 1;
+      supabase.functions.invoke.mockResolvedValue({ data: { data: hybridResult }, error: null });
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      jsonToList.mockImplementationOnce(() => {
+        throw new Error('zh hybrid parse failed');
+      });
+
+      const result = await flowproperty_hybrid_search({}, 'zh', 'tg', '坏', {}, undefined);
+
+      expect(result).toEqual({
+        data: [{ id: 'fp-hybrid-zh-bad' }],
+        page: 1,
+        success: true,
+        total: 1,
+      });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe('getFlowpropertyDetail', () => {
@@ -1142,6 +1463,35 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         success: false,
       });
     });
+
+    it('should use placeholder fields when matched unit groups omit optional reference fields', async () => {
+      const builder = createQueryBuilder({
+        data: [
+          {
+            id: validId1,
+            version: '01.00.000',
+          },
+        ],
+        error: null,
+      });
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getReferenceUnitGroups([{ id: validId1, version: '01.00.000' }]);
+
+      expect(result).toEqual({
+        data: [
+          {
+            id: validId1,
+            version: '01.00.000',
+            name: '-',
+            refUnitGroupId: '-',
+            refUnitGroupVersion: '-',
+            refUnitGroupShortDescription: {},
+          },
+        ],
+        success: true,
+      });
+    });
   });
 
   describe('getReferenceUnitGroup', () => {
@@ -1285,6 +1635,34 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       expect(result).toEqual({
         data: null,
         success: false,
+      });
+    });
+
+    it('should use placeholder fields when the resolved unit group omits optional reference values', async () => {
+      const mockEqVersion = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: validId,
+            version: '04.00.000',
+          },
+        ],
+      });
+      const mockEqId = jest.fn().mockReturnValue({ eq: mockEqVersion });
+      const mockSelect = jest.fn().mockReturnValue({ eq: mockEqId });
+
+      supabase.from.mockReturnValueOnce({ select: mockSelect });
+
+      const result = await getReferenceUnitGroup(validId, '04.00.000');
+
+      expect(result).toEqual({
+        data: {
+          id: validId,
+          version: '04.00.000',
+          name: '-',
+          refUnitGroupId: '-',
+          refUnitGroupShortDescription: {},
+        },
+        success: true,
       });
     });
   });

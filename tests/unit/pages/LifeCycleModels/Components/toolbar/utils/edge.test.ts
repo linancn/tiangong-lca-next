@@ -15,17 +15,30 @@ describe('toolbar/utils/edge', () => {
   it('builds an output label when the edge is output-heavy', () => {
     const result = getEdgeLabel(token, 3, 10) as any;
 
-    expect(result.attrs.labelText.text).toBe('O');
-    expect(result.attrs.labelBody.title).toBe('(OUTPUT: 13) - (INPUT: 10) = 3');
+    expect(result.attrs.labelText.text).toBe('Sur');
+    expect(result.attrs.labelBody.title).toBe('(Output: 13) - (Input: 10) = 3');
   });
 
   it('builds input and balanced labels for negative and zero imbalances', () => {
     const inputResult = getEdgeLabel(token, -2, 10) as any;
     const balancedResult = getEdgeLabel(token, 0, 10) as any;
 
-    expect(inputResult.attrs.labelText.text).toBe('I');
-    expect(inputResult.attrs.labelBody.title).toBe('(OUTPUT: 10) - (INPUT: 12) = -2');
-    expect(balancedResult.attrs.labelText.text).toBe('B');
-    expect(balancedResult.attrs.labelBody.title).toBe('(OUTPUT: 10) - (INPUT: 10) = 0');
+    expect(inputResult.attrs.labelText.text).toBe('Def');
+    expect(inputResult.attrs.labelBody.title).toBe('(Output: 10) - (Input: 12) = -2');
+    expect(balancedResult.attrs.labelText.text).toBe('Bal');
+    expect(balancedResult.attrs.labelBody.title).toBe('(Output: 10) - (Input: 10) = 0');
+  });
+
+  it('supports localized edge labels and tooltip titles', () => {
+    const result = getEdgeLabel(token, 0, 8, {
+      balanced: '平',
+      deficit: '亏',
+      surplus: '余',
+      input: '流入',
+      output: '流出',
+    }) as any;
+
+    expect(result.attrs.labelText.text).toBe('平');
+    expect(result.attrs.labelBody.title).toBe('(流出: 8) - (流入: 8) = 0');
   });
 });

@@ -38,6 +38,12 @@ var mockSetInitialState: jest.Mock = jest.fn((updater: any) => {
 });
 // eslint-disable-next-line no-var
 var mockSignUp: jest.Mock = jest.fn();
+// eslint-disable-next-line no-var
+var mockPasswordFields: Record<string, any> = {};
+// eslint-disable-next-line no-var
+var mockGetLocalizedAppTitle: jest.Mock = jest.fn();
+// eslint-disable-next-line no-var
+var mockGetLocalizedLoginSubtitle: jest.Mock = jest.fn();
 
 mockUseModelState.setInitialState = (...args: any[]) => mockSetInitialState(...args);
 
@@ -97,8 +103,8 @@ jest.mock('../../../../../config/defaultSettings', () => ({
   __esModule: true,
   defaultAppTitle: 'Tiangong LCA',
   defaultLoginSubtitle: 'Sustainable life cycle data',
-  getLocalizedAppTitle: () => 'Tiangong LCA',
-  getLocalizedLoginSubtitle: () => 'Sustainable life cycle data',
+  getLocalizedAppTitle: (...args: any[]) => mockGetLocalizedAppTitle(...args),
+  getLocalizedLoginSubtitle: (...args: any[]) => mockGetLocalizedLoginSubtitle(...args),
 }));
 
 jest.mock('@/components', () => ({
@@ -127,7 +133,15 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const LoginForm = ({ children, onFinish, submitter, initialValues, formRef }: any) => {
+  const LoginForm = ({
+    children,
+    onFinish,
+    submitter,
+    initialValues,
+    formRef,
+    title,
+    subTitle,
+  }: any) => {
     React.useEffect(() => {
       if (formRef) {
         formRef.current = {
@@ -144,6 +158,8 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <div data-testid='login-form'>
         <div data-testid='initial-values'>{JSON.stringify(initialValues)}</div>
+        <div data-testid='login-title'>{toText(title)}</div>
+        <div data-testid='login-subtitle'>{toText(subTitle)}</div>
         {children}
         {submitter !== false ? (
           <button
@@ -168,9 +184,12 @@ jest.mock('@ant-design/pro-components', () => {
   const ProConfigProvider = ({ children }: any) => <div>{children}</div>;
   const ProFormCheckbox = ({ children }: any) => <label>{children}</label>;
   const ProFormText = ({ placeholder }: any) => <input placeholder={toText(placeholder)} />;
-  ProFormText.Password = ({ placeholder }: any) => (
-    <input placeholder={toText(placeholder)} type='password' />
-  );
+  ProFormText.Password = (props: any) => {
+    if (props?.name) {
+      mockPasswordFields[props.name] = props;
+    }
+    return <input placeholder={toText(props.placeholder)} type='password' />;
+  };
   const ProLayout = ({ children }: any) => <div>{children}</div>;
 
   return {
@@ -248,6 +267,11 @@ const LoginPage = require('@/pages/User/Login').default;
 describe('Login page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPasswordFields = {};
+    mockGetLocalizedAppTitle.mockReset();
+    mockGetLocalizedLoginSubtitle.mockReset();
+    mockGetLocalizedAppTitle.mockReturnValue('Tiangong LCA');
+    mockGetLocalizedLoginSubtitle.mockReturnValue('Sustainable life cycle data');
     window.localStorage.clear();
     window.localStorage.setItem('isDarkMode', 'false');
     mockLogin.mockResolvedValue({ status: 'ok' });
@@ -378,5 +402,67 @@ describe('Login page', () => {
       expect(window.localStorage.getItem('isDarkMode')).toBe('true');
       expect(mockSetInitialState).toHaveBeenCalled();
     });
+  });
+
+  it('returns the previous state when dark mode toggle receives an empty initial state', async () => {
+    mockSetInitialState.mockImplementationOnce((updater: any) => {
+      if (typeof updater === 'function') {
+        return updater(undefined);
+      }
+      return updater;
+    });
+
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'toggle-dark-mode' }));
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem('isDarkMode')).toBe('true');
+      expect(mockSetInitialState).toHaveBeenCalled();
+    });
+  });
+
+  it('renders weak, medium, and strong password strength states in register mode', () => {
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+
+    const passwordField = mockPasswordFields.password;
+
+    expect(toText(passwordField.fieldProps.statusRender('short'))).toContain('Strength: Weak');
+    expect(toText(passwordField.fieldProps.statusRender('123456789'))).toContain(
+      'Strength: Medium',
+    );
+    expect(toText(passwordField.fieldProps.statusRender('1234567890123'))).toContain(
+      'Strength: Strong',
+    );
+  });
+
+  it('validates confirm password by allowing empty or matching values and rejecting mismatches', async () => {
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+
+    const confirmPasswordField = mockPasswordFields.confirmPassword;
+    const validatorFactory = confirmPasswordField.rules[1];
+    const validator = validatorFactory({
+      getFieldValue: () => 'Secret123!',
+    }).validator;
+
+    await expect(validator(undefined, '')).resolves.toBeUndefined();
+    await expect(validator(undefined, 'Secret123!')).resolves.toBeUndefined();
+    await expect(validator(undefined, 'Mismatch123!')).rejects.toThrow(
+      'The two passwords do not match!',
+    );
+  });
+
+  it('falls back to default localized title and subtitle when branding helpers return null', () => {
+    mockGetLocalizedAppTitle.mockReturnValueOnce(undefined);
+    mockGetLocalizedLoginSubtitle.mockReturnValueOnce(undefined);
+
+    render(<LoginPage />);
+
+    expect(screen.getByTestId('login-title')).toHaveTextContent('Tiangong LCA');
+    expect(screen.getByTestId('login-subtitle')).toHaveTextContent('Sustainable life cycle data');
   });
 });

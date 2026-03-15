@@ -62,6 +62,28 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
+  const edgeLabelText = {
+    balanced: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.balanced',
+      defaultMessage: 'Bal',
+    }),
+    deficit: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.deficit',
+      defaultMessage: 'Def',
+    }),
+    surplus: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.surplus',
+      defaultMessage: 'Sur',
+    }),
+    input: intl.formatMessage({
+      id: 'pages.button.input',
+      defaultMessage: 'Input',
+    }),
+    output: intl.formatMessage({
+      id: 'pages.button.output',
+      defaultMessage: 'Output',
+    }),
+  };
 
   const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
   const edges: GraphEdge[] = useGraphStore((state) => state.edges);
@@ -436,6 +458,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                 token,
                 edge?.data?.connection?.unbalancedAmount as number,
                 edge?.data?.connection?.exchangeAmount as number,
+                edgeLabelText,
               );
               return {
                 ...edge,

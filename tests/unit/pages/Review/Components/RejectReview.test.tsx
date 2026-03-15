@@ -314,6 +314,47 @@ describe('RejectReview component', () => {
     await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
   });
 
+  it('uses the default icon trigger and falls back to empty review logs when old review detail is missing', async () => {
+    mockGetReviewsDetail.mockResolvedValue(undefined);
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer', email: 'a@b.com' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetProcessDetail.mockResolvedValue({ data: null });
+
+    render(
+      <RejectReview
+        reviewId='review-1'
+        dataId='process-1'
+        dataVersion='01'
+        isModel={false}
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Fallback review' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateReviewApi).toHaveBeenCalledWith(
+        ['review-1'],
+        expect.objectContaining({
+          state_code: -1,
+          json: expect.objectContaining({
+            comment: { message: 'Fallback review' },
+            logs: [expect.objectContaining({ action: 'rejected' })],
+          }),
+        }),
+      ),
+    );
+    expect(screen.getByTestId('icon-file')).toBeInTheDocument();
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+  });
+
   it('shows a generic error when review update fails', async () => {
     mockGetReviewsDetail.mockResolvedValue({
       json: { logs: [] },
@@ -458,6 +499,108 @@ describe('RejectReview component', () => {
     expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
   });
 
+  it('tracks newly discovered under-review references from assigned comments', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetCommentApi.mockResolvedValue({
+      data: [{ id: 'comment-2', kind: 'assigned-comment' }],
+      error: null,
+    });
+    mockGetProcessDetail.mockResolvedValue({ data: null });
+    mockGetUserTeamId.mockResolvedValue('team-1');
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: { id: 'proc-under', version: '03', stateCode: 30 },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: false,
+      data: null,
+    });
+    mockGetAllRefObj.mockImplementation((payload: any) => {
+      if (Array.isArray(payload)) {
+        return [{ '@type': 'process data set', '@refObjectId': 'proc-under', '@version': '03' }];
+      }
+      return [];
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Track under review' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateDateToReviewState).toHaveBeenCalledWith('proc-under', '03', 'processes', {
+        state_code: 0,
+      }),
+    );
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+  });
+
+  it('does not duplicate already tracked under-review refs from process and same-model paths', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer', email: 'a@b.com' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetProcessDetail.mockResolvedValue({
+      data: { id: 'process-1', version: '01', stateCode: 30 },
+    });
+    mockGetUserTeamId.mockResolvedValue('team-1');
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: { id: 'process-1', version: '01', stateCode: 30 },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: { id: 'model-shadow', version: '01', stateCode: 30 },
+    });
+    mockDealProcress.mockImplementation((detail: any, _unReview: any[], underReview: any[]) => {
+      underReview.push({
+        '@refObjectId': detail.id,
+        '@version': detail.version,
+        '@type': 'process data set',
+      });
+    });
+    mockGetAllRefObj.mockImplementation((payload: any) => {
+      if (payload?.id === 'process-1') {
+        return [{ '@type': 'process data set', '@refObjectId': 'process-1', '@version': '01' }];
+      }
+      return [];
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Already tracked' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateDateToReviewState).toHaveBeenCalledWith('process-1', '01', 'processes', {
+        state_code: 0,
+      }),
+    );
+    expect(mockUpdateDateToReviewState).toHaveBeenCalledTimes(1);
+    expect(mockGetRefData).toHaveBeenCalledTimes(1);
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('process-1', '01');
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+  });
+
   it('still rejects successfully when the process detail cannot be loaded', async () => {
     mockGetReviewsDetail.mockResolvedValue({
       json: { logs: [] },
@@ -478,6 +621,32 @@ describe('RejectReview component', () => {
 
     await waitFor(() => expect(message.success).toHaveBeenCalledWith('Rejected successfully!'));
     expect(mockGetUserTeamId).not.toHaveBeenCalled();
+    expect(mockUpdateDateToReviewState).not.toHaveBeenCalled();
+  });
+
+  it('stops model rejection follow-up work when the lifecycle model cannot be loaded', async () => {
+    mockGetReviewsDetail.mockResolvedValue({
+      json: { logs: [] },
+      state_code: 0,
+    });
+    mockGetUserId.mockResolvedValue('user-1');
+    mockGetUsersByIds.mockResolvedValue([{ display_name: 'Reviewer', email: 'a@b.com' }]);
+    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: false,
+      data: null,
+    });
+
+    renderComponent({ isModel: true, dataId: 'model-missing' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Missing model' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+
+    await waitFor(() => expect(message.success).toHaveBeenCalledWith('Rejected successfully!'));
+    expect(mockGetProcessDetail).not.toHaveBeenCalled();
     expect(mockUpdateDateToReviewState).not.toHaveBeenCalled();
   });
 

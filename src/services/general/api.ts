@@ -795,7 +795,7 @@ export async function getAISuggestion(tidasData: any, dataType: string, options:
 
 const JSON_BLOCK_PATTERN = /```(?:json)?\s*([\s\S]*?)```/i;
 
-const parseJsonLikeText = (text: string): any => {
+export const parseJsonLikeText = (text: string): any => {
   const trimmedText = text.trim();
   if (!trimmedText) return undefined;
 
@@ -815,7 +815,7 @@ const parseJsonLikeText = (text: string): any => {
   return undefined;
 };
 
-const getTranslatedTextFromObject = (value: any): string | undefined => {
+export const getTranslatedTextFromObject = (value: any): string | undefined => {
   if (!value || typeof value !== 'object') return undefined;
 
   const directKeys = ['translatedText', 'translation', 'englishText', 'english', 'output_text'];
@@ -839,7 +839,7 @@ const getTranslatedTextFromObject = (value: any): string | undefined => {
   return undefined;
 };
 
-const extractTranslatedText = (value: any, depth = 0): string | undefined => {
+export const extractTranslatedText = (value: any, depth = 0): string | undefined => {
   if (depth > 8 || value === null || value === undefined) return undefined;
 
   if (typeof value === 'string') {

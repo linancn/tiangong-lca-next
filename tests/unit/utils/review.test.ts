@@ -138,10 +138,30 @@ describe('review utilities', () => {
     expect(Math.max(...runningCounts)).toBeLessThanOrEqual(2);
   });
 
+  it('rejects failed concurrency tasks and drains the queue', async () => {
+    const controller = new ConcurrencyController(1);
+    const error = new Error('boom');
+
+    const failedTask = controller.add(async () => {
+      throw error;
+    });
+    const successfulTask = controller.add(async () => 'ok');
+
+    await expect(failedTask).rejects.toThrow('boom');
+    await expect(successfulTask).resolves.toBe('ok');
+    await expect(controller.waitForAll()).resolves.toBeUndefined();
+  });
+
   it('returns correct table names', () => {
     expect(getRefTableName('process data set')).toBe('processes');
     expect(getRefTableName('lifeCycleModel data set')).toBe('lifecyclemodels');
     expect(getRefTableName('unknown')).toBeUndefined();
+  });
+
+  it('uses the default concurrency limit when none is provided', async () => {
+    const controller = new ConcurrencyController();
+
+    await expect(controller.add(async () => 'default')).resolves.toBe('default');
   });
 
   it('collects nested references without double counting shared objects', () => {
@@ -244,6 +264,31 @@ describe('review utilities', () => {
 
     dealModel(undefined, unReview, underReview, unRuleVerification, nonExistent);
     expect(nonExistent[0]['@type']).toBe('lifeCycleModel data set');
+  });
+
+  it('marks unreleased lifecycle models as unreviewed', () => {
+    const unReview: any[] = [];
+
+    dealModel(
+      {
+        id: 'model-unreviewed',
+        version: '01',
+        stateCode: 10,
+        ruleVerification: true,
+      },
+      unReview,
+      [],
+      [],
+      [],
+    );
+
+    expect(unReview).toEqual([
+      {
+        '@type': 'lifeCycleModel data set',
+        '@refObjectId': 'model-unreviewed',
+        '@version': '01',
+      },
+    ]);
   });
 
   it('walks reference graph and categorises states', async () => {
@@ -378,6 +423,92 @@ describe('review utilities', () => {
     expect((child as any).versionIsInTg).toBe(true);
   });
 
+  it('does not mark TG versions when current version is empty, equal, or newer', async () => {
+    const path = new ReffPath({
+      '@refObjectId': 'root',
+      '@version': '01',
+      '@type': 'process data set',
+    });
+    const refs = ['', '02', '03'].map(
+      (version) =>
+        new ReffPath({
+          '@refObjectId': 'flow-1',
+          '@version': version,
+          '@type': 'flow data set',
+        }),
+    );
+    refs.forEach((ref) => path.addChild(ref));
+
+    mockGetRefDataByIds.mockResolvedValue({
+      data: [
+        {
+          id: 'flow-1',
+          version: '02',
+          state_code: 100,
+        },
+      ],
+    });
+
+    await checkVersions(
+      new Set(['flow-1::flow data set', 'flow-1:02:flow data set', 'flow-1:03:flow data set']),
+      path,
+    );
+
+    refs.forEach((ref) => {
+      expect((ref as any).versionIsInTg).toBeUndefined();
+    });
+  });
+
+  it('skips details that do not match any requested ref id', async () => {
+    const path = new ReffPath({
+      '@refObjectId': 'root',
+      '@version': '01',
+      '@type': 'process data set',
+    });
+
+    mockGetRefDataByIds.mockResolvedValue({
+      data: [
+        {
+          id: 'other-flow',
+          version: '0.0',
+          state_code: 100,
+        },
+      ],
+    });
+
+    await checkVersions(new Set(['flow-1:0.0:flow data set']), path);
+
+    expect((path as any).versionIsInTg).toBeUndefined();
+  });
+
+  it('uses zero fallbacks when comparing malformed semantic versions', async () => {
+    const path = new ReffPath({
+      '@refObjectId': 'root',
+      '@version': '01',
+      '@type': 'process data set',
+    });
+    const child = new ReffPath({
+      '@refObjectId': 'flow-1',
+      '@version': '0.a',
+      '@type': 'flow data set',
+    });
+    path.addChild(child);
+
+    mockGetRefDataByIds.mockResolvedValue({
+      data: [
+        {
+          id: 'flow-1',
+          version: '0',
+          state_code: 100,
+        },
+      ],
+    });
+
+    await checkVersions(new Set(['flow-1:0.a:flow data set']), path);
+
+    expect((child as any).versionIsInTg).toBeUndefined();
+  });
+
   it('checks data wrapper using checkReferences', async () => {
     mockGetRefData.mockImplementation(async (id: string) => {
       if (id === 'flow-3') {
@@ -433,6 +564,221 @@ describe('review utilities', () => {
     expect(unRuleVerification).toHaveLength(1);
   });
 
+  it('reuses cached references without re-fetching and records cached path nodes', async () => {
+    const parentPath = new ReffPath({
+      '@refObjectId': 'root',
+      '@version': '01',
+      '@type': 'process data set',
+    });
+    const refMaps = new Map([
+      [
+        'flow-cache:01:flow data set',
+        {
+          stateCode: 30,
+          ruleVerification: false,
+        },
+      ],
+    ]);
+
+    await checkReferences(
+      [
+        {
+          '@refObjectId': 'flow-cache',
+          '@version': '01',
+          '@type': 'flow data set',
+        },
+      ],
+      refMaps,
+      'team-1',
+      [],
+      [],
+      [],
+      [],
+      parentPath,
+    );
+
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(parentPath.children).toHaveLength(1);
+    expect(parentPath.children[0]).toMatchObject({
+      '@refObjectId': 'flow-cache',
+      '@version': '01',
+    });
+  });
+
+  it('expands same-model process references and reuses existing classification buckets', async () => {
+    const unReview: any[] = [
+      { '@refObjectId': 'proc-same', '@version': '01', '@type': 'process data set' },
+    ];
+    const underReview: any[] = [
+      { '@refObjectId': 'child-under', '@version': '01', '@type': 'flow data set' },
+    ];
+    const unRuleVerification: any[] = [
+      { '@refObjectId': 'proc-same', '@version': '01', '@type': 'process data set' },
+    ];
+
+    mockGetRefData.mockImplementation(async (id: string) => {
+      if (id === 'proc-same') {
+        return {
+          success: true,
+          data: {
+            id: 'proc-same',
+            stateCode: 10,
+            ruleVerification: false,
+            json: {},
+          },
+        };
+      }
+      if (id === 'child-under') {
+        return {
+          success: true,
+          data: {
+            id: 'child-under',
+            stateCode: 30,
+            ruleVerification: true,
+            json: {},
+          },
+        };
+      }
+      return { success: false, data: null };
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-same',
+        version: '01',
+        stateCode: 10,
+        ruleVerification: false,
+        json: {
+          child: {
+            '@refObjectId': 'child-under',
+            '@version': '01',
+            '@type': 'flow data set',
+          },
+        },
+      },
+    });
+
+    await checkReferences(
+      [{ '@refObjectId': 'proc-same', '@version': '01', '@type': 'process data set' }],
+      new Map(),
+      'team-1',
+      unReview,
+      underReview,
+      unRuleVerification,
+      [],
+    );
+
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('proc-same', '01');
+    expect(unReview).toEqual(
+      expect.arrayContaining([
+        { '@refObjectId': 'proc-same', '@version': '01', '@type': 'process data set' },
+        {
+          '@refObjectId': 'model-same',
+          '@version': '01',
+          '@type': 'lifeCycleModel data set',
+        },
+      ]),
+    );
+    expect(unRuleVerification).toEqual(
+      expect.arrayContaining([
+        { '@refObjectId': 'proc-same', '@version': '01', '@type': 'process data set' },
+        {
+          '@refObjectId': 'model-same',
+          '@version': '01',
+          '@type': 'lifeCycleModel data set',
+        },
+      ]),
+    );
+    expect(underReview).toEqual([
+      { '@refObjectId': 'child-under', '@version': '01', '@type': 'flow data set' },
+    ]);
+  });
+
+  it('avoids duplicating existing unresolved references and attaches missing refs to the path', async () => {
+    const rootPath = new ReffPath({
+      '@refObjectId': 'root',
+      '@version': '01',
+      '@type': 'process data set',
+    });
+    const duplicateRef = {
+      '@refObjectId': 'dup-flow',
+      '@version': '01',
+      '@type': 'flow data set',
+    };
+    const missingRef = {
+      '@refObjectId': 'missing-flow',
+      '@version': '01',
+      '@type': 'flow data set',
+    };
+
+    mockGetRefData.mockImplementation(async (id: string) => {
+      if (id === 'dup-flow') {
+        return {
+          success: true,
+          data: {
+            id,
+            stateCode: 10,
+            ruleVerification: false,
+            json: {},
+          },
+        };
+      }
+      return { success: false, data: null };
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({ success: false, data: null });
+
+    const unReview = [duplicateRef];
+    const underReview: any[] = [];
+    const unRuleVerification = [duplicateRef];
+    const nonExistentRef = [missingRef];
+
+    await checkReferences(
+      [duplicateRef, missingRef],
+      new Map(),
+      'team-1',
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+      rootPath,
+    );
+
+    expect(unReview).toHaveLength(1);
+    expect(unRuleVerification).toHaveLength(1);
+    expect(nonExistentRef).toHaveLength(1);
+    expect(rootPath.children).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ '@refObjectId': 'dup-flow' }),
+        expect.objectContaining({ '@refObjectId': 'missing-flow', nonExistent: true }),
+      ]),
+    );
+  });
+
+  it('deduplicates existing under-review references', async () => {
+    const ref = {
+      '@refObjectId': 'under-review-flow',
+      '@version': '01',
+      '@type': 'flow data set',
+    };
+
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'under-review-flow',
+        stateCode: 30,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({ success: false, data: null });
+
+    const underReview = [ref];
+
+    await checkReferences([ref], new Map(), 'team-1', [], underReview, [], []);
+
+    expect(underReview).toEqual([ref]);
+  });
+
   it('updates under review items to pending review', async () => {
     mockGetReviewsOfData.mockResolvedValue([{ id: 'existing-review' }]);
     mockUpdateDateToReviewState.mockResolvedValue({ success: true });
@@ -454,6 +800,37 @@ describe('review utilities', () => {
       expect.objectContaining({
         state_code: 20,
       }),
+    );
+  });
+
+  it('captures per-item update failures when moving refs under review', async () => {
+    mockGetReviewsOfData.mockImplementation(async (id: string) => {
+      if (id === 'broken-item') {
+        throw new Error('cannot load reviews');
+      }
+      return [];
+    });
+    mockUpdateDateToReviewState.mockResolvedValue({ success: true });
+
+    const results = await updateUnReviewToUnderReview(
+      [
+        { '@refObjectId': 'broken-item', '@version': '01', '@type': 'process data set' },
+        { '@refObjectId': 'ok-item', '@version': '01', '@type': 'flow data set' },
+      ],
+      'review-2',
+    );
+
+    expect(results).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          success: false,
+          item: expect.objectContaining({ '@refObjectId': 'broken-item' }),
+        }),
+        expect.objectContaining({
+          success: true,
+          item: expect.objectContaining({ '@refObjectId': 'ok-item' }),
+        }),
+      ]),
     );
   });
 
@@ -498,6 +875,174 @@ describe('review utilities', () => {
     expect(result.errTabNames).toEqual(['classification']);
   });
 
+  it('flags missing validation and compliance payloads', () => {
+    const result = checkRequiredFields(
+      {
+        'modellingAndValidation.validation.review': 'validation',
+        'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
+      },
+      { modellingAndValidation: {} },
+    );
+
+    expect(result).toEqual({
+      checkResult: false,
+      errTabNames: ['validation', 'complianceDeclarations'],
+    });
+  });
+
+  it('flags malformed validation rows', () => {
+    const result = checkRequiredFields(
+      {
+        'modellingAndValidation.validation.review': 'validation',
+      },
+      {
+        modellingAndValidation: {
+          validation: {
+            review: [
+              {
+                '@type': 'type',
+                'common:scope': [{ '@name': 'scope', 'common:method': {} }],
+                'common:reviewDetails': [],
+              },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(result).toEqual({
+      checkResult: false,
+      errTabNames: ['validation'],
+    });
+  });
+
+  it('flags malformed compliance rows across null, missing-ref, and null-value cases', () => {
+    const nullItemResult = checkRequiredFields(
+      {
+        'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
+      },
+      {
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: [null],
+          },
+        },
+      },
+    );
+    const missingRefResult = checkRequiredFields(
+      {
+        'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
+      },
+      {
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: [
+              {
+                'common:referenceToComplianceSystem': {},
+              },
+            ],
+          },
+        },
+      },
+    );
+    const nullValueResult = checkRequiredFields(
+      {
+        'modellingAndValidation.complianceDeclarations.compliance': 'complianceDeclarations',
+      },
+      {
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: [
+              {
+                foo: null,
+                'common:referenceToComplianceSystem': {
+                  '@refObjectId': 'ref-1',
+                },
+              },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(nullItemResult.errTabNames).toEqual(['complianceDeclarations']);
+    expect(missingRefResult.errTabNames).toEqual(['complianceDeclarations']);
+    expect(nullValueResult.errTabNames).toEqual(['complianceDeclarations']);
+  });
+
+  it('flags empty forms and generic missing, array, and object fields', () => {
+    expect(checkRequiredFields({ foo: 'fooTab' }, {})).toEqual({
+      checkResult: false,
+      errTabNames: [],
+    });
+
+    expect(
+      checkRequiredFields(
+        {
+          foo: 'fooTab',
+          bar: 'barTab',
+          baz: 'bazTab',
+          qux: 'quxTab',
+          'nested.value': 'nestedTab',
+        },
+        {
+          bar: [],
+          baz: {},
+          qux: { a: null },
+          nested: {},
+        } as any,
+      ),
+    ).toEqual({
+      checkResult: false,
+      errTabNames: ['fooTab', 'barTab', 'bazTab', 'quxTab', 'nestedTab'],
+    });
+
+    expect(checkRequiredFields({ 'nested.value': 'nestedTab' }, 'text' as any)).toEqual({
+      checkResult: false,
+      errTabNames: ['nestedTab'],
+    });
+  });
+
+  it('falls back to empty tab labels when required field metadata is missing', () => {
+    expect(
+      checkRequiredFields(
+        {
+          'common:classification.common:class': undefined,
+          foo: undefined,
+          bar: undefined,
+          baz: undefined,
+          qux: undefined,
+        },
+        {
+          'common:classification': {
+            'common:class': {},
+          },
+          bar: [],
+          baz: {},
+          qux: { a: undefined },
+        } as any,
+      ),
+    ).toEqual({
+      checkResult: true,
+      errTabNames: [],
+    });
+
+    expect(
+      checkRequiredFields(
+        {
+          foo: 'fooTab',
+          'common:classification.common:class': undefined,
+        },
+        {
+          foo: 'present',
+        } as any,
+      ),
+    ).toEqual({
+      checkResult: true,
+      errTabNames: [],
+    });
+  });
+
   it('locates tab for erroneous reference', () => {
     const ref = {
       '@refObjectId': 'ref-10',
@@ -513,6 +1058,37 @@ describe('review utilities', () => {
     };
 
     expect(getErrRefTab(ref, data)).toBe('modellingAndValidation');
+  });
+
+  it('returns null for empty refs and handles circular objects', () => {
+    const circular: any = { foo: {} };
+    circular.foo.self = circular.foo;
+
+    expect(getErrRefTab(null as any, circular)).toBeNull();
+    expect(
+      getErrRefTab(
+        {
+          '@refObjectId': 'missing',
+          '@version': '01',
+          '@type': 'source data set',
+        },
+        circular,
+      ),
+    ).toBeNull();
+    expect(
+      getErrRefTab(
+        {
+          '@refObjectId': 'foo',
+          '@version': '01',
+          '@type': 'source data set',
+        },
+        {
+          '@refObjectId': 'foo',
+          '@version': '01',
+          '@type': 'source data set',
+        },
+      ),
+    ).toBeNull();
   });
 
   it('collects problem nodes from reference path', () => {
@@ -583,6 +1159,112 @@ describe('review utilities', () => {
     );
   });
 
+  it('returns false when setting a ref that does not exist in the path', () => {
+    const parent = new ReffPath({
+      '@refObjectId': 'parent',
+      '@version': '01',
+      '@type': 'flow data set',
+    });
+
+    expect(() =>
+      parent.set(
+        {
+          '@refObjectId': 'missing',
+          '@version': '01',
+          '@type': 'flow data set',
+        },
+        'versionUnderReview',
+        true,
+      ),
+    ).not.toThrow();
+    expect((parent as any).versionUnderReview).toBeUndefined();
+  });
+
+  it('avoids infinite recursion when set and findProblemNodes encounter cycles', () => {
+    const parent = new ReffPath({
+      '@refObjectId': 'parent',
+      '@version': '01',
+      '@type': 'flow data set',
+    });
+    const child = new ReffPath(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      false,
+      false,
+    );
+
+    parent.addChild(child);
+    child.addChild(parent);
+
+    expect(() =>
+      parent.set(
+        {
+          '@refObjectId': 'missing',
+          '@version': '01',
+          '@type': 'flow data set',
+        },
+        'versionUnderReview',
+        true,
+      ),
+    ).not.toThrow();
+    expect(parent.findProblemNodes()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ '@refObjectId': 'child' }),
+        expect.objectContaining({ '@refObjectId': 'parent' }),
+      ]),
+    );
+  });
+
+  it('treats mismatched under-review versions as problems during checkData scans', () => {
+    const parent = new ReffPath({
+      '@refObjectId': 'parent',
+      '@version': '01',
+      '@type': 'flow data set',
+    });
+    const child = new ReffPath(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
+    parent.addChild(child);
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'versionUnderReview',
+      true,
+    );
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'underReviewVersion',
+      '02',
+    );
+
+    expect(parent.findProblemNodes()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          '@refObjectId': 'child',
+          versionUnderReview: true,
+          underReviewVersion: '02',
+        }),
+        expect.objectContaining({ '@refObjectId': 'parent' }),
+      ]),
+    );
+  });
+
   it('aggregates review data and submits to reviews API', async () => {
     mockGetTeamMessageApi.mockResolvedValue({
       data: [{ json: { title: 'Team Title' } }],
@@ -642,6 +1324,23 @@ describe('review utilities', () => {
     ]);
   });
 
+  it('handles single review reports and empty review reports', async () => {
+    mockGetSourcesByIdsAndVersions.mockResolvedValue({
+      data: [{ id: 'report-single', version: '02', state_code: 40 }],
+    });
+
+    await expect(
+      checkReviewReport({
+        'common:referenceToCompleteReviewReport': {
+          '@refObjectId': 'report-single',
+          '@version': '02',
+        },
+      }),
+    ).resolves.toEqual([{ id: 'report-single', version: '02', stateCode: 40 }]);
+
+    await expect(checkReviewReport({ foo: 'bar' })).resolves.toEqual([]);
+  });
+
   it('returns rejected comments for rejected process reviews', async () => {
     mockGetRejectReviewsByProcess.mockResolvedValue({
       data: [{ id: 'review-1' }, { id: 'review-2' }],
@@ -657,6 +1356,26 @@ describe('review utilities', () => {
     expect(mockGetRejectReviewsByProcess).toHaveBeenCalledWith('process-1', '1.0.0');
     expect(mockGetRejectedCommentsByReviewIds).toHaveBeenCalledWith(['review-1', 'review-2']);
     expect(result).toEqual([{ foo: 'bar' }, { baz: 'qux' }]);
+  });
+
+  it('returns empty rejected comments when inputs or downstream responses are invalid', async () => {
+    await expect(getRejectedComments('', '1.0.0')).resolves.toEqual([]);
+
+    mockGetRejectReviewsByProcess.mockResolvedValue({
+      data: null,
+      error: new Error('review failed'),
+    });
+    await expect(getRejectedComments('process-1', '1.0.0')).resolves.toEqual([]);
+
+    mockGetRejectReviewsByProcess.mockResolvedValue({
+      data: [{ id: 'review-1' }],
+      error: null,
+    });
+    mockGetRejectedCommentsByReviewIds.mockResolvedValue({
+      data: null,
+      error: new Error('comments failed'),
+    });
+    await expect(getRejectedComments('process-1', '1.0.0')).resolves.toEqual([]);
   });
 
   it('merges rejected comments back into modellingAndValidation arrays and scalars', () => {
@@ -696,6 +1415,119 @@ describe('review utilities', () => {
     expect(data.modellingAndValidation.complianceDeclarations.compliance).toEqual([
       { id: 'new-compliance' },
     ]);
+  });
+
+  it('creates missing validation and compliance buckets and merges scalar values into arrays', () => {
+    const data: any = {
+      modellingAndValidation: {
+        validation: {
+          summary: [{ id: 'existing-summary' }],
+          status: 'existing-status',
+        },
+        complianceDeclarations: {
+          status: [{ id: 'existing-compliance-status' }],
+          owner: 'existing-owner',
+        },
+      },
+    };
+
+    mergeCommentsToData(
+      [
+        {
+          modellingAndValidation: {
+            validation: {
+              review: [{ id: 'review-1' }],
+              summary: { id: 'new-summary' },
+              status: 'new-status',
+            },
+            complianceDeclarations: {
+              compliance: [{ id: 'compliance-1' }],
+              status: { id: 'new-compliance-status' },
+              owner: 'new-owner',
+            },
+          },
+        },
+      ] as any,
+      data,
+    );
+
+    expect(data.modellingAndValidation.validation.review).toEqual([{ id: 'review-1' }]);
+    expect(data.modellingAndValidation.validation.summary).toEqual([
+      { id: 'existing-summary' },
+      { id: 'new-summary' },
+    ]);
+    expect(data.modellingAndValidation.validation.status).toEqual([
+      'existing-status',
+      'new-status',
+    ]);
+    expect(data.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'compliance-1' },
+    ]);
+    expect(data.modellingAndValidation.complianceDeclarations.status).toEqual([
+      { id: 'existing-compliance-status' },
+      { id: 'new-compliance-status' },
+    ]);
+    expect(data.modellingAndValidation.complianceDeclarations.owner).toEqual([
+      'existing-owner',
+      'new-owner',
+    ]);
+  });
+
+  it('copies missing validation and compliance sections directly', () => {
+    const data: any = {};
+
+    mergeCommentsToData(
+      [
+        {
+          modellingAndValidation: {
+            validation: {
+              review: [{ id: 'review-2' }],
+            },
+            complianceDeclarations: {
+              compliance: [{ id: 'compliance-2' }],
+            },
+          },
+        },
+      ] as any,
+      data,
+    );
+
+    expect(data.modellingAndValidation.validation).toEqual({
+      review: [{ id: 'review-2' }],
+    });
+    expect(data.modellingAndValidation.complianceDeclarations).toEqual({
+      compliance: [{ id: 'compliance-2' }],
+    });
+  });
+
+  it('assigns missing scalar compliance fields without wrapping them', () => {
+    const data: any = {
+      modellingAndValidation: {
+        complianceDeclarations: {},
+      },
+    };
+
+    mergeCommentsToData(
+      [
+        {
+          modellingAndValidation: {
+            complianceDeclarations: {
+              reviewer: 'reviewer-1',
+            },
+          },
+        },
+      ] as any,
+      data,
+    );
+
+    expect(data.modellingAndValidation.complianceDeclarations.reviewer).toBe('reviewer-1');
+  });
+
+  it('ignores comments without modellingAndValidation payloads', () => {
+    const data: any = {};
+
+    expect(() => mergeCommentsToData([{} as any], data)).not.toThrow();
+    expect(data).toEqual({ modellingAndValidation: {} });
   });
 
   it('skips lifecycle model process refs when resolving error tabs', () => {

@@ -146,6 +146,28 @@ const ToolbarEdit: FC<Props> = ({
   const syncGraphData = useGraphStore((state) => state.syncGraphData);
   const graph = useGraphStore((state) => state.graph);
   const intl = useIntl();
+  const edgeLabelText = {
+    balanced: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.balanced',
+      defaultMessage: 'Bal',
+    }),
+    deficit: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.deficit',
+      defaultMessage: 'Def',
+    }),
+    surplus: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.surplus',
+      defaultMessage: 'Sur',
+    }),
+    input: intl.formatMessage({
+      id: 'pages.button.input',
+      defaultMessage: 'Input',
+    }),
+    output: intl.formatMessage({
+      id: 'pages.button.output',
+      defaultMessage: 'Output',
+    }),
+  };
   const [userId, setUserId] = useState<string>('');
   const [processInstances, setProcessInstances] = useState<LifeCycleModelProcessInstance[]>([]);
   const importedId = getImportedId(importData?.[0]);
@@ -789,6 +811,7 @@ const ToolbarEdit: FC<Props> = ({
               token,
               edge?.data?.connection?.unbalancedAmount as number,
               edge?.data?.connection?.exchangeAmount as number,
+              edgeLabelText,
             );
             updateEdge(edge.id, { labels: [label] }, VISUAL_ONLY_MUTATION_OPTIONS);
           });
@@ -834,6 +857,7 @@ const ToolbarEdit: FC<Props> = ({
               token,
               edge?.data?.connection?.unbalancedAmount as number,
               edge?.data?.connection?.exchangeAmount as number,
+              edgeLabelText,
             );
             updateEdge(edge.id, { labels: [label] }, VISUAL_ONLY_MUTATION_OPTIONS);
           });
@@ -1144,7 +1168,7 @@ const ToolbarEdit: FC<Props> = ({
         nodeAttrs,
         portsGroups: ports.groups,
       });
-      const initEdges = hydrateEditorEdges(model?.edges ?? [], token);
+      const initEdges = hydrateEditorEdges(model?.edges ?? [], token, edgeLabelText);
 
       modelData({
         nodes: initNodes,
@@ -1192,7 +1216,7 @@ const ToolbarEdit: FC<Props> = ({
           nodeAttrs,
           portsGroups: ports.groups,
         });
-        const initEdges = hydrateEditorEdges(model?.edges ?? [], token);
+        const initEdges = hydrateEditorEdges(model?.edges ?? [], token, edgeLabelText);
         await modelData({
           nodes: initNodes,
           edges: initEdges,

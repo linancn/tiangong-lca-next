@@ -15,7 +15,7 @@ import type {
 } from '@/services/processes/data';
 import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
 import type { Edge as X6Edge, Node as X6Node } from '@antv/x6';
-import { getEdgeLabel } from './edge';
+import { getEdgeLabel, type EdgeLabelText } from './edge';
 import {
   getPortLabelWithAllocation,
   getPortTextColor,
@@ -555,6 +555,7 @@ export const hydrateEditorNodes = ({
 export const hydrateEditorEdges = (
   edges: LifeCycleModelGraphEdge[],
   token: LifeCycleModelThemeToken,
+  edgeLabelText?: EdgeLabelText,
 ) =>
   edges.map((edge) => {
     if (edge.target) {
@@ -564,6 +565,7 @@ export const hydrateEditorEdges = (
         token,
         edge?.data?.connection?.unbalancedAmount as number,
         edge?.data?.connection?.exchangeAmount as number,
+        edgeLabelText,
       );
 
       return {
