@@ -4,9 +4,10 @@
  */
 
 import LevelTextItemForm from '@/components/LevelTextItem/form';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 const mockGetILCDClassification = jest.fn();
 const mockGetILCDFlowCategorization = jest.fn();
+let latestTreeSelectProps: any = null;
 
 jest.mock('@/services/ilcd/api', () => ({
   getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
@@ -29,8 +30,9 @@ jest.mock('antd', () => {
       return [node, ...children];
     });
 
-  const TreeSelect = ({ treeData = [], onChange }: any) => {
+  const TreeSelect = ({ treeData = [], onChange, filterTreeNode }: any) => {
     const options = flattenSelectable(treeData);
+    latestTreeSelectProps = { treeData, onChange, filterTreeNode };
     return (
       <div>
         {options.map((option: any) => (
@@ -73,8 +75,8 @@ jest.mock('antd', () => {
 });
 
 describe('LevelTextItemForm', () => {
-  const createFormRef = () => {
-    const store: Record<string, any> = {};
+  const createFormRef = (initialStore: Record<string, any> = {}) => {
+    const store: Record<string, any> = JSON.parse(JSON.stringify(initialStore));
 
     const setValueAtPath = (path: any[], value: any) => {
       let node = store;
@@ -117,6 +119,7 @@ describe('LevelTextItemForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    latestTreeSelectProps = null;
   });
 
   it('shows validation help when classification is required but missing', async () => {
@@ -230,5 +233,144 @@ describe('LevelTextItemForm', () => {
     await waitFor(() => {
       expect(screen.queryByText('Please input classification')).not.toBeInTheDocument();
     });
+  });
+
+  it('uses default props and skips flow classification fetch when flowType is missing', async () => {
+    const formRef = createFormRef();
+
+    render(
+      <LevelTextItemForm
+        name={['classification']}
+        lang='en'
+        dataType='Flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetILCDClassification).not.toHaveBeenCalled();
+      expect(mockGetILCDFlowCategorization).not.toHaveBeenCalled();
+    });
+    expect(screen.queryByText('Please input classification')).not.toBeInTheDocument();
+  });
+
+  it('derives the show value from stored classification values and supports tree filtering', async () => {
+    mockGetILCDClassification.mockResolvedValue({
+      data: [
+        {
+          id: 'level-1',
+          label: 'Root',
+          value: 'root',
+          children: [
+            {
+              id: 'level-2',
+              title: 'Leaf without label',
+            },
+          ],
+        },
+      ],
+      success: true,
+    });
+
+    const formRef = createFormRef({
+      classification: {
+        value: ['Root/'],
+      },
+    });
+
+    render(
+      <LevelTextItemForm
+        name={['classification']}
+        lang='en'
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        hidden={false}
+        onData={jest.fn()}
+        rules={[]}
+        showRules={false}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(
+        ['classification', 'showValue'],
+        'level-2',
+      );
+    });
+
+    expect(latestTreeSelectProps.filterTreeNode('root', { title: 'Root/' })).toBe(true);
+    expect(latestTreeSelectProps.filterTreeNode('zzz', { title: undefined })).toBeUndefined();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Root/' }));
+
+    await waitFor(() => {
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(
+        ['classification', 'id'],
+        ['level-1', 'level-2'],
+      );
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(
+        ['classification', 'value'],
+        ['root', 'Root/'],
+      );
+    });
+  });
+
+  it('falls back when stored values and selected ids cannot be resolved', async () => {
+    mockGetILCDClassification.mockResolvedValue({
+      data: [
+        {
+          id: 'level-1',
+          label: 'Root',
+          value: 'root',
+        },
+      ],
+      success: true,
+    });
+
+    const formRef = createFormRef({
+      classification: {
+        value: ['unknown-leaf'],
+      },
+    });
+    const onData = jest.fn();
+
+    render(
+      <LevelTextItemForm
+        name={['classification']}
+        lang='en'
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        hidden={false}
+        onData={onData}
+        rules={[]}
+        showRules
+      />,
+    );
+
+    await waitFor(() => {
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(
+        ['classification', 'showValue'],
+        '',
+      );
+    });
+
+    await act(async () => {
+      await latestTreeSelectProps.onChange('missing-id');
+    });
+
+    await waitFor(() => {
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(['classification', 'id'], []);
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(['classification', 'value'], []);
+      expect(formRef.current?.setFieldValue).toHaveBeenCalledWith(
+        ['classification', 'showValue'],
+        undefined,
+      );
+      expect(onData).toHaveBeenCalled();
+    });
+
+    expect(screen.getByText('Please input classification')).toBeInTheDocument();
   });
 });

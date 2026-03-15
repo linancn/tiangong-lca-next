@@ -225,22 +225,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     },
   };
 
-  const nodeTemplate = {
-    id: '',
-    label: '',
-    shape: 'rect',
-    x: 200,
-    y: 100,
-    width: 350,
-    height: 80,
-    attrs: nodeAttrs,
-    data: {
-      label: [],
-      quantitativeReference: '0',
-      generalComment: [],
-    },
-  };
-
   const ports = {
     groups: {
       groupInput: {
@@ -412,7 +396,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                     ...item?.attrs,
                     text: {
                       ...item?.attrs?.text,
-                      text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350)}`,
+                      text: `${genPortLabel(
+                        itemTextWithAllocation ?? '',
+                        lang,
+                        node?.size?.width ?? node?.width ?? 350,
+                      )}`,
                       title: itemTextWithAllocation,
                       fill: getPortTextColor(
                         item?.data?.quantitativeReference,

@@ -307,4 +307,77 @@ describe('FlowpropertyForm', () => {
       screen.getAllByRole('textbox').some((element) => !element.hasAttribute('disabled')),
     ).toBe(true);
   });
+
+  it('derives schema rules when showRules is enabled', async () => {
+    mockGetRules.mockImplementation((rules: any) => [{ source: rules }]);
+
+    const formRef = {
+      current: {
+        setFieldsValue: jest.fn(),
+        setFieldValue: jest.fn(),
+        getFieldsValue: jest.fn(() => ({})),
+      },
+    };
+
+    const { rerender } = renderWithProviders(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='flowPropertiesInformation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+        showRules
+      />,
+    );
+
+    expect(mockGetRules).toHaveBeenCalledTimes(9);
+
+    await userEvent.click(screen.getByRole('button', { name: /Reference unit/i }));
+    expect(unitGroupSelectCalls[unitGroupSelectCalls.length - 1].rules).toEqual(
+      expect.arrayContaining([expect.objectContaining({ source: expect.anything() })]),
+    );
+
+    rerender(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='modellingAndValidation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+        showRules
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Compliance system name/i }));
+    expect(sourceSelectCalls[sourceSelectCalls.length - 1].rules).toEqual(
+      expect.arrayContaining([expect.objectContaining({ source: expect.anything() })]),
+    );
+
+    rerender(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='administrativeInformation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+        showRules
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Data set format(s)' }));
+    expect(sourceSelectCalls[sourceSelectCalls.length - 1].rules).toEqual(
+      expect.arrayContaining([expect.objectContaining({ source: expect.anything() })]),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Owner of data set' }));
+    expect(contactSelectCalls[contactSelectCalls.length - 1].rules).toEqual(
+      expect.arrayContaining([expect.objectContaining({ source: expect.anything() })]),
+    );
+  });
 });

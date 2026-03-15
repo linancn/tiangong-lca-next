@@ -1239,4 +1239,74 @@ describe('Unitgroups unit components', () => {
     expect(mockGetReferenceUnitGroup).not.toHaveBeenCalled();
     expect(screen.getByText('kg')).toBeInTheDocument();
   });
+
+  it('skips lookups when id is missing or idType is unsupported', async () => {
+    const { rerender } = renderWithProviders(
+      <ReferenceUnit id='' version='1.0' idType='flow' lang='en' />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockGetReferenceProperty).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnitGroup).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnit).not.toHaveBeenCalled();
+
+    rerender(<ReferenceUnit id='unsupported-id' version='1.0' idType='other' lang='en' />);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockGetReferenceProperty).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnitGroup).not.toHaveBeenCalled();
+    expect(mockGetReferenceUnit).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty reference ids when flow lookups return no linked data', async () => {
+    mockGetReferenceProperty.mockResolvedValueOnce({});
+    mockGetReferenceUnitGroup.mockResolvedValueOnce({});
+    mockGetReferenceUnit.mockResolvedValueOnce({});
+
+    renderWithProviders(<ReferenceUnit id='flow-id' version='1.0' idType='flow' lang='en' />);
+
+    await waitFor(() => {
+      expect(mockGetReferenceProperty).toHaveBeenCalledWith('flow-id', '1.0');
+      expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('', '');
+      expect(mockGetReferenceUnit).toHaveBeenCalledWith('', '');
+    });
+
+    expect(screen.queryByText('kg')).not.toBeInTheDocument();
+  });
+
+  it('falls back to empty reference ids when flowproperty lookups return no linked data', async () => {
+    mockGetReferenceUnitGroup.mockResolvedValueOnce({});
+    mockGetReferenceUnit.mockResolvedValueOnce({});
+
+    renderWithProviders(
+      <ReferenceUnit id='flowproperty-id' version='1.0' idType='flowproperty' lang='en' />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('flowproperty-id', '1.0');
+      expect(mockGetReferenceUnit).toHaveBeenCalledWith('', '');
+    });
+
+    expect(screen.queryByText('kg')).not.toBeInTheDocument();
+  });
+
+  it('falls back to an empty reference unit when unitgroup lookups return no data', async () => {
+    mockGetReferenceUnit.mockResolvedValueOnce({});
+
+    renderWithProviders(
+      <ReferenceUnit id='unitgroup-id' version='1.0' idType='unitgroup' lang='en' />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceUnit).toHaveBeenCalledWith('unitgroup-id', '1.0');
+    });
+
+    expect(screen.queryByText('kg')).not.toBeInTheDocument();
+  });
 });

@@ -359,10 +359,9 @@ const ProcessCreate: FC<CreateProps> = ({
                   e?.allocations?.allocation &&
                   e?.allocations?.allocation['@allocatedFraction']
                 ) {
-                  const fraction =
-                    e?.allocations?.allocation['@allocatedFraction']
-                      ?.toString()
-                      ?.replace('%', '') ?? 0;
+                  const fraction = e?.allocations?.allocation['@allocatedFraction']
+                    ?.toString()
+                    ?.replace('%', '');
                   allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
                 }
               });

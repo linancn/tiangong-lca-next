@@ -33,7 +33,7 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState('');
-  const [stateCode, setStateCode] = useState<string | number>('all');
+  const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -238,9 +238,6 @@ const TableList: FC = () => {
   };
 
   useEffect(() => {
-    if (team) {
-      return;
-    }
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) {
         setTeam(res.data[0] as TeamTable);
@@ -330,7 +327,7 @@ const TableList: FC = () => {
           sort,
         ) => {
           const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current ?? stateCode;
+          const currentStateCode = stateCodeRef.current;
           if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }

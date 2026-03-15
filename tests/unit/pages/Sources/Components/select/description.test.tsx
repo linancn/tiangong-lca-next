@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { renderWithProviders, screen } from '../../../../../helpers/testUtils';
 
+const mockGetLocale = jest.fn();
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -15,7 +17,7 @@ const toText = (node: any): string => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => 'en-US',
+  getLocale: () => mockGetLocale(),
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -38,7 +40,12 @@ jest.mock('antd', () => {
   );
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children }: any) => <div>{children}</div>;
+  Descriptions.Item = ({ children, label, labelStyle }: any) => (
+    <div data-testid='desc-item' data-label-width={labelStyle?.width ?? ''}>
+      <span>{toText(label)}</span>
+      <span>{children}</span>
+    </div>
+  );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
   return {
     __esModule: true,
@@ -52,6 +59,10 @@ jest.mock('antd', () => {
 
 describe('SourceSelectDescription', () => {
   const SourceSelectDescription = require('@/pages/Sources/Components/select/description').default;
+
+  beforeEach(() => {
+    mockGetLocale.mockReturnValue('en-US');
+  });
 
   it('renders a placeholder card when there are no source references', () => {
     renderWithProviders(<SourceSelectDescription title='Source' lang='en' />);
@@ -82,5 +93,51 @@ describe('SourceSelectDescription', () => {
     expect(screen.getAllByTestId('source-view')).toHaveLength(2);
     expect(screen.getByText('Source one')).toBeInTheDocument();
     expect(screen.getByText('Source two')).toBeInTheDocument();
+  });
+
+  it('uses the zh-CN label width for placeholder cards', () => {
+    mockGetLocale.mockReturnValue('zh-CN');
+
+    renderWithProviders(<SourceSelectDescription title='Source' lang='zh' />);
+
+    expect(screen.getByTestId('desc-item')).toHaveAttribute('data-label-width', '150px');
+    expect(screen.getByText('-')).toBeInTheDocument();
+  });
+
+  it('renders a single sparse source reference without a linked view', () => {
+    mockGetLocale.mockReturnValue('zh-CN');
+
+    renderWithProviders(
+      <SourceSelectDescription
+        title='Source'
+        lang='zh'
+        data={{
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Sparse source' }],
+        }}
+      />,
+    );
+
+    expect(screen.queryByTestId('source-view')).not.toBeInTheDocument();
+    expect(screen.getByText('Source1')).toBeInTheDocument();
+    expect(screen.getAllByTestId('desc-item')[0]).toHaveAttribute('data-label-width', '150px');
+    expect(screen.getAllByText('-')).not.toHaveLength(0);
+    expect(screen.getByText('Sparse source')).toBeInTheDocument();
+  });
+
+  it('falls back to an empty view version when the source version is missing', () => {
+    renderWithProviders(
+      <SourceSelectDescription
+        title='Source'
+        lang='en'
+        data={{
+          '@refObjectId': 'source-without-version',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'No version' }],
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId('source-view')).toHaveTextContent('source-without-version:');
+    expect(screen.getByText('No version')).toBeInTheDocument();
+    expect(screen.getAllByText('-')).not.toHaveLength(0);
   });
 });

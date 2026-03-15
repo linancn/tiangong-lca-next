@@ -49,7 +49,7 @@ const TableList: FC = () => {
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
-  const [stateCode, setStateCode] = useState<string | number>('all');
+  const [, setStateCode] = useState<string | number>('all');
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
 
@@ -298,9 +298,6 @@ const TableList: FC = () => {
   ];
 
   useEffect(() => {
-    if (team) {
-      return;
-    }
     getTeamById(tid ?? '').then((res) => {
       const teamData = (res.data as TeamTable[])[0];
       if (teamData) {
@@ -431,7 +428,7 @@ const TableList: FC = () => {
           filter,
         ) => {
           const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current ?? stateCode;
+          const currentStateCode = stateCodeRef.current;
           const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
           const classificationFilter = parseClassificationFilter(filter?.classification);
           const searchFilters = {

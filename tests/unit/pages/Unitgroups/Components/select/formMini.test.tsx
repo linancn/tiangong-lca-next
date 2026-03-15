@@ -3,6 +3,7 @@ import { act, renderWithProviders, waitFor } from '../../../../../helpers/testUt
 
 const mockSetUnits = jest.fn();
 const mockSetTargetUnit = jest.fn();
+let mockFormListFields: any[] = [];
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -57,7 +58,7 @@ jest.mock('antd', () => {
   Form.List = ({ children }: any) => (
     <div>
       {typeof children === 'function'
-        ? children([], { add: () => {}, remove: () => {} })
+        ? children(mockFormListFields, { add: () => {}, remove: () => {} })
         : children}
     </div>
   );
@@ -97,6 +98,7 @@ describe('UnitGroupFormMini', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFormListFields = [];
     mockGetReferenceProperty.mockResolvedValue({
       data: { refFlowPropertytId: 'fp-1', version: '2.0.0' },
     });
@@ -196,5 +198,122 @@ describe('UnitGroupFormMini', () => {
     expect(mockGetReferenceUnitGroup).not.toHaveBeenCalled();
     expect(mockGetReferenceUnit).not.toHaveBeenCalled();
     expect(setFieldValue).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty linked ids and empty unit metadata for flow references', async () => {
+    mockGetReferenceProperty.mockResolvedValueOnce({ data: {} });
+    mockGetReferenceUnitGroup.mockResolvedValueOnce({ data: {} });
+    mockGetReferenceUnit.mockResolvedValueOnce({ data: {} });
+    const setFieldValue = jest.fn();
+    const formRef = { current: { setFieldValue } };
+
+    await act(async () => {
+      renderWithProviders(
+        <UnitGroupFormMini
+          id='flow-fallback'
+          version={undefined}
+          idType='flow'
+          name={['exchange']}
+          formRef={formRef as any}
+          drawerVisible
+        />,
+      );
+    });
+
+    await waitFor(() => expect(mockGetReferenceProperty).toHaveBeenCalledWith('flow-fallback', ''));
+    expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('', '');
+    expect(mockGetReferenceUnit).toHaveBeenCalledWith('', '');
+    expect(mockSetUnits).toHaveBeenCalledWith([]);
+    expect(mockSetTargetUnit).toHaveBeenCalledWith('');
+    expect(setFieldValue).toHaveBeenCalledWith(['exchange', 'refUnitGroup'], {
+      shortDescription: [],
+      refUnit: {
+        name: '',
+        generalComment: [],
+      },
+    });
+  });
+
+  it('skips form updates when flowproperty references have no short description', async () => {
+    mockGetReferenceUnitGroup.mockResolvedValueOnce({
+      data: {
+        refUnitGroupId: undefined,
+        version: undefined,
+      },
+    });
+    mockGetReferenceUnit.mockResolvedValueOnce({ data: {} });
+    const setFieldValue = jest.fn();
+    const formRef = { current: { setFieldValue } };
+
+    await act(async () => {
+      renderWithProviders(
+        <UnitGroupFormMini
+          id='fp-fallback'
+          version={undefined}
+          idType='flowproperty'
+          name={['flowProperty']}
+          formRef={formRef as any}
+          drawerVisible
+        />,
+      );
+    });
+
+    await waitFor(() => expect(mockGetReferenceUnitGroup).toHaveBeenCalledWith('fp-fallback', ''));
+    expect(mockGetReferenceUnit).toHaveBeenCalledWith('', '');
+    expect(setFieldValue).not.toHaveBeenCalled();
+  });
+
+  it('falls back to an empty flowproperty reference-unit name when the linked unit omits it', async () => {
+    mockGetReferenceUnit.mockResolvedValueOnce({
+      data: {
+        refUnitGeneralComment: undefined,
+      },
+    });
+    const setFieldValue = jest.fn();
+    const formRef = { current: { setFieldValue } };
+
+    await act(async () => {
+      renderWithProviders(
+        <UnitGroupFormMini
+          id='fp-empty-unit'
+          version='4.0.0'
+          idType='flowproperty'
+          name={['flowProperty']}
+          formRef={formRef as any}
+          drawerVisible
+        />,
+      );
+    });
+
+    await waitFor(() =>
+      expect(setFieldValue).toHaveBeenCalledWith(['flowProperty', 'refUnitGroup'], {
+        shortDescription: [{ '@xml:lang': 'en', '#text': 'Mass unit' }],
+        refUnit: {
+          name: '',
+          generalComment: [],
+        },
+      }),
+    );
+  });
+
+  it('renders existing short-description and general-comment rows when the form already has values', async () => {
+    mockFormListFields = [{ key: 'row-1', name: 0 }];
+    const setFieldValue = jest.fn();
+    const formRef = { current: { setFieldValue } };
+
+    await act(async () => {
+      renderWithProviders(
+        <UnitGroupFormMini
+          id={undefined}
+          version={undefined}
+          idType='flow'
+          name={['exchange']}
+          formRef={formRef as any}
+          drawerVisible={false}
+        />,
+      );
+    });
+
+    expect(document.querySelectorAll('textarea[placeholder="text"]')).toHaveLength(2);
   });
 });

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
-  if (node === null || node === undefined) return '';
+  if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   if (Array.isArray(node)) return node.map(toText).join('');
   if (node?.props?.defaultMessage) return node.props.defaultMessage;
@@ -27,6 +27,28 @@ const mockGetLifeCycleModelTablePgroongaSearch = jest.fn();
 const mockLifeCycleModelHybridSearch = jest.fn();
 const mockContributeLifeCycleModel = jest.fn();
 const mockGetTeamById = jest.fn();
+const mockMessageSuccess = jest.fn();
+
+const modelRows = [
+  {
+    id: 'model-1',
+    version: '1.0.0',
+    name: 'Lifecycle model 1',
+    generalComment: 'General comment',
+    classification: 'Class A',
+    modifiedAt: '2024-01-01',
+    teamId: '',
+  },
+  {
+    id: 'model-2',
+    version: '1.0.1',
+    name: 'Lifecycle model 2',
+    generalComment: '',
+    classification: 'undefined',
+    modifiedAt: '2024-01-02',
+    teamId: 'team-2',
+  },
+];
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -62,7 +84,10 @@ jest.mock('@/services/teams/api', () => ({
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
   default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>{addVersionComponent?.({ newVersion: '02.00.000' })}</div>
+    <div data-testid='all-versions'>
+      all-versions
+      {addVersionComponent?.({ newVersion: '02.00.000' })}
+    </div>
   ),
 }));
 
@@ -77,8 +102,8 @@ jest.mock('@/components/ContributeData', () => ({
 
 jest.mock('@/components/ExportData', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => (
-    <div data-testid='export-data'>{`export:${id}:${version}`}</div>
+  default: ({ tableName, id, version }: any) => (
+    <button type='button'>{`export-${tableName}-${id}-${version}`}</button>
   ),
 }));
 
@@ -108,41 +133,56 @@ jest.mock('@/pages/Utils', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/create', () => ({
   __esModule: true,
-  default: ({ actionType = 'create', importData, newVersion }: any) => (
-    <div data-testid='lifecycle-create'>
-      {JSON.stringify({
-        actionType,
-        importCount: importData?.length ?? 0,
-        newVersion,
-      })}
+  default: ({ actionType = 'create', importData, newVersion, id, version, onClose }: any) => (
+    <div>
+      <div data-testid={`lifecycle-create-${actionType}`}>
+        {JSON.stringify({
+          actionType,
+          importCount: importData?.length ?? 0,
+          newVersion: newVersion ?? null,
+          id: id ?? null,
+          version: version ?? null,
+        })}
+      </div>
+      {onClose ? (
+        <button type='button' onClick={() => onClose()}>
+          close-lifecycle-create-{actionType}
+        </button>
+      ) : null}
     </div>
   ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-delete'>{`delete:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+      lifecycle-delete-{id}
+    </button>
+  ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-edit'>{`edit:${id}`}</div>,
+  default: ({ id }: any) => <button type='button'>{`lifecycle-edit-${id}`}</button>,
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='lifecycle-view'>{`view:${id}`}</div>,
+  default: ({ id }: any) => <button type='button'>{`lifecycle-view-${id}`}</button>,
 }));
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Card = ({ children }: any) => <section>{children}</section>;
   const Col = ({ children }: any) => <div>{children}</div>;
+  const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ title, children }: any) => (
+    <div data-tooltip-title={toText(title)}>{children}</div>
+  );
 
   const Checkbox = ({ children, onChange }: any) => {
     const [checked, setChecked] = React.useState(false);
@@ -163,21 +203,19 @@ jest.mock('antd', () => {
     );
   };
 
-  const Search = ({ onSearch, placeholder }: any) => {
-    return (
-      <div>
-        <input aria-label='search-input' placeholder={placeholder} />
-        <button type='button' onClick={() => onSearch?.('steel')}>
-          search
-        </button>
-      </div>
-    );
-  };
+  const Search = ({ onSearch, placeholder }: any) => (
+    <div>
+      <input aria-label='search-input' placeholder={placeholder} />
+      <button type='button' onClick={() => onSearch?.('steel')}>
+        search
+      </button>
+    </div>
+  );
 
   const Input = { Search };
 
   const message = {
-    success: jest.fn(),
+    success: (...args: any[]) => mockMessageSuccess(...args),
     error: jest.fn(),
   };
 
@@ -214,31 +252,47 @@ jest.mock('@ant-design/pro-components', () => {
 
   const PageContainer = ({ children, header }: any) => (
     <div>
-      <h1>{toText(header?.title)}</h1>
+      {header?.title ? <h1>{toText(header.title)}</h1> : null}
       {children}
     </div>
   );
 
-  const ProTable = ({ actionRef, request, columns = [], toolBarRender, headerTitle }: any) => {
-    const [rows, setRows] = React.useState<any[]>([]);
+  const ProTable = ({
+    actionRef,
+    request,
+    columns = [],
+    toolBarRender,
+    headerTitle,
+    rowKey,
+  }: any) => {
     const requestRef = React.useRef(request);
+    const [rows, setRows] = React.useState<any[]>([]);
+    const [pageInfo, setPageInfoState] = React.useState({ pageSize: 10, current: 1 });
 
     React.useEffect(() => {
       requestRef.current = request;
     }, [request]);
 
-    const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
-      return result;
-    });
+    const runRequest = React.useCallback(
+      async (sort: Record<string, string> = {}, params = pageInfo) => {
+        const result = await requestRef.current?.(params, sort);
+        setRows(result?.data ?? []);
+        return result;
+      },
+      [pageInfo],
+    );
+
+    const reload = jest.fn(async () => runRequest());
+    const requestWith = jest.fn(async (sort: Record<string, string> = {}) => runRequest(sort));
 
     React.useEffect(() => {
       latestReloadMock = reload;
       if (actionRef) {
         actionRef.current = {
           reload,
-          setPageInfo: jest.fn(),
+          setPageInfo: jest.fn((nextPageInfo: any) => {
+            setPageInfoState((prev: any) => ({ ...prev, ...nextPageInfo }));
+          }),
         };
       }
       void reload();
@@ -248,22 +302,42 @@ jest.mock('@ant-design/pro-components', () => {
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
         <div>{toolBarRender?.()}</div>
-        {rows.map((row, rowIndex) => (
-          <div key={`${row.id}-${rowIndex}`}>
-            {columns.map((column: any, columnIndex: number) => (
-              <div key={`${row.id}-${columnIndex}`}>
-                {column.render ? column.render(undefined, row) : row[column.dataIndex]}
-              </div>
-            ))}
-          </div>
-        ))}
+        <button type='button' onClick={() => requestWith({ name: 'ascend' })}>
+          request-name-sort-asc
+        </button>
+        <button type='button' onClick={() => requestWith({ name: 'descend' })}>
+          request-name-sort-desc
+        </button>
+        <button type='button' onClick={() => requestWith({ classification: 'ascend' })}>
+          request-classification-sort-asc
+        </button>
+        <button type='button' onClick={() => requestWith({ classification: 'descend' })}>
+          request-classification-sort-desc
+        </button>
+        <button type='button' onClick={() => requestWith({ modifiedAt: 'descend' })}>
+          request-unknown-sort
+        </button>
+        {rows.map((row: any, rowIndex: number) => {
+          const key = rowKey ? rowKey(row) : `row-${rowIndex}`;
+          return (
+            <div data-testid={`row-${key}`} key={key}>
+              {columns.map((column: any, columnIndex: number) => {
+                const value = column.dataIndex ? row[column.dataIndex] : undefined;
+                const rendered = column.render ? column.render(value, row, rowIndex) : value;
+                return <div key={`${column.dataIndex ?? 'col'}-${columnIndex}`}>{rendered}</div>;
+              })}
+            </div>
+          );
+        })}
       </section>
     );
   };
 
   return {
     __esModule: true,
+    ActionType: {},
     PageContainer,
+    ProColumns: {},
     ProTable,
   };
 });
@@ -289,17 +363,7 @@ describe('LifeCycleModelsPage', () => {
       ],
     });
     mockGetLifeCycleModelTableAll.mockResolvedValue({
-      data: [
-        {
-          id: 'model-1',
-          version: '1.0.0',
-          name: 'Lifecycle model 1',
-          generalComment: 'General comment',
-          classification: 'Class A',
-          modifiedAt: '2024-01-01',
-          teamId: '',
-        },
-      ],
+      data: modelRows,
       success: true,
     });
     mockGetLifeCycleModelTablePgroongaSearch.mockResolvedValue({
@@ -313,11 +377,18 @@ describe('LifeCycleModelsPage', () => {
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
   });
 
-  it('loads the default my-data table, team title, and toolbar actions', async () => {
+  it('loads the default table, row actions, version actions, and import reset workflow', async () => {
+    const user = userEvent.setup();
+
     renderWithProviders(<LifeCycleModelsPage />);
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
     await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /export-lifecyclemodels-model-1-1.0.0/i }),
+      ).toBeInTheDocument(),
+    );
 
     expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
       { pageSize: 10, current: 1 },
@@ -327,22 +398,45 @@ describe('LifeCycleModelsPage', () => {
       'team-1',
       'all',
     );
-
     expect(screen.getByRole('heading', { name: 'Team Alpha' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: /ai search/i })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.keyWord',
+    );
+    expect(screen.getByTestId('row-model-1-1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('Lifecycle model 1')).toBeInTheDocument();
+    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getAllByTestId('all-versions')).toHaveLength(2);
+    expect(screen.getAllByTestId('lifecycle-create-createVersion')[0]).toHaveTextContent(
+      '"newVersion":"02.00.000"',
+    );
+    expect(screen.getAllByTestId('lifecycle-create-createVersion')[0]).toHaveTextContent(
+      '"id":"model-1"',
+    );
+    expect(screen.getAllByRole('button', { name: /lifecycle-view-/i })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /lifecycle-edit-/i })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /lifecycle-delete-/i })).toHaveLength(2);
+    expect(
+      screen.getByRole('button', { name: /export-lifecyclemodels-model-1-1.0.0/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
-    expect(screen.getAllByTestId('lifecycle-create')[0]).toHaveTextContent('"actionType":"create"');
-    expect(screen.getByTestId('lifecycle-view')).toHaveTextContent('view:model-1');
-    expect(screen.getByTestId('lifecycle-edit')).toHaveTextContent('edit:model-1');
-    expect(screen.getByTestId('lifecycle-delete')).toHaveTextContent('delete:model-1');
+
+    await user.click(screen.getByRole('button', { name: /import-data/i }));
+    expect(screen.getByTestId('lifecycle-create-create')).toHaveTextContent('"importCount":1');
+
+    await user.click(screen.getByRole('button', { name: /close-lifecycle-create-create/i }));
+    expect(screen.getByTestId('lifecycle-create-create')).toHaveTextContent('"importCount":0');
   });
 
-  it('switches to pgroonga search and hybrid search from the same page workflow', async () => {
+  it('uses current state filters for pgroonga search, sort conversion, and AI search', async () => {
+    const user = userEvent.setup();
+
     renderWithProviders(<LifeCycleModelsPage />);
+
     await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
 
-    await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
+    await user.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
@@ -354,8 +448,7 @@ describe('LifeCycleModelsPage', () => {
       ),
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-
+    await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
@@ -368,9 +461,78 @@ describe('LifeCycleModelsPage', () => {
       ),
     );
 
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await user.click(screen.getByRole('button', { name: 'request-name-sort-asc' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        '20',
+        { key: 'baseName', lang: 'en', order: 'asc' },
+      ),
+    );
 
+    await user.click(screen.getByRole('button', { name: 'request-name-sort-desc' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        '20',
+        { key: 'baseName', lang: 'en', order: 'desc' },
+      ),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'request-classification-sort-desc' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        '20',
+        { key: 'common:class', order: 'desc' },
+      ),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'request-classification-sort-asc' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        '20',
+        { key: 'common:class', order: 'asc' },
+      ),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'request-unknown-sort' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        '20',
+        undefined,
+      ),
+    );
+
+    await user.click(screen.getByRole('checkbox', { name: /ai search/i }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.placeholder',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
@@ -383,46 +545,79 @@ describe('LifeCycleModelsPage', () => {
     );
   });
 
-  it('contributes a row and reloads after success', async () => {
+  it('contributes rows successfully or with logged errors and executes the delete callback prop', async () => {
+    const user = userEvent.setup();
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
     renderWithProviders(<LifeCycleModelsPage />);
 
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: /contribute-action/i })).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+
+    const contributeButtons = screen.getAllByRole('button', { name: /contribute-action/i });
+    expect(contributeButtons).toHaveLength(2);
+    expect(contributeButtons[1]).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'lifecycle-delete-model-1' }));
 
     await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+      await user.click(contributeButtons[0]);
     });
 
     await waitFor(() =>
       expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-1', '1.0.0'),
     );
-
-    const { message } = jest.requireMock('antd');
-    expect(message.success).toHaveBeenCalledWith('Contribute successfully');
+    expect(mockMessageSuccess).toHaveBeenCalledWith('Contribute successfully');
     expect(latestReloadMock).toHaveBeenCalled();
+
+    mockContributeLifeCycleModel.mockResolvedValueOnce({ error: { message: 'failed' } });
+
+    await act(async () => {
+      await user.click(contributeButtons[0]);
+    });
+
+    await waitFor(() =>
+      expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-1', '1.0.0'),
+    );
+    expect(logSpy).toHaveBeenCalledWith({ message: 'failed' });
+
+    logSpy.mockRestore();
   });
 
-  it('persists imported json into the create action and reloads when the filter changes', async () => {
+  it('renders public actions without my-data toolbar and omits the heading when team lookup is empty', async () => {
+    mockLocation = {
+      pathname: '/tgdata/lifecyclemodels',
+      search: '',
+    };
+    mockGetDataSource.mockReturnValue('tg');
+    mockGetTeamById.mockResolvedValueOnce({ data: [] });
+
     renderWithProviders(<LifeCycleModelsPage />);
 
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument(),
+      expect(
+        screen.getByRole('button', { name: /export-lifecyclemodels-model-1-1.0.0/i }),
+      ).toBeInTheDocument(),
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
-    expect(screen.getAllByTestId('lifecycle-create')[0]).toHaveTextContent('"importCount":1');
-
-    await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
-    await waitFor(() =>
-      expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
-        {},
-        'en',
-        'my',
-        'team-1',
-        '20',
-      ),
+    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'tg',
+      '',
+      'all',
     );
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /lifecycle-view-/i })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: /lifecycle-edit-/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /lifecycle-delete-/i })).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('lifecycle-create-copy')).toHaveLength(2);
+    expect(
+      screen.getByRole('button', { name: /export-lifecyclemodels-model-1-1.0.0/i }),
+    ).toBeInTheDocument();
   });
 });

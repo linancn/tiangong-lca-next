@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { ProcessForm } from '@/pages/Processes/Components/form';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -13,11 +13,14 @@ const toText = (node: any): string => {
 };
 
 const proTableInstances: any[] = [];
+const formListInstances: Record<string, any> = {};
 
 const mockProcessExchangeCreate = jest.fn();
 const mockProcessExchangeEdit = jest.fn();
 const mockProcessExchangeDelete = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockSourceSelectForm = jest.fn();
+const mockGetLangText = jest.fn(() => 'text');
 const mockJsonToList = jest.fn((value: any) =>
   Array.isArray(value) ? value : value ? [value] : [],
 );
@@ -72,7 +75,7 @@ jest.mock('@/services/flows/api', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  getLangText: () => 'text',
+  getLangText: (...args: any[]) => mockGetLangText(...args),
   getUnitData: jest.fn(() => Promise.resolve([])),
   jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
@@ -113,7 +116,10 @@ jest.mock('@/pages/Flows/Components/select/form', () => ({
 
 jest.mock('@/pages/Sources/Components/select/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='source-select'>source-select</div>,
+  default: (props: any) => {
+    mockSourceSelectForm(props);
+    return <div data-testid='source-select'>source-select</div>;
+  },
 }));
 
 jest.mock('@/pages/Contacts/Components/select/form', () => ({
@@ -153,7 +159,11 @@ jest.mock('@/pages/Processes/Components/Exchange/edit', () => ({
   __esModule: true,
   default: (props: any) => {
     mockProcessExchangeEdit(props);
-    return <div data-testid='exchange-edit' />;
+    return (
+      <button type='button' onClick={() => props.setViewDrawerVisible?.(false)}>
+        exchange-edit
+      </button>
+    );
   },
 }));
 
@@ -161,7 +171,11 @@ jest.mock('@/pages/Processes/Components/Exchange/delete', () => ({
   __esModule: true,
   default: (props: any) => {
     mockProcessExchangeDelete(props);
-    return <div data-testid='exchange-delete' />;
+    return (
+      <button type='button' onClick={() => props.setViewDrawerVisible?.(false)}>
+        exchange-delete
+      </button>
+    );
   },
 }));
 
@@ -169,7 +183,7 @@ jest.mock('@/pages/Processes/Components/Exchange/view', () => ({
   __esModule: true,
   default: (props: any) => {
     mockProcessExchangeView(props);
-    return <div data-testid='exchange-view' />;
+    return <button type='button'>exchange-view</button>;
   },
 }));
 
@@ -187,7 +201,7 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
   const ProTable = (props: any) => {
-    const { actionRef, toolBarRender, columns = [] } = props;
+    const { actionRef, dataSource, request, rowKey, toolBarRender, columns = [] } = props;
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
@@ -209,15 +223,25 @@ jest.mock('@ant-design/pro-components', () => {
     };
 
     const toolbar = toolBarRender ? toolBarRender() : null;
-    const renderedColumns = columns.map((column: any, index: number) => {
-      if (typeof column?.render !== 'function') return null;
-      return <div key={column?.dataIndex ?? index}>{column.render(null, sampleRow, index)}</div>;
-    });
+    const renderedRows =
+      Array.isArray(dataSource) && dataSource.length > 0 ? dataSource : request ? [sampleRow] : [];
 
     return (
       <section data-testid='pro-table'>
         {toolbar}
-        {renderedColumns}
+        {renderedRows.map((row: any, rowIndex: number) => {
+          const key = rowKey ? rowKey(row) : `row-${rowIndex}`;
+          return (
+            <div data-testid={`pro-row-${key}`} key={key}>
+              {columns.map((column: any, index: number) => {
+                if (typeof column?.render !== 'function') return null;
+                return (
+                  <div key={column?.dataIndex ?? index}>{column.render(null, row, index)}</div>
+                );
+              })}
+            </div>
+          );
+        })}
       </section>
     );
   };
@@ -233,7 +257,7 @@ jest.mock('antd', () => {
 
   const Button = ({ children, onClick, disabled }: any) => (
     <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick}>
-      {toText(children)}
+      {toText(children) || 'icon-button'}
     </button>
   );
 
@@ -260,14 +284,18 @@ jest.mock('antd', () => {
 
   const FormComponent = ({ children }: any) => <form>{children}</form>;
   FormComponent.Item = ({ children }: any) => <div>{children}</div>;
-  FormComponent.List = ({ children }: any) => {
-    const fields = [{ key: 0, name: 0 }];
+  const MockFormList = ({ children, name, initialValue = [], rules = [] }: any) => {
+    const initialCount = initialValue.length > 0 ? initialValue.length : 1;
+    const [fieldCount, setFieldCount] = React.useState(initialCount);
+    const fields = Array.from({ length: fieldCount }, (_, index) => ({ key: index, name: index }));
     const operations = {
-      add: jest.fn(),
-      remove: jest.fn(),
+      add: jest.fn(() => setFieldCount((count: number) => count + 1)),
+      remove: jest.fn(() => setFieldCount((count: number) => Math.max(1, count - 1))),
     };
+    formListInstances[JSON.stringify(name ?? [])] = { rules, operations, fieldCount };
     return children(fields, operations);
   };
+  FormComponent.List = MockFormList;
 
   const Input = ({ onChange, value, 'data-testid': dataTestId }: any) => (
     <input
@@ -363,7 +391,11 @@ describe('ProcessForm component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     proTableInstances.length = 0;
+    Object.keys(formListInstances).forEach((key) => delete formListInstances[key]);
     mockRefCheckContextValue = { refCheckData: [] };
+    mockSourceSelectForm.mockClear();
+    mockGetLangText.mockReset();
+    mockGetLangText.mockReturnValue('text');
   });
 
   it('marks rows with issues when rules are enabled', async () => {
@@ -404,6 +436,25 @@ describe('ProcessForm component', () => {
     expect(validRow).toBe('');
   });
 
+  it('does not mark rows when rules are disabled even if the exchange is incomplete', async () => {
+    render(<ProcessForm {...defaultProps} activeTabKey='exchanges' showRules={false} />);
+
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
+
+    const outputRowClassName = proTableInstances[1].rowClassName;
+    expect(
+      outputRowClassName({
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: '-',
+        resultingAmount: '-',
+        dataDerivationTypeStatus: '-',
+      }),
+    ).toBe('');
+  });
+
   it('disables exchange actions when actionFrom is modelResult', async () => {
     render(
       <ProcessForm
@@ -437,10 +488,16 @@ describe('ProcessForm component', () => {
         }),
       );
     });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'exchange-edit' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'exchange-delete' })[0]);
   });
 
   it('notifies parent when tab changes', async () => {
-    render(<ProcessForm {...defaultProps} />);
+    const propsWithoutShowRules = { ...defaultProps };
+    delete propsWithoutShowRules.showRules;
+
+    render(<ProcessForm {...propsWithoutShowRules} />);
 
     const validationTab = screen.getByRole('button', { name: 'Validation' });
     fireEvent.click(validationTab);
@@ -470,6 +527,28 @@ describe('ProcessForm component', () => {
       expect(mockLCIAResultCalculation).toHaveBeenCalledWith(exchangeData);
       expect(onLciaResults).toHaveBeenCalledWith([{ key: '1', meanAmount: 12 }]);
     });
+  });
+
+  it('returns an empty LCIA payload when calculation resolves to null', async () => {
+    const onLciaResults = jest.fn();
+    mockLCIAResultCalculation.mockResolvedValueOnce(null);
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='lciaResults'
+        onLciaResults={onLciaResults}
+        exchangeDataSource={[{ id: 'exchange-2' }]}
+      />,
+    );
+
+    mockGetReferenceQuantityFromMethod.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate LCIA Results' }));
+
+    await waitFor(() => {
+      expect(onLciaResults).toHaveBeenCalledWith([]);
+    });
+    expect(mockGetReferenceQuantityFromMethod).not.toHaveBeenCalled();
   });
 
   it('loads input exchanges, resolves units, and injects flow state metadata', async () => {
@@ -601,6 +680,98 @@ describe('ProcessForm component', () => {
     expect(result.data[0].stateCode).toBeUndefined();
   });
 
+  it('handles array and missing flow references for input exchanges, including empty classifications', async () => {
+    mockGetProcessExchange.mockResolvedValueOnce({
+      data: [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '1.0',
+          meanAmount: 1,
+          resultingAmount: 1,
+          dataDerivationTypeStatus: 'provided',
+        },
+      ],
+      total: 1,
+    });
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: 1,
+        dataDerivationTypeStatus: 'provided',
+      },
+    ]);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({
+      error: null,
+      data: [
+        {
+          id: 'flow-1',
+          version: '1.0',
+          stateCode: 30,
+        },
+      ],
+    });
+
+    const exchangeDataSource = [
+      {
+        ...sampleExchange,
+        referenceToFlowDataSet: [
+          {
+            '@refObjectId': 'flow-1',
+            '@version': '1.0',
+          },
+        ],
+      },
+    ];
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='exchanges'
+        exchangeDataSource={exchangeDataSource}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
+
+    const result = await proTableInstances[0].request({ pageSize: 10, current: 1 });
+
+    expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
+      [{ id: 'flow-1', version: '1.0' }],
+      'en',
+    );
+    expect(result.data[0].classification).toBe('');
+
+    mockGetProcessExchange.mockResolvedValueOnce({ data: [], total: 0 });
+    mockGetUnitData.mockResolvedValueOnce(undefined);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({ error: null, data: [] });
+
+    const previousTableCount = proTableInstances.length;
+    const { unmount } = render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='exchanges'
+        exchangeDataSource={[{ ...sampleExchange, referenceToFlowDataSet: undefined }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(proTableInstances.length).toBe(previousTableCount + 2);
+    });
+
+    await proTableInstances[previousTableCount].request({ pageSize: 10, current: 1 });
+
+    expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenLastCalledWith(
+      [{ id: '', version: '' }],
+      'en',
+    );
+
+    unmount();
+  });
+
   it('syncs reference quantities whenever lciaResults prop changes', async () => {
     const initialResults = [
       {
@@ -639,5 +810,232 @@ describe('ProcessForm component', () => {
         expect.objectContaining({ key: 'lcia-2' }),
       ]);
     });
+
+    expect(screen.getByTestId('pro-row-lcia-2')).toBeInTheDocument();
+  });
+
+  it('falls back to a dash when the LCIA reference quantity label is empty', async () => {
+    mockGetLangText.mockImplementation((value: any) =>
+      value === 'missing-quantity' ? '' : 'text',
+    );
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='lciaResults'
+        lciaResults={[
+          {
+            key: 'lcia-empty',
+            referenceQuantityDesc: 'missing-quantity',
+            referenceToLCIAMethodDataSet: {
+              'common:shortDescription': 'available-short-description',
+            },
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-row-lcia-empty')).toBeInTheDocument();
+    });
+
+    expect(within(screen.getByTestId('pro-row-lcia-empty')).getAllByText('-')).toHaveLength(2);
+  });
+
+  it('validates and mutates modelling data-source references through the form list controls', async () => {
+    const onData = jest.fn();
+    const listKey = JSON.stringify([
+      'modellingAndValidation',
+      'dataSourcesTreatmentAndRepresentativeness',
+      'referenceToDataSource',
+    ]);
+
+    const { rerender } = render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='modellingAndValidation'
+        showRules
+        onData={onData}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(formListInstances[listKey]).toBeDefined();
+    });
+
+    await expect(formListInstances[listKey].rules[0].validator(null, [])).rejects.toThrow();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add.*data source\(s\) used for this data set.*item/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(onData).toHaveBeenCalledTimes(1);
+      expect(formListInstances[listKey].fieldCount).toBe(2);
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'icon-button' })[0]);
+
+    await waitFor(() => {
+      expect(onData).toHaveBeenCalledTimes(2);
+      expect(formListInstances[listKey].fieldCount).toBe(1);
+    });
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='modellingAndValidation'
+        showRules={false}
+        onData={onData}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(formListInstances[listKey].rules).toEqual([]);
+    });
+  });
+
+  it('only applies the default source name in create mode', async () => {
+    const { rerender } = render(
+      <ProcessForm {...defaultProps} activeTabKey='administrativeInformation' formType='create' />,
+    );
+
+    await waitFor(() => {
+      expect(mockSourceSelectForm).toHaveBeenCalledWith(
+        expect.objectContaining({ defaultSourceName: 'ILCD format' }),
+      );
+    });
+
+    mockSourceSelectForm.mockClear();
+
+    rerender(
+      <ProcessForm {...defaultProps} activeTabKey='administrativeInformation' formType='edit' />,
+    );
+
+    await waitFor(() => {
+      expect(mockSourceSelectForm).toHaveBeenCalledWith(
+        expect.objectContaining({ defaultSourceName: '' }),
+      );
+    });
+  });
+
+  it('marks output rows with issues and enriches output exchanges with flow state metadata', async () => {
+    mockRefCheckContextValue = {
+      refCheckData: [{ id: 'flow-1', version: '1.0' }],
+    };
+    mockGetProcessExchange.mockResolvedValueOnce({
+      data: [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '1.0',
+          meanAmount: 1,
+          resultingAmount: 1,
+          dataDerivationTypeStatus: 'provided',
+        },
+      ],
+      total: 1,
+    });
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: 1,
+        dataDerivationTypeStatus: 'provided',
+      },
+    ]);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({
+      error: null,
+      data: [
+        {
+          id: 'flow-1',
+          version: '1.0',
+          stateCode: 20,
+        },
+      ],
+    });
+
+    render(<ProcessForm {...defaultProps} activeTabKey='exchanges' showRules />);
+
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
+
+    const outputRowClassName = proTableInstances[1].rowClassName;
+    expect(
+      outputRowClassName({
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: '-',
+        resultingAmount: '-',
+        dataDerivationTypeStatus: '-',
+      }),
+    ).toBe('error-row');
+    expect(
+      outputRowClassName({
+        referenceToFlowDataSetId: 'flow-2',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: '-',
+        dataDerivationTypeStatus: 'provided',
+      }),
+    ).toBe('error-row');
+    expect(
+      outputRowClassName({
+        referenceToFlowDataSetId: 'flow-2',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: 1,
+        dataDerivationTypeStatus: '-',
+      }),
+    ).toBe('error-row');
+
+    const result = await proTableInstances[1].request({ pageSize: 10, current: 1 });
+
+    expect(mockGetProcessExchange).toHaveBeenCalledWith(
+      expect.any(Array),
+      'Output',
+      expect.objectContaining({ pageSize: 10, current: 1 }),
+    );
+    expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
+      [{ id: 'flow-1', version: '1.0' }],
+      'en',
+    );
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        stateCode: 20,
+        classification: '',
+      }),
+    ]);
+  });
+
+  it('falls back to empty output flow ids and unit rows when output references are missing', async () => {
+    mockGetProcessExchange.mockResolvedValueOnce({ data: [], total: 0 });
+    mockGetUnitData.mockResolvedValueOnce(undefined);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({ error: null, data: [] });
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='exchanges'
+        exchangeDataSource={[{ ...sampleExchange, referenceToFlowDataSet: undefined }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(proTableInstances).toHaveLength(2);
+    });
+
+    const result = await proTableInstances[1].request({ pageSize: 10, current: 1 });
+
+    expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
+      [{ id: '', version: '' }],
+      'en',
+    );
+    expect(result.data).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/LifeCycleModels/Components/toolbar/viewIndex';
-import { render, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act, fireEvent, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
 const mockUpdateEdge = jest.fn();
@@ -88,8 +88,13 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/index', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/viewTargetAmount', () => ({
   __esModule: true,
-  default: ({ refNode, drawerVisible, lang }: any) => (
-    <div data-testid='target-amount'>{`${refNode?.id ?? refNode?.data?.id ?? 'none'}:${drawerVisible}:${lang}`}</div>
+  default: ({ refNode, drawerVisible, lang, onData }: any) => (
+    <div>
+      <div data-testid='target-amount'>{`${refNode?.id ?? refNode?.data?.id ?? 'none'}:${drawerVisible}:${lang}`}</div>
+      <button type='button' data-testid='target-amount-on-data' onClick={onData}>
+        target-amount-on-data
+      </button>
+    </div>
   ),
 }));
 
@@ -122,6 +127,12 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockGenLifeCycleModelInfoFromData = jest.fn();
 const mockGenLifeCycleModelData = jest.fn();
+const mockGenProcessName = jest.fn();
+const mockGetLangText = jest.fn();
+const mockGetPortLabelWithAllocation = jest.fn();
+const mockGetPortTextColor = jest.fn();
+const mockGetPortTextStyle = jest.fn();
+const mockNodeTitleTool = jest.fn();
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelInfoFromData: (...args: any[]) => mockGenLifeCycleModelInfoFromData(...args),
@@ -137,7 +148,7 @@ jest.mock('@/services/processes/api', () => ({
 
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
-  genProcessName: jest.fn((label: any) => label ?? 'process-name'),
+  genProcessName: (...args: any[]) => mockGenProcessName(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -148,7 +159,7 @@ jest.mock('@/services/general/data', () => ({
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   formatDateTime: () => '2026-03-12 12:00',
-  getLangText: () => 'Flow label',
+  getLangText: (...args: any[]) => mockGetLangText(...args),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/utils/edge', () => ({
@@ -158,15 +169,25 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/utils/edge', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/toolbar/utils/node', () => ({
   __esModule: true,
-  getPortLabelWithAllocation: jest.fn((label: string) => label),
-  getPortTextColor: jest.fn(() => '#1677ff'),
-  getPortTextStyle: jest.fn(() => 'bold'),
-  nodeTitleTool: jest.fn((width: number, title: string) => ({ id: 'nodeTitle', width, title })),
+  getPortLabelWithAllocation: (...args: any[]) => mockGetPortLabelWithAllocation(...args),
+  getPortTextColor: (...args: any[]) => mockGetPortTextColor(...args),
+  getPortTextStyle: (...args: any[]) => mockGetPortTextStyle(...args),
+  nodeTitleTool: (...args: any[]) => mockNodeTitleTool(...args),
 }));
 
 describe('ToolbarView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGenProcessName.mockImplementation((label: any) => label ?? 'process-name');
+    mockGetLangText.mockReturnValue('Flow label');
+    mockGetPortLabelWithAllocation.mockImplementation((label: string) => label);
+    mockGetPortTextColor.mockReturnValue('#1677ff');
+    mockGetPortTextStyle.mockReturnValue('bold');
+    mockNodeTitleTool.mockImplementation((width: number, title: string) => ({
+      id: 'nodeTitle',
+      width,
+      title,
+    }));
     mockGraphStoreState = {
       initData: mockInitData,
       updateNode: mockUpdateNode,
@@ -240,7 +261,30 @@ describe('ToolbarView', () => {
             label: 'Graph Process',
             quantitativeReference: '1',
           },
-          ports: { items: [] },
+          ports: {
+            items: [
+              {
+                id: 'port-input',
+                group: 'groupInput',
+                data: {
+                  textLang: 'Input Flow',
+                  allocations: [1],
+                  quantitativeReference: '0',
+                },
+                attrs: { text: {} },
+              },
+              {
+                id: 'port-output',
+                group: 'groupOutput',
+                data: {
+                  textLang: 'Output Flow',
+                  allocations: [2],
+                  quantitativeReference: '1',
+                },
+                attrs: { text: {} },
+              },
+            ],
+          },
         },
       ],
       edges: [
@@ -253,6 +297,14 @@ describe('ToolbarView', () => {
             },
           },
           target: { x: 1, y: 2, cell: 'node-a' },
+        },
+        {
+          id: 'graph-edge-2',
+          data: {
+            connection: {
+              exchangeAmount: 1,
+            },
+          },
         },
       ],
     });
@@ -296,6 +348,53 @@ describe('ToolbarView', () => {
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
     expect(screen.getByTestId('model-result')).toHaveTextContent('model-1:1.0.0:view:1');
     expect(screen.getByTestId('control')).toHaveTextContent('zoomOut|zoomTo|zoomIn');
+
+    const initGraph = mockInitData.mock.calls[0][0];
+    expect(initGraph.nodes[0].ports.items[0].attrs.text.title).toBe('Flow label');
+    expect(initGraph.nodes[0].ports.items[1].attrs.text.title).toBe('Flow label');
+    expect(initGraph.edges.find((edge: any) => edge.id === 'graph-edge-2')).toEqual(
+      expect.objectContaining({ id: 'graph-edge-2' }),
+    );
+  });
+
+  it('opens input/output port selectors and the target amount drawer from generated node tools', async () => {
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockInitData).toHaveBeenCalled());
+
+    const initGraph = mockInitData.mock.calls[0][0];
+    const tools = initGraph.nodes[0].tools.filter(Boolean);
+    const inputTool = tools.find((tool: any) => tool.id === 'inputFlow');
+    const outputTool = tools.find((tool: any) => tool.id === 'outputFlow');
+    const referenceTool = tools.find((tool: any) => tool.id === 'ref');
+
+    await act(async () => {
+      await inputTool.args.onClick({
+        cell: {
+          store: {
+            data: { id: 'node-a' },
+          },
+        },
+      });
+    });
+    expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:node-a:en');
+
+    await act(async () => {
+      await outputTool.args.onClick({
+        cell: {
+          store: {
+            data: { id: 'node-b' },
+          },
+        },
+      });
+    });
+    expect(screen.getByTestId('io-port-view')).toHaveTextContent('Output:true:node-b:en');
+
+    await act(async () => {
+      referenceTool.args.onClick();
+    });
+    expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
+    fireEvent.click(screen.getByTestId('target-amount-on-data'));
   });
 
   it('renders life cycle model view when the selected process instance belongs to a submodel', async () => {
@@ -357,6 +456,179 @@ describe('ToolbarView', () => {
     expect(screen.getByTestId('process-view')).toHaveTextContent('::toolIcon:true:en');
     expect(screen.getByTestId('edge-exchange')).toHaveTextContent('true:none:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('none:false:en');
+  });
+
+  it('uses empty defaults when the model payload is sparse or missing', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        id: 'node-width',
+        selected: false,
+        width: 280,
+        data: {
+          id: 'proc-2',
+          version: '2.0',
+          quantitativeReference: '0',
+        },
+        ports: { items: [] },
+      },
+      {
+        selected: false,
+        data: {
+          id: 'proc-3',
+          version: '3.0',
+          quantitativeReference: '0',
+        },
+        ports: { items: [] },
+      },
+    ];
+    mockGraphStoreState.edges = [];
+
+    mockGenLifeCycleModelInfoFromData.mockReturnValueOnce({});
+    mockGenLifeCycleModelData.mockReturnValueOnce({
+      nodes: [
+        {
+          id: 'node-b',
+          width: 280,
+          data: {
+            id: 'proc-2',
+            version: '2.0',
+            quantitativeReference: '0',
+          },
+          ports: {
+            items: [
+              {
+                id: 'port-width',
+                group: 'groupInput',
+                data: {
+                  textLang: 'Input Flow',
+                  quantitativeReference: '0',
+                },
+                attrs: { text: {} },
+              },
+            ],
+          },
+        },
+        {
+          id: 'node-c',
+          data: {
+            id: 'proc-3',
+            version: '3.0',
+            quantitativeReference: '0',
+          },
+          ports: {
+            items: [
+              {
+                id: 'port-default-width',
+                group: 'groupOutput',
+                data: {
+                  textLang: 'Output Flow',
+                  quantitativeReference: '0',
+                },
+                attrs: { text: {} },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        json: {},
+        json_tg: {
+          xflow: {
+            nodes: [{ data: { id: 'proc-2', version: '2.0' } }],
+          },
+        },
+      },
+    });
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({});
+    mockGetLangText.mockReturnValueOnce(undefined);
+    mockGetPortLabelWithAllocation.mockReturnValueOnce(undefined);
+    mockGenProcessName.mockReturnValue(undefined);
+
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockInitData).toHaveBeenCalled());
+
+    const initGraph = mockInitData.mock.calls[0][0];
+    expect(initGraph.edges).toEqual([]);
+    expect(initGraph.nodes[0].tools.some((tool: any) => tool && tool.id === 'ref')).toBe(false);
+    expect(initGraph.nodes[0].ports.items[0].attrs.text.text).toBe('');
+    expect(initGraph.nodes[0].ports.items[0].attrs.text.title).toBeUndefined();
+    expect(initGraph.nodes[0].tools.find((tool: any) => tool?.id === 'nodeTitle')).toEqual(
+      expect.objectContaining({ width: 280, title: '' }),
+    );
+    expect(initGraph.nodes[1].tools.find((tool: any) => tool?.id === 'nodeTitle')).toEqual(
+      expect.objectContaining({ width: 350, title: '' }),
+    );
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-width',
+        expect.objectContaining({
+          tools: expect.arrayContaining([
+            expect.objectContaining({ id: 'nodeTitle', width: 280, title: '' }),
+          ]),
+        }),
+      ),
+    );
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({
+        tools: expect.arrayContaining([
+          expect.objectContaining({ id: 'nodeTitle', width: 350, title: '' }),
+        ]),
+      }),
+    );
+  });
+
+  it('falls back to empty model detail payloads and empty graph data', async () => {
+    mockGenLifeCycleModelInfoFromData.mockReturnValueOnce({});
+    mockGenLifeCycleModelData.mockReturnValueOnce(undefined);
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {},
+    });
+
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockGenLifeCycleModelInfoFromData).toHaveBeenCalledWith({}));
+    await waitFor(() => expect(mockGenLifeCycleModelData).toHaveBeenCalledWith({}, 'en'));
+    await waitFor(() =>
+      expect(mockInitData).toHaveBeenCalledWith({
+        nodes: [],
+        edges: [],
+      }),
+    );
+    expect(mockGetProcessesByIdAndVersion).not.toHaveBeenCalled();
+  });
+
+  it('falls back to an empty selected version when the chosen process instance points to a submodel', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        id: 'node-1',
+        selected: true,
+        size: { width: 300 },
+        data: {
+          id: 'proc-1',
+          label: 'Process One',
+          quantitativeReference: '1',
+        },
+        ports: { items: [] },
+      },
+    ];
+    mockGraphStoreState.edges = [];
+    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
+      data: [{ id: 'proc-1', version: undefined, modelId: 'submodel-1' }],
+    });
+
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(screen.getByTestId('life-cycle-model-view')).toBeInTheDocument());
+    expect(screen.getByTestId('life-cycle-model-view')).toHaveTextContent(
+      'submodel-1::toolIcon:en',
+    );
   });
 
   it('registers graph handlers that toggle node and edge selection', () => {
@@ -424,5 +696,52 @@ describe('ToolbarView', () => {
     mockUpdateEdge.mockClear();
     edgeClick({ edge: { id: 'edge-1' } });
     expect(mockUpdateEdge).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty ids when deselecting nodes and edges without ids', () => {
+    mockGraphStoreState.nodes = [
+      {
+        selected: true,
+        data: {
+          quantitativeReference: '0',
+        },
+        ports: { items: [] },
+      },
+      {
+        id: 'node-2',
+        selected: false,
+        data: {
+          quantitativeReference: '0',
+        },
+        ports: { items: [] },
+      },
+    ];
+    mockGraphStoreState.edges = [{ selected: true }];
+
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible={false} />);
+
+    const nodeClick = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:click',
+    )?.[1];
+    const blankClick = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'blank:click',
+    )?.[1];
+
+    nodeClick({
+      node: {
+        id: 'node-2',
+        isNode: () => true,
+      },
+      e: {},
+    });
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: true });
+
+    mockUpdateNode.mockClear();
+    mockUpdateEdge.mockClear();
+
+    blankClick();
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
   });
 });
