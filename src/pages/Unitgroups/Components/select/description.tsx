@@ -21,7 +21,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const refData = normalizedData as UnitGroupRefObject;
   useEffect(() => {
     if (refData?.['@refObjectId']) {
-      getReferenceUnit(refData?.['@refObjectId'] ?? '', refData?.['@version'] ?? '').then((res) => {
+      getReferenceUnit(refData['@refObjectId'], refData?.['@version'] ?? '').then((res) => {
         setRefUnit(res?.data ?? null);
       });
     }
@@ -43,7 +43,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         </Descriptions>
         {refData?.['@refObjectId'] && (
           <UnitGroupView
-            id={refData?.['@refObjectId'] ?? ''}
+            id={refData['@refObjectId']}
             version={refData?.['@version'] ?? ''}
             lang={lang}
             buttonType='text'

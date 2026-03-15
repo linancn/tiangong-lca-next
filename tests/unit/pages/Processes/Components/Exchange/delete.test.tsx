@@ -136,4 +136,18 @@ describe('ProcessExchangeDelete', () => {
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Delete' })).not.toBeInTheDocument();
   });
+
+  it('supports the text button variant when deleting an exchange', () => {
+    const onData = jest.fn();
+
+    render(<ProcessExchangeDelete {...baseProps} buttonType='text' onData={onData} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    expect(onData).toHaveBeenCalledWith([
+      { '@dataSetInternalID': '0', name: 'first' },
+      { '@dataSetInternalID': '1', name: 'third' },
+    ]);
+  });
 });

@@ -3,6 +3,7 @@
  * Path: src/services/lifeCycleModels/util.ts
  */
 
+import { jsonToList } from '@/services/general/util';
 import {
   genEdgeExchangeTableData,
   genLifeCycleModelData,
@@ -406,6 +407,178 @@ describe('genLifeCycleModelJsonOrdered', () => {
       expect.objectContaining({ '@id': '2', '@flowUUID': 'flow-3' }),
     ]);
   });
+
+  it('should keep sparse process, review, and compliance records structurally valid when optional fields are missing', () => {
+    const result = genLifeCycleModelJsonOrdered('model-sparse', {
+      lifeCycleModelInformation: {
+        dataSetInformation: {},
+      },
+      modellingAndValidation: {
+        validation: {
+          review: [
+            {
+              'common:reviewDetails': [createLangText('Sparse review')],
+              'common:scope': [
+                {
+                  'common:method': { '@name': 'method-sparse' },
+                },
+              ],
+              'common:dataQualityIndicators': {
+                'common:dataQualityIndicator': [{ '@name': 'coverage' }],
+              },
+              'common:referenceToNameOfReviewerAndInstitution': { '@type': 'person' },
+              'common:referenceToCompleteReviewReport': { '@type': 'document' },
+            },
+          ],
+        },
+        complianceDeclarations: {
+          compliance: [
+            {
+              'common:approvalOfOverallCompliance': 'approved',
+              'common:referenceToComplianceSystem': { '@type': 'system' },
+            },
+          ],
+        },
+      },
+      model: {
+        nodes: [
+          {
+            id: 'node-sparse',
+            data: {},
+          },
+        ],
+        edges: [],
+      },
+    });
+
+    const process = jsonToList(
+      result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance,
+    )[0] as any;
+    const review = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.validation.review,
+    )[0] as any;
+    const compliance = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance,
+    )[0] as any;
+
+    expect(process.referenceToProcess).toEqual(
+      expect.objectContaining({
+        '@type': 'process data set',
+        '@uri': '../processes/undefined.xml',
+      }),
+    );
+    expect(review['common:scope']).toEqual(
+      expect.objectContaining({
+        'common:method': { '@name': 'method-sparse' },
+      }),
+    );
+    expect(review['common:dataQualityIndicators']['common:dataQualityIndicator']).toEqual(
+      expect.objectContaining({
+        '@name': 'coverage',
+      }),
+    );
+    expect(review['common:referenceToNameOfReviewerAndInstitution']).toEqual(
+      expect.objectContaining({
+        '@type': 'person',
+      }),
+    );
+    expect(review['common:referenceToCompleteReviewReport']).toEqual(
+      expect.objectContaining({
+        '@type': 'document',
+      }),
+    );
+    expect(compliance['common:referenceToComplianceSystem']).toEqual(
+      expect.objectContaining({
+        '@type': 'system',
+      }),
+    );
+    expect(compliance['common:approvalOfOverallCompliance']).toBe('approved');
+  });
+
+  it('should keep identifier-only review and compliance references when secondary fields are missing', () => {
+    const result = genLifeCycleModelJsonOrdered('model-sparse-refs', {
+      lifeCycleModelInformation: {
+        dataSetInformation: {},
+      },
+      modellingAndValidation: {
+        validation: {
+          review: [
+            {
+              'common:reviewDetails': [createLangText('Sparse review refs')],
+              'common:scope': [
+                {
+                  '@name': 'scope-sparse',
+                  'common:method': {},
+                },
+              ],
+              'common:dataQualityIndicators': {
+                'common:dataQualityIndicator': [{ '@value': 'high' }],
+              },
+              'common:referenceToNameOfReviewerAndInstitution': {
+                '@refObjectId': 'reviewer-sparse',
+              },
+              'common:referenceToCompleteReviewReport': {
+                '@refObjectId': 'report-sparse',
+              },
+            },
+          ],
+        },
+        complianceDeclarations: {
+          compliance: [
+            {
+              'common:referenceToComplianceSystem': {
+                '@refObjectId': 'system-sparse',
+              },
+            },
+          ],
+        },
+      },
+      model: {
+        nodes: [
+          {
+            id: 'node-sparse-refs',
+            data: {
+              index: '5',
+            },
+          },
+        ],
+        edges: [],
+      },
+    });
+
+    const review = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.validation.review,
+    )[0] as any;
+    const compliance = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance,
+    )[0] as any;
+
+    expect(review['common:scope']).toEqual(
+      expect.objectContaining({
+        '@name': 'scope-sparse',
+      }),
+    );
+    expect(review['common:dataQualityIndicators']['common:dataQualityIndicator']).toEqual(
+      expect.objectContaining({
+        '@value': 'high',
+      }),
+    );
+    expect(review['common:referenceToNameOfReviewerAndInstitution']).toEqual(
+      expect.objectContaining({
+        '@refObjectId': 'reviewer-sparse',
+      }),
+    );
+    expect(review['common:referenceToCompleteReviewReport']).toEqual(
+      expect.objectContaining({
+        '@refObjectId': 'report-sparse',
+      }),
+    );
+    expect(compliance['common:referenceToComplianceSystem']).toEqual(
+      expect.objectContaining({
+        '@refObjectId': 'system-sparse',
+      }),
+    );
+  });
 });
 
 describe('genLifeCycleModelInfoFromData', () => {
@@ -457,6 +630,17 @@ describe('genLifeCycleModelInfoFromData', () => {
     expect(review['common:referenceToCompleteReviewReport']['@refObjectId']).toBe('report-1');
     expect(compliance['common:referenceToComplianceSystem']['@refObjectId']).toBe('system-1');
     expect(compliance['common:approvalOfOverallCompliance']).toBe('approved');
+  });
+
+  it('should fallback common:UUID to "-" when the ordered dataset omits it', () => {
+    const ordered = genLifeCycleModelJsonOrdered('model-uuid-fallback', baseModelData);
+    delete ordered.lifeCycleModelDataSet.lifeCycleModelInformation.dataSetInformation[
+      'common:UUID'
+    ];
+
+    const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
+
+    expect(result.lifeCycleModelInformation.dataSetInformation['common:UUID']).toBe('-');
   });
 });
 
@@ -574,6 +758,13 @@ describe('genLifeCycleModelData', () => {
     expect(result.nodes[0].label).toBe('Compact ...');
     expect(result.nodes[0].ports.items[0].attrs.text.text).toBe('Fa...');
     expect(result.nodes[0].ports.items[0].attrs.text.title).toBe('Fallback port name');
+  });
+
+  it('should fallback to an empty node list when xflow nodes are missing', () => {
+    const result = genLifeCycleModelData({ xflow: { edges: [{ id: 'edge-only' }] } } as any, 'en');
+
+    expect(result.nodes).toEqual([]);
+    expect(result.edges).toEqual([{ id: 'edge-only' }]);
   });
 });
 

@@ -440,7 +440,7 @@ const ProcessView: FC<Props> = ({
     },
   ];
   const loadSolverLciaResults = useCallback(
-    async (forceReload = false) => {
+    async (forceReload: boolean) => {
       if (solverLciaLoading) {
         return;
       }
@@ -2100,3 +2100,5 @@ const ProcessView: FC<Props> = ({
 };
 
 export default ProcessView;
+
+export { buildMergedLciaRows, getLciaMethodMetaMap, toReferenceValue };

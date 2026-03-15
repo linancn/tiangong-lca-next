@@ -12,9 +12,31 @@ const toText = (node: any): string => {
   return '';
 };
 
-const mockRefCheckContextValue = { refCheckData: [] as any[] };
+let mockRefCheckContextValue = { refCheckData: [] as any[] };
 let mockCurrentUserId = 'user-1';
 let mockRefDataUserId = 'user-1';
+const mockFormItemRulesRegistry = new Map<string, any[]>();
+const mockUseRefCheckContext = jest.fn(() => mockRefCheckContextValue);
+const mockFormState: Record<string, any> = {};
+
+const mockSetValueAtPath = (path: any[], value: any) => {
+  let cursor = mockFormState;
+  for (let index = 0; index < path.length - 1; index += 1) {
+    const key = path[index];
+    cursor[key] = cursor[key] ? { ...cursor[key] } : {};
+    cursor = cursor[key];
+  }
+  cursor[path[path.length - 1]] = value;
+};
+
+const mockGetValueAtPath = (path: any[]) => {
+  let cursor: any = mockFormState;
+  for (let index = 0; index < path.length; index += 1) {
+    cursor = cursor?.[path[index]];
+    if (cursor === undefined) return undefined;
+  }
+  return cursor;
+};
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -38,13 +60,39 @@ jest.mock('antd', () => {
     </div>
   );
   const Form = ({ children }: any) => <form>{children}</form>;
-  Form.Item = ({ label, children, getValueProps }: any) => {
+  Form.Item = ({ label, children, getValueProps, name, rules }: any) => {
+    const path = Array.isArray(name) ? name : name ? [name] : null;
+    if (path) {
+      mockFormItemRulesRegistry.set(path.join('.'), rules ?? []);
+    }
     const content = React.Children.only(children);
+    const value = path ? mockGetValueAtPath(path) : content?.props?.value;
     if (content && React.isValidElement(content) && getValueProps) {
       return (
         <label>
           <span>{toText(label)}</span>
-          {React.cloneElement(content, getValueProps(content.props.value))}
+          {React.cloneElement(content, getValueProps(value))}
+        </label>
+      );
+    }
+    if (content && React.isValidElement(content) && path) {
+      return (
+        <label>
+          <span>{toText(label)}</span>
+          {React.cloneElement(content, { value })}
+          {rules?.some((rule: any) => typeof rule?.validator === 'function') && (
+            <button
+              type='button'
+              onClick={() =>
+                rules
+                  .find((rule: any) => typeof rule?.validator === 'function')
+                  ?.validator({}, value)
+                  ?.catch(() => undefined)
+              }
+            >
+              {`validate ${path.join('.')}`}
+            </button>
+          )}
         </label>
       );
     }
@@ -55,13 +103,20 @@ jest.mock('antd', () => {
       </label>
     );
   };
-  Form.List = ({ children }: any) => (
-    <div>
-      {typeof children === 'function'
-        ? children([], { add: () => {}, remove: () => {} })
-        : children}
-    </div>
-  );
+  Form.List = ({ children, name }: any) => {
+    const path = Array.isArray(name) ? name : name ? [name] : [];
+    const currentValue = mockGetValueAtPath(path);
+    const subFields = Array.isArray(currentValue)
+      ? currentValue.map((_: any, index: number) => ({ key: index, name: index }))
+      : [];
+    return (
+      <div>
+        {typeof children === 'function'
+          ? children(subFields, { add: () => {}, remove: () => {} })
+          : children}
+      </div>
+    );
+  };
   const Input = ({ value = '', onChange, disabled, placeholder }: any) => (
     <input
       value={value}
@@ -110,7 +165,12 @@ jest.mock('antd', () => {
 
 jest.mock('@/components/RequiredSelectFormTitle', () => ({
   __esModule: true,
-  default: ({ label }: any) => <span data-testid='required-title'>{toText(label)}</span>,
+  default: ({ label, errRef }: any) => (
+    <span data-testid='required-title'>
+      {toText(label)}
+      {errRef ? ' err-ref' : ''}
+    </span>
+  ),
   ErrRefTipMessage: () => <span>err-ref</span>,
 }));
 
@@ -130,7 +190,24 @@ jest.mock('@/pages/Flowproperties/Components/view', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/edit', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span>{`edit ${id}:${version}`}</span>,
+  default: ({ id, version, updateErrRef }: any) => (
+    <div>
+      <span>{`edit ${id}:${version}`}</span>
+      <button
+        type='button'
+        onClick={() =>
+          updateErrRef?.({
+            id: `${id}-edited`,
+            version,
+            ruleVerification: false,
+            nonExistent: false,
+          })
+        }
+      >
+        trigger edit err ref
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Unitgroups/Components/select/formMini', () => ({
@@ -202,48 +279,32 @@ jest.mock('@/contexts/refCheckContext', () => {
     __esModule: true,
     RefCheckContext,
     RefCheckType: class {},
-    useRefCheckContext: () => mockRefCheckContextValue,
+    useRefCheckContext: () => mockUseRefCheckContext(),
   };
 });
 
-const formState: Record<string, any> = {};
-
-const setValueAtPath = (path: any[], value: any) => {
-  let cursor = formState;
-  for (let index = 0; index < path.length - 1; index += 1) {
-    const key = path[index];
-    cursor[key] = cursor[key] ? { ...cursor[key] } : {};
-    cursor = cursor[key];
-  }
-  cursor[path[path.length - 1]] = value;
-};
-
-const getValueAtPath = (path: any[]) => {
-  let cursor: any = formState;
-  for (let index = 0; index < path.length; index += 1) {
-    cursor = cursor?.[path[index]];
-    if (cursor === undefined) return undefined;
-  }
-  return cursor;
-};
-
 describe('FlowpropertySelectForm', () => {
-  const FlowpropertySelectForm = require('@/pages/Flowproperties/Components/select/form').default;
+  const flowpropertySelectFormModule = require('@/pages/Flowproperties/Components/select/form');
+  const FlowpropertySelectForm = flowpropertySelectFormModule.default;
+  const { resolveRefErrorFromContext, validateRequiredReferenceValue } =
+    flowpropertySelectFormModule;
 
   beforeEach(() => {
-    Object.keys(formState).forEach((key) => delete formState[key]);
-    mockRefCheckContextValue.refCheckData = [];
+    Object.keys(mockFormState).forEach((key) => delete mockFormState[key]);
+    mockRefCheckContextValue = { refCheckData: [] };
     mockCurrentUserId = 'user-1';
     mockRefDataUserId = 'user-1';
+    mockFormItemRulesRegistry.clear();
     jest.clearAllMocks();
+    mockUseRefCheckContext.mockImplementation(() => mockRefCheckContextValue);
   });
 
   it('selects a flow property, supports refresh, and clears the selected reference', async () => {
     const onData = jest.fn();
     const formRef = {
       current: {
-        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
-        getFieldValue: (path: any[]) => getValueAtPath(path),
+        setFieldValue: (path: any[], value: any) => mockSetValueAtPath(path, value),
+        getFieldValue: (path: any[]) => mockGetValueAtPath(path),
       },
     };
 
@@ -265,8 +326,8 @@ describe('FlowpropertySelectForm', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /open drawer/i }));
 
-    await waitFor(() => expect(formState.reference['@refObjectId']).toBe('flowproperty-1'));
-    expect(formState.reference['common:shortDescription']).toEqual([
+    await waitFor(() => expect(mockFormState.reference['@refObjectId']).toBe('flowproperty-1'));
+    expect(mockFormState.reference['common:shortDescription']).toEqual([
       { '@xml:lang': 'en', '#text': 'Flow property short name' },
     ]);
     expect(mockValidateRefObjectId).toHaveBeenCalledWith(formRef, ['reference']);
@@ -281,11 +342,81 @@ describe('FlowpropertySelectForm', () => {
     await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledTimes(2));
 
     await userEvent.click(screen.getByRole('button', { name: /clear/i }));
-    expect(formState.reference).toEqual({});
+    expect(mockFormState.reference).toEqual({});
+  });
+
+  it('resolves ref-check errors across id, refData, and stale-error cases', () => {
+    const matchedById = resolveRefErrorFromContext({
+      refCheckData: [
+        { id: 'flowproperty-1', version: '1.0.0', ruleVerification: false, nonExistent: false },
+      ],
+      id: 'flowproperty-1',
+      version: '1.0.0',
+      refData: null,
+      currentErrRef: null,
+    });
+    expect(matchedById?.id).toBe('flowproperty-1');
+
+    const matchedByRefData = resolveRefErrorFromContext({
+      refCheckData: [
+        { id: 'refdata-id', version: '2.0.0', ruleVerification: false, nonExistent: false },
+      ],
+      id: 'other-id',
+      version: '0.0.1',
+      refData: { id: 'refdata-id', version: '2.0.0' } as any,
+      currentErrRef: null,
+    });
+    expect(matchedByRefData?.id).toBe('refdata-id');
+
+    const clearedStaleErrRef = resolveRefErrorFromContext({
+      refCheckData: [
+        { id: 'different-id', version: '9.9.9', ruleVerification: false, nonExistent: false },
+      ],
+      id: 'flowproperty-1',
+      version: '1.0.0',
+      refData: { id: 'flowproperty-1', version: '1.0.0' } as any,
+      currentErrRef: {
+        id: 'stale-id',
+        version: '1.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    });
+    expect(clearedStaleErrRef).toBeNull();
+
+    const preservedCurrentErrRef = resolveRefErrorFromContext({
+      refCheckData: [
+        { id: 'different-id', version: '9.9.9', ruleVerification: false, nonExistent: false },
+      ],
+      id: 'flowproperty-1',
+      version: '1.0.0',
+      refData: { id: 'same-id', version: '1.0.0' } as any,
+      currentErrRef: {
+        id: 'same-id',
+        version: '1.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    });
+    expect(preservedCurrentErrRef?.id).toBe('same-id');
+    expect(
+      resolveRefErrorFromContext({
+        refCheckData: [],
+        id: 'flowproperty-1',
+        version: '1.0.0',
+        refData: null,
+        currentErrRef: {
+          id: 'same-id',
+          version: '1.0.0',
+          ruleVerification: false,
+          nonExistent: false,
+        },
+      }),
+    ).toBeNull();
   });
 
   it('loads an existing reference and hides edit access for non-owners', async () => {
-    setValueAtPath(['reference'], {
+    mockSetValueAtPath(['reference'], {
       '@refObjectId': 'flowproperty-1',
       '@version': '1.0.0',
     });
@@ -294,8 +425,8 @@ describe('FlowpropertySelectForm', () => {
 
     const formRef = {
       current: {
-        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
-        getFieldValue: (path: any[]) => getValueAtPath(path),
+        setFieldValue: (path: any[], value: any) => mockSetValueAtPath(path, value),
+        getFieldValue: (path: any[]) => mockGetValueAtPath(path),
       },
     };
 
@@ -320,6 +451,199 @@ describe('FlowpropertySelectForm', () => {
     expect(screen.queryByText('edit flowproperty-1:1.0.0')).not.toBeInTheDocument();
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent(
       'flowproperty-1:1.0.0:flowproperty',
+    );
+  });
+
+  it('renders populated short description rows and owner err-ref updates', async () => {
+    mockSetValueAtPath(['reference'], {
+      '@refObjectId': 'flowproperty-1',
+      '@version': '1.0.0',
+      'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Existing short description' }],
+    });
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => mockSetValueAtPath(path, value),
+        getFieldValue: (path: any[]) => mockGetValueAtPath(path),
+      },
+    };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertySelectForm
+          name={['reference']}
+          label='Flow property'
+          lang='en'
+          formRef={formRef as any}
+          drawerVisible={false}
+          onData={jest.fn()}
+        />,
+      );
+    });
+
+    await waitFor(() => expect(screen.getAllByPlaceholderText('text')).toHaveLength(1));
+    expect(mockGetLocalValueProps).toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: /trigger edit err ref/i }));
+    expect(screen.getByText('err-ref')).toBeInTheDocument();
+  });
+
+  it('renders matched ref-check errors in non-required mode', async () => {
+    mockSetValueAtPath(['reference'], {
+      '@refObjectId': 'flowproperty-1',
+      '@version': '1.0.0',
+    });
+    mockRefCheckContextValue = { refCheckData: [{ id: 'flowproperty-1', version: '1.0.0' }] };
+    mockUseRefCheckContext.mockImplementation(() => mockRefCheckContextValue);
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => mockSetValueAtPath(path, value),
+        getFieldValue: (path: any[]) => mockGetValueAtPath(path),
+      },
+    };
+
+    const { rerender } = renderWithProviders(
+      <FlowpropertySelectForm
+        name={['reference']}
+        label='Flow property'
+        lang='en'
+        formRef={formRef as any}
+        drawerVisible={false}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetRefData).toHaveBeenCalled());
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /trigger edit err ref/i }));
+    expect(screen.getByText('err-ref')).toBeInTheDocument();
+
+    mockRefCheckContextValue = { refCheckData: [{ id: 'different-id', version: '9.9.9' }] };
+    mockUseRefCheckContext.mockImplementation(() => mockRefCheckContextValue);
+    rerender(
+      <FlowpropertySelectForm
+        name={['reference']}
+        label='Flow property'
+        lang='en'
+        formRef={formRef as any}
+        drawerVisible={false}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.queryByText('err-ref')).not.toBeInTheDocument());
+  });
+
+  it('runs the required validator branches', async () => {
+    mockSetValueAtPath(['reference'], {
+      '@refObjectId': 'flowproperty-1',
+      '@version': '1.0.0',
+    });
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => mockSetValueAtPath(path, value),
+        getFieldValue: (path: any[]) => mockGetValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <FlowpropertySelectForm
+        name={['reference']}
+        label='Flow property'
+        lang='en'
+        formRef={formRef as any}
+        drawerVisible={false}
+        onData={jest.fn()}
+        rules={[{ required: true, message: 'Flow property is required' }]}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetRefData).toHaveBeenCalled());
+
+    const validator = mockFormItemRulesRegistry
+      .get('reference.@refObjectId')
+      ?.find((rule: any) => typeof rule?.validator === 'function')?.validator;
+    expect(typeof validator).toBe('function');
+
+    await act(async () => {
+      await expect(validator({}, undefined)).rejects.toThrow();
+    });
+    expect(consoleSpy).toHaveBeenCalledWith('form rules check error');
+
+    await act(async () => {
+      await expect(validator({}, 'flowproperty-1')).resolves.toBeUndefined();
+    });
+    await userEvent.click(
+      screen.getByRole('button', { name: /validate reference\.@refObjectId/i }),
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it('validates required reference values directly', async () => {
+    const setRuleErrorState = jest.fn();
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    await expect(validateRequiredReferenceValue(undefined, setRuleErrorState)).rejects.toThrow();
+    expect(setRuleErrorState).toHaveBeenCalledWith(true);
+    expect(consoleSpy).toHaveBeenCalledWith('form rules check error');
+
+    setRuleErrorState.mockClear();
+    await expect(
+      validateRequiredReferenceValue('flowproperty-1', setRuleErrorState),
+    ).resolves.toBeUndefined();
+    expect(setRuleErrorState).toHaveBeenCalledWith(false);
+    consoleSpy.mockRestore();
+  });
+
+  it('covers missing ref data and detail fallbacks', async () => {
+    mockSetValueAtPath(['reference'], {
+      '@refObjectId': 'flowproperty-1',
+      '@version': '1.0.0',
+    });
+    mockGetFlowpropertyDetail.mockResolvedValueOnce({
+      data: {
+        id: 'flowproperty-1',
+        version: undefined,
+        userId: 'user-1',
+      },
+    });
+    mockGetRefData.mockResolvedValueOnce({});
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => mockSetValueAtPath(path, value),
+        getFieldValue: (path: any[]) => mockGetValueAtPath(path),
+      },
+    };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertySelectForm
+          name={['reference']}
+          label='Flow property'
+          lang='en'
+          formRef={formRef as any}
+          drawerVisible={false}
+          onData={jest.fn()}
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('flowproperty-1', '1.0.0'),
+    );
+    expect(screen.getByText('view flowproperty-1:')).toBeInTheDocument();
+    expect(screen.getByText('edit flowproperty-1:')).toBeInTheDocument();
+    expect(mockFormState.reference['common:shortDescription']).toEqual([]);
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyDetail).toHaveBeenLastCalledWith('flowproperty-1', ''),
     );
   });
 });

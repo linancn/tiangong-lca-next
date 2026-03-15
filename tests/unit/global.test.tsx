@@ -5,6 +5,7 @@ const mockNotification = {
   open: jest.fn(),
 };
 const mockMessage = {
+  error: jest.fn(),
   warning: jest.fn(),
 };
 const mockUseIntl = jest.fn(() => ({
@@ -51,6 +52,9 @@ describe('global runtime side effects', () => {
     getRegistration,
     cacheKeys = [],
     cacheKeyError,
+    hasCaches = true,
+    hasGetRegistrations = true,
+    protocol = 'http:',
     reloadSpy,
   }: any) => {
     const addEventListenerSpy = jest
@@ -82,14 +86,18 @@ describe('global runtime side effects', () => {
       notification: mockNotification,
     }));
 
+    const cacheValue = hasCaches
+      ? {
+          keys: cacheKeyError
+            ? jest.fn().mockRejectedValue(cacheKeyError)
+            : jest.fn().mockResolvedValue(cacheKeys),
+          delete: jest.fn().mockResolvedValue(true),
+        }
+      : undefined;
+
     Object.defineProperty(window, 'caches', {
       configurable: true,
-      value: {
-        keys: cacheKeyError
-          ? jest.fn().mockRejectedValue(cacheKeyError)
-          : jest.fn().mockResolvedValue(cacheKeys),
-        delete: jest.fn().mockResolvedValue(true),
-      },
+      value: cacheValue,
     });
     Object.defineProperty(global, 'caches', {
       configurable: true,
@@ -98,16 +106,16 @@ describe('global runtime side effects', () => {
     Object.defineProperty(navigator, 'serviceWorker', {
       configurable: true,
       value: {
-        getRegistrations: jest.fn().mockResolvedValue(getRegistrations ?? []),
+        ...(hasGetRegistrations
+          ? { getRegistrations: jest.fn().mockResolvedValue(getRegistrations ?? []) }
+          : {}),
         getRegistration: jest.fn().mockResolvedValue(getRegistration ?? null),
       },
     });
-    const locationValue = reloadSpy
-      ? {
-          protocol: originalLocation.protocol,
-          reload: reloadSpy ?? jest.fn(),
-        }
-      : originalLocation;
+    const locationValue = {
+      protocol,
+      reload: reloadSpy ?? jest.fn(),
+    };
 
     Object.defineProperty(window, 'location', {
       configurable: true,
@@ -201,6 +209,40 @@ describe('global runtime side effects', () => {
     expect(reloadSpy).not.toHaveBeenCalled();
   });
 
+  it('shows a failure message when skip-waiting returns an error', async () => {
+    const eventHandlers: Record<string, any> = {};
+    const reloadSpy = jest.fn();
+
+    await loadGlobalModule({
+      pwa: true,
+      eventHandlers,
+      cacheKeys: ['cache-a'],
+      reloadSpy,
+    });
+
+    const waitingWorker = {
+      postMessage: jest.fn((_msg: any, [port]: any[]) => {
+        port.__peer.onmessage({ data: { error: new Error('skip failed') } });
+      }),
+    };
+    eventHandlers['sw.updated']({
+      detail: {
+        waiting: waitingWorker,
+      },
+    });
+
+    const openPayload = mockNotification.open.mock.calls[0][0];
+    await openPayload.btn.props.onClick();
+    await flushAsync();
+
+    expect(mockMessage.error).toHaveBeenCalledWith(
+      'Refresh failed, please reload the page manually',
+    );
+    expect(mockNotification.destroy).not.toHaveBeenCalledWith(openPayload.key);
+    expect(window.caches.keys).not.toHaveBeenCalled();
+    expect(reloadSpy).not.toHaveBeenCalled();
+  });
+
   it('logs cache cleanup failures during service worker update reload', async () => {
     const eventHandlers: Record<string, any> = {};
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -244,11 +286,54 @@ describe('global runtime side effects', () => {
       getRegistrations: [{ unregister }],
       getRegistration: { unregister },
       cacheKeys: ['cache-a'],
+      protocol: 'http:',
     });
 
     expect(eventHandlers['sw.offline']).toBeUndefined();
     expect(eventHandlers['sw.updated']).toBeUndefined();
     expect(unregister).not.toHaveBeenCalled();
     expect(window.caches.keys).not.toHaveBeenCalled();
+  });
+
+  it('unregisters service workers and clears caches when PWA is disabled on https origins', async () => {
+    const eventHandlers: Record<string, any> = {};
+    const unregisterA = jest.fn();
+    const unregisterB = jest.fn();
+    const unregisterActive = jest.fn();
+
+    await loadGlobalModule({
+      pwa: false,
+      eventHandlers,
+      getRegistrations: [{ unregister: unregisterA }, { unregister: unregisterB }],
+      getRegistration: { unregister: unregisterActive },
+      cacheKeys: ['cache-a', 'cache-b'],
+      protocol: 'https:',
+    });
+
+    expect(eventHandlers['sw.offline']).toBeUndefined();
+    expect(eventHandlers['sw.updated']).toBeUndefined();
+    expect(unregisterA).toHaveBeenCalledTimes(1);
+    expect(unregisterB).toHaveBeenCalledTimes(1);
+    expect(unregisterActive).toHaveBeenCalledTimes(1);
+    expect(window.caches.keys).toHaveBeenCalledTimes(1);
+    expect(window.caches.delete).toHaveBeenCalledWith('cache-a');
+    expect(window.caches.delete).toHaveBeenCalledWith('cache-b');
+  });
+
+  it('skips optional unregister and cache cleanup paths when those APIs are unavailable', async () => {
+    const eventHandlers: Record<string, any> = {};
+
+    await loadGlobalModule({
+      pwa: false,
+      eventHandlers,
+      getRegistration: null,
+      hasCaches: false,
+      hasGetRegistrations: false,
+      protocol: 'https:',
+    });
+
+    expect(eventHandlers['sw.offline']).toBeUndefined();
+    expect(eventHandlers['sw.updated']).toBeUndefined();
+    expect(window.caches).toBeUndefined();
   });
 });

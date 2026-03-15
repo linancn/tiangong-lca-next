@@ -203,4 +203,30 @@ describe('ContactDelete component', () => {
     expect(setViewDrawerVisible).not.toHaveBeenCalled();
     expect(screen.getByRole('alertdialog', { name: 'Delete Contact' })).toBeInTheDocument();
   });
+
+  it('supports the text button variant and falls back to a generic error message', async () => {
+    const user = userEvent.setup();
+
+    mockDeleteContact.mockResolvedValue({
+      status: 400,
+      error: undefined,
+    });
+
+    renderWithProviders(
+      <ContactDelete
+        id='contact-delete'
+        version='01.00.000'
+        buttonType='text'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('alertdialog', { name: 'Delete' });
+    await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Error'));
+  });
 });

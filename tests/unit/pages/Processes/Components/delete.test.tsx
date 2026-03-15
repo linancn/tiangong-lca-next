@@ -127,6 +127,22 @@ describe('ProcessDelete component', () => {
     });
   });
 
+  it('supports the text button variant and falls back to a generic error message', async () => {
+    mockDeleteProcess.mockResolvedValue({
+      status: 400,
+      error: undefined,
+    });
+
+    render(<ProcessDelete {...defaultProps} buttonType='text' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => {
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Error');
+    });
+  });
+
   it('hides modal when cancel is clicked', () => {
     render(<ProcessDelete {...defaultProps} />);
 

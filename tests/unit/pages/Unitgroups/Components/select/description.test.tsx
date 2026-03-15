@@ -12,10 +12,12 @@ const toText = (node: any): string => {
   return '';
 };
 
+let mockLocale = 'en-US';
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => 'en-US',
+  getLocale: () => mockLocale,
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -55,7 +57,11 @@ jest.mock('antd', () => {
   );
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children }: any) => <div>{children}</div>;
+  Descriptions.Item = ({ children, labelStyle, styles }: any) => (
+    <div data-label-style-width={labelStyle?.width} data-styles-label-width={styles?.label?.width}>
+      {children}
+    </div>
+  );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
   return {
     __esModule: true,
@@ -73,6 +79,7 @@ describe('UnitGroupSelectDescription', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'en-US';
   });
 
   it('renders fallback values when no referenced unit group is provided', () => {
@@ -109,5 +116,26 @@ describe('UnitGroupSelectDescription', () => {
     expect(screen.getByText('sup:kg')).toBeInTheDocument();
     expect(screen.getByText('Short desc')).toBeInTheDocument();
     expect(screen.getByText('Reference comment')).toBeInTheDocument();
+  });
+
+  it('uses the zh label width and falls back to an empty version when it is missing', async () => {
+    mockLocale = 'zh-CN';
+    mockGetReferenceUnit.mockResolvedValue({ data: null });
+
+    const { container } = renderWithProviders(
+      <UnitGroupSelectDescription
+        title='Unit group'
+        lang='zh'
+        data={{
+          '@refObjectId': 'ug-zh',
+          'common:shortDescription': [{ '@xml:lang': 'zh', '#text': '简述' }],
+        }}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetReferenceUnit).toHaveBeenCalledWith('ug-zh', ''));
+    expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('ug-zh:');
+    expect(container.querySelector('[data-label-style-width="210px"]')).not.toBeNull();
+    expect(screen.getAllByTestId('lang-desc')[1]).toHaveTextContent('');
   });
 });

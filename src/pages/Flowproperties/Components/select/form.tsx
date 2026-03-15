@@ -35,6 +35,56 @@ type RefDataResponse = {
   success?: boolean;
 };
 
+type ResolveRefErrorArgs = {
+  refCheckData?: RefCheckType[] | null;
+  id?: string;
+  version?: string;
+  refData?: FlowpropertyDetailData | null;
+  currentErrRef?: RefCheckType | null;
+};
+
+export const resolveRefErrorFromContext = ({
+  refCheckData,
+  id,
+  version,
+  refData,
+  currentErrRef,
+}: ResolveRefErrorArgs): RefCheckType | null => {
+  if (!refCheckData?.length) {
+    return null;
+  }
+
+  const matchedRef = refCheckData.find(
+    (item) =>
+      (item.id === id && item.version === version) ||
+      (item.id === refData?.id && item.version === refData?.version),
+  );
+
+  if (matchedRef) {
+    return matchedRef;
+  }
+
+  if (refData && refData?.id !== currentErrRef?.id) {
+    return null;
+  }
+
+  return currentErrRef ?? null;
+};
+
+export const validateRequiredReferenceValue = (
+  value: unknown,
+  setRuleErrorState: (value: boolean) => void,
+) => {
+  if (!value) {
+    setRuleErrorState(true);
+    console.log('form rules check error');
+    return Promise.reject(new Error());
+  }
+
+  setRuleErrorState(false);
+  return Promise.resolve();
+};
+
 const FlowpropertiesSelectForm: FC<Props> = ({
   name,
   label,
@@ -86,42 +136,39 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   }, [id, version]);
   useEffect(() => {
     if (refCheckContext?.refCheckData?.length) {
-      const ref = refCheckContext?.refCheckData?.find(
-        (item) =>
-          (item.id === id && item.version === version) ||
-          (item.id === refData?.id && item.version === refData?.version),
+      setErrRef(
+        resolveRefErrorFromContext({
+          refCheckData: refCheckContext?.refCheckData,
+          id,
+          version,
+          refData,
+          currentErrRef: errRef,
+        }),
       );
-      if (ref) {
-        setErrRef(ref);
-      } else if (refData && refData?.id !== errRef?.id) {
-        setErrRef(null);
-      }
     } else {
       setErrRef(null);
     }
   }, [refCheckContext, refData]);
 
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
-    getFlowpropertyDetail(rowId, rowVersion ?? '').then(
-      async (result: FlowpropertyDetailResponse) => {
-        setDataUserId(result?.data?.userId);
-        updateErrRefByDetail(result?.data);
-        const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
-        await formRef.current?.setFieldValue(name, {
-          '@refObjectId': rowId,
-          '@type': 'flow property data set',
-          '@uri': `../flowproperties/${rowId}.xml`,
-          '@version': result.data?.version,
-          'common:shortDescription':
-            selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
-        });
-        setId(rowId);
-        setVersion(result.data?.version);
-        validateRefObjectId(formRef, name);
-        setUnitGroupFromMiniKey(UnitGroupFromMiniKey + 1);
-        onData();
-      },
-    );
+    getFlowpropertyDetail(rowId, rowVersion).then(async (result: FlowpropertyDetailResponse) => {
+      setDataUserId(result?.data?.userId);
+      updateErrRefByDetail(result?.data);
+      const selectedData = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+      await formRef.current?.setFieldValue(name, {
+        '@refObjectId': rowId,
+        '@type': 'flow property data set',
+        '@uri': `../flowproperties/${rowId}.xml`,
+        '@version': result.data?.version,
+        'common:shortDescription':
+          selectedData?.flowPropertiesInformation?.dataSetInformation?.['common:name'] ?? [],
+      });
+      setId(rowId);
+      setVersion(result.data?.version);
+      validateRefObjectId(formRef, name);
+      setUnitGroupFromMiniKey(UnitGroupFromMiniKey + 1);
+      onData();
+    });
   };
 
   useEffect(() => {
@@ -143,7 +190,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
 
   const requiredRules = rules.filter(isRequiredRule);
   const isRequired = requiredRules.length > 0;
-  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule));
 
   return (
     <Card
@@ -183,15 +230,8 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             ...(isRequired
               ? [
                   {
-                    validator: (_: Rule, value: unknown) => {
-                      if (!value) {
-                        setRuleErrorState(true);
-                        console.log('form rules check error');
-                        return Promise.reject(new Error());
-                      }
-                      setRuleErrorState(false);
-                      return Promise.resolve();
-                    },
+                    validator: (_: Rule, value: unknown) =>
+                      validateRequiredReferenceValue(value, setRuleErrorState),
                   },
                 ]
               : []),

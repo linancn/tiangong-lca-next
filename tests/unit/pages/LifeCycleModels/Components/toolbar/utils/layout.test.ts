@@ -75,6 +75,20 @@ describe('applyDagreLayout (src/pages/LifeCycleModels/Components/toolbar/utils/l
     expect(positions.B.x).toBeGreaterThan(positions.A.x);
   });
 
+  it('uses the default rank direction when rankdir is omitted', () => {
+    const positions: Record<string, { x: number; y: number }> = {};
+    const nodeA = createNode('A', positions);
+    const nodeB = createNode('B', positions);
+    const edgeAB = createEdge('edge-ab', 'A', 'B');
+    const graph = {
+      getNodes: () => [nodeA, nodeB],
+      getEdges: () => [edgeAB],
+    } as any;
+
+    expect(applyDagreLayout(graph)).toBe(true);
+    expect(positions.B.x).toBeGreaterThan(positions.A.x);
+  });
+
   it('ignores dangling edges and still computes positions', () => {
     const positions: Record<string, { x: number; y: number }> = {};
     const nodeA = createNode('A', positions);
@@ -136,5 +150,16 @@ describe('applyDagreLayout (src/pages/LifeCycleModels/Components/toolbar/utils/l
       expect.objectContaining({ event: 'x6:auto-layout' }),
       { reason: 'auto-layout' },
     );
+  });
+
+  it('returns false from the history helper when no layout is applied', () => {
+    const graph = {
+      getNodes: () => [],
+      getEdges: () => [],
+      getPlugin: jest.fn(),
+    } as any;
+
+    expect(applyDagreLayoutWithHistory(graph)).toBe(false);
+    expect(graph.getPlugin).not.toHaveBeenCalled();
   });
 });

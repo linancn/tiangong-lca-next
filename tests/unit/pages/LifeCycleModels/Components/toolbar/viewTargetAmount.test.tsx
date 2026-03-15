@@ -56,9 +56,14 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
-    open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
+    const container = getContainer?.();
+    return open ? (
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={container?.nodeName === 'BODY' ? 'body' : 'other'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -68,6 +73,7 @@ jest.mock('antd', () => {
         <div>{children}</div>
       </section>
     ) : null;
+  };
 
   const Space = ({ children }: any) => <div>{children}</div>;
 
@@ -183,6 +189,10 @@ describe('ViewTargetAmount', () => {
     );
 
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
+    expect(screen.getByRole('dialog', { name: 'Target amount' })).toHaveAttribute(
+      'data-container',
+      'body',
+    );
 
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
@@ -197,5 +207,87 @@ describe('ViewTargetAmount', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
 
     expect(setDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('disables the trigger without a ref node and falls back to placeholder values when process detail is sparse', async () => {
+    const setDrawerVisible = jest.fn();
+    mockGetProcessDetail.mockResolvedValueOnce({ data: { json: {} } });
+    mockGenProcessFromData.mockReturnValueOnce({});
+
+    const { rerender } = render(
+      <TargetAmount
+        refNode={undefined as any}
+        drawerVisible={false}
+        lang='en'
+        setDrawerVisible={setDrawerVisible}
+        onData={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /star/i })).toBeDisabled();
+
+    rerender(
+      <TargetAmount
+        refNode={{ data: {} } as any}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={setDrawerVisible}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('', ''));
+    expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(6);
+    expect(screen.queryByText(/flow-view:/)).not.toBeInTheDocument();
+  });
+
+  it('uses the first array reference flow entry and falls back to an empty version for the flow viewer', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      processInformation: {
+        quantitativeReference: {
+          referenceToReferenceFlow: 'ex-1',
+        },
+        dataSetInformation: {
+          name: {
+            baseName: [{ '@xml:lang': 'en', '#text': 'Ref process' }],
+          },
+          'common:generalComment': [{ '@xml:lang': 'en', '#text': 'Process comment' }],
+        },
+      },
+      exchanges: {
+        exchange: [
+          {
+            '@dataSetInternalID': 'ex-1',
+            referenceToFlowDataSet: [
+              {
+                '@refObjectId': 'flow-array',
+                '@type': 'flow data set',
+                '@uri': '../flows/flow-array.xml',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Reference flow' }],
+              },
+              {
+                '@refObjectId': 'flow-second',
+                '@version': '9.9.9',
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    render(
+      <TargetAmount
+        refNode={refNode as any}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
+    expect(screen.getByText('flow-array')).toBeInTheDocument();
+    expect(screen.getByText('flow-view:flow-array:')).toBeInTheDocument();
+    expect(screen.getByTestId('unit-group-mini')).toHaveTextContent('flow:flow-array:');
   });
 });

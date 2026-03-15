@@ -72,6 +72,21 @@ describe('Auth Cognito helpers (src/services/auth/cognito.ts)', () => {
 
       expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();
     });
+
+    it('falls back to an empty bearer token when the session has no access token', async () => {
+      supabaseMock.auth.getSession.mockResolvedValueOnce({
+        data: { session: {} },
+        error: null,
+      });
+
+      await cognitoSignUp('Password1!');
+
+      expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('sign_up_cognito', {
+        headers: { Authorization: 'Bearer ' },
+        body: { password: 'Password1!' },
+        region: FunctionRegion.UsEast1,
+      });
+    });
   });
 
   describe('cognitoChangePassword', () => {
@@ -95,6 +110,21 @@ describe('Auth Cognito helpers (src/services/auth/cognito.ts)', () => {
 
       expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();
     });
+
+    it('uses an empty bearer token when changing a password without an access token', async () => {
+      supabaseMock.auth.getSession.mockResolvedValueOnce({
+        data: { session: {} },
+        error: null,
+      });
+
+      await cognitoChangePassword('NewPass2@');
+
+      expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('change_password_cognito', {
+        headers: { Authorization: 'Bearer ' },
+        body: { password: 'NewPass2@' },
+        region: FunctionRegion.UsEast1,
+      });
+    });
   });
 
   describe('cognitoChangeEmail', () => {
@@ -117,6 +147,21 @@ describe('Auth Cognito helpers (src/services/auth/cognito.ts)', () => {
       await cognitoChangeEmail('new@example.com');
 
       expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();
+    });
+
+    it('uses an empty bearer token when changing email without an access token', async () => {
+      supabaseMock.auth.getSession.mockResolvedValueOnce({
+        data: { session: {} },
+        error: null,
+      });
+
+      await cognitoChangeEmail('new@example.com');
+
+      expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('change_email_cognito', {
+        headers: { Authorization: 'Bearer ' },
+        body: { newEmail: 'new@example.com' },
+        region: FunctionRegion.UsEast1,
+      });
     });
   });
 });

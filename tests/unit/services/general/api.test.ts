@@ -219,6 +219,28 @@ describe('getDataDetail', () => {
     expect(builder.range).toHaveBeenCalledWith(0, 0);
     expect(result.data?.version).toBe(sampleVersion);
   });
+
+  it('should treat a non-string version as an empty version filter', async () => {
+    const fallbackPayload = {
+      data: [
+        {
+          version: sampleVersion,
+          json: { foo: 'bar' },
+          modified_at: '2023-01-02T00:00:00Z',
+          state_code: 200,
+          rule_verification: 'pending',
+          user_id: 'user-2',
+        },
+      ],
+    };
+    const builder = createQueryBuilder(fallbackPayload);
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.getDataDetail(sampleId, 123 as any, 'flows');
+
+    expect(builder.order).toHaveBeenCalledWith('version', { ascending: false });
+    expect(result.data?.version).toBe(sampleVersion);
+  });
 });
 
 describe('getDataDetailById', () => {
@@ -409,6 +431,18 @@ describe('getRefData', () => {
       success: true,
     });
   });
+
+  it('should return failure when no reference rows are found after querying', async () => {
+    const builder = createQueryBuilder({ data: [], error: null });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.getRefData(sampleId, sampleVersion, 'flows');
+
+    expect(result).toEqual({
+      data: null,
+      success: false,
+    });
+  });
 });
 
 describe('updateStateCodeApi', () => {
@@ -433,6 +467,19 @@ describe('updateStateCodeApi', () => {
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
+  });
+
+  it('should use an empty bearer token when the session has no access token', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
+    mockFunctionsInvoke.mockResolvedValue({ data: { updated: true } });
+
+    await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 300);
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: 'Bearer ' },
+      body: { id: sampleId, version: sampleVersion, table: 'flows', data: { state_code: 300 } },
+      region: expect.anything(),
+    });
   });
 });
 
@@ -478,6 +525,20 @@ describe('updateDateToReviewState', () => {
       region: expect.anything(),
     });
     expect(result).toEqual({ ok: true });
+  });
+
+  it('should use an empty bearer token when review-state update has no access token', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
+    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true } });
+    const payload = { foo: 'bar' };
+
+    await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', payload);
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: 'Bearer ' },
+      body: { id: sampleId, version: sampleVersion, table: 'flows', data: payload },
+      region: expect.anything(),
+    });
   });
 });
 
@@ -586,6 +647,30 @@ describe('contributeSource', () => {
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(messageMock.error).toHaveBeenCalledWith('You are not a member of any team');
     expect(result).toEqual({ error: true, message: 'Contribute failed' });
+  });
+
+  it('should contribute with an empty bearer token when the session lacks access token', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-1' } } },
+    });
+    const rolesBuilder = createQueryBuilder({
+      data: [{ user_id: 'user-1', team_id: 'team-empty-token', role: 'member' }],
+    });
+    mockFrom.mockReturnValueOnce(rolesBuilder);
+    mockFunctionsInvoke.mockResolvedValue({ data: { contributed: true } });
+
+    await generalApi.contributeSource('sources', sampleId, sampleVersion);
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+      headers: { Authorization: 'Bearer ' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'sources',
+        data: { team_id: 'team-empty-token' },
+      },
+      region: expect.anything(),
+    });
   });
 });
 
@@ -747,6 +832,19 @@ describe('getAISuggestion', () => {
 
     consoleLogSpy.mockRestore();
   });
+
+  it('should use an empty bearer token for AI suggestions when access token is absent', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
+    mockFunctionsInvoke.mockResolvedValue({ data: { suggestion: { foo: 'bar' } } });
+
+    await generalApi.getAISuggestion({}, 'process', {});
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('ai_suggest', {
+      headers: { Authorization: 'Bearer ' },
+      body: { tidasData: {}, dataType: 'process', options: {} },
+      region: expect.anything(),
+    });
+  });
 });
 
 describe('multilingual save normalization', () => {
@@ -827,6 +925,131 @@ describe('translateZhTextToEnglish', () => {
 
     expect(result).toBeUndefined();
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('should extract direct translated text from the translation payload', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-9' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        translations: [{ translatedText: '  Direct English  ' }],
+      },
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('直接文本');
+
+    expect(result).toBe('Direct English');
+  });
+
+  it('should extract translation text from content arrays and nested keys', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-10' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        translations: [
+          {
+            translatedText: {
+              result: {
+                content: [{ text: '  Nested content translation  ' }],
+              },
+            },
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('嵌套内容');
+
+    expect(result).toBe('Nested content translation');
+  });
+
+  it('should extract translation text from array payloads with content fields', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-11' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        translations: [
+          {
+            translatedText: [{ translation: '  Array content translation  ' }],
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('数组内容');
+
+    expect(result).toBe('Array content translation');
+  });
+
+  it('should extract translation text from content string entries', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-13' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        translations: [
+          {
+            translatedText: {
+              content: [{ content: '  Content entry translation  ' }],
+            },
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('内容字段');
+
+    expect(result).toBe('Content entry translation');
+  });
+
+  it('should return undefined when translation arrays contain no extractable values', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-14' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        translations: [
+          {
+            translatedText: [],
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('空数组');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should return undefined when translation objects have no supported keys', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-15' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        translations: [
+          {
+            translatedText: { unsupported: { nested: 'value' } },
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await generalApi.translateZhTextToEnglish('无支持键');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should return undefined and log when translation edge function fails', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-12' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: { message: 'translate failed' },
+    });
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+    const result = await generalApi.translateZhTextToEnglish('失败场景');
+
+    expect(result).toBeUndefined();
+    expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'translate failed' });
+    consoleLogSpy.mockRestore();
   });
 });
 
@@ -1282,6 +1505,48 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeDefined();
     });
 
+    it('should map sources table for English locale', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-source-en',
+            'common:shortName': { en: 'Source EN' },
+            'common:class': ['source-class-en'],
+            sourceCitation: 'Citation EN',
+            publicationType: 'Report',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementation((value: any) =>
+        Array.isArray(value) ? value : value ? [value] : [],
+      );
+      mockClassificationToString.mockReturnValueOnce('Source Class EN');
+
+      const result = await generalApi.getAllVersions(
+        'common:shortName',
+        'sources',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toMatchObject({
+        id: sampleId,
+        shortName: 'Source EN',
+        classification: 'Source Class EN',
+        sourceCitation: 'Citation EN',
+      });
+    });
+
     it('should handle te dataSource with team ID', async () => {
       const mockData = [
         { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
@@ -1523,6 +1788,59 @@ describe('Edge Cases and Error Handling', () => {
       });
     });
 
+    it('should map unitgroups table for Chinese locale', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-unit-zh',
+            'common:name': { zh: '单位组ZH' },
+            'common:class': [{ value: 'unit-class-zh' }],
+            referenceToReferenceUnit: 'unit-zh',
+            unit: [
+              {
+                '@dataSetInternalID': 'unit-zh',
+                name: '千克',
+                generalComment: { zh: '参考单位备注' },
+              },
+            ],
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDClassification.mockResolvedValueOnce({
+        data: [{ id: 'unit-class-zh', value: '单位分类ZH' }],
+      });
+      mockJsonToList.mockImplementation((value: any) =>
+        Array.isArray(value) ? value : value ? [value] : [],
+      );
+      mockGenClassificationZH.mockReturnValueOnce(['单位分类ZH']);
+      mockClassificationToString.mockReturnValueOnce('单位分类ZH');
+
+      const result = await generalApi.getAllVersions(
+        'common:name',
+        'unitgroups',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('UnitGroup', 'zh', ['all']);
+      expect(result.data?.[0]).toMatchObject({
+        id: sampleId,
+        classification: '单位分类ZH',
+        refUnitId: 'unit-zh',
+        refUnitName: '千克',
+      });
+    });
+
     it('should map flowproperties table for Chinese locale', async () => {
       const payload = {
         data: [
@@ -1567,6 +1885,49 @@ describe('Edge Cases and Error Handling', () => {
         id: sampleId,
         classification: '流属性分类',
         refUnitGroupId: 'unitgroup-1',
+      });
+    });
+
+    it('should map flowproperties table for English locale', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-fp-en',
+            'common:name': { en: 'Flow Property EN' },
+            'common:class': ['fp-class-en'],
+            'common:generalComment': { en: 'General EN' },
+            '@refObjectId': 'unitgroup-en',
+            'common:shortDescription': { en: 'Unit Group EN' },
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementation((value: any) =>
+        Array.isArray(value) ? value : value ? [value] : [],
+      );
+      mockClassificationToString.mockReturnValueOnce('FP Class EN');
+
+      const result = await generalApi.getAllVersions(
+        'common:name',
+        'flowproperties',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toMatchObject({
+        id: sampleId,
+        classification: 'FP Class EN',
+        refUnitGroupId: 'unitgroup-en',
+        refUnitGroup: 'Unit Group EN',
       });
     });
 
@@ -1672,6 +2033,114 @@ describe('Edge Cases and Error Handling', () => {
       });
     });
 
+    it('should map flow datasets for Chinese non-elementary records', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            typeOfDataSet: 'Product flow',
+            name: { zh: '产品流ZH' },
+            classificationInformation: {
+              'common:classification': {
+                'common:class': ['product-category-zh'],
+              },
+            },
+            'common:synonyms': { zh: '同义词ZH' },
+            CASNumber: '222-22-2',
+            referenceToFlowPropertyDataSet: { '@refObjectId': 'flow-prop-zh' },
+            locationOfSupply: 'CN-SW',
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-flow-zh',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDFlowCategorizationAll.mockResolvedValueOnce({
+        data: {
+          category: [{ '@value': 'product-category-zh', '#text': '产品流分类ZH' }],
+        },
+      });
+      mockGetILCDLocationByValues.mockResolvedValueOnce({
+        data: [{ '@value': 'CN-SW', '#text': '中国西南' }],
+      });
+      mockJsonToList.mockImplementation((value: any) =>
+        Array.isArray(value) ? value : value ? [value] : [],
+      );
+      mockGenClassificationZH.mockReturnValueOnce(['产品流分类ZH']);
+      mockClassificationToString.mockReturnValueOnce('产品流分类ZH');
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'flows',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toMatchObject({
+        id: sampleId,
+        classification: '产品流分类ZH',
+        locationOfSupply: '中国西南',
+      });
+    });
+
+    it('should map flow datasets for English elementary records', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            typeOfDataSet: 'Elementary flow',
+            name: { en: 'Elementary Flow EN' },
+            classificationInformation: {
+              'common:elementaryFlowCategorization': {
+                'common:category': ['elementary-en'],
+              },
+            },
+            'common:synonyms': { en: 'Elementary synonym' },
+            CASNumber: '333-33-3',
+            referenceToFlowPropertyDataSet: { '@refObjectId': 'flow-prop-en' },
+            locationOfSupply: 'US-W',
+            modified_at: '2024-01-01T00:00:00Z',
+            team_id: 'team-flow-elementary-en',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDLocationByValues.mockResolvedValueOnce({
+        data: [{ '@value': 'US-W', '#text': 'West US' }],
+      });
+      mockJsonToList.mockImplementation((value: any) =>
+        Array.isArray(value) ? value : value ? [value] : [],
+      );
+      mockClassificationToString.mockReturnValueOnce('Elementary Class EN');
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'flows',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toMatchObject({
+        id: sampleId,
+        classification: 'Elementary Class EN',
+        locationOfSupply: 'West US',
+      });
+    });
+
     it('should map process datasets for Chinese locale', async () => {
       const payload = {
         data: [
@@ -1762,6 +2231,485 @@ describe('Edge Cases and Error Handling', () => {
       expect(consoleErrorSpy).toHaveBeenCalled();
       expect(result.data?.[0]).toEqual({ id: sampleId });
 
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should map lifecyclemodels table for English locale', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            modified_at: '2024-02-01T00:00:00Z',
+            team_id: 'team-lcm-en',
+            name: { en: 'Model EN' },
+            'common:class': ['lcm-class-en'],
+            'common:generalComment': { en: 'Model EN comment' },
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementation((value: any) =>
+        Array.isArray(value) ? value : value ? [value] : [],
+      );
+      mockClassificationToString.mockReturnValueOnce('LCM Class EN');
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'lifecyclemodels',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toMatchObject({
+        id: sampleId,
+        classification: 'LCM Class EN',
+        version: sampleVersion,
+      });
+    });
+
+    it('should return fallback items when contact mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Broken contact' }],
+            'common:name': [{ '@xml:lang': 'en', '#text': 'Broken contact name' }],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('contact parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:shortName',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when source mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:shortName': { zh: '损坏来源' },
+            'common:class': ['broken-source'],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDClassification.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('source parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:shortName',
+        'sources',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when English source mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:shortName': { en: 'Broken source EN' },
+            'common:class': ['broken-source-en'],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('source en parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:shortName',
+        'sources',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when unitgroup mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:name': { en: 'Broken unitgroup' },
+            unit: [],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('unitgroup parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:name',
+        'unitgroups',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when Chinese unitgroup mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:name': { zh: '损坏单位组ZH' },
+            unit: [],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDClassification.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('unitgroup zh parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:name',
+        'unitgroups',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when flowproperty mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:name': { zh: '损坏流属性' },
+            'common:class': ['broken-fp'],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDClassification.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('flowproperty parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:name',
+        'flowproperties',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when English flowproperty mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:name': { en: 'Broken FP EN' },
+            'common:class': ['broken-fp-en'],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('flowproperty en parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'common:name',
+        'flowproperties',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when flow mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            typeOfDataSet: 'Elementary flow',
+            locationOfSupply: 'US-ERR',
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDFlowCategorizationAll.mockResolvedValueOnce({ data: {} });
+      mockGetILCDLocationByValues.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('flow parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'flows',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when English flow mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            typeOfDataSet: 'Product flow',
+            locationOfSupply: 'US-ERR-EN',
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDLocationByValues.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('flow en parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'flows',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when process mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            '@location': 'CN-ERR',
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDLocationByValues.mockResolvedValueOnce({ data: [] });
+      mockGetILCDClassification.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('process parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'processes',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when English process mappings throw', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            '@location': 'US-ERR-EN',
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDLocationByValues.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('process en parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'processes',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should return fallback items when lifecyclemodel mappings throw in Chinese branch', async () => {
+      const payload = {
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            'common:class': ['broken-lcm-zh'],
+            modified_at: '2024-01-01T00:00:00Z',
+          },
+        ],
+        error: null,
+        count: 1,
+      };
+      const builder = createQueryBuilder(payload);
+      mockFrom.mockReturnValueOnce(builder);
+      mockGetILCDClassification.mockResolvedValueOnce({ data: [] });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('lcm zh parse failed');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'lifecyclemodels',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'zh',
+        'tg',
+      );
+
+      expect(result.data?.[0]).toEqual({ id: sampleId });
+      expect(consoleErrorSpy).toHaveBeenCalled();
       consoleErrorSpy.mockRestore();
     });
 

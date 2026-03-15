@@ -364,7 +364,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
                 (item: any) => !defaultSelectedRowKeys.current.includes(item.user_id),
               );
               return {
-                data: data || [],
+                data,
                 success: result.success,
                 total: result.total,
               };

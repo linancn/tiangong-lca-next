@@ -54,6 +54,7 @@ describe('locale bundles', () => {
       'app.pwa.serviceworker.updated',
       'app.pwa.serviceworker.updated.hint',
       'app.pwa.serviceworker.updated.ok',
+      'app.pwa.serviceworker.updated.failed',
       'pages.team.info.title',
       'pages.team.info.description',
       'component.allTeams.form.title',

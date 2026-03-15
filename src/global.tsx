@@ -3,7 +3,7 @@ import { Button, message, notification } from 'antd';
 import defaultSettings from '../config/defaultSettings';
 
 const { pwa } = defaultSettings;
-const isHttps = document.location.protocol === 'https:';
+const isHttps = window.location.protocol === 'https:';
 
 const clearCache = () => {
   // remove all caches
@@ -57,9 +57,18 @@ if (pwa) {
     const btn = (
       <Button
         type='primary'
-        onClick={() => {
-          notification.destroy(key);
-          reloadSW();
+        onClick={async () => {
+          try {
+            await reloadSW();
+            notification.destroy(key);
+          } catch {
+            message.error(
+              useIntl().formatMessage({
+                id: 'app.pwa.serviceworker.updated.failed',
+                defaultMessage: 'Refresh failed, please reload the page manually',
+              }),
+            );
+          }
         }}
       >
         {useIntl().formatMessage({ id: 'app.pwa.serviceworker.updated.ok' })}

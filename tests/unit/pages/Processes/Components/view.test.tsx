@@ -1,6 +1,10 @@
 // @ts-nocheck
-import ProcessView from '@/pages/Processes/Components/view';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import ProcessView, {
+  buildMergedLciaRows,
+  getLciaMethodMetaMap,
+  toReferenceValue,
+} from '@/pages/Processes/Components/view';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -12,6 +16,15 @@ const toText = (node: any): string => {
   return '';
 };
 
+const getDescriptionItemValue = (label: string) => {
+  const labelNode = screen.getByText(label);
+  const item = labelNode.closest('[data-testid="description-item"]');
+  if (!item) {
+    throw new Error(`Description item not found for label: ${label}`);
+  }
+  return within(item).getByTestId('description-value');
+};
+
 const mockGetProcessDetail = jest.fn();
 const mockGetProcessExchange = jest.fn();
 const mockGetUnitData = jest.fn();
@@ -19,6 +32,8 @@ const mockGetFlowStateCode = jest.fn();
 const mockGenProcessFromData = jest.fn();
 const mockGenProcessExchangeTableData = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockGetLangText = jest.fn();
+const mockGetLangJson = jest.fn();
 const mockQueryLcaResults = jest.fn();
 const mockIsLcaFunctionInvokeError = jest.fn(() => false);
 const mockCacheAndDecompressMethod = jest.fn();
@@ -49,8 +64,8 @@ jest.mock('@/services/processes/util', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  getLangJson: (value: any) => value,
-  getLangText: () => 'text',
+  getLangJson: (...args: any[]) => mockGetLangJson(...args),
+  getLangText: (...args: any[]) => mockGetLangText(...args),
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
   jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
@@ -135,22 +150,43 @@ jest.mock('@/pages/Utils/review', () => ({
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ request, dataSource = [], columns = [] }: any) => {
-    if (request) {
-      void request({ current: 1, pageSize: 10 });
-    }
+  const MockProTable = ({ request, dataSource = [], columns = [], rowKey }: any) => {
+    const [requestRows, setRequestRows] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+      let active = true;
+      if (request) {
+        void Promise.resolve(request({ current: 1, pageSize: 10 })).then((result: any) => {
+          if (active) {
+            setRequestRows(Array.isArray(result?.data) ? result.data : []);
+          }
+        });
+      }
+      return () => {
+        active = false;
+      };
+    }, [request]);
+
+    const rows = request ? requestRows : dataSource;
+
+    const resolveRowKey = (row: any, index: number) => {
+      if (typeof rowKey === 'function') return rowKey(row);
+      if (typeof rowKey === 'string') return row?.[rowKey];
+      return row.key ?? row.referenceToLCIAMethodDataSet?.['@refObjectId'] ?? index;
+    };
 
     return (
       <div data-testid='pro-table'>
-        {dataSource.map((row: any, index: number) => (
-          <div key={row.key ?? row.referenceToLCIAMethodDataSet?.['@refObjectId'] ?? index}>
+        {rows.map((row: any, index: number) => (
+          <div
+            key={resolveRowKey(row, index)}
+            data-testid={`pro-row-${String(resolveRowKey(row, index))}`}
+          >
             {columns.map((column: any, columnIndex: number) => (
               <div key={column.key ?? column.dataIndex ?? columnIndex}>
-                {toText(
-                  column.render
-                    ? column.render(row[column.dataIndex], row, index)
-                    : row[column.dataIndex],
-                )}
+                {column.render
+                  ? column.render(row[column.dataIndex], row, index)
+                  : toText(row[column.dataIndex])}
               </div>
             ))}
           </div>
@@ -161,7 +197,7 @@ jest.mock('@ant-design/pro-components', () => {
 
   return {
     __esModule: true,
-    ProTable,
+    ProTable: MockProTable,
   };
 });
 
@@ -170,26 +206,35 @@ jest.mock('@ant-design/icons', () => ({
   CloseOutlined: () => <span>close-icon</span>,
   ProductOutlined: () => <span>product-icon</span>,
   ProfileOutlined: () => <span>profile-icon</span>,
+  CheckCircleOutlined: () => <span>check-circle-icon</span>,
+  CloseCircleOutlined: () => <span>close-circle-icon</span>,
 }));
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, onClick, disabled }: any) => (
+  const Button = ({ children, icon, onClick, disabled }: any) => (
     <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick}>
+      {icon}
       {toText(children)}
     </button>
   );
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children }: any) =>
-    open ? (
+  const Drawer = ({ open, title, extra, children, getContainer, onClose }: any) => {
+    if (!open) return null;
+    getContainer?.();
+    return (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>{extra}</header>
         <div>{children}</div>
+        <button type='button' onClick={onClose}>
+          drawer-close
+        </button>
       </section>
-    ) : null;
+    );
+  };
 
   const Spin = ({ spinning, children }: any) => (
     <div data-testid='spin' data-spinning={String(spinning)}>
@@ -218,7 +263,12 @@ jest.mock('antd', () => {
 
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children }: any) => <div>{children}</div>;
+  Descriptions.Item = ({ label, children }: any) => (
+    <div data-testid='description-item'>
+      <div>{toText(label)}</div>
+      <div data-testid='description-value'>{children}</div>
+    </div>
+  );
   const Divider = ({ children }: any) => <div>{children}</div>;
   const Typography = {
     Text: ({ children }: any) => <span>{children}</span>,
@@ -238,7 +288,16 @@ jest.mock('antd', () => {
     Input: {
       TextArea: ({ children, ...props }: any) => <textarea {...props}>{children}</textarea>,
     },
-    theme: { defaultAlgorithm: {}, darkAlgorithm: {} },
+    theme: {
+      defaultAlgorithm: {},
+      darkAlgorithm: {},
+      useToken: () => ({
+        token: {
+          colorTextDescription: '#8c8c8c',
+          colorTextSecondary: '#8c8c8c',
+        },
+      }),
+    },
   };
 });
 
@@ -276,6 +335,13 @@ describe('ProcessView component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useRealTimers();
+    mockGetLangText.mockImplementation((value: any) => {
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value[0]?.['#text'] ?? '';
+      if (value?.['#text']) return value['#text'];
+      return '';
+    });
+    mockGetLangJson.mockImplementation((value: any) => value);
     mockGetProcessDetail.mockResolvedValue({
       data: { json: { processDataSet: processDataSet } },
     });
@@ -371,6 +437,122 @@ describe('ProcessView component', () => {
     ).toBeInTheDocument();
   });
 
+  it('opens with the result-icon trigger and renders fallback labels for unsupported option codes', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      processInformation: {
+        dataSetInformation: { baseName: { '#text': 'Process with fallback labels' } },
+        mathematicalRelations: {
+          variableParameter: {
+            uncertaintyDistributionType: 'unsupported-value',
+          },
+        },
+      },
+      modellingAndValidation: {
+        LCIMethodAndAllocation: {
+          typeOfDataSet: 'unsupported-value',
+          LCIMethodPrinciple: 'unsupported-value',
+          LCIMethodApproaches: 'unsupported-value',
+        },
+        completeness: {
+          completenessProductModel: 'unsupported-value',
+          completenessElementaryFlows: {
+            '@type': 'unsupported-value',
+            '@value': 'unsupported-value',
+          },
+        },
+      },
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:copyright': 'unsupported-value',
+          'common:licenseType': 'unsupported-value',
+        },
+      },
+    });
+
+    render(<ProcessView {...defaultProps} buttonType='toolResultIcon' />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument();
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Modelling and validation' }));
+    expect(getDescriptionItemValue('Type of data set')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('LCI method principle')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('LCI method approaches')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('Completeness product model')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('completeness type')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('value')).toHaveTextContent('-');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Process information' }));
+    expect(getDescriptionItemValue('Uncertainty distribution type')).toHaveTextContent('-');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Administrative information' }));
+    expect(getDescriptionItemValue('Copyright?')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('License type')).toHaveTextContent('-');
+  });
+
+  it('renders supported option labels when known process codes are provided', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      processInformation: {
+        dataSetInformation: { baseName: { '#text': 'Process with supported labels' } },
+        mathematicalRelations: {
+          variableParameter: {
+            uncertaintyDistributionType: 'uniform',
+          },
+        },
+      },
+      modellingAndValidation: {
+        LCIMethodAndAllocation: {
+          typeOfDataSet: 'LCI result',
+          LCIMethodPrinciple: 'Attributional',
+          LCIMethodApproaches: 'Allocation - mass',
+        },
+        completeness: {
+          completenessProductModel: 'Relevant flows missing',
+          completenessElementaryFlows: {
+            '@type': 'Noise',
+            '@value': 'No statement',
+          },
+        },
+      },
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:copyright': 'true',
+          'common:licenseType': 'Free of charge for all users and uses',
+        },
+      },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument();
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Modelling and validation' }));
+    expect(getDescriptionItemValue('Type of data set')).toHaveTextContent('LCI result');
+    expect(getDescriptionItemValue('LCI method principle')).toHaveTextContent('Attributional');
+    expect(getDescriptionItemValue('LCI method approaches')).toHaveTextContent('Allocation - mass');
+    expect(getDescriptionItemValue('Completeness product model')).toHaveTextContent(
+      'Relevant flows missing',
+    );
+    expect(getDescriptionItemValue('completeness type')).toHaveTextContent('Noise');
+    expect(getDescriptionItemValue('value')).toHaveTextContent('No statement');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Process information' }));
+    expect(getDescriptionItemValue('Uncertainty distribution type')).toHaveTextContent('uniform');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Administrative information' }));
+    expect(getDescriptionItemValue('Copyright?')).toHaveTextContent('Yes');
+    expect(getDescriptionItemValue('License type')).toHaveTextContent(
+      'Free of charge for all users and uses',
+    );
+  });
+
   it('refreshes solver LCIA results on demand even after initial load completed', async () => {
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
@@ -381,6 +563,52 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh latest calculated results' }));
 
     await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
+  });
+
+  it('normalizes sparse solver rows and string failures for the LCIA tab', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      LCIAResults: { LCIAResult: [] },
+    });
+    mockGetDecompressedMethod.mockResolvedValueOnce({
+      files: [
+        {
+          id: '',
+          version: 'ignored',
+          referenceQuantity: { 'common:shortDescription': { '#text': 'ignored' } },
+        },
+        {
+          id: 'other-impact',
+          version: 'ignored',
+          referenceQuantity: { 'common:shortDescription': { '#text': 'ignored' } },
+        },
+      ],
+    });
+    mockQueryLcaResults
+      .mockResolvedValueOnce({
+        snapshot_id: 'snapshot-sparse',
+        result_id: 'result-sparse',
+        source: 'latest_ready',
+        meta: { computed_at: '2026-03-10T00:00:00Z' },
+        data: {
+          values: [{ impact_id: 'impact-sparse' }, {}],
+        },
+      })
+      .mockRejectedValueOnce('solver string failure');
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() => expect(screen.getByTestId('pro-row-impact-sparse')).toBeInTheDocument());
+    expect(screen.getByText('impact-sparse')).toBeInTheDocument();
+    expect(screen.getByTestId('aligned-number')).toHaveTextContent('0');
+    expect(screen.getByText('-')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh latest calculated results' }));
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
   });
 
   it('shows a solver error message when latest LCIA query fails', async () => {
@@ -485,5 +713,534 @@ describe('ProcessView component', () => {
           call[1] === 'en',
       ),
     ).toBe(true);
+  });
+
+  it('handles array-based exchange references, missing flow metadata, and unit lookup fallbacks', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      exchanges: {
+        exchange: [
+          {
+            '@dataSetInternalID': '0',
+            referenceToFlowDataSet: [{}],
+          },
+        ],
+      },
+    });
+    mockGetProcessExchange.mockResolvedValue({
+      data: [
+        {
+          id: 'exchange-empty',
+          referenceToFlowDataSetId: '',
+          referenceToFlowDataSetVersion: '',
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+    mockGetUnitData.mockResolvedValueOnce(undefined).mockResolvedValueOnce([
+      {
+        id: 'exchange-empty',
+        referenceToFlowDataSetId: '',
+        referenceToFlowDataSetVersion: '',
+      },
+    ]);
+    mockGetFlowStateCode.mockResolvedValueOnce({ error: 'boom', data: [] }).mockResolvedValueOnce({
+      error: null,
+      data: [
+        {
+          id: '',
+          version: '',
+          stateCode: 100,
+          classification: undefined,
+        },
+      ],
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+
+    await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
+    expect(
+      mockGetFlowStateCode.mock.calls.filter(
+        (call) =>
+          JSON.stringify(call[0]) === JSON.stringify([{ id: '', version: '' }]) && call[1] === 'en',
+      ).length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it('falls back to an empty output unit list when the output unit lookup returns nothing', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      exchanges: {
+        exchange: [
+          {
+            '@dataSetInternalID': '0',
+            referenceToFlowDataSet: [{}],
+          },
+        ],
+      },
+    });
+    mockGetProcessExchange.mockResolvedValue({
+      data: [
+        {
+          id: 'exchange-empty',
+          referenceToFlowDataSetId: '',
+          referenceToFlowDataSetVersion: '',
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+    mockGetUnitData
+      .mockResolvedValueOnce([
+        {
+          id: 'exchange-empty',
+          referenceToFlowDataSetId: '',
+          referenceToFlowDataSetVersion: '',
+        },
+      ])
+      .mockResolvedValueOnce(undefined);
+    mockGetFlowStateCode.mockResolvedValue({
+      error: null,
+      data: [
+        {
+          id: '',
+          version: '',
+          stateCode: 100,
+          classification: undefined,
+        },
+      ],
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+
+    await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
+    expect(
+      mockGetUnitData.mock.calls.filter((call) => call[0] === 'flow' && Array.isArray(call[1]))
+        .length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it('falls back to empty process payloads without crashing', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({ data: { json: {} } });
+    mockGenProcessFromData.mockReturnValueOnce({});
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument();
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+    await waitFor(() => expect(screen.getByTestId('pro-table')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+    await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
+  });
+
+  it('falls back to solver metadata-free LCIA rows when the method list cache cannot be refreshed', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      LCIAResults: { LCIAResult: [] },
+    });
+    mockGetDecompressedMethod.mockResolvedValueOnce(null);
+    mockCacheAndDecompressMethod.mockResolvedValueOnce(false);
+    mockQueryLcaResults.mockResolvedValueOnce({
+      snapshot_id: 'snapshot-fallback',
+      result_id: 'result-fallback',
+      source: 'latest_ready',
+      meta: { computed_at: '2026-03-10T00:00:00Z' },
+      data: {
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: '2',
+            impact_name: ' Impact Name ',
+            unit: 'kg',
+            value: '12.5',
+          },
+        ],
+      },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() => expect(screen.getByTestId('pro-row-impact-1')).toBeInTheDocument());
+    expect(screen.getByText('Impact Name')).toBeInTheDocument();
+    expect(screen.getByText('kg')).toBeInTheDocument();
+    expect(screen.getByTestId('aligned-number')).toHaveTextContent('12.5');
+  });
+
+  it('sorts fallback solver LCIA rows by impact index before rendering', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      LCIAResults: { LCIAResult: [] },
+    });
+    mockGetDecompressedMethod.mockResolvedValueOnce(null);
+    mockCacheAndDecompressMethod.mockResolvedValueOnce(false);
+    mockQueryLcaResults.mockResolvedValueOnce({
+      snapshot_id: 'snapshot-sorted',
+      result_id: 'result-sorted',
+      source: 'latest_ready',
+      meta: { computed_at: '2026-03-10T00:00:00Z' },
+      data: {
+        values: [
+          {
+            impact_id: 'impact-2',
+            impact_index: 2,
+            impact_name: 'Second',
+            unit: 'kg',
+            value: 22,
+          },
+          {
+            impact_id: 'impact-1',
+            impact_index: 1,
+            impact_name: 'First',
+            unit: 'kg',
+            value: 11,
+          },
+        ],
+      },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() => expect(screen.getByTestId('pro-row-impact-1')).toBeInTheDocument());
+    expect(
+      screen.getAllByTestId(/^pro-row-/).map((node) => node.getAttribute('data-testid')),
+    ).toEqual(['pro-row-impact-1', 'pro-row-impact-2']);
+  });
+
+  it('refreshes the method cache and merges solver rows into existing LCIA rows', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      LCIAResults: {
+        LCIAResult: [
+          {
+            key: 'base-key',
+            meanAmount: 1,
+            referenceToLCIAMethodDataSet: {
+              '@refObjectId': 'impact-1',
+              '@version': '',
+            },
+          },
+        ],
+      },
+    });
+    mockGetDecompressedMethod
+      .mockResolvedValueOnce({
+        files: [{ id: 'impact-1', version: 'old-version' }],
+      })
+      .mockResolvedValueOnce({
+        files: [
+          {
+            id: 'impact-1',
+            version: '2.0.0',
+            description: { '#text': 'Method description' },
+            referenceQuantity: {
+              'common:shortDescription': { '#text': 'kg CO2 eq' },
+            },
+          },
+          {
+            id: '',
+            version: 'ignored',
+          },
+          {
+            id: 'impact-2',
+            version: 'other',
+          },
+        ],
+      });
+    mockCacheAndDecompressMethod.mockResolvedValueOnce(true);
+    mockQueryLcaResults.mockResolvedValue({
+      snapshot_id: 'snapshot-merge',
+      result_id: 'result-merge',
+      source: 'latest_ready',
+      meta: { computed_at: '2026-03-11T00:00:00Z' },
+      data: {
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 1,
+            impact_name: '',
+            unit: 'unknown',
+            value: 42,
+          },
+          {
+            impact_id: '',
+            impact_index: 2,
+            impact_name: 'Ignored',
+            unit: 'kg',
+            value: 3,
+          },
+        ],
+      },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh latest calculated results' }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/source=latest_ready, snapshot=snapshot-merge, result=result-merge/),
+      ).toBeInTheDocument(),
+    );
+    expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
+    expect(screen.getByText('Method description')).toBeInTheDocument();
+    expect(screen.getByText('2.0.0')).toBeInTheDocument();
+    expect(screen.getByText('kg CO2 eq')).toBeInTheDocument();
+    expect(screen.getByTestId('aligned-number')).toHaveTextContent('42');
+    expect(screen.getAllByTestId(/^pro-row-/)).toHaveLength(1);
+  });
+
+  it('keeps base LCIA rows when solver payload values are not an array and uses row.key as the table row key', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      ...processDataSet,
+      LCIAResults: {
+        LCIAResult: [
+          {
+            key: 'base-key',
+            meanAmount: 9,
+            referenceToLCIAMethodDataSet: {},
+          },
+        ],
+      },
+    });
+    mockQueryLcaResults.mockResolvedValueOnce({
+      snapshot_id: 'snapshot-empty',
+      result_id: 'result-empty',
+      source: 'latest_ready',
+      meta: { computed_at: '2026-03-12T00:00:00Z' },
+      data: {
+        values: null,
+      },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() => expect(screen.getByTestId('pro-row-base-key')).toBeInTheDocument());
+    expect(screen.getByTestId('aligned-number')).toHaveTextContent('9');
+  });
+
+  it('falls back to a generic solver error when queued snapshot metadata is incomplete', async () => {
+    const queuedError = {
+      code: 'snapshot_build_queued',
+      body: {
+        build_job_id: 123,
+        build_snapshot_id: null,
+      },
+    };
+    mockIsLcaFunctionInvokeError.mockImplementation(
+      (error: any) => error?.code === 'snapshot_build_queued',
+    );
+    mockQueryLcaResults.mockRejectedValueOnce(queuedError);
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByText('Snapshot is rebuilding (job {jobId}). Retrying automatically...'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('supports the text button variant and closes the drawer through both close actions', async () => {
+    render(<ProcessView {...defaultProps} buttonType='text' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'View process' })).not.toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'View process' })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('returns a method meta map only for requested method ids', async () => {
+    mockGetDecompressedMethod.mockResolvedValueOnce({
+      files: [
+        {
+          version: 'ignored',
+          referenceQuantity: { 'common:shortDescription': { '#text': 'ignored' } },
+        },
+        { id: 'other-impact', version: 'ignored' },
+        {
+          id: 'impact-1',
+          version: '',
+          description: { '#text': 'Target description' },
+          referenceQuantity: { 'common:shortDescription': { '#text': 'kg eq' } },
+        },
+      ],
+    });
+
+    const result = await getLciaMethodMetaMap(['impact-1']);
+
+    expect(result.size).toBe(1);
+    expect(result.get('impact-1')).toEqual({
+      description: { '#text': 'Target description' },
+      version: '',
+      referenceQuantityDesc: { '#text': 'kg eq' },
+    });
+  });
+
+  it('returns an empty method meta map when the decompressed list uses a non-array files payload', async () => {
+    mockGetDecompressedMethod.mockResolvedValueOnce({
+      files: {
+        0: {
+          referenceQuantity: { 'common:shortDescription': { '#text': 'kg eq' } },
+        },
+        id: 'impact-1',
+      },
+    });
+
+    const result = await getLciaMethodMetaMap(['impact-1']);
+
+    expect(result.size).toBe(0);
+  });
+
+  it('returns an empty method meta map when the method list is unavailable after refresh', async () => {
+    mockGetDecompressedMethod.mockResolvedValueOnce(null);
+    mockCacheAndDecompressMethod.mockResolvedValueOnce(false);
+
+    const result = await getLciaMethodMetaMap(['impact-1']);
+
+    expect(result.size).toBe(0);
+    expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
+  });
+
+  it('refreshes cached method metadata when the initial list is missing reference quantities', async () => {
+    mockGetDecompressedMethod
+      .mockResolvedValueOnce({
+        files: [{ id: 'impact-1', version: 'stale-version' }],
+      })
+      .mockResolvedValueOnce({
+        files: [
+          {
+            id: 'impact-1',
+            version: '2.0.0',
+            description: { '#text': 'Fresh description' },
+            referenceQuantity: { 'common:shortDescription': { '#text': 'fresh unit' } },
+          },
+        ],
+      });
+    mockCacheAndDecompressMethod.mockResolvedValueOnce(true);
+
+    const result = await getLciaMethodMetaMap(['impact-1']);
+
+    expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
+    expect(result.get('impact-1')).toEqual({
+      description: { '#text': 'Fresh description' },
+      version: '2.0.0',
+      referenceQuantityDesc: { '#text': 'fresh unit' },
+    });
+  });
+
+  it('merges solver rows using impact-id and hyphen fallbacks for missing method metadata', () => {
+    const mergedWithImpactId = buildMergedLciaRows(
+      [
+        {
+          key: 'base-key',
+          meanAmount: 1,
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': 'impact-1',
+            '@version': '',
+          },
+        },
+      ],
+      [
+        {
+          impact_id: 'impact-1',
+          impact_index: 1,
+          impact_name: '   ',
+          unit: 'unknown',
+          value: 9,
+        },
+      ],
+      new Map([
+        [
+          'impact-1',
+          {
+            description: undefined,
+            version: '',
+            referenceQuantityDesc: undefined,
+          },
+        ],
+      ]),
+    );
+
+    expect(mergedWithImpactId[0].referenceToLCIAMethodDataSet['common:shortDescription']).toEqual({
+      '@xml:lang': 'en',
+      '#text': 'impact-1',
+    });
+    expect(mergedWithImpactId[0].referenceToLCIAMethodDataSet['@version']).toBe('');
+
+    const mergedWithHyphen = buildMergedLciaRows(
+      [],
+      [
+        {
+          impact_id: '',
+          impact_index: 1,
+          impact_name: '   ',
+          unit: 'unknown',
+          value: 2,
+        },
+      ],
+      new Map(),
+    );
+
+    expect(mergedWithHyphen[0].referenceToLCIAMethodDataSet['common:shortDescription']).toEqual({
+      '@xml:lang': 'en',
+      '#text': '-',
+    });
+    expect(mergedWithHyphen[0].referenceToLCIAMethodDataSet['@version']).toBe('');
+  });
+
+  it('returns the first reference entry when a flow reference array is provided', () => {
+    expect(
+      toReferenceValue([
+        { '@refObjectId': 'flow-1', '@version': '1.0' },
+        { '@refObjectId': 'flow-2', '@version': '2.0' },
+      ]),
+    ).toEqual({ '@refObjectId': 'flow-1', '@version': '1.0' });
   });
 });
