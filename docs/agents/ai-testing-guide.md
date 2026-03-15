@@ -62,18 +62,18 @@ npm run lint
 - Directional goal: move toward 100% meaningful coverage across `src/**`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
-- Latest verified full run on March 14, 2026 (`npm run test:coverage`) is `276 suites / 2481 tests` with:
-  - Statements: `93.93%` (17286/18402)
-  - Branches: `82.32%` (8819/10712)
-  - Functions: `91.09%` (3569/3918)
-  - Lines: `94.26%` (16559/17567)
+- Latest verified full run on March 15, 2026 (`npm run test:coverage`) is `279 suites / 2741 tests` with:
+  - Statements: `96.04%` (17944/18682)
+  - Branches: `89.35%` (9597/10740)
+  - Functions: `93.86%` (3735/3979)
+  - Lines: `96.32%` (17186/17842)
 - Current all-file inventory from the same run:
-  - Source files tracked: `300`
-  - Fully covered files (`100/100/100/100`): `140`
-  - Files with remaining gaps: `160`
-  - Branch buckets: `<50 = 0`, `50-70 = 24`, `70-90 = 101`, `90-<100 = 24`
-  - `line=100` but `branch<100`: `43`
-- The branch gate is healthy. Execution is now an ordered file-closure workflow rather than gate recovery.
+  - Source files tracked: `303`
+  - Fully covered files (`100/100/100/100`): `177`
+  - Files with remaining gaps: `126`
+  - Branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 91`, `90-<100 = 24`
+  - `line=100` but `branch<100`: `30`
+- The branch gate is healthy and the `50-70` bucket is cleared. Execution is now an ordered file-closure workflow focused on the `70-90` bucket and branch-only gaps.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
 - Report detail policy:

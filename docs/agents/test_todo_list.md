@@ -12,54 +12,53 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 - keep docs in sync when workflow expectations change.
 - when testing workflow/baseline/backlog changes, sync `docs/agents/ai-testing-guide.md` and this file; if strategic context changes too, sync `docs/agents/test_improvement_plan.md` and `_CN` mirrors in the same diff.
 
-## Snapshot Baseline (March 14, 2026)
+## Snapshot Baseline (March 15, 2026)
 
 Latest verified full run (`npm run test:coverage`):
 
-- Test suites: 276 passed
-- Tests: 2481 passed
+- Test suites: 279 passed
+- Tests: 2741 passed
 - Coverage:
-  - Statements: 93.93% (17286/18402)
-  - Branches: 82.32% (8819/10712)
-  - Functions: 91.09% (3569/3918)
-  - Lines: 94.26% (16559/17567)
+  - Statements: 96.04% (17944/18682)
+  - Branches: 89.35% (9597/10740)
+  - Functions: 93.86% (3735/3979)
+  - Lines: 96.32% (17186/17842)
 - Delta vs previous documented baseline:
-  - Test suites: +0
-  - Tests: +131
-  - Statements: +2.45
-  - Branches: +4.15
-  - Functions: +3.73
-  - Lines: +2.48
+  - Test suites: +3
+  - Tests: +260
+  - Statements: +2.11
+  - Branches: +7.03
+  - Functions: +2.77
+  - Lines: +2.06
 - Enforced global branch threshold: 50%
-- Gate status: **PASS** (+32.32% buffer above threshold)
+- Gate status: **PASS** (+39.35% buffer above threshold)
 
 ## Recent Closure Delta
 
-- Fully covered files: `115 -> 140` (`+25`)
-- Files with remaining gaps: `185 -> 160` (`-25`)
-- `<50% branch` bucket: `2 -> 0`
-- `50%-70% branch` bucket: `46 -> 24`
-- Recent queue files closed to `100/100/100/100` include `TableFilter`, `FileViewer/upload`, `Unitgroups edit`, `Processes edit`, `Processes Exchange create/edit/select`, `Flows Property create/edit`, `ReviewForm/view`, and `Processes Compliance/view`.
-- Additional locally verified closure after the March 14 baseline: `src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` plus its shared X6 editor support files now sit at `100/100/100/100` under focused coverage (`X6Graph`, `graphContext`, `toolbar/control`, `toolbar/utils/editGraph`).
+- Fully covered files: `140 -> 177` (`+37`)
+- Files with remaining gaps: `160 -> 126` (`-34`)
+- `50%-70% branch` bucket: `24 -> 0`
+- `line=100 but branch<100` bucket: `43 -> 30`
+- Recent queue files closed to `100/100/100/100` include `Flows index`, `LifeCycleModels index`, `Processes form/view`, `Contacts delete`, `Processes delete`, `Processes Exchange delete`, `services/auth/{cognito,password}`, `Review/SelectReviewer`, `Flowproperties select form`, and `services/flowproperties/api`.
 
 ## All-File Inventory
 
 Current repo-wide status from the same run:
 
-- Source files tracked: 300
-- Fully covered files (`100/100/100/100`): 140
-- Files with remaining gaps: 160
+- Source files tracked: 303
+- Fully covered files (`100/100/100/100`): 177
+- Files with remaining gaps: 126
 - Branch buckets:
   - `<50`: 0 files
-  - `50-70`: 24 files
-  - `70-90`: 101 files
+  - `50-70`: 0 files
+  - `70-90`: 91 files
   - `90-<100`: 24 files
-- `line=100` but `branch<100`: 43 files
+- `line=100` but `branch<100`: 30 files
 - Category averages:
-  - components: `96.81%` lines / `89.64%` branches / `95.08%` functions
-  - services: `95.90%` lines / `86.72%` branches / `97.17%` functions
-  - pages: `96.15%` lines / `87.70%` branches / `90.81%` functions
-  - others: `99.53%` lines / `98.96%` branches / `99.45%` functions
+  - components: `97.18%` lines / `92.52%` branches / `95.42%` functions
+  - services: `96.44%` lines / `90.38%` branches / `97.42%` functions
+  - pages: `97.34%` lines / `92.92%` branches / `93.02%` functions
+  - others: `99.89%` lines / `99.64%` branches / `99.83%` functions
 
 ## Reporting Workflow
 
@@ -86,44 +85,50 @@ Current repo-wide status from the same run:
 
 ## Current Ordered Closure Queue (Head Snapshot)
 
-- [ ] `src/pages/Unitgroups/Components/Unit/reference.tsx` — stmt `100.00%`, line `100.00%`, branch `62.50%`, func `100.00%`
-- [ ] `src/components/LocationTextItem/form.tsx` — stmt `100.00%`, line `100.00%`, branch `63.63%`, func `100.00%`
-- [ ] `src/pages/Flows/index.tsx` — stmt `79.72%`, line `80.28%`, branch `64.51%`, func `61.29%`
-- [ ] `src/pages/LifeCycleModels/index.tsx` — stmt `87.35%`, line `87.20%`, branch `64.70%`, func `89.47%`
-- [ ] `src/pages/Processes/Components/form.tsx` — stmt `84.73%`, line `85.27%`, branch `64.86%`, func `70.73%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewIndex.tsx` — stmt `92.46%`, line `91.72%`, branch `65.00%`, func `86.48%`
-- [ ] `src/pages/Sources/Components/select/description.tsx` — stmt `100.00%`, line `100.00%`, branch `65.00%`, func `100.00%`
-- [ ] `src/pages/Flowproperties/Components/form.tsx` — stmt `100.00%`, line `100.00%`, branch `65.21%`, func `100.00%`
-- [ ] `src/pages/Processes/Components/create.tsx` — stmt `83.45%`, line `84.61%`, branch `65.27%`, func `56.66%`
-- [ ] `src/components/LevelTextItem/form.tsx` — stmt `77.90%`, line `77.64%`, branch `65.57%`, func `77.77%`
-- [ ] `src/pages/Unitgroups/Components/select/formMini.tsx` — stmt `94.73%`, line `94.59%`, branch `65.71%`, func `83.33%`
-- [ ] `src/pages/Processes/Components/view.tsx` — stmt `84.55%`, line `84.91%`, branch `66.51%`, func `80.00%`
-- [ ] `src/pages/Contacts/Components/delete.tsx` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`
-- [ ] `src/pages/Processes/Components/delete.tsx` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`
-- [ ] `src/pages/Processes/Components/Exchange/delete.tsx` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`
-- [ ] `src/services/auth/cognito.ts` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`
-- [ ] `src/services/auth/password.ts` — stmt `100.00%`, line `100.00%`, branch `66.66%`, func `100.00%`
-- [ ] `src/pages/Review/Components/SelectReviewer.tsx` — stmt `89.14%`, line `88.88%`, branch `67.44%`, func `76.00%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx` — stmt `97.05%`, line `96.87%`, branch `67.64%`, func `87.50%`
+- [ ] `src/components/LCIACacheMonitor/index.tsx` — stmt `86.36%`, line `87.30%`, branch `72.22%`, func `80.00%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect.tsx` — stmt `98.41%`, line `98.33%`, branch `72.41%`, func `95.65%`
+- [ ] `src/components/AllTeams/index.tsx` — stmt `98.75%`, line `98.71%`, branch `72.50%`, func `100.00%`
+- [ ] `src/pages/Review/Components/reviewProcess/index.tsx` — stmt `90.12%`, line `90.56%`, branch `72.60%`, func `62.50%`
+- [ ] `src/pages/Sources/Components/delete.tsx` — stmt `100.00%`, line `100.00%`, branch `72.72%`, func `100.00%`
+- [ ] `src/services/unitgroups/util.ts` — stmt `100.00%`, line `100.00%`, branch `73.17%`, func `100.00%`
+- [ ] `src/components/AISuggestion/index.tsx` — stmt `84.58%`, line `84.22%`, branch `73.60%`, func `97.05%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/add.tsx` — stmt `87.39%`, line `87.17%`, branch `74.19%`, func `71.87%`
+- [ ] `src/services/teams/api.ts` — stmt `100.00%`, line `100.00%`, branch `74.28%`, func `100.00%`
+- [ ] `src/pages/Sources/Components/form.tsx` — stmt `94.87%`, line `94.73%`, branch `74.41%`, func `80.00%`
+- [ ] `src/pages/Contacts/Components/form.tsx` — stmt `100.00%`, line `100.00%`, branch `74.57%`, func `100.00%`
+- [ ] `src/services/processes/classification/api.ts` — stmt `71.42%`, line `70.00%`, branch `75.00%`, func `80.00%`
+- [ ] `src/pages/Review/index.tsx` — stmt `87.27%`, line `87.03%`, branch `75.00%`, func `100.00%`
+- [ ] `src/pages/User/Login/password_forgot.tsx` — stmt `90.90%`, line `90.69%`, branch `75.00%`, func `77.77%`
+- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx` — stmt `96.96%`, line `96.77%`, branch `75.00%`, func `87.50%`
+- [ ] `src/services/auth/profile.ts` — stmt `100.00%`, line `100.00%`, branch `75.00%`, func `100.00%`
+- [ ] `src/pages/Sources/Components/create.tsx` — stmt `83.94%`, line `85.60%`, branch `75.86%`, func `65.51%`
+- [ ] `src/services/lifeCycleModels/api.ts` — stmt `89.35%`, line `89.30%`, branch `75.98%`, func `84.90%`
+- [ ] `src/pages/Sources/Components/select/drawer.tsx` — stmt `87.87%`, line `87.75%`, branch `76.92%`, func `80.00%`
+- [ ] `src/services/lca/taskCenter.ts` — stmt `88.38%`, line `88.03%`, branch `76.97%`, func `100.00%`
+- [ ] `src/services/contacts/api.ts` — stmt `98.34%`, line `98.33%`, branch `77.10%`, func `100.00%`
+- [ ] `src/services/lifeCycleModels/util_allocate_supply_demand.ts` — stmt `97.31%`, line `98.76%`, branch `77.22%`, func `100.00%`
+- [ ] `src/pages/Sources/Components/view.tsx` — stmt `91.66%`, line `91.42%`, branch `77.27%`, func `62.50%`
+- [ ] `src/pages/Sources/Components/select/form.tsx` — stmt `86.11%`, line `87.50%`, branch `77.31%`, func `78.26%`
+- [ ] `src/pages/Flows/Components/create.tsx` — stmt `91.59%`, line `93.10%`, branch `77.35%`, func `70.83%`
 
-Use `node scripts/test-coverage-report.js --full` for the full ordered queue of all 160 incomplete files.
+Use `node scripts/test-coverage-report.js --full` for the full ordered queue of all 126 incomplete files.
 
 ## Shared-Fixture Batch Candidates
 
 These clusters are the only standing justification for batched queue execution:
 
-- `src/pages/Review/Components` — 16 incomplete files, min branch `67.44%`, avg branch `84.65%`
-- `src/pages/LifeCycleModels/Components` — 15 incomplete files, min branch `65.00%`, avg branch `80.70%`
-- `src/pages/Processes/Components` — 12 incomplete files, min branch `64.86%`, avg branch `75.90%`
-- `src/pages/Unitgroups/Components` — 10 incomplete files, min branch `62.50%`, avg branch `81.18%`
+- `src/pages/Review/Components` — 14 incomplete files, min branch `72.60%`, avg branch `86.82%`
+- `src/pages/LifeCycleModels/Components` — 10 incomplete files, min branch `72.41%`, avg branch `87.14%`
 - `src/pages/Flows/Components` — 8 incomplete files, min branch `77.35%`, avg branch `86.12%`
-- `src/pages/Sources/Components` — 8 incomplete files, min branch `65.00%`, avg branch `76.08%`
-- `src/pages/Flowproperties/Components` — 8 incomplete files, min branch `65.21%`, avg branch `82.95%`
-- `src/pages/Contacts/Components` — 8 incomplete files, min branch `66.66%`, avg branch `81.19%`
-- `src/services/auth` — 4 incomplete files, min branch `66.66%`, avg branch `76.08%`
-- `src/services/lifeCycleModels` — 4 incomplete files, min branch `69.60%`, avg branch `76.74%`
-- `src/pages/User` — 4 incomplete files, min branch `71.42%`, avg branch `85.22%`
+- `src/pages/Sources/Components` — 7 incomplete files, min branch `72.72%`, avg branch `77.67%`
+- `src/pages/Contacts/Components` — 7 incomplete files, min branch `74.57%`, avg branch `83.26%`
+- `src/pages/Unitgroups/Components` — 7 incomplete files, min branch `78.26%`, avg branch `87.89%`
+- `src/pages/Processes/Components` — 6 incomplete files, min branch `77.77%`, avg branch `82.92%`
+- `src/pages/Flowproperties/Components` — 6 incomplete files, min branch `83.33%`, avg branch `87.90%`
 - `src/components/AllTeams` — 4 incomplete files, min branch `72.50%`, avg branch `82.26%`
+- `src/pages/User/Login` — 3 incomplete files, min branch `75.00%`, avg branch `89.81%`
+- `src/services/processes` — 3 incomplete files, min branch `75.00%`, avg branch `83.64%`
+- `src/services/lifeCycleModels` — 3 incomplete files, min branch `75.98%`, avg branch `79.12%`
 
 ## Test Engineering Quality Rules
 

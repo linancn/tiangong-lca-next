@@ -62,18 +62,18 @@ npm run lint
 - 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
-- 截至 2026年3月14日，最新已验证全量运行（`npm run test:coverage`）是 `276 suites / 2481 tests`，全局覆盖率为：
-  - Statements: `93.93%` (17286/18402)
-  - Branches: `82.32%` (8819/10712)
-  - Functions: `91.09%` (3569/3918)
-  - Lines: `94.26%` (16559/17567)
+- 截至 2026年3月15日，最新已验证全量运行（`npm run test:coverage`）是 `279 suites / 2741 tests`，全局覆盖率为：
+  - Statements: `96.04%` (17944/18682)
+  - Branches: `89.35%` (9597/10740)
+  - Functions: `93.86%` (3735/3979)
+  - Lines: `96.32%` (17186/17842)
 - 同一轮运行得到的逐文件库存摘要：
-  - 追踪的源码文件：`300`
-  - 已全满文件（`100/100/100/100`）：`140`
-  - 仍有缺口的文件：`160`
-  - Branch 分桶：`<50 = 0`、`50-70 = 24`、`70-90 = 101`、`90-<100 = 24`
-  - `line=100` 但 `branch<100` 的文件：`43`
-- branch 门禁已经稳定，执行方式也切到“按文件有序清零”，不再是“救门禁”模式。
+  - 追踪的源码文件：`303`
+  - 已全满文件（`100/100/100/100`）：`177`
+  - 仍有缺口的文件：`126`
+  - Branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 91`、`90-<100 = 24`
+  - `line=100` 但 `branch<100` 的文件：`30`
+- branch 门禁已经稳定，而且 `50-70` 桶已经清空；当前执行重心是 `70-90` 桶和 branch-only 缺口的有序收口。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
 - 报告粒度规则：

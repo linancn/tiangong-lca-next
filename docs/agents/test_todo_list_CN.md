@@ -12,54 +12,53 @@
 - 流程预期变化时同步更新文档。
 - 当测试工作流、覆盖率基线或 backlog 状态变化时，必须同步 `docs/agents/ai-testing-guide.md` 和本文件；若长期策略背景也变化，还要在同一 diff 中同步 `docs/agents/test_improvement_plan.md` 及 `_CN` 镜像。
 
-## 基线快照（2026年3月14日）
+## 基线快照（2026年3月15日）
 
 最新已验证全量覆盖率运行（`npm run test:coverage`）：
 
-- Test suites：276 passed
-- Tests：2481 passed
+- Test suites：279 passed
+- Tests：2741 passed
 - 覆盖率：
-  - Statements: 93.93% (17286/18402)
-  - Branches: 82.32% (8819/10712)
-  - Functions: 91.09% (3569/3918)
-  - Lines: 94.26% (16559/17567)
+  - Statements: 96.04% (17944/18682)
+  - Branches: 89.35% (9597/10740)
+  - Functions: 93.86% (3735/3979)
+  - Lines: 96.32% (17186/17842)
 - 相比上一版已记录基线的增量：
-  - Test suites：+0
-  - Tests：+131
-  - Statements：+2.45
-  - Branches：+4.15
-  - Functions：+3.73
-  - Lines：+2.48
+  - Test suites：+3
+  - Tests：+260
+  - Statements：+2.11
+  - Branches：+7.03
+  - Functions：+2.77
+  - Lines：+2.06
 - 当前全局 branch 门槛：50%
-- 门禁状态：**已通过**（高于门槛 32.32 个百分点）
+- 门禁状态：**已通过**（高于门槛 39.35 个百分点）
 
 ## 最近收口增量
 
-- 已全满文件：`115 -> 140`（`+25`）
-- 仍有缺口的文件：`185 -> 160`（`-25`）
-- `<50% branch` 桶：`2 -> 0`
-- `50%-70% branch` 桶：`46 -> 24`
-- 最近清到 `100/100/100/100` 的队头文件包括 `TableFilter`、`FileViewer/upload`、`Unitgroups edit`、`Processes edit`、`Processes Exchange create/edit/select`、`Flows Property create/edit`、`ReviewForm/view`、`Processes Compliance/view`。
-- 在 2026 年 3 月 14 日基线之后额外本地确认补齐：`src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx` 以及它共享的 X6 编辑器支撑文件（`X6Graph`、`graphContext`、`toolbar/control`、`toolbar/utils/editGraph`）在聚焦覆盖率下已达到 `100/100/100/100`。
+- 已全满文件：`140 -> 177`（`+37`）
+- 仍有缺口的文件：`160 -> 126`（`-34`）
+- `50%-70% branch` 桶：`24 -> 0`
+- `line=100 但 branch<100` 桶：`43 -> 30`
+- 最近清到 `100/100/100/100` 的队头文件包括 `Flows index`、`LifeCycleModels index`、`Processes form/view`、`Contacts delete`、`Processes delete`、`Processes Exchange delete`、`services/auth/{cognito,password}`、`Review/SelectReviewer`、`Flowproperties select form`、`services/flowproperties/api`。
 
 ## 全文件库存
 
 同一轮运行得到的全仓逐文件状态：
 
-- 追踪的源码文件：300
-- 已全满文件（`100/100/100/100`）：140
-- 仍有缺口的文件：160
+- 追踪的源码文件：303
+- 已全满文件（`100/100/100/100`）：177
+- 仍有缺口的文件：126
 - Branch 分桶：
   - `<50`：0 个文件
-  - `50-70`：24 个文件
-  - `70-90`：101 个文件
+  - `50-70`：0 个文件
+  - `70-90`：91 个文件
   - `90-<100`：24 个文件
-- `line=100` 但 `branch<100`：43 个文件
+- `line=100` 但 `branch<100`：30 个文件
 - 分类平均值：
-  - components：`96.81%` lines / `89.64%` branches / `95.08%` functions
-  - services：`95.90%` lines / `86.72%` branches / `97.17%` functions
-  - pages：`96.15%` lines / `87.70%` branches / `90.81%` functions
-  - others：`99.53%` lines / `98.96%` branches / `99.45%` functions
+  - components：`97.18%` lines / `92.52%` branches / `95.42%` functions
+  - services：`96.44%` lines / `90.38%` branches / `97.42%` functions
+  - pages：`97.34%` lines / `92.92%` branches / `93.02%` functions
+  - others：`99.89%` lines / `99.64%` branches / `99.83%` functions
 
 ## 报告工作流
 
@@ -86,44 +85,50 @@
 
 ## 当前有序清零队列（队头快照）
 
-- [ ] `src/pages/Unitgroups/Components/Unit/reference.tsx` — stmt `100.00%`，line `100.00%`，branch `62.50%`，func `100.00%`
-- [ ] `src/components/LocationTextItem/form.tsx` — stmt `100.00%`，line `100.00%`，branch `63.63%`，func `100.00%`
-- [ ] `src/pages/Flows/index.tsx` — stmt `79.72%`，line `80.28%`，branch `64.51%`，func `61.29%`
-- [ ] `src/pages/LifeCycleModels/index.tsx` — stmt `87.35%`，line `87.20%`，branch `64.70%`，func `89.47%`
-- [ ] `src/pages/Processes/Components/form.tsx` — stmt `84.73%`，line `85.27%`，branch `64.86%`，func `70.73%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewIndex.tsx` — stmt `92.46%`，line `91.72%`，branch `65.00%`，func `86.48%`
-- [ ] `src/pages/Sources/Components/select/description.tsx` — stmt `100.00%`，line `100.00%`，branch `65.00%`，func `100.00%`
-- [ ] `src/pages/Flowproperties/Components/form.tsx` — stmt `100.00%`，line `100.00%`，branch `65.21%`，func `100.00%`
-- [ ] `src/pages/Processes/Components/create.tsx` — stmt `83.45%`，line `84.61%`，branch `65.27%`，func `56.66%`
-- [ ] `src/components/LevelTextItem/form.tsx` — stmt `77.90%`，line `77.64%`，branch `65.57%`，func `77.77%`
-- [ ] `src/pages/Unitgroups/Components/select/formMini.tsx` — stmt `94.73%`，line `94.59%`，branch `65.71%`，func `83.33%`
-- [ ] `src/pages/Processes/Components/view.tsx` — stmt `84.55%`，line `84.91%`，branch `66.51%`，func `80.00%`
-- [ ] `src/pages/Contacts/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
-- [ ] `src/pages/Processes/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
-- [ ] `src/pages/Processes/Components/Exchange/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
-- [ ] `src/services/auth/cognito.ts` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
-- [ ] `src/services/auth/password.ts` — stmt `100.00%`，line `100.00%`，branch `66.66%`，func `100.00%`
-- [ ] `src/pages/Review/Components/SelectReviewer.tsx` — stmt `89.14%`，line `88.88%`，branch `67.44%`，func `76.00%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx` — stmt `97.05%`，line `96.87%`，branch `67.64%`，func `87.50%`
+- [ ] `src/components/LCIACacheMonitor/index.tsx` — stmt `86.36%`，line `87.30%`，branch `72.22%`，func `80.00%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect.tsx` — stmt `98.41%`，line `98.33%`，branch `72.41%`，func `95.65%`
+- [ ] `src/components/AllTeams/index.tsx` — stmt `98.75%`，line `98.71%`，branch `72.50%`，func `100.00%`
+- [ ] `src/pages/Review/Components/reviewProcess/index.tsx` — stmt `90.12%`，line `90.56%`，branch `72.60%`，func `62.50%`
+- [ ] `src/pages/Sources/Components/delete.tsx` — stmt `100.00%`，line `100.00%`，branch `72.72%`，func `100.00%`
+- [ ] `src/services/unitgroups/util.ts` — stmt `100.00%`，line `100.00%`，branch `73.17%`，func `100.00%`
+- [ ] `src/components/AISuggestion/index.tsx` — stmt `84.58%`，line `84.22%`，branch `73.60%`，func `97.05%`
+- [ ] `src/pages/LifeCycleModels/Components/toolbar/add.tsx` — stmt `87.39%`，line `87.17%`，branch `74.19%`，func `71.87%`
+- [ ] `src/services/teams/api.ts` — stmt `100.00%`，line `100.00%`，branch `74.28%`，func `100.00%`
+- [ ] `src/pages/Sources/Components/form.tsx` — stmt `94.87%`，line `94.73%`，branch `74.41%`，func `80.00%`
+- [ ] `src/pages/Contacts/Components/form.tsx` — stmt `100.00%`，line `100.00%`，branch `74.57%`，func `100.00%`
+- [ ] `src/services/processes/classification/api.ts` — stmt `71.42%`，line `70.00%`，branch `75.00%`，func `80.00%`
+- [ ] `src/pages/Review/index.tsx` — stmt `87.27%`，line `87.03%`，branch `75.00%`，func `100.00%`
+- [ ] `src/pages/User/Login/password_forgot.tsx` — stmt `90.90%`，line `90.69%`，branch `75.00%`，func `77.77%`
+- [ ] `src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx` — stmt `96.96%`，line `96.77%`，branch `75.00%`，func `87.50%`
+- [ ] `src/services/auth/profile.ts` — stmt `100.00%`，line `100.00%`，branch `75.00%`，func `100.00%`
+- [ ] `src/pages/Sources/Components/create.tsx` — stmt `83.94%`，line `85.60%`，branch `75.86%`，func `65.51%`
+- [ ] `src/services/lifeCycleModels/api.ts` — stmt `89.35%`，line `89.30%`，branch `75.98%`，func `84.90%`
+- [ ] `src/pages/Sources/Components/select/drawer.tsx` — stmt `87.87%`，line `87.75%`，branch `76.92%`，func `80.00%`
+- [ ] `src/services/lca/taskCenter.ts` — stmt `88.38%`，line `88.03%`，branch `76.97%`，func `100.00%`
+- [ ] `src/services/contacts/api.ts` — stmt `98.34%`，line `98.33%`，branch `77.10%`，func `100.00%`
+- [ ] `src/services/lifeCycleModels/util_allocate_supply_demand.ts` — stmt `97.31%`，line `98.76%`，branch `77.22%`，func `100.00%`
+- [ ] `src/pages/Sources/Components/view.tsx` — stmt `91.66%`，line `91.42%`，branch `77.27%`，func `62.50%`
+- [ ] `src/pages/Sources/Components/select/form.tsx` — stmt `86.11%`，line `87.50%`，branch `77.31%`，func `78.26%`
+- [ ] `src/pages/Flows/Components/create.tsx` — stmt `91.59%`，line `93.10%`，branch `77.35%`，func `70.83%`
 
-查看全部 160 个未完成文件，请运行 `node scripts/test-coverage-report.js --full`。
+查看全部 126 个未完成文件，请运行 `node scripts/test-coverage-report.js --full`。
 
 ## 共享夹具批次候选
 
 只有这些簇，才构成成批推进队列的正当理由：
 
-- `src/pages/Review/Components` — 16 个未完成文件，最低 branch `67.44%`，平均 branch `84.65%`
-- `src/pages/LifeCycleModels/Components` — 15 个未完成文件，最低 branch `65.00%`，平均 branch `80.70%`
-- `src/pages/Processes/Components` — 12 个未完成文件，最低 branch `64.86%`，平均 branch `75.90%`
-- `src/pages/Unitgroups/Components` — 10 个未完成文件，最低 branch `62.50%`，平均 branch `81.18%`
+- `src/pages/Review/Components` — 14 个未完成文件，最低 branch `72.60%`，平均 branch `86.82%`
+- `src/pages/LifeCycleModels/Components` — 10 个未完成文件，最低 branch `72.41%`，平均 branch `87.14%`
 - `src/pages/Flows/Components` — 8 个未完成文件，最低 branch `77.35%`，平均 branch `86.12%`
-- `src/pages/Sources/Components` — 8 个未完成文件，最低 branch `65.00%`，平均 branch `76.08%`
-- `src/pages/Flowproperties/Components` — 8 个未完成文件，最低 branch `65.21%`，平均 branch `82.95%`
-- `src/pages/Contacts/Components` — 8 个未完成文件，最低 branch `66.66%`，平均 branch `81.19%`
-- `src/services/auth` — 4 个未完成文件，最低 branch `66.66%`，平均 branch `76.08%`
-- `src/services/lifeCycleModels` — 4 个未完成文件，最低 branch `69.60%`，平均 branch `76.74%`
-- `src/pages/User` — 4 个未完成文件，最低 branch `71.42%`，平均 branch `85.22%`
+- `src/pages/Sources/Components` — 7 个未完成文件，最低 branch `72.72%`，平均 branch `77.67%`
+- `src/pages/Contacts/Components` — 7 个未完成文件，最低 branch `74.57%`，平均 branch `83.26%`
+- `src/pages/Unitgroups/Components` — 7 个未完成文件，最低 branch `78.26%`，平均 branch `87.89%`
+- `src/pages/Processes/Components` — 6 个未完成文件，最低 branch `77.77%`，平均 branch `82.92%`
+- `src/pages/Flowproperties/Components` — 6 个未完成文件，最低 branch `83.33%`，平均 branch `87.90%`
 - `src/components/AllTeams` — 4 个未完成文件，最低 branch `72.50%`，平均 branch `82.26%`
+- `src/pages/User/Login` — 3 个未完成文件，最低 branch `75.00%`，平均 branch `89.81%`
+- `src/services/processes` — 3 个未完成文件，最低 branch `75.00%`，平均 branch `83.64%`
+- `src/services/lifeCycleModels` — 3 个未完成文件，最低 branch `75.98%`，平均 branch `79.12%`
 
 ## 测试工程质量规则
 
