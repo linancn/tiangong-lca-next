@@ -619,8 +619,26 @@ const ToolbarEdit: FC<Props> = ({
     if (!portUpdate) {
       return;
     }
-    updateNode(ioPortSelectorNode!.id, { ports: portUpdate.ports });
-    updateNode(ioPortSelectorNode!.id, { width: portUpdate.width, height: portUpdate.height });
+
+    const nodeId = ioPortSelectorNode?.id;
+    if (!nodeId) {
+      return;
+    }
+
+    const applyPortUpdate = () => {
+      updateNode(nodeId, {
+        ports: portUpdate.ports,
+        width: portUpdate.width,
+        height: portUpdate.height,
+      });
+    };
+
+    if (graph && typeof graph.batchUpdate === 'function') {
+      graph.batchUpdate('update-node-ports', applyPortUpdate);
+      return;
+    }
+
+    applyPortUpdate();
   };
 
   // const updateEdgeData = (data: unknown) => {

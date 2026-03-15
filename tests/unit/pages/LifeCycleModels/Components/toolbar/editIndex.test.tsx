@@ -1184,6 +1184,38 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('batches flow port and node size updates into a single graph history mutation', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    await act(async () => {
+      await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    mockGraph.batchUpdate.mockClear();
+    mockUpdateNode.mockClear();
+
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    await waitFor(() => expect(mockGraph.batchUpdate).toHaveBeenCalledTimes(1));
+    expect(mockGraph.batchUpdate).toHaveBeenCalledWith('update-node-ports', expect.any(Function));
+    expect(mockUpdateNode).toHaveBeenCalledTimes(1);
+    expect(mockUpdateNode).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({
+        ports: expect.objectContaining({
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'INPUT:flow-input',
+            }),
+          ]),
+        }),
+        width: 350,
+        height: expect.any(Number),
+      }),
+    );
+  });
+
   it('repositions existing output ports when new input ports are selected', async () => {
     mockGraphStoreState.nodes[0].ports.items = [
       {
