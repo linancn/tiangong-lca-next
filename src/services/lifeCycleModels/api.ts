@@ -83,9 +83,7 @@ const updateLifeCycleModelProcesses = async (id: string, version: string, data: 
           review: data?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review,
         },
       };
-      const normalizedResult = normalizeLangPayloadForSave
-        ? await normalizeLangPayloadForSave(newJson)
-        : { payload: newJson, validationError: undefined };
+      const normalizedResult = await normalizeLangPayloadForSave(newJson);
       const normalizedJson = normalizedResult?.payload ?? newJson;
       const validationError = normalizedResult?.validationError;
       if (validationError) {
@@ -143,9 +141,7 @@ export async function createLifeCycleModel(data: any) {
   // };
   // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
-  const normalizedCreateResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered)
-    : { payload: rawLifeCycleModelJsonOrdered, validationError: undefined };
+  const normalizedCreateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
   const newLifeCycleModelJsonOrdered =
     normalizedCreateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedCreateResult?.validationError;
@@ -448,9 +444,7 @@ export async function updateLifeCycleModel(data: any) {
     const oldData = result.data[0];
 
     const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
-    const normalizedUpdateResult = normalizeLangPayloadForSave
-      ? await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered)
-      : { payload: rawLifeCycleModelJsonOrdered, validationError: undefined };
+    const normalizedUpdateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
     const newLifeCycleModelJsonOrdered =
       normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
     const validationError = normalizedUpdateResult?.validationError;
@@ -656,9 +650,7 @@ export async function updateLifeCycleModel(data: any) {
 }
 
 export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(data)
-    : { payload: data, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(data);
   const normalizedData = normalizedResult?.payload ?? data;
   const validationError = normalizedResult?.validationError;
   if (validationError) {

@@ -143,12 +143,6 @@ const Review = () => {
         reviewedTableRef.current.reload();
       }
     }
-    if (userData?.role === 'review-admin' && activeTabKey !== 'unassigned') {
-      setActiveTabKey('unassigned');
-      if (unassignedTableRef.current) {
-        unassignedTableRef.current.reload();
-      }
-    }
   }, [userData]);
 
   return (

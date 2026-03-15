@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { ContactForm } from '@/pages/Contacts/Components/form';
+import contactSchema from '@/pages/Contacts/contacts_schema.json';
 import React from 'react';
 import { fireEvent, render, screen } from '../../../helpers/testUtils';
 
@@ -128,6 +129,47 @@ describe('ContactForm component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetRules.mockClear();
+    contactSchema.contactDataSet.contactInformation.dataSetInformation['common:shortName'].rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation['common:name'].rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.classificationInformation[
+      'common:classification'
+    ]['common:class'][0]['@classId'].rules = [{ required: true }];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.contactAddress.rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.telephone.rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.telefax.rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.email.rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.WWWAddress.rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.centralContactPoint.rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.contactDescriptionOrComment.rules =
+      [{ required: true }];
+    contactSchema.contactDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules = [
+      { required: true },
+    ];
+    contactSchema.contactDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToDataSetFormat'
+    ]['@refObjectId'].rules = [{ required: true }];
+    contactSchema.contactDataSet.administrativeInformation.publicationAndOwnership[
+      'common:dataSetVersion'
+    ].rules = [{ required: true }];
+    contactSchema.contactDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToOwnershipOfDataSet'
+    ]['@refObjectId'].rules = [{ required: true }];
   });
 
   const renderForm = (props: Record<string, any> = {}) =>
@@ -198,5 +240,81 @@ describe('ContactForm component', () => {
 
     expect(shortNameCall).toBeDefined();
     expect(shortNameCall?.[0]?.rules?.length).toBeGreaterThan(0);
+  });
+
+  it('uses the default showRules=false value when the prop is omitted', () => {
+    render(
+      <ContactForm
+        lang='en'
+        activeTabKey='contactInformation'
+        formRef={React.createRef()}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+      />,
+    );
+
+    const shortNameCall = mockLangTextItemForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') === 'contactInformation.dataSetInformation.common:shortName',
+    );
+
+    expect(shortNameCall?.[0]?.rules).toEqual([]);
+    expect(mockGetRules).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to empty rule arrays on contact information fields when schema rules are missing', () => {
+    contactSchema.contactDataSet.contactInformation.dataSetInformation['common:shortName'].rules =
+      undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation['common:name'].rules =
+      undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.classificationInformation[
+      'common:classification'
+    ]['common:class'][0]['@classId'].rules = undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.contactAddress.rules =
+      undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.telephone.rules = undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.telefax.rules = undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.email.rules = undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.WWWAddress.rules = undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.centralContactPoint.rules =
+      undefined;
+    contactSchema.contactDataSet.contactInformation.dataSetInformation.contactDescriptionOrComment.rules =
+      undefined;
+
+    renderForm({ showRules: true });
+
+    expect(mockGetRules).toHaveBeenCalledWith([]);
+
+    const shortNameCall = mockLangTextItemForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') === 'contactInformation.dataSetInformation.common:shortName',
+    );
+
+    expect(shortNameCall?.[0]?.rules).toEqual([{ required: true, message: 'Required' }]);
+  });
+
+  it('falls back to empty rule arrays on administrative information fields when schema rules are missing', () => {
+    contactSchema.contactDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules =
+      undefined;
+    contactSchema.contactDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToDataSetFormat'
+    ]['@refObjectId'].rules = undefined;
+    contactSchema.contactDataSet.administrativeInformation.publicationAndOwnership[
+      'common:dataSetVersion'
+    ].rules = undefined;
+    contactSchema.contactDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToOwnershipOfDataSet'
+    ]['@refObjectId'].rules = undefined;
+
+    renderForm({ activeTabKey: 'administrativeInformation', showRules: true });
+
+    expect(mockGetRules).toHaveBeenCalledWith([]);
+    expect(screen.getAllByRole('textbox').some((input) => input.hasAttribute('disabled'))).toBe(
+      true,
+    );
+    expect(screen.getByTestId('source-select-ILCD format')).toBeInTheDocument();
   });
 });

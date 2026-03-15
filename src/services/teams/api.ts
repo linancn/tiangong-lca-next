@@ -315,7 +315,7 @@ export async function getUnrankedTeams(params: { pageSize?: number; current?: nu
     }
 
     return Promise.resolve({
-      data: teams ?? [],
+      data: teams,
       success: true,
       total: count || 0,
     });

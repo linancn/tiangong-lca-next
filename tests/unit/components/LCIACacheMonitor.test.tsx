@@ -18,6 +18,7 @@ jest.mock('@/services/lciaMethods/util', () => ({
 
 describe('LCIACacheMonitor', () => {
   const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -30,6 +31,7 @@ describe('LCIACacheMonitor', () => {
 
   afterAll(() => {
     consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
   });
 
   it('caches LCIA methods when no manifest is stored', async () => {
@@ -156,6 +158,47 @@ describe('LCIACacheMonitor', () => {
 
     expect(mockGetCachedMethodList).not.toHaveBeenCalled();
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+  });
+
+  it('recaches when the manifest file list changes', async () => {
+    jest.useFakeTimers();
+    mockGetCacheManifest.mockReturnValue({
+      version: '1.2.4',
+      files: ['flow_factors.json.gz'],
+      cachedAt: Date.now(),
+      decompressed: true,
+    });
+    mockCacheAndDecompressMethod.mockResolvedValue(true);
+
+    render(<LCIACacheMonitor />);
+
+    await act(async () => {
+      jest.advanceTimersByTime(3000);
+      await Promise.resolve();
+    });
+
+    expect(mockGetCachedMethodList).not.toHaveBeenCalled();
+    expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+  });
+
+  it('logs partial cache failures when some files fail to cache', async () => {
+    jest.useFakeTimers();
+    mockGetCacheManifest.mockReturnValue(undefined);
+    mockCacheAndDecompressMethod
+      .mockResolvedValueOnce(true)
+      .mockRejectedValueOnce(new Error('cache failed'));
+
+    render(<LCIACacheMonitor />);
+
+    await act(async () => {
+      jest.advanceTimersByTime(3000);
+      await Promise.resolve();
+    });
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to cache list.json:', expect.any(Error));
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '⚠️  LCIA methods caching completed with issues: 1/2 successful, 1 errors.',
+    );
   });
 
   it('handles caching errors without crashing the app', async () => {

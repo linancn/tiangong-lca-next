@@ -128,7 +128,7 @@ const SourceCreate: FC<CreateProps> = ({
         });
       }
 
-      const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
+      const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
       const formFieldsValue = formRefCreate.current?.getFieldsValue();
       const result: SupabaseMutationResult<unknown> = await createSource(paramsId, {
         ...formFieldsValue,
@@ -191,10 +191,9 @@ const SourceCreate: FC<CreateProps> = ({
     await setFileList(initFile);
   };
 
-  const getFormDetail = async () => {
-    if (!id || !version) return;
+  const getFormDetail = async (detailId: string, detailVersion: string) => {
     setSpinning(true);
-    getSourceDetail(id, version).then(async (result: SourceDetailResponse) => {
+    getSourceDetail(detailId, detailVersion).then(async (result: SourceDetailResponse) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataSet.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
@@ -227,7 +226,7 @@ const SourceCreate: FC<CreateProps> = ({
       return;
     }
     if (actionType === 'copy' || actionType === 'createVersion') {
-      getFormDetail();
+      getFormDetail(id!, version!);
       return;
     }
 

@@ -56,8 +56,10 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
-    open ? (
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
+    if (!open) return null;
+    getContainer?.();
+    return (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
           <div>{extra}</div>
@@ -67,7 +69,8 @@ jest.mock('antd', () => {
         </header>
         <div>{children}</div>
       </section>
-    ) : null;
+    );
+  };
 
   const Space = ({ children }: any) => <div>{children}</div>;
 
@@ -169,6 +172,20 @@ describe('ReviewLifeCycleModelViewTargetAmount', () => {
     expect(setDrawerVisible).toHaveBeenCalledWith(true);
   });
 
+  it('disables the trigger when no reference node exists', () => {
+    render(
+      <TargetAmount
+        refNode={null}
+        drawerVisible={false}
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /star/i })).toBeDisabled();
+  });
+
   it('loads process detail and renders review target amount reference flow information', async () => {
     const setDrawerVisible = jest.fn();
 
@@ -196,5 +213,35 @@ describe('ReviewLifeCycleModelViewTargetAmount', () => {
 
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
     expect(setDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('renders fallback placeholders when target values or reference exchange data are missing', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {},
+    });
+    mockGenProcessFromData.mockReturnValueOnce({
+      processInformation: {
+        quantitativeReference: {
+          referenceToReferenceFlow: 'missing-ref',
+        },
+        dataSetInformation: {},
+      },
+    });
+
+    render(
+      <TargetAmount
+        refNode={{ data: { id: 'process-2', version: '2.0.0' } } as any}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-2', '2.0.0'));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(6);
+    expect(screen.queryByText(/flow-view:/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('unit-group-mini')).toHaveTextContent('flow:undefined:undefined');
   });
 });

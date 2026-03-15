@@ -142,6 +142,7 @@ jest.mock('@/services/supabase/key', () => ({
 
 const { deleteSource: mockDeleteSource, getSourceDetail: mockGetSourceDetail } =
   jest.requireMock('@/services/sources/api');
+const { genSourceFromData: mockGenSourceFromData } = jest.requireMock('@/services/sources/util');
 const { getThumbFileUrls: mockGetThumbFileUrls, removeFile: mockRemoveFile } = jest.requireMock(
   '@/services/supabase/storage',
 );
@@ -280,5 +281,40 @@ describe('SourceDelete component', () => {
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(setViewDrawerVisible).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Delete' })).toBeInTheDocument();
+  });
+
+  it('supports the text-button flow and falls back to default error messaging for sparse payloads', async () => {
+    const user = userEvent.setup();
+
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        json: {},
+      },
+    });
+    mockGenSourceFromData.mockReturnValueOnce({});
+    mockGetThumbFileUrls.mockResolvedValueOnce([]);
+    mockDeleteSource.mockResolvedValueOnce({
+      status: 500,
+      error: null,
+    });
+
+    renderWithProviders(
+      <SourceDelete
+        id='source-123'
+        version='01.00.000'
+        buttonType='text'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('dialog', { name: 'Delete' });
+    await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => expect(mockGenSourceFromData).toHaveBeenCalledWith({}));
+    await waitFor(() => expect(mockGetThumbFileUrls).toHaveBeenCalledWith(undefined));
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Error'));
   });
 });

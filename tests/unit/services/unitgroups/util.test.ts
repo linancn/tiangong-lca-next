@@ -340,6 +340,41 @@ describe('Unit Group Utility Functions', () => {
         ),
       ).toBe(false);
     });
+
+    it('should drop empty fallback objects when ordered output is built from sparse form data', () => {
+      const result = genUnitGroupJsonOrdered('sparse-unit-group-id', {
+        unitGroupInformation: {
+          dataSetInformation: {},
+        },
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: {},
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {},
+          publicationAndOwnership: {},
+        },
+      });
+
+      expect(result.unitGroupDataSet.unitGroupInformation.dataSetInformation['common:UUID']).toBe(
+        'sparse-unit-group-id',
+      );
+      expect(result.unitGroupDataSet.unitGroupInformation.dataSetInformation.email).toBeUndefined();
+      expect(result.unitGroupDataSet.unitGroupInformation.quantitativeReference).toBeUndefined();
+      expect(result.unitGroupDataSet.modellingAndValidation).toBeUndefined();
+      expect(
+        result.unitGroupDataSet.administrativeInformation?.dataEntryBy?.[
+          'common:referenceToDataSetFormat'
+        ],
+      ).toBeUndefined();
+      expect(
+        result.unitGroupDataSet.administrativeInformation?.publicationAndOwnership?.[
+          'common:dataSetVersion'
+        ],
+      ).toBeUndefined();
+      expect(result.unitGroupDataSet.units).toBeUndefined();
+    });
   });
 
   describe('genUnitTableData', () => {

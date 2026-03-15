@@ -42,12 +42,15 @@ jest.mock('@/services/supabase', () => ({
 const mockGetTeamIdByUserId = jest.fn();
 const mockContributeSource = jest.fn();
 const mockGetRefData = jest.fn();
+const mockNormalizeLangPayloadForSave = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
   getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
+  normalizeLangPayloadForSave: (...args: any[]) =>
+    mockNormalizeLangPayloadForSave.apply(null, args),
 }));
 
 const mockClassificationToString = jest.fn();
@@ -201,6 +204,7 @@ beforeEach(() => {
   mockGetTeamIdByUserId.mockReset();
   mockContributeSource.mockReset();
   mockGetRefData.mockReset();
+  mockNormalizeLangPayloadForSave.mockReset();
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
@@ -225,6 +229,10 @@ beforeEach(() => {
   mockGetTeamIdByUserId.mockResolvedValue('team-default');
   mockContributeSource.mockResolvedValue({ success: true });
   mockGetRefData.mockResolvedValue({ success: true, data: null });
+  mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
+    payload,
+    validationError: undefined,
+  }));
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
   mockGetLangText.mockReturnValue('localized-text');
@@ -1006,6 +1014,98 @@ describe('deleteLifeCycleModel', () => {
 });
 
 describe('createLifeCycleModel', () => {
+  it('returns a language validation error when normalization rejects the payload', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { ignored: true },
+      validationError: 'Invalid multilingual payload',
+    });
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockGenLifeCycleModelProcesses).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Invalid multilingual payload',
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    });
+  });
+
+  it('falls back to the raw generated payload when normalization returns no payload', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: undefined,
+      validationError: undefined,
+    });
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    const selectMock = jest.fn().mockResolvedValue({ data: [], error: null });
+    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
+    mockFrom.mockReturnValueOnce({ insert: insertMock });
+
+    await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: {
+        nodes: [],
+        edges: [
+          {
+            source: { cell: 'upstream-1' },
+            target: { cell: 'downstream-1' },
+            data: { connection: { outputExchange: { '@flowUUID': 'flow-1' } } },
+          },
+        ],
+      },
+    });
+
+    expect(mockNormalizeLangPayloadForSave).toHaveBeenCalled();
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+      sampleModelId,
+      [],
+      { lifeCycleModelDataSet: {} },
+      [],
+    );
+    expect(insertMock).toHaveBeenCalledWith([
+      expect.objectContaining({
+        json_ordered: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: {
+              dataSetInformation: {
+                referenceToResultingProcess: [],
+              },
+            },
+          },
+        },
+        json_tg: expect.objectContaining({
+          xflow: expect.objectContaining({
+            edges: [
+              expect.objectContaining({
+                labels: [],
+                data: expect.objectContaining({
+                  connection: expect.objectContaining({
+                    isBalanced: undefined,
+                    unbalancedAmount: undefined,
+                    exchangeAmount: undefined,
+                  }),
+                }),
+              }),
+            ],
+          }),
+        }),
+      }),
+    ]);
+  });
+
   it('stores lifecycle model payload with derived json and processes', async () => {
     const generatedProcesses = {
       lifeCycleModelProcesses: [
@@ -1271,6 +1371,41 @@ describe('createLifeCycleModel', () => {
 });
 
 describe('updateLifeCycleModel', () => {
+  it('returns a language validation error before querying child processes', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ json: {}, submodels: [] }],
+        error: null,
+      }),
+    );
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { ignored: true },
+      validationError: 'Update payload is invalid',
+    });
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockGenLifeCycleModelProcesses).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Update payload is invalid',
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    });
+  });
+
   it('updates lifecycle model json and synchronizes child processes', async () => {
     const keepFinalId = {
       nodeId: 'node-keep',
@@ -1477,6 +1612,188 @@ describe('updateLifeCycleModel', () => {
     expect(result).toEqual({ updated: true });
   });
 
+  it('hydrates primary processes, recreates missing containers, and maps balanced edge metadata', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ json: {}, submodels: [] }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce({
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          technology: {
+            processes: {
+              processInstance: [{ referenceToProcess: { '@refObjectId': 'included-primary' } }],
+            },
+          },
+        },
+      },
+    });
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [
+        {
+          option: 'update',
+          modelInfo: { id: 'primary-update', type: 'primary', finalId: {} },
+          data: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {},
+              },
+              administrativeInformation: {
+                dataEntryBy: {},
+                publicationAndOwnership: {},
+              },
+            },
+          },
+        },
+        {
+          option: 'create',
+          modelInfo: { id: 'primary-create', type: 'primary', finalId: {} },
+          data: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {},
+              },
+              administrativeInformation: {
+                dataEntryBy: {},
+                publicationAndOwnership: {},
+              },
+            },
+          },
+        },
+      ],
+      up2DownEdges: [
+        {
+          upstreamNodeId: 'node-a',
+          downstreamNodeId: 'node-b',
+          flowUUID: 'flow-1',
+          isBalanced: false,
+          unbalancedAmount: 2,
+          exchangeAmount: 5,
+        },
+      ],
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse({ updated: true }));
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'primary-update',
+          version: sampleVersion,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  identifierOfSubDataSet: 'legacy-id',
+                  'common:synonyms': ['legacy-synonym'],
+                },
+                technology: {
+                  technologyDescriptionAndIncludedProcesses: 'legacy-desc',
+                  technologicalApplicability: 'legacy-applicability',
+                  referenceToTechnologyPictogramme: 'legacy-pictogram',
+                  referenceToTechnologyFlowDiagrammOrPicture: 'legacy-diagram',
+                },
+              },
+              modellingAndValidation: {
+                LCIMethodAndAllocation: 'legacy-allocation',
+                dataSourcesTreatmentAndRepresentativeness: 'legacy-sources',
+                completeness: 'legacy-complete',
+              },
+              administrativeInformation: {
+                dataEntryBy: {},
+                publicationAndOwnership: {},
+              },
+            },
+          },
+        },
+      ],
+    });
+    mockValidateProcessesByIdAndVersion.mockResolvedValueOnce(true);
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: {
+        nodes: [],
+        edges: [
+          {
+            source: { cell: 'node-a' },
+            target: { cell: 'node-b' },
+            data: { connection: { outputExchange: { '@flowUUID': 'flow-1' } } },
+          },
+        ],
+      },
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'update_data',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          data: expect.objectContaining({
+            json_tg: {
+              xflow: {
+                nodes: [],
+                edges: [
+                  expect.objectContaining({
+                    labels: [],
+                    data: expect.objectContaining({
+                      connection: expect.objectContaining({
+                        isBalanced: false,
+                        unbalancedAmount: 2,
+                        exchangeAmount: 5,
+                      }),
+                    }),
+                  }),
+                ],
+              },
+              submodels: [
+                { id: 'primary-update', type: 'primary', finalId: {} },
+                { id: 'primary-create', type: 'primary', finalId: {} },
+              ],
+            },
+          }),
+        }),
+      }),
+    );
+    expect(mockUpdateProcess).toHaveBeenCalledWith(
+      'primary-update',
+      sampleVersion,
+      expect.objectContaining({
+        processInformation: expect.objectContaining({
+          dataSetInformation: expect.objectContaining({
+            identifierOfSubDataSet: 'legacy-id',
+            'common:synonyms': ['legacy-synonym'],
+          }),
+          technology: expect.objectContaining({
+            technologyDescriptionAndIncludedProcesses: 'legacy-desc',
+            technologicalApplicability: 'legacy-applicability',
+            referenceToTechnologyPictogramme: 'legacy-pictogram',
+            referenceToTechnologyFlowDiagrammOrPicture: 'legacy-diagram',
+            referenceToIncludedProcesses: [{ '@refObjectId': 'included-primary' }],
+          }),
+        }),
+        modellingAndValidation: expect.objectContaining({
+          LCIMethodAndAllocation: 'legacy-allocation',
+          dataSourcesTreatmentAndRepresentativeness: 'legacy-sources',
+          completeness: 'legacy-complete',
+        }),
+      }),
+      sampleModelId,
+    );
+    expect(mockCreateProcess).toHaveBeenCalledWith(
+      'primary-create',
+      expect.objectContaining({
+        processInformation: expect.objectContaining({
+          technology: expect.objectContaining({
+            referenceToIncludedProcesses: [{ '@refObjectId': 'included-primary' }],
+          }),
+        }),
+      }),
+      sampleModelId,
+    );
+    expect(result).toEqual({ updated: true });
+  });
+
   it('returns undefined when lifecycle model is not found or session missing', async () => {
     mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [], error: null }));
     mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
@@ -1596,6 +1913,62 @@ describe('updateLifeCycleModel', () => {
 });
 
 describe('updateLifeCycleModelJsonApi', () => {
+  it('returns a language validation error before invoking the edge function', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { ignored: true },
+      validationError: 'JSON payload is invalid',
+    });
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      { raw: true },
+    );
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'JSON payload is invalid',
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    });
+  });
+
+  it('uses normalized payload data when writing lifecycle model json', async () => {
+    const normalizedPayload = { normalized: true };
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: normalizedPayload,
+      validationError: undefined,
+    });
+    const edgeResponse = createMockEdgeFunctionResponse({
+      data: [{ json_tg: { submodels: [] } }],
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(edgeResponse);
+
+    await lifeCycleModelsApi.updateLifeCycleModelJsonApi(sampleModelId, sampleVersion, {
+      raw: true,
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'update_data',
+      expect.objectContaining({
+        body: {
+          id: sampleModelId,
+          version: sampleVersion,
+          table: 'lifecyclemodels',
+          data: { json_ordered: normalizedPayload },
+        },
+      }),
+    );
+  });
+
   it('invokes edge function and schedules process updates when session is active', async () => {
     const scheduledTasks: Array<() => Promise<unknown>> = [];
     mockControllerAdd.mockImplementation((task: () => Promise<unknown>) => {

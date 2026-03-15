@@ -98,8 +98,9 @@ jest.mock('antd', () => {
     }),
   };
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     const label = toText(title) || 'drawer';
     return (
       <section role='dialog' aria-label={label}>
@@ -232,7 +233,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, columns, toolBarRender }: any) => {
     const requestRef = React.useRef(request);
     const initializedRef = React.useRef(false);
 
@@ -241,8 +242,8 @@ jest.mock('@ant-design/pro-components', () => {
     }, [request]);
 
     React.useEffect(() => {
-      latestProTableProps = { actionRef, request, rowSelection };
-    }, [actionRef, request, rowSelection]);
+      latestProTableProps = { actionRef, request, rowSelection, columns, toolBarRender };
+    }, [actionRef, request, rowSelection, columns, toolBarRender]);
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
@@ -263,7 +264,11 @@ jest.mock('@ant-design/pro-components', () => {
       }
     }, [actionRef, reload]);
 
-    return <div data-testid='pro-table' />;
+    return (
+      <div data-testid='pro-table'>
+        <div>{toolBarRender?.()}</div>
+      </div>
+    );
   };
 
   return {
@@ -336,6 +341,118 @@ describe('ModelToolbarAdd', () => {
     expect(mockGetProcessTablePgroongaSearch).not.toHaveBeenCalled();
   });
 
+  it('renders icon trigger, column renderers, and closes from drawer controls', async () => {
+    mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAdd buttonType='icon' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
+    await waitFor(() => {
+      expect(mockGetProcessTableAll).toHaveBeenCalled();
+    });
+
+    const sampleRow = {
+      id: 'process-1',
+      version: '01.00.000',
+      name: 'Sample process',
+      generalComment: 'row comment',
+      typeOfDataSet: 'Unit process, black box',
+      referenceYear: '2024',
+      location: 'CN',
+      modifiedAt: '2026-03-15T00:00:00.000Z',
+    };
+
+    render(
+      <>
+        {latestProTableProps.columns[1].render?.(null, sampleRow)}
+        {latestProTableProps.columns[3].render?.(null, sampleRow)}
+        {latestProTableProps.columns[8].render?.(null, sampleRow)}
+      </>,
+    );
+
+    expect(screen.getByText('Sample process')).toBeInTheDocument();
+    expect(screen.getByText('process-view')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: 'Add process' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
+    expect(await screen.findByRole('dialog', { name: 'Add process' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    expect(screen.queryByRole('dialog', { name: 'Add process' })).not.toBeInTheDocument();
+  });
+
+  it('searches TianGong and Business Data tabs with non-AI keywords', async () => {
+    mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+    mockGetProcessTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() => {
+      expect(mockGetProcessTableAll).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+        [],
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+    await waitFor(() =>
+      expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'co',
+        [],
+      ),
+    );
+
+    const coSearchInput = screen.getByRole('textbox', { name: 'co' });
+    await userEvent.clear(coSearchInput);
+    await userEvent.type(coSearchInput, 'cement');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+
+    await waitFor(() => {
+      expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'co',
+        'cement',
+        {},
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
+    await waitFor(() =>
+      expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    const tgSearchInput = screen.getByRole('textbox', { name: 'tg' });
+    await userEvent.clear(tgSearchInput);
+    await userEvent.type(tgSearchInput, 'solar');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+
+    await waitFor(() => {
+      expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'tg',
+        'solar',
+        {},
+      );
+    });
+  });
+
   it('searches My Data tab with keyword', async () => {
     mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
     mockGetProcessTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
@@ -377,6 +494,104 @@ describe('ModelToolbarAdd', () => {
     expect(mockProcessHybridSearch).not.toHaveBeenCalled();
   });
 
+  it('renders My Data toolbar create action and supports AI search for My/Team Data', async () => {
+    mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+    mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() => {
+      expect(mockGetProcessTableAll).toHaveBeenCalled();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
+    expect(await screen.findByText('process-create')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText('AI Search'));
+
+    const mySearchInput = screen.getByRole('textbox', { name: 'my' });
+    await userEvent.clear(mySearchInput);
+    await userEvent.type(mySearchInput, 'battery');
+    await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
+
+    await waitFor(() => {
+      expect(mockProcessHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'battery',
+        {},
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
+    await waitFor(() =>
+      expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'te',
+        [],
+      ),
+    );
+
+    const teSearchInput = screen.getByRole('textbox', { name: 'te' });
+    await userEvent.clear(teSearchInput);
+    await userEvent.type(teSearchInput, 'steam');
+    await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
+
+    await waitFor(() => {
+      expect(mockProcessHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'te',
+        'steam',
+        {},
+      );
+    });
+  });
+
+  it('uses AI search on Team Data tab from a clean checkbox state', async () => {
+    mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+    mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() => {
+      expect(mockGetProcessTableAll).toHaveBeenCalled();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
+    await waitFor(() =>
+      expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'te',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByText('AI Search'));
+
+    const teSearchInput = screen.getByRole('textbox', { name: 'te' });
+    await userEvent.clear(teSearchInput);
+    await userEvent.type(teSearchInput, 'steam');
+    await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
+
+    await waitFor(() => {
+      expect(mockProcessHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'te',
+        'steam',
+        {},
+      );
+    });
+  });
+
   it('uses AI search on Business Data tab', async () => {
     mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
     mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
@@ -416,6 +631,45 @@ describe('ModelToolbarAdd', () => {
       'cement',
       {},
     );
+  });
+
+  it('returns fallback table payloads when list queries resolve undefined', async () => {
+    mockGetProcessTableAll.mockResolvedValue(undefined);
+
+    render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+
+    await waitFor(async () => {
+      await expect(latestProTableProps.request({ pageSize: 10, current: 1 }, {})).resolves.toEqual({
+        data: [],
+        success: false,
+      });
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+    await waitFor(async () => {
+      await expect(latestProTableProps.request({ pageSize: 10, current: 1 }, {})).resolves.toEqual({
+        data: [],
+        success: false,
+      });
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
+    await waitFor(async () => {
+      await expect(latestProTableProps.request({ pageSize: 10, current: 1 }, {})).resolves.toEqual({
+        data: [],
+        success: false,
+      });
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
+    await waitFor(async () => {
+      await expect(latestProTableProps.request({ pageSize: 10, current: 1 }, {})).resolves.toEqual({
+        data: [],
+        success: false,
+      });
+    });
   });
 
   it('searches Team Data tab with keyword', async () => {

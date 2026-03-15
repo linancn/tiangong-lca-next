@@ -111,6 +111,15 @@ describe('Review page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'pages.review.tabs.members' }));
 
     expect(await screen.findByTestId('review-member')).toHaveTextContent('review-admin');
+
+    fireEvent.click(screen.getByRole('button', { name: 'pages.review.tabs.unassigned' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('assignment-unassigned')).toHaveTextContent(
+        'unassigned:review-admin',
+      );
+      expect(assignmentReloads.unassigned).toHaveBeenCalled();
+    });
   });
 
   it('forces review members onto the reviewed tab and reloads that table', async () => {
@@ -142,6 +151,13 @@ describe('Review page', () => {
       expect(screen.getByTestId('assignment-reviewer-rejected')).toHaveTextContent(
         'reviewer-rejected:review-member',
       );
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'pages.review.tabs.reviewed' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('assignment-reviewed')).toHaveTextContent('reviewed:review-member');
+      expect(assignmentReloads.reviewed).toHaveBeenCalledTimes(2);
     });
   });
 

@@ -389,6 +389,36 @@ describe('AISuggestion Component', () => {
     expect(await screen.findByText('component.aiSuggestion.modal.title')).toBeInTheDocument();
   });
 
+  it('uses default disabled/onClose handlers and dark theme when those props are omitted', async () => {
+    localStorage.setItem('isDarkMode', 'true');
+    const propsWithoutOnClose: typeof defaultProps = { ...defaultProps };
+    delete (propsWithoutOnClose as Partial<typeof defaultProps>).disabled;
+    delete (propsWithoutOnClose as Partial<typeof defaultProps>).onClose;
+
+    render(
+      <ConfigProvider>
+        <AISuggestion {...propsWithoutOnClose} />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    expect(document.querySelector('.json-diff-container')).toHaveAttribute('data-theme', 'dark');
+
+    const modal = screen.getByRole('dialog');
+    const closeButtons = within(modal).getAllByRole('button', { name: /close/i });
+    const closeButton = closeButtons.find((button) => button.classList.contains('ant-modal-close'));
+    expect(closeButton).toBeDefined();
+    await userEvent.click(closeButton!);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    localStorage.setItem('isDarkMode', 'false');
+  });
+
   it('reuses the original json when the expected dataset payload is missing', async () => {
     const onLatestJsonChange = jest.fn();
 
@@ -576,11 +606,15 @@ describe('AISuggestion Component', () => {
       );
     });
 
+    const acceptCallCountBeforeUndoReject = defaultProps.onAcceptChange.mock.calls.length;
     await userEvent.click(
       screen.getByRole('button', { name: /component\.aiSuggestion\.button\.undo/i }),
     );
 
     await waitFor(() => {
+      expect(defaultProps.onAcceptChange).toHaveBeenCalledTimes(
+        acceptCallCountBeforeUndoReject + 1,
+      );
       expect(defaultProps.onAcceptChange).toHaveBeenLastCalledWith(
         'processDataSet.name',
         'AI Suggested Process',
@@ -589,6 +623,56 @@ describe('AISuggestion Component', () => {
 
     messageSuccessSpy.mockRestore();
     messageWarningSpy.mockRestore();
+  });
+
+  it('undoes a rejected falsy value change and notifies the parent with the original falsy payload', async () => {
+    mockDiffResult = {
+      processDataSet: {
+        isBackgroundSystem: [true, false],
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          isBackgroundSystem: false,
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              isBackgroundSystem: true,
+            },
+          }}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.action\.reject/i }),
+    );
+
+    const acceptCallCountBeforeUndo = defaultProps.onAcceptChange.mock.calls.length;
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.undo/i }),
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.onAcceptChange).toHaveBeenCalledTimes(acceptCallCountBeforeUndo + 1);
+      expect(defaultProps.onAcceptChange).toHaveBeenLastCalledWith(
+        'processDataSet.isBackgroundSystem',
+        false,
+      );
+    });
   });
 
   it('parses added and removed array deltas and reports copy success for AI data', async () => {
@@ -647,6 +731,423 @@ describe('AISuggestion Component', () => {
     });
 
     messageSuccessSpy.mockRestore();
+  });
+
+  it('applies complex accepted diffs across objects and arrays while ignoring text-diff entries', async () => {
+    const onLatestJsonChange = jest.fn();
+    mockDiffResult = {
+      processDataSet: {
+        obsolete: ['gone', 0, 0],
+        textBody: ['old text', 'new text', 2],
+        flag: [false, true],
+        count: [1, 2],
+        metadata: {
+          title: ['old title', 'new title'],
+        },
+        addedObj: [{ label: 'fresh' }],
+        listAdded: {
+          _t: 'a',
+          1: ['new'],
+        },
+        listRemoved: {
+          _t: 'a',
+          '1_1': ['drop', 0, 3],
+        },
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          flag: true,
+          count: 2,
+          textBody: 'new text',
+          metadata: {
+            title: 'new title',
+          },
+          addedObj: {
+            label: 'fresh',
+          },
+          listAdded: ['keep', 'new'],
+          listRemoved: ['keep'],
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              flag: false,
+              count: 1,
+              textBody: 'old text',
+              obsolete: 'gone',
+              metadata: {
+                title: 'old title',
+              },
+              addedObj: undefined,
+              listAdded: ['keep'],
+              listRemoved: ['keep', 'drop'],
+            },
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    const acceptAllButton = screen.getByRole('button', {
+      name: /component\.aiSuggestion\.button\.acceptAll/i,
+    });
+    expect(acceptAllButton).toHaveTextContent('(7)');
+
+    await userEvent.click(acceptAllButton);
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {
+          flag: true,
+          count: 2,
+          textBody: 'old text',
+          metadata: {
+            title: 'new title',
+          },
+          addedObj: {
+            label: 'fresh',
+          },
+          listAdded: ['keep', 'new'],
+          listRemoved: ['keep'],
+        },
+      });
+    });
+  });
+
+  it('accepts trailing numeric and boolean array additions', async () => {
+    const onLatestJsonChange = jest.fn();
+    mockDiffResult = {
+      processDataSet: {
+        trailing: {
+          _t: 'a',
+          0: [1],
+          1: [true],
+        },
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          trailing: [1, true],
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              trailing: [],
+            },
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    const acceptAllButton = screen.getByRole('button', {
+      name: /component\.aiSuggestion\.button\.acceptAll/i,
+    });
+    expect(acceptAllButton).toHaveTextContent('(2)');
+
+    await userEvent.click(acceptAllButton);
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {
+          trailing: [1, true],
+        },
+      });
+    });
+  });
+
+  it('initializes missing intermediate array containers for nested array additions', async () => {
+    const onLatestJsonChange = jest.fn();
+    mockDiffResult = {
+      processDataSet: {
+        groups: {
+          _t: 'a',
+          0: {
+            _t: 'a',
+            0: ['nested'],
+          },
+        },
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          groups: [['nested']],
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {},
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.acceptAll/i }),
+    );
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {
+          groups: [['nested']],
+        },
+      });
+    });
+  });
+
+  it('applies nested object additions and trailing object removals', async () => {
+    const onLatestJsonChange = jest.fn();
+    mockDiffResult = {
+      processDataSet: {
+        removedTail: [
+          {
+            label: 'old',
+            extra: 'value',
+          },
+          0,
+          0,
+        ],
+        metadata: {
+          details: {
+            label: ['fresh'],
+          },
+        },
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          metadata: {
+            details: {
+              label: 'fresh',
+            },
+          },
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              metadata: {},
+              removedTail: {
+                label: 'old',
+                extra: 'value',
+              },
+            },
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.acceptAll/i }),
+    );
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {
+          metadata: {
+            details: {
+              label: 'fresh',
+            },
+          },
+        },
+      });
+    });
+  });
+
+  it('accepts large trailing removals without losing alignment', async () => {
+    const onLatestJsonChange = jest.fn();
+    const removedHuge = Object.fromEntries(
+      Array.from({ length: 12 }, (_, index) => [`key${index}`, index]),
+    );
+    mockDiffResult = {
+      processDataSet: {
+        removedHuge: [removedHuge, 0, 0],
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {},
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              removedHuge,
+            },
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.acceptAll/i }),
+    );
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {},
+      });
+    });
+  });
+
+  it('applies nested updates inside newly-added array slots', async () => {
+    const onLatestJsonChange = jest.fn();
+    mockDiffResult = {
+      processDataSet: {
+        matrix: {
+          _t: 'a',
+          0: {
+            label: ['fresh'],
+          },
+        },
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          matrix: [
+            {
+              label: 'fresh',
+            },
+          ],
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {
+              matrix: [],
+            },
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.acceptAll/i }),
+    );
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {
+          matrix: [
+            {
+              label: 'fresh',
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  it('accepts large trailing additions without losing alignment', async () => {
+    const onLatestJsonChange = jest.fn();
+    const addedHuge = Object.fromEntries(
+      Array.from({ length: 12 }, (_, index) => [`key${index}`, index]),
+    );
+    mockDiffResult = {
+      processDataSet: {
+        addedHuge: [addedHuge],
+      },
+    };
+    mockGetAISuggestion.mockResolvedValueOnce({
+      success: true,
+      data: {
+        processDataSet: {
+          addedHuge,
+        },
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <AISuggestion
+          {...defaultProps}
+          originJson={{
+            processDataSet: {},
+          }}
+          onLatestJsonChange={onLatestJsonChange}
+        />
+      </ConfigProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByText('component.aiSuggestion.modal.title');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /component\.aiSuggestion\.button\.acceptAll/i }),
+    );
+
+    await waitFor(() => {
+      expect(onLatestJsonChange).toHaveBeenLastCalledWith({
+        processDataSet: {
+          addedHuge,
+        },
+      });
+    });
   });
 
   it('should render with correct button attributes', () => {

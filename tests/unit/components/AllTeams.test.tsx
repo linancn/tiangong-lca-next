@@ -257,6 +257,14 @@ const teamsData = [
   },
 ];
 
+const shortDescriptionTeamsData = [
+  {
+    id: 't3',
+    json: { title: { en: 'Gamma Team' }, description: { en: 'Short desc' } },
+    ownerEmail: 'gamma@example.com',
+  },
+];
+
 const renderAllTeams = (
   overrideProps: Partial<{
     tableType: 'joinTeam' | 'manageSystem';
@@ -328,6 +336,19 @@ describe('AllTeams component', () => {
     expect(selectButton).toBeEnabled();
 
     expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'manageSystem');
+  });
+
+  it('renders short descriptions without truncation', async () => {
+    mockGetAllTableTeams.mockResolvedValue({
+      data: shortDescriptionTeamsData,
+      success: true,
+      total: shortDescriptionTeamsData.length,
+    });
+
+    renderAllTeams();
+
+    expect(await screen.findByText('Gamma Team')).toBeInTheDocument();
+    expect(screen.getByText('Short desc')).toBeInTheDocument();
   });
 
   it('loads join-team table when requested', async () => {
@@ -414,6 +435,30 @@ describe('AllTeams component', () => {
     expect(payload.map(({ rank }) => rank)).toEqual([11, 12]);
   });
 
+  it('falls back to page 1 and size 10 when page info is falsy', async () => {
+    renderAllTeams();
+
+    await screen.findByText('Alpha Team');
+    const actionRef = getLastActionRef();
+
+    act(() => {
+      actionRef?.current?.setPageInfo?.({ current: 0, pageSize: 0 });
+    });
+
+    const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
+    fireEvent.click(dragButton);
+
+    const saveIcon = await screen.findByRole('img', { name: /save/i });
+    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+
+    await waitFor(() => {
+      expect(mockUpdateSort).toHaveBeenCalledWith([
+        { id: 't2', rank: 1 },
+        { id: 't1', rank: 2 },
+      ]);
+    });
+  });
+
   it('preserves dragged order when saving ranks', async () => {
     renderAllTeams();
 
@@ -485,6 +530,33 @@ describe('AllTeams component', () => {
     expect(selectButton).toBeDisabled();
   });
 
+  it('keeps manage-system actions enabled for owners', async () => {
+    renderAllTeams({ systemUserRole: 'owner' });
+
+    const removeButton = await findRemoveButtonForRow('t1');
+    expect(removeButton).toBeEnabled();
+
+    const selectButton = screen.getByRole('button', { name: /open select teams/i });
+    expect(selectButton).toBeEnabled();
+    screen.getAllByRole('button', { name: /edit team/i }).forEach((button) => {
+      expect(button).toBeEnabled();
+    });
+  });
+
+  it('allows members to drag and save homepage ranks', async () => {
+    renderAllTeams({ systemUserRole: 'member' });
+
+    const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
+    fireEvent.click(dragButton);
+
+    const saveIcon = await screen.findByRole('img', { name: /save/i });
+    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+
+    await waitFor(() => {
+      expect(mockUpdateSort).toHaveBeenCalled();
+    });
+  });
+
   it('removes a team after confirmation and shows success message', async () => {
     renderAllTeams({ systemUserRole: 'admin' });
 
@@ -532,5 +604,61 @@ describe('AllTeams component', () => {
       expect(actionRef.current.pageInfo.current).toBe(1);
       expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('gamma');
     });
+  });
+
+  it('falls back to empty table rows when request payload omits data', async () => {
+    mockGetAllTableTeams.mockResolvedValueOnce({
+      success: true,
+      total: 0,
+    });
+
+    renderAllTeams();
+
+    await waitFor(() => {
+      expect(mockGetAllTableTeams).toHaveBeenCalled();
+    });
+    expect(screen.queryByTestId('row-t1')).not.toBeInTheDocument();
+  });
+
+  it('falls back to tableData when dragged rows are empty', async () => {
+    mockGetAllTableTeams.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    });
+
+    renderAllTeams();
+
+    await waitFor(() => {
+      expect(mockGetAllTableTeams).toHaveBeenCalled();
+    });
+
+    const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
+    fireEvent.click(dragButton);
+
+    const saveIcon = await screen.findByRole('img', { name: /save/i });
+    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+
+    await waitFor(() => {
+      expect(mockUpdateSort).toHaveBeenCalledWith([]);
+    });
+  });
+
+  it('falls back to an empty keyword result list when search payload omits data', async () => {
+    mockGetTeamsByKeyword.mockResolvedValueOnce({
+      success: true,
+      total: 0,
+    });
+
+    renderAllTeams();
+
+    const searchBox = await screen.findByRole('searchbox');
+    fireEvent.change(searchBox, { target: { value: 'missing' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => {
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('missing');
+    });
+    expect(screen.queryByTestId('row-t1')).not.toBeInTheDocument();
   });
 });

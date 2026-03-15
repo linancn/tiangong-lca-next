@@ -79,6 +79,21 @@ describe('Auth profile helpers (src/services/auth/profile.ts)', () => {
         type: 'changeEmail',
       });
     });
+
+    it('falls back to an empty email payload when the new email is missing', async () => {
+      authMock.updateUser.mockResolvedValueOnce({ error: null });
+
+      const result = await changeEmail({
+        email: 'current@example.com',
+        newEmail: undefined,
+        type: 'changeEmail',
+      });
+
+      expect(authMock.updateUser).toHaveBeenCalledWith({
+        email: '',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'changeEmail' });
+    });
   });
 
   describe('setProfile', () => {
@@ -116,6 +131,23 @@ describe('Auth profile helpers (src/services/auth/profile.ts)', () => {
         type: 'profile',
         currentAuthority: 'guest',
       });
+    });
+
+    it('falls back to an empty display name when the profile form omits the value', async () => {
+      authMock.updateUser.mockResolvedValueOnce({
+        data: { user: { role: 'member' } },
+        error: null,
+      });
+
+      const result = await setProfile({
+        name: undefined,
+        type: 'profile',
+      });
+
+      expect(authMock.updateUser).toHaveBeenCalledWith({
+        data: { display_name: '' },
+      });
+      expect(result).toEqual({ status: 'ok', type: 'profile', currentAuthority: 'member' });
     });
   });
 });

@@ -185,9 +185,6 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
   };
 
   const handleSaveRanks = async () => {
-    if (systemUserRole !== 'admin' && systemUserRole !== 'owner' && systemUserRole !== 'member') {
-      return;
-    }
     try {
       const currentPage = actionRef.current?.pageInfo?.current || 1;
       const pageSize = actionRef.current?.pageInfo?.pageSize || 10;
