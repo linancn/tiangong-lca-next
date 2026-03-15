@@ -14,9 +14,7 @@ import { getCachedClassificationData } from '../ilcd/cache';
 import { genFlowpropertyJsonOrdered } from './util';
 export async function createFlowproperties(id: string, data: any) {
   const rawData = genFlowpropertyJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
@@ -45,9 +43,7 @@ export async function createFlowproperties(id: string, data: any) {
 
 export async function updateFlowproperties(id: string, version: string, data: any) {
   const rawData = genFlowpropertyJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
