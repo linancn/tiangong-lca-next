@@ -56,9 +56,7 @@ jest.mock('@ant-design/pro-components', () => {
     const runRequest = React.useCallback(async () => {
       if (request) {
         const result = await request({ current: pageInfo.current, pageSize: pageInfo.pageSize });
-        if (result?.data) {
-          setRows(result.data);
-        }
+        setRows(result?.data ?? []);
       }
     }, [request, pageInfo]);
 
@@ -138,9 +136,7 @@ jest.mock('@ant-design/pro-components', () => {
     const runRequest = React.useCallback(async () => {
       if (request) {
         const result = await request({ current: pageInfo.current, pageSize: pageInfo.pageSize });
-        if (result?.data) {
-          setRows(result.data);
-        }
+        setRows(result?.data ?? []);
       }
     }, [request, pageInfo]);
 

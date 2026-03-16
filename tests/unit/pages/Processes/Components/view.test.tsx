@@ -382,7 +382,7 @@ const processDataSet = {
 
 describe('ProcessView component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     jest.useRealTimers();
     mockGetLangText.mockImplementation((value: any) => {
       if (typeof value === 'string') return value;
@@ -391,6 +391,10 @@ describe('ProcessView component', () => {
       return '';
     });
     mockGetLangJson.mockImplementation((value: any) => value);
+    mockJsonToList.mockImplementation((value: any) =>
+      Array.isArray(value) ? value : value ? [value] : [],
+    );
+    mockIsLcaFunctionInvokeError.mockImplementation(() => false);
     mockGetProcessDetail.mockResolvedValue({
       data: { json: { processDataSet: processDataSet } },
     });
@@ -496,7 +500,7 @@ describe('ProcessView component', () => {
       }),
     );
     expect(
-      screen.getByText(/source=latest_ready, snapshot=snapshot-1, result=result-1/),
+      screen.getByText(/source=all_unit, snapshot=snapshot-1, result=result-1/),
     ).toBeInTheDocument();
   });
 
@@ -664,9 +668,13 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
 
     await waitFor(() => expect(screen.getByTestId('pro-row-impact-sparse')).toBeInTheDocument());
-    expect(screen.getByText('impact-sparse')).toBeInTheDocument();
-    expect(screen.getByTestId('aligned-number')).toHaveTextContent('0');
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('pro-row-impact-sparse')).getByText('impact-sparse'),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('pro-row-impact-sparse')).getByTestId('aligned-number'),
+    ).toHaveTextContent('0');
+    expect(within(screen.getByTestId('pro-row-impact-sparse')).getByText('-')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh latest calculated results' }));
     await waitFor(() =>
@@ -937,9 +945,13 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
 
     await waitFor(() => expect(screen.getByTestId('pro-row-impact-1')).toBeInTheDocument());
-    expect(screen.getByText('Impact Name')).toBeInTheDocument();
-    expect(screen.getByText('kg')).toBeInTheDocument();
-    expect(screen.getByTestId('aligned-number')).toHaveTextContent('12.5');
+    expect(
+      within(screen.getByTestId('pro-row-impact-1')).getByText('Impact Name'),
+    ).toBeInTheDocument();
+    expect(within(screen.getByTestId('pro-row-impact-1')).getByText('kg')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('pro-row-impact-1')).getByTestId('aligned-number'),
+    ).toHaveTextContent('12.5');
   });
 
   it('sorts fallback solver LCIA rows by impact index before rendering', async () => {
@@ -1066,10 +1078,16 @@ describe('ProcessView component', () => {
       ).toBeInTheDocument(),
     );
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
-    expect(screen.getByText('Method description')).toBeInTheDocument();
-    expect(screen.getByText('2.0.0')).toBeInTheDocument();
-    expect(screen.getByText('kg CO2 eq')).toBeInTheDocument();
-    expect(screen.getByTestId('aligned-number')).toHaveTextContent('42');
+    expect(
+      within(screen.getByTestId('pro-row-impact-1')).getByText('Method description'),
+    ).toBeInTheDocument();
+    expect(within(screen.getByTestId('pro-row-impact-1')).getByText('2.0.0')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('pro-row-impact-1')).getByText('kg CO2 eq'),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('pro-row-impact-1')).getByTestId('aligned-number'),
+    ).toHaveTextContent('42');
     expect(screen.getAllByTestId(/^pro-row-/)).toHaveLength(1);
   });
 
@@ -1106,7 +1124,9 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
 
     await waitFor(() => expect(screen.getByTestId('pro-row-base-key')).toBeInTheDocument());
-    expect(screen.getByTestId('aligned-number')).toHaveTextContent('9');
+    expect(
+      within(screen.getByTestId('pro-row-base-key')).getByTestId('aligned-number'),
+    ).toHaveTextContent('9');
   });
 
   it('falls back to a generic solver error when queued snapshot metadata is incomplete', async () => {
