@@ -7,7 +7,7 @@ import {
 } from '@/services/processes/api';
 import { BarChartOutlined } from '@ant-design/icons';
 
-import { Button, Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
+import { Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
@@ -16,6 +16,7 @@ import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
+import ToolBarButton from '@/components/ToolBarButton';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
@@ -503,15 +504,17 @@ const TableList: FC = () => {
           }
           const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
           const analysisPageOption = (
-            <Button
+            <ToolBarButton
               key='lca-analysis-page-option'
               icon={<BarChartOutlined />}
+              tooltip={intl.formatMessage({
+                id: 'pages.process.lca.page.title',
+                defaultMessage: 'LCA Analysis',
+              })}
               onClick={() => {
                 history.push('/mydata/processes/analysis');
               }}
-            >
-              <FormattedMessage id='pages.process.lca.page.title' defaultMessage='LCA Analysis' />
-            </Button>
+            />
           );
           const reloadIndex = settings.findIndex((item) => item.key === 'reload');
           if (reloadIndex < 0) {
