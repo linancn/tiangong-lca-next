@@ -711,6 +711,342 @@ describe('getProcessTableAll', () => {
   });
 });
 
+describe('listProcessesForLcaAnalysis', () => {
+  it('loads only the requested page for a single-source analysis list', async () => {
+    const buildProcessRow = (index: number) => ({
+      id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+      version: '01.00.000',
+      modified_at: `2024-03-${String((index % 28) + 1).padStart(2, '0')}T12:00:00Z`,
+      team_id: 'team-open',
+      model_id: `model-${index}`,
+      name: { en: `Open process ${index}` },
+      'common:class': { '#text': `class-${index}` },
+      'common:generalComment': { en: `comment-${index}` },
+      typeOfDataSet: 'background',
+      'common:referenceYear': '2024',
+      '@location': 'CN',
+    });
+
+    const requestedPageRows = Array.from({ length: 50 }, (_, index) => buildProcessRow(index + 51));
+    const builder = createQueryBuilder({
+      data: requestedPageRows,
+      count: 250,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 50 },
+      'en',
+      'open_data',
+    );
+
+    expect(builder.range).toHaveBeenCalledWith(50, 99);
+    expect(result.success).toBe(true);
+    expect(result.total).toBe(250);
+    expect(result.data).toHaveLength(50);
+  });
+
+  it('queries all_data in one paginated request for non-search loading', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+          version: '01.00.000',
+          modified_at: '2024-03-01T12:00:00Z',
+          team_id: 'team-my',
+          model_id: 'model-my',
+          name: { en: 'My process' },
+          'common:class': { '#text': 'class-my' },
+          'common:generalComment': { en: 'mine' },
+          typeOfDataSet: 'foreground',
+          'common:referenceYear': '2024',
+          '@location': 'CN',
+        },
+        {
+          id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+          version: '02.00.000',
+          modified_at: '2024-03-02T12:00:00Z',
+          team_id: 'team-open',
+          model_id: 'model-open-2',
+          name: { en: 'Open process' },
+          'common:class': { '#text': 'class-open' },
+          'common:generalComment': { en: 'open' },
+          typeOfDataSet: 'background',
+          'common:referenceYear': '2023',
+          '@location': 'US',
+        },
+      ],
+      count: 42,
+    });
+
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-1',
+          },
+        },
+      },
+    });
+    mockGetCachedLocationData.mockResolvedValue([
+      { '@value': 'CN', '#text': 'China' },
+      { '@value': 'US', '#text': 'United States' },
+    ]);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 20 },
+      'en',
+      'all_data',
+    );
+
+    expect(builder.or).toHaveBeenCalledWith('state_code.eq.100,user_id.eq.user-1');
+    expect(builder.range).toHaveBeenCalledWith(20, 39);
+    expect(result.success).toBe(true);
+    expect(result.page).toBe(2);
+    expect(result.total).toBe(42);
+    expect(result.data).toHaveLength(2);
+  });
+
+  it('searches current-user and open-data sources for all_data keyword lookups', async () => {
+    const myProcessId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const openProcessId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: myProcessId,
+            version: '01.00.000',
+            modified_at: '2024-06-03T00:00:00Z',
+            team_id: 'team-my',
+            model_id: 'model-my',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'My search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-my' },
+                      },
+                    },
+                    'common:generalComment': { en: 'mine' },
+                  },
+                  time: {
+                    'common:referenceYear': '2024',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'CN',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'foreground',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: openProcessId,
+            version: '02.00.000',
+            modified_at: '2024-06-04T00:00:00Z',
+            team_id: 'team-open',
+            model_id: 'model-open',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'Open search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-open' },
+                      },
+                    },
+                    'common:generalComment': { en: 'open' },
+                  },
+                  time: {
+                    'common:referenceYear': '2023',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'US',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'background',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: myProcessId,
+            version: '01.00.000',
+            modified_at: '2024-06-03T00:00:00Z',
+            team_id: 'team-my',
+            model_id: 'model-my',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'My search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-my' },
+                      },
+                    },
+                    'common:generalComment': { en: 'mine' },
+                  },
+                  time: {
+                    'common:referenceYear': '2024',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'CN',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'foreground',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: openProcessId,
+            version: '02.00.000',
+            modified_at: '2024-06-04T00:00:00Z',
+            team_id: 'team-open',
+            model_id: 'model-open',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'Open search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-open' },
+                      },
+                    },
+                    'common:generalComment': { en: 'open' },
+                  },
+                  time: {
+                    'common:referenceYear': '2023',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'US',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'background',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      });
+    mockGetCachedLocationData.mockResolvedValue([
+      { '@value': 'CN', '#text': 'China' },
+      { '@value': 'US', '#text': 'United States' },
+    ]);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 10 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      1,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'my',
+        page_size: 1,
+        page_current: 1,
+      }),
+    );
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      2,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'tg',
+        page_size: 1,
+        page_current: 1,
+      }),
+    );
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      3,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'my',
+        page_size: 10,
+        page_current: 1,
+      }),
+    );
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      4,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'tg',
+        page_size: 9,
+        page_current: 1,
+      }),
+    );
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({ id: myProcessId }),
+        expect.objectContaining({ id: openProcessId }),
+      ],
+      page: 1,
+      success: true,
+      total: 2,
+    });
+  });
+});
+
 describe('getProcessExchange', () => {
   it('filters exchanges by direction and paginates result', async () => {
     const exchanges = [

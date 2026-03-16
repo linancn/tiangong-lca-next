@@ -358,6 +358,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
 
       await queryLcaResults({
         scope: 'prod',
+        data_scope: 'current_user',
         mode: 'process_all_impacts',
         process_id: 'process-1',
         process_version: '1.0.0',
@@ -367,9 +368,62 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
         method: 'POST',
         body: {
           scope: 'prod',
+          data_scope: 'current_user',
           mode: 'process_all_impacts',
           process_id: 'process-1',
           process_version: '1.0.0',
+        },
+        headers: {
+          Authorization: 'Bearer token-123',
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    });
+
+    it('supports hotspot ranking requests without explicit process_ids', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: {
+          snapshot_id: 'snapshot-2',
+          result_id: 'result-2',
+          source: 'all_unit',
+          mode: 'processes_one_impact',
+          data: {
+            kind: 'ranked_processes',
+            impact_id: 'impact-1',
+            values: [],
+          },
+          meta: {
+            cache_hit: false,
+            computed_at: '2026-03-12T12:30:00.000Z',
+          },
+        },
+        error: null,
+      });
+
+      await queryLcaResults({
+        scope: 'prod',
+        data_scope: 'all_data',
+        mode: 'processes_one_impact',
+        impact_id: 'impact-1',
+        top_n: 50,
+        offset: 20,
+        sort_by: 'absolute_value',
+        sort_direction: 'desc',
+        allow_fallback: false,
+      });
+
+      expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('lca_query_results', {
+        method: 'POST',
+        body: {
+          scope: 'prod',
+          data_scope: 'all_data',
+          mode: 'processes_one_impact',
+          impact_id: 'impact-1',
+          top_n: 50,
+          offset: 20,
+          sort_by: 'absolute_value',
+          sort_direction: 'desc',
+          allow_fallback: false,
         },
         headers: {
           Authorization: 'Bearer token-123',

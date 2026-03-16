@@ -32,6 +32,9 @@ let latestRequest: any = null;
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  history: {
+    push: jest.fn(),
+  },
   useIntl: () => ({
     locale: 'en-US',
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -194,6 +197,12 @@ jest.mock('antd', () => {
 
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Card = ({ children }: any) => <section>{children}</section>;
+  const Button = ({ children, icon, onClick }: any) => (
+    <button type='button' onClick={onClick}>
+      {icon}
+      {children}
+    </button>
+  );
   const Checkbox = ({ children, onChange }: any) => {
     const [checked, setChecked] = React.useState(false);
     return (
@@ -251,6 +260,7 @@ jest.mock('antd', () => {
   return {
     __esModule: true,
     Card,
+    Button,
     Checkbox,
     Col,
     ConfigProvider,

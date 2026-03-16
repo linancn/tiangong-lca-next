@@ -350,10 +350,11 @@ export const createProComponentsMock = () => {
     );
   };
 
-  const PageContainer = ({ title, header, children }: any) => (
+  const PageContainer = ({ title, header, children, extra }: any) => (
     <div data-testid='page-container'>
       <div data-testid='page-container-title'>{header?.title ?? title}</div>
       <div data-testid='page-title'>{header?.title ?? title}</div>
+      {extra ? <div data-testid='page-container-extra'>{extra}</div> : null}
       <div>{children}</div>
     </div>
   );

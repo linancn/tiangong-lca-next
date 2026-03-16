@@ -61,6 +61,7 @@ export default {
   'menu.mydata.models': 'Models',
   'menu.mydata.products': 'Product Models',
   'menu.mydata.processes': 'Processes',
+  'menu.mydata.processAnalysis': 'Process Analysis',
   'menu.lifeCycleModels': 'Life Cycle Models',
   'menu.processes': 'Processes',
   'menu.mydata.flows': 'Flows',

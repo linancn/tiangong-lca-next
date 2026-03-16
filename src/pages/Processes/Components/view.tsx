@@ -41,7 +41,7 @@ import {
   Typography,
 } from 'antd';
 import type { ButtonType } from 'antd/es/button';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemView from './Compliance/view';
@@ -55,6 +55,7 @@ import {
 import ReviewItemView from './Review/view';
 
 import { getExchangeColumns } from './Exchange/column';
+import LcaProfileSummary from './lcaProfileSummary';
 import {
   copyrightOptions,
   LCIMethodApproachOptions,
@@ -71,6 +72,7 @@ type Props = {
   disabled: boolean;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
+  triggerLabel?: ReactNode;
 };
 
 type ProcessFormWithId = FormProcess & { id?: string };
@@ -271,6 +273,7 @@ const ProcessView: FC<Props> = ({
   lang,
   disabled,
   buttonTypeProp = 'default',
+  triggerLabel,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -1943,6 +1946,7 @@ const ProcessView: FC<Props> = ({
             />
           </Typography.Text>
         )}
+        <LcaProfileSummary rows={lciaResultDataSource} lang={lang} loading={solverLciaLoading} />
         <ProTable<LCIAResultTable, ListPagination>
           rowKey={(row) => row.referenceToLCIAMethodDataSet?.['@refObjectId'] || row.key}
           loading={solverLciaLoading}
@@ -2055,6 +2059,16 @@ const ProcessView: FC<Props> = ({
             onClick={onView}
           />
         </Tooltip>
+      ) : buttonType === 'link' ? (
+        disabled || id === '' ? (
+          <Typography.Text type='secondary'>
+            {triggerLabel ?? <FormattedMessage id='pages.button.view' defaultMessage='View' />}
+          </Typography.Text>
+        ) : (
+          <Typography.Link onClick={onView}>
+            {triggerLabel ?? <FormattedMessage id='pages.button.view' defaultMessage='View' />}
+          </Typography.Link>
+        )
       ) : (
         <Button onClick={onView}>
           <FormattedMessage id='pages.button.view' defaultMessage='View' />
