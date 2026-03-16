@@ -6,6 +6,7 @@ export type LcaJobStatus = 'queued' | 'running' | 'ready' | 'completed' | 'faile
 type LcaSolveRequestBase = {
   scope?: string;
   snapshot_id?: string;
+  data_scope?: LcaDataScope;
   solve?: {
     return_x?: boolean;
     return_g?: boolean;

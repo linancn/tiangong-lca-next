@@ -14,7 +14,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getCachedClassificationData, getCachedLocationData } from '../ilcd/cache';
-import type { ProcessDetailByVersionResponse } from './data';
+import type { ProcessDetailByVersionResponse, ProcessTable } from './data';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
 const selectStr4Table = `
@@ -37,6 +37,69 @@ export type LcaMyProcessOption = {
   version: string;
   name: string;
 };
+
+export type LcaAnalysisProcessScope = 'current_user' | 'open_data' | 'all_data';
+
+type ProcessTableQueryParams = {
+  current?: number;
+  pageSize?: number;
+};
+
+type ProcessTableResponse = {
+  data: ProcessTable[];
+  page?: number;
+  success: boolean;
+  total?: number;
+  error?: unknown;
+};
+
+async function mapProcessTableRows(rawRows: any[], lang: string): Promise<ProcessTable[]> {
+  if (!Array.isArray(rawRows) || rawRows.length === 0) {
+    return [];
+  }
+
+  const locations = Array.from(new Set(rawRows.map((item: any) => item['@location'])));
+  const [locationRes, classificationRes] = await Promise.all([
+    getCachedLocationData(lang, locations),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
+  ]);
+  const locationDataArr = locationRes || [];
+  const locationMap = new Map(locationDataArr.map((item: any) => [item['@value'], item['#text']]));
+  const classificationData = classificationRes;
+
+  return rawRows.map((item: any) => {
+    try {
+      const classifications = jsonToList(item['common:class']);
+      const classification =
+        lang === 'zh'
+          ? classificationToString(genClassificationZH(classifications, classificationData) ?? {})
+          : classificationToString(classifications);
+      let location = item['@location'];
+      if (locationMap.has(location)) {
+        location = locationMap.get(location);
+      }
+
+      return {
+        key: item.id + ':' + item.version,
+        id: item.id,
+        version: item.version,
+        lang,
+        name: genProcessName(item.name ?? {}, lang) || String(item.id ?? '').trim(),
+        generalComment: getLangText(item['common:generalComment'] ?? {}, lang),
+        classification,
+        typeOfDataSet: item.typeOfDataSet ?? '-',
+        referenceYear: item['common:referenceYear'] ?? '-',
+        location: location ?? '-',
+        modifiedAt: new Date(item.modified_at),
+        teamId: item?.team_id,
+        modelId: item?.model_id,
+      };
+    } catch (error) {
+      console.error(error);
+      return { id: item.id } as ProcessTable;
+    }
+  });
+}
 
 export async function listMyProcessesForLca(
   lang: string,
@@ -267,50 +330,68 @@ export async function getProcessTableAll(
     return { data: [], success: true };
   }
 
-  const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-  const [locationRes, classificationRes] = await Promise.all([
-    getCachedLocationData(lang, locations),
-    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
-  ]);
-  const locationDataArr = locationRes || [];
-  const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes;
+  const data = await mapProcessTableRows(result.data, lang);
 
-  let data: any[] = result.data.map((i: any) => {
-    try {
-      const classifications = jsonToList(i['common:class']);
-      let classification;
-      if (lang === 'zh') {
-        const classificationZH = genClassificationZH(classifications, classificationData);
-        classification = classificationToString(classificationZH ?? {});
-      } else {
-        classification = classificationToString(classifications);
-      }
-      let location = i['@location'];
-      if (locationMap.has(location)) {
-        location = locationMap.get(location);
-      }
-      return {
-        key: i.id + ':' + i.version,
-        id: i.id,
-        version: i.version,
-        lang: lang,
-        name: genProcessName(i.name ?? {}, lang),
-        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-        classification,
-        typeOfDataSet: i.typeOfDataSet ?? '-',
-        referenceYear: i['common:referenceYear'] ?? '-',
-        location: location ?? '-',
-        modifiedAt: new Date(i.modified_at),
-        teamId: i?.team_id,
-        modelId: i?.model_id,
-      };
-    } catch (e) {
-      console.error(e);
-      return { id: i.id };
-    }
-  });
+  return {
+    data,
+    page: params?.current ?? 1,
+    success: true,
+    total: result?.count ?? 0,
+  };
+}
 
+async function getProcessTableAllData(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  sort: Record<string, SortOrder>,
+  lang: string,
+  typeOfDataSet?: string,
+): Promise<ProcessTableResponse> {
+  const session = await supabase.auth.getSession();
+  const userId = session.data.session?.user?.id;
+
+  if (!userId) {
+    return { data: [], success: false, error: 'unauthorized' };
+  }
+
+  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
+  const orderBy = sort[sortBy] ?? 'descend';
+  let query = supabase
+    .from('processes')
+    .select(selectStr4Table, { count: 'exact' })
+    .or(`state_code.eq.100,user_id.eq.${userId}`)
+    .order(sortBy, { ascending: orderBy === 'ascend' })
+    .range(
+      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+    );
+
+  if (typeOfDataSet && typeOfDataSet !== 'all') {
+    query = query.eq(
+      'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
+      typeOfDataSet,
+    );
+  }
+
+  const result = await query;
+
+  if (result?.error) {
+    console.error('error', result?.error);
+    return { data: [], success: false, error: result?.error };
+  }
+
+  if (!result?.data || result?.data.length === 0) {
+    return {
+      data: [],
+      page: params?.current ?? 1,
+      success: true,
+      total: result?.count ?? 0,
+    };
+  }
+
+  const data = await mapProcessTableRows(result.data, lang);
   return {
     data,
     page: params?.current ?? 1,
@@ -781,6 +862,237 @@ export async function getProcessTablePgroongaSearch(
     };
   }
 }
+
+function normalizeProcessTableResponse(
+  result:
+    | ProcessTableResponse
+    | { data?: ProcessTable[]; page?: number; success?: boolean; total?: number }
+    | undefined,
+  fallbackPage = 1,
+): ProcessTableResponse {
+  if (!result) {
+    return { data: [], page: fallbackPage, success: false };
+  }
+
+  return {
+    data: Array.isArray(result.data) ? result.data : [],
+    page: result.page ?? fallbackPage,
+    success: result.success !== false,
+    total:
+      typeof result.total === 'number'
+        ? result.total
+        : Array.isArray(result.data)
+          ? result.data.length
+          : 0,
+    error: 'error' in result ? result.error : undefined,
+  };
+}
+
+function mergeUniqueProcessTableRows(responses: ProcessTableResponse[]): ProcessTable[] {
+  const merged: ProcessTable[] = [];
+  const seen = new Set<string>();
+
+  responses.forEach((response) => {
+    response.data.forEach((row) => {
+      const id = String(row.id ?? '').trim();
+      const version = String(row.version ?? '').trim();
+      const key = version ? `${id}:${version}` : id;
+      if (!id || seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      merged.push(row);
+    });
+  });
+
+  return merged;
+}
+
+async function listAllDataSearchProcessPage(
+  params: ProcessTableQueryParams,
+  lang: string,
+  queryText: string,
+  filterCondition: any,
+  stateCode: string | number,
+  typeOfDataSet: string,
+): Promise<ProcessTableResponse> {
+  const currentPage = Math.max(1, params.current ?? 1);
+  const pageSize = Math.max(1, params.pageSize ?? 10);
+  const loadSearchBySource = async (dataSource: 'my' | 'tg', pageParams: ProcessTableQueryParams) =>
+    normalizeProcessTableResponse(
+      await getProcessTablePgroongaSearch(
+        pageParams,
+        lang,
+        dataSource,
+        queryText,
+        filterCondition,
+        stateCode,
+        typeOfDataSet,
+      ),
+      pageParams.current ?? 1,
+    );
+
+  const currentUserHead = await loadSearchBySource('my', {
+    current: 1,
+    pageSize: 1,
+  });
+  if (!currentUserHead.success) {
+    return {
+      data: [],
+      page: currentPage,
+      success: false,
+      total: 0,
+      error: currentUserHead.error,
+    };
+  }
+
+  const openDataHead = await loadSearchBySource('tg', {
+    current: 1,
+    pageSize: 1,
+  });
+  if (!openDataHead.success) {
+    return {
+      data: [],
+      page: currentPage,
+      success: false,
+      total: currentUserHead.total ?? 0,
+      error: openDataHead.error,
+    };
+  }
+
+  const currentUserTotal = currentUserHead.total ?? 0;
+  const openDataTotal = openDataHead.total ?? 0;
+  const pageStartIndex = (currentPage - 1) * pageSize;
+
+  if (pageStartIndex < currentUserTotal) {
+    const currentUserPage = await loadSearchBySource('my', {
+      current: currentPage,
+      pageSize,
+    });
+    if (!currentUserPage.success) {
+      return {
+        data: [],
+        page: currentPage,
+        success: false,
+        total: currentUserTotal + openDataTotal,
+        error: currentUserPage.error,
+      };
+    }
+
+    const remainingSlots = Math.max(0, pageSize - currentUserPage.data.length);
+    if (remainingSlots === 0) {
+      return {
+        data: currentUserPage.data,
+        page: currentPage,
+        success: true,
+        total: currentUserTotal + openDataTotal,
+      };
+    }
+
+    const openDataPage = await loadSearchBySource('tg', {
+      current: 1,
+      pageSize: remainingSlots,
+    });
+    if (!openDataPage.success) {
+      return {
+        data: [],
+        page: currentPage,
+        success: false,
+        total: currentUserTotal + openDataTotal,
+        error: openDataPage.error,
+      };
+    }
+
+    return {
+      data: mergeUniqueProcessTableRows([
+        currentUserPage,
+        {
+          ...openDataPage,
+          data: openDataPage.data.slice(0, remainingSlots),
+        },
+      ]),
+      page: currentPage,
+      success: true,
+      total: currentUserTotal + openDataTotal,
+    };
+  }
+
+  const openDataStartIndex = pageStartIndex - currentUserTotal;
+  const openDataPage = await loadSearchBySource('tg', {
+    current: Math.floor(openDataStartIndex / pageSize) + 1,
+    pageSize: pageSize + (openDataStartIndex % pageSize),
+  });
+  if (!openDataPage.success) {
+    return {
+      data: [],
+      page: currentPage,
+      success: false,
+      total: currentUserTotal + openDataTotal,
+      error: openDataPage.error,
+    };
+  }
+
+  const openDataSliceStart = openDataStartIndex % pageSize;
+  return {
+    data: openDataPage.data.slice(openDataSliceStart, openDataSliceStart + pageSize),
+    page: currentPage,
+    success: true,
+    total: currentUserTotal + openDataTotal,
+  };
+}
+
+export async function listProcessesForLcaAnalysis(
+  params: ProcessTableQueryParams,
+  lang: string,
+  dataScope: LcaAnalysisProcessScope,
+  keyword = '',
+  sort: Record<string, SortOrder> = {},
+  filterCondition: any = {},
+  stateCode: string | number = 'all',
+  typeOfDataSet = 'all',
+): Promise<ProcessTableResponse> {
+  const trimmedKeyword = keyword.trim();
+
+  const loadBySource = async (dataSource: 'my' | 'tg'): Promise<ProcessTableResponse> => {
+    if (trimmedKeyword) {
+      return normalizeProcessTableResponse(
+        await getProcessTablePgroongaSearch(
+          params,
+          lang,
+          dataSource,
+          trimmedKeyword,
+          filterCondition,
+          stateCode,
+          typeOfDataSet,
+        ),
+        params.current ?? 1,
+      );
+    }
+
+    return normalizeProcessTableResponse(
+      await getProcessTableAll(params, sort, lang, dataSource, '', stateCode, typeOfDataSet),
+      params.current ?? 1,
+    );
+  };
+
+  if (dataScope === 'all_data') {
+    if (!trimmedKeyword) {
+      return await getProcessTableAllData(params, sort, lang, typeOfDataSet);
+    }
+
+    return await listAllDataSearchProcessPage(
+      params,
+      lang,
+      trimmedKeyword,
+      filterCondition,
+      stateCode,
+      typeOfDataSet,
+    );
+  }
+
+  return loadBySource(dataScope === 'open_data' ? 'tg' : 'my');
+}
+
 export async function process_hybrid_search(
   params: {
     current?: number;

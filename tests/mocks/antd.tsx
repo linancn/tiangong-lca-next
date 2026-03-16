@@ -186,10 +186,14 @@ export const createAntdMock = () => {
     mode,
     showSearch,
     optionFilterProp,
+    allowClear,
+    maxTagCount,
     ...rest
   }: any) => {
     void showSearch;
     void optionFilterProp;
+    void allowClear;
+    void maxTagCount;
     return (
       <select
         multiple={mode === 'multiple'}

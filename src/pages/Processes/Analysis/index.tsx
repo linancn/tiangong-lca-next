@@ -38,11 +38,7 @@ import {
   submitLcaContributionPath,
 } from '@/services/lca';
 import type { LCIAResultTable } from '@/services/lciaMethods/data';
-import {
-  getProcessDetail,
-  getProcessTableAll,
-  getProcessTablePgroongaSearch,
-} from '@/services/processes/api';
+import { getProcessDetail, listProcessesForLcaAnalysis } from '@/services/processes/api';
 import type { ProcessTable } from '@/services/processes/data';
 import { genProcessName } from '@/services/processes/util';
 import { getTeams } from '@/services/teams/api';
@@ -69,7 +65,7 @@ import {
   theme,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, history, useIntl } from 'umi';
 import {
   LCA_SCOPE,
@@ -94,6 +90,40 @@ const G2_TOOLTIP_SELECTOR = '.g2-tooltip';
 const G2_TOOLTIP_TITLE_SELECTOR = '.g2-tooltip-title';
 const G2_TOOLTIP_NAME_SELECTOR = '.g2-tooltip-list-item-name-label';
 const G2_TOOLTIP_VALUE_SELECTOR = '.g2-tooltip-list-item-value';
+
+function buildProcessRowKey(processRow: ProcessTable): string {
+  const processId = String(processRow.id ?? '').trim();
+  const processVersion = String(processRow.version ?? '').trim();
+  return processVersion ? `${processId}:${processVersion}` : processId;
+}
+
+function mergeProcessRows(existingRows: ProcessTable[], nextRows: ProcessTable[]): ProcessTable[] {
+  const merged = new Map<string, ProcessTable>();
+
+  [...existingRows, ...nextRows].forEach((processRow) => {
+    const rowKey = buildProcessRowKey(processRow);
+    if (!rowKey) {
+      return;
+    }
+    merged.set(rowKey, processRow);
+  });
+
+  return Array.from(merged.values());
+}
+
+function prependCurrentProcessOption(
+  currentOptions: LcaProcessOption[],
+  optionMap: Map<string, LcaProcessOption>,
+  processId: string,
+): LcaProcessOption[] {
+  const normalizedProcessId = String(processId ?? '').trim();
+  if (!normalizedProcessId || currentOptions.some((item) => item.value === normalizedProcessId)) {
+    return currentOptions;
+  }
+
+  const selectedOption = optionMap.get(normalizedProcessId);
+  return selectedOption ? [selectedOption, ...currentOptions] : currentOptions;
+}
 
 type AntdThemeToken = ReturnType<typeof theme.useToken>['token'];
 
@@ -160,16 +190,6 @@ type ContributionPathResultState = QueryMeta & {
   amount: number;
   model: LcaContributionPathModel;
 };
-
-function mapAnalysisDataScopeToProcessDataSource(scope: LcaAnalysisDataScope): string {
-  if (scope === 'open_data') {
-    return 'tg';
-  }
-  if (scope === 'all_data') {
-    return '';
-  }
-  return 'my';
-}
 
 function truncateChartLabel(value: string, maxLength = DEFAULT_CHART_LABEL_MAX_LENGTH): string {
   const trimmed = value.trim();
@@ -396,7 +416,9 @@ const LcaAnalysisPage = () => {
   const [activeTabKey, setActiveTabKey] = useState('profile');
   const [selectedDataScope, setSelectedDataScope] = useState<LcaAnalysisDataScope>('current_user');
   const [processSearchKeyword, setProcessSearchKeyword] = useState('');
-  const [processOptions, setProcessOptions] = useState<LcaProcessOption[]>([]);
+  const [appliedProcessSearchKeyword, setAppliedProcessSearchKeyword] = useState('');
+  const [processCurrentPage, setProcessCurrentPage] = useState(1);
+  const [processTotalCount, setProcessTotalCount] = useState(0);
   const [processOptionsLoading, setProcessOptionsLoading] = useState(false);
   const [processOptionsError, setProcessOptionsError] = useState<string | null>(null);
   const [impactOptions, setImpactOptions] = useState<ImpactOption[]>([]);
@@ -419,6 +441,7 @@ const LcaAnalysisPage = () => {
   const [pathCutoffShare, setPathCutoffShare] = useState(0.01);
   const [pathMaxNodes, setPathMaxNodes] = useState(200);
   const [processRows, setProcessRows] = useState<ProcessTable[]>([]);
+  const [knownProcessRows, setKnownProcessRows] = useState<ProcessTable[]>([]);
   const [teamNameMap, setTeamNameMap] = useState<Map<string, string>>(new Map());
 
   const [profileLoading, setProfileLoading] = useState(false);
@@ -443,14 +466,36 @@ const LcaAnalysisPage = () => {
   const [pathProcessMetaMap, setPathProcessMetaMap] = useState<
     Map<string, LcaContributionPathProcessMeta>
   >(new Map());
+  const processOptionsRequestIdRef = useRef(0);
+  const initializedProcessQueryKeyRef = useRef('');
+  const processQueryKey = `${lang}:${selectedDataScope}:${appliedProcessSearchKeyword}`;
+  const processOptions = useMemo(() => buildLcaProcessOptions(processRows), [processRows]);
+  const knownProcessOptions = useMemo(
+    () => buildLcaProcessOptions(knownProcessRows),
+    [knownProcessRows],
+  );
+  const processPageCount = useMemo(
+    () => Math.max(1, Math.ceil(processTotalCount / DEFAULT_ANALYSIS_PAGE_SIZE)),
+    [processTotalCount],
+  );
+  const processRangeStart =
+    processTotalCount === 0 ? 0 : (processCurrentPage - 1) * DEFAULT_ANALYSIS_PAGE_SIZE + 1;
+  const processRangeEnd =
+    processTotalCount === 0
+      ? 0
+      : Math.min(processTotalCount, processCurrentPage * DEFAULT_ANALYSIS_PAGE_SIZE);
 
   const processOptionMap = useMemo(
-    () => new Map(processOptions.map((item) => [item.value, item])),
-    [processOptions],
+    () => new Map(knownProcessOptions.map((item) => [item.value, item])),
+    [knownProcessOptions],
   );
   const processRowMap = useMemo(
-    () => new Map(processRows.map((item) => [item.id, item])),
-    [processRows],
+    () => new Map(knownProcessRows.map((item) => [item.id, item])),
+    [knownProcessRows],
+  );
+  const profileProcessOptions = useMemo(
+    () => prependCurrentProcessOption(processOptions, processOptionMap, selectedProfileProcessId),
+    [processOptionMap, processOptions, selectedProfileProcessId],
   );
   const selectedCompareProcesses = useMemo(
     () =>
@@ -567,6 +612,12 @@ const LcaAnalysisPage = () => {
   }, [impactOptions]);
 
   useEffect(() => {
+    if (processOptionsLoading || initializedProcessQueryKeyRef.current === processQueryKey) {
+      return;
+    }
+
+    initializedProcessQueryKeyRef.current = processQueryKey;
+
     if (processOptions.length === 0) {
       setSelectedProfileProcessId('');
       setSelectedCompareProcessIds([]);
@@ -610,10 +661,8 @@ const LcaAnalysisPage = () => {
         .map((item) => item.value);
     });
 
-    setSelectedPathProcessId((current) =>
-      current && processOptionMap.has(current) ? current : processOptions[0].value,
-    );
-  }, [processOptionMap, processOptions]);
+    setSelectedPathProcessId(processOptions[0].value);
+  }, [processOptions, processOptionsLoading, processQueryKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -654,45 +703,58 @@ const LcaAnalysisPage = () => {
     };
   }, [lang]);
 
+  const clearAnalysisResults = () => {
+    setProfileResult(null);
+    setCompareResult(null);
+    setHotspotResult(null);
+    setGroupedResult(null);
+    setPathResult(null);
+    setProfileError(null);
+    setCompareError(null);
+    setHotspotError(null);
+    setGroupedError(null);
+    setPathError(null);
+  };
+
   const loadProcessOptions = async (
     keyword = '',
     dataScope: LcaAnalysisDataScope = selectedDataScope,
+    currentPage = 1,
+    options: { resetKnownRows?: boolean } = {},
   ) => {
+    const requestId = processOptionsRequestIdRef.current + 1;
+    processOptionsRequestIdRef.current = requestId;
     setProcessOptionsLoading(true);
     setProcessOptionsError(null);
 
     try {
-      const trimmedKeyword = keyword.trim();
-      const processDataSource = mapAnalysisDataScopeToProcessDataSource(dataScope);
-      const result = trimmedKeyword
-        ? await getProcessTablePgroongaSearch(
-            {
-              current: 1,
-              pageSize: DEFAULT_ANALYSIS_PAGE_SIZE,
-            },
-            lang,
-            processDataSource,
-            trimmedKeyword,
-            {},
-            'all',
-            'all',
-          )
-        : await getProcessTableAll(
-            {
-              current: 1,
-              pageSize: DEFAULT_ANALYSIS_PAGE_SIZE,
-            },
-            {},
-            lang,
-            processDataSource,
-            '',
-            'all',
-            'all',
-          );
+      const result = await listProcessesForLcaAnalysis(
+        {
+          current: currentPage,
+          pageSize: DEFAULT_ANALYSIS_PAGE_SIZE,
+        },
+        lang,
+        dataScope,
+        keyword,
+        {},
+        {},
+        'all',
+        'all',
+      );
+      if (result?.success === false) {
+        throw new Error('load_processes_for_analysis_failed');
+      }
+      if (requestId !== processOptionsRequestIdRef.current) {
+        return;
+      }
 
       const rows = Array.isArray(result?.data) ? result.data : [];
+      setProcessCurrentPage(currentPage);
+      setProcessTotalCount(typeof result?.total === 'number' ? result.total : rows.length);
       setProcessRows(rows);
-      setProcessOptions(buildLcaProcessOptions(rows));
+      setKnownProcessRows((current) =>
+        options.resetKnownRows ? rows : mergeProcessRows(current, rows),
+      );
       if (rows.length === 0) {
         setProcessOptionsError(
           intl.formatMessage({
@@ -702,8 +764,14 @@ const LcaAnalysisPage = () => {
         );
       }
     } catch (_error) {
-      setProcessRows([]);
-      setProcessOptions([]);
+      if (requestId !== processOptionsRequestIdRef.current) {
+        return;
+      }
+      if (options.resetKnownRows) {
+        setProcessRows([]);
+        setKnownProcessRows([]);
+        setProcessTotalCount(0);
+      }
       setProcessOptionsError(
         intl.formatMessage({
           id: 'pages.process.lca.page.processes.loadFailed',
@@ -711,8 +779,36 @@ const LcaAnalysisPage = () => {
         }),
       );
     } finally {
-      setProcessOptionsLoading(false);
+      if (requestId === processOptionsRequestIdRef.current) {
+        setProcessOptionsLoading(false);
+      }
     }
+  };
+
+  const loadFirstProcessPage = async (
+    keyword = appliedProcessSearchKeyword,
+    dataScope: LcaAnalysisDataScope = selectedDataScope,
+  ) => {
+    initializedProcessQueryKeyRef.current = '';
+    setProcessCurrentPage(1);
+    setProcessRows([]);
+    setKnownProcessRows([]);
+    setProcessTotalCount(0);
+    clearAnalysisResults();
+    await loadProcessOptions(keyword, dataScope, 1, { resetKnownRows: true });
+  };
+
+  const changeProcessPage = async (nextPage: number) => {
+    if (
+      processOptionsLoading ||
+      nextPage < 1 ||
+      nextPage > processPageCount ||
+      nextPage === processCurrentPage
+    ) {
+      return;
+    }
+
+    await loadProcessOptions(appliedProcessSearchKeyword, selectedDataScope, nextPage);
   };
 
   const loadAnalysisOptions = async () => {
@@ -744,17 +840,7 @@ const LcaAnalysisPage = () => {
   };
 
   useEffect(() => {
-    setProfileResult(null);
-    setCompareResult(null);
-    setHotspotResult(null);
-    setGroupedResult(null);
-    setPathResult(null);
-    setProfileError(null);
-    setCompareError(null);
-    setHotspotError(null);
-    setGroupedError(null);
-    setPathError(null);
-    void loadProcessOptions(processSearchKeyword, selectedDataScope);
+    void loadFirstProcessPage(appliedProcessSearchKeyword, selectedDataScope);
   }, [lang, selectedDataScope]);
 
   useEffect(() => {
@@ -796,7 +882,7 @@ const LcaAnalysisPage = () => {
     }
 
     const seededMeta = new Map<string, LcaContributionPathProcessMeta>();
-    processOptions.forEach((item) => {
+    knownProcessOptions.forEach((item) => {
       if (!item.value) {
         return;
       }
@@ -876,7 +962,7 @@ const LcaAnalysisPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [lang, pathResult, processOptions]);
+  }, [knownProcessOptions, lang, pathResult]);
 
   const goBackToProcesses = () => {
     history.push('/mydata/processes');
@@ -1891,7 +1977,11 @@ const LcaAnalysisPage = () => {
         icon={<ReloadOutlined />}
         loading={processOptionsLoading || impactOptionsLoading}
         onClick={() => {
-          void loadProcessOptions(processSearchKeyword, selectedDataScope);
+          void loadProcessOptions(
+            appliedProcessSearchKeyword,
+            selectedDataScope,
+            processCurrentPage,
+          );
           void loadAnalysisOptions();
         }}
       >
@@ -1974,28 +2064,63 @@ const LcaAnalysisPage = () => {
                       onSearch={(value) => {
                         const nextKeyword = String(value ?? '');
                         setProcessSearchKeyword(nextKeyword);
-                        setProfileResult(null);
-                        setCompareResult(null);
-                        setHotspotResult(null);
-                        setGroupedResult(null);
-                        setPathResult(null);
-                        setPathError(null);
-                        void loadProcessOptions(nextKeyword, selectedDataScope);
+                        setAppliedProcessSearchKeyword(nextKeyword);
+                        void loadFirstProcessPage(nextKeyword, selectedDataScope);
                       }}
                     />
                   </Form.Item>
                 </Form>
               </Col>
             </Row>
-            <Typography.Text type='secondary'>
-              <FormattedMessage
-                id='pages.process.lca.page.processes.count'
-                defaultMessage='{count} process options are currently available for analysis.'
-                values={{
-                  count: processOptions.length,
-                }}
-              />
-            </Typography.Text>
+            <Space align='center' wrap={true}>
+              <Typography.Text type='secondary'>
+                <FormattedMessage
+                  id='pages.process.lca.page.processes.count'
+                  defaultMessage='{count} process rows are currently available for analysis.'
+                  values={{
+                    count: processTotalCount,
+                  }}
+                />
+              </Typography.Text>
+              <Typography.Text type='secondary'>
+                <FormattedMessage
+                  id='pages.process.lca.page.processes.range'
+                  defaultMessage='Showing {start}-{end} on page {current} of {totalPages}.'
+                  values={{
+                    start: processRangeStart,
+                    end: processRangeEnd,
+                    current: processCurrentPage,
+                    totalPages: processPageCount,
+                  }}
+                />
+              </Typography.Text>
+              <Space size='small'>
+                <Button
+                  size='small'
+                  disabled={processOptionsLoading || processCurrentPage <= 1}
+                  onClick={() => {
+                    void changeProcessPage(processCurrentPage - 1);
+                  }}
+                >
+                  <FormattedMessage
+                    id='pages.process.lca.page.processes.action.previousPage'
+                    defaultMessage='Previous page'
+                  />
+                </Button>
+                <Button
+                  size='small'
+                  disabled={processOptionsLoading || processCurrentPage >= processPageCount}
+                  onClick={() => {
+                    void changeProcessPage(processCurrentPage + 1);
+                  }}
+                >
+                  <FormattedMessage
+                    id='pages.process.lca.page.processes.action.nextPage'
+                    defaultMessage='Next page'
+                  />
+                </Button>
+              </Space>
+            </Space>
             {processOptionsError ? <Alert message={processOptionsError} type='error' /> : null}
             {impactOptionsError ? <Alert message={impactOptionsError} type='error' /> : null}
           </Space>
@@ -2032,8 +2157,8 @@ const LcaAnalysisPage = () => {
                             defaultMessage: 'Process',
                           })}
                           value={selectedProfileProcessId || undefined}
-                          options={processOptions}
-                          disabled={processOptionsLoading || processOptions.length === 0}
+                          options={profileProcessOptions}
+                          disabled={processOptionsLoading || profileProcessOptions.length === 0}
                           optionFilterProp='label'
                           onChange={(value) => {
                             setSelectedProfileProcessId(String(value ?? ''));
@@ -2213,6 +2338,8 @@ const LcaAnalysisPage = () => {
                       <LcaProcessSelectionTable
                         processOptions={processOptions}
                         selectedProcessIds={selectedCompareProcessIds}
+                        selectedProcessOptions={selectedCompareProcesses}
+                        totalProcessCount={processTotalCount}
                         titleMessage={{
                           id: 'pages.process.lca.page.compare.selectionTitle',
                           defaultMessage: 'Process selection',
@@ -2220,7 +2347,7 @@ const LcaAnalysisPage = () => {
                         hintMessage={{
                           id: 'pages.process.lca.page.compare.selectionHint',
                           defaultMessage:
-                            '{selectedCount} processes selected from {totalCount} loaded options.',
+                            '{selectedCount} processes selected from {totalCount} available options.',
                         }}
                         emptyMessage={{
                           id: 'pages.process.lca.page.compare.selectionEmpty',
@@ -2438,6 +2565,8 @@ const LcaAnalysisPage = () => {
                       <LcaProcessSelectionTable
                         processOptions={processOptions}
                         selectedProcessIds={selectedHotspotProcessIds}
+                        selectedProcessOptions={selectedHotspotProcesses}
+                        totalProcessCount={processTotalCount}
                         titleMessage={{
                           id: 'pages.process.lca.page.hotspots.selectionTitle',
                           defaultMessage: 'Process selection',
@@ -2445,7 +2574,7 @@ const LcaAnalysisPage = () => {
                         hintMessage={{
                           id: 'pages.process.lca.page.hotspots.selectionHint',
                           defaultMessage:
-                            '{selectedCount} processes selected from {totalCount} loaded options.',
+                            '{selectedCount} processes selected from {totalCount} available options.',
                         }}
                         emptyMessage={{
                           id: 'pages.process.lca.page.hotspots.selectionEmpty',
@@ -2691,6 +2820,10 @@ const LcaAnalysisPage = () => {
                       <LcaProcessSelectionTable
                         processOptions={processOptions}
                         selectedProcessIds={selectedGroupedProcessIds}
+                        selectedProcessOptions={selectedGroupedProcessIds
+                          .map((processId) => processOptionMap.get(processId))
+                          .filter((item): item is LcaProcessOption => !!item)}
+                        totalProcessCount={processTotalCount}
                         titleMessage={{
                           id: 'pages.process.lca.page.grouped.selectionTitle',
                           defaultMessage: 'Process selection',
@@ -2698,7 +2831,7 @@ const LcaAnalysisPage = () => {
                         hintMessage={{
                           id: 'pages.process.lca.page.grouped.selectionHint',
                           defaultMessage:
-                            '{selectedCount} processes selected from {totalCount} loaded options.',
+                            '{selectedCount} processes selected from {totalCount} available options.',
                         }}
                         emptyMessage={{
                           id: 'pages.process.lca.page.grouped.selectionEmpty',
@@ -3040,6 +3173,8 @@ const LcaAnalysisPage = () => {
                       <LcaProcessSelectionTable
                         processOptions={processOptions}
                         selectedProcessIds={selectedPathProcessId ? [selectedPathProcessId] : []}
+                        selectedProcessOptions={selectedPathProcess ? [selectedPathProcess] : []}
+                        totalProcessCount={processTotalCount}
                         selectionType='radio'
                         titleMessage={{
                           id: 'pages.process.lca.page.path.selectionTitle',
@@ -3048,7 +3183,7 @@ const LcaAnalysisPage = () => {
                         hintMessage={{
                           id: 'pages.process.lca.page.path.selectionHint',
                           defaultMessage:
-                            '{selectedCount} root process selected from {totalCount} loaded options.',
+                            '{selectedCount} root process selected from {totalCount} available options.',
                         }}
                         emptyMessage={{
                           id: 'pages.process.lca.page.path.selectionEmpty',

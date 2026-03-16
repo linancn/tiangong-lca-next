@@ -44,8 +44,7 @@ jest.mock('@/services/lca', () => ({
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
-  getProcessTableAll: jest.fn(),
-  getProcessTablePgroongaSearch: jest.fn(),
+  listProcessesForLcaAnalysis: jest.fn(),
   getProcessDetail: jest.fn(),
 }));
 
@@ -66,7 +65,9 @@ const {
   getLcaContributionPathResult,
   pollLcaJobUntilTerminal,
 } = jest.requireMock('@/services/lca');
-const { getProcessDetail, getProcessTableAll } = jest.requireMock('@/services/processes/api');
+const { getProcessDetail, listProcessesForLcaAnalysis } = jest.requireMock(
+  '@/services/processes/api',
+);
 const { getTeams } = jest.requireMock('@/services/teams/api');
 const { cacheAndDecompressMethod, getDecompressedMethod } = jest.requireMock(
   '@/services/lciaMethods/util',
@@ -172,7 +173,7 @@ describe('LcaAnalysisPage', () => {
     resetUmiMocks();
     setUmiLocation({ pathname: '/mydata/processes/analysis', search: '' });
 
-    getProcessTableAll.mockResolvedValue({
+    listProcessesForLcaAnalysis.mockResolvedValue({
       data: [
         buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
         buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
@@ -340,7 +341,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Back to processes' })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: 'Refresh options' })).toHaveLength(1);
@@ -369,7 +370,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
@@ -394,7 +395,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     queryLcaResults.mockResolvedValueOnce({
@@ -439,7 +440,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-grouped'));
@@ -465,7 +466,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
@@ -577,7 +578,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
@@ -693,7 +694,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
@@ -706,11 +707,48 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByText('kg CO2-eq').length).toBeGreaterThan(0);
   });
 
+  it('requests the next process page from the server when paging forward', async () => {
+    listProcessesForLcaAnalysis.mockImplementation(async (params: { current?: number }) => ({
+      data: [
+        buildProcess(`process-page-${params.current ?? 1}`, 'Paged process', '01.00.000'),
+        buildProcess(`process-page-${params.current ?? 1}-2`, 'Paged process 2', '01.00.000'),
+      ],
+      success: true,
+      total: 120,
+    }));
+
+    render(<LcaAnalysisPage />);
+
+    expect(
+      await screen.findByText('120 process rows are currently available for analysis.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Showing 1-50 on page 1 of 3.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        {
+          current: 2,
+          pageSize: 50,
+        },
+        'en',
+        'current_user',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    expect(await screen.findByText('Showing 51-100 on page 2 of 3.')).toBeInTheDocument();
+  });
+
   it('switches data scope and uses the selected scope for option loading and hotspot queries', async () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('3 process options are currently available for analysis.'),
+      await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Data scope'), {
@@ -718,15 +756,16 @@ describe('LcaAnalysisPage', () => {
     });
 
     await waitFor(() =>
-      expect(getProcessTableAll).toHaveBeenLastCalledWith(
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
         {
           current: 1,
           pageSize: 50,
         },
-        {},
         'en',
+        'all_data',
         '',
-        '',
+        {},
+        {},
         'all',
         'all',
       ),
