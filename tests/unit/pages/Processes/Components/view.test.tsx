@@ -775,15 +775,10 @@ describe('ProcessView component', () => {
       current: 1,
       pageSize: 10,
     });
-    expect(mockGetUnitData.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(mockGetFlowStateCode.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(
-      mockGetFlowStateCode.mock.calls.some(
-        (call) =>
-          JSON.stringify(call[0]) === JSON.stringify([{ id: 'flow-1', version: '1.0' }]) &&
-          call[1] === 'en',
-      ),
-    ).toBe(true);
+    await waitFor(() => expect(mockGetUnitData.mock.calls.length).toBeGreaterThanOrEqual(2));
+    await waitFor(() =>
+      expect(mockGetFlowStateCode).toHaveBeenCalledWith([{ id: 'flow-1', version: '1.0' }], 'en'),
+    );
   });
 
   it('handles array-based exchange references, missing flow metadata, and unit lookup fallbacks', async () => {
@@ -833,12 +828,15 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
 
     await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
-    expect(
-      mockGetFlowStateCode.mock.calls.filter(
-        (call) =>
-          JSON.stringify(call[0]) === JSON.stringify([{ id: '', version: '' }]) && call[1] === 'en',
-      ).length,
-    ).toBeGreaterThanOrEqual(2);
+    await waitFor(() =>
+      expect(
+        mockGetFlowStateCode.mock.calls.filter(
+          (call) =>
+            JSON.stringify(call[0]) === JSON.stringify([{ id: '', version: '' }]) &&
+            call[1] === 'en',
+        ).length,
+      ).toBeGreaterThanOrEqual(2),
+    );
   });
 
   it('falls back to an empty output unit list when the output unit lookup returns nothing', async () => {
@@ -890,10 +888,12 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
 
     await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
-    expect(
-      mockGetUnitData.mock.calls.filter((call) => call[0] === 'flow' && Array.isArray(call[1]))
-        .length,
-    ).toBeGreaterThanOrEqual(2);
+    await waitFor(() =>
+      expect(
+        mockGetUnitData.mock.calls.filter((call) => call[0] === 'flow' && Array.isArray(call[1]))
+          .length,
+      ).toBeGreaterThanOrEqual(2),
+    );
   });
 
   it('falls back to empty process payloads without crashing', async () => {
