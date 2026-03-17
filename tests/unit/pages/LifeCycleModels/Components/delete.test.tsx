@@ -13,7 +13,11 @@ const toText = (node: any): string => {
   return '';
 };
 
-const mockDeleteLifeCycleModel = jest.fn(async () => ({ status: 204 }));
+const mockDeleteLifeCycleModel = jest.fn(async () => ({
+  ok: true,
+  modelId: 'default-model',
+  version: '1.0.0',
+}));
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -112,15 +116,18 @@ describe('LifeCycleModelDelete', () => {
     await waitFor(() => expect(mockDeleteLifeCycleModel).toHaveBeenCalledWith('model-1', '1.0.0'));
 
     const { message } = jest.requireMock('antd');
-    expect(message.success).toHaveBeenCalledWith('Selected record has been deleted.');
+    await waitFor(() =>
+      expect(message.success).toHaveBeenCalledWith('Selected record has been deleted.'),
+    );
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
   });
 
   it('shows the backend message when delete fails', async () => {
     mockDeleteLifeCycleModel.mockResolvedValueOnce({
-      status: 400,
-      error: { message: 'Delete lifecycle model failed' },
+      ok: false,
+      code: 'PROCESS_PERSIST_FAILED',
+      message: 'Delete lifecycle model failed',
     });
 
     const actionRef = { current: { reload: jest.fn() } };
@@ -151,8 +158,9 @@ describe('LifeCycleModelDelete', () => {
 
   it('falls back to a generic error when delete fails without a backend message', async () => {
     mockDeleteLifeCycleModel.mockResolvedValueOnce({
-      status: 500,
-      error: null,
+      ok: false,
+      code: 'PROCESS_PERSIST_FAILED',
+      message: undefined,
     });
 
     const actionRef = { current: { reload: jest.fn() } };
@@ -203,7 +211,7 @@ describe('LifeCycleModelDelete', () => {
     await waitFor(() =>
       expect(mockDeleteLifeCycleModel).toHaveBeenCalledWith('model-icon', '3.0.0'),
     );
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
   });

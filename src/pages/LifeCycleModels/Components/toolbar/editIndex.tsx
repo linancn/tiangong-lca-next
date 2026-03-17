@@ -5,12 +5,7 @@ import type { refDataType } from '@/pages/Utils/review';
 import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
 import { getRefData } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
-import {
-  formatDateTime,
-  getImportedId,
-  getLangText,
-  isSupabaseDuplicateKeyError,
-} from '@/services/general/util';
+import { formatDateTime, getImportedId, getLangText } from '@/services/general/util';
 import {
   createLifeCycleModel,
   getLifeCycleModelDetail,
@@ -23,6 +18,7 @@ import type {
   LifeCycleModelGraphNode,
   LifeCycleModelImportData,
   LifeCycleModelJsonTg,
+  LifeCycleModelMutationResult,
   LifeCycleModelPortItem,
   LifeCycleModelProcessInstance,
   LifeCycleModelSelectedPortPayload,
@@ -789,10 +785,24 @@ const ToolbarEdit: FC<Props> = ({
         : (edges as LifeCycleModelGraphEdge[]);
 
       const newData = buildSavePayload(infoData, currentNodes, currentEdges);
+      const showMutationError = (result: Extract<LifeCycleModelMutationResult, { ok: false }>) => {
+        if (result.code === 'VERSION_CONFLICT') {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.button.create.error.duplicateId',
+              defaultMessage: 'Data with the same ID already exists.',
+            }),
+          );
+          return;
+        }
+
+        message.error(result.message ?? 'Error');
+      };
 
       if (thisAction === 'edit') {
         const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
-        if (result?.data) {
+        if (result.ok) {
+          const savedLifeCycleModel = result.lifecycleModel;
           setInfoData({ ...newData, id: thisId, version: thisVersion });
           message.success(
             intl.formatMessage({
@@ -800,11 +810,11 @@ const ToolbarEdit: FC<Props> = ({
               defaultMessage: 'Save successfully',
             }),
           );
-          setThisId(result.data?.[0]?.id);
-          setThisVersion(result.data?.[0]?.version);
-          setJsonTg(result.data?.[0]?.json_tg);
+          setThisId(savedLifeCycleModel?.id ?? result.modelId);
+          setThisVersion(savedLifeCycleModel?.version ?? result.version);
+          setJsonTg(savedLifeCycleModel?.json_tg ?? {});
 
-          const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
+          const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
             []) as LifeCycleModelGraphEdge[];
           savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
             const label = getEdgeLabel(
@@ -818,28 +828,13 @@ const ToolbarEdit: FC<Props> = ({
 
           saveCallback();
         } else {
-          if (result?.error?.state_code === 100) {
-            message.error(
-              intl.formatMessage({
-                id: 'pages.review.openData',
-                defaultMessage: 'This data is open data, save failed',
-              }),
-            );
-          } else if (result?.error?.state_code === 20) {
-            message.error(
-              intl.formatMessage({
-                id: 'pages.review.underReview',
-                defaultMessage: 'Data is under review, save failed',
-              }),
-            );
-          } else {
-            message.error(result?.error?.message);
-          }
+          showMutationError(result);
         }
       } else if (thisAction === 'create') {
         const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
         const result = await createLifeCycleModel({ ...newData, id: newId });
-        if (result.data) {
+        if (result.ok) {
+          const savedLifeCycleModel = result.lifecycleModel;
           message.success(
             intl.formatMessage({
               id: 'pages.button.create.success',
@@ -847,10 +842,11 @@ const ToolbarEdit: FC<Props> = ({
             }),
           );
           setThisAction('edit');
-          setThisId(result.data?.[0]?.id);
-          setThisVersion(result.data?.[0]?.version);
+          setThisId(savedLifeCycleModel?.id ?? result.modelId);
+          setThisVersion(savedLifeCycleModel?.version ?? result.version);
+          setJsonTg(savedLifeCycleModel?.json_tg ?? {});
 
-          const savedEdges = (result?.data?.[0]?.json_tg?.xflow?.edges ??
+          const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
             []) as LifeCycleModelGraphEdge[];
           savedEdges.forEach((edge: LifeCycleModelGraphEdge) => {
             const label = getEdgeLabel(
@@ -864,14 +860,7 @@ const ToolbarEdit: FC<Props> = ({
 
           saveCallback();
         } else {
-          message.error(
-            isSupabaseDuplicateKeyError(result.error)
-              ? intl.formatMessage({
-                  id: 'pages.button.create.error.duplicateId',
-                  defaultMessage: 'Data with the same ID already exists.',
-                })
-              : (result.error?.message ?? 'Error'),
-          );
+          showMutationError(result);
         }
       }
       return true;
@@ -1561,9 +1550,12 @@ const ToolbarEdit: FC<Props> = ({
         disabled={false}
       /> */}
       <ModelResult
-        submodels={jsonTg?.submodels ?? []}
-        modelId={id}
-        modelVersion={version}
+        submodels={(jsonTg?.submodels ?? []).map((submodel) => ({
+          id: submodel.id,
+          version: submodel.version ?? thisVersion,
+        }))}
+        modelId={thisId}
+        modelVersion={thisVersion}
         lang={lang}
         actionType='edit'
       />
