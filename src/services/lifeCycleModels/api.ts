@@ -1,12 +1,10 @@
-import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamIdByUserId } from '../general/api';
-import type { LangTextValue, ReferenceItem } from '../general/data';
 import {
   classificationToString,
   genClassificationZH,
@@ -14,153 +12,157 @@ import {
   jsonToList,
 } from '../general/util';
 import { getILCDClassification } from '../ilcd/api';
-import {
-  createProcess,
-  deleteProcess,
-  getProcessDetailByIdsAndVersion,
-  updateProcess,
-  validateProcessesByIdAndVersion,
-} from '../processes/api';
+import { getProcessDetailByIdsAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import { genLifeCycleModelJsonOrdered, genReferenceToResultingProcess } from './util';
+import type { LifeCycleModelJsonTg, LifeCycleModelMutationResult } from './data';
+import {
+  buildDeleteLifeCycleModelBundlePayload,
+  buildReviewUpdateLifeCycleModelPersistencePlan,
+  buildSaveLifeCycleModelPersistencePlan,
+} from './persistencePlan';
+import { genLifeCycleModelJsonOrdered } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
-type RefProcess = {
-  id: string;
-  version: string;
-  'common:shortDescription': LangTextValue;
-};
+function buildMutationError(
+  code: string,
+  message: string,
+  details?: unknown,
+): LifeCycleModelMutationResult {
+  return {
+    ok: false,
+    code,
+    message,
+    details,
+  };
+}
 
-const mapRefProcessesToIncludedProcesses = (
-  refProcesses: RefProcess | RefProcess[],
-): ReferenceItem[] => {
-  return jsonToList(refProcesses)
-    .filter(
-      (process): process is RefProcess =>
-        typeof process?.id === 'string' &&
-        process.id.length > 0 &&
-        typeof process?.version === 'string' &&
-        process.version.length > 0,
-    )
-    .map((process) => ({
-      '@refObjectId': process.id,
-      '@type': 'process data set',
-      '@uri': `../processes/${process.id}.xml`,
-      '@version': process.version,
-      'common:shortDescription': process?.['common:shortDescription'],
-    }));
-};
+function buildLangValidationError(validationError: string): LifeCycleModelMutationResult {
+  return buildMutationError('LANG_VALIDATION_ERROR', validationError);
+}
 
-const updateLifeCycleModelProcesses = async (id: string, version: string, data: any) => {
-  const result = await supabase
-    .from('processes')
-    .select('json_ordered')
-    .eq('id', id)
-    .eq('version', version);
+function isLifecycleModelMutationResult(value: unknown): value is LifeCycleModelMutationResult {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'ok' in value &&
+    typeof (value as { ok?: unknown }).ok === 'boolean'
+  );
+}
 
-  if (result.error) {
-    console.error(result.error);
-    return;
-  }
+async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutationResult> {
+  const status = Number(error?.context?.status ?? 0);
+  const response = error?.context;
 
-  if (result.data && result.data.length > 0) {
-    const currentJsonOrdered = result.data[0].json_ordered;
-
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      const newJson = {
-        ...currentJsonOrdered,
-      };
-      newJson.processDataSet.modellingAndValidation = {
-        ...currentJsonOrdered.processDataSet.modellingAndValidation,
-        complianceDeclarations: {
-          ...currentJsonOrdered.processDataSet.modellingAndValidation.complianceDeclarations,
-          compliance:
-            data?.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations?.compliance,
-        },
-        validation: {
-          ...currentJsonOrdered.processDataSet.modellingAndValidation.validation,
-          review: data?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review,
-        },
-      };
-      const normalizedResult = await normalizeLangPayloadForSave(newJson);
-      const normalizedJson = normalizedResult?.payload ?? newJson;
-      const validationError = normalizedResult?.validationError;
-      if (validationError) {
-        console.error(validationError);
-        return {
-          error: {
-            message: validationError,
-            code: 'LANG_VALIDATION_ERROR',
-            details: '',
-            hint: '',
-            name: 'LangValidationError',
-          },
-        };
+  if (response && typeof response.clone === 'function') {
+    try {
+      const payload = await response.clone().json();
+      if (isLifecycleModelMutationResult(payload)) {
+        return payload;
       }
-      const updateResult = await supabase.functions.invoke('update_data', {
-        headers: {
-          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-        },
-        body: {
-          id,
-          version,
-          table: 'processes',
-          data: {
-            json_ordered: normalizedJson,
-          },
-        },
-        region: FunctionRegion.UsEast1,
-      });
 
-      if (updateResult.error) {
-        console.error(updateResult.error);
-      } else {
-        return updateResult.data;
+      if (payload && typeof payload === 'object') {
+        const record = payload as Record<string, unknown>;
+        if (typeof record.code === 'string' && typeof record.message === 'string') {
+          return buildMutationError(record.code, record.message, record.details);
+        }
       }
-    } else {
-      console.error('no session');
+    } catch (_jsonError) {
+      // ignore JSON parse failures and fall back to text / generic handling.
     }
-  } else {
-    console.error('no processes');
   }
-};
 
-export async function createLifeCycleModel(data: any) {
-  // const oldData = {
-  //   lifeCycleModelDataSet: {
-  //     '@xmlns': 'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
-  //     '@xmlns:acme': 'http://acme.com/custom',
-  //     '@xmlns:common': 'http://lca.jrc.it/ILCD/Common',
-  //     '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-  //     '@locations': '../ILCDLocations.xml',
-  //     '@version': '1.1',
-  //     '@xsi:schemaLocation':
-  //       'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd',
-  //   },
-  // };
-  // const newData = genLifeCycleModelJsonOrdered(data.id, data, oldData);
+  if (response && typeof response.clone === 'function') {
+    try {
+      const text = await response.clone().text();
+      if (status === 401) {
+        return buildMutationError('AUTH_REQUIRED', text || 'Authentication required');
+      }
+      if (status === 403) {
+        return buildMutationError('FORBIDDEN', text || 'Forbidden');
+      }
+      if (status === 404) {
+        return buildMutationError('MODEL_NOT_FOUND', text || 'Lifecycle model not found');
+      }
+      if (text) {
+        return buildMutationError('FUNCTION_ERROR', text, { status });
+      }
+    } catch (_textError) {
+      // ignore text parse failures and fall through to generic handling.
+    }
+  }
+
+  if (status === 401) {
+    return buildMutationError('AUTH_REQUIRED', 'Authentication required');
+  }
+  if (status === 403) {
+    return buildMutationError('FORBIDDEN', 'Forbidden');
+  }
+  if (status === 404) {
+    return buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found');
+  }
+
+  return buildMutationError(
+    'FUNCTION_ERROR',
+    error?.message ?? 'Lifecycle model bundle request failed',
+    error,
+  );
+}
+
+async function invokeLifecycleModelBundleFunction(
+  functionName: 'save_lifecycle_model_bundle' | 'delete_lifecycle_model_bundle',
+  body: Record<string, unknown>,
+): Promise<LifeCycleModelMutationResult> {
+  try {
+    const session = await supabase.auth.getSession();
+    const accessToken = session.data.session?.access_token;
+    if (!accessToken) {
+      return buildMutationError('AUTH_REQUIRED', 'Authentication required');
+    }
+
+    const result = await supabase.functions.invoke(functionName, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body,
+      region: FunctionRegion.UsEast1,
+    });
+
+    if (!result) {
+      return buildMutationError('FUNCTION_ERROR', 'Lifecycle model bundle request failed');
+    }
+
+    if (result.error) {
+      return parseFunctionInvokeError(result.error);
+    }
+
+    if (isLifecycleModelMutationResult(result.data)) {
+      return result.data;
+    }
+
+    return buildMutationError(
+      'INVALID_RESPONSE',
+      'Lifecycle model bundle endpoint returned an invalid response',
+      result.data,
+    );
+  } catch (error: any) {
+    return buildMutationError(
+      'FUNCTION_ERROR',
+      error?.message ?? 'Lifecycle model bundle request failed',
+      error,
+    );
+  }
+}
+
+export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedCreateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
   const newLifeCycleModelJsonOrdered =
     normalizedCreateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedCreateResult?.validationError;
   if (validationError) {
-    return {
-      data: null,
-      error: {
-        message: validationError,
-        code: 'LANG_VALIDATION_ERROR',
-        details: '',
-        hint: '',
-        name: 'LangValidationError',
-      },
-      status: 400,
-      statusText: 'LANG_VALIDATION_ERROR',
-      count: null,
-    };
+    return buildLangValidationError(validationError);
   }
-  // const refNode = data?.model?.nodes.find((i: any) => i?.data?.quantitativeReference === '1');
+
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
@@ -168,569 +170,173 @@ export async function createLifeCycleModel(data: any) {
     [],
   );
 
-  const edges = (data?.model?.edges ?? []).map((e: any) => {
-    const up2DownEdge = up2DownEdges.find(
-      (edge) =>
-        edge?.upstreamNodeId === e?.source?.cell && edge?.downstreamNodeId === e?.target?.cell,
-    );
-    return {
-      ...e,
-      labels: [],
-      data: {
-        ...e.data,
-        connection: {
-          ...e.data?.connection,
-          isBalanced: up2DownEdge?.isBalanced,
-          unbalancedAmount: up2DownEdge?.unbalancedAmount,
-          exchangeAmount: up2DownEdge?.exchangeAmount,
-        },
-      },
-    };
+  const planResult = await buildSaveLifeCycleModelPersistencePlan({
+    mode: 'create',
+    modelId: data.id,
+    lifeCycleModelJsonOrdered: newLifeCycleModelJsonOrdered,
+    nodes: data?.model?.nodes ?? [],
+    edges: data?.model?.edges ?? [],
+    up2DownEdges,
+    lifeCycleModelProcesses,
   });
 
-  const validateResult = createTidasLifeCycleModel(newLifeCycleModelJsonOrdered).validateEnhanced();
-  let issues = [];
-  if (!validateResult.success) {
-    issues = validateResult.error.issues.filter(
-      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-    );
+  if (!planResult.ok) {
+    return buildMutationError(planResult.code, planResult.message, planResult.details);
   }
-  const rule_verification = issues.length === 0;
-  const updatedData = genReferenceToResultingProcess(
-    lifeCycleModelProcesses,
-    data.version,
-    newLifeCycleModelJsonOrdered,
-  );
 
-  const result = await supabase
-    .from('lifecyclemodels')
-    .insert([
-      {
-        id: data.id,
-        json_ordered: updatedData,
-        json_tg: {
-          xflow: { edges, nodes: data?.model?.nodes ?? [] },
-          submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
-        },
-        rule_verification,
-      },
-    ])
-    .select();
-
-  if (result.error) {
-    console.error(result.error);
-  } else {
-    if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
-      lifeCycleModelProcesses.forEach(async (n: any) => {
-        try {
-          if (n.modelInfo.type === 'primary') {
-            n.data.processDataSet.processInformation.technology = {
-              ...n.data.processDataSet.processInformation.technology,
-              referenceToIncludedProcesses: jsonToList(
-                newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
-                  ?.technology?.processes?.processInstance,
-              ).map((item) => {
-                return item.referenceToProcess;
-              }),
-            };
-          }
-          if (n.modelInfo.type === 'secondary') {
-            n.data.processDataSet.processInformation.technology = {
-              ...n.data.processDataSet.processInformation.technology,
-              referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(n?.refProcesses),
-            };
-          }
-          await createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
-        } catch (error) {
-          console.error(error);
-        }
-      });
-    }
-  }
-  return result;
+  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', planResult.plan);
 }
 
-const overrideWithOldProcess = function (newData: any, oldData: any) {
-  if (oldData?.processDataSet?.processInformation?.dataSetInformation?.identifierOfSubDataSet) {
-    newData.processDataSet.processInformation.dataSetInformation.identifierOfSubDataSet =
-      oldData.processDataSet.processInformation.dataSetInformation.identifierOfSubDataSet;
-  }
-
-  if (oldData?.processDataSet?.processInformation?.dataSetInformation?.['common:synonyms']) {
-    newData.processDataSet.processInformation.dataSetInformation['common:synonyms'] =
-      oldData.processDataSet.processInformation.dataSetInformation['common:synonyms'];
-  }
-
-  if (
-    oldData?.processDataSet?.processInformation?.technology
-      ?.technologyDescriptionAndIncludedProcesses
-  ) {
-    if (!newData.processDataSet.processInformation.technology) {
-      newData.processDataSet.processInformation.technology = {} as any;
-    }
-    (
-      newData.processDataSet.processInformation.technology as any
-    ).technologyDescriptionAndIncludedProcesses =
-      oldData.processDataSet.processInformation.technology.technologyDescriptionAndIncludedProcesses;
-  }
-
-  if (oldData?.processDataSet?.processInformation?.technology?.technologicalApplicability) {
-    if (!newData.processDataSet.processInformation.technology) {
-      newData.processDataSet.processInformation.technology = {} as any;
-    }
-    (newData.processDataSet.processInformation.technology as any).technologicalApplicability =
-      oldData.processDataSet.processInformation.technology.technologicalApplicability;
-  }
-
-  if (oldData?.processDataSet?.processInformation?.technology?.referenceToTechnologyPictogramme) {
-    if (!newData.processDataSet.processInformation.technology) {
-      newData.processDataSet.processInformation.technology = {} as any;
-    }
-    (newData.processDataSet.processInformation.technology as any).referenceToTechnologyPictogramme =
-      oldData.processDataSet.processInformation.technology.referenceToTechnologyPictogramme;
-  }
-
-  if (
-    oldData?.processDataSet?.processInformation?.technology
-      ?.referenceToTechnologyFlowDiagrammOrPicture
-  ) {
-    if (!newData.processDataSet.processInformation.technology) {
-      newData.processDataSet.processInformation.technology = {} as any;
-    }
-    (
-      newData.processDataSet.processInformation.technology as any
-    ).referenceToTechnologyFlowDiagrammOrPicture =
-      oldData.processDataSet.processInformation.technology.referenceToTechnologyFlowDiagrammOrPicture;
-  }
-
-  if (oldData?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation) {
-    if (!newData.processDataSet.modellingAndValidation) {
-      newData.processDataSet.modellingAndValidation = {} as any;
-    }
-    newData.processDataSet.modellingAndValidation.LCIMethodAndAllocation =
-      oldData.processDataSet.modellingAndValidation.LCIMethodAndAllocation;
-  }
-
-  if (oldData?.processDataSet?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness) {
-    if (!newData.processDataSet.modellingAndValidation) {
-      newData.processDataSet.modellingAndValidation = {} as any;
-    }
-    newData.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness =
-      oldData.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness;
-  }
-
-  if (oldData?.processDataSet?.modellingAndValidation?.completeness) {
-    if (!newData.processDataSet.modellingAndValidation) {
-      newData.processDataSet.modellingAndValidation = {} as any;
-    }
-    newData.processDataSet.modellingAndValidation.completeness =
-      oldData.processDataSet.modellingAndValidation.completeness;
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.dataEntryBy?.[
-      'common:referenceToConvertedOriginalDataSetFrom'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.dataEntryBy[
-      'common:referenceToConvertedOriginalDataSetFrom'
-    ] =
-      oldData.processDataSet.administrativeInformation.dataEntryBy[
-        'common:referenceToConvertedOriginalDataSetFrom'
-      ];
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.dataEntryBy?.[
-      'common:referenceToDataSetUseApproval'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.dataEntryBy[
-      'common:referenceToDataSetUseApproval'
-    ] =
-      oldData.processDataSet.administrativeInformation.dataEntryBy[
-        'common:referenceToDataSetUseApproval'
-      ];
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-      'common:dateOfLastRevision'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.publicationAndOwnership[
-      'common:dateOfLastRevision'
-    ] =
-      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
-        'common:dateOfLastRevision'
-      ];
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-      'common:workflowAndPublicationStatus'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.publicationAndOwnership[
-      'common:workflowAndPublicationStatus'
-    ] =
-      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
-        'common:workflowAndPublicationStatus'
-      ];
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-      'common:referenceToUnchangedRepublication'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.publicationAndOwnership[
-      'common:referenceToUnchangedRepublication'
-    ] =
-      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
-        'common:referenceToUnchangedRepublication'
-      ];
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-      'common:referenceToRegistrationAuthority'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.publicationAndOwnership[
-      'common:referenceToRegistrationAuthority'
-    ] =
-      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
-        'common:referenceToRegistrationAuthority'
-      ];
-  }
-
-  if (
-    oldData?.processDataSet?.administrativeInformation?.publicationAndOwnership?.[
-      'common:registrationNumber'
-    ]
-  ) {
-    newData.processDataSet.administrativeInformation.publicationAndOwnership[
-      'common:registrationNumber'
-    ] =
-      oldData.processDataSet.administrativeInformation.publicationAndOwnership[
-        'common:registrationNumber'
-      ];
-  }
-
-  if (oldData?.processDataSet?.processInformation?.time) {
-    newData.processDataSet.processInformation.time = oldData.processDataSet.processInformation.time;
-  }
-
-  if (oldData?.processDataSet?.processInformation?.geography) {
-    newData.processDataSet.processInformation.geography =
-      oldData.processDataSet.processInformation.geography;
-  }
-
-  if (oldData?.processDataSet?.processInformation?.mathematicalRelations) {
-    newData.processDataSet.processInformation.mathematicalRelations =
-      oldData.processDataSet.processInformation.mathematicalRelations;
-  }
-};
-
-export async function updateLifeCycleModel(data: any) {
-  const result = await supabase
+export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
+  const currentModelResult = await supabase
     .from('lifecyclemodels')
-    .select('id, json, json_tg->submodels')
+    .select('id, json_tg->submodels')
     .eq('id', data.id)
     .eq('version', data.version);
 
-  if (result.data && result.data.length === 1) {
-    const oldData = result.data[0];
-
-    const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
-    const normalizedUpdateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
-    const newLifeCycleModelJsonOrdered =
-      normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
-    const validationError = normalizedUpdateResult?.validationError;
-    if (validationError) {
-      return {
-        data: null,
-        error: {
-          message: validationError,
-          code: 'LANG_VALIDATION_ERROR',
-          details: '',
-          hint: '',
-          name: 'LangValidationError',
-        },
-        status: 400,
-        statusText: 'LANG_VALIDATION_ERROR',
-        count: null,
-      };
-    }
-
-    const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
-      data.id,
-      data?.model?.nodes ?? [],
-      newLifeCycleModelJsonOrdered,
-      jsonToList(oldData.submodels),
+  if (currentModelResult.error) {
+    return buildMutationError(
+      'MODEL_LOOKUP_FAILED',
+      'Failed to load lifecycle model before saving',
+      currentModelResult.error,
     );
-
-    const edges = (data?.model?.edges ?? []).map((edge: any) => {
-      const up2DownEdge = up2DownEdges.find(
-        (udEdge) =>
-          udEdge?.upstreamNodeId === edge?.source?.cell &&
-          udEdge?.downstreamNodeId === edge?.target?.cell &&
-          udEdge?.flowUUID === edge?.data?.connection?.outputExchange?.['@flowUUID'],
-      );
-      return {
-        ...edge,
-        labels: [],
-        data: {
-          ...edge?.data,
-          connection: {
-            ...edge?.data?.connection,
-            isBalanced: up2DownEdge?.isBalanced,
-            unbalancedAmount: up2DownEdge?.unbalancedAmount,
-            exchangeAmount: up2DownEdge?.exchangeAmount,
-          },
-        },
-      };
-    });
-
-    const validateResult = createTidasLifeCycleModel(
-      newLifeCycleModelJsonOrdered,
-    ).validateEnhanced();
-    let issues = [];
-    if (!validateResult.success) {
-      issues = validateResult.error.issues.filter(
-        (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-      );
-    }
-    const rule_verification = issues.length === 0;
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      const oldSubmodels: any[] = jsonToList(oldData.submodels);
-      const deleteOldSubmodels = oldSubmodels.filter((o: any) => {
-        return (
-          o.type === 'secondary' &&
-          !lifeCycleModelProcesses.some((n: any) => {
-            const newModelInfo = n.modelInfo;
-            return (
-              o.finalId.nodeId === newModelInfo.finalId.nodeId &&
-              o.finalId.processId === newModelInfo.finalId.processId &&
-              o.finalId.allocatedExchangeDirection ===
-                newModelInfo.finalId.allocatedExchangeDirection &&
-              o.finalId.allocatedExchangeFlowId === newModelInfo.finalId.allocatedExchangeFlowId
-            );
-          })
-        );
-      });
-
-      const updatedData = genReferenceToResultingProcess(
-        lifeCycleModelProcesses,
-        data.version,
-        newLifeCycleModelJsonOrdered,
-      );
-      const updateResult = await supabase.functions.invoke('update_data', {
-        headers: {
-          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-        },
-        body: {
-          id: data.id,
-          version: data.version,
-          table: 'lifecyclemodels',
-          data: {
-            json_ordered: updatedData,
-            json_tg: {
-              xflow: { edges, nodes: data?.model?.nodes ?? [] },
-              submodels: lifeCycleModelProcesses.map((p) => p.modelInfo),
-            },
-            rule_verification,
-          },
-        },
-        region: FunctionRegion.UsEast1,
-      });
-      if (updateResult.error) {
-        console.error('update_data lifecyclemodels', updateResult.error);
-      } else {
-        const deletionPromises: Promise<any>[] =
-          deleteOldSubmodels && deleteOldSubmodels.length > 0
-            ? deleteOldSubmodels.map((o: any) =>
-                deleteProcess(o.id, data.version).catch((error) => {
-                  console.error(error);
-                }),
-              )
-            : [];
-
-        let updatePromises: Promise<any>[] = [];
-        if (lifeCycleModelProcesses && lifeCycleModelProcesses.length > 0) {
-          const { data: oldProcesses } = await getProcessDetailByIdsAndVersion(
-            lifeCycleModelProcesses.map((n: any) => n.modelInfo.id),
-            data.version,
-          );
-
-          updatePromises = lifeCycleModelProcesses
-            .map((n: any) => {
-              return (async () => {
-                try {
-                  if (n.option === 'update') {
-                    const validate = await validateProcessesByIdAndVersion(
-                      n.modelInfo.id,
-                      data.version,
-                    );
-                    if (validate) {
-                      const oldProcess = oldProcesses?.find(
-                        (p: any) => p.id === n.modelInfo.id && p.version === data.version,
-                      );
-                      if (oldProcess) {
-                        overrideWithOldProcess(n.data, oldProcess.json);
-                      }
-                      if (n.modelInfo.type === 'primary') {
-                        n.data.processDataSet.processInformation.technology = {
-                          ...n.data.processDataSet.processInformation.technology,
-                          referenceToIncludedProcesses: jsonToList(
-                            newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet
-                              ?.lifeCycleModelInformation?.technology?.processes?.processInstance,
-                          ).map((item) => {
-                            return item.referenceToProcess;
-                          }),
-                        };
-                      }
-
-                      if (n.modelInfo.type === 'secondary') {
-                        n.data.processDataSet.processInformation.technology = {
-                          ...n.data.processDataSet.processInformation.technology,
-                          referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
-                            n?.refProcesses,
-                          ),
-                        };
-                      }
-                      return updateProcess(
-                        n.modelInfo.id,
-                        data.version,
-                        n.data.processDataSet,
-                        data.id,
-                      );
-                    } else {
-                      return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
-                    }
-                  } else if (n.option === 'create') {
-                    if (n.modelInfo.type === 'primary') {
-                      n.data.processDataSet.processInformation.technology = {
-                        ...n.data.processDataSet.processInformation.technology,
-                        referenceToIncludedProcesses: jsonToList(
-                          newLifeCycleModelJsonOrdered?.lifeCycleModelDataSet
-                            ?.lifeCycleModelInformation?.technology?.processes?.processInstance,
-                        ).map((item) => {
-                          return item.referenceToProcess;
-                        }),
-                      };
-                    }
-
-                    if (n.modelInfo.type === 'secondary') {
-                      n.data.processDataSet.processInformation.technology = {
-                        ...n.data.processDataSet.processInformation.technology,
-                        referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
-                          n?.refProcesses,
-                        ),
-                      };
-                    }
-                    return createProcess(n.modelInfo.id, n.data.processDataSet, data.id);
-                  }
-                } catch (error) {
-                  console.error(error);
-                }
-              })();
-            })
-            .filter(Boolean) as Promise<any>[];
-        }
-
-        await Promise.all([...deletionPromises, ...updatePromises]);
-
-        return updateResult?.data;
-      }
-    }
   }
+
+  if (!currentModelResult.data || currentModelResult.data.length !== 1) {
+    return buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found');
+  }
+
+  const oldSubmodels = jsonToList(currentModelResult.data[0].submodels);
+  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+  const normalizedUpdateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
+  const newLifeCycleModelJsonOrdered =
+    normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
+  const validationError = normalizedUpdateResult?.validationError;
+  if (validationError) {
+    return buildLangValidationError(validationError);
+  }
+
+  const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
+    data.id,
+    data?.model?.nodes ?? [],
+    newLifeCycleModelJsonOrdered,
+    oldSubmodels,
+  );
+
+  const oldProcessesResult = await getProcessDetailByIdsAndVersion(
+    lifeCycleModelProcesses.map((process: any) => process.modelInfo.id),
+    data.version,
+  );
+  const oldProcesses = oldProcessesResult?.data ?? [];
+
+  const planResult = await buildSaveLifeCycleModelPersistencePlan({
+    mode: 'update',
+    modelId: data.id,
+    version: data.version,
+    lifeCycleModelJsonOrdered: newLifeCycleModelJsonOrdered,
+    nodes: data?.model?.nodes ?? [],
+    edges: data?.model?.edges ?? [],
+    up2DownEdges,
+    lifeCycleModelProcesses,
+    oldSubmodels,
+    oldProcesses,
+  });
+
+  if (!planResult.ok) {
+    return buildMutationError(planResult.code, planResult.message, planResult.details);
+  }
+
+  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', planResult.plan);
 }
 
-export async function updateLifeCycleModelJsonApi(id: string, version: string, data: any) {
+export async function updateLifeCycleModelJsonApi(
+  id: string,
+  version: string,
+  data: any,
+  options: { commentReview?: any[]; commentCompliance?: any[] } = {},
+): Promise<LifeCycleModelMutationResult> {
   const normalizedResult = await normalizeLangPayloadForSave(data);
   const normalizedData = normalizedResult?.payload ?? data;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
-    return {
-      data: null,
-      error: {
-        message: validationError,
-        code: 'LANG_VALIDATION_ERROR',
-        details: '',
-        hint: '',
-        name: 'LangValidationError',
-      },
-      status: 400,
-      statusText: 'LANG_VALIDATION_ERROR',
-      count: null,
-    };
+    return buildLangValidationError(validationError);
   }
-  let updateResult: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    updateResult = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table: 'lifecyclemodels', data: { json_ordered: normalizedData } },
-      region: FunctionRegion.UsEast1,
-    });
+
+  const currentModelResult = await supabase
+    .from('lifecyclemodels')
+    .select('json_tg, rule_verification')
+    .eq('id', id)
+    .eq('version', version);
+
+  if (currentModelResult.error) {
+    return buildMutationError(
+      'MODEL_LOOKUP_FAILED',
+      'Failed to load lifecycle model before review update',
+      currentModelResult.error,
+    );
   }
-  if (updateResult.error) {
-    console.log('error', updateResult.error);
+
+  if (!currentModelResult.data || currentModelResult.data.length !== 1) {
+    return buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found');
   }
-  if (updateResult?.data?.data && updateResult?.data?.data?.length > 0) {
-    const submodels = updateResult?.data?.data[0]?.json_tg?.submodels;
 
-    if (submodels && submodels.length > 0) {
-      const controller = new ConcurrencyController(3);
+  const currentModel = currentModelResult.data[0];
+  const currentJsonTg = (currentModel.json_tg ?? {}) as LifeCycleModelJsonTg;
+  const submodels = jsonToList(currentJsonTg?.submodels);
+  const submodelIds = submodels.map((item: any) => item.id).filter(Boolean);
 
-      for (const item of submodels) {
-        controller.add(async () => {
-          try {
-            const result = await updateLifeCycleModelProcesses(item.id, version, normalizedData);
-            return { success: true, result, item };
-          } catch (error) {
-            console.error(`update process ${item.id} failed:`, error);
-            return { success: false, error, item };
-          }
-        });
-      }
+  let currentProcesses: Array<{
+    id: string;
+    version: string;
+    json_ordered: any;
+    rule_verification?: boolean | null;
+  }> = [];
 
-      await controller.waitForAll();
+  if (submodelIds.length > 0) {
+    const currentProcessesResult = await supabase
+      .from('processes')
+      .select('id, version, json_ordered, rule_verification')
+      .eq('version', version)
+      .in('id', submodelIds);
+
+    if (currentProcessesResult.error) {
+      return buildMutationError(
+        'PROCESS_LOOKUP_FAILED',
+        'Failed to load current submodel processes before review update',
+        currentProcessesResult.error,
+      );
     }
+
+    currentProcesses = currentProcessesResult.data ?? [];
   }
-  return updateResult?.data;
+
+  const planResult = await buildReviewUpdateLifeCycleModelPersistencePlan({
+    modelId: id,
+    version,
+    lifeCycleModelJsonOrdered: normalizedData,
+    currentJsonTg,
+    currentRuleVerification: Boolean(currentModel.rule_verification),
+    submodels,
+    currentProcesses,
+    commentReview: options.commentReview,
+    commentCompliance: options.commentCompliance,
+  });
+
+  if (!planResult.ok) {
+    return buildMutationError(planResult.code, planResult.message, planResult.details);
+  }
+
+  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', planResult.plan);
 }
 
-export async function deleteLifeCycleModel(id: string, version: string) {
-  const result = await supabase
-    .from('lifecyclemodels')
-    .select('id, version, json_tg->submodels')
-    .eq('id', id)
-    .eq('version', version);
-
-  if (result.data && result.data.length === 1) {
-    const oldSubmodels: any[] = jsonToList(result.data[0].submodels);
-    if (oldSubmodels && oldSubmodels.length > 0)
-      oldSubmodels.forEach((o: any) => {
-        try {
-          deleteProcess(o.id, version);
-        } catch (error) {
-          console.error(error);
-        }
-      });
-  }
-
-  const resultDelete = await supabase
-    .from('lifecyclemodels')
-    .delete()
-    .eq('id', id)
-    .eq('version', version);
-  return resultDelete;
+export async function deleteLifeCycleModel(
+  id: string,
+  version: string,
+): Promise<LifeCycleModelMutationResult> {
+  return invokeLifecycleModelBundleFunction(
+    'delete_lifecycle_model_bundle',
+    buildDeleteLifeCycleModelBundlePayload(id, version),
+  );
 }
 
 export async function getLifeCycleModelTableAll(

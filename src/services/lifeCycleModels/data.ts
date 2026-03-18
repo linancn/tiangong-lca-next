@@ -210,7 +210,7 @@ export type LifeCycleModelToolbarEditInfoHandle<TRefData = unknown> = {
 
 export type LifeCycleModelSubModel = {
   id: string;
-  version: string;
+  version?: string;
   type?: 'primary' | 'secondary' | string;
   [key: string]: unknown;
 };
@@ -271,3 +271,60 @@ export type LifeCycleModelThemeToken = {
   colorText: string;
   colorBgBase: string;
 };
+
+export type LifeCycleModelProcessMutation =
+  | {
+      op: 'create';
+      id: string;
+      modelId: string;
+      jsonOrdered: unknown;
+      ruleVerification: boolean;
+    }
+  | {
+      op: 'update';
+      id: string;
+      version: string;
+      modelId: string;
+      jsonOrdered: unknown;
+      ruleVerification: boolean;
+    }
+  | {
+      op: 'delete';
+      id: string;
+      version: string;
+    };
+
+export type LifeCycleModelPersistencePlan = {
+  mode: 'create' | 'update';
+  modelId: string;
+  version?: string;
+  parent: {
+    jsonOrdered: unknown;
+    jsonTg: LifeCycleModelJsonTg;
+    ruleVerification: boolean;
+  };
+  processMutations: LifeCycleModelProcessMutation[];
+};
+
+export type LifeCycleModelMutationRecord = {
+  id: string;
+  version: string;
+  json?: { lifeCycleModelDataSet?: FormLifeCycleModel } | null;
+  json_tg?: LifeCycleModelJsonTg | null;
+  ruleVerification?: boolean;
+};
+
+export type LifeCycleModelMutationResult =
+  | {
+      ok: true;
+      modelId: string;
+      version: string;
+      lifecycleModel?: LifeCycleModelMutationRecord;
+      warnings?: string[];
+    }
+  | {
+      ok: false;
+      code: string;
+      message: string;
+      details?: unknown;
+    };

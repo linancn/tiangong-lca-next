@@ -302,7 +302,7 @@ describe('ReviewProgress component', () => {
     mockGetRefData.mockResolvedValue({ success: true, data: { stateCode: 100 } });
     mockUpdateStateCodeApi.mockResolvedValue({ error: null });
     mockGetLifeCycleModelDetail.mockResolvedValue({ success: true, data: { stateCode: 100 } });
-    mockUpdateLifeCycleModelJsonApi.mockResolvedValue({ data: {} });
+    mockUpdateLifeCycleModelJsonApi.mockResolvedValue({ ok: true, lifecycleModel: {} });
     mockGetProcessDetail.mockResolvedValue({ success: true, data: { stateCode: 100 } });
     mockUpdateProcessApi.mockResolvedValue({ error: null });
     mockGetUserTeamId.mockResolvedValue('team-1');
@@ -826,7 +826,8 @@ describe('ReviewProgress component', () => {
       ],
     });
     mockUpdateLifeCycleModelJsonApi.mockResolvedValue({
-      data: {
+      ok: true,
+      lifecycleModel: {
         lifeCycleModelDataSet: {
           modellingAndValidation: {
             validation: { review: [{ id: 'review-note' }] },
@@ -865,12 +866,15 @@ describe('ReviewProgress component', () => {
             }),
           }),
         }),
+        {
+          commentReview: [{ id: 'review-note' }],
+          commentCompliance: [{ id: 'compliance-note' }],
+        },
       ),
     );
     await waitFor(() =>
       expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalledWith([
         { id: 'model-1', version: '1.0.0' },
-        { id: 'submodel-proc', version: '1.0.0' },
       ]),
     );
     await waitFor(() =>
@@ -979,15 +983,11 @@ describe('ReviewProgress component', () => {
       };
     });
     mockGetProcessDetailByIdAndVersion.mockResolvedValue({
-      data: [
-        { id: 'model-1', version: '1.0.0', json: {} },
-        { id: 'submodel-proc', version: '1.0.0', json: {} },
-        { id: 'missing-proc', version: '1.0.0', json: {} },
-        { id: 'absent-proc', version: '1.0.0', json: {} },
-      ],
+      data: [{ id: 'model-1', version: '1.0.0', json: {} }],
     });
     mockUpdateLifeCycleModelJsonApi.mockResolvedValue({
-      data: {
+      ok: true,
+      lifecycleModel: {
         kind: 'no-refs',
         lifeCycleModelDataSet: {
           modellingAndValidation: {
@@ -1029,6 +1029,10 @@ describe('ReviewProgress component', () => {
             }),
           }),
         }),
+        {
+          commentReview: [{ id: 'review-note' }],
+          commentCompliance: [{ id: 'compliance-note' }],
+        },
       ),
     );
     expect(mockUpdateProcessApi).toHaveBeenCalledWith(
@@ -1049,34 +1053,8 @@ describe('ReviewProgress component', () => {
         }),
       }),
     );
-    expect(mockUpdateProcessApi).toHaveBeenCalledWith(
-      'submodel-proc',
-      '1.0.0',
-      expect.objectContaining({
-        json_ordered: expect.objectContaining({
-          processDataSet: expect.objectContaining({
-            modellingAndValidation: expect.objectContaining({
-              validation: { review: [{ id: 'review-note' }] },
-              complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
-            }),
-          }),
-        }),
-      }),
-    );
-    expect(mockUpdateProcessApi).toHaveBeenCalledWith(
-      'missing-proc',
-      '1.0.0',
-      expect.objectContaining({
-        json_ordered: expect.objectContaining({
-          processDataSet: expect.objectContaining({
-            modellingAndValidation: expect.objectContaining({
-              validation: { review: [{ id: 'review-note' }] },
-              complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
-            }),
-          }),
-        }),
-      }),
-    );
+    expect(mockUpdateProcessApi.mock.calls.filter(([id]) => id === 'submodel-proc').length).toBe(0);
+    expect(mockUpdateProcessApi.mock.calls.filter(([id]) => id === 'missing-proc').length).toBe(0);
     expect(mockUpdateProcessApi.mock.calls.filter(([id]) => id === 'absent-proc').length).toBe(0);
   });
 
@@ -1121,7 +1099,8 @@ describe('ReviewProgress component', () => {
     });
     mockGetProcessDetail.mockResolvedValue({ success: true, data: undefined });
     mockUpdateLifeCycleModelJsonApi.mockResolvedValue({
-      data: {
+      ok: true,
+      lifecycleModel: {
         kind: 'no-refs',
         lifeCycleModelDataSet: {
           modellingAndValidation: {
@@ -1161,6 +1140,10 @@ describe('ReviewProgress component', () => {
             }),
           }),
         }),
+        {
+          commentReview: [{ id: 'review-note' }],
+          commentCompliance: [{ id: 'compliance-note' }],
+        },
       ),
     );
   });
@@ -1245,7 +1228,8 @@ describe('ReviewProgress component', () => {
       },
     });
     mockUpdateLifeCycleModelJsonApi.mockResolvedValue({
-      data: {
+      ok: true,
+      lifecycleModel: {
         kind: 'new-model',
         lifeCycleModelDataSet: {
           modellingAndValidation: {
@@ -1255,7 +1239,6 @@ describe('ReviewProgress component', () => {
         },
       },
     });
-
     render(
       <ReviewProgress
         reviewId='review-1'
@@ -1278,9 +1261,88 @@ describe('ReviewProgress component', () => {
         'model-1',
         '1.0.0',
         expect.any(Object),
+        {
+          commentReview: [],
+          commentCompliance: [],
+        },
       ),
     );
     expect(mockGetProcessDetailByIdAndVersion).not.toHaveBeenCalled();
+  });
+
+  it('stops review approval when lifecycle model bundle persistence fails', async () => {
+    let resolveMutation: (value: any) => void = () => undefined;
+    const mutationPromise = new Promise((resolve) => {
+      resolveMutation = resolve;
+    });
+
+    mockGetCommentApi.mockImplementation(async (_reviewId: string, state?: string) => {
+      if (state === 'assigned') {
+        return {
+          data: [
+            {
+              id: 'row-1',
+              reviewer_id: 'user-2',
+              reviewer_name: '',
+              state_code: 0,
+              updated_at: '2024-01-01T00:00:00Z',
+              json: {
+                modellingAndValidation: {
+                  validation: { review: [{ id: 'review-note' }] },
+                  complianceDeclarations: { compliance: [{ id: 'compliance-note' }] },
+                },
+              },
+            },
+          ],
+        };
+      }
+      return { data: [] };
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0.0',
+        stateCode: 10,
+        json: {
+          lifeCycleModelDataSet: {
+            modellingAndValidation: {
+              validation: { review: [] },
+              complianceDeclarations: { compliance: [] },
+            },
+          },
+        },
+        json_tg: {
+          submodels: [{ id: 'submodel-proc' }],
+        },
+      },
+    });
+    mockUpdateLifeCycleModelJsonApi.mockReturnValueOnce(mutationPromise);
+
+    render(
+      <ReviewProgress
+        reviewId='review-1'
+        dataId='model-1'
+        dataVersion='1.0.0'
+        actionType='model'
+        tabType='assigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    const [openButton] = screen.getAllByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => screen.getByTestId('protable'));
+    fireEvent.click(screen.getByRole('button', { name: /approve review/i }));
+
+    await waitFor(() => expect(screen.getByTestId('spin')).toBeInTheDocument());
+    resolveMutation({ ok: false, message: 'Bundle failed' });
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Bundle failed'));
+    await waitFor(() => expect(screen.queryByTestId('spin')).not.toBeInTheDocument());
+    expect(mockUpdateCommentApi).not.toHaveBeenCalled();
+    expect(mockUpdateReviewApi).not.toHaveBeenCalled();
   });
 
   it('recursively updates model and process references before publishing a model review', async () => {
@@ -1395,7 +1457,8 @@ describe('ReviewProgress component', () => {
       ],
     });
     mockUpdateLifeCycleModelJsonApi.mockResolvedValue({
-      data: {
+      ok: true,
+      lifecycleModel: {
         kind: 'new-model',
         lifeCycleModelDataSet: {
           modellingAndValidation: {

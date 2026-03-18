@@ -994,22 +994,23 @@ describe('ToolbarEdit', () => {
       },
     ];
     mockUpdateLifeCycleModel.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'model-1',
-          version: '1.1',
-          json_tg: {
-            xflow: {
-              edges: [
-                {
-                  id: 'saved-edit-edge',
-                  data: { connection: { unbalancedAmount: 7, exchangeAmount: 9 } },
-                },
-              ],
-            },
+      ok: true,
+      modelId: 'model-1',
+      version: '1.1',
+      lifecycleModel: {
+        id: 'model-1',
+        version: '1.1',
+        json_tg: {
+          xflow: {
+            edges: [
+              {
+                id: 'saved-edit-edge',
+                data: { connection: { unbalancedAmount: 7, exchangeAmount: 9 } },
+              },
+            ],
           },
         },
-      ],
+      },
     });
 
     render(<ToolbarEdit {...baseProps} />);
@@ -1045,12 +1046,13 @@ describe('ToolbarEdit', () => {
     mockGraphStoreState.nodes = [{ id: 'store-node', data: { label: 'Store Node' } }];
     mockGraphStoreState.edges = [{ id: 'store-edge' }];
     mockUpdateLifeCycleModel.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'model-1',
-          version: '1.1',
-        },
-      ],
+      ok: true,
+      modelId: 'model-1',
+      version: '1.1',
+      lifecycleModel: {
+        id: 'model-1',
+        version: '1.1',
+      },
     });
 
     render(<ToolbarEdit {...baseProps} />);
@@ -1763,22 +1765,23 @@ describe('ToolbarEdit', () => {
       ],
     };
     mockCreateLifeCycleModel.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'created-model',
-          version: '1.1',
-          json_tg: {
-            xflow: {
-              edges: [
-                {
-                  id: 'saved-edge',
-                  data: { connection: { unbalancedAmount: 3, exchangeAmount: 4 } },
-                },
-              ],
-            },
+      ok: true,
+      modelId: 'created-model',
+      version: '1.1',
+      lifecycleModel: {
+        id: 'created-model',
+        version: '1.1',
+        json_tg: {
+          xflow: {
+            edges: [
+              {
+                id: 'saved-edge',
+                data: { connection: { unbalancedAmount: 3, exchangeAmount: 4 } },
+              },
+            ],
           },
         },
-      ],
+      },
     });
 
     render(
@@ -1817,10 +1820,10 @@ describe('ToolbarEdit', () => {
   it('shows a duplicate-id error when create mode hits a unique conflict', async () => {
     const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
     mockCreateLifeCycleModel.mockResolvedValueOnce({
-      data: undefined,
-      error: { message: 'duplicate' },
+      ok: false,
+      code: 'VERSION_CONFLICT',
+      message: 'duplicate',
     });
-    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
 
     render(
       <ToolbarEdit
@@ -1842,13 +1845,14 @@ describe('ToolbarEdit', () => {
 
   it('uses the existing id for create-version saves and tolerates sparse saved edges', async () => {
     mockCreateLifeCycleModel.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'model-1',
-          version: '2.0',
-          json_tg: {},
-        },
-      ],
+      ok: true,
+      modelId: 'model-1',
+      version: '2.0',
+      lifecycleModel: {
+        id: 'model-1',
+        version: '2.0',
+        json_tg: {},
+      },
     });
 
     render(
@@ -1879,8 +1883,8 @@ describe('ToolbarEdit', () => {
   it('falls back to a generic create error when the backend omits a message', async () => {
     const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
     mockCreateLifeCycleModel.mockResolvedValueOnce({
-      data: undefined,
-      error: {},
+      ok: false,
+      code: 'FUNCTION_ERROR',
     });
 
     render(
@@ -1905,9 +1909,17 @@ describe('ToolbarEdit', () => {
     render(<ToolbarEdit {...baseProps} />);
 
     mockUpdateLifeCycleModel
-      .mockResolvedValueOnce({ error: { state_code: 100 } })
-      .mockResolvedValueOnce({ error: { state_code: 20 } })
-      .mockResolvedValueOnce({ error: { message: 'generic failure' } });
+      .mockResolvedValueOnce({
+        ok: false,
+        code: 'OPEN_DATA',
+        message: 'This data is open data, save failed',
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        code: 'UNDER_REVIEW',
+        message: 'Data is under review, save failed',
+      })
+      .mockResolvedValueOnce({ ok: false, code: 'FUNCTION_ERROR', message: 'generic failure' });
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
     await waitFor(() =>
