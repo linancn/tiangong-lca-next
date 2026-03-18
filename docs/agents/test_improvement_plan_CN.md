@@ -1,20 +1,20 @@
 # 测试改进计划（中文镜像）
 
-> 快照日期：2026年3月15日。本文件用于记录测试工程的长期背景与策略；日常可执行 backlog 以 `docs/agents/test_todo_list.md` 为准。镜像约束：每次变更需同步英文版 `docs/agents/test_improvement_plan.md`。
+> 快照日期：2026年3月18日。本文件用于记录测试工程的长期背景与策略；日常可执行 backlog 以 `docs/agents/test_todo_list.md` 为准。镜像约束：每次变更需同步英文版 `docs/agents/test_improvement_plan.md`。
 
 ## 当前基线
 
 - 最新已验证全量运行命令：`npm run test:coverage`
-- 当前全量运行规模：279 suites / 2741 tests
+- 当前全量运行规模：286 suites / 2842 tests
 - 当前 Jest 全量覆盖率：
-  - Statements: 96.04%
-  - Branches: 89.35%
-  - Functions: 93.86%
-  - Lines: 96.32%
-- 当前逐文件库存：追踪 303 个源码文件，已全满 177 个，仍有缺口 126 个。
-- 当前 branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 91`、`90-<100 = 24`。
+  - Statements: 94.97%
+  - Branches: 87.97%
+  - Functions: 94.01%
+  - Lines: 95.15%
+- 当前逐文件库存：追踪 312 个源码文件，已全满 197 个，仍有缺口 115 个。
+- 当前 branch 分桶：`<50 = 1`、`50-70 = 8`、`70-90 = 68`、`90-<100 = 27`。
 - `jest.config.cjs` 当前全局门槛：50%（branches/functions/lines/statements）。
-- 眼下主要问题：**测试工程已经远超过“救门禁”阶段，而且 `50%-70% branch` 桶也已经清空；当前战略重点变成了按有序文件队列持续清理 `70%-90%` 桶，以及共享页面/服务簇里剩余的 branch-only 缺口**。
+- 眼下主要问题：**当前测试工程依然远高于全局门禁，但 lifecycle-model persistence bundle 同步重新打开了 1 个 `<50% branch` 热点和 8 个 `50%-70%` 热点；眼下战略重点是先重新清空这些低 branch 桶，再继续推进更大的 `70%-90%` 桶和 branch-only 缺口**。
 
 ## 原则
 
@@ -32,18 +32,20 @@
 
 - [x] 忘记/重置密码流程已补 unit 覆盖。
 - [x] graph/context/request/supabase bootstrap 等核心能力已覆盖。
-- [x] 已将 branch 覆盖恢复到全局门槛以上，并建立更高的安全余量（当前 89.35%）。
+- [x] 已将 branch 覆盖恢复到全局门槛以上，并建立更高的安全余量（当前 87.97%）。
 - [x] 已扩展 `src/pages/Utils/index.tsx`、`src/pages/Utils/review.tsx` 和 `src/pages/Utils/updateReference.tsx` 的测试。
 - [x] 已覆盖 contact/source/flow/flowproperty selector + drawer 工作流、lifecycle-model view/edit toolbar，以及上一轮 process/review 工作流热点。
 - [x] 已直接补上 `Flows/Components/Property/*`、登录页 top actions、lifecycle toolbar utility helpers、required-fields 映射和 add-member modal。
 - [x] 已把旧的全量长列表覆盖率工作流替换成“默认队列摘要 + `--full` 全量队列”的双层报告方式。
 - [x] 已按严格队列顺序关掉最后两个 `<50% branch` 文件（`src/components/TableFilter/index.tsx` 和 `src/pages/Unitgroups/Components/edit.tsx`）。
 - [x] 已按严格队列顺序清空此前的 `50%-70%` 桶。
-- [ ] 再按严格队列顺序清理当前 `70%-90%` 桶，从 `src/components/LCIACacheMonitor/index.tsx`、`src/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect.tsx`、`src/components/AllTeams/index.tsx` 开始。
+- [ ] 先按严格队列顺序重新清理新开启的 `<50% branch` 热点，队头是 `src/services/lifeCycleModels/api.ts`。
+- [ ] 再按严格队列顺序清理新开启的 `50%-70% branch` 桶，队头依次是 `src/pages/Processes/Components/lcaGroupedResults.ts`、`src/services/lifeCycleModels/persistencePlan.ts`、`src/pages/Processes/Components/lcaImpactCompareToolbar.tsx`、`src/pages/Processes/Analysis/index.tsx`。
+- [ ] 然后继续按严格队列顺序缩小当前 `70%-90%` 桶，从 `src/pages/Processes/Components/lcaAnalysisShared.ts`、`src/pages/Processes/Components/lcaImpactHotspotToolbar.tsx`、`src/pages/Processes/Components/lcaContributionPath.ts`、`src/pages/Processes/Components/lcaProcessSelectionTable.tsx`、`src/services/lca/api.ts` 开始。
 - [ ] 继续按队列顺序消化 `line=100` 但 `branch<100` 的簇，行为安全时可用死分支清理替代硬造测试。
-- [ ] 继续推进最大的页面簇收口：`src/pages/Review/Components`、`src/pages/LifeCycleModels/Components`、`src/pages/Flows/Components`、`src/pages/Sources/Components`。
-- [ ] 继续按队列顺序推进 service 收口，优先 `src/services/lifeCycleModels/api.ts`、`src/services/lca/taskCenter.ts`、`src/services/contacts/api.ts`、`src/services/lifeCycleModels/util_allocate_supply_demand.ts`。
-- [ ] 从当前 89.35% branch 基线继续往 100% 收口，方式是持续缩短有序队列，而不是临时改优先级。
+- [ ] 继续推进最大的页面簇收口：`src/pages/Processes/Components`、`src/pages/Review/Components`、`src/pages/Flows/Components`、`src/pages/LifeCycleModels/Components`。
+- [ ] 继续按队列顺序推进 service 收口，优先 `src/services/processes/api.ts`、`src/services/lca/api.ts`、`src/services/flows/api.ts`，以及清完低 branch 桶后的其余 lifecycle-model bundle 文件。
+- [ ] 从当前 87.97% branch 基线继续往 100% 收口，方式是持续缩短有序队列，而不是临时改优先级。
 
 ## 执行循环
 

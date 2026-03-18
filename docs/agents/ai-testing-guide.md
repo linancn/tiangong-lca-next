@@ -62,24 +62,25 @@ npm run lint
 - Directional goal: move toward 100% meaningful coverage across `src/**`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
-- Latest verified full run on March 15, 2026 (`npm run test:coverage`) is `279 suites / 2741 tests` with:
-  - Statements: `96.04%` (17944/18682)
-  - Branches: `89.35%` (9597/10740)
-  - Functions: `93.86%` (3735/3979)
-  - Lines: `96.32%` (17186/17842)
+- Latest verified full run on March 18, 2026 (`npm run test:coverage`) is `286 suites / 2842 tests` with:
+  - Statements: `94.97%` (19080/20090)
+  - Branches: `87.97%` (10285/11691)
+  - Functions: `94.01%` (4116/4378)
+  - Lines: `95.15%` (18278/19208)
 - Current all-file inventory from the same run:
-  - Source files tracked: `303`
-  - Fully covered files (`100/100/100/100`): `177`
-  - Files with remaining gaps: `126`
-  - Branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 91`, `90-<100 = 24`
-  - `line=100` but `branch<100`: `30`
-- The branch gate is healthy and the `50-70` bucket is cleared. Execution is now an ordered file-closure workflow focused on the `70-90` bucket and branch-only gaps.
+  - Source files tracked: `312`
+  - Fully covered files (`100/100/100/100`): `197`
+  - Files with remaining gaps: `115`
+  - Branch buckets: `<50 = 1`, `50-70 = 8`, `70-90 = 68`, `90-<100 = 27`
+  - `line=100` but `branch<100`: `27`
+- The branch gate is still healthy, but the lifecycle-model persistence bundle sync reopened one `<50` hotspot and eight `50-70` hotspots. Execution stays queue-ordered, with the immediate closure focus back on those reopened low-branch files before returning to the wider `70-90` bucket and branch-only gaps.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
 - Report detail policy:
   - `npm run test:coverage:report`: default review output. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files.
   - `node scripts/test-coverage-report.js --full`: full ordered incomplete-file queue. Use this to inspect the entire file-by-file state or refresh the backlog snapshot.
   - Queue order is deterministic: `branches asc -> lines asc -> statements asc -> functions asc -> path`.
+  - The current queue head is led by `src/services/lifeCycleModels/api.ts`, `src/pages/Processes/Components/lcaGroupedResults.ts`, `src/services/lifeCycleModels/persistencePlan.ts`, and `src/pages/Processes/Analysis/index.tsx`.
 - Queue strategy:
   - Do not re-rank work by ad hoc “highest ROI” judgments.
   - Pick the first file in the ordered closure queue and drive it toward `100/100/100/100` where meaningful before moving on.
