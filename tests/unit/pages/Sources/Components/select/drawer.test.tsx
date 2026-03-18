@@ -109,7 +109,7 @@ jest.mock('antd', () => {
     return <>{children}</>;
   };
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) =>
     open ? (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
@@ -118,6 +118,9 @@ jest.mock('antd', () => {
             close
           </button>
         </header>
+        <div data-testid='drawer-container'>
+          {getContainer?.() === globalThis.document?.body ? 'body' : 'custom'}
+        </div>
         <div>{children}</div>
         <footer>{footer}</footer>
       </section>
@@ -361,5 +364,76 @@ describe('SourceSelectDrawer', () => {
 
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
+  });
+
+  it('reloads tg and my tabs, supports my search, and closes from footer cancel and extra close', async () => {
+    renderWithProviders(<SourceSelectDrawer buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await screen.findByRole('dialog', { name: 'Select Source' });
+    expect(screen.getByTestId('drawer-container')).toHaveTextContent('body');
+
+    await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
+    await waitFor(() =>
+      expect(mockGetSourceTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'my',
+        [],
+        undefined,
+      ),
+    );
+
+    await userEvent.type(screen.getByLabelText('my'), 'mine');
+    await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'my',
+        'mine',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /TianGong Data/i }));
+    await waitFor(() =>
+      expect(mockGetSourceTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await screen.findByRole('dialog', { name: 'Select Source' });
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+    expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
+  });
+
+  it('uses the default icon tooltip text and loads TE data without review-report state filtering', async () => {
+    renderWithProviders(<SourceSelectDrawer buttonType='icon' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
+    await screen.findByRole('dialog', { name: 'Select Source' });
+
+    await userEvent.click(screen.getByRole('button', { name: /TE Data/i }));
+    await waitFor(() =>
+      expect(mockGetSourceTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'te',
+        [],
+        undefined,
+      ),
+    );
   });
 });

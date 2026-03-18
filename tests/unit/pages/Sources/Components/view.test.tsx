@@ -78,14 +78,20 @@ jest.mock('@/pages/Sources/Components/optiondata', () => ({
 
 jest.mock('antd', () => {
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
-  const Button = ({ children, onClick, disabled, icon }: any) => (
-    <button type='button' onClick={disabled ? undefined : onClick} disabled={disabled}>
+  const Button = ({ children, onClick, disabled, icon, href, target }: any) => (
+    <button
+      type='button'
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      data-href={href}
+      data-target={target}
+    >
       {icon}
       {toText(children)}
     </button>
   );
   const Tooltip = ({ children }: any) => <>{children}</>;
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
@@ -94,6 +100,9 @@ jest.mock('antd', () => {
             close
           </button>
         </header>
+        <div data-testid='drawer-container'>
+          {getContainer?.() === globalThis.document?.body ? 'body' : 'custom'}
+        </div>
         <div>{children}</div>
       </section>
     ) : null;
@@ -187,5 +196,52 @@ describe('SourceView', () => {
     await userEvent.click(screen.getByRole('button', { name: /Administrative information/i }));
     expect(screen.getByTestId('contact-desc')).toBeInTheDocument();
     expect(screen.getByText('1.0')).toBeInTheDocument();
+  });
+
+  it('renders the URL citation branch, supports the text trigger, and closes from both close actions', async () => {
+    mockIsValidURL.mockReturnValue(true);
+    mockGenSourceFromData.mockReturnValue({
+      sourceInformation: {
+        dataSetInformation: {
+          sourceCitation: 'https://example.com/source',
+        },
+      },
+      administrativeInformation: {},
+    });
+
+    renderWithProviders(<SourceView id='source-2' version='2.0' lang='en' buttonType='text' />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^view$/i }));
+
+    await waitFor(() => expect(mockGetSourceDetail).toHaveBeenCalledWith('source-2', '2.0'));
+    expect(screen.getByTestId('drawer-container')).toHaveTextContent('body');
+    const citationLinkButton = document.querySelector(
+      'button[data-href="https://example.com/source"]',
+    );
+    expect(citationLinkButton).not.toBeNull();
+    expect(citationLinkButton).toHaveAttribute('data-href', 'https://example.com/source');
+    expect(citationLinkButton).toHaveAttribute('data-target', 'blank');
+
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+    expect(screen.queryByRole('dialog', { name: /View Source/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^view$/i }));
+    await screen.findByRole('dialog', { name: /View Source/i });
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: /View Source/i })).not.toBeInTheDocument();
+  });
+
+  it('falls back to an empty source dataset when the detail payload is missing', async () => {
+    mockGetSourceDetail.mockResolvedValue({
+      data: null,
+    });
+
+    renderWithProviders(<SourceView id='source-3' version='3.0' lang='en' buttonType='icon' />);
+
+    await userEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(mockGenSourceFromData).toHaveBeenCalledWith({}));
+    expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    expect(screen.getByRole('dialog', { name: /View Source/i })).toBeInTheDocument();
   });
 });

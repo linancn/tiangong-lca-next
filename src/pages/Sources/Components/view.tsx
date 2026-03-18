@@ -108,7 +108,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 <Button
                   type='link'
                   target='blank'
-                  href={initData.sourceInformation?.dataSetInformation?.sourceCitation ?? ''}
+                  href={initData.sourceInformation?.dataSetInformation?.sourceCitation}
                 >
                   <LinkOutlined />
                 </Button>

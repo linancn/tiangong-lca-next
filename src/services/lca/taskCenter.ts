@@ -46,7 +46,6 @@ const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
 let taskSequence = 0;
 let tasks: LcaBackgroundTask[] = [];
 const listeners = new Set<() => void>();
-let hydratedFromStorage = false;
 
 type PersistedTaskStore = {
   version: number;
@@ -300,9 +299,6 @@ function closeTimelineItem(
   item: LcaTaskPhaseTimelineItem,
   endedAt: string,
 ): LcaTaskPhaseTimelineItem {
-  if (item.endedAt) {
-    return item;
-  }
   const durationMs = Math.max(0, Date.parse(endedAt) - Date.parse(item.startedAt));
   return {
     ...item,
@@ -349,15 +345,13 @@ function upsertTask(taskId: string, patch: Partial<LcaBackgroundTask>): void {
   const timestamp = nowIso();
   const nextPhase = patch.phase ?? current.phase;
   const nextState = patch.state ?? current.state;
-  const nextTimeline = patch.phaseTimeline
-    ? patch.phaseTimeline.slice()
-    : applyTaskTimelineTransition(
-        current.phaseTimeline,
-        current.phase,
-        nextPhase,
-        nextState,
-        timestamp,
-      );
+  const nextTimeline = applyTaskTimelineTransition(
+    current.phaseTimeline,
+    current.phase,
+    nextPhase,
+    nextState,
+    timestamp,
+  );
   const updated: LcaBackgroundTask = {
     ...current,
     ...patch,
@@ -610,11 +604,6 @@ async function resumeTaskAfterReload(taskId: string): Promise<void> {
 }
 
 function hydrateTasksFromStorage(): void {
-  if (hydratedFromStorage) {
-    return;
-  }
-  hydratedFromStorage = true;
-
   const restored = readTasksFromStorage();
   if (restored.length === 0) {
     return;

@@ -15,9 +15,7 @@ import { genContactJsonOrdered } from './util';
 
 export async function createContact(id: string, data: any) {
   const rawData = genContactJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
@@ -46,9 +44,7 @@ export async function createContact(id: string, data: any) {
 
 export async function updateContact(id: string, version: string, data: any) {
   const rawData = genContactJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {

@@ -92,8 +92,8 @@ function buildCapacityGraph(
   supplies: Record<string, number>,
   demands: Record<string, number>,
   edges: Iterable<Edge>,
+  tolerance: number,
   edgeCapacities?: EdgeCapacities,
-  tolerance: number = 1e-9,
 ): { capacity: CapacityGraph; source: string; sink: string; edgeList: Edge[] } {
   validateNonNegativeAmounts(supplies, 'Supply');
   validateNonNegativeAmounts(demands, 'Demand');
@@ -121,12 +121,6 @@ function buildCapacityGraph(
     }
   }
 
-  if (totalSupply === 0 && totalDemand === 0) {
-    defaultEdgeCap = 0;
-  } else if (defaultEdgeCap === 0) {
-    defaultEdgeCap = Math.max(totalSupply, totalDemand, 1);
-  }
-
   const edgeList = uniqueEdgesPreserveOrder(edges);
   for (const [u, v] of edgeList) {
     const cap = getEdgeCapacity(edgeCapacities, u, v, defaultEdgeCap);
@@ -148,7 +142,7 @@ function summarizeFlow(
   supplies: Record<string, number>,
   demands: Record<string, number>,
   edgeList: Iterable<Edge>,
-  tolerance: number = 1e-9,
+  tolerance: number,
 ): {
   allocations: Allocation;
   remaining_supply: Record<string, number>;
@@ -175,12 +169,12 @@ function summarizeFlow(
 
   const remaining_supply: Record<string, number> = {};
   for (const n of Object.keys(supplies)) {
-    const rem = (supplies[n] ?? 0) - (supplyUsed[n] ?? 0);
+    const rem = supplies[n] - supplyUsed[n];
     remaining_supply[n] = rem > tolerance ? rem : 0;
   }
   const remaining_demand: Record<string, number> = {};
   for (const n of Object.keys(demands)) {
-    const rem = (demands[n] ?? 0) - (demandMet[n] ?? 0);
+    const rem = demands[n] - demandMet[n];
     remaining_demand[n] = rem > tolerance ? rem : 0;
   }
   const total_delivered = Object.values(demandMet).reduce((a, b) => a + b, 0);
@@ -197,7 +191,7 @@ function edmondsKarp(
   capacity: CapacityGraph,
   source: string,
   sink: string,
-  opts?: { prioritizeBalance?: boolean; tolerance?: number },
+  opts: { prioritizeBalance?: boolean; tolerance: number },
 ): { maxFlow: number; flow: CapacityGraph } {
   const residual: Record<string, Record<string, number>> = {};
   const neighbors: Record<string, Set<string>> = {};
@@ -216,7 +210,6 @@ function edmondsKarp(
     ensureResidual(u);
     ensureNeighbors(u);
     for (const [v, cap] of Object.entries(edges)) {
-      if (cap < 0) throw new Error(`Negative capacity detected on edge ${u}->${v}`);
       ensureResidual(u, v);
       residual[u][v] += cap;
       ensureResidual(v);
@@ -229,7 +222,7 @@ function edmondsKarp(
   }
 
   let maxFlow = 0;
-  const eps = Number.isFinite(opts?.tolerance ?? NaN) ? Math.max(0, opts!.tolerance!) : 1e-9;
+  const eps = Math.max(0, opts.tolerance);
   const prioritizeBalance = opts?.prioritizeBalance === true;
 
   // 根据启发式为相邻节点排序：偏向用尽小供给/补齐小需求，反向边靠后。
@@ -243,7 +236,7 @@ function edmondsKarp(
       if (!isForward) return 1e6;
       // SOURCE -> 供给节点：优先用尽小供给（residual[SOURCE][u] 小优先）
       if (from === source && initial[from][to] !== undefined) {
-        return residual[from]?.[to] ?? Number.POSITIVE_INFINITY;
+        return residual[from][to];
       }
       // 供给 -> 需求：优先补齐小需求（residual[需求节点][SINK] 小优先）
       if (
@@ -252,8 +245,7 @@ function edmondsKarp(
         initial[to] &&
         initial[to][sink] !== undefined
       ) {
-        const remDemand = residual[to]?.[sink];
-        return remDemand === undefined ? Number.POSITIVE_INFINITY : remDemand;
+        return residual[to][sink];
       }
       // 其他情况保持稳定顺序
       return 0;
@@ -270,7 +262,7 @@ function edmondsKarp(
       const neighs = orderedNeighbors(u);
       for (const v of neighs) {
         if (parent[v] !== undefined) continue;
-        if ((residual[u]?.[v] ?? 0) > eps) {
+        if (residual[u][v] > eps) {
           parent[v] = u;
           queue.push(v);
         }
@@ -285,9 +277,8 @@ function edmondsKarp(
       let cur: string = sink;
       // parent[source] === null 是路径起点的哨兵
       while (parent[cur] !== null) {
-        const prev = parent[cur];
-        if (typeof prev !== 'string') break; // 保护：理论上不发生
-        pathFlow = Math.min(pathFlow, residual[prev]?.[cur] ?? 0);
+        const prev = parent[cur] as string;
+        pathFlow = Math.min(pathFlow, residual[prev][cur]);
         cur = prev;
       }
     }
@@ -296,13 +287,12 @@ function edmondsKarp(
     {
       let cur: string = sink;
       while (parent[cur] !== null) {
-        const prev = parent[cur];
-        if (typeof prev !== 'string') break;
-        const fwd = (residual[prev][cur] ?? 0) - pathFlow;
-        const rev = (residual[cur][prev] ?? 0) + pathFlow;
+        const prev = parent[cur] as string;
+        const fwd = residual[prev][cur] - pathFlow;
+        const rev = residual[cur][prev] + pathFlow;
         // clamp tiny residuals to zero to reduce numerical noise
         residual[prev][cur] = fwd > eps ? fwd : 0;
-        residual[cur][prev] = rev > eps ? rev : 0;
+        residual[cur][prev] = rev;
         neighbors[cur].add(prev);
         neighbors[prev].add(cur);
         cur = prev;
@@ -316,7 +306,7 @@ function edmondsKarp(
   for (const [u, edges] of Object.entries(initial)) {
     flow[u] = {};
     for (const [v, cap] of Object.entries(edges)) {
-      const used = cap - (residual[u]?.[v] ?? 0);
+      const used = cap - residual[u][v];
       if (used > eps) {
         flow[u][v] = used;
       }
@@ -368,8 +358,8 @@ export function allocateSupplyToDemand(
     supplies,
     demands,
     edges,
-    edgeCapacities,
     tolerance,
+    edgeCapacities,
   );
 
   const prioritizeBalance = opts?.prioritizeBalance === true;

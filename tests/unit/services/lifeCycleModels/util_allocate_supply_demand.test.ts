@@ -60,6 +60,20 @@ describe('allocateSupplyToDemand - tiny magnitude cases', () => {
     expect(res.remaining_demand).toEqual({ d: 3 });
   });
 
+  test('falls back to the default edge capacity when a Map has no matching edge key', () => {
+    const supplies = { s: 2 };
+    const demands = { d: 5 };
+    const edges: Array<[string, string]> = [['s', 'd']];
+    const edgeCaps = new Map([['other→edge', 1]]);
+
+    const res = allocateSupplyToDemand(supplies, demands, edges, edgeCaps);
+
+    expect(res.total_delivered).toBe(2);
+    expect(res.allocations).toEqual({ s: { d: 2 } });
+    expect(res.remaining_supply).toEqual({ s: 0 });
+    expect(res.remaining_demand).toEqual({ d: 3 });
+  });
+
   test('deduplicates duplicate edges instead of allocating the same route twice', () => {
     const supplies = { s: 3 };
     const demands = { d: 3 };
@@ -96,6 +110,22 @@ describe('allocateSupplyToDemand - tiny magnitude cases', () => {
     expect(res.remaining_demand).toEqual({ d: 2 });
   });
 
+  test('falls back to the default edge capacity when a Record has no matching edge key', () => {
+    const supplies = { s: 3 };
+    const demands = { d: 5 };
+    const edges: Array<[string, string]> = [['s', 'd']];
+    const edgeCaps = {
+      'other→edge': 1,
+    };
+
+    const res = allocateSupplyToDemand(supplies, demands, edges, edgeCaps);
+
+    expect(res.total_delivered).toBe(3);
+    expect(res.allocations).toEqual({ s: { d: 3 } });
+    expect(res.remaining_supply).toEqual({ s: 0 });
+    expect(res.remaining_demand).toEqual({ d: 2 });
+  });
+
   test('throws when any supply amount is negative', () => {
     expect(() => allocateSupplyToDemand({ s: -1 }, { d: 1 }, [['s', 'd']])).toThrow(
       'Supply amounts must be non-negative',
@@ -128,5 +158,21 @@ describe('allocateSupplyToDemand - tiny magnitude cases', () => {
     expect(
       Object.values(res.allocations).flatMap((row) => Object.values(row)).length,
     ).toBeGreaterThan(0);
+  });
+
+  test('falls back to default tolerances when non-finite tolerance options are provided', () => {
+    const supplies = { s: 1 };
+    const demands = { d: 1 };
+    const edges: Array<[string, string]> = [['s', 'd']];
+
+    const res = allocateSupplyToDemand(supplies, demands, edges, undefined, {
+      tolerance: Number.POSITIVE_INFINITY,
+      relTolerance: Number.NaN,
+    });
+
+    expect(res.total_delivered).toBe(1);
+    expect(res.allocations).toEqual({ s: { d: 1 } });
+    expect(res.remaining_supply).toEqual({ s: 0 });
+    expect(res.remaining_demand).toEqual({ d: 0 });
   });
 });
