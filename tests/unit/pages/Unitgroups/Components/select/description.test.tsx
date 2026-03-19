@@ -57,10 +57,8 @@ jest.mock('antd', () => {
   );
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children, labelStyle, styles }: any) => (
-    <div data-label-style-width={labelStyle?.width} data-styles-label-width={styles?.label?.width}>
-      {children}
-    </div>
+  Descriptions.Item = ({ children, styles }: any) => (
+    <div data-styles-label-width={styles?.label?.width}>{children}</div>
   );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
   return {
@@ -135,7 +133,7 @@ describe('UnitGroupSelectDescription', () => {
 
     await waitFor(() => expect(mockGetReferenceUnit).toHaveBeenCalledWith('ug-zh', ''));
     expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('ug-zh:');
-    expect(container.querySelector('[data-label-style-width="210px"]')).not.toBeNull();
+    expect(container.querySelector('[data-styles-label-width="210px"]')).not.toBeNull();
     expect(screen.getAllByTestId('lang-desc')[1]).toHaveTextContent('');
   });
 });
