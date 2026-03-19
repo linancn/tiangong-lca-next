@@ -54,17 +54,12 @@ type ProcessTableResponse = {
 };
 
 async function mapProcessTableRows(rawRows: any[], lang: string): Promise<ProcessTable[]> {
-  if (!Array.isArray(rawRows) || rawRows.length === 0) {
-    return [];
-  }
-
   const locations = Array.from(new Set(rawRows.map((item: any) => item['@location'])));
   const [locationRes, classificationRes] = await Promise.all([
     getCachedLocationData(lang, locations),
     lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
   ]);
-  const locationDataArr = locationRes || [];
-  const locationMap = new Map(locationDataArr.map((item: any) => [item['@value'], item['#text']]));
+  const locationMap = new Map(locationRes.map((item: any) => [item['@value'], item['#text']]));
   const classificationData = classificationRes;
 
   return rawRows.map((item: any) => {
@@ -91,8 +86,8 @@ async function mapProcessTableRows(rawRows: any[], lang: string): Promise<Proces
         referenceYear: item['common:referenceYear'] ?? '-',
         location: location ?? '-',
         modifiedAt: new Date(item.modified_at),
-        teamId: item?.team_id,
-        modelId: item?.model_id,
+        teamId: item.team_id,
+        modelId: item.model_id,
       };
     } catch (error) {
       console.error(error);
@@ -132,12 +127,12 @@ export async function listMyProcessesForLca(
 
   const data = (result.data ?? [])
     .map((item: any) => {
-      const id = String(item?.id ?? '').trim();
-      const version = String(item?.version ?? '').trim();
+      const id = String(item.id ?? '').trim();
+      const version = String(item.version ?? '').trim();
       if (!id || !version) {
         return null;
       }
-      const name = genProcessName(item?.name ?? {}, lang);
+      const name = genProcessName(item.name ?? {}, lang);
       return {
         id,
         version,
@@ -151,9 +146,7 @@ export async function listMyProcessesForLca(
 
 export async function createProcess(id: string, data: any, modelId?: string) {
   const rawData = genProcessJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
@@ -189,9 +182,7 @@ export async function createProcess(id: string, data: any, modelId?: string) {
 
 export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const rawData = genProcessJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
@@ -509,8 +500,7 @@ export async function getConnectableProcessesTable(
     lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
     getLifeCyclesByIdAndVersion(processIdsAndVersions),
   ]);
-  const locationDataArr = locationRes || [];
-  const locationMap = new Map(locationDataArr.map((l: any) => [l['@value'], l['#text']]));
+  const locationMap = new Map(locationRes.map((l: any) => [l['@value'], l['#text']]));
   const classificationData = classificationRes;
 
   let data: any[] = result.data.map((i: any) => {
@@ -539,7 +529,7 @@ export async function getConnectableProcessesTable(
         referenceYear: i['common:referenceYear'] ?? '-',
         location: location ?? '-',
         modifiedAt: new Date(i.modified_at),
-        teamId: i?.team_id,
+        teamId: i.team_id,
       };
     } catch (e) {
       console.error(e);
@@ -709,27 +699,30 @@ export async function getProcessTablePgroongaSearch(
   orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
 ) {
   // const time_start = new Date();
-  let result: any;
-
   const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    const requestParams: { [key: string]: any } = {
-      query_text: queryText,
-      filter_condition: filterCondition,
-      page_size: params.pageSize ?? 10,
-      page_current: params.current ?? 1,
-      data_source: dataSource,
-      order_by: orderBy,
-      // this_user_id: session.data.session.user?.id,
+  if (!session.data.session) {
+    return {
+      data: [],
+      success: false,
+      error: 'unauthorized',
     };
-    if (typeof stateCode === 'number') {
-      requestParams['state_code'] = stateCode;
-    }
-    if (typeOfDataSet && typeOfDataSet !== 'all') {
-      requestParams['type_of_data_set'] = typeOfDataSet;
-    }
-    result = await supabase.rpc('pgroonga_search_processes_v1', requestParams);
   }
+  const requestParams: { [key: string]: any } = {
+    query_text: queryText,
+    filter_condition: filterCondition,
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    order_by: orderBy,
+    // this_user_id: session.data.session.user?.id,
+  };
+  if (typeof stateCode === 'number') {
+    requestParams['state_code'] = stateCode;
+  }
+  if (typeOfDataSet && typeOfDataSet !== 'all') {
+    requestParams['type_of_data_set'] = typeOfDataSet;
+  }
+  const result = await supabase.rpc('pgroonga_search_processes_v1', requestParams);
   if (result.error) {
     console.log('error', result.error);
   }
@@ -795,9 +788,9 @@ export async function getProcessTablePgroongaSearch(
               typeOfDataSet:
                 i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
                   ?.typeOfDataSet ?? '-',
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-              modelId: i?.model_id,
+              modifiedAt: new Date(i.modified_at),
+              teamId: i.team_id,
+              modelId: i.model_id,
             };
           } catch (e) {
             console.error(e);
@@ -841,9 +834,9 @@ export async function getProcessTablePgroongaSearch(
             typeOfDataSet:
               i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
                 ?.typeOfDataSet ?? '-',
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-            modelId: i?.model_id,
+            modifiedAt: new Date(i.modified_at),
+            teamId: i.team_id,
+            modelId: i.model_id,
           };
         } catch (e) {
           console.error(e);
@@ -864,27 +857,19 @@ export async function getProcessTablePgroongaSearch(
 }
 
 function normalizeProcessTableResponse(
-  result:
-    | ProcessTableResponse
-    | { data?: ProcessTable[]; page?: number; success?: boolean; total?: number }
-    | undefined,
-  fallbackPage = 1,
+  result: ProcessTableResponse | undefined,
+  fallbackPage: number,
 ): ProcessTableResponse {
   if (!result) {
     return { data: [], page: fallbackPage, success: false };
   }
 
   return {
-    data: Array.isArray(result.data) ? result.data : [],
+    data: result.data,
     page: result.page ?? fallbackPage,
     success: result.success !== false,
-    total:
-      typeof result.total === 'number'
-        ? result.total
-        : Array.isArray(result.data)
-          ? result.data.length
-          : 0,
-    error: 'error' in result ? result.error : undefined,
+    total: result.total ?? result.data.length,
+    error: result.error,
   };
 }
 
@@ -918,7 +903,10 @@ async function listAllDataSearchProcessPage(
 ): Promise<ProcessTableResponse> {
   const currentPage = Math.max(1, params.current ?? 1);
   const pageSize = Math.max(1, params.pageSize ?? 10);
-  const loadSearchBySource = async (dataSource: 'my' | 'tg', pageParams: ProcessTableQueryParams) =>
+  const loadSearchBySource = async (
+    dataSource: 'my' | 'tg',
+    pageParams: Required<ProcessTableQueryParams>,
+  ) =>
     normalizeProcessTableResponse(
       await getProcessTablePgroongaSearch(
         pageParams,
@@ -929,7 +917,7 @@ async function listAllDataSearchProcessPage(
         stateCode,
         typeOfDataSet,
       ),
-      pageParams.current ?? 1,
+      pageParams.current,
     );
 
   const currentUserHead = await loadSearchBySource('my', {
@@ -955,13 +943,13 @@ async function listAllDataSearchProcessPage(
       data: [],
       page: currentPage,
       success: false,
-      total: currentUserHead.total ?? 0,
+      total: currentUserHead.total,
       error: openDataHead.error,
     };
   }
 
-  const currentUserTotal = currentUserHead.total ?? 0;
-  const openDataTotal = openDataHead.total ?? 0;
+  const currentUserTotal = currentUserHead.total!;
+  const openDataTotal = openDataHead.total!;
   const pageStartIndex = (currentPage - 1) * pageSize;
 
   if (pageStartIndex < currentUserTotal) {
@@ -1190,9 +1178,9 @@ export async function process_hybrid_search(
               typeOfDataSet:
                 i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
                   ?.typeOfDataSet ?? '-',
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-              modelId: i?.model_id,
+              modifiedAt: new Date(i.modified_at),
+              teamId: i.team_id,
+              modelId: i.model_id,
             };
           } catch (e) {
             console.error(e);
@@ -1236,9 +1224,9 @@ export async function process_hybrid_search(
             typeOfDataSet:
               i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
                 ?.typeOfDataSet ?? '-',
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-            modelId: i?.model_id,
+            modifiedAt: new Date(i.modified_at),
+            teamId: i.team_id,
+            modelId: i.model_id,
           };
         } catch (e) {
           console.error(e);
@@ -1306,11 +1294,11 @@ export async function getProcessDetail(id: string, version: string) {
           id: id,
           version: data.version,
           json: data.json,
-          modifiedAt: data?.modified_at,
-          stateCode: data?.state_code,
-          ruleVerification: data?.rule_verification,
-          teamId: data?.team_id,
-          reviews: data?.reviews,
+          modifiedAt: data.modified_at,
+          stateCode: data.state_code,
+          ruleVerification: data.rule_verification,
+          teamId: data.team_id,
+          reviews: data.reviews,
         },
         success: true,
       });
@@ -1336,7 +1324,7 @@ export async function getProcessExchange(
   },
 ) {
   const data = exchangeData.filter(
-    (i) => i?.exchangeDirection.toUpperCase() === direction.toUpperCase(),
+    (i) => i.exchangeDirection.toUpperCase() === direction.toUpperCase(),
   );
   const start = ((params.current ?? 1) - 1) * (params.pageSize ?? 10);
   const end = start + (params.pageSize ?? 10);
@@ -1345,7 +1333,7 @@ export async function getProcessExchange(
     data: paginatedData,
     page: params.current ?? 1,
     success: true,
-    total: data.length ?? 0,
+    total: data.length,
   });
 }
 
@@ -1399,8 +1387,8 @@ export async function getProcessesByIdAndVersion(
           referenceYear: i['common:referenceYear'] ?? '-',
           // location: location ?? '-',
           modifiedAt: new Date(i.modified_at),
-          teamId: i?.team_id,
-          modelId: i?.model_id,
+          teamId: i.team_id,
+          modelId: i.model_id,
         };
       }) ?? [];
   } else {
@@ -1415,9 +1403,9 @@ export async function getProcessesByIdAndVersion(
           typeOfDataSet: i.typeOfDataSet ?? '-',
           referenceYear: i['common:referenceYear'] ?? '-',
           modifiedAt: new Date(i.modified_at),
-          teamId: i?.team_id,
-          modelId: i?.model_id,
-          userId: i?.user_id,
+          teamId: i.team_id,
+          modelId: i.model_id,
+          userId: i.user_id,
         };
       }) ?? [];
   }

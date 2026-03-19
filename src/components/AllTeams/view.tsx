@@ -112,11 +112,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
             >
               {initData?.json?.darkLogoPreviewUrl ? (
                 <Image
-                  style={
-                    initData?.json?.darkLogoPreviewUrl
-                      ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
-                      : {}
-                  }
+                  style={{ background: '#141414', display: 'inline-block', borderRadius: '8px' }}
                   width={100}
                   src={initData?.json?.darkLogoPreviewUrl}
                   alt='Dark Logo'

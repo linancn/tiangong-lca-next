@@ -127,6 +127,9 @@ const FlowsCreate: FC<CreateProps> = ({
     getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
       const dataset = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
+        dataset.administrativeInformation = dataset.administrativeInformation ?? {};
+        dataset.administrativeInformation.publicationAndOwnership =
+          dataset.administrativeInformation.publicationAndOwnership ?? {};
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
           newVersion;
       }
@@ -340,7 +343,7 @@ const FlowsCreate: FC<CreateProps> = ({
                   console.log('err', err);
                   return false;
                 }
-                const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
+                const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
                 const fieldsValue = formRefCreate.current?.getFieldsValue();
                 const flowProperties = fromData?.flowProperties;
                 // if (

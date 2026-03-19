@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 jest.mock('umi', () => ({
@@ -53,10 +53,11 @@ jest.mock('antd', () => {
   });
   Button.displayName = 'MockButton';
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
     if (!open) {
       return null;
     }
+    getContainer?.();
     const heading = typeof title === 'string' ? title : (title?.props?.children ?? 'Drawer');
     return (
       <section role='dialog' aria-modal='true'>
@@ -199,6 +200,22 @@ describe('TeamView component', () => {
     });
   });
 
+  it('closes the drawer from the header close icon', async () => {
+    const user = userEvent.setup();
+
+    render(<TeamView id='team-1' buttonType='icon' />);
+
+    await user.click(screen.getByRole('button', { name: /view/i }));
+    const dialog = await screen.findByRole('dialog');
+
+    const [headerCloseButton] = within(dialog).getAllByRole('button');
+    await user.click(headerCloseButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
   it('renders text button when buttonType is not icon', async () => {
     const user = userEvent.setup();
 
@@ -243,5 +260,29 @@ describe('TeamView component', () => {
     await waitFor(() => expect(screen.getByTestId('spinner-idle')).toBeInTheDocument());
     expect(screen.queryByAltText('Light Logo')).not.toBeInTheDocument();
     expect(screen.queryByAltText('Dark Logo')).not.toBeInTheDocument();
+  });
+
+  it('renders dash placeholders for empty title and description values', async () => {
+    const user = userEvent.setup();
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          ...teamResponse.data[0],
+          json: {
+            ...teamResponse.data[0].json,
+            title: [{ '#text': '', '@xml:lang': 'en' }],
+            description: [{ '#text': '', '@xml:lang': 'en' }],
+          },
+        },
+      ],
+    });
+
+    render(<TeamView id='team-empty-text' buttonType='icon' />);
+
+    await user.click(screen.getByRole('button', { name: /view/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    const placeholders = await screen.findAllByText('-');
+    expect(placeholders.length).toBeGreaterThanOrEqual(2);
   });
 });

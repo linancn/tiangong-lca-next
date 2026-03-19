@@ -164,7 +164,11 @@ jest.mock('@ant-design/pro-components', () => {
       <div>
         {rows.map((row: Record<string, any>) => {
           const titleColumn = columns.find((column: any) => column.dataIndex === 'title');
+          const descriptionColumn = columns.find(
+            (column: any) => column.dataIndex === 'description',
+          );
           const labelContent = renderCell(titleColumn, row);
+          const descriptionContent = renderCell(descriptionColumn, row);
           return (
             <div key={row.id}>
               <label>
@@ -175,6 +179,7 @@ jest.mock('@ant-design/pro-components', () => {
                 />
                 <span>{labelContent}</span>
               </label>
+              <div>{descriptionContent}</div>
             </div>
           );
         })}
@@ -222,7 +227,10 @@ const teamOptions = [
   },
   {
     id: 'team-2',
-    json: { title: { en: 'Beta Team' }, description: { en: 'Beta description' } },
+    json: {
+      title: { en: 'Beta Team' },
+      description: { en: 'Beta description that is definitely longer than twenty characters' },
+    },
     ownerEmail: 'beta@example.com',
   },
 ];
@@ -263,6 +271,8 @@ describe('SelectTeams component', () => {
 
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     expect(mockGetUnrankedTeams).toHaveBeenCalledWith({ current: 1, pageSize: 10 });
+    expect(screen.getByText('Alpha description')).toBeInTheDocument();
+    expect(screen.getByText('Beta description tha...')).toBeInTheDocument();
 
     const alphaCheckbox = await screen.findByRole('checkbox', { name: 'Alpha Team' });
     const betaCheckbox = await screen.findByRole('checkbox', { name: 'Beta Team' });
@@ -279,6 +289,23 @@ describe('SelectTeams component', () => {
 
     expect(getMessageMock().warning).toHaveBeenCalledWith('Please select at least one team');
     expect(mockUpdateSort).not.toHaveBeenCalled();
+  });
+
+  it('renders an empty table when the team request succeeds without data rows', async () => {
+    const user = userEvent.setup();
+    mockGetUnrankedTeams.mockResolvedValueOnce({
+      data: undefined,
+      success: true,
+      total: 0,
+    });
+    renderSelectTeams();
+
+    await user.click(screen.getByRole('button', { name: /select team/i }));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    });
   });
 
   it('adds selected teams and closes the drawer on success', async () => {
