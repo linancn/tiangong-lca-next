@@ -37,6 +37,8 @@ const buildMockFormApi = (): MockFormApi => {
   return api;
 };
 
+let mockIntlLocale = 'en-US';
+
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
   default: ({
@@ -66,6 +68,7 @@ jest.mock('@/services/processes/api', () => ({
 
 jest.mock('umi', () => ({
   useIntl: () => ({
+    locale: mockIntlLocale,
     formatMessage: (
       { defaultMessage, id }: { defaultMessage?: string; id: string },
       values?: Record<string, string | number>,
@@ -283,6 +286,7 @@ const mockListMyProcessesForLca = listMyProcessesForLca as unknown as jest.Mock;
 describe('LcaSolveToolbar component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIntlLocale = 'en-US';
     mockSubmitLcaTask.mockReturnValue({ id: 'task-1' });
     mockListMyProcessesForLca.mockResolvedValue({
       success: true,
@@ -389,11 +393,58 @@ describe('LcaSolveToolbar component', () => {
     });
   });
 
+  it('falls back to String(error) when task submission throws a non-Error value', async () => {
+    mockSubmitLcaTask.mockImplementationOnce(() => {
+      throw 'boom-string';
+    });
+
+    render(<LcaSolveToolbar />);
+    await openModal();
+    fireEvent.click(screen.getByTestId('lca-modal-ok'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Calculation request failed: boom-string');
+    });
+  });
+
   it('shows an error when loading the process list returns an unsuccessful response', async () => {
     mockListMyProcessesForLca.mockResolvedValueOnce({
       success: false,
       data: [],
     });
+
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to load your process list');
+    });
+  });
+
+  it('loads the process list using zh when the active locale starts with zh', async () => {
+    mockIntlLocale = 'zh-CN';
+
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    await waitFor(() => {
+      expect(mockListMyProcessesForLca).toHaveBeenCalledWith('zh', { limit: 300 });
+    });
+  });
+
+  it('falls back to en when the active locale is missing', async () => {
+    mockIntlLocale = undefined as any;
+
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    await waitFor(() => {
+      expect(mockListMyProcessesForLca).toHaveBeenCalledWith('en', { limit: 300 });
+    });
+  });
+
+  it('shows an error when loading the process list throws', async () => {
+    mockListMyProcessesForLca.mockRejectedValueOnce(new Error('network down'));
 
     render(<LcaSolveToolbar />);
     await openModal();
@@ -414,6 +465,46 @@ describe('LcaSolveToolbar component', () => {
 
     fireEvent.change(screen.getByTestId('field-process_ref'), {
       target: { value: 'invalid-ref' },
+    });
+    fireEvent.click(screen.getByTestId('lca-modal-ok'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Please select a process');
+    });
+    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
+  });
+
+  it('rejects process references that are missing the version segment', async () => {
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByTestId('field-process_ref'), {
+      target: { value: 'process-1::' },
+    });
+    fireEvent.click(screen.getByTestId('lca-modal-ok'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Please select a process');
+    });
+    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
+  });
+
+  it('rejects process references that are missing the process id segment', async () => {
+    render(<LcaSolveToolbar />);
+    await openModal();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByTestId('field-process_ref'), {
+      target: { value: '::01.00.000' },
     });
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 

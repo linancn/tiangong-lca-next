@@ -231,9 +231,9 @@ export function mergeCommentDataIntoProcessJson(
   commentCompliance: any[],
 ) {
   const json = clone(processJson);
-  const existingReview = json?.processDataSet?.modellingAndValidation?.validation?.review ?? [];
+  const existingReview = json?.processDataSet?.modellingAndValidation?.validation?.review;
   const existingCompliance =
-    json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance ?? [];
+    json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance;
 
   json.processDataSet.modellingAndValidation = {
     ...json.processDataSet.modellingAndValidation,

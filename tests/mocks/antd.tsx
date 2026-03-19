@@ -148,14 +148,22 @@ export const createAntdMock = () => {
   InputTextArea.displayName = 'MockTextArea';
   (Input as any).TextArea = InputTextArea;
 
-  const InputSearch = ({ placeholder, onSearch }: any) => {
-    const [keyword, setKeyword] = React.useState('');
+  const InputSearch = ({ placeholder, value, onChange, onSearch }: any) => {
+    const [keyword, setKeyword] = React.useState(String(value ?? ''));
+
+    React.useEffect(() => {
+      setKeyword(String(value ?? ''));
+    }, [value]);
+
     return (
       <div data-testid='search-input'>
         <input
           value={keyword}
           placeholder={placeholder}
-          onChange={(event) => setKeyword(event.target.value)}
+          onChange={(event) => {
+            setKeyword(event.target.value);
+            onChange?.(event);
+          }}
         />
         <button type='button' onClick={() => onSearch?.(keyword)}>
           Search

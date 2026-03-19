@@ -148,7 +148,7 @@ const LcaProcessSelectionTable = ({
             defaultMessage: 'Filter processes in the current view',
           })}
           value={filterKeyword}
-          onChange={(event) => setFilterKeyword(String(event.target.value ?? ''))}
+          onChange={(event) => setFilterKeyword(String(event.target.value))}
         />
       </Space>
       <Typography.Text type='secondary'>

@@ -320,6 +320,7 @@ const LcaImpactHotspotToolbar: FC<{
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<HotspotResultState | null>(null);
+  const analysisUnit = analysisResult?.unit ?? '-';
 
   const loadImpactOptionList = async () => {
     setImpactOptionsLoading(true);
@@ -348,17 +349,7 @@ const LcaImpactHotspotToolbar: FC<{
     }
   };
 
-  const runAnalysis = async (requestedOffset = 0) => {
-    if (!selectedImpactId) {
-      setAnalysisError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.impactRequired',
-          defaultMessage: 'Please select an impact category.',
-        }),
-      );
-      return;
-    }
-
+  const runAnalysis = async (requestedOffset: number) => {
     setAnalysisLoading(true);
     setAnalysisError(null);
     try {
@@ -399,7 +390,7 @@ const LcaImpactHotspotToolbar: FC<{
       } catch (_error) {
         processNameLookup = new Map<string, string>();
       }
-      const selectedImpact = impactOptions.find((item) => item.value === selectedImpactId);
+      const selectedImpact = impactOptions.find((item) => item.value === selectedImpactId)!;
       const offsetValue = Number(data.offset ?? requestedOffset);
       const limitValue = Number(data.limit ?? selectedTopN);
       const totalProcessCount = Number(data.total_process_count ?? rankedValues.length);
@@ -407,8 +398,8 @@ const LcaImpactHotspotToolbar: FC<{
 
       setAnalysisResult({
         impactId: selectedImpactId,
-        impactLabel: selectedImpact?.label || selectedImpactId,
-        unit: selectedImpact?.unit || '-',
+        impactLabel: selectedImpact.label,
+        unit: selectedImpact.unit,
         snapshotId: queried.snapshot_id,
         resultId: queried.result_id,
         source: queried.source,
@@ -535,7 +526,7 @@ const LcaImpactHotspotToolbar: FC<{
       render: (_, item) => (
         <>
           <AlignedNumber value={item.value} />{' '}
-          <Typography.Text type='secondary'>{analysisResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{analysisUnit}</Typography.Text>
         </>
       ),
     },
@@ -653,7 +644,7 @@ const LcaImpactHotspotToolbar: FC<{
                   label: `${item.label} (${item.unit})`,
                 }))}
                 onChange={(value) => {
-                  setSelectedImpactId(String(value ?? ''));
+                  setSelectedImpactId(String(value));
                   setAnalysisResult(null);
                   setAnalysisError(null);
                 }}
@@ -674,7 +665,7 @@ const LcaImpactHotspotToolbar: FC<{
                 value={selectedTopN}
                 options={topNOptions}
                 onChange={(value) => {
-                  setSelectedTopN(Number(value ?? DEFAULT_HOTSPOT_LIMIT));
+                  setSelectedTopN(Number(value));
                   setAnalysisResult(null);
                   setAnalysisError(null);
                 }}

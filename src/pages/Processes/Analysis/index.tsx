@@ -116,7 +116,7 @@ function prependCurrentProcessOption(
   optionMap: Map<string, LcaProcessOption>,
   processId: string,
 ): LcaProcessOption[] {
-  const normalizedProcessId = String(processId ?? '').trim();
+  const normalizedProcessId = processId.trim();
   if (!normalizedProcessId || currentOptions.some((item) => item.value === normalizedProcessId)) {
     return currentOptions;
   }
@@ -403,7 +403,7 @@ function formatContributionPathTerminalReason(
         defaultMessage: 'Stopped by top-k child limit',
       });
     default:
-      return normalized || '-';
+      return normalized;
   }
 }
 
@@ -685,7 +685,7 @@ const LcaAnalysisPage = () => {
             (row?.json as { title?: unknown } | undefined)?.title ?? {},
             lang,
           );
-          nextMap.set(teamId, title || teamId);
+          nextMap.set(teamId, title && title !== '-' ? title : teamId);
         });
 
         setTeamNameMap(nextMap);
@@ -717,9 +717,9 @@ const LcaAnalysisPage = () => {
   };
 
   const loadProcessOptions = async (
-    keyword = '',
-    dataScope: LcaAnalysisDataScope = selectedDataScope,
-    currentPage = 1,
+    keyword: string,
+    dataScope: LcaAnalysisDataScope,
+    currentPage: number,
     options: { resetKnownRows?: boolean } = {},
   ) => {
     const requestId = processOptionsRequestIdRef.current + 1;
@@ -785,10 +785,7 @@ const LcaAnalysisPage = () => {
     }
   };
 
-  const loadFirstProcessPage = async (
-    keyword = appliedProcessSearchKeyword,
-    dataScope: LcaAnalysisDataScope = selectedDataScope,
-  ) => {
+  const loadFirstProcessPage = async (keyword: string, dataScope: LcaAnalysisDataScope) => {
     initializedProcessQueryKeyRef.current = '';
     setProcessCurrentPage(1);
     setProcessRows([]);
@@ -799,15 +796,6 @@ const LcaAnalysisPage = () => {
   };
 
   const changeProcessPage = async (nextPage: number) => {
-    if (
-      processOptionsLoading ||
-      nextPage < 1 ||
-      nextPage > processPageCount ||
-      nextPage === processCurrentPage
-    ) {
-      return;
-    }
-
     await loadProcessOptions(appliedProcessSearchKeyword, selectedDataScope, nextPage);
   };
 
@@ -883,9 +871,6 @@ const LcaAnalysisPage = () => {
 
     const seededMeta = new Map<string, LcaContributionPathProcessMeta>();
     knownProcessOptions.forEach((item) => {
-      if (!item.value) {
-        return;
-      }
       seededMeta.set(item.value, {
         label: item.name,
         version: item.version,
@@ -918,16 +903,13 @@ const LcaAnalysisPage = () => {
       const loadedMeta = await Promise.all(
         missingProcessIds.map(async (processId) => {
           try {
-            const detail = await getProcessDetail(
-              processId,
-              processId === pathResult.process.value ? pathResult.process.version : '',
-            );
+            const detail = await getProcessDetail(processId, '');
             const name = genProcessName(
               detail?.data?.json?.processDataSet?.processInformation?.dataSetInformation?.name ??
                 {},
               lang,
             );
-            const normalizedLabel = String(name ?? '').trim();
+            const normalizedLabel = name.trim();
             return [
               processId,
               normalizedLabel && normalizedLabel !== '-'
@@ -1048,36 +1030,6 @@ const LcaAnalysisPage = () => {
   };
 
   const runCompareAnalysis = async () => {
-    if (!selectedCompareImpactId) {
-      setCompareError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.impactRequired',
-          defaultMessage: 'Please select an impact category.',
-        }),
-      );
-      return;
-    }
-
-    if (selectedCompareProcesses.length === 0) {
-      setCompareError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.processRequired',
-          defaultMessage: 'Please select at least one process.',
-        }),
-      );
-      return;
-    }
-
-    if (selectedCompareProcesses.length === 0) {
-      setCompareError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.processRequired',
-          defaultMessage: 'Please select at least one process.',
-        }),
-      );
-      return;
-    }
-
     setCompareLoading(true);
     setCompareError(null);
 
@@ -1126,26 +1078,6 @@ const LcaAnalysisPage = () => {
   };
 
   const runHotspotAnalysis = async () => {
-    if (!selectedHotspotImpactId) {
-      setHotspotError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.impactRequired',
-          defaultMessage: 'Please select an impact category.',
-        }),
-      );
-      return;
-    }
-
-    if (selectedHotspotProcesses.length === 0) {
-      setHotspotError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.processRequired',
-          defaultMessage: 'Please select at least one process.',
-        }),
-      );
-      return;
-    }
-
     setHotspotLoading(true);
     setHotspotError(null);
 
@@ -1194,26 +1126,6 @@ const LcaAnalysisPage = () => {
   };
 
   const runGroupedAnalysis = async () => {
-    if (!selectedGroupedImpactId) {
-      setGroupedError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.impactRequired',
-          defaultMessage: 'Please select an impact category.',
-        }),
-      );
-      return;
-    }
-
-    if (selectedGroupedProcesses.length === 0) {
-      setGroupedError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.processRequired',
-          defaultMessage: 'Please select at least one process.',
-        }),
-      );
-      return;
-    }
-
     setGroupedLoading(true);
     setGroupedError(null);
 
@@ -1275,25 +1187,7 @@ const LcaAnalysisPage = () => {
   };
 
   const runContributionPathAnalysis = async () => {
-    if (!selectedPathImpactId) {
-      setPathError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.impactRequired',
-          defaultMessage: 'Please select an impact category.',
-        }),
-      );
-      return;
-    }
-
-    if (!selectedPathProcess) {
-      setPathError(
-        intl.formatMessage({
-          id: 'pages.process.lca.error.processRequired',
-          defaultMessage: 'Please select a process',
-        }),
-      );
-      return;
-    }
+    const pathProcess = selectedPathProcess!;
 
     if (!Number.isFinite(pathAmount) || pathAmount === 0) {
       setPathError(
@@ -1312,9 +1206,8 @@ const LcaAnalysisPage = () => {
       const submitted = await submitLcaContributionPath({
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
-        process_id: selectedPathProcess.value,
-        process_version:
-          selectedPathProcess.version === '-' ? undefined : selectedPathProcess.version,
+        process_id: pathProcess.value,
+        process_version: pathProcess.version === '-' ? undefined : pathProcess.version,
         impact_id: selectedPathImpactId,
         amount: pathAmount,
         options: {
@@ -1388,7 +1281,7 @@ const LcaAnalysisPage = () => {
       const selectedImpact = impactOptions.find((item) => item.value === selectedPathImpactId);
 
       setPathResult({
-        process: selectedPathProcess,
+        process: pathProcess,
         impactId: model.impact.impactId,
         impactLabel: selectedImpact?.label || model.impact.label,
         unit: resolveContributionPathDisplayUnit(selectedImpact, model),
@@ -1420,6 +1313,10 @@ const LcaAnalysisPage = () => {
     () => (profileResult ? buildLcaProfileModel(profileResult.rows, lang) : null),
     [lang, profileResult],
   );
+  const compareUnit = compareResult?.unit ?? '-';
+  const hotspotUnit = hotspotResult?.unit ?? '-';
+  const groupedUnit = groupedResult?.unit ?? '-';
+  const pathUnit = pathResult?.unit ?? '-';
 
   const profileChartData = useMemo(
     () =>
@@ -1520,13 +1417,7 @@ const LcaAnalysisPage = () => {
   }, [pathSankeyData]);
 
   const resolveSankeyNodeKey = (value: SankeyGraphNodeDatum | string | undefined) => {
-    if (!value) {
-      return '';
-    }
-    if (typeof value === 'string') {
-      return value;
-    }
-    return String(value.key ?? '').trim();
+    return typeof value === 'string' ? value : String(value?.key ?? '').trim();
   };
 
   const resolvePathSankeyLinkMeta = (datum: SankeyGraphLinkDatum) => {
@@ -1555,9 +1446,6 @@ const LcaAnalysisPage = () => {
   );
 
   const resolvePathProcessVersion = (processId: string) => {
-    if (!processId) {
-      return '';
-    }
     if (pathResult?.process.value === processId && pathResult.process.version !== '-') {
       return pathResult.process.version;
     }
@@ -1570,10 +1458,6 @@ const LcaAnalysisPage = () => {
   };
 
   const renderPathProcessTrigger = (processId: string, fallbackLabel: string) => {
-    if (!processId) {
-      return <Typography.Text>{fallbackLabel || '-'}</Typography.Text>;
-    }
-
     return (
       <ProcessView
         id={processId}
@@ -1581,7 +1465,7 @@ const LcaAnalysisPage = () => {
         lang={lang}
         buttonType='link'
         disabled={false}
-        triggerLabel={pathProcessMetaMap.get(processId)?.label || fallbackLabel || processId}
+        triggerLabel={pathProcessMetaMap.get(processId)?.label || fallbackLabel}
       />
     );
   };
@@ -1608,7 +1492,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.value} />{' '}
-          <Typography.Text type='secondary'>{compareResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{compareUnit}</Typography.Text>
         </>
       ),
     },
@@ -1663,7 +1547,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.value} />{' '}
-          <Typography.Text type='secondary'>{hotspotResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{hotspotUnit}</Typography.Text>
         </>
       ),
     },
@@ -1714,7 +1598,7 @@ const LcaAnalysisPage = () => {
               },
               {
                 count: item.processCount,
-                processName: item.topProcess?.processName ?? '-',
+                processName: item.topProcess!.processName,
               },
             )}
           </Typography.Text>
@@ -1743,7 +1627,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.value} />{' '}
-          <Typography.Text type='secondary'>{groupedResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{groupedUnit}</Typography.Text>
         </>
       ),
     },
@@ -1758,7 +1642,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.absoluteValue} />{' '}
-          <Typography.Text type='secondary'>{groupedResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{groupedUnit}</Typography.Text>
         </>
       ),
     },
@@ -1826,7 +1710,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.directImpact} />{' '}
-          <Typography.Text type='secondary'>{pathResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{pathUnit}</Typography.Text>
         </>
       ),
     },
@@ -1885,7 +1769,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.pathScore} />{' '}
-          <Typography.Text type='secondary'>{pathResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{pathUnit}</Typography.Text>
         </>
       ),
     },
@@ -1935,7 +1819,7 @@ const LcaAnalysisPage = () => {
       render: (_, item) => (
         <>
           <AlignedNumber value={item.directImpact} />{' '}
-          <Typography.Text type='secondary'>{pathResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{pathUnit}</Typography.Text>
         </>
       ),
     },
@@ -2062,7 +1946,7 @@ const LcaAnalysisPage = () => {
                       value={processSearchKeyword}
                       onChange={(event) => setProcessSearchKeyword(event.target.value)}
                       onSearch={(value) => {
-                        const nextKeyword = String(value ?? '');
+                        const nextKeyword = String(value);
                         setProcessSearchKeyword(nextKeyword);
                         setAppliedProcessSearchKeyword(nextKeyword);
                         void loadFirstProcessPage(nextKeyword, selectedDataScope);
@@ -2161,7 +2045,7 @@ const LcaAnalysisPage = () => {
                           disabled={processOptionsLoading || profileProcessOptions.length === 0}
                           optionFilterProp='label'
                           onChange={(value) => {
-                            setSelectedProfileProcessId(String(value ?? ''));
+                            setSelectedProfileProcessId(String(value));
                             setProfileResult(null);
                             setProfileError(null);
                           }}
@@ -2327,7 +2211,7 @@ const LcaAnalysisPage = () => {
                             disabled={impactOptionsLoading || impactOptions.length === 0}
                             optionFilterProp='label'
                             onChange={(value) => {
-                              setSelectedCompareImpactId(String(value ?? ''));
+                              setSelectedCompareImpactId(String(value));
                               setCompareResult(null);
                               setCompareError(null);
                             }}
@@ -2441,7 +2325,7 @@ const LcaAnalysisPage = () => {
                                       defaultMessage='Top contributor'
                                     />
                                   }
-                                  value={compareResult.model.topItem?.processName ?? '-'}
+                                  value={compareResult.model.topItem!.processName}
                                 />
                               </Col>
                               <Col xs={24} sm={8}>
@@ -2455,9 +2339,9 @@ const LcaAnalysisPage = () => {
                                   value={compareResult.model.totalAbsoluteValue}
                                   formatter={(value) => (
                                     <>
-                                      <AlignedNumber value={Number(value ?? 0)} />{' '}
+                                      <AlignedNumber value={Number(value)} />{' '}
                                       <Typography.Text type='secondary'>
-                                        {compareResult.unit}
+                                        {compareUnit}
                                       </Typography.Text>
                                     </>
                                   )}
@@ -2554,7 +2438,7 @@ const LcaAnalysisPage = () => {
                             disabled={impactOptionsLoading || impactOptions.length === 0}
                             optionFilterProp='label'
                             onChange={(value) => {
-                              setSelectedHotspotImpactId(String(value ?? ''));
+                              setSelectedHotspotImpactId(String(value));
                               setHotspotResult(null);
                               setHotspotError(null);
                             }}
@@ -2682,9 +2566,9 @@ const LcaAnalysisPage = () => {
                                   value={hotspotResult.model.totalAbsoluteValue}
                                   formatter={(value) => (
                                     <>
-                                      <AlignedNumber value={Number(value ?? 0)} />{' '}
+                                      <AlignedNumber value={Number(value)} />{' '}
                                       <Typography.Text type='secondary'>
-                                        {hotspotResult.unit}
+                                        {hotspotUnit}
                                       </Typography.Text>
                                     </>
                                   )}
@@ -2783,7 +2667,7 @@ const LcaAnalysisPage = () => {
                                 disabled={impactOptionsLoading || impactOptions.length === 0}
                                 optionFilterProp='label'
                                 onChange={(value) => {
-                                  setSelectedGroupedImpactId(String(value ?? ''));
+                                  setSelectedGroupedImpactId(String(value));
                                   setGroupedResult(null);
                                   setGroupedError(null);
                                 }}
@@ -2936,7 +2820,7 @@ const LcaAnalysisPage = () => {
                                       defaultMessage='Top group'
                                     />
                                   }
-                                  value={groupedResult.model.topItem?.groupLabel ?? '-'}
+                                  value={groupedResult.model.topItem!.groupLabel}
                                 />
                               </Col>
                               <Col xs={24} sm={12} lg={6}>
@@ -2950,9 +2834,9 @@ const LcaAnalysisPage = () => {
                                   value={groupedResult.model.totalAbsoluteValue}
                                   formatter={(value) => (
                                     <>
-                                      <AlignedNumber value={Number(value ?? 0)} />{' '}
+                                      <AlignedNumber value={Number(value)} />{' '}
                                       <Typography.Text type='secondary'>
-                                        {groupedResult.unit}
+                                        {groupedUnit}
                                       </Typography.Text>
                                     </>
                                   )}
@@ -3051,7 +2935,7 @@ const LcaAnalysisPage = () => {
                                 disabled={impactOptionsLoading || impactOptions.length === 0}
                                 optionFilterProp='label'
                                 onChange={(value) => {
-                                  setSelectedPathImpactId(String(value ?? ''));
+                                  setSelectedPathImpactId(String(value));
                                   setPathResult(null);
                                   setPathError(null);
                                 }}
@@ -3267,10 +3151,8 @@ const LcaAnalysisPage = () => {
                                   value={resolvedPathModel.summary.totalImpact}
                                   formatter={(value) => (
                                     <>
-                                      <AlignedNumber value={Number(value ?? 0)} />{' '}
-                                      <Typography.Text type='secondary'>
-                                        {pathResult.unit}
-                                      </Typography.Text>
+                                      <AlignedNumber value={Number(value)} />{' '}
+                                      <Typography.Text type='secondary'>{pathUnit}</Typography.Text>
                                     </>
                                   )}
                                 />
@@ -3322,7 +3204,7 @@ const LcaAnalysisPage = () => {
                                 >
                                   {renderPathProcessTrigger(
                                     resolvedPathModel.root.processId,
-                                    resolvedPathModel.root.label || pathResult.process.name,
+                                    resolvedPathModel.root.label,
                                   )}
                                 </Descriptions.Item>
                                 <Descriptions.Item
@@ -3534,8 +3416,7 @@ const LcaAnalysisPage = () => {
                                           }),
                                           value:
                                             resolvePathSankeyLinkMeta(datum)?.sourceLabel ??
-                                            resolveSankeyNodeKey(datum.source) ??
-                                            '-',
+                                            resolveSankeyNodeKey(datum.source),
                                         }),
                                         (datum: SankeyGraphLinkDatum) => ({
                                           name: intl.formatMessage({
@@ -3544,8 +3425,7 @@ const LcaAnalysisPage = () => {
                                           }),
                                           value:
                                             resolvePathSankeyLinkMeta(datum)?.targetLabel ??
-                                            resolveSankeyNodeKey(datum.target) ??
-                                            '-',
+                                            resolveSankeyNodeKey(datum.target),
                                         }),
                                         (datum: SankeyGraphLinkDatum) => ({
                                           name: intl.formatMessage({
@@ -3566,7 +3446,7 @@ const LcaAnalysisPage = () => {
                                           }),
                                           value: `${normalizeNumber(
                                             resolvePathSankeyLinkMeta(datum)?.directImpact,
-                                          )} ${pathResult.unit}`,
+                                          )} ${pathUnit}`,
                                         }),
                                         (datum: SankeyGraphLinkDatum) => ({
                                           name: intl.formatMessage({

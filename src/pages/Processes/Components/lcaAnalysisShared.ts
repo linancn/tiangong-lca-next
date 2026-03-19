@@ -119,6 +119,14 @@ export function toProgressStatus(
   return direction === 'negative' ? 'exception' : 'normal';
 }
 
+function readTrimmedString(value: unknown): string {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
+}
+
 async function getLciaMethodListEntries(): Promise<LciaMethodListEntry[]> {
   let listData = await getDecompressedMethod('list.json');
   const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
@@ -131,7 +139,11 @@ async function getLciaMethodListEntries(): Promise<LciaMethodListEntry[]> {
     listData = await getDecompressedMethod('list.json');
   }
 
-  return Array.isArray(listData?.files) ? (listData.files as LciaMethodListEntry[]) : [];
+  return Array.isArray(listData?.files)
+    ? (listData.files.filter(
+        (item: unknown): item is LciaMethodListEntry => !!item && typeof item === 'object',
+      ) as LciaMethodListEntry[])
+    : [];
 }
 
 export async function loadImpactOptions(lang: string): Promise<ImpactOption[]> {
@@ -139,14 +151,14 @@ export async function loadImpactOptions(lang: string): Promise<ImpactOption[]> {
 
   return files
     .map((item) => {
-      const value = String(item?.id ?? '').trim();
+      const value = readTrimmedString(item.id);
       if (!value) {
         return null;
       }
 
-      const label = resolveLangText(item?.description, lang) || value;
+      const label = resolveLangText(item.description, lang) || value;
       const unit =
-        resolveLangText(item?.referenceQuantity?.['common:shortDescription'], lang) || '-';
+        resolveLangText(item.referenceQuantity?.['common:shortDescription'], lang) || '-';
 
       return {
         value,
@@ -170,15 +182,15 @@ export async function getLcaMethodMetaMap(
   const byId = new Map<string, LcaMethodMeta>();
 
   files.forEach((item) => {
-    const methodId = String(item?.id ?? '').trim();
+    const methodId = readTrimmedString(item.id);
     if (!methodId || !impactIdSet.has(methodId)) {
       return;
     }
 
     byId.set(methodId, {
-      description: item?.description,
-      version: item?.version,
-      referenceQuantityDesc: getLangJson(item?.referenceQuantity?.['common:shortDescription']),
+      description: item.description,
+      version: item.version,
+      referenceQuantityDesc: getLangJson(item.referenceQuantity?.['common:shortDescription']),
     });
   });
 

@@ -393,7 +393,7 @@ export function applyLcaContributionPathProcessMeta(
     ...model,
     root: {
       ...model.root,
-      label: labelByProcessId.get(model.root.processId) ?? model.root.label,
+      label: labelByProcessId.get(model.root.processId)!,
     },
     contributors,
     topContributors: contributors.slice(0, DEFAULT_TOP_CONTRIBUTOR_COUNT),

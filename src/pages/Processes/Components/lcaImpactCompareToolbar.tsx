@@ -171,6 +171,7 @@ const LcaImpactCompareToolbar: FC<{
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CompareResultState | null>(null);
+  const analysisUnit = analysisResult?.unit ?? '-';
 
   useEffect(() => {
     if (!open) {
@@ -215,9 +216,6 @@ const LcaImpactCompareToolbar: FC<{
   };
 
   const onOpen = () => {
-    if (processOptions.length === 0) {
-      return;
-    }
     setOpen(true);
     setSelectedImpactId('');
     setSelectedProcessIds(defaultSelectedProcessIds);
@@ -244,39 +242,9 @@ const LcaImpactCompareToolbar: FC<{
   };
 
   const runAnalysis = async () => {
-    if (!selectedImpactId) {
-      setAnalysisError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.impactRequired',
-          defaultMessage: 'Please select an impact category.',
-        }),
-      );
-      return;
-    }
-
-    if (selectedProcessIds.length === 0) {
-      setAnalysisError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.processRequired',
-          defaultMessage: 'Please select at least one process.',
-        }),
-      );
-      return;
-    }
-
     const selectedProcesses = selectedProcessIds
       .map((processId) => processOptionMap.get(processId))
       .filter((item): item is ProcessOption => !!item);
-
-    if (selectedProcesses.length === 0) {
-      setAnalysisError(
-        intl.formatMessage({
-          id: 'pages.process.lca.analysis.validation.processRequired',
-          defaultMessage: 'Please select at least one process.',
-        }),
-      );
-      return;
-    }
 
     setAnalysisLoading(true);
     setAnalysisError(null);
@@ -295,11 +263,11 @@ const LcaImpactCompareToolbar: FC<{
           ? (values as Record<string, unknown>)
           : {};
 
-      const selectedImpact = impactOptions.find((item) => item.value === selectedImpactId);
+      const selectedImpact = impactOptions.find((item) => item.value === selectedImpactId)!;
       setAnalysisResult({
         impactId: selectedImpactId,
-        impactLabel: selectedImpact?.label || selectedImpactId,
-        unit: selectedImpact?.unit || '-',
+        impactLabel: selectedImpact.label,
+        unit: selectedImpact.unit,
         snapshotId: queried.snapshot_id,
         resultId: queried.result_id,
         source: queried.source,
@@ -378,7 +346,7 @@ const LcaImpactCompareToolbar: FC<{
       render: (_, item) => (
         <>
           <AlignedNumber value={item.value} />{' '}
-          <Typography.Text type='secondary'>{analysisResult?.unit ?? '-'}</Typography.Text>
+          <Typography.Text type='secondary'>{analysisUnit}</Typography.Text>
         </>
       ),
     },
@@ -495,7 +463,7 @@ const LcaImpactCompareToolbar: FC<{
                   label: `${item.label} (${item.unit})`,
                 }))}
                 onChange={(value) => {
-                  setSelectedImpactId(String(value ?? ''));
+                  setSelectedImpactId(String(value));
                   setAnalysisResult(null);
                   setAnalysisError(null);
                 }}
