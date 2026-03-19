@@ -330,7 +330,7 @@ export const TabsDetail: FC<Props> = ({
             label={
               <FormattedMessage id='pages.process.view.processInformation.id' defaultMessage='ID' />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.processInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -403,7 +403,7 @@ export const TabsDetail: FC<Props> = ({
                 defaultMessage='Identifier of sub-data set'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
           </Descriptions.Item>
@@ -470,7 +470,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Reference year'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {initData.processInformation?.time?.['common:referenceYear'] ?? '-'}
             </Descriptions.Item>
@@ -485,7 +485,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Data set valid until:'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {initData.processInformation?.time?.dataSetValidUntil ?? '-'}
             </Descriptions.Item>
@@ -523,7 +523,7 @@ export const TabsDetail: FC<Props> = ({
                 defaultMessage='Location'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -561,7 +561,7 @@ export const TabsDetail: FC<Props> = ({
                 defaultMessage='Sub-location(s)'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -660,7 +660,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Name of variable'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter?.['@name'] ??
                 '-'}
@@ -676,7 +676,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Formula'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter?.formula ??
                 '-'}
@@ -692,7 +692,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Mean value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter?.meanValue ??
                 '-'}
@@ -708,7 +708,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Minimum value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter
                 ?.minimumValue ?? '-'}
@@ -724,7 +724,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Maximum value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter
                 ?.maximumValue ?? '-'}
@@ -740,7 +740,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Uncertainty distribution type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getComplianceLabel(
                 initData.processInformation?.mathematicalRelations?.variableParameter
@@ -758,7 +758,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Relative StdDev in %'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter
                 ?.relativeStandardDeviation95In ?? '-'}
@@ -799,7 +799,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Type of data set'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getProcesstypeOfDataSetOptions(
                 initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
@@ -816,7 +816,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='LCI method principle'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getLCIMethodPrincipleOptions(
                 initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
@@ -845,7 +845,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='LCI method approaches'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getLCIMethodApproachOptions(
                 initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
@@ -1021,7 +1021,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Percentage supply or production covered'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.percentageSupplyOrProductionCovered ?? '-'}
@@ -1116,7 +1116,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Completeness product model'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {getCompletenessProductModelOptions(
                 initData.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
@@ -1142,7 +1142,7 @@ export const TabsDetail: FC<Props> = ({
                     defaultMessage='completeness type'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {getCompletenessElementaryFlowsTypeOptions(
                   initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
@@ -1161,7 +1161,7 @@ export const TabsDetail: FC<Props> = ({
                     defaultMessage='value'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {getCompletenessElementaryFlowsValueOptions(
                   initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
@@ -1340,7 +1340,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Date of last revision'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dateOfLastRevision'
@@ -1357,7 +1357,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               <Space>
                 {initData.administrativeInformation?.publicationAndOwnership?.[
@@ -1472,7 +1472,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='Copyright?'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getCopyrightOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
@@ -1505,7 +1505,7 @@ export const TabsDetail: FC<Props> = ({
                   defaultMessage='License type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getLicenseTypeOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.[

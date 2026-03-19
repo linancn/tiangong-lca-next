@@ -558,7 +558,7 @@ const ProcessView: FC<Props> = ({
             label={
               <FormattedMessage id='pages.process.view.processInformation.id' defaultMessage='ID' />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.processInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -631,7 +631,7 @@ const ProcessView: FC<Props> = ({
                 defaultMessage='Identifier of sub-data set'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
           </Descriptions.Item>
@@ -677,7 +677,7 @@ const ProcessView: FC<Props> = ({
         />
         {/* <Card size="small" title={'Quantitative Reference'}>
           <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item key={0} label="Type" labelStyle={{ width: '100px' }}>
+            <Descriptions.Item key={0} label="Type" styles={{ label: { width: '100px' } }}>
               {initData.processInformation?.quantitativeReference?.['@type'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
@@ -686,7 +686,7 @@ const ProcessView: FC<Props> = ({
             <Descriptions.Item
               key={0}
               label="Reference To Reference Flow"
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {initData.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '-'}
             </Descriptions.Item>
@@ -718,7 +718,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Reference year'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {initData.processInformation?.time?.['common:referenceYear'] ?? '-'}
             </Descriptions.Item>
@@ -733,7 +733,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Data set valid until:'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {initData.processInformation?.time?.['common:dataSetValidUntil'] ?? '-'}
             </Descriptions.Item>
@@ -771,7 +771,7 @@ const ProcessView: FC<Props> = ({
                 defaultMessage='Location'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -809,7 +809,7 @@ const ProcessView: FC<Props> = ({
                 defaultMessage='Sub-location(s)'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -908,7 +908,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Name of variable'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter?.['@name'] ??
                 '-'}
@@ -924,7 +924,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Formula'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter?.formula ??
                 '-'}
@@ -940,7 +940,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Mean value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter?.meanValue ??
                 '-'}
@@ -956,7 +956,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Minimum value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter
                 ?.minimumValue ?? '-'}
@@ -972,7 +972,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Maximum value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter
                 ?.maximumValue ?? '-'}
@@ -988,7 +988,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Uncertainty distribution type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getComplianceLabel(
                 initData.processInformation?.mathematicalRelations?.variableParameter
@@ -1006,7 +1006,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Relative StdDev in %'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {initData.processInformation?.mathematicalRelations?.variableParameter
                 ?.relativeStandardDeviation95In ?? '-'}
@@ -1047,7 +1047,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Type of data set'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getProcesstypeOfDataSetOptions(
                 initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
@@ -1064,7 +1064,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='LCI method principle'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getLCIMethodPrincipleOptions(
                 initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
@@ -1093,7 +1093,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='LCI method approaches'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getLCIMethodApproachOptions(
                 initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
@@ -1269,7 +1269,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Percentage supply or production covered'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.percentageSupplyOrProductionCovered ?? '-'}
@@ -1364,7 +1364,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Completeness product model'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {getCompletenessProductModelOptions(
                 initData.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
@@ -1390,7 +1390,7 @@ const ProcessView: FC<Props> = ({
                     defaultMessage='completeness type'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {getCompletenessElementaryFlowsTypeOptions(
                   initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
@@ -1409,7 +1409,7 @@ const ProcessView: FC<Props> = ({
                     defaultMessage='value'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {getCompletenessElementaryFlowsValueOptions(
                   initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
@@ -1593,7 +1593,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Date of last revision'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:dateOfLastRevision'
@@ -1610,7 +1610,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               <Space>
                 {initData.administrativeInformation?.publicationAndOwnership?.[
@@ -1725,7 +1725,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='Copyright?'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getCopyrightOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
@@ -1758,7 +1758,7 @@ const ProcessView: FC<Props> = ({
                   defaultMessage='License type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getLicenseTypeOptions(
                 initData.administrativeInformation?.publicationAndOwnership?.[

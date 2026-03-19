@@ -235,7 +235,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.flow.view.flowInformation.id' defaultMessage='ID' />}
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData?.flowInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -317,7 +317,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage='Type of flow'
                 />
               }
-              labelStyle={{ width: '160px' }}
+              styles={{ label: { width: '160px' } }}
             >
               {flowTypeOptions.find(
                 (i) => i.value === initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
@@ -352,7 +352,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='CAS Number'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {initData?.flowInformation?.dataSetInformation?.['CASNumber'] ?? '-'}
           </Descriptions.Item>
@@ -367,7 +367,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='Sum formula'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {initData?.flowInformation?.dataSetInformation?.['sumFormula'] ?? '-'}
           </Descriptions.Item>
@@ -392,7 +392,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='EC Number'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {ecNumber ?? '-'}
           </Descriptions.Item>
@@ -401,7 +401,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
 
         {/* <Card size="small" title={'Quantitative Reference'}>
                     <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Reference To Reference Flow Property" labelStyle={{ width: '200px' }}>
+                        <Descriptions.Item key={0} label="Reference To Reference Flow Property" styles={{ label: { width: '200px' } }}>
                             {initData?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty ?? '-'}
                         </Descriptions.Item>
                     </Descriptions>
@@ -424,7 +424,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='Location of supply'
               />
             }
-            labelStyle={{ width: '150px' }}
+            styles={{ label: { width: '150px' } }}
           />
         </Card>
         <br />
@@ -476,7 +476,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage="LCI Method: Type Of Data Set"
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-'}
           </Descriptions.Item>
@@ -599,7 +599,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '160px' }}
+              styles={{ label: { width: '160px' } }}
             >
               <Space>
                 {initData?.administrativeInformation?.publicationAndOwnership?.[

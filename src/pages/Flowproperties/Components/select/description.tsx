@@ -30,7 +30,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
                 defaultMessage='Ref object id'
               />
             }
-            labelStyle={{ width: locale === 'zh-CN' ? '190px' : '310px' }}
+            styles={{ label: { width: locale === 'zh-CN' ? '190px' : '310px' } }}
           >
             {refObjectId || '-'}
           </Descriptions.Item>
@@ -47,7 +47,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
           label={
             <FormattedMessage id="pages.flow.view.flowProperties.type" defaultMessage="Type" />
           }
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {data?.['@type'] ?? '-'}
         </Descriptions.Item>
@@ -57,13 +57,13 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.flow.view.flowProperties.uri" defaultMessage="URI" />}
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions> */}
       {/* <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
+        <Descriptions.Item key={0} label="Version" styles={{ label: { width: '120px' } }}>
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions> */}

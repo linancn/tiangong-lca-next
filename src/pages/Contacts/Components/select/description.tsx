@@ -30,7 +30,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
                 defaultMessage='Reference contact data set identifier'
               />
             }
-            labelStyle={{ width: locale === 'zh-CN' ? '190px' : '260px' }}
+            styles={{ label: { width: locale === 'zh-CN' ? '190px' : '260px' } }}
           >
             {refItem?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
@@ -45,7 +45,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.type" defaultMessage="Type" />}
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {data?.['@type'] ?? '-'}
         </Descriptions.Item>
@@ -55,7 +55,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id="pages.contact.uri" defaultMessage="URI" />}
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
@@ -65,7 +65,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
         <Descriptions.Item
           key={0}
           label={<FormattedMessage id='pages.contact.version' defaultMessage='Version' />}
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {refItem?.['@version'] ?? '-'}
         </Descriptions.Item>

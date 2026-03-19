@@ -526,7 +526,7 @@ const ContactEdit: FC<Props> = ({
       )}
 
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage id='pages.contact.drawer.title.edit' defaultMessage='Edit Contact' />

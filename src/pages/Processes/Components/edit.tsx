@@ -799,7 +799,7 @@ const ProcessEdit: FC<Props> = ({
       )}
       <Drawer
         getContainer={() => document.body}
-        destroyOnClose={true}
+        destroyOnHidden
         title={
           <FormattedMessage
             id={'pages.process.drawer.title.edit'}

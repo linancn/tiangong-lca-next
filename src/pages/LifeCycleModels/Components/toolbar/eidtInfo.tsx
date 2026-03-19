@@ -674,7 +674,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         </Tooltip>
         <Drawer
           getContainer={() => document.body}
-          destroyOnClose
+          destroyOnHidden
           title={
             <FormattedMessage
               id='pages.flow.model.drawer.title.info'

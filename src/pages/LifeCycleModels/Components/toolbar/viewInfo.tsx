@@ -95,7 +95,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             label={
               <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {data.lifeCycleModelInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -354,7 +354,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               <Space>
                 {data.administrativeInformation?.publicationAndOwnership?.[
@@ -406,7 +406,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                   defaultMessage='Copyright?'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getCopyrightOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
@@ -441,7 +441,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
                   defaultMessage='License type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getLicenseTypeOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??

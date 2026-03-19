@@ -35,7 +35,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
               <Descriptions.Item
-                labelStyle={{ width: '160px' }}
+                styles={{ label: { width: '160px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.name'
@@ -56,7 +56,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
               <Descriptions.Item
-                labelStyle={{ width: '160px' }}
+                styles={{ label: { width: '160px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.value'

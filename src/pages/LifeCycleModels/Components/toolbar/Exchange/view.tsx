@@ -103,7 +103,7 @@ const EdgeExchangeView: FC<Props> = ({
                   defaultMessage='Source process output flow'
                 />
               }
-              bordered={false}
+              variant='borderless'
             >
               <Spin spinning={spinningSource}>
                 <Descriptions bordered size={'small'} column={1}>
@@ -115,7 +115,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Exchange direction'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataSource?.exchangeDirection ?? '-'}
                   </Descriptions.Item>
@@ -141,7 +141,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Mean amount'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataSource?.meanAmount ?? '-'}
                   </Descriptions.Item>
@@ -156,7 +156,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Resulting amount'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataSource?.resultingAmount ?? '-'}
                   </Descriptions.Item>
@@ -171,7 +171,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Data derivation type / status'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataSource?.dataDerivationTypeStatus ?? '-'}
                   </Descriptions.Item>
@@ -203,7 +203,7 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Reference flow(s)'
                         />
                       }
-                      labelStyle={{ width: '220px' }}
+                      styles={{ label: { width: '220px' } }}
                     >
                       {
                         <QuantitativeReferenceIcon
@@ -231,7 +231,7 @@ const EdgeExchangeView: FC<Props> = ({
                   defaultMessage='Target process input flow'
                 />
               }
-              bordered={false}
+              variant='borderless'
             >
               <Spin spinning={spinningTarget}>
                 <Descriptions bordered size={'small'} column={1}>
@@ -243,7 +243,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Exchange direction'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataTarget?.exchangeDirection ?? '-'}
                   </Descriptions.Item>
@@ -269,7 +269,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Mean amount'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataTarget?.meanAmount ?? '-'}
                   </Descriptions.Item>
@@ -284,7 +284,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Resulting amount'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataTarget?.resultingAmount ?? '-'}
                   </Descriptions.Item>
@@ -299,7 +299,7 @@ const EdgeExchangeView: FC<Props> = ({
                         defaultMessage='Data derivation type / status'
                       />
                     }
-                    labelStyle={{ width: '220px' }}
+                    styles={{ label: { width: '220px' } }}
                   >
                     {exchangeDataTarget?.dataDerivationTypeStatus ?? '-'}
                   </Descriptions.Item>
@@ -331,7 +331,7 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Reference flow(s)'
                         />
                       }
-                      labelStyle={{ width: '220px' }}
+                      styles={{ label: { width: '220px' } }}
                     >
                       {
                         <QuantitativeReferenceIcon

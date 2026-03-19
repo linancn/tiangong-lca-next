@@ -92,7 +92,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Quantitative reference'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
           </Descriptions.Item>

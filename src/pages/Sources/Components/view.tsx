@@ -71,7 +71,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             label={
               <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.sourceInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -98,7 +98,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='Source citation'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {isValidURL(initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '') ? (
               <Tooltip
@@ -128,7 +128,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='Publication type'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {getPublicationTypeLabel(
               initData.sourceInformation?.dataSetInformation?.publicationType ?? '',
@@ -241,7 +241,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '160px' }}
+              styles={{ label: { width: '160px' } }}
             >
               <Space>
                 {initData.administrativeInformation?.publicationAndOwnership?.[

@@ -281,7 +281,7 @@ const FlowsCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage

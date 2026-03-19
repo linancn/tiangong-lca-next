@@ -383,7 +383,7 @@ const FlowpropertiesEdit: FC<Props> = ({
         )}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage

@@ -196,7 +196,7 @@ const ContactCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           actionType === 'copy' ? (

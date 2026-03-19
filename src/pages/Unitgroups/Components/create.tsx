@@ -224,7 +224,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage

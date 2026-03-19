@@ -41,7 +41,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
           <Space direction='vertical' style={{ width: '100%' }}>
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.approvalOfOverallCompliance'
@@ -58,7 +58,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.nomenclatureCompliance'
@@ -75,7 +75,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.methodologicalCompliance'
@@ -92,7 +92,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.reviewCompliance'
@@ -106,7 +106,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.documentationCompliance'
@@ -123,7 +123,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.qualityCompliance'

@@ -84,7 +84,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
                 defaultMessage='Mean value (of unit)'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {viewData.meanValue ?? '-'}
           </Descriptions.Item>
@@ -99,7 +99,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
                 defaultMessage='Quantitative reference'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
           </Descriptions.Item>

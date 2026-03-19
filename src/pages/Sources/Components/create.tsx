@@ -315,7 +315,7 @@ const SourceCreate: FC<CreateProps> = ({
                 )} */}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage

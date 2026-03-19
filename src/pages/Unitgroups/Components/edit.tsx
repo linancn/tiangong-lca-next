@@ -398,7 +398,7 @@ const UnitGroupEdit: FC<Props> = ({
 
       <Drawer
         getContainer={() => document.body}
-        destroyOnClose={true}
+        destroyOnHidden
         title={
           <FormattedMessage
             id={'pages.unitgroup.drawer.title.edit'}

@@ -36,7 +36,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
             label={
               <FormattedMessage id='pages.unitgroup.refObjectId' defaultMessage='Ref object id' />
             }
-            labelStyle={{ width: locale === 'zh-CN' ? '210px' : '230px' }}
+            styles={{ label: { width: locale === 'zh-CN' ? '210px' : '230px' } }}
           >
             {refData?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>
@@ -61,7 +61,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
               defaultMessage="Type"
             />
           }
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {data?.['@type'] ?? '-'}
         </Descriptions.Item>
@@ -76,14 +76,14 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
               defaultMessage="URI"
             />
           }
-          labelStyle={{ width: '140px' }}
+          styles={{ label: { width: '140px' } }}
         >
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <br /> */}
       {/* <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label="Version" labelStyle={{ width: '120px' }}>
+        <Descriptions.Item key={0} label="Version" styles={{ label: { width: '120px' } }}>
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions> */}

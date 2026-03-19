@@ -730,7 +730,7 @@ export default function ReviewProgress({
         />
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         title={
           <FormattedMessage
             id='pages.review.progress.drawer.title'

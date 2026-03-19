@@ -40,7 +40,7 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
             <Space direction='vertical' style={{ width: '100%' }}>
               <Descriptions bordered size='small' column={1}>
                 <Descriptions.Item
-                  labelStyle={{ width: '120px' }}
+                  styles={{ label: { width: '120px' } }}
                   label={
                     <FormattedMessage
                       id='pages.process.validation.modellingAndValidation.review.type'

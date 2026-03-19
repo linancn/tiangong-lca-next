@@ -94,7 +94,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Exchange direction'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {viewData.exchangeDirection ?? '-'}
           </Descriptions.Item>
@@ -120,7 +120,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Location'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {viewData.location ?? '-'}
           </Descriptions.Item>
@@ -135,7 +135,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Function type'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {getFunctionTypeOptions(viewData.functionType)}
           </Descriptions.Item>
@@ -150,7 +150,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Variable'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {viewData.referenceToVariable ?? '-'}
           </Descriptions.Item>
@@ -162,7 +162,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             label={
               <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {viewData.meanAmount ?? '-'}
           </Descriptions.Item>
@@ -177,7 +177,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Resulting amount'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {viewData.resultingAmount ?? '-'}
           </Descriptions.Item>
@@ -192,7 +192,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Uncertainty distribution type'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {viewData.uncertaintyDistributionType ?? '-'}
           </Descriptions.Item>
@@ -210,7 +210,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                     defaultMessage='Minimum amount'
                   />
                 }
-                labelStyle={{ width: '220px' }}
+                styles={{ label: { width: '220px' } }}
               >
                 {viewData.minimumAmount ?? '-'}
               </Descriptions.Item>
@@ -225,7 +225,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                     defaultMessage='Maximum amount'
                   />
                 }
-                labelStyle={{ width: '220px' }}
+                styles={{ label: { width: '220px' } }}
               >
                 {viewData.maximumAmount ?? '-'}
               </Descriptions.Item>
@@ -247,7 +247,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                     defaultMessage='Relative standard deviation 95 in'
                   />
                 }
-                labelStyle={{ width: '220px' }}
+                styles={{ label: { width: '220px' } }}
               >
                 {viewData.relativeStandardDeviation95In ?? '-'}
               </Descriptions.Item>
@@ -275,7 +275,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                   defaultMessage='Internal reference to co-product'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {viewData?.allocations?.allocation['@internalReferenceToCoProduct'] ?? '-'}
             </Descriptions.Item>
@@ -290,7 +290,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                   defaultMessage='Allocated fraction'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {viewData?.allocations?.allocation['@allocatedFraction'] ?? '-'}
             </Descriptions.Item>
@@ -306,7 +306,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Data source type'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {getDataSourceTypeOptions(viewData.dataSourceType)}
           </Descriptions.Item>
@@ -321,7 +321,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 defaultMessage='Data derivation type / status'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {getDataDerivationTypeStatusOptions(viewData.dataDerivationTypeStatus)}
           </Descriptions.Item>
@@ -363,7 +363,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                   defaultMessage='Reference flow(s)'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
             </Descriptions.Item>

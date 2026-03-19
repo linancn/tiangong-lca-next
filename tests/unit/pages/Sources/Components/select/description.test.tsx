@@ -40,8 +40,8 @@ jest.mock('antd', () => {
   );
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children, label, labelStyle }: any) => (
-    <div data-testid='desc-item' data-label-width={labelStyle?.width ?? ''}>
+  Descriptions.Item = ({ children, label, styles }: any) => (
+    <div data-testid='desc-item' data-label-width={styles?.label?.width ?? ''}>
       <span>{toText(label)}</span>
       <span>{children}</span>
     </div>
