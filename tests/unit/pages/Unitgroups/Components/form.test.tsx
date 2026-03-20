@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { UnitGroupForm } from '@/pages/Unitgroups/Components/form';
+import schema from '@/pages/Unitgroups/unitgroups_schema.json';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen } from '../../../../helpers/testUtils';
 
@@ -81,13 +82,14 @@ jest.mock('@/pages/Contacts/Components/select/form', () => ({
 
 jest.mock('@/pages/Sources/Components/select/form', () => ({
   __esModule: true,
-  default: ({ name, label, defaultSourceName, onData, showRequiredLabel }: any) => (
+  default: ({ name, label, defaultSourceName, onData, showRequiredLabel, rules }: any) => (
     <button type='button' data-testid='source-select' onClick={onData}>
       {JSON.stringify({
         name,
         label: label?.props?.defaultMessage ?? label,
         defaultSourceName,
         showRequiredLabel: !!showRequiredLabel,
+        rulesCount: rules?.length ?? 0,
       })}
     </button>
   ),
@@ -119,12 +121,26 @@ jest.mock('@/pages/Unitgroups/Components/Unit/view', () => ({
 
 jest.mock('@/pages/Unitgroups/Components/Unit/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='unit-edit'>{`edit:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <div data-testid='unit-edit'>
+      {`edit:${id}`}
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close-unit-edit
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Unitgroups/Components/Unit/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='unit-delete'>{`delete:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <div data-testid='unit-delete'>
+      {`delete:${id}`}
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close-unit-delete
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/services/unitgroups/util', () => ({
@@ -210,7 +226,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ dataSource = [], columns = [], toolBarRender, actionRef }: any) => {
+  const ProTable = ({ dataSource = [], columns = [], toolBarRender, actionRef, rowKey }: any) => {
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
@@ -224,7 +240,7 @@ jest.mock('@ant-design/pro-components', () => {
       <section data-testid='pro-table'>
         <div>{toolBarRender?.()}</div>
         {dataSource.map((row: any, rowIndex: number) => (
-          <div key={`${row.dataSetInternalID}-${rowIndex}`}>
+          <div key={rowKey ? rowKey(row) : `${row.dataSetInternalID}-${rowIndex}`}>
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.dataSetInternalID}-${columnIndex}`}>
                 {column.render ? column.render(undefined, row) : row[column.dataIndex]}
@@ -273,6 +289,84 @@ describe('UnitGroupForm', () => {
       })),
     );
   });
+
+  const withRulesFallbacks = (callback: () => void) => {
+    const nameRules =
+      schema.unitGroupDataSet.unitGroupInformation.dataSetInformation['common:name'].rules;
+    const classRules =
+      schema.unitGroupDataSet.unitGroupInformation.dataSetInformation.classificationInformation[
+        'common:classification'
+      ]['common:class']['@classId'].rules;
+    const complianceRefRules =
+      schema.unitGroupDataSet.modellingAndValidation.complianceDeclarations.compliance[
+        'common:referenceToComplianceSystem'
+      ]['@refObjectId'].rules;
+    const approvalRules =
+      schema.unitGroupDataSet.modellingAndValidation.complianceDeclarations.compliance[
+        'common:approvalOfOverallCompliance'
+      ].rules;
+    const timeStampRules =
+      schema.unitGroupDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules;
+    const formatRules =
+      schema.unitGroupDataSet.administrativeInformation.dataEntryBy[
+        'common:referenceToDataSetFormat'
+      ]['@refObjectId'].rules;
+    const versionRules =
+      schema.unitGroupDataSet.administrativeInformation.publicationAndOwnership[
+        'common:dataSetVersion'
+      ].rules;
+    const ownerRules =
+      schema.unitGroupDataSet.administrativeInformation.publicationAndOwnership[
+        'common:referenceToOwnershipOfDataSet'
+      ]['@refObjectId'].rules;
+
+    delete schema.unitGroupDataSet.unitGroupInformation.dataSetInformation['common:name'].rules;
+    delete schema.unitGroupDataSet.unitGroupInformation.dataSetInformation
+      .classificationInformation['common:classification']['common:class']['@classId'].rules;
+    delete schema.unitGroupDataSet.modellingAndValidation.complianceDeclarations.compliance[
+      'common:referenceToComplianceSystem'
+    ]['@refObjectId'].rules;
+    delete schema.unitGroupDataSet.modellingAndValidation.complianceDeclarations.compliance[
+      'common:approvalOfOverallCompliance'
+    ].rules;
+    delete schema.unitGroupDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules;
+    delete schema.unitGroupDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToDataSetFormat'
+    ]['@refObjectId'].rules;
+    delete schema.unitGroupDataSet.administrativeInformation.publicationAndOwnership[
+      'common:dataSetVersion'
+    ].rules;
+    delete schema.unitGroupDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToOwnershipOfDataSet'
+    ]['@refObjectId'].rules;
+
+    try {
+      callback();
+    } finally {
+      schema.unitGroupDataSet.unitGroupInformation.dataSetInformation['common:name'].rules =
+        nameRules;
+      schema.unitGroupDataSet.unitGroupInformation.dataSetInformation.classificationInformation[
+        'common:classification'
+      ]['common:class']['@classId'].rules = classRules;
+      schema.unitGroupDataSet.modellingAndValidation.complianceDeclarations.compliance[
+        'common:referenceToComplianceSystem'
+      ]['@refObjectId'].rules = complianceRefRules;
+      schema.unitGroupDataSet.modellingAndValidation.complianceDeclarations.compliance[
+        'common:approvalOfOverallCompliance'
+      ].rules = approvalRules;
+      schema.unitGroupDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules =
+        timeStampRules;
+      schema.unitGroupDataSet.administrativeInformation.dataEntryBy[
+        'common:referenceToDataSetFormat'
+      ]['@refObjectId'].rules = formatRules;
+      schema.unitGroupDataSet.administrativeInformation.publicationAndOwnership[
+        'common:dataSetVersion'
+      ].rules = versionRules;
+      schema.unitGroupDataSet.administrativeInformation.publicationAndOwnership[
+        'common:referenceToOwnershipOfDataSet'
+      ]['@refObjectId'].rules = ownerRules;
+    }
+  };
 
   it('renders the information tab and triggers shared metadata helpers', async () => {
     renderWithProviders(<UnitGroupForm {...baseProps} activeTabKey='unitGroupInformation' />);
@@ -358,6 +452,8 @@ describe('UnitGroupForm', () => {
     expect(screen.getByText('qref:true')).toBeInTheDocument();
     expect(screen.getByTestId('unit-view')).toHaveTextContent('view:0');
     expect(screen.getByTestId('unit-edit')).toHaveTextContent('edit:0');
+    await userEvent.click(screen.getByRole('button', { name: /close-unit-edit/i }));
+    await userEvent.click(screen.getByRole('button', { name: /close-unit-delete/i }));
     expect(screen.getByTestId('unit-delete')).toHaveTextContent('delete:0');
 
     await userEvent.click(screen.getByTestId('unit-create'));
@@ -384,5 +480,33 @@ describe('UnitGroupForm', () => {
     );
 
     expect(screen.getAllByTestId('lang-text-form')[0]).not.toHaveTextContent('"rulesCount":0');
+  });
+
+  it('falls back to empty rule arrays when schema rules are missing', () => {
+    withRulesFallbacks(() => {
+      const { rerender } = renderWithProviders(
+        <UnitGroupForm {...baseProps} activeTabKey='unitGroupInformation' showRules />,
+      );
+
+      expect(screen.getAllByTestId('lang-text-form')[0]).toHaveTextContent('"rulesCount":0');
+
+      rerender(<UnitGroupForm {...baseProps} activeTabKey='modellingAndValidation' showRules />);
+      const complianceSourceSelect = screen
+        .getAllByTestId('source-select')
+        .find((node) => node.textContent?.includes('Compliance system name'));
+      expect(complianceSourceSelect).toHaveTextContent('"showRequiredLabel":true');
+      expect(complianceSourceSelect).toHaveTextContent('"rulesCount":0');
+
+      rerender(
+        <UnitGroupForm
+          {...baseProps}
+          activeTabKey='administrativeInformation'
+          showRules
+          formType='createVersion'
+        />,
+      );
+      expect(screen.getAllByRole('textbox')[1]).toBeDisabled();
+      expect(screen.getByTestId('contact-select')).toHaveTextContent('"rulesCount":0');
+    });
   });
 });

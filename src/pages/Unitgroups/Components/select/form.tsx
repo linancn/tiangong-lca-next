@@ -147,7 +147,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
       setId(refObjectId);
       setVersion(formRef.current?.getFieldValue([...name, '@version']) as string | undefined);
       getReferenceUnit(
-        (formRef.current?.getFieldValue([...name, '@refObjectId']) as string | undefined) ?? '',
+        refObjectId,
         (formRef.current?.getFieldValue([...name, '@version']) as string | undefined) ?? '',
       ).then((res) => {
         formRef.current?.setFieldValue([...name, 'refUnit'], {
@@ -169,7 +169,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
 
   const requiredRules = rules.filter(isRequiredRule);
   const isRequired = requiredRules.length > 0;
-  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule));
   return (
     <Card
       size='small'

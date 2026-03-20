@@ -12,9 +12,12 @@ const toText = (node: any): string => {
   return '';
 };
 
-const mockRefCheckContextValue = { refCheckData: [] as any[] };
+let mockRefCheckContextValue = { refCheckData: [] as any[] };
 let mockCurrentUserId = 'user-1';
 let mockRefDataUserId = 'user-1';
+const mockCapturedRules = new Map<string, any[]>();
+const mockFormListFieldsByName = new Map<string, any[]>();
+const mockValueByName = new Map<string, any>();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -38,13 +41,20 @@ jest.mock('antd', () => {
     </div>
   );
   const Form = ({ children }: any) => <form>{children}</form>;
-  Form.Item = ({ label, children, getValueProps }: any) => {
+  Form.Item = ({ label, children, getValueProps, name, rules }: any) => {
+    if (name) {
+      mockCapturedRules.set(JSON.stringify(name), rules ?? []);
+    }
     const content = React.Children.only(children);
     if (content && React.isValidElement(content) && getValueProps) {
+      const resolvedValue = name ? mockValueByName.get(JSON.stringify(name)) : undefined;
       return (
         <label>
           <span>{toText(label)}</span>
-          {React.cloneElement(content, getValueProps(content.props.value))}
+          {React.cloneElement(
+            content,
+            getValueProps(resolvedValue === undefined ? content.props.value : resolvedValue),
+          )}
         </label>
       );
     }
@@ -55,10 +65,13 @@ jest.mock('antd', () => {
       </label>
     );
   };
-  Form.List = ({ children }: any) => (
+  Form.List = ({ children, name }: any) => (
     <div>
       {typeof children === 'function'
-        ? children([], { add: () => {}, remove: () => {} })
+        ? children(mockFormListFieldsByName.get(JSON.stringify(name)) ?? [], {
+            add: () => {},
+            remove: () => {},
+          })
         : children}
     </div>
   );
@@ -130,7 +143,27 @@ jest.mock('@/pages/Unitgroups/Components/view', () => ({
 
 jest.mock('@/pages/Unitgroups/Components/edit', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span>{`edit ${id}:${version}`}</span>,
+  default: ({ id, version, updateErrRef, setViewDrawerVisible }: any) => (
+    <>
+      <span>{`edit ${id}:${version}`}</span>
+      <button
+        type='button'
+        onClick={() =>
+          updateErrRef?.({
+            id: 'other-unitgroup',
+            version: '9.9.9',
+            ruleVerification: false,
+            nonExistent: false,
+          })
+        }
+      >
+        update err ref
+      </button>
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close edit view
+      </button>
+    </>
+  ),
 }));
 
 const mockGetUnitGroupDetail = jest.fn(async () => ({
@@ -159,27 +192,29 @@ jest.mock('@/services/unitgroups/api', () => ({
   getReferenceUnit: (...args: any[]) => mockGetReferenceUnit(...args),
 }));
 
+const mockGenUnitGroupFromData = jest.fn(() => ({
+  unitGroupInformation: {
+    dataSetInformation: {
+      'common:name': [{ '@xml:lang': 'en', '#text': 'Unit group short name' }],
+    },
+    quantitativeReference: {
+      referenceToReferenceUnit: '0',
+    },
+  },
+  units: {
+    unit: [
+      {
+        '@dataSetInternalID': '0',
+        name: 'kg',
+        generalComment: [{ '@xml:lang': 'en', '#text': 'Reference comment' }],
+      },
+    ],
+  },
+}));
+
 jest.mock('@/services/unitgroups/util', () => ({
   __esModule: true,
-  genUnitGroupFromData: jest.fn(() => ({
-    unitGroupInformation: {
-      dataSetInformation: {
-        'common:name': [{ '@xml:lang': 'en', '#text': 'Unit group short name' }],
-      },
-      quantitativeReference: {
-        referenceToReferenceUnit: '0',
-      },
-    },
-    units: {
-      unit: [
-        {
-          '@dataSetInternalID': '0',
-          name: 'kg',
-          generalComment: [{ '@xml:lang': 'en', '#text': 'Reference comment' }],
-        },
-      ],
-    },
-  })),
+  genUnitGroupFromData: (...args: any[]) => mockGenUnitGroupFromData(...args),
 }));
 
 const mockGetRefData = jest.fn(async () => ({
@@ -197,15 +232,22 @@ jest.mock('@/services/general/api', () => ({
   getRefData: (...args: any[]) => mockGetRefData(...args),
 }));
 
+const mockJsonToList = jest.fn((value: any) =>
+  Array.isArray(value) ? value : value ? [value] : [],
+);
+
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  jsonToList: jest.fn((value: any) => (Array.isArray(value) ? value : value ? [value] : [])),
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 const mockValidateRefObjectId = jest.fn();
+const mockGetLocalValueProps = jest.fn((value: any) => ({
+  value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
+}));
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
-  getLocalValueProps: jest.fn((value: any) => ({ value })),
+  getLocalValueProps: (...args: any[]) => mockGetLocalValueProps(...args),
   validateRefObjectId: (...args: any[]) => mockValidateRefObjectId(...args),
 }));
 
@@ -245,13 +287,24 @@ describe('UnitgroupsSelectForm', () => {
 
   beforeEach(() => {
     Object.keys(formState).forEach((key) => delete formState[key]);
-    mockRefCheckContextValue.refCheckData = [];
+    mockRefCheckContextValue = { refCheckData: [] };
     mockCurrentUserId = 'user-1';
     mockRefDataUserId = 'user-1';
+    mockCapturedRules.clear();
+    mockFormListFieldsByName.clear();
+    mockValueByName.clear();
     jest.clearAllMocks();
   });
 
   it('selects a unit group, refreshes it, and clears the selected field', async () => {
+    mockFormListFieldsByName.set(JSON.stringify(['reference', 'common:shortDescription']), [
+      { key: 'short-row', name: 0 },
+    ]);
+    mockFormListFieldsByName.set(JSON.stringify(['reference', 'refUnit', 'generalComment']), [
+      { key: 'comment-row', name: 0 },
+    ]);
+    mockValueByName.set(JSON.stringify([0, '@xml:lang']), 'en');
+
     const onData = jest.fn();
     const formRef = {
       current: {
@@ -289,6 +342,10 @@ describe('UnitgroupsSelectForm', () => {
 
     expect(await screen.findByText('view unitgroup-1:1.0.0')).toBeInTheDocument();
     expect(screen.getByText('edit unitgroup-1:1.0.0')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('English')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /update err ref/i }));
+    await userEvent.click(screen.getByRole('button', { name: /close edit view/i }));
 
     await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
     await waitFor(() => expect(mockGetUnitGroupDetail).toHaveBeenCalledTimes(2));
@@ -303,14 +360,16 @@ describe('UnitgroupsSelectForm', () => {
   it('restores an existing selection, shows ref errors, and hides edit actions for non-owners', async () => {
     setValueAtPath(['reference', '@refObjectId'], 'unitgroup-1');
     setValueAtPath(['reference', '@version'], '1.0.0');
-    mockRefCheckContextValue.refCheckData = [
-      {
-        id: 'unitgroup-1',
-        version: '1.0.0',
-        ruleVerification: true,
-        nonExistent: true,
-      },
-    ];
+    mockRefCheckContextValue = {
+      refCheckData: [
+        {
+          id: 'unitgroup-1',
+          version: '1.0.0',
+          ruleVerification: true,
+          nonExistent: true,
+        },
+      ],
+    };
     mockRefDataUserId = 'other-user';
 
     const formRef = {
@@ -344,5 +403,202 @@ describe('UnitgroupsSelectForm', () => {
       name: 'kg',
       generalComment: [{ '@xml:lang': 'en', '#text': 'Reference comment' }],
     });
+  });
+
+  it('runs the required validator and renders the required title when requested', async () => {
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    renderWithProviders(
+      <UnitgroupsSelectForm
+        name={['reference']}
+        label='Unit group'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+        rules={[{ required: true, message: 'Unit group is required' }]}
+        showRequiredLabel
+      />,
+    );
+
+    expect(screen.getByTestId('required-title')).toHaveTextContent('Unit group');
+
+    const rules = mockCapturedRules.get(JSON.stringify(['reference', '@refObjectId'])) ?? [];
+    const validatorRule = rules.find((rule) => typeof rule?.validator === 'function');
+
+    await act(async () => {
+      await expect(validatorRule.validator({}, undefined)).rejects.toBeInstanceOf(Error);
+    });
+    await act(async () => {
+      await expect(validatorRule.validator({}, 'unitgroup-1')).resolves.toBeUndefined();
+    });
+    expect(consoleSpy).toHaveBeenCalledWith('form rules check error');
+
+    consoleSpy.mockRestore();
+  });
+
+  it('renders the required title when showRequiredLabel is enabled without required rules', () => {
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <UnitgroupsSelectForm
+        name={['reference']}
+        label='Unit group'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+        showRequiredLabel
+      />,
+    );
+
+    expect(screen.getByTestId('required-title')).toHaveTextContent('Unit group');
+  });
+
+  it('uses ref-data matches to clear stale errors', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'unitgroup-1');
+    setValueAtPath(['reference', '@version'], '1.0.0');
+    mockGetRefData.mockResolvedValueOnce({
+      data: {
+        id: 'unitgroup-2',
+        version: '2.0.0',
+        userId: mockRefDataUserId,
+        stateCode: 10,
+        ruleVerification: false,
+      },
+    });
+    mockRefCheckContextValue = {
+      refCheckData: [{ id: 'unitgroup-2', version: '2.0.0', ruleVerification: false }],
+    };
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    const { rerender } = renderWithProviders(
+      <UnitgroupsSelectForm
+        name={['reference']}
+        label='Unit group'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetRefData).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /update err ref/i }));
+
+    mockRefCheckContextValue = {
+      refCheckData: [{ id: 'other-unitgroup', version: '0.0.1', ruleVerification: false }],
+    };
+    rerender(
+      <UnitgroupsSelectForm
+        name={['reference']}
+        label='Unit group'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('err-ref')).not.toBeInTheDocument();
+    });
+  });
+
+  it('handles null ref-data responses without cloning errors', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'unitgroup-1');
+    setValueAtPath(['reference', '@version'], '1.0.0');
+    mockGetRefData.mockResolvedValueOnce({ data: null });
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <UnitgroupsSelectForm
+        name={['reference']}
+        label='Unit group'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetRefData).toHaveBeenCalledWith('unitgroup-1', '1.0.0', 'unitgroups', ''),
+    );
+    expect(screen.getByText('view unitgroup-1:1.0.0')).toBeInTheDocument();
+    expect(screen.queryByText('edit unitgroup-1:1.0.0')).not.toBeInTheDocument();
+  });
+
+  it('uses version, reference-unit, and unit-group fallbacks for non-nested references', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'unitgroup-1');
+    mockGetReferenceUnit.mockResolvedValueOnce({ data: undefined });
+    mockGetUnitGroupDetail.mockResolvedValueOnce({
+      data: {
+        id: 'unitgroup-1',
+        version: undefined,
+        userId: mockRefDataUserId,
+        stateCode: 10,
+        ruleVerification: false,
+        json: {},
+      },
+    });
+    mockGenUnitGroupFromData.mockReturnValueOnce({
+      unitGroupInformation: {
+        dataSetInformation: {},
+        quantitativeReference: {
+          referenceToReferenceUnit: 'missing-unit',
+        },
+      },
+      units: {
+        unit: [],
+      },
+    });
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <UnitgroupsSelectForm
+        name={['reference']}
+        label='Unit group'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetReferenceUnit).toHaveBeenCalledWith('unitgroup-1', ''));
+    expect(formState.reference.refUnit).toEqual({ name: '', generalComment: [] });
+    expect(await screen.findByText('view unitgroup-1:')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    await waitFor(() => expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unitgroup-1', ''));
+    expect(await screen.findByText('edit unitgroup-1:')).toBeInTheDocument();
+    expect(formState.reference['common:shortDescription']).toEqual([]);
+    expect(formState.reference.refUnit).toEqual({ name: '', generalComment: [] });
   });
 });

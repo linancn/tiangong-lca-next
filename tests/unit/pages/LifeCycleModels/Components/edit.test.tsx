@@ -48,7 +48,8 @@ jest.mock('antd', () => {
     return <span title={label}>{children}</span>;
   };
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
+    getContainer?.();
     if (!open) return null;
     return (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
@@ -244,5 +245,27 @@ describe('LifeCycleModelEdit', () => {
 
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the default edit label and empty toolbar identifiers', async () => {
+    renderWithProviders(
+      <LifeCycleModelEdit
+        id={undefined}
+        version={undefined}
+        buttonType=''
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        id: '',
+        version: '',
+        action: 'edit',
+      }),
+    );
   });
 });

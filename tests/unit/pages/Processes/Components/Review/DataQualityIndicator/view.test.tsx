@@ -65,4 +65,19 @@ describe('ProcessReviewDataQualityIndicatorView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to dashes when indicator name or value is missing', () => {
+    render(
+      <DataQualityIndicatorItemView
+        data={[
+          {
+            '@name': undefined,
+            '@value': undefined,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText('-')).toHaveLength(2);
+  });
 });

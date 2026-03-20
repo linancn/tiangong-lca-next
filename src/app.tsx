@@ -214,19 +214,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         const teamMenus = menuDataProps.filter(
           (item) => item.path === '/tgdata' || item.path === '/codata',
         );
-        return (
-          teamMenus?.map((menu) => {
-            return {
-              ...menu,
-              children: menu?.children?.map((item) => {
-                return {
-                  ...item,
-                  path: item.path + '?tid=' + tid,
-                };
-              }),
-            };
-          }) ?? []
-        );
+        return teamMenus.map((menu) => {
+          return {
+            ...menu,
+            children: menu?.children?.map((item) => {
+              return {
+                ...item,
+                path: item.path + '?tid=' + tid,
+              };
+            }),
+          };
+        });
       } else {
         return menuDataProps;
       }
