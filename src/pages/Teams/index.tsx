@@ -1,3 +1,4 @@
+import { darkLogoPreviewStyle } from '@/components/AllTeams/logoPreviewStyle';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
@@ -567,13 +568,7 @@ const Team = () => {
                 ) : undefined
               }
             >
-              <div
-                style={
-                  darkLogoPreviewUrl
-                    ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
-                    : {}
-                }
-              >
+              <div style={darkLogoPreviewUrl ? darkLogoPreviewStyle : {}}>
                 <Upload
                   disabled={
                     (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
