@@ -17,6 +17,81 @@ import {
 } from '../ilcd/api';
 import { genProcessName } from '../processes/util';
 
+type InvokeErrorBody = {
+  code?: string;
+  detail?: string;
+  error?: string;
+  message?: string;
+  state_code?: number;
+};
+
+type GetRefDataOptions = {
+  fallbackToLatest?: boolean;
+};
+
+export async function attachStateCodesToRows<
+  T extends { id?: string; stateCode?: number; version?: string },
+>(table: string, rows: T[]): Promise<T[]> {
+  if (!table || !Array.isArray(rows) || rows.length === 0) {
+    return rows;
+  }
+
+  const missingStateRows = rows.filter(
+    (row) =>
+      typeof row?.stateCode !== 'number' &&
+      typeof row?.id === 'string' &&
+      row.id.length > 0 &&
+      typeof row?.version === 'string' &&
+      row.version.length > 0,
+  );
+
+  if (missingStateRows.length === 0) {
+    return rows;
+  }
+
+  const ids = Array.from(
+    new Set(missingStateRows.map((row) => row.id).filter(Boolean)),
+  ) as string[];
+
+  if (ids.length === 0) {
+    return rows;
+  }
+
+  const { data, error } = await supabase.from(table).select('id,version,state_code').in('id', ids);
+
+  if (error || !data) {
+    return rows;
+  }
+
+  const stateCodeMap = new Map<string, number | null | undefined>();
+  data.forEach((item: { id?: string; state_code?: number | null; version?: string }) => {
+    if (!item?.id || !item?.version) {
+      return;
+    }
+    stateCodeMap.set(`${item.id}:${item.version}`, item.state_code);
+  });
+
+  return rows.map((row) => {
+    if (
+      typeof row?.stateCode === 'number' ||
+      typeof row?.id !== 'string' ||
+      typeof row?.version !== 'string'
+    ) {
+      return row;
+    }
+
+    const stateCode = stateCodeMap.get(`${row.id}:${row.version}`);
+    if (typeof stateCode !== 'number') {
+      return row;
+    }
+
+    return {
+      ...row,
+      stateCode,
+    };
+  });
+}
+
 export async function exportDataApi(tableName: string, id: string, version: string) {
   let query;
   if (tableName === 'lifecyclemodels') {
@@ -567,6 +642,46 @@ export async function importTidasPackageApi(file: File) {
 
 const VERSION_PATTERN = /^\d{2}\.\d{2}\.\d{3}$/;
 
+export async function resolveFunctionInvokeError(error: { message?: string; context?: Response }) {
+  const fallbackMessage = error?.message || 'Request failed';
+  const context = error?.context;
+
+  if (!context || typeof context.text !== 'function') {
+    return {
+      message: fallbackMessage,
+    };
+  }
+
+  try {
+    const text = await context.text();
+    if (!text) {
+      return {
+        message: fallbackMessage,
+        status: context.status,
+      };
+    }
+
+    try {
+      const parsed = JSON.parse(text) as InvokeErrorBody;
+      return {
+        ...parsed,
+        message: parsed.message || parsed.detail || parsed.error || fallbackMessage,
+        status: context.status,
+      };
+    } catch {
+      return {
+        message: `${fallbackMessage}: ${text}`,
+        status: context.status,
+      };
+    }
+  } catch {
+    return {
+      message: fallbackMessage,
+      status: context.status,
+    };
+  }
+}
+
 export async function getDataDetail(id: string, version: string, table: string) {
   const hasValidId = typeof id === 'string' && id.length === 36;
   const normalizedVersion = typeof version === 'string' ? version.trim() : '';
@@ -625,7 +740,13 @@ export async function getDataDetailById(id: string, table: string) {
   return null;
 }
 
-export async function getRefData(id: string, version: string, table: string, teamId?: string) {
+export async function getRefData(
+  id: string,
+  version: string,
+  table: string,
+  teamId?: string,
+  options: GetRefDataOptions = {},
+) {
   if (!table || !id || id.length !== 36) {
     return Promise.resolve({
       data: null,
@@ -635,14 +756,14 @@ export async function getRefData(id: string, version: string, table: string, tea
 
   let query = supabase
     .from(table)
-    .select('state_code,json,rule_verification,user_id,team_id')
+    .select('id,version,state_code,json,rule_verification,user_id,team_id')
     .eq('id', id);
 
   let result: any = {};
 
   if (version && version.length === 9) {
     result = await query.eq('version', version);
-    if (!result?.data || result.data.length === 0) {
+    if ((!result?.data || result.data.length === 0) && options.fallbackToLatest !== false) {
       result = await query.order('version', { ascending: false }).range(0, 0);
     }
   } else {
@@ -657,10 +778,13 @@ export async function getRefData(id: string, version: string, table: string, tea
     }
     return Promise.resolve({
       data: {
+        id: data?.id,
+        version: data?.version,
         stateCode: data?.state_code,
         json: data?.json,
         ruleVerification: data?.rule_verification,
         userId: data?.user_id,
+        teamId: data?.team_id,
       },
       success: true,
     });
@@ -708,6 +832,9 @@ export async function updateStateCodeApi(
   }
   if (result.error) {
     console.log('error', result.error);
+    return {
+      error: await resolveFunctionInvokeError(result.error),
+    };
   }
   return result?.data;
 }
@@ -736,6 +863,9 @@ export async function updateDateToReviewState(
   }
   if (result.error) {
     console.log('error', result.error);
+    return {
+      error: await resolveFunctionInvokeError(result.error),
+    };
   }
   return result?.data;
 }
@@ -783,6 +913,9 @@ export async function contributeSource(tableName: string, id: string, version: s
     }
     if (result.error) {
       console.log('error', result.error);
+      return {
+        error: await resolveFunctionInvokeError(result.error),
+      };
     }
     return result?.data;
   } else {

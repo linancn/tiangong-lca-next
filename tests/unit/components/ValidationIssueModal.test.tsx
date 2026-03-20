@@ -1,0 +1,465 @@
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
+import { act, cleanup, fireEvent, screen } from '@testing-library/react';
+
+jest.mock('umi', () => ({
+  __esModule: true,
+  FormattedMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) => (
+    <span>{defaultMessage ?? id}</span>
+  ),
+}));
+
+jest.mock('antd', () => {
+  const React = require('react');
+
+  const Button = ({
+    children,
+    disabled,
+    onClick,
+    type,
+  }: {
+    children?: React.ReactNode;
+    disabled?: boolean;
+    onClick?: () => void;
+    type?: string;
+  }) => (
+    <button
+      type='button'
+      data-button-type={type}
+      disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+    >
+      {children}
+    </button>
+  );
+
+  const ConfigProvider = ({ children }: { children?: React.ReactNode }) => <>{children}</>;
+
+  const Modal = ({
+    children,
+    closable,
+    closeIcon,
+    footer,
+    onCancel,
+    open,
+    title,
+    zIndex,
+  }: {
+    children?: React.ReactNode;
+    closable?: boolean;
+    closeIcon?: React.ReactNode;
+    footer?: React.ReactNode;
+    onCancel?: () => void;
+    open?: boolean;
+    title?: React.ReactNode;
+    zIndex?: number;
+  }) => {
+    if (!open) {
+      return null;
+    }
+
+    return (
+      <div role='dialog' data-z-index={zIndex}>
+        <div>{title}</div>
+        {closable ? (
+          <button aria-label='close' type='button' onClick={onCancel}>
+            {closeIcon}
+          </button>
+        ) : null}
+        <div>{children}</div>
+        <div>{footer}</div>
+      </div>
+    );
+  };
+
+  const Space = ({ children }: { children?: React.ReactNode }) => <div>{children}</div>;
+
+  const Table = ({
+    columns,
+    dataSource,
+    scroll,
+    sticky,
+  }: {
+    columns: Array<{
+      title: React.ReactNode;
+      key?: string;
+      dataIndex?: string;
+      render?: (value: unknown, record: any, index: number) => React.ReactNode;
+    }>;
+    dataSource: any[];
+    scroll?: {
+      y?: number;
+    };
+    sticky?: boolean;
+  }) => (
+    <table data-scroll-y={scroll?.y} data-sticky={sticky ? 'true' : 'false'}>
+      <thead>
+        <tr>
+          {columns.map((column) => (
+            <th key={column.key ?? String(column.dataIndex)}>{column.title}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {dataSource.map((record, rowIndex) => (
+          <tr key={rowIndex}>
+            {columns.map((column) => {
+              const value = column.dataIndex ? record[column.dataIndex] : undefined;
+              const content = column.render?.(value, record, rowIndex) ?? value ?? null;
+              return <td key={column.key ?? String(column.dataIndex)}>{content}</td>;
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
+  return {
+    __esModule: true,
+    Button,
+    ConfigProvider,
+    Modal,
+    Space,
+    Table,
+    theme: {
+      useToken: () => ({
+        token: {
+          borderRadiusLG: 8,
+          colorBorderSecondary: '#f0f0f0',
+          colorPrimary: '#5C246A',
+          colorText: '#1f1f1f',
+          colorTextDisabled: '#bfbfbf',
+          colorTextHeading: '#141414',
+          colorTextSecondary: '#8c8c8c',
+          zIndexPopupBase: 1000,
+          fontSizeHeading4: 20,
+          fontSizeLG: 16,
+          fontWeightStrong: 600,
+          lineHeight: 1.5715,
+          marginSM: 12,
+        },
+      }),
+    },
+  };
+});
+
+describe('ValidationIssueModal', () => {
+  const intl = {
+    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => {
+      const messages: Record<string, string> = {
+        'pages.validationIssues.downloadHtml': '下载 HTML',
+        'pages.validationIssues.datasetType.contact': '联系人',
+        'pages.validationIssues.datasetType.source': '来源',
+        'pages.validationIssues.datasetType.unitgroup': '单位组',
+        'pages.validationIssues.datasetType.flowproperty': '流属性',
+        'pages.validationIssues.datasetType.flow': '流',
+        'pages.validationIssues.datasetType.process': '过程',
+        'pages.validationIssues.datasetType.lifecyclemodel': '模型',
+        'pages.validationIssues.table.issue': '问题',
+        'pages.validationIssues.table.action': '操作',
+        'pages.validationIssues.issue.nonExistentRef': '数据不存在',
+        'pages.validationIssues.issue.ruleVerificationFailed': '数据校验不通过',
+        'pages.validationIssues.issue.sdkInvalid': '当前数据集校验失败',
+        'pages.validationIssues.confirm': '知道了',
+        'pages.process.view.processInformation': '过程信息',
+        'pages.process.view.modellingAndValidation': '建模信息',
+        'pages.process.view.administrativeInformation': '管理信息',
+        'pages.process.view.exchanges': '输入/输出',
+        'pages.validationIssues.viewDetails': '查看详情',
+      };
+
+      return messages[id] ?? defaultMessage ?? id;
+    },
+  };
+
+  beforeEach(() => {
+    cleanup();
+    document.body.innerHTML = '';
+    localStorage.setItem('isDarkMode', 'false');
+    if (!URL.revokeObjectURL) {
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        value: () => {},
+        writable: true,
+      });
+    }
+  });
+
+  afterEach(() => {
+    cleanup();
+    document.body.innerHTML = '';
+  });
+
+  it('renders a closable modal with enabled view details button and jumps on click', async () => {
+    const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('数据校验问题')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'close' })).toBeInTheDocument();
+    expect(screen.getByText('操作')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '知道了' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-z-index', '2000');
+
+    const viewDetailsButton = screen.getByRole('button', { name: '查看详情' });
+    expect(viewDetailsButton).toBeInTheDocument();
+
+    fireEvent.click(viewDetailsButton);
+
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+      '_blank',
+      'noopener,noreferrer',
+    );
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+    windowOpenSpy.mockRestore();
+  });
+
+  it('renders non existent issues as dataset does not exist and disables the detail button', async () => {
+    const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'nonExistentRef',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByText('数据不存在')).toBeInTheDocument();
+
+    const viewDetailsButton = screen.getByRole('button', { name: '查看详情' });
+    expect(viewDetailsButton).toBeDisabled();
+
+    fireEvent.click(viewDetailsButton);
+    expect(windowOpenSpy).not.toHaveBeenCalled();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+    windowOpenSpy.mockRestore();
+  });
+
+  it('merges issues with the same dataset into one row and lists all issue messages', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            tabNames: [
+              'processInformation',
+              'modellingAndValidation',
+              'administrativeInformation',
+              'exchanges',
+            ],
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(document.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(
+      screen.getByText('当前数据集校验失败(过程信息，建模信息，管理信息，输入/输出)'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('数据校验不通过')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: '查看详情' })).toHaveLength(1);
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('keeps the table header fixed and sorts rows by the required dataset type order', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/models?id=model-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'model-1',
+              '@type': 'lifeCycleModel data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/flows?id=flow-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'flow-1',
+              '@type': 'flow data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/contacts?id=contact-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'contact-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByRole('table')).toHaveAttribute('data-scroll-y', '360');
+    expect(screen.getByRole('table')).toHaveAttribute('data-sticky', 'true');
+
+    const rowTexts = Array.from(document.querySelectorAll('tbody tr')).map((row) =>
+      row.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+
+    expect(rowTexts).toEqual([
+      expect.stringContaining('联系人'),
+      expect.stringContaining('流'),
+      expect.stringContaining('过程'),
+      expect.stringContaining('模型'),
+    ]);
+    expect(rowTexts[0]).toContain('contact-1');
+    expect(rowTexts[1]).toContain('flow-1');
+    expect(rowTexts[2]).toContain('process-1');
+    expect(rowTexts[3]).toContain('model-1');
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('exports html table with the same action column content as the modal', async () => {
+    const createObjectURLSpy = jest
+      .spyOn(URL, 'createObjectURL')
+      .mockImplementation(() => 'blob:validation-issues');
+    const revokeObjectURLSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/contacts?id=contact-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'contact-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'nonExistentRef',
+            link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-2',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '下载 HTML' }));
+    });
+
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+
+    const blob = createObjectURLSpy.mock.calls[0][0] as Blob;
+    const html = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob);
+    });
+
+    expect(html).toContain('<th>操作</th>');
+    expect(html).not.toContain('<th>链接</th>');
+    expect(html).toContain('>查看详情<');
+    expect(html).toContain('class="action-link"');
+    expect(html).toContain('class="action-link-disabled"');
+    expect(html.indexOf('contact-1')).toBeLessThan(html.indexOf('process-1'));
+    expect(html.indexOf('process-1')).toBeLessThan(html.indexOf('process-2'));
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+});

@@ -9,6 +9,7 @@ export type LifeCycleModelTable = {
   classification: string;
   version: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
 };
 
@@ -204,6 +205,7 @@ export type LifeCycleModelToolbarEditInfoHandle<TRefData = unknown> = {
     from: LifeCycleModelCheckContext,
     nodes: LifeCycleModelGraphNode[],
     edges: LifeCycleModelGraphEdge[],
+    options?: { silent?: boolean },
   ) => Promise<LifeCycleModelCheckResult<TRefData>>;
   updateReferenceDescription: (formData: LifeCycleModelFormState) => Promise<void>;
 };

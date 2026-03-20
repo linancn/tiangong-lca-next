@@ -60,6 +60,11 @@ jest.mock('@ant-design/icons', () => ({
   FormOutlined: () => <span>edit</span>,
 }));
 
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -280,7 +285,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    SourceForm: ({ onData }: any) => {
+    SourceForm: ({ onData, showRules }: any) => {
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -289,6 +294,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
 
       return (
         <div>
+          <div data-testid='source-show-rules'>{String(Boolean(showRules))}</div>
           <label htmlFor='edit-source-short-name'>Short Name</label>
           <input
             id='edit-source-short-name'
@@ -312,6 +318,7 @@ jest.mock('@/pages/Utils/review', () => ({
   ReffPath: jest.fn().mockImplementation(() => ({
     findProblemNodes: () => [],
   })),
+  buildValidationIssues: jest.fn(() => []),
   checkData: jest.fn(() => Promise.resolve()),
   getErrRefTab: jest.fn(() => 'sourceInformation'),
   getAllRefObj: jest.fn(() => []),
@@ -327,6 +334,7 @@ jest.mock('@/pages/Utils/review', () => ({
     };
     return tableDict[type];
   }),
+  validateDatasetWithSdk: jest.fn(() => ({ success: true, issues: [] })),
 }));
 
 jest.mock('@/services/sources/api', () => ({
@@ -345,6 +353,7 @@ jest.mock('@/services/sources/util', () => ({
       },
     },
   })),
+  genSourceJsonOrdered: jest.fn(() => ({})),
 }));
 
 jest.mock('@/services/supabase/storage', () => ({
@@ -365,6 +374,13 @@ jest.mock('@/services/supabase/key', () => ({
 
 const { getSourceDetail: mockGetSourceDetail, updateSource: mockUpdateSource } =
   jest.requireMock('@/services/sources/api');
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
+const {
+  buildValidationIssues: mockBuildValidationIssues,
+  validateDatasetWithSdk: mockValidateDatasetWithSdk,
+} = jest.requireMock('@/pages/Utils/review');
 
 describe('SourceEdit component', () => {
   beforeEach(() => {
@@ -379,6 +395,9 @@ describe('SourceEdit component', () => {
     mockUpdateSource.mockResolvedValue({
       data: [{ rule_verification: true }],
     });
+    mockBuildValidationIssues.mockReset().mockReturnValue([]);
+    mockValidateDatasetWithSdk.mockReset().mockReturnValue({ success: true, issues: [] });
+    mockShowValidationIssueModal.mockReset();
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -430,5 +449,95 @@ describe('SourceEdit component', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Edit Source' })).not.toBeInTheDocument(),
     );
+  });
+
+  it('blocks data check when the dataset is under review', async () => {
+    const user = userEvent.setup();
+
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: {
+          sourceDataSet: {},
+        },
+      },
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+
+    await waitFor(() =>
+      expect(mockGetSourceDetail).toHaveBeenCalledWith('source-123', '01.00.000'),
+    );
+
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    expect(mockUpdateSource).not.toHaveBeenCalled();
+    expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+      'This data set is under review and cannot be validated',
+    );
+  });
+
+  it('auto checks silently when required flag opens the drawer', async () => {
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 10,
+        json: {
+          sourceDataSet: {},
+        },
+      },
+    });
+    mockUpdateSource.mockResolvedValueOnce({
+      data: [{ rule_verification: false }],
+    });
+    mockValidateDatasetWithSdk.mockReturnValue({
+      success: false,
+      issues: [{ path: ['sourceDataSet', 'sourceInformation'] }],
+    });
+    mockBuildValidationIssues.mockReturnValue([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/mydata/sources?id=source-123&version=01.00.000&required=1',
+        ref: {
+          '@type': 'source data set',
+          '@refObjectId': 'source-123',
+          '@version': '01.00.000',
+        },
+        tabNames: ['sourceInformation'],
+      },
+    ]);
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        autoOpen={true}
+        autoCheckRequired={true}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+
+    await waitFor(() => expect(mockUpdateSource).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(within(drawer).getByTestId('source-show-rules')).toHaveTextContent('true'),
+    );
+
+    expect(mockShowValidationIssueModal).not.toHaveBeenCalled();
+    expect(getMockAntdMessage().error).not.toHaveBeenCalled();
   });
 });

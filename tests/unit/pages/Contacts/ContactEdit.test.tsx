@@ -28,6 +28,11 @@ jest.mock('@ant-design/icons', () => ({
   FormOutlined: () => <span>edit</span>,
 }));
 
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -262,6 +267,7 @@ jest.mock('@/pages/Contacts/Components/form', () => {
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   ReffPath: jest.fn().mockImplementation(() => ({ findProblemNodes: () => [] })),
+  buildValidationIssues: jest.fn(() => []),
   checkData: jest.fn(),
   getErrRefTab: jest.fn(),
   getAllRefObj: jest.fn(() => []),
@@ -277,6 +283,7 @@ jest.mock('@/pages/Utils/review', () => ({
     };
     return tableDict[type];
   }),
+  validateDatasetWithSdk: jest.fn(() => ({ success: true, issues: [] })),
 }));
 
 jest.mock('@/services/contacts/api', () => ({
@@ -393,5 +400,50 @@ describe('ContactEdit component', () => {
     );
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('blocks data check when the dataset is under review', async () => {
+    const user = userEvent.setup();
+
+    mockGetContactDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: {
+          contactDataSet: {
+            contactInformation: {
+              dataSetInformation: {
+                'common:shortName': 'Original contact',
+                email: 'original@example.com',
+              },
+            },
+          },
+        },
+      },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+
+    await waitFor(() =>
+      expect(mockGetContactDetail).toHaveBeenCalledWith('contact-123', '01.00.000'),
+    );
+
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    expect(mockUpdateContact).not.toHaveBeenCalled();
+    expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+      'This data set is under review and cannot be validated',
+    );
   });
 });

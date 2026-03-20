@@ -4,8 +4,15 @@ import {
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
 import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
+import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import {
+  getDataSource,
+  getLang,
+  getLangText,
+  getUnitData,
+  isDataUnderReview,
+} from '@/services/general/util';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
@@ -14,7 +21,6 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
-import { contributeSource } from '@/services/general/api';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -23,7 +29,6 @@ import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
-import { getUnitData } from '@/services/general/util';
 import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -40,18 +45,61 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
+  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const attachReviewState = async (result: {
+    data?: FlowpropertyTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    if (dataSource !== 'my' || !Array.isArray(result?.data)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      data: await attachStateCodesToRows('flowproperties', result.data),
+    };
+  };
+  const attachRefUnitData = async (result: {
+    data?: FlowpropertyTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    const resultWithReviewState = await attachReviewState(result);
+    return {
+      ...resultWithReviewState,
+      data: ((await getUnitData('unitgroup', resultWithReviewState?.data ?? [])) ?? []) as
+        | FlowpropertyTable[]
+        | undefined,
+    };
+  };
+
+  useEffect(() => {
+    if (dataSource === 'my' && id && version) {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [dataSource, id, version]);
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -168,6 +216,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
@@ -179,6 +228,7 @@ const TableList: FC = () => {
                 version={row.version}
               />
               <FlowpropertiesEdit
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -186,6 +236,7 @@ const TableList: FC = () => {
                 lang={lang}
               />
               <FlowpropertiesDelete
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -364,37 +415,40 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return flowproperty_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
+              return attachRefUnitData(
+                await flowproperty_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+              );
             }
-            return getFlowpropertyTablePgroongaSearch(
-              params,
-              lang,
-              dataSource,
-              keyWord,
-              {},
-              stateCode,
-            ).then((res) => {
-              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
-                return {
-                  ...res,
-                  data: refUnitGroupResp ?? [],
-                };
-              });
-            });
+            return attachRefUnitData(
+              await getFlowpropertyTablePgroongaSearch(
+                params,
+                lang,
+                dataSource,
+                keyWord,
+                {},
+                stateCode,
+              ),
+            );
           }
-          return getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode).then(
-            (res) => {
-              return getUnitData('unitgroup', res?.data ?? []).then((refUnitGroupResp) => {
-                return {
-                  ...res,
-                  data: refUnitGroupResp ?? [],
-                };
-              });
-            },
+          return attachRefUnitData(
+            await getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
           );
         }}
         columns={flowpropertiesColumns}
       />
+
+      {editDrawerVisible && editId && editVersion && (
+        <FlowpropertiesEdit
+          id={editId}
+          version={editVersion}
+          buttonType={'icon'}
+          actionRef={actionRef}
+          lang={lang}
+          autoOpen={true}
+          autoCheckRequired={required}
+          onDrawerClose={() => setEditDrawerVisible(false)}
+        />
+      )}
     </PageContainer>
   );
 };

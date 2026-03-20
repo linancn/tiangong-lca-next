@@ -37,10 +37,12 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 const mockGetTeamIdByUserId = jest.fn();
+const mockResolveFunctionInvokeError = jest.fn(async (error: any) => error);
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
+  resolveFunctionInvokeError: (...args: any[]) => mockResolveFunctionInvokeError.apply(null, args),
 }));
 
 const mockClassificationToString = jest.fn();
@@ -142,6 +144,7 @@ jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
 
 const mockControllerAdd = jest.fn();
 const mockControllerWaitForAll = jest.fn();
+const mockValidateDatasetRuleVerification = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
@@ -149,6 +152,8 @@ jest.mock('@/pages/Utils/review', () => ({
     add: (...args: any[]) => mockControllerAdd.apply(null, args),
     waitForAll: (...args: any[]) => mockControllerWaitForAll.apply(null, args),
   })),
+  validateDatasetRuleVerification: (...args: any[]) =>
+    mockValidateDatasetRuleVerification.apply(null, args),
 }));
 
 import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
@@ -181,6 +186,7 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
+  mockResolveFunctionInvokeError.mockReset().mockImplementation(async (error: any) => error);
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
@@ -197,6 +203,13 @@ beforeEach(() => {
   mockGenLifeCycleModelProcesses.mockReset();
   mockControllerAdd.mockReset();
   mockControllerWaitForAll.mockReset();
+  mockValidateDatasetRuleVerification.mockReset().mockResolvedValue({
+    datasetSdkIssues: [],
+    datasetSdkValid: true,
+    nonExistentRef: [],
+    ruleVerification: true,
+    unRuleVerification: [],
+  });
 
   mockAuthGetSession.mockResolvedValue(createMockSession(sampleUserId, sampleAccessToken));
   mockGetTeamIdByUserId.mockResolvedValue('team-default');

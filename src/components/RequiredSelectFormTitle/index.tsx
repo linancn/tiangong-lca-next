@@ -13,7 +13,10 @@ type RequiredSelectFormTitleProps = {
 export const ErrRefTipMessage = ({ errRef }: { errRef: RefCheckType }) => {
   if (errRef?.ruleVerification === false) {
     return (
-      <FormattedMessage id='pages.select.unRuleVerification' defaultMessage='Data is incomplete' />
+      <FormattedMessage
+        id='pages.select.unRuleVerification'
+        defaultMessage='Data validation failed'
+      />
     );
   }
   if (errRef?.nonExistent === true) {

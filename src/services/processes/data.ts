@@ -12,6 +12,7 @@ export type ProcessTable = {
   referenceYear: string;
   location: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
   modelId: string;
   typeOfDataSet: string;

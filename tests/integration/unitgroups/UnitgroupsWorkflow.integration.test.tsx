@@ -222,11 +222,13 @@ jest.mock('@/services/general/util', () => ({
   }),
   genClassificationZH: jest.fn((classifications: any) => classifications),
   getImportedId: jest.fn(() => undefined),
+  isDataUnderReview: jest.fn(() => false),
   isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: jest.fn(async () => ({ data: {}, error: null })),
   getTeamIdByUserId: jest.fn(async () => 'team-1'),
 }));

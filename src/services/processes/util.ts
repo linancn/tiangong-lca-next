@@ -16,6 +16,38 @@ import {
   toAmountNumber,
 } from '../general/util';
 
+const normalizeExchangeAmountValue = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined || value === 'undefined') {
+    return undefined;
+  }
+
+  return value;
+};
+
+const toExchangeAmountString = (value: string | number | null | undefined) => {
+  const normalizedValue = normalizeExchangeAmountValue(value);
+
+  if (normalizedValue === undefined) {
+    return undefined;
+  }
+
+  return `${normalizedValue}`;
+};
+
+const normalizeReferenceYearValue = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined || value === '' || value === 'undefined') {
+    return undefined;
+  }
+
+  const normalizedValue = Number(value);
+
+  if (Number.isNaN(normalizedValue)) {
+    return undefined;
+  }
+
+  return normalizedValue;
+};
+
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
@@ -45,8 +77,8 @@ export function genProcessJsonOrdered(id: string, data: any) {
         functionType: item.functionType,
         exchangeDirection: item.exchangeDirection,
         referenceToVariable: item.referenceToVariable,
-        meanAmount: `${item.meanAmount}`,
-        resultingAmount: `${resultingAmount}`,
+        meanAmount: toExchangeAmountString(item.meanAmount),
+        resultingAmount: toExchangeAmountString(resultingAmount),
         minimumAmount: item.minimumAmount,
         maximumAmount: item.maximumAmount,
         uncertaintyDistributionType: item.uncertaintyDistributionType,
@@ -148,9 +180,9 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         quantitativeReference: { ...quantitativeReference },
         time: {
-          'common:referenceYear': data?.processInformation?.time?.['common:referenceYear']
-            ? Number(data?.processInformation?.time?.['common:referenceYear'])
-            : undefined,
+          'common:referenceYear': normalizeReferenceYearValue(
+            data?.processInformation?.time?.['common:referenceYear'],
+          ),
           'common:dataSetValidUntil':
             data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
           'common:timeRepresentativenessDescription': getLangJson(
@@ -871,7 +903,9 @@ export function genProcessFromData(data: any): FormProcess {
           ),
         },
         time: {
-          'common:referenceYear': Number(data?.processInformation?.time?.['common:referenceYear']),
+          'common:referenceYear': normalizeReferenceYearValue(
+            data?.processInformation?.time?.['common:referenceYear'],
+          ),
           'common:dataSetValidUntil':
             data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
           'common:timeRepresentativenessDescription': getLangList(
@@ -1481,8 +1515,8 @@ export function genProcessFromData(data: any): FormProcess {
               functionType: item.functionType,
               exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
-              meanAmount: item.meanAmount,
-              resultingAmount: item.resultingAmount,
+              meanAmount: normalizeExchangeAmountValue(item.meanAmount),
+              resultingAmount: normalizeExchangeAmountValue(item.resultingAmount),
               minimumAmount: item.minimumAmount,
               maximumAmount: item.maximumAmount,
               uncertaintyDistributionType: item.uncertaintyDistributionType,
@@ -1531,8 +1565,8 @@ export function genProcessFromData(data: any): FormProcess {
               functionType: item.functionType,
               exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
-              meanAmount: item.meanAmount,
-              resultingAmount: item.resultingAmount,
+              meanAmount: normalizeExchangeAmountValue(item.meanAmount),
+              resultingAmount: normalizeExchangeAmountValue(item.resultingAmount),
               minimumAmount: item.minimumAmount,
               maximumAmount: item.maximumAmount,
               uncertaintyDistributionType: item.uncertaintyDistributionType,
@@ -1567,7 +1601,7 @@ export function genProcessFromData(data: any): FormProcess {
         LCIAResult: data?.LCIAResults?.LCIAResult ?? [],
       },
     },
-  });
+  } as any);
   return removeEmptyObjects({
     processInformation: process.processDataSet.processInformation,
     exchanges: process.processDataSet.exchanges,
@@ -1601,8 +1635,8 @@ export function genProcessExchangeTableData(data: any, lang: string) {
           lang,
         ),
         referenceToVariable: item?.referenceToVariable ?? '-',
-        meanAmount: item?.meanAmount ?? '-',
-        resultingAmount: item?.resultingAmount ?? '-',
+        meanAmount: normalizeExchangeAmountValue(item?.meanAmount) ?? '-',
+        resultingAmount: normalizeExchangeAmountValue(item?.resultingAmount) ?? '-',
         dataDerivationTypeStatus: item?.dataDerivationTypeStatus ?? '-',
         referencesToDataSource: {
           referenceToDataSource: {

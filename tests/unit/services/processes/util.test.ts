@@ -628,6 +628,47 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet.exchanges.exchange).toEqual([]);
     });
 
+    it('should keep empty reference year empty instead of NaN', () => {
+      const dataWithEmptyReferenceYear = {
+        ...mockProcessData,
+        processInformation: {
+          ...mockProcessData.processInformation,
+          time: {
+            ...mockProcessData.processInformation.time,
+            'common:referenceYear': '',
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithEmptyReferenceYear);
+
+      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
+    });
+
+    it('should not stringify missing exchange amounts to undefined', () => {
+      const dataWithMissingAmounts = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              meanAmount: undefined,
+              resultingAmount: undefined,
+            },
+          ],
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithMissingAmounts);
+
+      expect(result.processDataSet.exchanges.exchange[0].meanAmount).toBeUndefined();
+      expect(result.processDataSet.exchanges.exchange[0].resultingAmount).toBeUndefined();
+    });
+
     it('should include allocations in exchanges', () => {
       const dataWithAllocations = {
         ...mockProcessData,
@@ -757,6 +798,30 @@ describe('Process Utility Functions', () => {
       expect(result.exchanges.exchange).toHaveLength(1);
     });
 
+    it('should normalize legacy undefined amount strings in exchanges', () => {
+      const dataWithLegacyUndefinedAmounts = {
+        ...mockRawData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              meanAmount: 'undefined',
+              resultingAmount: 'undefined',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessFromData(dataWithLegacyUndefinedAmounts);
+
+      expect(result.exchanges.exchange[0].meanAmount).toBeUndefined();
+      expect(result.exchanges.exchange[0].resultingAmount).toBeUndefined();
+    });
+
     it('should handle missing exchanges', () => {
       const dataWithoutExchanges = {
         ...mockRawData,
@@ -766,6 +831,22 @@ describe('Process Utility Functions', () => {
       const result = genProcessFromData(dataWithoutExchanges);
 
       expect(result.exchanges.exchange).toEqual([]);
+    });
+
+    it('should keep empty reference year empty instead of NaN when converting from raw data', () => {
+      const dataWithEmptyReferenceYear = {
+        ...mockRawData,
+        processInformation: {
+          ...mockRawData.processInformation,
+          time: {
+            'common:referenceYear': undefined,
+          },
+        },
+      };
+
+      const result = genProcessFromData(dataWithEmptyReferenceYear);
+
+      expect(result.processInformation.time['common:referenceYear']).toBeUndefined();
     });
 
     it('should mark quantitative reference exchange', () => {

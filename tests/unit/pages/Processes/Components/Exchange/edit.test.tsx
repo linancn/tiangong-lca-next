@@ -294,6 +294,29 @@ describe('ProcessExchangeEdit', () => {
     });
   });
 
+  it('normalizes historical undefined amount strings to empty form values', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            meanAmount: 'undefined',
+            resultingAmount: 'undefined',
+            exchangeDirection: 'output',
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(proFormApi?.getFieldValue('meanAmount')).toBeUndefined();
+      expect(proFormApi?.getFieldValue('resultingAmount')).toBeUndefined();
+    });
+  });
+
   it('submits updated exchange data', async () => {
     const onData = jest.fn();
     render(<ProcessExchangeEdit {...defaultProps} onData={onData} />);

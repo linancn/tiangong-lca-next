@@ -9,9 +9,9 @@ import {
   getContactTablePgroongaSearch,
 } from '@/services/contacts/api';
 import { ContactImportData, ContactTable } from '@/services/contacts/data';
-import { contributeSource } from '@/services/general/api';
+import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -35,18 +35,47 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ContactImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
+  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const attachReviewState = async (result: {
+    data?: ContactTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    if (dataSource !== 'my' || !Array.isArray(result?.data)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      data: await attachStateCodesToRows('contacts', result.data),
+    };
+  };
+
+  useEffect(() => {
+    if (dataSource === 'my' && id && version) {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [dataSource, id, version]);
 
   const contactColumns: ProColumns<ContactTable>[] = [
     {
@@ -138,6 +167,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
@@ -149,6 +179,7 @@ const TableList: FC = () => {
                 actionRef={actionRef}
               />
               <ContactEdit
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -157,6 +188,7 @@ const TableList: FC = () => {
                 setViewDrawerVisible={() => {}}
               />
               <ContactDelete
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -331,14 +363,33 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return contact_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
+              return attachReviewState(
+                await contact_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+              );
             }
-            return getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode);
+            return attachReviewState(
+              await getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode),
+            );
           }
-          return getContactTableAll(params, sort, lang, dataSource, tid ?? '', stateCode);
+          return attachReviewState(
+            await getContactTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+          );
         }}
         columns={contactColumns}
       />
+
+      {editDrawerVisible && editId && editVersion && (
+        <ContactEdit
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          buttonType={'icon'}
+          actionRef={actionRef}
+          setViewDrawerVisible={setEditDrawerVisible}
+          autoOpen={true}
+          autoCheckRequired={required}
+        />
+      )}
     </PageContainer>
   );
 };

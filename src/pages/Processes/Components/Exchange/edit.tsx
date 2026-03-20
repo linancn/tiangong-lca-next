@@ -43,6 +43,21 @@ type Props = {
   showRules: boolean;
   disabled?: boolean;
 };
+
+const normalizeExchangeAmountValue = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined || value === 'undefined') {
+    return undefined;
+  }
+
+  return value;
+};
+
+const normalizeExchangeFormData = (exchangeData: ProcessExchangeData): ProcessExchangeData => ({
+  ...exchangeData,
+  meanAmount: normalizeExchangeAmountValue(exchangeData?.meanAmount),
+  resultingAmount: normalizeExchangeAmountValue(exchangeData?.resultingAmount),
+});
+
 const ProcessExchangeEdit: FC<Props> = ({
   id,
   data,
@@ -81,7 +96,9 @@ const ProcessExchangeEdit: FC<Props> = ({
   const onReset = () => {
     // setSpinning(true);
     formRefEdit.current?.resetFields();
-    const filteredData = data?.find((item) => item['@dataSetInternalID'] === id) ?? {};
+    const filteredData = normalizeExchangeFormData(
+      data?.find((item) => item['@dataSetInternalID'] === id) ?? {},
+    );
     setInitData(filteredData);
     formRefEdit.current?.setFieldsValue(filteredData);
     setFromData(filteredData);

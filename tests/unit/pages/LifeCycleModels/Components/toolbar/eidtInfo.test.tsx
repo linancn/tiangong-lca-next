@@ -41,6 +41,11 @@ jest.mock('@/pages/LifeCycleModels/Components/form', () => {
   };
 });
 
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
+}));
+
 jest.mock('@/style/custom.less', () => ({
   __esModule: true,
   default: { footer_right: 'footer-right' },
@@ -242,10 +247,13 @@ const mockDealModel = jest.fn((modelDetail, unReview) => {
 });
 const mockDealProcress = jest.fn();
 const mockCheckVersions = jest.fn().mockResolvedValue(undefined);
+const mockBuildValidationIssues = jest.fn().mockReturnValue([]);
 const mockGetAllRefObj = jest.fn().mockReturnValue([]);
 const mockUpdateReviewsAfterCheckData = jest.fn().mockResolvedValue({});
 const mockUpdateUnReviewToUnderReview = jest.fn().mockResolvedValue({});
 const mockGetErrRefTab = jest.fn().mockReturnValue(null);
+const mockMapValidationIssuesToRefCheckData = jest.fn().mockReturnValue([]);
+const mockValidateDatasetWithSdk = jest.fn().mockReturnValue({ success: true, issues: [] });
 
 function MockReffPath() {}
 MockReffPath.prototype.findProblemNodes = function () {
@@ -254,6 +262,7 @@ MockReffPath.prototype.findProblemNodes = function () {
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
+  buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
   checkVersions: (...args: any[]) => mockCheckVersions(...args),
   checkRequiredFields: (...args: any[]) => mockCheckRequiredFields(...args),
@@ -261,9 +270,12 @@ jest.mock('@/pages/Utils/review', () => ({
   dealProcress: (...args: any[]) => mockDealProcress(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
+  mapValidationIssuesToRefCheckData: (...args: any[]) =>
+    mockMapValidationIssuesToRefCheckData(...args),
   ReffPath: MockReffPath,
   updateReviewsAfterCheckData: (...args: any[]) => mockUpdateReviewsAfterCheckData(...args),
   updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
+  validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
 const mockGetLifeCycleModelDetail = jest.fn();
@@ -335,8 +347,11 @@ beforeEach(() => {
   mockDealModel.mockReset();
   mockDealProcress.mockReset();
   mockCheckVersions.mockReset().mockResolvedValue(undefined);
+  mockBuildValidationIssues.mockReset().mockReturnValue([]);
   mockGetAllRefObj.mockReset().mockReturnValue([]);
   mockGetErrRefTab.mockReset().mockReturnValue(null);
+  mockMapValidationIssuesToRefCheckData.mockReset().mockReturnValue([]);
+  mockValidateDatasetWithSdk.mockReset().mockReturnValue({ success: true, issues: [] });
   mockGetLifeCycleModelDetail.mockReset();
   mockGetProcessDetail.mockReset();
   mockGetUserTeamId.mockReset().mockResolvedValue('team-1');

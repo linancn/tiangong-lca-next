@@ -216,6 +216,7 @@ jest.mock('@/services/general/util', () => ({
   }),
   formatDateTime: jest.fn(() => '2024-01-10T00:00:00Z'),
   getImportedId: jest.fn(() => undefined),
+  isDataUnderReview: jest.fn(() => false),
   isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
@@ -226,6 +227,7 @@ jest.mock('@/services/general/data', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: jest.fn(),
   getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),
   getDataDetailById: jest.fn(() => Promise.resolve({ data: [] })),

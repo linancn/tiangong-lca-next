@@ -49,6 +49,11 @@ jest.mock('@/components/AISuggestion', () => ({
   ),
 }));
 
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
+}));
+
 jest.mock('@/contexts/refCheckContext', () => ({
   __esModule: true,
   RefCheckContext: {
@@ -85,6 +90,8 @@ jest.mock('@/services/processes/api', () => ({
 
 const mockGenProcessFromData = jest.fn();
 const mockGenProcessJsonOrdered = jest.fn();
+const mockBuildValidationIssues = jest.fn(() => []);
+const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
@@ -102,12 +109,16 @@ jest.mock('@/pages/Utils/review', () => ({
   ReffPath: function () {
     return {};
   },
+  buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkReferences: jest.fn(() => Promise.resolve({ findProblemNodes: () => [] })),
+  checkVersions: jest.fn(() => Promise.resolve()),
   dealProcress: jest.fn(),
   getAllRefObj: jest.fn(() => []),
   getErrRefTab: jest.fn(() => ''),
+  mapValidationIssuesToRefCheckData: jest.fn(() => []),
   updateReviewsAfterCheckData: jest.fn(),
   updateUnReviewToUnderReview: jest.fn(() => Promise.resolve()),
+  validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
 jest.mock('antd', () => {
@@ -254,6 +265,7 @@ describe('ProcessEdit component', () => {
 
   const processDataset = {
     processInformation: { name: 'Existing process' },
+    administrativeInformation: { note: 'keep existing admin info' },
     exchanges: {
       exchange: [
         {
@@ -268,6 +280,8 @@ describe('ProcessEdit component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     actionRef.current.reload.mockClear();
+    mockBuildValidationIssues.mockReset().mockReturnValue([]);
+    mockValidateDatasetWithSdk.mockReset().mockReturnValue({ success: true, issues: [] });
     mockUpdateProcess.mockResolvedValue({
       data: [
         {
@@ -323,6 +337,17 @@ describe('ProcessEdit component', () => {
     });
   });
 
+  it('auto opens without rendering the trigger icon', async () => {
+    render(<ProcessEdit {...baseProps} autoOpen={true} />);
+
+    expect(screen.getByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
+    expect(screen.queryByText('form-icon')).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+    });
+  });
+
   it('blocks submission when allocated fractions exceed 100%', async () => {
     render(<ProcessEdit {...baseProps} />);
 
@@ -351,5 +376,144 @@ describe('ProcessEdit component', () => {
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
       expect.stringContaining('Allocated fraction total of output is greater than 100%'),
     );
+  });
+
+  it('does not save an empty payload when data check is clicked before process detail loads', async () => {
+    mockGetProcessDetail.mockImplementation(() => new Promise(() => {}));
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => {
+      expect(mockUpdateProcess).not.toHaveBeenCalled();
+    });
+  });
+
+  it('uses the latest form snapshot when data check saves the process', async () => {
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+    });
+
+    await act(async () => {
+      proFormApi?.setFieldsValue({
+        processInformation: { name: 'Updated from form snapshot' },
+      });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateProcess).toHaveBeenCalledWith(
+        'process-1',
+        '1.0.0',
+        expect.objectContaining({
+          processInformation: { name: 'Updated from form snapshot' },
+          administrativeInformation: { note: 'keep existing admin info' },
+        }),
+      );
+    });
+  });
+
+  it('keeps the current tab when data check finds exchange issues', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: {
+            processDataSet: {
+              processInformation: { name: 'Existing process' },
+              exchanges: {
+                exchange: [],
+              },
+            },
+          },
+          state_code: 10,
+          rule_verification: false,
+        },
+      ],
+    });
+    mockGenProcessFromData.mockImplementation((dataset: any) => ({
+      processInformation: dataset?.processInformation ?? { name: 'Existing process' },
+      exchanges: dataset?.exchanges ?? { exchange: [] },
+    }));
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+    });
+
+    expect(latestProcessFormProps.activeTabKey).toBe('processInformation');
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateProcess).toHaveBeenCalledWith('process-1', '1.0.0', expect.any(Object));
+    });
+
+    expect(latestProcessFormProps.activeTabKey).toBe('processInformation');
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Please select exchanges');
+  });
+
+  it('maps quantitative reference sdk issues to exchanges instead of process information', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: false,
+        },
+      ],
+    });
+    mockValidateDatasetWithSdk.mockReturnValue({
+      success: false,
+      issues: [
+        {
+          path: [
+            'processDataSet',
+            'processInformation',
+            'quantitativeReference',
+            'referenceToReferenceFlow',
+          ],
+        },
+      ],
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+    });
+
+    await waitFor(() => {
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sdkInvalidTabNames: ['exchanges'],
+        }),
+      );
+    });
+
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('exchanges：Data check failed!');
   });
 });

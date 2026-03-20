@@ -1,4 +1,4 @@
-import { contributeSource } from '@/services/general/api';
+import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import {
   getSourceTableAll,
   getSourceTablePgroongaSearch,
@@ -15,7 +15,7 @@ import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { SourceImportData, SourceTable } from '@/services/sources/data';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -37,18 +37,47 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
+  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const attachReviewState = async (result: {
+    data?: SourceTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    if (dataSource !== 'my' || !Array.isArray(result?.data)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      data: await attachStateCodesToRows('sources', result.data),
+    };
+  };
+
+  useEffect(() => {
+    if (dataSource === 'my' && id && version) {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [dataSource, id, version]);
   const sourceColumns: ProColumns<SourceTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -144,6 +173,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
@@ -155,6 +185,7 @@ const TableList: FC = () => {
                 buttonType={'icon'}
               />
               <SourceEdit
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -163,6 +194,7 @@ const TableList: FC = () => {
                 setViewDrawerVisible={() => {}}
               />
               <SourceDelete
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -333,14 +365,33 @@ const TableList: FC = () => {
         ) => {
           if (keyWord.length > 0) {
             if (openAI) {
-              return source_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode);
+              return attachReviewState(
+                await source_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+              );
             }
-            return getSourceTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode);
+            return attachReviewState(
+              await getSourceTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode),
+            );
           }
-          return getSourceTableAll(params, sort, lang, dataSource, tid ?? '', stateCode);
+          return attachReviewState(
+            await getSourceTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+          );
         }}
         columns={sourceColumns}
       />
+
+      {editDrawerVisible && editId && editVersion && (
+        <SourceEdit
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          buttonType={'icon'}
+          actionRef={actionRef}
+          setViewDrawerVisible={setEditDrawerVisible}
+          autoOpen={true}
+          autoCheckRequired={required}
+        />
+      )}
     </PageContainer>
   );
 };

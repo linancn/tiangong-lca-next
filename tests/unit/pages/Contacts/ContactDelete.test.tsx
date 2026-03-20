@@ -148,4 +148,26 @@ describe('ContactDelete component', () => {
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
   });
+
+  it('disables delete trigger when disabled is true', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactDelete
+        disabled
+        id='contact-delete'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(mockDeleteContact).not.toHaveBeenCalled();
+  });
 });

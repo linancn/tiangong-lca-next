@@ -58,6 +58,8 @@ Read only what matches the current task:
 - `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.
 - `src/components/**`, `src/contexts/**`, `types/**`: shared UI/context/types.
 - `tests/{unit,integration}/**`: Jest suites + shared helpers in `tests/helpers/**`.
+- `docker/volumes/functions/**`: synced self-hosted edge-functions mirror. Do not edit these files in `tiangong-lca-next`.
+- `docker/pull-edge-functions.sh`: the only supported way to refresh `docker/volumes/functions/**` in this repo.
 
 ## Delivery Contract
 
@@ -67,6 +69,7 @@ Read only what matches the current task:
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to the change.
 - Keep diffs scoped; update docs when expectations or workflows change.
+- Never hand-edit `docker/volumes/functions/**`; sync it via `./docker/pull-edge-functions.sh`.
 
 ## Documentation Maintenance
 

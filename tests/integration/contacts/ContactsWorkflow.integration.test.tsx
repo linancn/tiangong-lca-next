@@ -183,6 +183,7 @@ const {
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   getTeamById: jest.fn(async () => ({ data: [] })),
   contributeSource: jest.fn(),
   getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),

@@ -1,7 +1,14 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
-import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import {
+  ReffPath,
+  buildValidationIssues,
+  checkData,
+  getErrRefTab,
+  validateDatasetWithSdk,
+} from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
   getRefsOfNewVersion,
@@ -16,7 +23,6 @@ import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/st
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { RcFile, UploadFile } from 'antd/es/upload';
 import path from 'path';
@@ -32,8 +38,11 @@ type Props = {
   lang: string;
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   updateErrRef?: (data: RefCheckType | null) => void;
+  autoOpen?: boolean;
+  autoCheckRequired?: boolean;
 };
 
 type UpdateSourceResult = SupabaseMutationResult<{ rule_verification?: boolean }>;
@@ -46,8 +55,11 @@ const SourceEdit: FC<Props> = ({
   buttonType,
   actionRef,
   lang,
+  disabled = false,
   setViewDrawerVisible,
   updateErrRef = () => {},
+  autoOpen = false,
+  autoCheckRequired = false,
 }) => {
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
   const [refsLoading, setRefsLoading] = useState(false);
@@ -60,11 +72,13 @@ const SourceEdit: FC<Props> = ({
   const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
   const [fromData, setFromData] = useState<FormSource>();
   const [initData, setInitData] = useState<FormSource>();
+  const [detailStateCode, setDetailStateCode] = useState<number>();
   const [spinning, setSpinning] = useState(false);
   const [fileList0, setFileList0] = useState<UploadFile[]>([]);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [loadFiles, setLoadFiles] = useState<RcFile[]>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
   const [refCheckContextValue, setRefCheckContextValue] = useState<{
@@ -77,6 +91,12 @@ const SourceEdit: FC<Props> = ({
       refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
     });
   }, [refCheckData, parentRefCheckContext]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      setDrawerVisible(true);
+    }
+  }, [autoOpen, id, version]);
   // useEffect(() => {
   //   if (showRules) {
   //     setTimeout(() => {
@@ -137,12 +157,18 @@ const SourceEdit: FC<Props> = ({
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerVisible(false);
+    setViewDrawerVisible(false);
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
     setSpinning(true);
     getSourceDetail(id, version).then(async (result: SourceDetailResponse) => {
       const dataSet = genSourceFromData(result.data?.json?.sourceDataSet ?? {});
+      setDetailStateCode(result.data?.stateCode);
       setInitData(dataSet);
       setFromData(dataSet);
       formRefEdit.current?.setFieldsValue(dataSet);
@@ -155,7 +181,11 @@ const SourceEdit: FC<Props> = ({
     });
   };
 
-  const handleSubmit = async (autoClose: boolean): Promise<UpdateSourceResult | undefined> => {
+  const handleSubmit = async (
+    autoClose: boolean,
+    options?: { silent?: boolean },
+  ): Promise<UpdateSourceResult | undefined> => {
+    const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     if (fileList0.length > 0) {
@@ -166,7 +196,7 @@ const SourceEdit: FC<Props> = ({
         const { error } = await removeFile(
           nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
         );
-        if (error) {
+        if (error && !silent) {
           message.error(error.message);
         }
       }
@@ -227,7 +257,7 @@ const SourceEdit: FC<Props> = ({
       );
       if (autoClose) {
         formRefEdit.current?.resetFields();
-        setDrawerVisible(false);
+        closeDrawer();
         reload();
         return undefined;
       }
@@ -259,41 +289,47 @@ const SourceEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
+      setAutoCheckTriggered(false);
       return;
     }
     onReset();
   }, [drawerVisible]);
-  const handleCheckData = async () => {
+  const handleCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.checkData.inReview',
+            defaultMessage: 'This data set is under review and cannot be validated',
+          }),
+        );
+      }
+      return;
+    }
     setSpinning(true);
-    const updateResult = await handleSubmit(false);
+    const updateResult = await handleSubmit(false, { silent });
     if (!updateResult || updateResult.error) {
       setSpinning(false);
       return;
     }
     setShowRules(true);
+    const rootRef = {
+      '@type': 'source data set',
+      '@refObjectId': id,
+      '@version': version,
+    } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     const pathRef = new ReffPath(
-      {
-        '@type': 'source data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
+      rootRef,
       updateResult?.data?.[0]?.rule_verification ?? false,
       false,
     );
-    await checkData(
-      {
-        '@type': 'source data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-    );
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
@@ -308,22 +344,6 @@ const SourceEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const unRuleVerificationData = unRuleVerification.map((item: refDataType) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: false,
-        nonExistent: false,
-      };
-    });
-    const nonExistentRefData = nonExistentRef.map((item: refDataType) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: true,
-        nonExistent: true,
-      };
-    });
     const errTabNames: string[] = [];
     nonExistentRef.forEach((item: refDataType) => {
       const tabName = getErrRefTab(item, initData);
@@ -338,72 +358,107 @@ const SourceEdit: FC<Props> = ({
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
-    const tidasSource = createTidasSource(genSourceJsonOrdered(id, fromData));
-    const validateResult = tidasSource.validateEnhanced();
-    const issues = validateResult.success ? [] : validateResult.error.issues;
-    if (issues.length) {
-      issues.forEach((err) => {
+    const sdkValidation = validateDatasetWithSdk(
+      'source data set',
+      genSourceJsonOrdered(id, fromData),
+    );
+    const sdkIssues = sdkValidation.issues;
+    const sdkInvalidTabNames: string[] = [];
+    if (sdkIssues.length) {
+      sdkIssues.forEach((err) => {
         const tabName = err.path[1];
         if (tabName && !errTabNames.includes(tabName as string))
           errTabNames.push(tabName as string);
+        if (tabName && !sdkInvalidTabNames.includes(tabName as string))
+          sdkInvalidTabNames.push(tabName as string);
       });
       formRefEdit.current?.validateFields();
     }
+    const validationIssues = buildValidationIssues({
+      datasetSdkValid: sdkValidation.success,
+      nonExistentRef,
+      rootRef,
+      sdkInvalidTabNames,
+      unRuleVerification,
+    });
     if (
-      unRuleVerificationData.length === 0 &&
-      nonExistentRefData.length === 0 &&
+      unRuleVerification.length === 0 &&
+      nonExistentRef.length === 0 &&
       errTabNames.length === 0 &&
       problemNodes.length === 0 &&
-      issues.length === 0
+      sdkIssues.length === 0
     ) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.check.success',
-          defaultMessage: 'Data check successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.check.success',
+            defaultMessage: 'Data check successfully!',
+          }),
+        );
+      }
     } else {
-      if (errTabNames && errTabNames.length > 0) {
-        message.error(
-          errTabNames
-            .map((tab) =>
-              intl.formatMessage({
-                id: `pages.source.view.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
-            .join('，') +
+      const validationHint =
+        errTabNames && errTabNames.length > 0
+          ? errTabNames
+              .map((tab) =>
+                intl.formatMessage({
+                  id: `pages.source.view.${tab}`,
+                  defaultMessage: tab,
+                }),
+              )
+              .join('，') +
             '：' +
             intl.formatMessage({
               id: 'pages.button.check.error',
               defaultMessage: 'Data check failed!',
-            }),
-        );
-      } else {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
+            })
+          : intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            });
+      if (!silent && validationIssues.length > 0) {
+        showValidationIssueModal({
+          intl,
+          issues: validationIssues,
+          title: intl.formatMessage({
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
           }),
-        );
+        });
+      } else if (!silent) {
+        message.error(validationHint);
       }
     }
     setSpinning(false);
   };
+  useEffect(() => {
+    if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
+      return;
+    }
+    setAutoCheckTriggered(true);
+    void handleCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, handleCheckData, spinning]);
   return (
     <>
-      {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
-          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
-        </Tooltip>
-      ) : (
-        <Button onClick={onEdit}>
-          <FormattedMessage
-            id={buttonType ? buttonType : 'pages.button.edit'}
-            defaultMessage='Edit'
-          />
-        </Button>
-      )}
+      {!autoOpen &&
+        (buttonType === 'icon' ? (
+          <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<FormOutlined />}
+              size='small'
+              onClick={onEdit}
+            />
+          </Tooltip>
+        ) : (
+          <Button disabled={disabled} onClick={onEdit}>
+            <FormattedMessage
+              id={buttonType ? buttonType : 'pages.button.edit'}
+              defaultMessage='Edit'
+            />
+          </Button>
+        ))}
 
       <Drawer
         getContainer={() => document.body}
@@ -413,19 +468,13 @@ const SourceEdit: FC<Props> = ({
         }
         width='90%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         maskClosable={false}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={closeDrawer}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={handleCheckData}>
+            <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
@@ -438,7 +487,7 @@ const SourceEdit: FC<Props> = ({
                 defaultMessage='Update Reference'
               />
             </Button>
-            <Button onClick={() => setDrawerVisible(false)}>
+            <Button onClick={closeDrawer}>
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             {/* <Button onClick={onReset}>

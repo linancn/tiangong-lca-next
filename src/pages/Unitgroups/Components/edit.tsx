@@ -1,7 +1,14 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
-import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import {
+  ReffPath,
+  buildValidationIssues,
+  checkData,
+  getErrRefTab,
+  validateDatasetWithSdk,
+} from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
   getRefsOfNewVersion,
@@ -19,7 +26,6 @@ import { genUnitGroupFromData, genUnitGroupJsonOrdered } from '@/services/unitgr
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -32,8 +38,11 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   updateErrRef?: (data: RefCheckType | null) => void;
+  autoOpen?: boolean;
+  autoCheckRequired?: boolean;
 };
 const UnitGroupEdit: FC<Props> = ({
   id,
@@ -41,8 +50,11 @@ const UnitGroupEdit: FC<Props> = ({
   buttonType,
   lang,
   actionRef,
+  disabled = false,
   setViewDrawerVisible,
   updateErrRef = () => {},
+  autoOpen = false,
+  autoCheckRequired = false,
 }) => {
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
   const [refsLoading, setRefsLoading] = useState(false);
@@ -55,9 +67,11 @@ const UnitGroupEdit: FC<Props> = ({
     useState<UnitGroupDataSetObjectKeys>('unitGroupInformation');
   const [initData, setInitData] = useState<UnitGroupFormState>();
   const [fromData, setFromData] = useState<UnitGroupFormState>();
+  const [detailStateCode, setDetailStateCode] = useState<number>();
   const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
   const [refCheckContextValue, setRefCheckContextValue] = useState<{
@@ -70,6 +84,11 @@ const UnitGroupEdit: FC<Props> = ({
       refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
     });
   }, [refCheckData, parentRefCheckContext]);
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      setDrawerVisible(true);
+    }
+  }, [autoOpen, id, version]);
   const intl = useIntl();
   type UpdateUnitGroupResult = {
     data?: Array<{ rule_verification?: boolean }>;
@@ -144,11 +163,17 @@ const UnitGroupEdit: FC<Props> = ({
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerVisible(false);
+    setViewDrawerVisible(false);
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
     setSpinning(true);
     getUnitGroupDetail(id, version).then(async (result: UnitGroupDetailResponse) => {
+      setDetailStateCode(result.data?.stateCode);
       setInitData({ ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}), id: id });
       setFromData({
         ...genUnitGroupFromData(result.data?.json?.unitGroupDataSet ?? {}),
@@ -169,8 +194,10 @@ const UnitGroupEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
+      setAutoCheckTriggered(false);
       return;
     }
     onReset();
@@ -185,7 +212,11 @@ const UnitGroupEdit: FC<Props> = ({
     } as UnitGroupFormState);
   }, [unitDataSource]);
 
-  const handleSubmit = async (autoClose: boolean): Promise<UpdateUnitGroupResult | true> => {
+  const handleSubmit = async (
+    autoClose: boolean,
+    options?: { silent?: boolean },
+  ): Promise<UpdateUnitGroupResult | true> => {
+    const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
 
@@ -210,35 +241,38 @@ const UnitGroupEdit: FC<Props> = ({
           nonExistent: false,
         });
       }
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.save.success',
-          defaultMessage: 'Saved successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.save.success',
+            defaultMessage: 'Saved successfully!',
+          }),
+        );
+      }
       if (autoClose) {
-        setDrawerVisible(false);
-        setViewDrawerVisible(false);
+        closeDrawer();
         actionRef?.current?.reload();
       }
       // setActiveTabKey('unitGroupInformation');
     } else {
-      if (updateResult?.error?.state_code === 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.openData',
-            defaultMessage: 'This data is open data, save failed',
-          }),
-        );
-      } else if (updateResult?.error?.state_code === 20) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.underReview',
-            defaultMessage: 'Data is under review, save failed',
-          }),
-        );
-      } else {
-        message.error(updateResult?.error?.message);
+      if (!silent) {
+        if (updateResult?.error?.state_code === 100) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.openData',
+              defaultMessage: 'This data is open data, save failed',
+            }),
+          );
+        } else if (updateResult?.error?.state_code === 20) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.underReview',
+              defaultMessage: 'Data is under review, save failed',
+            }),
+          );
+        } else {
+          message.error(updateResult?.error?.message);
+        }
       }
     }
     if (!autoClose) {
@@ -247,35 +281,39 @@ const UnitGroupEdit: FC<Props> = ({
     return true;
   };
 
-  const handleCheckData = async () => {
+  const handleCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.checkData.inReview',
+            defaultMessage: 'This data set is under review and cannot be validated',
+          }),
+        );
+      }
+      return;
+    }
     setSpinning(true);
-    const updateResult = await handleSubmit(false);
+    const updateResult = await handleSubmit(false, { silent });
     if (typeof updateResult !== 'boolean' && updateResult?.error) {
       setSpinning(false);
       return;
     }
     setShowRules(true);
+    const rootRef = {
+      '@type': 'unit group data set',
+      '@refObjectId': id,
+      '@version': version,
+    } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     const pathRef = new ReffPath(
-      {
-        '@type': 'unit group data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
+      rootRef,
       typeof updateResult !== 'boolean' && Boolean(updateResult?.data?.[0]?.rule_verification),
       false,
     );
-    await checkData(
-      {
-        '@type': 'unit group data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-    );
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result: RefCheckType[] = problemNodes.map((item: ProblemNode) => {
@@ -290,30 +328,9 @@ const UnitGroupEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const units = fromData?.units;
-    if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.unitgroups.validator.unit.required',
-          defaultMessage: 'Please select unit',
-        }),
-      );
-      setSpinning(false);
-      return;
-    } else if (
-      units.unit.filter((item: UnitItem) => Boolean(item?.quantitativeReference)).length !== 1
-    ) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
-          defaultMessage: 'Unit needs to have exactly one quantitative reference open',
-        }),
-      );
-      setSpinning(false);
-      return;
-    }
-
     const errTabNames: string[] = [];
+    const currentDatasetTabNames: string[] = [];
+    let datasetValidationMessage: string | null = null;
     nonExistentRef.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
@@ -326,33 +343,74 @@ const UnitGroupEdit: FC<Props> = ({
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    const tidasUnitGroup = createTidasUnitGroup(genUnitGroupJsonOrdered(id, fromData));
-    const validateResult = tidasUnitGroup.validateEnhanced();
-    const issues = validateResult.success ? [] : validateResult.error.issues;
-    if (issues.length) {
-      issues.forEach((err) => {
+    const sdkValidation = validateDatasetWithSdk(
+      'unit group data set',
+      genUnitGroupJsonOrdered(id, fromData),
+    );
+    const sdkIssues = sdkValidation.issues;
+    let currentDatasetValid = sdkValidation.success;
+    const units = fromData?.units;
+    if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
+      currentDatasetValid = false;
+      datasetValidationMessage = intl.formatMessage({
+        id: 'pages.unitgroups.validator.unit.required',
+        defaultMessage: 'Please select unit',
+      });
+      if (!errTabNames.includes('units')) errTabNames.push('units');
+      if (!currentDatasetTabNames.includes('units')) currentDatasetTabNames.push('units');
+      setActiveTabKey('units');
+    } else if (
+      units.unit.filter((item: UnitItem) => Boolean(item?.quantitativeReference)).length !== 1
+    ) {
+      currentDatasetValid = false;
+      datasetValidationMessage = intl.formatMessage({
+        id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
+        defaultMessage: 'Unit needs to have exactly one quantitative reference open',
+      });
+      if (!errTabNames.includes('units')) errTabNames.push('units');
+      if (!currentDatasetTabNames.includes('units')) currentDatasetTabNames.push('units');
+      setActiveTabKey('units');
+    }
+    if (sdkIssues.length) {
+      sdkIssues.forEach((err) => {
         const tabName = err.path[1];
         if (tabName && !errTabNames.includes(tabName as string))
           errTabNames.push(tabName as string);
+        if (tabName && !currentDatasetTabNames.includes(tabName as string))
+          currentDatasetTabNames.push(tabName as string);
       });
       formRefEdit.current?.validateFields();
     }
+    const validationIssues = buildValidationIssues({
+      datasetSdkValid: currentDatasetValid,
+      nonExistentRef,
+      rootRef,
+      sdkInvalidTabNames: currentDatasetTabNames,
+      unRuleVerification,
+    });
     if (
+      currentDatasetValid &&
       unRuleVerification.length === 0 &&
       nonExistentRef.length === 0 &&
-      errTabNames.length === 0 &&
-      problemNodes.length === 0 &&
-      issues.length === 0
+      problemNodes.length === 0
     ) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.check.success',
-          defaultMessage: 'Data check successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.check.success',
+            defaultMessage: 'Data check successfully!',
+          }),
+        );
+      }
     } else {
-      if (errTabNames && errTabNames.length > 0) {
-        message.error(
+      let validationHint = intl.formatMessage({
+        id: 'pages.button.check.error',
+        defaultMessage: 'Data check failed!',
+      });
+      if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'units') {
+        validationHint = datasetValidationMessage;
+      } else if (errTabNames && errTabNames.length > 0) {
+        validationHint =
           errTabNames
             .map((tab: string) =>
               intl.formatMessage({
@@ -361,40 +419,61 @@ const UnitGroupEdit: FC<Props> = ({
               }),
             )
             .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            }),
-        );
-      } else {
-        message.error(
+          '：' +
           intl.formatMessage({
             id: 'pages.button.check.error',
             defaultMessage: 'Data check failed!',
+          });
+      }
+      if (!silent && validationIssues.length > 0) {
+        showValidationIssueModal({
+          intl,
+          issues: validationIssues,
+          title: intl.formatMessage({
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
           }),
-        );
+        });
+      } else if (!silent) {
+        message.error(validationHint);
       }
     }
     setSpinning(false);
   };
 
+  useEffect(() => {
+    if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
+      return;
+    }
+    setAutoCheckTriggered(true);
+    void handleCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, handleCheckData, spinning]);
+
   return (
     <>
-      {buttonType === 'icon' ? (
-        <Tooltip
-          title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit'></FormattedMessage>}
-        >
-          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit}></Button>
-        </Tooltip>
-      ) : (
-        <Button onClick={onEdit}>
-          <FormattedMessage
-            id={buttonType ? buttonType : 'pages.button.edit'}
-            defaultMessage='Edit'
-          ></FormattedMessage>
-        </Button>
-      )}
+      {!autoOpen &&
+        (buttonType === 'icon' ? (
+          <Tooltip
+            title={
+              <FormattedMessage id='pages.button.edit' defaultMessage='Edit'></FormattedMessage>
+            }
+          >
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<FormOutlined />}
+              size='small'
+              onClick={onEdit}
+            ></Button>
+          </Tooltip>
+        ) : (
+          <Button disabled={disabled} onClick={onEdit}>
+            <FormattedMessage
+              id={buttonType ? buttonType : 'pages.button.edit'}
+              defaultMessage='Edit'
+            ></FormattedMessage>
+          </Button>
+        ))}
 
       <Drawer
         getContainer={() => document.body}
@@ -408,22 +487,14 @@ const UnitGroupEdit: FC<Props> = ({
         width='90%'
         closable={false}
         extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => {
-              setDrawerVisible(false);
-            }}
-          ></Button>
+          <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer}></Button>
         }
         maskClosable={false}
         open={drawerVisible}
-        onClose={() => {
-          setDrawerVisible(false);
-        }}
+        onClose={closeDrawer}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={handleCheckData}>
+            <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
@@ -436,11 +507,7 @@ const UnitGroupEdit: FC<Props> = ({
                 defaultMessage='Update Reference'
               />
             </Button>
-            <Button
-              onClick={() => {
-                setDrawerVisible(false);
-              }}
-            >
+            <Button onClick={closeDrawer}>
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel'></FormattedMessage>
             </Button>
             {/* <Button onClick={onReset}>

@@ -1,9 +1,13 @@
-import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import {
+  ConcurrencyController,
+  getAllRefObj,
+  getRefTableName,
+  validateDatasetRuleVerification,
+} from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
-import { contributeSource, getRefData } from '@/services/general/api';
+import { contributeSource, getRefData, resolveFunctionInvokeError } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
@@ -127,18 +131,16 @@ export async function createLifeCycleModel(data: any) {
     };
   });
 
-  const validateResult = createTidasLifeCycleModel(newLifeCycleModelJsonOrdered).validateEnhanced();
-  let issues = [];
-  if (!validateResult.success) {
-    issues = validateResult.error.issues.filter(
-      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-    );
-  }
-  const rule_verification = issues.length === 0;
   const updatedData = genReferenceToResultingProcess(
     lifeCycleModelProcesses,
     data.version,
     newLifeCycleModelJsonOrdered,
+  );
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'lifeCycleModel data set',
+    updatedData,
+    userTeamId,
   );
 
   const result = await supabase
@@ -407,16 +409,6 @@ export async function updateLifeCycleModel(data: any) {
       };
     });
 
-    const validateResult = createTidasLifeCycleModel(
-      newLifeCycleModelJsonOrdered,
-    ).validateEnhanced();
-    let issues = [];
-    if (!validateResult.success) {
-      issues = validateResult.error.issues.filter(
-        (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-      );
-    }
-    const rule_verification = issues.length === 0;
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       const oldSubmodels: any[] = jsonToList(oldData.submodels);
@@ -441,6 +433,12 @@ export async function updateLifeCycleModel(data: any) {
         data.version,
         newLifeCycleModelJsonOrdered,
       );
+      const userTeamId = (await getTeamIdByUserId()) ?? '';
+      const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+        'lifeCycleModel data set',
+        updatedData,
+        userTeamId,
+      );
       const updateResult = await supabase.functions.invoke('update_data', {
         headers: {
           Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
@@ -462,6 +460,9 @@ export async function updateLifeCycleModel(data: any) {
       });
       if (updateResult.error) {
         console.error('update_data lifecyclemodels', updateResult.error);
+        return {
+          error: await resolveFunctionInvokeError(updateResult.error),
+        };
       } else {
         const deletionPromises: Promise<any>[] =
           deleteOldSubmodels && deleteOldSubmodels.length > 0
@@ -549,6 +550,9 @@ export async function updateLifeCycleModelJsonApi(id: string, version: string, d
   }
   if (updateResult.error) {
     console.log('error', updateResult.error);
+    return {
+      error: await resolveFunctionInvokeError(updateResult.error),
+    };
   }
   if (updateResult?.data?.data && updateResult?.data?.data?.length > 0) {
     const submodels = updateResult?.data?.data[0]?.json_tg?.submodels;
@@ -1117,10 +1121,10 @@ export async function contributeLifeCycleModel(id: string, version: string) {
         ) {
           if (!needContributeMap.has(refKey)) {
             needContributeMap.set(refKey, {
-              id: item.ref['@refObjectId'],
-              version: item.ref['@version'],
               type: item.ref['@type'],
               ...item.refData,
+              id: item.ref['@refObjectId'],
+              version: item.ref['@version'],
             });
           }
         }

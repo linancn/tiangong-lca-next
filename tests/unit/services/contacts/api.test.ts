@@ -20,7 +20,8 @@ jest.mock('@/services/contacts/util');
 
 describe('Contacts API Service', () => {
   const { supabase } = jest.requireMock('@/services/supabase');
-  const { getTeamIdByUserId, getDataDetail } = jest.requireMock('@/services/general/api');
+  const { getTeamIdByUserId, getDataDetail, resolveFunctionInvokeError } =
+    jest.requireMock('@/services/general/api');
   const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
   const { getLangText, jsonToList, genClassificationZH, classificationToString } =
     jest.requireMock('@/services/general/util');
@@ -63,6 +64,7 @@ describe('Contacts API Service', () => {
     jsonToList.mockImplementation((value: any) => (Array.isArray(value) ? value : [value]));
     genClassificationZH.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);
     classificationToString.mockReturnValue('Test Classification');
+    resolveFunctionInvokeError.mockImplementation(async (error: any) => error);
   });
 
   describe('createContact', () => {
@@ -207,7 +209,7 @@ describe('Contacts API Service', () => {
       const result = await updateContact('contact-123', 'v1.0', {});
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-      expect(result).toBeNull();
+      expect(result).toEqual({ error: { message: 'Update failed' } });
 
       consoleLogSpy.mockRestore();
     });

@@ -10,11 +10,52 @@ import {
   dealModel,
   dealProcress,
   getAllRefObj,
+  getDatasetDetailPath,
   getErrRefTab,
   getRefTableName,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
+  validateDatasetRuleVerification,
 } from '@/pages/Utils/review';
+
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createContact: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+  createFlow: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+  createFlowProperty: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+  createLifeCycleModel: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+  createProcess: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+  createSource: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+  createUnitGroup: () => ({
+    validateEnhanced: () => ({
+      success: true,
+    }),
+  }),
+}));
 
 const mockGetRefData = jest.fn();
 const mockGetRefDataByIds = jest.fn();
@@ -129,6 +170,16 @@ describe('review utilities', () => {
     expect(getRefTableName('process data set')).toBe('processes');
     expect(getRefTableName('lifeCycleModel data set')).toBe('lifecyclemodels');
     expect(getRefTableName('unknown')).toBeUndefined();
+  });
+
+  it('builds validation detail paths with required query flag', () => {
+    expect(
+      getDatasetDetailPath({
+        '@refObjectId': 'source-1',
+        '@type': 'source data set',
+        '@version': '01.00.000',
+      }),
+    ).toBe('/mydata/sources?id=source-1&version=01.00.000&required=1');
   });
 
   it('collects nested references without double counting shared objects', () => {
@@ -416,8 +467,87 @@ describe('review utilities', () => {
       path,
     );
 
-    expect(mockGetRefData).toHaveBeenCalledWith('flow-3', '01', 'flows');
+    expect(mockGetRefData).toHaveBeenCalledWith('flow-3', '01', 'flows', '', {
+      fallbackToLatest: false,
+    });
     expect(unRuleVerification).toHaveLength(1);
+  });
+
+  it('ignores current dataset self references when computing rule verification', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-1',
+        stateCode: 0,
+        ruleVerification: false,
+        json: {},
+      },
+    });
+
+    const result = await validateDatasetRuleVerification('contact data set', {
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-1',
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+            'common:referenceToOwnershipOfDataSet': {
+              '@refObjectId': 'contact-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+        },
+      },
+    });
+
+    expect(result.ruleVerification).toBe(true);
+    expect(result.unRuleVerification).toEqual([]);
+    expect(result.nonExistentRef).toEqual([]);
+    expect(mockGetRefData).not.toHaveBeenCalled();
+  });
+
+  it('does not persist workflow version-state failures into rule verification', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-2',
+        stateCode: 30,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+
+    const result = await validateDatasetRuleVerification('contact data set', {
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-1',
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+            'common:referenceToOwnershipOfDataSet': {
+              '@refObjectId': 'contact-2',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+        },
+      },
+    });
+
+    expect(result.ruleVerification).toBe(true);
+    expect(result.datasetSdkValid).toBe(true);
+    expect(result.unRuleVerification).toEqual([]);
+    expect(result.nonExistentRef).toEqual([]);
+    expect(mockGetRefData).toHaveBeenCalledWith('contact-2', '01.00.000', 'contacts', '', {
+      fallbackToLatest: false,
+    });
   });
 
   it('updates under review items to pending review', async () => {

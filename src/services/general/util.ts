@@ -58,6 +58,10 @@ export function isSupabaseDuplicateKeyError(error: any): boolean {
   return error?.code === '23505';
 }
 
+export function isDataUnderReview(stateCode?: number | null): boolean {
+  return typeof stateCode === 'number' && stateCode >= 20 && stateCode < 100;
+}
+
 export function removeEmptyObjects(obj: any) {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === 'object') {

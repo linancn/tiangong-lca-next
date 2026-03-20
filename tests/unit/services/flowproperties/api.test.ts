@@ -67,6 +67,7 @@ jest.mock('@/services/ilcd/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
@@ -204,7 +205,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const result = await updateFlowproperties('id', 'version', {});
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toBeNull(); // Function returns result?.data which is null on error
+      expect(result).toEqual({ error: mockError });
       consoleLogSpy.mockRestore();
     });
   });

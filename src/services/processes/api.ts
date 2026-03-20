@@ -1,10 +1,13 @@
-import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import {
+  getAllRefObj,
+  getRefTableName,
+  validateDatasetRuleVerification,
+} from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
-import { contributeSource, getRefData } from '@/services/general/api';
+import { contributeSource, getRefData, resolveFunctionInvokeError } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/es/table/interface';
 import { getTeamIdByUserId } from '../general/api';
 import {
@@ -88,15 +91,12 @@ export async function listMyProcessesForLca(
 
 export async function createProcess(id: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const validateResult = createTidasProcess(newData).validateEnhanced();
-  let issues = [];
-  if (!validateResult.success) {
-    issues = validateResult.error.issues.filter(
-      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-    );
-  }
-  const rule_verification = issues.length === 0;
-  // const teamId = await getTeamIdByUserId();
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'process data set',
+    newData,
+    userTeamId,
+  );
   const result = await supabase
     .from('processes')
     .insert([{ id: id, json_ordered: newData, model_id: modelId, rule_verification }])
@@ -106,14 +106,12 @@ export async function createProcess(id: string, data: any, modelId?: string) {
 
 export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
   const newData = genProcessJsonOrdered(id, data);
-  const validateResult = createTidasProcess(newData).validateEnhanced();
-  let issues = [];
-  if (!validateResult.success) {
-    issues = validateResult.error.issues.filter(
-      (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-    );
-  }
-  const rule_verification = issues.length === 0;
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'process data set',
+    newData,
+    userTeamId,
+  );
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
     return undefined;
@@ -132,7 +130,7 @@ export async function updateProcess(id: string, version: string, data: any, mode
   });
   if (result.error) {
     console.error('updateProcess error', result.error);
-    return { error: result.error };
+    return { error: await resolveFunctionInvokeError(result.error) };
   }
   return result?.data;
 }
@@ -151,6 +149,7 @@ export async function updateProcessApi(id: string, version: string, data: any) {
   }
   if (result.error) {
     console.log('error', result.error);
+    return { error: await resolveFunctionInvokeError(result.error) };
   }
   return result?.data;
 }
@@ -1159,10 +1158,10 @@ export async function contributeProcess(id: string, version: string) {
         ) {
           if (!needContributeMap.has(refKey)) {
             needContributeMap.set(refKey, {
-              id: item.ref['@refObjectId'],
-              version: item.ref['@version'],
               type: item.ref['@type'],
               ...item.refData,
+              id: item.ref['@refObjectId'],
+              version: item.ref['@version'],
             });
           }
         }
