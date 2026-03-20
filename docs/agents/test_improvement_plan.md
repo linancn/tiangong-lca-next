@@ -29,26 +29,12 @@
 - Always run `npm run lint` after test changes.
 - Do not raise coverage thresholds again yet; first prove that full closure can be preserved under maintenance.
 
-## Priority Backlog
+## Maintenance Backlog
 
-- [x] Auth reset/forgot flows are covered in unit tests.
-- [x] Core graph/context/request/supabase bootstrap tests are in place.
-- [x] Recover branch coverage above the global threshold and grow a meaningful safety buffer (current branch coverage: 87.97%).
-- [x] Expand tests around `src/pages/Utils/index.tsx`, `src/pages/Utils/review.tsx`, and `src/pages/Utils/updateReference.tsx`.
-- [x] Cover contact/source/flow/flowproperty selector and drawer workflows plus lifecycle-model view/edit toolbars and the prior process/review workflow hotspots.
-- [x] Add direct coverage for `Flows/Components/Property/*`, login top actions, lifecycle toolbar utility helpers, required-fields maps, and add-member modals.
-- [x] Replace the old monolithic coverage dump workflow with a queue-first default report plus `--full` full-queue escape hatch.
-- [x] Close the last `<50% branch` queue files in strict order (`src/components/TableFilter/index.tsx` and `src/pages/Unitgroups/Components/edit.tsx`).
-- [x] Clear the former `50%-70%` bucket in strict queue order.
-- [x] Re-clear the reintroduced `<50% branch` hotspot in strict queue order, led by `src/services/lifeCycleModels/api.ts`.
-- [x] Re-clear the reintroduced `50%-70% branch` bucket in strict queue order, led by `src/pages/Processes/Components/lcaGroupedResults.ts`, `src/services/lifeCycleModels/persistencePlan.ts`, `src/pages/Processes/Components/lcaImpactCompareToolbar.tsx`, and `src/pages/Processes/Analysis/index.tsx`.
-- [x] Continue shrinking the `70%-90%` bucket in strict queue order until it is empty.
-- [x] Burn down the `line=100` but `branch<100` cluster in queue order, using dead-branch cleanup when behaviorally safe.
-- [x] Continue page-cluster closure with the largest shared-fixture groups: `src/pages/Processes/Components`, `src/pages/Review/Components`, `src/pages/Flows/Components`, and `src/pages/LifeCycleModels/Components`.
-- [x] Continue service closure in queue order until all service files reach `100/100/100/100`.
-- [x] Push from the 87.97% branch baseline to complete closure by repeatedly shrinking the ordered queue rather than redefining priorities.
 - [ ] Keep the repo in maintenance mode by preserving `100/100/100/100` on every touched or newly added `src/**` file.
+- [ ] Treat any newly uncovered branch as an immediate regression, not as future backlog.
 - [ ] Re-run `npm run test:coverage:report` after meaningful test-engineering changes to confirm the queue remains empty.
+- [ ] Keep the local push gate aligned with the docs and scripts (`npm run prepush:gate` must remain the authoritative local enforcement command).
 
 ## Execution Loop
 

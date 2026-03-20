@@ -35,7 +35,9 @@ npm test
 
 # Full coverage
 npm run test:coverage
+npm run test:coverage:assert-full
 npm run test:coverage:report
+npm run prepush:gate
 
 # Equivalent full unit/src phase used by the shared runner
 npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
@@ -60,6 +62,7 @@ npm run lint
 ## Coverage Expectations
 
 - Directional goal: move toward 100% meaningful coverage across `src/**`.
+- Hard requirement: any code change must leave repo-wide statements, branches, functions, and lines at `100%`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
 - Latest verified full run on March 20, 2026 (`npm run test:coverage:report`, which reruns `npm run test:coverage`) is `288 suites / 3476 tests` with:
@@ -74,10 +77,12 @@ npm run lint
   - Branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 0`, `90-<100 = 0`
   - `line=100` but `branch<100`: `0`
 - The closure queue is empty. The repo is now in maintenance mode: keep every touched or newly added `src/**` file at `100/100/100/100`, and only reopen queue execution when a future regression appears in the coverage report.
+- Push gate: `.husky/pre-push` now runs `npm run prepush:gate`, which means `lint + npm run test:coverage + npm run test:coverage:assert-full`. If coverage drops below full closure, push is blocked locally.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
 - Report detail policy:
   - `npm run test:coverage:report`: default review output. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files using full project-relative paths (no `...` truncation for file or cluster labels).
+  - `npm run test:coverage:assert-full`: strict assertion mode for the latest coverage artifact. It fails unless every tracked source file remains at `100/100/100/100`.
   - `node scripts/test-coverage-report.js --full`: full ordered incomplete-file queue. Use this to inspect the entire file-by-file state or refresh the backlog snapshot.
   - When the repo is fully covered, both report commands explicitly print `No files with remaining coverage gaps.`; keep using them to verify maintenance-mode health after meaningful changes.
   - Queue order is deterministic: `branches asc -> lines asc -> statements asc -> functions asc -> path`.
@@ -88,6 +93,7 @@ npm run lint
   - Allowed queue exceptions are narrow: batch adjacent files that share the same mock/fixture/test harness, or fix a shared test-infrastructure blocker first if it blocks the current file or its immediate neighbors.
   - If a queued branch is provably unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests just to satisfy coverage.
 - Do not raise coverage thresholds yet; the next quality gain should come from keeping full closure intact, not from moving the gate.
+- Use `npm run prepush:gate` when you want to emulate the exact local push gate before an actual push.
 
 ## Related Docs
 

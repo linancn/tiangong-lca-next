@@ -35,7 +35,9 @@ npm test
 
 # 全量覆盖率
 npm run test:coverage
+npm run test:coverage:assert-full
 npm run test:coverage:report
+npm run prepush:gate
 
 # 共享 runner 实际使用的全量 unit/src 阶段命令
 npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
@@ -60,6 +62,7 @@ npm run lint
 ## 覆盖率预期
 
 - 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
+- 硬约束：任何代码修改都必须让全仓 Statements / Branches / Functions / Lines 保持 `100%`。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
 - 截至 2026年3月20日，最新已验证全量运行（`npm run test:coverage:report`，它会先重新执行 `npm run test:coverage`）是 `288 suites / 3476 tests`，全局覆盖率为：
@@ -74,10 +77,12 @@ npm run lint
   - Branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 0`、`90-<100 = 0`
   - `line=100` 但 `branch<100` 的文件：`0`
 - 当前有序清零队列已经清空。仓库现在处于维护态：所有触达或新增的 `src/**` 文件都要保持 `100/100/100/100`，只有覆盖率报告重新出现缺口时，才恢复队列执行。
+- Push 门禁：`.husky/pre-push` 现在执行 `npm run prepush:gate`，也就是 `lint + npm run test:coverage + npm run test:coverage:assert-full`。只要覆盖率不是全仓 100%，本地 push 就会被直接拦下。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
 - 报告粒度规则：
   - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件；文件和批次标签使用完整的项目相对路径，不再用 `...` 截断。
+  - `npm run test:coverage:assert-full`：对最新 coverage 产物做严格断言。只要任一 tracked source file 不是 `100/100/100/100`，就直接失败。
   - `node scripts/test-coverage-report.js --full`：看完整的有序未完成文件队列，用于查看全量逐文件状态或刷新 backlog 快照。
   - 当仓库已经全满覆盖时，这两个命令都会明确输出 `No files with remaining coverage gaps.`；后续有意义的测试工程变更后，仍要用它们确认仓库是否继续保持维护态。
   - 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
@@ -88,6 +93,7 @@ npm run lint
   - 允许的例外很少：相邻文件共享同一套 mock/fixture/test harness 时可成批推进；当前文件或紧邻文件被共享测试基础设施问题卡住时，可先修 blocker。
   - 如果当前队列分支被证明不可达或业务上无效，优先删除死分支且不改变行为，而不是为了抬覆盖率去硬造测试。
 - 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自把全仓满覆盖稳定保持住，而不是把门槛继续抬高。
+- 需要在正式 push 前本地预演时，直接运行 `npm run prepush:gate`。
 
 ## 相关文档
 

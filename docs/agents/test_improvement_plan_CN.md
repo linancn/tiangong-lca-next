@@ -29,26 +29,12 @@
 - 每次修改后必须执行 `npm run lint`。
 - 现阶段仍不要上调覆盖率阈值；先证明全仓满覆盖能够在维护态下稳定保持。
 
-## 优先级待办
+## 维护态待办
 
-- [x] 忘记/重置密码流程已补 unit 覆盖。
-- [x] graph/context/request/supabase bootstrap 等核心能力已覆盖。
-- [x] 已将 branch 覆盖恢复到全局门槛以上，并建立更高的安全余量（当前 87.97%）。
-- [x] 已扩展 `src/pages/Utils/index.tsx`、`src/pages/Utils/review.tsx` 和 `src/pages/Utils/updateReference.tsx` 的测试。
-- [x] 已覆盖 contact/source/flow/flowproperty selector + drawer 工作流、lifecycle-model view/edit toolbar，以及上一轮 process/review 工作流热点。
-- [x] 已直接补上 `Flows/Components/Property/*`、登录页 top actions、lifecycle toolbar utility helpers、required-fields 映射和 add-member modal。
-- [x] 已把旧的全量长列表覆盖率工作流替换成“默认队列摘要 + `--full` 全量队列”的双层报告方式。
-- [x] 已按严格队列顺序关掉最后两个 `<50% branch` 文件（`src/components/TableFilter/index.tsx` 和 `src/pages/Unitgroups/Components/edit.tsx`）。
-- [x] 已按严格队列顺序清空此前的 `50%-70%` 桶。
-- [x] 已按严格队列顺序重新清理新开启的 `<50% branch` 热点，队头是 `src/services/lifeCycleModels/api.ts`。
-- [x] 已按严格队列顺序清理新开启的 `50%-70% branch` 桶，队头依次是 `src/pages/Processes/Components/lcaGroupedResults.ts`、`src/services/lifeCycleModels/persistencePlan.ts`、`src/pages/Processes/Components/lcaImpactCompareToolbar.tsx`、`src/pages/Processes/Analysis/index.tsx`。
-- [x] 已按严格队列顺序清空 `70%-90%` 桶。
-- [x] 已按队列顺序消化 `line=100` 但 `branch<100` 的簇，在行为安全时使用了死分支清理。
-- [x] 已完成主要页面簇收口：`src/pages/Processes/Components`、`src/pages/Review/Components`、`src/pages/Flows/Components`、`src/pages/LifeCycleModels/Components`。
-- [x] 已按队列顺序完成剩余 service 收口。
-- [x] 已从 87.97% branch 基线推进到全仓 `100/100/100/100`。
 - [ ] 在维护态下保持所有触达或新增的 `src/**` 文件继续维持 `100/100/100/100`。
+- [ ] 把任何新出现的未覆盖分支都视为需要立即消掉的回归，而不是新的长期 backlog。
 - [ ] 在有意义的测试工程变更后，重新运行 `npm run test:coverage:report`，确认队列仍为空。
+- [ ] 保持本地 push 门禁与文档、脚本一致（`npm run prepush:gate` 必须继续是唯一权威的本地强制命令）。
 
 ## 执行循环
 

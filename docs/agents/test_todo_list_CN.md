@@ -1,6 +1,6 @@
 # 测试待办清单（Test Todo List）
 
-> 这是**可执行**测试待办的事实来源。本文件用于执行排期；长期背景信息保留在 `docs/agents/test_improvement_plan.md`。镜像约束：修改本文件时，同步更新英文版 `docs/agents/test_todo_list.md`。
+> 本文件是当前测试执行状态的事实来源。当仓库保持全量收口时，本文件处于维护态，而不是活跃 backlog。长期背景信息保留在 `docs/agents/test_improvement_plan.md`。镜像约束：修改本文件时，同步更新英文版 `docs/agents/test_todo_list.md`。
 
 ## 范围（依据 AGENTS 测试要求）
 
@@ -33,18 +33,12 @@
 - 当前全局 branch 门槛：50%
 - 门禁状态：**已通过**（高于门槛 50.00 个百分点）
 
-## 最近收口增量
+## 当前状态
 
-- 追踪的源码文件：`312 -> 313`（`+1`）
-- 已全满文件：`197 -> 313`（`+116`）
-- 仍有缺口的文件：`115 -> 0`（`-115`）
-- `<50% branch` 桶：`1 -> 0`
-- `50%-70% branch` 桶：`8 -> 0`
-- `70%-90% branch` 桶：`68 -> 0`
-- `90%-<100% branch` 桶：`27 -> 0`
-- `line=100 但 branch<100` 桶：`27 -> 0`
-- 最后一轮收口清掉了重新开启的 lifecycle-model persistence bundle 缺口、剩余的 `Processes/lca*` 分析文件，以及最后几批 wrapper/service 的 branch-only 缝隙。
-- 当前有序清零队列已经清空。仓库已从主动收口阶段转入维护态：后续所有触达或新增的 `src/**` 文件都要保持 `100/100/100/100`，只有未来真的出现回归时才重新开启队列。
+- 当前有序清零队列已经清空。
+- 仓库现在处于维护态。
+- 任何代码修改都必须作为硬约束维持全仓 `100%` statements / branches / functions / lines。
+- 本地 push 会被 `.husky/pre-push` 强制门禁；当前门禁命令是 `npm run prepush:gate`。
 
 ## 全文件库存
 
@@ -69,6 +63,8 @@
 
 - 共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避 macOS 全量本地运行和 pre-push 中出现的 Jest worker 偶发 `SIGSEGV` 崩溃。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 都已内置所需堆内存，全量覆盖率直接用脚本即可。
+- `npm run test:coverage:assert-full` 会对最新 coverage 产物做严格断言，只要任一 tracked source file 不是 `100/100/100/100` 就失败。
+- `npm run prepush:gate` 是精确等同于 push 前门禁的本地命令：`lint + 全量 coverage + 严格全仓 100% 断言`。
 - `npm run test:coverage:report` 是默认 review 产物，默认输出：
   - 全局摘要，
   - 分类摘要，

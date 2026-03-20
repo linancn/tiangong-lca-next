@@ -12,6 +12,7 @@ const path = require('path');
 const PROJECT_ROOT = process.cwd();
 const COVERAGE_DIR = path.join(PROJECT_ROOT, 'coverage');
 const SHOW_FULL = process.argv.includes('--full');
+const ASSERT_FULL = process.argv.includes('--assert-full');
 
 const colors = {
   reset: '\x1b[0m',
@@ -542,6 +543,57 @@ function printOrderedQueue(title, files, limit = files.length) {
   });
 }
 
+function assertFullCoverage(total, allFiles, orderedQueue) {
+  const failedMetrics = [
+    ['Statements', total.statements],
+    ['Branches', total.branches],
+    ['Functions', total.functions],
+    ['Lines', total.lines],
+  ].filter(([, metric]) => metric.pct !== 100 || metric.hit !== metric.found);
+
+  if (!failedMetrics.length && orderedQueue.length === 0) {
+    console.log(
+      '\n' +
+        colorize(
+          `✅ Full coverage gate passed: ${allFiles.length}/${allFiles.length} tracked source files are at 100/100/100/100.`,
+          'green',
+        ),
+    );
+    return;
+  }
+
+  console.error(
+    '\n' +
+      colorize(
+        '❌ Full coverage gate failed. All tracked source files must remain at 100% statements/branches/functions/lines before push.',
+        'red',
+      ),
+  );
+
+  if (failedMetrics.length) {
+    console.error(colorize('  Global totals below 100%:', 'red'));
+    failedMetrics.forEach(([label, metric]) => {
+      console.error(
+        colorize(
+          `    ${label}: ${formatPercent(metric.pct)}% (${metric.hit}/${metric.found})`,
+          'red',
+        ),
+      );
+    });
+  }
+
+  if (orderedQueue.length) {
+    console.error(colorize(`  Files with remaining gaps: ${orderedQueue.length}`, 'red'));
+    printOrderedQueue(
+      'Full Coverage Gate Failures',
+      orderedQueue,
+      Math.min(25, orderedQueue.length),
+    );
+  }
+
+  process.exit(2);
+}
+
 function generateReport() {
   const srcDir = path.join(PROJECT_ROOT, 'src');
   const coverageData = parseCoverageArtifacts();
@@ -584,6 +636,10 @@ function generateReport() {
     orderedQueue,
     SHOW_FULL ? orderedQueue.length : 25,
   );
+
+  if (ASSERT_FULL) {
+    assertFullCoverage(coverageData.total, allFiles, orderedQueue);
+  }
 
   if (!SHOW_FULL) {
     console.log(

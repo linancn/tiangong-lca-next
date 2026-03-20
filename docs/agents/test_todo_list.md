@@ -1,6 +1,6 @@
 # Test Todo List
 
-> Source of truth for **actionable** testing backlog. Use this file for execution planning; keep long-term context in `docs/agents/test_improvement_plan.md`. Mirror requirement: update `docs/agents/test_todo_list_CN.md` in the same change.
+> Source of truth for current testing execution status. While the repo stays at full closure, this file operates in maintenance mode rather than as an active backlog. Keep long-term context in `docs/agents/test_improvement_plan.md`. Mirror requirement: update `docs/agents/test_todo_list_CN.md` in the same change.
 
 ## Scope (from AGENTS test requirements)
 
@@ -33,18 +33,12 @@ Latest verified full run (`npm run test:coverage:report`, which reruns `npm run 
 - Enforced global branch threshold: 50%
 - Gate status: **PASS** (+50.00% buffer above threshold)
 
-## Recent Closure Delta
+## Current State
 
-- Source files tracked: `312 -> 313` (`+1`)
-- Fully covered files: `197 -> 313` (`+116`)
-- Files with remaining gaps: `115 -> 0` (`-115`)
-- `<50% branch` bucket: `1 -> 0`
-- `50%-70% branch` bucket: `8 -> 0`
-- `70%-90% branch` bucket: `68 -> 0`
-- `90%-<100% branch` bucket: `27 -> 0`
-- `line=100 but branch<100` bucket: `27 -> 0`
-- The final closure wave cleared the reopened lifecycle-model persistence bundle gaps, the remaining `Processes/lca*` analysis files, and the last wrapper/service branch-only files.
-- The ordered closure queue is now empty. The repo has moved from active closure work to maintenance mode: keep every touched or newly added `src/**` file at `100/100/100/100`, and only reopen the queue when a future regression appears.
+- The ordered closure queue is empty.
+- The repo is in maintenance mode.
+- Any code change is a hard requirement to preserve repo-wide `100%` statements / branches / functions / lines.
+- Local push is blocked unless the repo passes `.husky/pre-push`, which now runs `npm run prepush:gate`.
 
 ## All-File Inventory
 
@@ -69,6 +63,8 @@ Current repo-wide status from the same run:
 
 - The shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker `SIGSEGV` crashes seen during full local and pre-push runs on macOS.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use those scripts directly for full coverage work.
+- `npm run test:coverage:assert-full` fails unless the latest coverage artifact still reports full closure for every tracked source file.
+- `npm run prepush:gate` is the exact local push gate: `lint + full coverage + strict full-coverage assertion`.
 - `npm run test:coverage:report` is the default review artifact. It prints:
   - global summary,
   - category summary,
