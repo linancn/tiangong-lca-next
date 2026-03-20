@@ -677,7 +677,7 @@ export default function ReviewProgress({
     try {
       const publishResult = await updateModelReviewDataToPublic(dataId, dataVersion);
       if (!publishResult.ok) {
-        message.error(publishResult.message ?? 'Failed to approve review');
+        message.error(publishResult.message);
         return;
       }
 

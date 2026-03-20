@@ -56,14 +56,20 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, children, extra }: any) =>
-    open ? (
-      <section data-testid='drawer'>
+  const Drawer = ({ open, title, children, extra, getContainer, onClose }: any) => {
+    const container = getContainer?.();
+
+    return open ? (
+      <section data-testid='drawer' data-container={String(Boolean(container))}>
         <header>{toText(title)}</header>
         <div>{extra}</div>
+        <button type='button' aria-label='drawer-close' onClick={onClose}>
+          close drawer
+        </button>
         <div>{children}</div>
       </section>
     ) : null;
+  };
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
@@ -114,7 +120,24 @@ describe('ReviewLifeCycleModelsDetail', () => {
     await userEvent.click(screen.getByRole('button', { name: 'profile' }));
 
     expect(screen.getByText('View review')).toBeInTheDocument();
+    expect(screen.getByTestId('drawer')).toHaveAttribute('data-container', 'true');
     expect(screen.getByTestId('toolbar-view')).toHaveTextContent('"type":"view"');
     expect(screen.getByTestId('toolbar-view')).toHaveTextContent('"tabType":"review"');
+  });
+
+  it('closes the drawer through the extra close button and drawer onClose', async () => {
+    render(<ReviewLifeCycleModelsDetail {...baseProps} type='edit' />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'audit' }));
+    expect(screen.getByTestId('drawer')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'audit' }));
+    expect(screen.getByTestId('drawer')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
   });
 });

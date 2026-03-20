@@ -48,10 +48,14 @@ jest.mock('antd', () => {
     return <span title={label}>{children}</span>;
   };
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
     if (!open) return null;
     return (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={String(Boolean(getContainer?.()))}
+      >
         <header>{extra}</header>
         <div>{children}</div>
         <button type='button' onClick={onClose}>
@@ -115,8 +119,10 @@ jest.mock('@ant-design/pro-components', () => {
 
 jest.mock('@/pages/Processes/Components/edit', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => (
-    <div data-testid='process-edit'>{`edit:${id}:${version}`}</div>
+  default: ({ id, version, setViewDrawerVisible }: any) => (
+    <button type='button' data-testid='process-edit' onClick={() => setViewDrawerVisible?.()}>
+      {`edit:${id}:${version}`}
+    </button>
   ),
 }));
 
@@ -165,6 +171,10 @@ describe('ModelResult', () => {
     await userEvent.click(screen.getByRole('button', { name: /model result/i }));
 
     expect(screen.getByRole('dialog', { name: /model results/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /model results/i })).toHaveAttribute(
+      'data-container',
+      'true',
+    );
 
     await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledTimes(2));
     expect(mockGetProcessesByIdAndVersion).toHaveBeenNthCalledWith(
@@ -185,6 +195,8 @@ describe('ModelResult', () => {
     expect(screen.getAllByTestId('process-edit')).toHaveLength(3);
     expect(screen.getByText('view:model-1:1.0.0')).toBeInTheDocument();
     expect(screen.getByText('edit:sub-2:1.0.0')).toBeInTheDocument();
+
+    await userEvent.click(screen.getAllByTestId('process-edit')[0]);
   });
 
   it('renders view-only actions in view mode and closes cleanly', async () => {

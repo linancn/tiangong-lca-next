@@ -541,6 +541,31 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     );
   });
 
+  it('runs the pending edge-anchor refresh cleanup when the graph instance is cleared', () => {
+    const wrapper = ({ children }: { children: any }) => <GraphProvider>{children}</GraphProvider>;
+    const graph = new MockGraph();
+    const cleanupRefresh = jest.fn();
+    mockScheduleGraphEdgeAnchorRefresh.mockReturnValueOnce(cleanupRefresh);
+
+    const { result } = renderHook(() => useGraphStore((state) => state), { wrapper });
+
+    act(() => {
+      result.current.setGraph(graph as any);
+      result.current.initData({
+        nodes: [{ id: 'node-cleanup' }],
+        edges: [],
+      });
+    });
+
+    expect(cleanupRefresh).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.setGraph(null);
+    });
+
+    expect(cleanupRefresh).toHaveBeenCalledTimes(1);
+  });
+
   it('registers and cleans up graph events', async () => {
     const graph = new MockGraph();
     const handler = jest.fn();

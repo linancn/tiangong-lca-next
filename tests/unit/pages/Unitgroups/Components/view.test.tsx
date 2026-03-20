@@ -102,9 +102,13 @@ jest.mock('antd', () => {
     </button>
   );
   const Tooltip = ({ children }: any) => <>{children}</>;
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'custom'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -150,8 +154,9 @@ jest.mock('antd', () => {
 });
 
 jest.mock('@ant-design/pro-components', () => {
-  const ProTable = ({ dataSource = [], columns = [] }: any) => (
+  const ProTable = ({ dataSource = [], columns = [], toolBarRender }: any) => (
     <div data-testid='pro-table'>
+      <div data-testid='pro-table-toolbar'>{toText(toolBarRender?.())}</div>
       {dataSource.map((row: any, index: number) => (
         <div key={row.dataSetInternalID ?? index}>
           {columns.map((column: any, columnIndex: number) =>
@@ -279,6 +284,71 @@ describe('UnitGroupView', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^Units$/i }));
     expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-toolbar')).toBeEmptyDOMElement();
     expect(screen.getByTestId('unit-view')).toHaveTextContent('unit-1');
+  });
+
+  it('supports the text trigger, fallback labels, drawer close handlers, and sparse datasets', async () => {
+    mockGetUnitGroupDetail.mockResolvedValueOnce({
+      data: null,
+    });
+    mockGenUnitGroupFromData.mockReturnValue({
+      unitGroupInformation: {
+        dataSetInformation: {
+          'common:UUID': undefined,
+          'common:name': [],
+          'common:generalComment': undefined,
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [],
+            },
+          },
+        },
+      },
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: {
+            'common:approvalOfOverallCompliance': 'unknown-value',
+          },
+        },
+      },
+      administrativeInformation: {
+        dataEntryBy: {},
+        publicationAndOwnership: {},
+      },
+      units: {
+        unit: null,
+      },
+    });
+    mockGenUnitTableData.mockReturnValue([]);
+
+    renderWithProviders(<UnitGroupView id='ug-2' version='2.0' lang='en' buttonType='text' />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^View$/i }));
+
+    await waitFor(() => expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('ug-2', '2.0'));
+    expect(screen.getByRole('dialog', { name: /View Unit group/i })).toHaveAttribute(
+      'data-container',
+      'body',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Modelling and validation/i }));
+    expect(screen.getByText('-')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Administrative information/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await userEvent.click(screen.getByRole('button', { name: /^Units$/i }));
+    expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+
+    await userEvent.click(screen.getAllByRole('button')[1]);
+    expect(screen.queryByRole('dialog', { name: /View Unit group/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^View$/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: /View Unit group/i })).toBeInTheDocument(),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: /View Unit group/i })).not.toBeInTheDocument();
   });
 });

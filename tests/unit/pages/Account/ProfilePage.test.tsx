@@ -952,6 +952,32 @@ describe('Account profile page (unit)', () => {
     expect(screen.queryByLabelText('API Key')).not.toBeInTheDocument();
   });
 
+  it('falls back to an empty email string when generating an API key without a loaded email', async () => {
+    mockGetCurrentUser.mockResolvedValueOnce({
+      userid: 'user-1',
+      name: 'Test User',
+    } as any);
+
+    const user = userEvent.setup();
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
+    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
+
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: '',
+        password: 'Abcdefg1!',
+      }),
+    );
+
+    const payload = JSON.stringify({ email: '', password: 'Abcdefg1!' }, null, 0);
+    expect(screen.getByDisplayValue(btoa(payload))).toBeInTheDocument();
+  });
+
   it('clears the generated API key when leaving the API key tab', async () => {
     const user = userEvent.setup();
     renderWithProviders(<Profile />);

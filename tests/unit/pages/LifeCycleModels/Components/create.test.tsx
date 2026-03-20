@@ -49,10 +49,14 @@ jest.mock('antd', () => {
     return <span title={label}>{children}</span>;
   };
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
     if (!open) return null;
     return (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'unknown'}
+      >
         <header>{extra}</header>
         <div>{children}</div>
         <button type='button' onClick={onClose}>
@@ -113,6 +117,9 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/editIndex', () => ({
         <button type='button' onClick={() => props.setIsSave(true)}>
           mark-save
         </button>
+        <button type='button' onClick={() => props.onClose?.()}>
+          call-on-close
+        </button>
       </div>
     );
   },
@@ -153,6 +160,10 @@ describe('LifeCycleModelCreate', () => {
     await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
 
     expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /create model/i })).toHaveAttribute(
+      'data-container',
+      'body',
+    );
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
 
@@ -188,6 +199,27 @@ describe('LifeCycleModelCreate', () => {
         actionType: 'copy',
         id: 'model-copy',
         version: '2.0.0',
+      }),
+    );
+  });
+
+  it('uses the default create tooltip branch for icon buttons without an explicit action type', async () => {
+    renderWithProviders(
+      <LifeCycleModelCreate
+        buttonType='icon'
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+
+    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        actionType: undefined,
+        id: '',
+        version: '',
       }),
     );
   });
@@ -291,5 +323,20 @@ describe('LifeCycleModelCreate', () => {
 
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('invokes the default onClose noop passed to the toolbar when no onClose prop is provided', async () => {
+    renderWithProviders(
+      <LifeCycleModelCreate
+        buttonType='text'
+        lang='en'
+        actionRef={{ current: undefined } as any}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await userEvent.click(screen.getByRole('button', { name: /call-on-close/i }));
+
+    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
   });
 });

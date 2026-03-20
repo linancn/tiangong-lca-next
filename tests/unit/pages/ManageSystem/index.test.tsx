@@ -417,4 +417,56 @@ describe('ManageSystem page', () => {
     expect(screen.getByTestId('all-teams')).toHaveTextContent('manageSystem:none');
     consoleErrorSpy.mockRestore();
   });
+
+  it('logs thrown update and delete failures without crashing the member table', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({ user_id: 'owner-1', role: 'owner' });
+    mockUpdateRoleApi.mockRejectedValueOnce(new Error('update threw'));
+    mockDelRoleApi.mockRejectedValueOnce(new Error('delete threw'));
+
+    render(<ManageSystemPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+
+    const memberRow = await screen.findByTestId('row-member-1');
+
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('renders an empty fallback for unknown member roles', async () => {
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({ user_id: 'owner-1', role: 'owner' });
+    mockGetSystemMembersApi.mockResolvedValueOnce({
+      success: true,
+      total: 1,
+      data: [
+        {
+          user_id: 'mystery-1',
+          team_id: 'team-1',
+          role: 'guest',
+          display_name: 'Mystery User',
+          email: 'mystery@example.com',
+        },
+      ],
+    });
+
+    render(<ManageSystemPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+
+    const mysteryRow = await screen.findByTestId('row-mystery-1');
+    expect(within(mysteryRow).getByText('mystery@example.com')).toBeInTheDocument();
+    expect(within(mysteryRow).getByText('Mystery User')).toBeInTheDocument();
+  });
 });

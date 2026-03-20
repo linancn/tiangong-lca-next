@@ -71,11 +71,11 @@ jest.mock('antd', () => {
   );
   Button.displayName = 'MockButton';
 
-  const Drawer = ({ open, onClose, title, extra, footer, children }: any) => {
+  const Drawer = ({ open, onClose, title, extra, footer, children, getContainer }: any) => {
     if (!open) return null;
     const label = toText(title) || 'drawer';
     return (
-      <div role='dialog' aria-label={label}>
+      <div role='dialog' aria-label={label} data-container={getContainer?.()?.tagName ?? ''}>
         <div>{extra}</div>
         <div>{children}</div>
         <div>{footer}</div>
@@ -165,7 +165,14 @@ jest.mock('@ant-design/pro-components', () => {
     return { [head]: buildNestedValue(rest, value) };
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onValuesChange, onFinish, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onValuesChange,
+    onFinish,
+    submitter,
+    children,
+  }: any) => {
     const initialRef = React.useRef(initialValues);
     const [values, setValues] = React.useState<any>(initialValues ?? {});
     const pendingChangeRef = React.useRef<any>(null);
@@ -232,6 +239,7 @@ jest.mock('@ant-design/pro-components', () => {
             void onFinish?.();
           }}
         >
+          {submitter?.render?.()}
           {typeof children === 'function' ? children(values) : children}
         </form>
       </ProFormContext.Provider>
@@ -259,7 +267,7 @@ jest.mock('@/pages/Contacts/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    ContactForm: ({ onData }: any) => {
+    ContactForm: ({ onData, onTabChange }: any) => {
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -280,6 +288,9 @@ jest.mock('@/pages/Contacts/Components/form', () => {
               onData?.();
             }}
           />
+          <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
+            switch-tab
+          </button>
         </div>
       );
     },
@@ -500,5 +511,129 @@ describe('ContactCreate component', () => {
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('create failed'));
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Create Contact' })).toBeInTheDocument();
+  });
+
+  it('falls back to an empty contact dataset when copy detail payload is missing', async () => {
+    const user = userEvent.setup();
+
+    mockGetContactDetail.mockResolvedValueOnce({
+      data: { json: {} },
+    });
+
+    renderWithProviders(
+      <ContactCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='contact-copy'
+        version='1.0.0'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    await screen.findByRole('dialog', { name: 'Copy Contact' });
+
+    await waitFor(() => {
+      expect(mockGenContactFromData).toHaveBeenCalledWith({});
+    });
+  });
+
+  it('opens copy drawers, exposes the container, switches tabs, and closes through all drawer actions', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='contact-copy'
+        version='1.0.0'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const firstDrawer = await screen.findByRole('dialog', { name: 'Copy Contact' });
+    expect(firstDrawer).toHaveAttribute('data-container', 'BODY');
+    expect(mockGetContactDetail).toHaveBeenCalledWith('contact-copy', '1.0.0');
+
+    await user.click(within(firstDrawer).getByRole('button', { name: 'switch-tab' }));
+    await user.click(within(firstDrawer).getByRole('button', { name: 'close' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Copy Contact' })).not.toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    const secondDrawer = await screen.findByRole('dialog', { name: 'Copy Contact' });
+
+    await user.click(within(secondDrawer).getByRole('button', { name: 'Close' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Copy Contact' })).not.toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    const thirdDrawer = await screen.findByRole('dialog', { name: 'Copy Contact' });
+
+    await user.click(within(thirdDrawer).getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Copy Contact' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('short-circuits createVersion detail loading when runtime props are incomplete', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='createVersion'
+        newVersion='02.00.000'
+        {...({} as any)}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Create Version' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockGetContactDetail).not.toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockCreateContact).toHaveBeenCalledWith('', expect.anything());
+    });
+  });
+
+  it('shows the generic fallback error message when the backend omits a message', async () => {
+    const user = userEvent.setup();
+
+    mockCreateContact.mockResolvedValue({
+      data: null,
+      error: {},
+    });
+
+    renderWithProviders(
+      <ContactCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Error');
+    });
   });
 });

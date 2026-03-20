@@ -288,6 +288,38 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
         },
       ]);
     });
+
+    it('returns error status when thumbnail generation fails for 4-part paths', async () => {
+      const mockDownload = jest.fn().mockRejectedValue(new Error('Nested network error'));
+
+      (mockStorageFrom as jest.Mock).mockReturnValue({
+        download: mockDownload,
+      });
+
+      const fileList = [{ '@uri': 'storage/bucket-name/folder/image.png' }];
+
+      const result = await getThumbFileUrls(fileList);
+
+      expect(result).toEqual([
+        {
+          uid: 'storage/bucket-name/folder/image.png',
+          status: 'error',
+          name: '1.png',
+        },
+      ]);
+    });
+
+    it('returns error status for invalid file paths', async () => {
+      const result = await getThumbFileUrls([{ '@uri': 'invalid-path' }]);
+
+      expect(result).toEqual([
+        {
+          uid: 'invalid-path',
+          status: 'error',
+          name: '1',
+        },
+      ]);
+    });
   });
 
   describe('uploadFile', () => {

@@ -331,6 +331,21 @@ describe('Users API service (src/services/users/api.ts)', () => {
       expect(mockFunctionsInvoke).not.toHaveBeenCalled();
       expect(result).toEqual({});
     });
+
+    it('falls back to an empty bearer token when the session has no access token', async () => {
+      mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
+      mockFunctionsInvoke.mockResolvedValue({ data: { success: true }, error: null });
+
+      await updateUserContact('user-456', { phone: '456' });
+
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_user', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: { userId: 'user-456', data: { contact: { phone: '456' } } },
+        region: 'us-east-1',
+      });
+    });
   });
 
   describe('getUserDetail', () => {

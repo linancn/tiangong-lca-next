@@ -47,9 +47,13 @@ jest.mock('antd', () => {
     </button>
   );
   const Tooltip = ({ children }: any) => <>{children}</>;
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={String(Boolean(getContainer?.()))}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -112,8 +116,16 @@ describe('FlowPropertyView', () => {
 
     await userEvent.click(screen.getByRole('button'));
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getByRole('dialog', { name: /view exchange/i })).toHaveAttribute(
+      'data-container',
+      'true',
+    );
 
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
+    expect(screen.queryByRole('dialog', { name: /view exchange/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getAllByRole('button', { name: /^close$/i })[1]);
     expect(screen.queryByRole('dialog', { name: /view exchange/i })).not.toBeInTheDocument();
   });
 });

@@ -49,10 +49,14 @@ jest.mock('antd', () => {
     return <span title={label}>{children}</span>;
   };
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
     if (!open) return null;
     return (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={String(Boolean(getContainer?.()))}
+      >
         <header>{extra}</header>
         <div>{children}</div>
         <button type='button' onClick={onClose}>
@@ -154,6 +158,10 @@ describe('LifeCycleModelView', () => {
     await userEvent.click(screen.getByRole('button', { name: /view/i }));
 
     expect(screen.getByRole('dialog', { name: /view model/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /view model/i })).toHaveAttribute(
+      'data-container',
+      'true',
+    );
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
 

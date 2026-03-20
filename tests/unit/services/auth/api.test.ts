@@ -268,6 +268,24 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
       });
       expect(result).toEqual({ status: 'ok', type: 'register', currentAuthority: 'guest' });
     });
+
+    it('uses empty email fallback when email is missing', async () => {
+      authMock.signUp.mockResolvedValueOnce({
+        data: { user: { role: 'authenticated' } },
+        error: null,
+      });
+
+      const result = await signUp({
+        confirmPassword: 'Password123!',
+        type: 'register',
+      } as any);
+
+      expect(authMock.signUp).toHaveBeenCalledWith({
+        email: '',
+        password: 'Password123!',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'register', currentAuthority: 'guest' });
+    });
   });
 
   describe('reauthenticate', () => {

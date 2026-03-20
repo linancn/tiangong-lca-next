@@ -1,5 +1,6 @@
 import LcaAnalysisPage from '@/pages/Processes/Analysis';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { resetAntdToken, setAntdToken } from '../../../../mocks/antd';
 import { resetUmiMocks, setUmiLocation, umiMocks } from '../../../../mocks/umi';
 
 jest.mock('umi', () => require('@/tests/mocks/umi').createUmiMock());
@@ -12,8 +13,12 @@ jest.mock('@ant-design/pro-components', () =>
 );
 jest.mock('@ant-design/charts', () => ({
   __esModule: true,
-  Bar: ({ data }: { data?: unknown[] }) => (
-    <div data-testid='bar-chart' data-count={Array.isArray(data) ? data.length : 0} />
+  Bar: ({ data, theme }: { data?: unknown[]; theme?: { axis?: { gridStroke?: string } } }) => (
+    <div
+      data-testid='bar-chart'
+      data-count={Array.isArray(data) ? data.length : 0}
+      data-border-color={theme?.axis?.gridStroke ?? ''}
+    />
   ),
   Sankey: ({
     data,
@@ -362,6 +367,7 @@ const contributionPathArtifact = {
 describe('LcaAnalysisPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    resetAntdToken();
     resetUmiMocks();
     setUmiLocation({ pathname: '/mydata/processes/analysis', search: '' });
     isLcaFunctionInvokeError.mockImplementation(() => false);
@@ -539,6 +545,25 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByText('Climate change').length).toBeGreaterThan(0);
     expect(screen.getAllByText('kg CO2-eq').length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('bar-chart').length).toBeGreaterThan(0);
+  });
+
+  it('falls back to colorSplit when the secondary border token is unavailable', async () => {
+    setAntdToken({
+      colorBorderSecondary: undefined,
+      colorSplit: '#abc123',
+    });
+
+    render(<LcaAnalysisPage />);
+
+    expect(
+      await screen.findByText('3 process rows are currently available for analysis.'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId('bar-chart')[0]).toHaveAttribute('data-border-color', '#abc123'),
+    );
   });
 
   it('runs selected-process compare from the independent page', async () => {

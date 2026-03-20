@@ -47,9 +47,13 @@ jest.mock('antd', () => {
     </button>
   );
   const Tooltip = ({ children }: any) => <>{children}</>;
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'unknown'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -96,6 +100,10 @@ describe('UnitView', () => {
     await userEvent.click(screen.getByRole('button'));
 
     expect(screen.getByRole('dialog', { name: /View Unit/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /View Unit/i })).toHaveAttribute(
+      'data-container',
+      'body',
+    );
     expect(screen.getByText('sup:kg')).toBeInTheDocument();
     expect(screen.getByText('Kilogram comment')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
@@ -110,5 +118,35 @@ describe('UnitView', () => {
     expect(screen.getByRole('dialog', { name: /View Unit/i })).toBeInTheDocument();
     expect(screen.getByText('sup:-')).toBeInTheDocument();
     expect(screen.getByTestId('quant-ref')).toHaveTextContent('false');
+  });
+
+  it('closes through both the extra close button and drawer onClose handler', async () => {
+    renderWithProviders(
+      <UnitView
+        id='unit-1'
+        buttonType='icon'
+        data={[
+          {
+            '@dataSetInternalID': 'unit-1',
+            name: 'kg',
+            generalComment: 'Kilogram comment',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    expect(screen.getByRole('dialog', { name: /View Unit/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+    expect(screen.queryByRole('dialog', { name: /View Unit/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /profile-icon/i }));
+    expect(screen.getByRole('dialog', { name: /View Unit/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^close$/i }));
+    expect(screen.queryByRole('dialog', { name: /View Unit/i })).not.toBeInTheDocument();
   });
 });

@@ -1218,6 +1218,37 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('applies port updates directly when the graph instance is unavailable', async () => {
+    mockGraphStoreState.graph = undefined;
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    await act(async () => {
+      await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
+    });
+
+    mockUpdateNode.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    await waitFor(() =>
+      expect(mockUpdateNode).toHaveBeenCalledWith(
+        'node-1',
+        expect.objectContaining({
+          ports: expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'INPUT:flow-input',
+              }),
+            ]),
+          }),
+          width: 350,
+          height: expect.any(Number),
+        }),
+      ),
+    );
+  });
+
   it('repositions existing output ports when new input ports are selected', async () => {
     mockGraphStoreState.nodes[0].ports.items = [
       {
@@ -1317,6 +1348,31 @@ describe('ToolbarEdit', () => {
     });
 
     expect(mockUpdateEdge).toHaveBeenCalledWith('edge-selected', { selected: false });
+  });
+
+  it('returns early when the selected io-port node has no id', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    await act(async () => {
+      await inputTool.args.onClick({
+        cell: {
+          store: {
+            data: {
+              ...mockGraphStoreState.nodes[0],
+              id: '',
+            },
+          },
+        },
+      });
+    });
+
+    mockGraph.batchUpdate.mockClear();
+    mockUpdateNode.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
+
+    expect(mockGraph.batchUpdate).not.toHaveBeenCalled();
+    expect(mockUpdateNode).not.toHaveBeenCalled();
   });
 
   it('toggles reference tools and opens the target amount drawer', async () => {
@@ -1880,6 +1936,51 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('falls back to mutation result ids and versions when create saves omit lifecycleModel payloads', async () => {
+    mockCreateLifeCycleModel.mockResolvedValueOnce({
+      ok: true,
+      modelId: 'created-fallback',
+      version: '5.0',
+    });
+    mockUpdateLifeCycleModel.mockResolvedValueOnce({
+      ok: true,
+      modelId: 'created-fallback',
+      version: '5.0',
+    });
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        id=''
+        version=''
+        action='create'
+        drawerVisible={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockCreateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'uuid-123',
+        }),
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'created-fallback',
+          version: '5.0',
+        }),
+      ),
+    );
+  });
+
   it('falls back to a generic create error when the backend omits a message', async () => {
     const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
     mockCreateLifeCycleModel.mockResolvedValueOnce({
@@ -1933,6 +2034,46 @@ describe('ToolbarEdit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
     await waitFor(() => expect(antMessage.error).toHaveBeenCalledWith('generic failure'));
+  });
+
+  it('falls back to mutation result ids and versions when edit saves omit lifecycleModel payloads', async () => {
+    mockUpdateLifeCycleModel
+      .mockResolvedValueOnce({
+        ok: true,
+        modelId: 'model-fallback',
+        version: '9.9',
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        modelId: 'model-fallback',
+        version: '9.9',
+      });
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModel).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          id: 'model-1',
+          version: '1.0',
+        }),
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(mockUpdateLifeCycleModel).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          id: 'model-fallback',
+          version: '9.9',
+        }),
+      ),
+    );
   });
 
   it('initializes imported models when the drawer opens', async () => {
