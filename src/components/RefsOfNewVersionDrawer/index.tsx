@@ -40,7 +40,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
   return (
     <Drawer
       getContainer={() => document.body}
-      destroyOnClose
+      destroyOnHidden
       width={800}
       open={open}
       closable={false}

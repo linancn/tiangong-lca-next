@@ -20,8 +20,12 @@ jest.mock('@/services/contacts/util');
 
 describe('Contacts API Service', () => {
   const { supabase } = jest.requireMock('@/services/supabase');
-  const { getTeamIdByUserId, getDataDetail, resolveFunctionInvokeError } =
-    jest.requireMock('@/services/general/api');
+  const {
+    getTeamIdByUserId,
+    getDataDetail,
+    normalizeLangPayloadForSave,
+    resolveFunctionInvokeError,
+  } = jest.requireMock('@/services/general/api');
   const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
   const { getLangText, jsonToList, genClassificationZH, classificationToString } =
     jest.requireMock('@/services/general/util');
@@ -59,12 +63,16 @@ describe('Contacts API Service', () => {
         },
       },
     }));
+    normalizeLangPayloadForSave.mockImplementation(async (value: any) => ({
+      payload: value,
+      validationError: undefined,
+    }));
+    resolveFunctionInvokeError.mockImplementation(async (error: any) => error);
 
     getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] || '');
     jsonToList.mockImplementation((value: any) => (Array.isArray(value) ? value : [value]));
     genClassificationZH.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);
     classificationToString.mockReturnValue('Test Classification');
-    resolveFunctionInvokeError.mockImplementation(async (error: any) => error);
   });
 
   describe('createContact', () => {
@@ -125,6 +133,28 @@ describe('Contacts API Service', () => {
       const result = await createContact('contact-123', {});
 
       expect(result.data?.[0].rule_verification).toBe(false);
+    });
+
+    it('should return a validation error when language normalization fails during create', async () => {
+      const { createContact } = require('@/services/contacts/api');
+
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: 'invalid_multilang_contact',
+      });
+
+      const result = await createContact('contact-123', {});
+
+      expect(mockFrom).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: {
+          message: 'invalid_multilang_contact',
+          code: 'LANG_VALIDATION_ERROR',
+        },
+      });
     });
   });
 
@@ -213,6 +243,75 @@ describe('Contacts API Service', () => {
 
       consoleLogSpy.mockRestore();
     });
+
+    it('should return a validation error when language normalization fails during update', async () => {
+      const { updateContact } = require('@/services/contacts/api');
+
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: 'invalid_contact_update',
+      });
+
+      const result = await updateContact('contact-123', 'v1.0', {});
+
+      expect(mockFunctions).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: {
+          message: 'invalid_contact_update',
+          code: 'LANG_VALIDATION_ERROR',
+        },
+      });
+    });
+
+    it('should use an empty bearer token and raw payload fallback when the normalized payload is missing', async () => {
+      const { updateContact } = require('@/services/contacts/api');
+
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: undefined,
+      });
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-123' },
+          },
+        },
+      });
+      mockFunctions.mockResolvedValue({
+        data: { success: true },
+        error: null,
+      });
+
+      const result = await updateContact('contact-123', 'v1.0', {
+        contactInformation: {
+          dataSetInformation: {
+            'common:name': [{ '@xml:lang': 'en', '#text': 'Fallback Payload' }],
+          },
+        },
+      });
+
+      expect(mockFunctions).toHaveBeenCalledWith('update_data', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          id: 'contact-123',
+          version: 'v1.0',
+          table: 'contacts',
+          data: {
+            json_ordered: expect.objectContaining({
+              contactDataSet: expect.any(Object),
+            }),
+            rule_verification: true,
+          },
+        },
+        region: expect.any(String),
+      });
+      expect(result).toEqual({ success: true });
+    });
   });
 
   describe('deleteContact', () => {
@@ -298,6 +397,86 @@ describe('Contacts API Service', () => {
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(result.total).toBe(1);
+    });
+
+    it('should apply team filtering for tg data source when team id is provided', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockRange = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const finalEq = jest.fn().mockResolvedValue({
+        data: [],
+        count: 0,
+        error: null,
+      });
+
+      mockFrom.mockReturnValue({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValue({
+        order: mockOrder,
+      });
+      mockOrder.mockReturnValue({
+        range: mockRange,
+      });
+      mockRange.mockReturnValue({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        eq: finalEq,
+      });
+
+      const result = await getContactTableAll(
+        { current: 1, pageSize: 10 },
+        {},
+        'en',
+        'tg',
+        'team-1',
+      );
+
+      expect(mockEq).toHaveBeenCalledWith('state_code', 100);
+      expect(finalEq).toHaveBeenCalledWith('team_id', 'team-1');
+      expect(result.success).toBe(true);
+    });
+
+    it('should apply collaborative filtering for co data source with default paging', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockRange = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const finalEq = jest.fn().mockResolvedValue({
+        data: [],
+        count: 0,
+        error: null,
+      });
+
+      mockFrom.mockReturnValue({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValue({
+        order: mockOrder,
+      });
+      mockOrder.mockReturnValue({
+        range: mockRange,
+      });
+      mockRange.mockReturnValue({
+        eq: mockEq,
+      });
+      mockEq.mockReturnValueOnce({
+        eq: finalEq,
+      });
+
+      const result = await getContactTableAll({}, {}, 'en', 'co', 'team-co');
+
+      expect(mockOrder).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(mockRange).toHaveBeenCalledWith(0, 9);
+      expect(mockEq).toHaveBeenCalledWith('state_code', 200);
+      expect(finalEq).toHaveBeenCalledWith('team_id', 'team-co');
+      expect(result.success).toBe(true);
     });
 
     it('should fetch contacts with MY data source and user session', async () => {
@@ -425,6 +604,32 @@ describe('Contacts API Service', () => {
       expect(result.success).toBe(true);
     });
 
+    it('should return empty success when TE data source has no team id', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockRange = jest.fn().mockReturnThis();
+
+      getTeamIdByUserId.mockResolvedValue(null);
+      mockFrom.mockReturnValue({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValue({
+        order: mockOrder,
+      });
+      mockOrder.mockReturnValue({
+        range: mockRange,
+      });
+
+      const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', []);
+
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
+    });
+
     it('should handle database error gracefully', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
 
@@ -459,6 +664,109 @@ describe('Contacts API Service', () => {
       expect(result.data).toEqual([]);
 
       consoleLogSpy.mockRestore();
+    });
+
+    it('should fall back to id-only rows when contact table mapping throws', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockRange = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'contact-1',
+            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact 1' }],
+            'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name 1' }],
+            'common:class': [{ '@level': '0', '#text': 'Category' }],
+            email: 'test@example.com',
+            version: 'v1.0',
+            modified_at: '2023-01-01T00:00:00Z',
+            team_id: 'team-1',
+          },
+        ],
+        count: 1,
+        error: null,
+      });
+
+      mockFrom.mockReturnValue({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValue({
+        order: mockOrder,
+      });
+      mockOrder.mockReturnValue({
+        range: mockRange,
+      });
+      mockRange.mockReturnValue({
+        eq: mockEq,
+      });
+      getCachedClassificationData.mockResolvedValue([]);
+      getLangText.mockImplementation(() => {
+        throw new Error('Transform failed');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', []);
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'contact-1' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should use default sorting and paging values, and fall back empty contact fields', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockRange = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'contact-defaults',
+            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact Defaults' }],
+            'common:name': [{ '@xml:lang': 'en', '#text': 'Full Defaults' }],
+            'common:class': [{ '@level': '0', '#text': 'Category' }],
+            email: undefined,
+            version: 'v2.0',
+            modified_at: '2023-01-02T00:00:00Z',
+            team_id: 'team-defaults',
+          },
+        ],
+        count: null,
+        error: null,
+      });
+
+      mockFrom.mockReturnValue({
+        select: mockSelect,
+      });
+      mockSelect.mockReturnValue({
+        order: mockOrder,
+      });
+      mockOrder.mockReturnValue({
+        range: mockRange,
+      });
+      mockRange.mockReturnValue({
+        eq: mockEq,
+      });
+
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-defaults' }]);
+
+      const result = await getContactTableAll({}, {}, 'en', 'tg', []);
+
+      expect(mockOrder).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(mockRange).toHaveBeenCalledWith(0, 9);
+      expect(result).toMatchObject({
+        page: 1,
+        total: 0,
+        success: true,
+      });
+      expect(result.data[0]).toMatchObject({
+        id: 'contact-defaults',
+        email: '-',
+      });
     });
   });
 
@@ -584,6 +892,217 @@ describe('Contacts API Service', () => {
         this_user_id: 'user-123',
       });
     });
+
+    it('should return the raw result when there is no session for pgroonga search', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: { session: null },
+      });
+
+      const result = await getContactTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'query',
+        {},
+      );
+
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(result).toEqual({});
+    });
+
+    it('should log rpc errors and return the raw rpc response', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-123' },
+          },
+        },
+      });
+
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      mockRpc.mockResolvedValue({
+        data: null,
+        error: { message: 'RPC failed' },
+      });
+
+      const result = await getContactTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'query',
+        {},
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'RPC failed' });
+      expect(result).toEqual({
+        data: null,
+        error: { message: 'RPC failed' },
+      });
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it('should fall back to id-only rows when pgroonga mapping throws', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-123' },
+          },
+        },
+      });
+
+      mockRpc.mockResolvedValue({
+        data: [
+          {
+            id: 'contact-1',
+            json: {
+              contactDataSet: {
+                contactInformation: {
+                  dataSetInformation: {
+                    'common:shortName': [{ '@xml:lang': 'en', '#text': 'Search Result' }],
+                    'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name' }],
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '@level': '0', '#text': 'Category' }],
+                      },
+                    },
+                    email: 'search@example.com',
+                  },
+                },
+              },
+            },
+            version: 'v1.0',
+            modified_at: '2023-01-01T00:00:00Z',
+            team_id: 'team-1',
+            total_count: 1,
+          },
+        ],
+        error: null,
+      });
+      getCachedClassificationData.mockResolvedValue([]);
+      getLangText.mockImplementation(() => {
+        throw new Error('Transform failed');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getContactTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'broken query',
+        {},
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'contact-1' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should use default paging with state_code and fall back empty pgroonga fields', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-defaults' },
+          },
+        },
+      });
+
+      mockRpc.mockResolvedValue({
+        data: [
+          {
+            id: 'contact-search-defaults',
+            version: 'v2.0',
+            modified_at: '2023-01-02T00:00:00Z',
+            team_id: 'team-defaults',
+            total_count: null,
+            json: {
+              contactDataSet: {
+                contactInformation: {
+                  dataSetInformation: {
+                    'common:shortName': [{ '@xml:lang': 'en', '#text': 'Search Defaults' }],
+                    'common:name': [{ '@xml:lang': 'en', '#text': 'Search Full Defaults' }],
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '@level': '0', '#text': 'Category' }],
+                      },
+                    },
+                    email: undefined,
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      });
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-search-defaults' }]);
+
+      const result = await getContactTablePgroongaSearch(
+        {},
+        'en',
+        'my',
+        'defaults',
+        { status: 'active' },
+        0,
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts', {
+        query_text: 'defaults',
+        filter_condition: { status: 'active' },
+        page_size: 10,
+        page_current: 1,
+        data_source: 'my',
+        this_user_id: 'user-defaults',
+        state_code: 0,
+      });
+      expect(result).toMatchObject({
+        page: 1,
+        total: 0,
+        success: true,
+      });
+      expect(result.data[0]).toMatchObject({
+        id: 'contact-search-defaults',
+        email: '-',
+      });
+    });
+
+    it('should use default paging for pgroonga searches without state_code', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-defaults' },
+          },
+        },
+      });
+
+      mockRpc.mockResolvedValue({
+        data: [],
+        error: null,
+      });
+
+      await getContactTablePgroongaSearch({}, 'en', 'tg', 'defaults', { level: 1 });
+
+      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts', {
+        query_text: 'defaults',
+        filter_condition: { level: 1 },
+        page_size: 10,
+        page_current: 1,
+        data_source: 'tg',
+        this_user_id: 'user-defaults',
+      });
+    });
   });
 
   describe('contact_hybrid_search', () => {
@@ -687,6 +1206,193 @@ describe('Contacts API Service', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual([]);
+    });
+
+    it('should return raw result when there is no session for hybrid search', async () => {
+      const { contact_hybrid_search } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: { session: null },
+      });
+
+      const result = await contact_hybrid_search(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'query',
+        {},
+      );
+
+      expect(mockFunctions).not.toHaveBeenCalled();
+      expect(result).toEqual({});
+    });
+
+    it('should log edge function errors and return the raw error response', async () => {
+      const { contact_hybrid_search } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            access_token: 'test-token',
+          },
+        },
+      });
+
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      mockFunctions.mockResolvedValue({
+        data: null,
+        error: { message: 'Hybrid failed' },
+      });
+
+      const result = await contact_hybrid_search(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'query',
+        {},
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Hybrid failed' });
+      expect(result).toEqual({
+        data: null,
+        error: { message: 'Hybrid failed' },
+      });
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it('should fall back to id-only rows when hybrid mapping throws', async () => {
+      const { contact_hybrid_search } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            access_token: 'test-token',
+            user: { id: 'user-123' },
+          },
+        },
+      });
+
+      const hybridRows = [
+        {
+          id: 'contact-1',
+          json: {
+            contactDataSet: {
+              contactInformation: {
+                dataSetInformation: {
+                  'common:shortName': [{ '@xml:lang': 'en', '#text': 'Hybrid Result' }],
+                  'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                  email: 'hybrid@example.com',
+                },
+              },
+            },
+          },
+          version: 'v1.0',
+          modified_at: '2023-01-01T00:00:00Z',
+          team_id: 'team-1',
+        },
+      ] as any;
+      hybridRows.total_count = 1;
+
+      mockFunctions.mockResolvedValue({
+        data: {
+          data: hybridRows,
+        },
+        error: null,
+      });
+      getCachedClassificationData.mockResolvedValue([]);
+      getLangText.mockImplementation(() => {
+        throw new Error('Transform failed');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await contact_hybrid_search(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'query',
+        {},
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'contact-1' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should use an empty bearer token and default paging in hybrid search results', async () => {
+      const { contact_hybrid_search } = require('@/services/contacts/api');
+
+      mockAuth.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-hybrid' },
+          },
+        },
+      });
+
+      mockFunctions.mockResolvedValue({
+        data: {
+          data: Object.assign(
+            [
+              {
+                id: 'contact-hybrid-defaults',
+                version: 'v3.0',
+                modified_at: '2023-01-03T00:00:00Z',
+                team_id: 'team-hybrid',
+                json: {
+                  contactDataSet: {
+                    contactInformation: {
+                      dataSetInformation: {
+                        'common:shortName': [{ '@xml:lang': 'en', '#text': 'Hybrid Defaults' }],
+                        'common:name': [{ '@xml:lang': 'en', '#text': 'Hybrid Full Defaults' }],
+                        classificationInformation: {
+                          'common:classification': {
+                            'common:class': [{ '@level': '0', '#text': 'Category' }],
+                          },
+                        },
+                        email: undefined,
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+            { total_count: null },
+          ),
+        },
+        error: null,
+      });
+
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-hybrid-defaults' }]);
+
+      const result = await contact_hybrid_search({}, 'en', 'tg', 'hybrid', { tag: 'a' });
+
+      expect(mockFunctions).toHaveBeenCalledWith('contact_hybrid_search', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          query: 'hybrid',
+          filter: { tag: 'a' },
+        },
+        region: expect.any(String),
+      });
+      expect(result).toMatchObject({
+        page: 1,
+        total: 0,
+        success: true,
+      });
+      expect(result.data[0]).toMatchObject({
+        id: 'contact-hybrid-defaults',
+        email: '-',
+      });
     });
   });
 

@@ -12,7 +12,7 @@ const SourceDescription: FC<Props> = ({ title, data }) => {
   //   return (
   //     <Card size="small" title={title}>
   //       <Descriptions bordered size={'small'} column={1}>
-  //         <Descriptions.Item key={0} labelStyle={{ display: 'none' }}>
+  //         <Descriptions.Item key={0} styles={{ label: { display: 'none' } }}>
   //           -
   //         </Descriptions.Item>
   //       </Descriptions>
@@ -22,25 +22,25 @@ const SourceDescription: FC<Props> = ({ title, data }) => {
   return (
     <Card size='small' title={title}>
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='Type' labelStyle={{ width: '120px' }}>
+        <Descriptions.Item key={0} label='Type' styles={{ label: { width: '120px' } }}>
           {data?.['@type'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='Ref Object Id' labelStyle={{ width: '120px' }}>
+        <Descriptions.Item key={0} label='Ref Object Id' styles={{ label: { width: '120px' } }}>
           {data?.['@refObjectId'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='URI' labelStyle={{ width: '120px' }}>
+        <Descriptions.Item key={0} label='URI' styles={{ label: { width: '120px' } }}>
           {data?.['@uri'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='Version' labelStyle={{ width: '120px' }}>
+        <Descriptions.Item key={0} label='Version' styles={{ label: { width: '120px' } }}>
           {data?.['@version'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>

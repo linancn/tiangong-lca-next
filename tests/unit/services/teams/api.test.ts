@@ -22,10 +22,12 @@ import {
   getAllTableTeams,
   getTeamById,
   getTeamMembersApi,
+  getTeamMessageApi,
   getTeams,
   getTeamsByKeyword,
   getUnrankedTeams,
   updateSort,
+  updateTeamRank,
 } from '@/services/teams/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import {
@@ -120,6 +122,18 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
         success: true,
       });
     });
+
+    it('should fall back to an empty array when the query returns undefined data', async () => {
+      const builder = createQueryBuilder({ data: undefined, error: null });
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getTeams();
+
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
+    });
   });
 
   describe('getTeamsByKeyword', () => {
@@ -165,6 +179,18 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
       supabase.from.mockReturnValue(builder);
 
       const result = await getTeamsByKeyword(keyword);
+
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
+    });
+
+    it('should fall back to an empty array when search returns undefined data', async () => {
+      const builder = createQueryBuilder({ data: undefined, error: null });
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getTeamsByKeyword('fallback');
 
       expect(result).toEqual({
         data: [],
@@ -252,6 +278,20 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
         total: 0,
       });
     });
+
+    it('should use pagination defaults and empty fallbacks when the query returns undefined rows', async () => {
+      const builder = createQueryBuilder({ data: undefined, count: undefined, error: null });
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getAllTableTeams({} as any, 'manageSystem');
+
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual({
+        data: [],
+        success: true,
+        total: 0,
+      });
+    });
   });
 
   describe('getTeamById', () => {
@@ -296,6 +336,18 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
         success: false,
       });
       expect(supabase.from).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to an empty array when the team lookup returns undefined data', async () => {
+      const builder = createQueryBuilder({ data: undefined, error: null });
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getTeamById('team-123');
+
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
     });
   });
 
@@ -355,6 +407,111 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
 
       expect(supabase.functions.invoke).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
+    });
+
+    it('should fall back to an empty bearer token when updating with rank', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: { access_token: undefined } },
+      });
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ success: true }),
+      );
+
+      await editTeamMessage('team-123', { title: 'Updated Team' }, 3, true);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_team', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          id: 'team-123',
+          data: { json: { title: 'Updated Team' }, rank: 3, is_public: true },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    });
+
+    it('should fall back to an empty bearer token when updating without rank', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: { access_token: undefined } },
+      });
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ success: true }),
+      );
+
+      await editTeamMessage('team-123', { title: 'Updated Team' }, undefined, false);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_team', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          id: 'team-123',
+          data: { json: { title: 'Updated Team' }, is_public: false },
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    });
+  });
+
+  describe('updateTeamRank', () => {
+    it('should update team rank via edge function', async () => {
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ success: true }),
+      );
+
+      const result = await updateTeamRank('team-123', 8);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_team', {
+        headers: {
+          Authorization: 'Bearer test-token',
+        },
+        body: { id: 'team-123', data: { rank: 8 } },
+        region: FunctionRegion.UsEast1,
+      });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should return undefined when no session exists', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await updateTeamRank('team-123', 8);
+
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should fall back to an empty bearer token when the session has no access token', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: { session: { access_token: undefined } },
+      });
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ success: true }),
+      );
+
+      await updateTeamRank('team-123', 8);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_team', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: { id: 'team-123', data: { rank: 8 } },
+        region: FunctionRegion.UsEast1,
+      });
+    });
+  });
+
+  describe('getTeamMessageApi', () => {
+    it('should fetch raw team message rows', async () => {
+      const builder = createQueryBuilder(createMockSuccessResponse([mockTeam]));
+      supabase.from.mockReturnValue(builder);
+
+      const result = await getTeamMessageApi('team-123');
+
+      expect(supabase.from).toHaveBeenCalledWith('teams');
+      expect(builder.select).toHaveBeenCalledWith('*');
+      expect(builder.eq).toHaveBeenCalledWith('id', 'team-123');
+      expect(result).toEqual(createMockSuccessResponse([mockTeam]));
     });
   });
 
@@ -426,6 +583,21 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
         data: null,
       });
     });
+
+    it('should return failure when user details request returns null', async () => {
+      const teamId = 'team-123';
+      const mockRoles = [createMockRole()];
+
+      getTeamRoles.mockResolvedValue({ error: null, data: mockRoles });
+      getUsersByIds.mockResolvedValue(null);
+
+      const result = await getTeamMembersApi(mockPaginationParams, mockSortOrder, teamId);
+
+      expect(result).toEqual({
+        success: false,
+        data: null,
+      });
+    });
   });
 
   describe('addTeamMemberApi', () => {
@@ -480,6 +652,23 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
           message: 'exists',
         },
       });
+      expect(addRoleApi).not.toHaveBeenCalled();
+    });
+
+    it('should return undefined when role lookup fails', async () => {
+      const teamId = 'team-123';
+      const email = 'lookup-error@example.com';
+      const userId = 'user-456';
+
+      getUserIdByEmail.mockResolvedValue(userId);
+      getRoleByuserId.mockResolvedValue({
+        data: null,
+        error: { message: 'Lookup failed' },
+      });
+
+      const result = await addTeamMemberApi(teamId, email);
+
+      expect(result).toBeUndefined();
       expect(addRoleApi).not.toHaveBeenCalled();
     });
   });
@@ -573,6 +762,24 @@ describe('Teams API Service (src/services/teams/api.ts)', () => {
 
       expect(result).toEqual({
         data: [],
+        success: true,
+        total: 0,
+      });
+    });
+
+    it('should use pagination defaults and count fallback when unranked team count is missing', async () => {
+      const mockTeams = [createMockTeam({ rank: 0 })];
+      const builder = createQueryBuilder({ data: mockTeams, count: undefined, error: null });
+      supabase.from.mockReturnValue(builder);
+
+      getUserIdsByTeamIds.mockResolvedValue([]);
+      getUserEmailByUserIds.mockResolvedValue([]);
+
+      const result = await getUnrankedTeams({});
+
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual({
+        data: mockTeams,
         success: true,
         total: 0,
       });

@@ -290,7 +290,7 @@ const ExchangeSelect: FC<Props> = ({
                   defaultMessage='Source process output flow'
                 />
               }
-              bordered={false}
+              variant='borderless'
             >
               <ProTable<ProcessExchangeTable, ListPagination>
                 actionRef={actionRefSelectSource}
@@ -320,7 +320,7 @@ const ExchangeSelect: FC<Props> = ({
                   defaultMessage='Target process input flow'
                 />
               }
-              bordered={false}
+              variant='borderless'
             >
               <ProTable<ProcessExchangeTable, ListPagination>
                 actionRef={actionRefSelectTarget}

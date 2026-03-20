@@ -13,6 +13,7 @@ describe('Contacts Util Service', () => {
     getLangList,
     classificationToJsonList,
     classificationToStringList,
+    convertToUTCISOString,
     removeEmptyObjects,
     formatDateTime,
   } = jest.requireMock('@/services/general/util');
@@ -26,6 +27,7 @@ describe('Contacts Util Service', () => {
     getLangList.mockImplementation((value: any) => value || []);
     classificationToJsonList.mockImplementation((value: any) => value || []);
     classificationToStringList.mockImplementation((value: any) => value || []);
+    convertToUTCISOString.mockImplementation((value: any) => value);
     removeEmptyObjects.mockImplementation((obj: any) => obj);
     formatDateTime.mockReturnValue('2023-01-01T00:00:00Z');
   });
@@ -157,6 +159,31 @@ describe('Contacts Util Service', () => {
         'http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd',
       );
     });
+
+    it('should stamp current time and derive permanent dataset URI from id and version', async () => {
+      const { genContactJsonOrdered } = require('@/services/contacts/util');
+
+      const result = genContactJsonOrdered('contact-777', {
+        contactInformation: { dataSetInformation: {} },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '02.03.004',
+          },
+        },
+      });
+
+      expect(formatDateTime).toHaveBeenCalled();
+      expect(
+        result.contactDataSet?.administrativeInformation?.dataEntryBy?.['common:timeStamp'],
+      ).toBe('2023-01-01T00:00:00Z');
+      expect(
+        result.contactDataSet?.administrativeInformation?.publicationAndOwnership?.[
+          'common:permanentDataSetURI'
+        ],
+      ).toBe(
+        'https://lcdn.tiangong.earth/datasetdetail/contact.xhtml?uuid=contact-777&version=02.03.004',
+      );
+    });
   });
 
   describe('genContactFromData', () => {
@@ -250,6 +277,41 @@ describe('Contacts Util Service', () => {
       expect(formatDateTime).toHaveBeenCalled();
     });
 
+    it('should fall back to formatDateTime when UTC conversion returns undefined', async () => {
+      const { genContactFromData } = require('@/services/contacts/util');
+
+      convertToUTCISOString.mockReturnValueOnce(undefined);
+
+      const result = genContactFromData({
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-fallback',
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': 'raw-ts',
+          },
+          publicationAndOwnership: {},
+        },
+      });
+
+      expect(result).toBeDefined();
+      expect(convertToUTCISOString).toHaveBeenCalledWith('raw-ts');
+      expect(formatDateTime).toHaveBeenCalled();
+      expect(createTidasContact).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contactDataSet: expect.objectContaining({
+            administrativeInformation: expect.objectContaining({
+              dataEntryBy: expect.objectContaining({
+                'common:timeStamp': '2023-01-01T00:00:00Z',
+              }),
+            }),
+          }),
+        }),
+      );
+    });
+
     it('should handle complex reference structures', async () => {
       const { genContactFromData } = require('@/services/contacts/util');
 
@@ -316,6 +378,58 @@ describe('Contacts Util Service', () => {
           }),
         }),
       );
+    });
+
+    it('should preserve permanentDataSetURI and normalize owner/reference short descriptions', async () => {
+      const { genContactFromData } = require('@/services/contacts/util');
+
+      const result = genContactFromData({
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-permalink',
+            referenceToContact: {
+              '@refObjectId': 'linked-contact',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Linked contact' },
+            },
+            referenceToLogo: {
+              '@refObjectId': 'linked-logo',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Linked logo' },
+            },
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {
+            'common:timeStamp': '2023-01-02T00:00:00Z',
+            'common:referenceToDataSetFormat': {
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'ILCD format' },
+            },
+          },
+          publicationAndOwnership: {
+            'common:dataSetVersion': '02.00.000',
+            'common:permanentDataSetURI': 'https://lcdn.tiangong.earth/contact-permalink',
+            'common:referenceToOwnershipOfDataSet': {
+              '@refObjectId': 'owner-1',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Owner 1' },
+            },
+            'common:referenceToPrecedingDataSetVersion': {
+              '@refObjectId': 'prev-1',
+              'common:shortDescription': { '@xml:lang': 'en', '#text': 'Prev 1' },
+            },
+          },
+        },
+      });
+
+      expect(getLangList).toHaveBeenCalledWith({ '@xml:lang': 'en', '#text': 'Linked contact' });
+      expect(getLangList).toHaveBeenCalledWith({ '@xml:lang': 'en', '#text': 'Linked logo' });
+      expect(getLangList).toHaveBeenCalledWith({ '@xml:lang': 'en', '#text': 'Owner 1' });
+      expect(
+        result?.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
+      ).toBe('https://lcdn.tiangong.earth/contact-permalink');
+      expect(
+        result?.contactInformation?.dataSetInformation?.referenceToContact?.[
+          'common:shortDescription'
+        ],
+      ).toEqual({ '@xml:lang': 'en', '#text': 'Linked contact' });
     });
   });
 });

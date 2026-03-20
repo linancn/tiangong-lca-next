@@ -33,9 +33,6 @@ interface JsonLine {
   path: string;
   isDiff?: boolean;
   diffType?: 'added' | 'removed' | 'modified';
-  isCollapsible?: boolean;
-  isCollapsed?: boolean;
-  childCount?: number;
   isDeleteBlockStart?: boolean;
   deleteBlockDiffItem?: DiffItem;
   isAddedBlockStart?: boolean;
@@ -98,7 +95,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   const [operationHistory, setOperationHistory] = useState<OperationHistoryItem[]>([]);
 
   const leftPanelRef = React.useRef<HTMLDivElement>(null);
-  const rightPanelRef = React.useRef<HTMLDivElement>(null);
 
   const getTidasData = () => {
     switch (type) {
@@ -174,8 +170,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     const items: DiffItem[] = [];
 
     const parseDelta = (deltaObj: any, path: string = '', parentIsArray: boolean = false) => {
-      if (!deltaObj || typeof deltaObj !== 'object') return;
-
       Object.keys(deltaObj).forEach((key) => {
         // 跳过数组标记
         if (key === '_t') return;
@@ -186,9 +180,9 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           // 如果key包含下划线，说明是数组移动操作，需要特殊处理
           if (key.includes('_')) {
             const actualIndex = key.split('_')[0];
-            currentPath = path ? `${path}[${actualIndex}]` : `[${actualIndex}]`;
+            currentPath = `${path}[${actualIndex}]`;
           } else {
-            currentPath = path ? `${path}[${key}]` : `[${key}]`;
+            currentPath = `${path}[${key}]`;
           }
         } else {
           // 对象属性使用 .key 格式
@@ -252,52 +246,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     return items;
   }, [originJson, AIJson, diffpatcher]);
 
-  // 初始化折叠路径 - 默认折叠没有差异的大对象/数组
-  useEffect(() => {
-    if (!originJson || !AIJson || diffItems.length === 0) return;
-
-    const diffPaths = new Set(diffItems.map((item) => item.path));
-    const pathsToCollapse = new Set<string>();
-
-    const findCollapsiblePaths = (obj: any, path: string = '') => {
-      if (!obj || typeof obj !== 'object') return;
-
-      // 检查当前路径及其子路径是否有差异
-      let hasDiff = false;
-      for (const diffPath of diffPaths) {
-        if (diffPath.startsWith(path)) {
-          hasDiff = true;
-          break;
-        }
-      }
-
-      // 如果没有差异且元素较多，添加到折叠列表
-      if (!hasDiff && path) {
-        // 不折叠根级别
-        if (Array.isArray(obj) && obj.length > 3) {
-          pathsToCollapse.add(path);
-        } else if (typeof obj === 'object' && Object.keys(obj).length > 5) {
-          pathsToCollapse.add(path);
-        }
-      }
-
-      // 递归处理子元素
-      if (Array.isArray(obj)) {
-        obj.forEach((item, index) => {
-          const childPath = path ? `${path}[${index}]` : `[${index}]`;
-          findCollapsiblePaths(item, childPath);
-        });
-      } else if (typeof obj === 'object') {
-        Object.keys(obj).forEach((key) => {
-          const childPath = path ? `${path}.${key}` : key;
-          findCollapsiblePaths(obj[key], childPath);
-        });
-      }
-    };
-
-    findCollapsiblePaths(originJson);
-  }, [originJson, AIJson, diffItems]);
-
   // 计算JSON结果
   const latestJson = useMemo(() => {
     if (!originJson || !AIJson || diffItems.length === 0) return originJson;
@@ -344,20 +292,19 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         let current = result;
         for (let i = 0; i < pathParts.length - 1; i++) {
           const part = pathParts[i];
+          const nextPart = pathParts[i + 1];
           const isArrayIndex = /^\d+$/.test(part);
+          const nextShouldBeArray = /^\d+$/.test(nextPart);
 
           if (isArrayIndex) {
             const index = parseInt(part, 10);
-            if (!Array.isArray(current)) {
-              current = [];
-            }
-            if (!current[index]) {
-              current[index] = {};
+            if (current[index] === undefined) {
+              current[index] = nextShouldBeArray ? [] : {};
             }
             current = current[index];
           } else {
-            if (!current[part]) {
-              current[part] = {};
+            if (current[part] === undefined) {
+              current[part] = nextShouldBeArray ? [] : {};
             }
             current = current[part];
           }
@@ -369,13 +316,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         if (item.type === 'added' || item.type === 'modified') {
           if (isLastArrayIndex) {
             const index = parseInt(lastPart, 10);
-            if (!Array.isArray(current)) {
-              // 如果当前不是数组但需要设置数组元素，需要特殊处理
-              const parent = pathParts.length > 1 ? current : result;
-              parent[lastPart] = item.newValue;
-            } else {
-              current[index] = item.newValue;
-            }
+            current[index] = item.newValue;
           } else {
             current[lastPart] = item.newValue;
           }
@@ -413,11 +354,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   };
 
   const handleUndo = () => {
-    const lastOperation = operationHistory[operationHistory.length - 1];
-    if (!lastOperation) {
-      message.info(intl.formatMessage({ id: 'component.aiSuggestion.message.noUndoOperation' }));
-      return;
-    }
+    const lastOperation = operationHistory[operationHistory.length - 1]!;
 
     // 恢复到上一个状态
     setAcceptedChanges(lastOperation.previousAcceptedChanges);
@@ -426,12 +363,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     // 如果有回调函数，需要通知父组件
     if (lastOperation.type === 'accept' && lastOperation.path && onRejectChange) {
       onRejectChange(lastOperation.path);
-    } else if (
-      lastOperation.type === 'reject' &&
-      lastOperation.path &&
-      lastOperation.value &&
-      onAcceptChange
-    ) {
+    } else if (lastOperation.type === 'reject' && lastOperation.path && onAcceptChange) {
       onAcceptChange(lastOperation.path, lastOperation.value);
     } else if (lastOperation.type === 'accept_all' && lastOperation.items) {
       // 撤销所有接受的更改
@@ -485,11 +417,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   };
 
   const handleRejectChange = (path: string) => {
+    const diffItem = diffItems.find((item) => item.path === path);
     setOperationHistory((prev) => [
       ...prev,
       {
         path,
         type: 'reject',
+        value: diffItem?.newValue,
         previousAcceptedChanges: new Set(acceptedChanges),
         previousRejectedChanges: new Set(rejectedChanges),
       },
@@ -521,17 +455,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     } catch (err) {
       message.error(intl.formatMessage({ id: 'component.aiSuggestion.message.copyFailed' }));
       console.error('复制失败:', err);
-    }
-  };
-
-  // 同步滚动处理
-  const handleSyncScroll = (source: 'left' | 'right') => {
-    if (source === 'left' && leftPanelRef.current && rightPanelRef.current) {
-      rightPanelRef.current.scrollTop = leftPanelRef.current.scrollTop;
-      rightPanelRef.current.scrollLeft = leftPanelRef.current.scrollLeft;
-    } else if (source === 'right' && leftPanelRef.current && rightPanelRef.current) {
-      leftPanelRef.current.scrollTop = rightPanelRef.current.scrollTop;
-      leftPanelRef.current.scrollLeft = rightPanelRef.current.scrollLeft;
     }
   };
 
@@ -632,7 +555,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       value: any,
       currentPath: string,
       currentIndent: number,
-      isPropertyValue: boolean = false,
+      isPropertyValue: boolean,
     ): JsonLine[] => {
       const result: JsonLine[] = [];
       const indentStr = isPropertyValue ? '' : '  '.repeat(currentIndent);
@@ -664,12 +587,10 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           lineNumber: lineNumber++,
           indent: currentIndent,
           path: currentPath,
-          isCollapsible: value.length > 3,
-          childCount: value.length,
         });
 
         value.forEach((item, index) => {
-          const itemPath = currentPath ? `${currentPath}[${index}]` : `[${index}]`;
+          const itemPath = `${currentPath}[${index}]`;
           const itemLines = processValue(item, itemPath, currentIndent + 1, false);
           result.push(...itemLines);
           if (index < value.length - 1) {
@@ -689,8 +610,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
           lineNumber: lineNumber++,
           indent: currentIndent,
           path: currentPath,
-          isCollapsible: Object.keys(value).length > 5,
-          childCount: Object.keys(value).length,
         });
 
         const keys = Object.keys(value);
@@ -846,31 +765,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         let leftIdx = 0;
         let rightIdx = 0;
 
-        while (leftIdx < leftLines.length || rightIdx < rightLines.length) {
+        while (leftIdx < leftLines.length && rightIdx < rightLines.length) {
           const leftLine = leftLines[leftIdx];
           const rightLine = rightLines[rightIdx];
 
-          if (!leftLine && !rightLine) {
-            break;
-          }
-
-          // 如果只剩左边的行
-          if (leftLine && !rightLine) {
-            alignedRows.push({ left: leftLine, right: undefined });
-            leftIdx++;
-            continue;
-          }
-
-          // 如果只剩右边的行
-          if (!leftLine && rightLine) {
-            alignedRows.push({ left: undefined, right: rightLine });
-            rightIdx++;
-            continue;
-          }
-
           // 两边都有行，进行智能匹配
-          const leftDiff = leftLine ? diffPathMap.get(leftLine.path) : null;
-          const rightDiff = rightLine ? diffPathMap.get(rightLine.path) : null;
+          const leftDiff = diffPathMap.get(leftLine.path);
+          const rightDiff = diffPathMap.get(rightLine.path);
 
           // 如果路径完全匹配，直接对齐
           if (leftLine.path === rightLine.path) {
@@ -934,6 +835,11 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
             }
           }
         }
+
+        alignedRows.push(
+          ...leftLines.slice(leftIdx).map((left) => ({ left, right: undefined })),
+          ...rightLines.slice(rightIdx).map((right) => ({ left: undefined, right })),
+        );
 
         return alignedRows;
       };
@@ -1047,18 +953,16 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                   }}
                 >
                   {(() => {
-                    const currentDiffItem = isInDeletedBlock
-                      ? deleteBlockDiffItem
-                      : isInAddedBlock
-                        ? addedBlockDiffItem
-                        : diffItem;
-                    const currentPath = isInDeletedBlock
-                      ? deleteBlockDiffItem?.path
-                      : isInAddedBlock
-                        ? addedBlockDiffItem?.path
-                        : line.path;
-                    const currentIsAccepted = acceptedChanges.has(currentPath || '');
-                    const currentIsRejected = rejectedChanges.has(currentPath || '');
+                    const currentDiffItem = (
+                      isInDeletedBlock
+                        ? deleteBlockDiffItem
+                        : isInAddedBlock
+                          ? addedBlockDiffItem
+                          : diffItem
+                    )!;
+                    const currentPath = currentDiffItem.path;
+                    const currentIsAccepted = acceptedChanges.has(currentPath);
+                    const currentIsRejected = rejectedChanges.has(currentPath);
 
                     return currentIsAccepted ? (
                       <span
@@ -1093,9 +997,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                         <Button
                           type='primary'
                           size='small'
-                          onClick={() =>
-                            handleAcceptChange(currentPath || '', currentDiffItem?.newValue)
-                          }
+                          onClick={() => handleAcceptChange(currentPath, currentDiffItem?.newValue)}
                           style={{
                             fontSize: '10px',
                             height: '20px',
@@ -1108,7 +1010,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                         </Button>
                         <Button
                           size='small'
-                          onClick={() => handleRejectChange(currentPath || '')}
+                          onClick={() => handleRejectChange(currentPath)}
                           style={{
                             fontSize: '10px',
                             height: '20px',
@@ -1173,7 +1075,6 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
             position: 'relative',
           }}
           ref={leftPanelRef}
-          onScroll={() => handleSyncScroll('left')}
         >
           <div
             style={{

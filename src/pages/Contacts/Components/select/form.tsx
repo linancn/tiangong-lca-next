@@ -252,7 +252,11 @@ const ContactSelectForm: FC<Props> = ({
           {id && !disabled && (
             <Button
               onClick={() => {
-                formRef.current?.setFieldValue([...name], {});
+                if (parentName) {
+                  formRef.current?.setFieldValue([...parentName, ...name], {});
+                } else {
+                  formRef.current?.setFieldValue([...name], {});
+                }
                 validateRefObjectId(formRef, name, parentName);
                 onData();
               }}

@@ -8,7 +8,9 @@ import {
   classificationToString,
   genClassificationZH,
   getLangText,
+  getLangValidationErrorMessage,
   jsonToList,
+  normalizeLangPayloadBeforeSave,
 } from '../general/util';
 import {
   getILCDClassification,
@@ -1454,4 +1456,131 @@ export async function getAISuggestion(tidasData: any, dataType: string, options:
     console.log('error', result.error);
   }
   return result?.data;
+}
+
+const JSON_BLOCK_PATTERN = /```(?:json)?\s*([\s\S]*?)```/i;
+
+export const parseJsonLikeText = (text: string): any => {
+  const trimmedText = text.trim();
+  if (!trimmedText) return undefined;
+
+  const candidates = [trimmedText];
+  const blockMatch = trimmedText.match(JSON_BLOCK_PATTERN);
+  if (blockMatch?.[1]) {
+    candidates.push(blockMatch[1].trim());
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      continue;
+    }
+  }
+  return undefined;
+};
+
+export const getTranslatedTextFromObject = (value: any): string | undefined => {
+  if (!value || typeof value !== 'object') return undefined;
+
+  const directKeys = ['translatedText', 'translation', 'englishText', 'english', 'output_text'];
+  for (const key of directKeys) {
+    if (typeof value?.[key] === 'string' && value[key].trim()) {
+      return value[key].trim();
+    }
+  }
+
+  if (Array.isArray(value?.content)) {
+    for (const contentItem of value.content) {
+      if (typeof contentItem?.text === 'string' && contentItem.text.trim()) {
+        return contentItem.text.trim();
+      }
+      if (typeof contentItem?.content === 'string' && contentItem.content.trim()) {
+        return contentItem.content.trim();
+      }
+    }
+  }
+
+  return undefined;
+};
+
+export const extractTranslatedText = (value: any, depth = 0): string | undefined => {
+  if (depth > 8 || value === null || value === undefined) return undefined;
+
+  if (typeof value === 'string') {
+    const parsed = parseJsonLikeText(value);
+    if (parsed) {
+      return extractTranslatedText(parsed, depth + 1);
+    }
+    return value.trim() || undefined;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const extracted = extractTranslatedText(item, depth + 1);
+      if (extracted) return extracted;
+    }
+    return undefined;
+  }
+
+  if (typeof value === 'object') {
+    const directTranslated = getTranslatedTextFromObject(value);
+    if (directTranslated) return directTranslated;
+
+    const preferredNestedKeys = ['result', 'data', 'response', 'output', 'values', 'messages'];
+    for (const nestedKey of preferredNestedKeys) {
+      if (nestedKey in value) {
+        const extracted = extractTranslatedText(value[nestedKey], depth + 1);
+        if (extracted) return extracted;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+export async function translateZhTextToEnglish(text: string): Promise<string | undefined> {
+  const sourceText = text?.trim();
+  if (!sourceText) return undefined;
+
+  let result: any = {};
+  const session = await supabase.auth.getSession();
+  const accessToken = session?.data?.session?.access_token;
+  if (accessToken) {
+    result = await supabase.functions.invoke('translate_text', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: {
+        texts: [sourceText],
+        sourceLang: 'zh',
+        targetLang: 'en',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+  }
+  if (result.error) {
+    console.log('error', result.error);
+    return undefined;
+  }
+
+  const translatedText = extractTranslatedText(result?.data?.translations?.[0]?.translatedText);
+  if (!translatedText) {
+    const fallbackText = extractTranslatedText(result?.data);
+    return fallbackText?.trim();
+  }
+  return translatedText.trim();
+}
+
+export async function normalizeLangPayloadForSave(payload: any) {
+  const normalized = await normalizeLangPayloadBeforeSave(payload, {
+    translateZhToEn: translateZhTextToEnglish,
+  });
+
+  const validationError = getLangValidationErrorMessage(normalized.issues);
+  return {
+    payload: normalized.payload,
+    issues: normalized.issues,
+    validationError: validationError || undefined,
+  };
 }

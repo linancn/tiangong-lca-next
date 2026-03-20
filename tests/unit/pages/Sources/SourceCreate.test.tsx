@@ -76,8 +76,9 @@ jest.mock('antd', () => {
   );
   Button.displayName = 'MockButton';
 
-  const Drawer = ({ open, onClose, title, extra, footer, children }: any) => {
+  const Drawer = ({ open, onClose, title, extra, footer, children, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     const label = toText(title) || 'drawer';
     return (
       <div role='dialog' aria-label={label}>
@@ -170,7 +171,14 @@ jest.mock('@ant-design/pro-components', () => {
     return { [head]: buildNestedValue(rest, value) };
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onValuesChange, onFinish, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onValuesChange,
+    onFinish,
+    submitter,
+    children,
+  }: any) => {
     const initialRef = React.useRef(initialValues);
     const [values, setValues] = React.useState<any>(initialValues ?? {});
     const pendingChangeRef = React.useRef<any>(null);
@@ -232,6 +240,7 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <ProFormContext.Provider value={contextValue}>
+        <div data-testid='submitter-render'>{JSON.stringify(submitter?.render?.() ?? null)}</div>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -265,7 +274,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    SourceForm: ({ onData, setFileList, setLoadFiles }: any) => {
+    SourceForm: ({ onData, onTabChange, setFileList, setLoadFiles }: any) => {
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -294,6 +303,30 @@ jest.mock('@/pages/Sources/Components/form', () => {
             }}
           >
             mock-file
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              setFileList?.([]);
+            }}
+          >
+            clear-files
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              onData?.();
+            }}
+          >
+            sync-tab
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              onTabChange?.('administrativeInformation');
+            }}
+          >
+            tab-admin
           </button>
         </div>
       );
@@ -324,12 +357,44 @@ jest.mock('@/services/supabase/key', () => ({
   supabaseStorageBucket: 'sources',
 }));
 
-const { createSource: mockCreateSource } = jest.requireMock('@/services/sources/api');
+const { createSource: mockCreateSource, getSourceDetail: mockGetSourceDetail } =
+  jest.requireMock('@/services/sources/api');
+const { genSourceFromData: mockGenSourceFromData } = jest.requireMock('@/services/sources/util');
+const {
+  getThumbFileUrls: mockGetThumbFileUrls,
+  removeFile: mockRemoveFile,
+  uploadFile: mockUploadFile,
+} = jest.requireMock('@/services/supabase/storage');
+const {
+  getImportedId: mockGetImportedId,
+  isSupabaseDuplicateKeyError: mockIsSupabaseDuplicateKeyError,
+} = jest.requireMock('@/services/general/util');
 
 describe('SourceCreate component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateSource.mockResolvedValue({ data: [{ id: 'source-new' }] });
+    mockGetSourceDetail.mockResolvedValue({
+      data: { json: { sourceDataSet: {} } },
+    });
+    mockGenSourceFromData.mockReturnValue({
+      sourceInformation: {
+        dataSetInformation: {
+          'common:shortName': 'Existing Source',
+          referenceToDigitalFile: [],
+        },
+      },
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.00.000',
+        },
+      },
+    });
+    mockGetThumbFileUrls.mockResolvedValue([]);
+    mockRemoveFile.mockResolvedValue({ error: null });
+    mockUploadFile.mockResolvedValue({ error: null });
+    mockGetImportedId.mockReturnValue(undefined);
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -371,5 +436,328 @@ describe('SourceCreate component', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Create Source' })).not.toBeInTheDocument(),
     );
+  });
+
+  it('loads the existing record for createVersion and reuses the original id', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='createVersion'
+        id='source-1'
+        version='1.0.0'
+        newVersion='02.00.000'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await waitFor(() => expect(mockGetSourceDetail).toHaveBeenCalledWith('source-1', '1.0.0'));
+    expect(mockGetThumbFileUrls).toHaveBeenCalledWith([]);
+    expect(within(drawer).getByLabelText('Short Name')).toHaveValue('Existing Source');
+
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockCreateSource).toHaveBeenCalledWith(
+        'source-1',
+        expect.objectContaining({
+          sourceInformation: expect.objectContaining({
+            dataSetInformation: expect.objectContaining({
+              'common:shortName': 'Existing Source',
+              referenceToDigitalFile: [],
+            }),
+          }),
+          administrativeInformation: expect.objectContaining({
+            publicationAndOwnership: expect.objectContaining({
+              'common:dataSetVersion': '02.00.000',
+            }),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('uploads newly attached files after a successful save', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceCreate lang='en' actionRef={{ current: { reload: jest.fn() } } as any} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'mock-file' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockUploadFile).toHaveBeenCalledWith(
+        'uuid-source-create.pdf',
+        expect.objectContaining({ uid: 'file-existing', name: 'existing.pdf' }),
+      ),
+    );
+  });
+
+  it('shows the duplicate-id error and keeps the drawer open on failure', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateSource.mockResolvedValue({
+      data: null,
+      error: { message: 'duplicate' },
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
+
+    renderWithProviders(
+      <SourceCreate lang='en' actionRef={actionRef as any} onClose={jest.fn()} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'Data with the same ID already exists.',
+      ),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+  });
+
+  it('shows the backend error message when create fails for another reason', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateSource.mockResolvedValue({
+      data: null,
+      error: { message: 'create failed' },
+    });
+
+    renderWithProviders(
+      <SourceCreate lang='en' actionRef={actionRef as any} onClose={jest.fn()} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('create failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+  });
+
+  it('falls back to the generic error label when the backend does not include a message', async () => {
+    const user = userEvent.setup();
+
+    mockCreateSource.mockResolvedValue({
+      data: null,
+      error: {},
+    });
+
+    renderWithProviders(
+      <SourceCreate lang='en' actionRef={{ current: { reload: jest.fn() } } as any} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Error'));
+  });
+
+  it('opens in copy mode and closes from both header and footer actions', async () => {
+    const user = userEvent.setup();
+    const onClose = jest.fn();
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='source-1'
+        version='1.0.0'
+        onClose={onClose}
+      />,
+    );
+
+    const initialCloseCount = onClose.mock.calls.length;
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    expect(await screen.findByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'close' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(initialCloseCount + 1));
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    expect(await screen.findByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(initialCloseCount + 2));
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    expect(await screen.findByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(initialCloseCount + 3));
+  });
+
+  it('auto-opens imported data and reuses the imported id on save', async () => {
+    const user = userEvent.setup();
+    mockGetImportedId.mockReturnValue('imported-source-id');
+    mockGenSourceFromData.mockReturnValueOnce({
+      sourceInformation: {
+        dataSetInformation: {
+          'common:shortName': 'Imported Source',
+          referenceToDigitalFile: [],
+        },
+      },
+      administrativeInformation: {
+        publicationAndOwnership: {
+          'common:dataSetVersion': '01.00.000',
+        },
+      },
+    });
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        importData={[{ sourceDataSet: { sourceInformation: {} } } as any]}
+      />,
+    );
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    expect(mockGenSourceFromData).toHaveBeenCalledWith({ sourceInformation: {} });
+    expect(within(drawer).getByLabelText('Short Name')).toHaveValue('Imported Source');
+
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockCreateSource).toHaveBeenCalledWith(
+        'imported-source-id',
+        expect.objectContaining({
+          sourceInformation: expect.objectContaining({
+            dataSetInformation: expect.objectContaining({
+              'common:shortName': 'Imported Source',
+            }),
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('falls back to an empty dataset object when the detail response omits sourceDataSet', async () => {
+    const user = userEvent.setup();
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: { json: {} },
+    });
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='source-1'
+        version='1.0.0'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    await waitFor(() => expect(mockGenSourceFromData).toHaveBeenCalledWith({}));
+  });
+
+  it('keeps already-uploaded file urls when saving a copied record', async () => {
+    const user = userEvent.setup();
+    mockGetThumbFileUrls.mockResolvedValueOnce([
+      {
+        uid: '../sources/existing.pdf',
+        name: 'existing.pdf',
+        url: '../sources/existing.pdf',
+      },
+    ]);
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='source-1'
+        version='1.0.0'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockCreateSource).toHaveBeenCalledWith(
+        'uuid-source-create',
+        expect.objectContaining({
+          sourceInformation: expect.objectContaining({
+            dataSetInformation: expect.objectContaining({
+              referenceToDigitalFile: [{ '@uri': '../sources/existing.pdf' }],
+            }),
+          }),
+        }),
+      ),
+    );
+    expect(mockUploadFile).not.toHaveBeenCalled();
+  });
+
+  it('removes deleted original files and surfaces storage removal errors', async () => {
+    const user = userEvent.setup();
+    mockGetThumbFileUrls.mockResolvedValueOnce([
+      {
+        uid: '../sources/old.pdf',
+        name: 'old.pdf',
+        url: '../sources/old.pdf',
+      },
+    ]);
+    mockRemoveFile.mockResolvedValueOnce({ error: { message: 'remove failed' } });
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='source-1'
+        version='1.0.0'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'clear-files' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(mockRemoveFile).toHaveBeenCalledWith(['old.pdf']));
+    expect(getMockAntdMessage().error).toHaveBeenCalledWith('remove failed');
+    expect(mockCreateSource).toHaveBeenCalledTimes(1);
+  });
+
+  it('syncs the active tab back into form state when the child requests it', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceCreate lang='en' actionRef={{ current: { reload: jest.fn() } } as any} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+
+    await user.click(within(drawer).getByRole('button', { name: 'sync-tab' }));
+    await user.click(within(drawer).getByRole('button', { name: 'tab-admin' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(mockCreateSource).toHaveBeenCalledTimes(1));
   });
 });

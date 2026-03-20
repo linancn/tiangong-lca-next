@@ -32,7 +32,7 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
               <Descriptions.Item
-                labelStyle={{ width: '120px' }}
+                styles={{ label: { width: '120px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.scope.name'
@@ -53,7 +53,7 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
             >
               <Descriptions.Item
-                labelStyle={{ width: '120px' }}
+                styles={{ label: { width: '120px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.scope.method.name'

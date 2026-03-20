@@ -14,7 +14,13 @@ import {
   isDataUnderReview,
 } from '@/services/general/util';
 import { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -29,7 +35,6 @@ import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
-import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
@@ -41,7 +46,7 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
-  const [stateCode, setStateCode] = useState<string | number>('all');
+  const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -63,6 +68,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const keyWordRef = useRef<string>('');
+  const stateCodeRef = useRef<string | number>('all');
   const attachReviewState = async (result: {
     data?: FlowpropertyTable[];
     page?: number;
@@ -321,15 +328,13 @@ const TableList: FC = () => {
   ];
 
   useEffect(() => {
-    if (team) {
-      return;
-    }
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) setTeam(res.data[0] as TeamTable);
     });
   }, []);
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -389,8 +394,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -413,10 +419,19 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current;
+          if (currentKeyWord.length > 0) {
             if (openAI) {
               return attachRefUnitData(
-                await flowproperty_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+                await flowproperty_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  currentKeyWord,
+                  {},
+                  currentStateCode,
+                ),
               );
             }
             return attachRefUnitData(
@@ -424,14 +439,21 @@ const TableList: FC = () => {
                 params,
                 lang,
                 dataSource,
-                keyWord,
+                currentKeyWord,
                 {},
-                stateCode,
+                currentStateCode,
               ),
             );
           }
           return attachRefUnitData(
-            await getFlowpropertyTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+            await getFlowpropertyTableAll(
+              params,
+              sort,
+              lang,
+              dataSource,
+              tid ?? '',
+              currentStateCode,
+            ),
           );
         }}
         columns={flowpropertiesColumns}

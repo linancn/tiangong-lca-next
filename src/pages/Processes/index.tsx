@@ -5,16 +5,18 @@ import {
   getProcessTablePgroongaSearch,
   process_hybrid_search,
 } from '@/services/processes/api';
+import { BarChartOutlined } from '@ant-design/icons';
 
 import { Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage, useIntl, useLocation } from 'umi';
+import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
+import ToolBarButton from '@/components/ToolBarButton';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
@@ -24,8 +26,13 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/es/table/interface';
@@ -48,8 +55,8 @@ export const getProcesstypeOfDataSetOptions = (value: string) => {
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState('');
-  const [stateCode, setStateCode] = useState<string | number>('all');
-  const [typeOfDataSet, setTypeOfDataSet] = useState<string>('all');
+  const [, setStateCode] = useState<string | number>('all');
+  const [, setTypeOfDataSet] = useState<string>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ProcessImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -97,8 +104,12 @@ const TableList: FC = () => {
       data: await attachStateCodesToRows('processes', result.data),
     };
   };
+  const keyWordRef = useRef('');
+  const stateCodeRef = useRef<string | number>('all');
+  const typeOfDataSetRef = useRef<string>('all');
   const typeOfDataSetFilter = () => {
     const onChange = (value: string) => {
+      typeOfDataSetRef.current = value;
       setTypeOfDataSet(value);
       actionRef.current?.reloadAndRest?.();
     };
@@ -443,9 +454,6 @@ const TableList: FC = () => {
   ];
 
   useEffect(() => {
-    if (team) {
-      return;
-    }
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) setTeam(res.data[0] ?? null);
     });
@@ -466,6 +474,7 @@ const TableList: FC = () => {
   };
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -473,6 +482,16 @@ const TableList: FC = () => {
   const handleImportData = (jsonData: ProcessImportData) => {
     setImportData(jsonData);
   };
+
+  const applyProcessTableResult = async (result?: {
+    data?: ProcessTable[];
+    success?: boolean;
+    total?: number;
+  }) => {
+    const resolvedResult = result ?? { data: [], success: false, total: 0 };
+    return attachReviewState(resolvedResult);
+  };
+
   return (
     <PageContainer
       header={{
@@ -522,13 +541,27 @@ const TableList: FC = () => {
             return settings;
           }
           const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
+          const analysisPageOption = (
+            <ToolBarButton
+              key='lca-analysis-page-option'
+              icon={<BarChartOutlined />}
+              tooltip={intl.formatMessage({
+                id: 'pages.process.lca.page.title',
+                defaultMessage: 'LCA Analysis',
+              })}
+              onClick={() => {
+                history.push('/mydata/processes/analysis');
+              }}
+            />
+          );
           const reloadIndex = settings.findIndex((item) => item.key === 'reload');
           if (reloadIndex < 0) {
-            return [...settings, calcOption];
+            return [...settings, calcOption, analysisPageOption];
           }
           return [
             ...settings.slice(0, reloadIndex + 1),
             calcOption,
+            analysisPageOption,
             ...settings.slice(reloadIndex + 1),
           ];
         }}
@@ -542,8 +575,9 @@ const TableList: FC = () => {
               <span key={3}>{typeOfDataSetFilter()}</span>,
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -566,7 +600,10 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current;
+          const currentTypeOfDataSet = typeOfDataSetRef.current;
+          if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
               | undefined;
@@ -584,27 +621,27 @@ const TableList: FC = () => {
               }
             }
             if (openAI) {
-              return attachReviewState(
+              return applyProcessTableResult(
                 await process_hybrid_search(
                   params,
                   lang,
                   dataSource,
-                  keyWord,
+                  currentKeyWord,
                   {},
-                  stateCode,
-                  typeOfDataSet,
+                  currentStateCode,
+                  currentTypeOfDataSet,
                 ),
               );
             }
-            return attachReviewState(
+            return applyProcessTableResult(
               await getProcessTablePgroongaSearch(
                 params,
                 lang,
                 dataSource,
-                keyWord,
+                currentKeyWord,
                 {},
-                stateCode,
-                typeOfDataSet,
+                currentStateCode,
+                currentTypeOfDataSet,
                 orderBy,
               ),
             );
@@ -626,15 +663,15 @@ const TableList: FC = () => {
             }
           }
 
-          return attachReviewState(
+          return applyProcessTableResult(
             await getProcessTableAll(
               params,
               convertedSort,
               lang,
               dataSource,
               tid ?? '',
-              stateCode,
-              typeOfDataSet,
+              currentStateCode,
+              currentTypeOfDataSet,
             ),
           );
         }}

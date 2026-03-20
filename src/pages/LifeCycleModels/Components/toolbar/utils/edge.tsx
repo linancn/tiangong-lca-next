@@ -1,9 +1,26 @@
 import type { LifeCycleModelThemeToken } from '@/services/lifeCycleModels/data';
 
+export type EdgeLabelText = {
+  balanced: string;
+  deficit: string;
+  surplus: string;
+  input: string;
+  output: string;
+};
+
+const DEFAULT_EDGE_LABEL_TEXT: EdgeLabelText = {
+  balanced: 'Bal',
+  deficit: 'Def',
+  surplus: 'Sur',
+  input: 'Input',
+  output: 'Output',
+};
+
 export const getEdgeLabel = (
   token: LifeCycleModelThemeToken,
   unbalancedAmount: number,
   exchangeAmount: number,
+  edgeLabelText: EdgeLabelText = DEFAULT_EDGE_LABEL_TEXT,
 ) => {
   if (unbalancedAmount === undefined || unbalancedAmount === null) {
     return {};
@@ -12,15 +29,15 @@ export const getEdgeLabel = (
   let output = 0;
   let input = 0;
   if (unbalancedAmount > 0) {
-    text = 'O';
+    text = edgeLabelText.surplus;
     output = exchangeAmount + unbalancedAmount;
     input = exchangeAmount;
   } else if (unbalancedAmount < 0) {
-    text = 'I';
+    text = edgeLabelText.deficit;
     output = exchangeAmount;
     input = exchangeAmount - unbalancedAmount;
   } else {
-    text = 'B';
+    text = edgeLabelText.balanced;
     output = exchangeAmount;
     input = exchangeAmount;
   }
@@ -55,7 +72,7 @@ export const getEdgeLabel = (
         strokeWidth: 2,
         rx: 5,
         ry: 5,
-        title: `(OUTPUT: ${output}) - (INPUT: ${input}) = ${unbalancedAmount}`,
+        title: `(${edgeLabelText.output}: ${output}) - (${edgeLabelText.input}: ${input}) = ${unbalancedAmount}`,
       },
     },
     position: {

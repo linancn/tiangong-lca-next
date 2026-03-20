@@ -38,5 +38,7 @@ if (passthroughArgs.length > 0) {
 
 const ciArgs = isCI ? ['--ci'] : [];
 
-runJest([...ciArgs, 'tests/unit', 'src', '--testTimeout=20000']);
+// The full unit/src phase can intermittently crash worker subprocesses on macOS
+// when Jest fans out too aggressively, so keep parallelism bounded here.
+runJest([...ciArgs, 'tests/unit', 'src', '--maxWorkers=50%', '--testTimeout=20000']);
 runJest([...ciArgs, 'tests/integration', '--runInBand', '--testTimeout=20000']);

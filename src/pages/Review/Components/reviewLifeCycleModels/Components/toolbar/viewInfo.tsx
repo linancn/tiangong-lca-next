@@ -179,7 +179,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             label={
               <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {data.lifeCycleModelInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -249,7 +249,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 defaultMessage='Identifier of sub-data set'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {data.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
           </Descriptions.Item>
@@ -329,7 +329,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Reference year'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {data.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? '-'}
             </Descriptions.Item>
@@ -344,7 +344,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Data set valid until:'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {data.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? '-'}
             </Descriptions.Item>
@@ -384,7 +384,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 defaultMessage='Location'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -422,7 +422,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 defaultMessage='Sub-location(s)'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           />
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
@@ -523,7 +523,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Name of variable'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.[
                 '@name'
@@ -540,7 +540,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Formula'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.formula ??
                 '-'}
@@ -556,7 +556,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Mean value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
                 ?.meanValue ?? '-'}
@@ -572,7 +572,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Minimum value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
                 ?.minimumValue ?? '-'}
@@ -588,7 +588,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Maximum value'
                 />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
                 ?.maximumValue ?? '-'}
@@ -604,7 +604,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Uncertainty distribution type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getComplianceLabel(
                 data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
@@ -622,7 +622,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Relative StdDev in %'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
                 ?.relativeStandardDeviation95In ?? '-'}
@@ -673,7 +673,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Type of data set'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getProcesstypeOfDataSetOptions(
                 data.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
@@ -690,7 +690,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='LCI method principle'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getLCIMethodPrincipleOptions(
                 data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
@@ -718,7 +718,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='LCI method approaches'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {getLCIMethodApproachOptions(
                 data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
@@ -891,7 +891,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Percentage supply or production covered'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
                 ?.percentageSupplyOrProductionCovered ?? '-'}
@@ -977,7 +977,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Completeness product model'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {getCompletenessProductModelOptions(
                 data.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
@@ -1003,7 +1003,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                     defaultMessage='completeness type'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {getCompletenessElementaryFlowsTypeOptions(
                   data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
@@ -1022,7 +1022,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                     defaultMessage='value'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {getCompletenessElementaryFlowsValueOptions(
                   data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
@@ -1153,7 +1153,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 defaultMessage='Review Compliance'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {getreviewComplianceOptions(
               data.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -1191,7 +1191,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 defaultMessage='Quality Compliance'
               />
             }
-            labelStyle={{ width: '180px' }}
+            styles={{ label: { width: '180px' } }}
           >
             {getqualityComplianceOptions(
               data.modellingAndValidation?.complianceDeclarations?.compliance?.[
@@ -1368,7 +1368,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Date of last revision'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {data.administrativeInformation?.publicationAndOwnership?.[
                 'common:dateOfLastRevision'
@@ -1385,7 +1385,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               <Space>
                 {data.administrativeInformation?.publicationAndOwnership?.[
@@ -1513,7 +1513,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='Copyright?'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getCopyrightOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
@@ -1548,7 +1548,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   defaultMessage='License type'
                 />
               }
-              labelStyle={{ width: '180px' }}
+              styles={{ label: { width: '180px' } }}
             >
               {getLicenseTypeOptions(
                 data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??

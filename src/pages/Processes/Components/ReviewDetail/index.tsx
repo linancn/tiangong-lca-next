@@ -145,7 +145,7 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
         width={600}
         open={drawerVisible}
         onClose={handleDrawerClose}
-        destroyOnClose
+        destroyOnHidden
         closable={false}
         extra={
           <Button

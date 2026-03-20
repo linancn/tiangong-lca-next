@@ -23,7 +23,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
       <Descriptions bordered size={'small'} column={1}>
         <Descriptions.Item
           label={<FormattedMessage id='pages.account.profile.userid' defaultMessage='User ID' />}
-          labelStyle={{ width: '120px' }}
+          styles={{ label: { width: '120px' } }}
         >
           {initData?.id || '-'}
         </Descriptions.Item>
@@ -38,14 +38,14 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             label={<FormattedMessage id='pages.account.profile.email' defaultMessage='Email' />}
-            labelStyle={{ width: '120px' }}
+            styles={{ label: { width: '120px' } }}
           >
             <MailOutlined style={{ marginRight: 8 }} />
             {initData?.email || '-'}
           </Descriptions.Item>
           {/* <Descriptions.Item
             label={<FormattedMessage id='pages.account.profile.role' defaultMessage='Role' />}
-            labelStyle={{ width: '120px' }}
+            styles={{ label: { width: '120px' } }}
           >
             <IdcardOutlined style={{ marginRight: 8 }} />
             {initData?.role
@@ -59,7 +59,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
             label={
               <FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />
             }
-            labelStyle={{ width: '120px' }}
+            styles={{ label: { width: '120px' } }}
           >
             <UserOutlined style={{ marginRight: 8 }} />
             {initData?.display_name || '-'}

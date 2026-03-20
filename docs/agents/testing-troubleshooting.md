@@ -81,6 +81,7 @@ When Jest does not exit:
 - Add unit tests for pure helpers/branches unreachable from integration tests.
 - Add component tests for feature-flag/prop-gated UI branches.
 - Use targeted `collectCoverageFrom` runs during gap closure.
+- Keep `docs/agents/test_todo_list.md` updated when a gap is closed or reprioritized; update `docs/agents/test_improvement_plan.md` too if the strategic summary changed.
 
 ## Final Verification
 
@@ -89,4 +90,4 @@ Before concluding a fix:
 1. Re-run the focused failing suite.
 2. Re-run neighboring impacted suite if behavior changed.
 3. Run `npm run lint`.
-4. If workflow changed, sync docs (English + `_CN`).
+4. If workflow/backlog changed, sync `test_todo_list.md` and related docs (English + `_CN`); sync `test_improvement_plan.md` too when long-term context changed.

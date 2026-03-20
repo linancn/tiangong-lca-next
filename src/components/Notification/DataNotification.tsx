@@ -52,7 +52,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
           name: item.name,
           teamName: item.teamName,
           userName: item.userName,
-          modifiedAt: item.modifiedAt || '-',
+          modifiedAt: item.modifiedAt ?? '',
           isFromLifeCycle: item.isFromLifeCycle,
           rejectReason: (item.json as any)?.comment?.message || '',
           stateCode: item.stateCode,
@@ -160,8 +160,9 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
       dataIndex: 'modifiedAt',
       key: 'modifiedAt',
       render: (time: string) => {
-        if (!time) return '';
+        if (!time || time === '-') return '-';
         const date = new Date(time);
+        if (Number.isNaN(date.getTime())) return '-';
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
         const day = date.getDate();

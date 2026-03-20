@@ -24,6 +24,7 @@ import {
   getSourcesByIdsAndVersions,
   getSourceTableAll,
   getSourceTablePgroongaSearch,
+  source_hybrid_search,
   updateSource,
 } from '@/services/sources/api';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -351,6 +352,25 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-123');
     });
 
+    it('should use collaborative filters and default paging when dataSource is "co"', async () => {
+      const mockData = [mockSource];
+      const mockResult = createMockSuccessResponse(mockData, 1);
+
+      const builder = createQueryBuilder(mockResult);
+      supabase.from.mockReturnValue(builder);
+      getLangText.mockReturnValue('Collaborative Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('-');
+
+      const result = await getSourceTableAll({}, {}, 'en', 'co', 'team-co');
+
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(builder.eq).toHaveBeenCalledWith('state_code', 200);
+      expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-co');
+      expect(result).toMatchObject({ page: 1, success: true, total: 1 });
+    });
+
     it('should filter by user when dataSource is "my"', async () => {
       const mockData = [mockSource];
       const mockResult = createMockSuccessResponse(mockData, 1);
@@ -561,6 +581,244 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
 
       consoleLogSpy.mockRestore();
+    });
+
+    it('should map Chinese search rows and use default pagination values', async () => {
+      const rpcRows: any = [{ ...mockSource, total_count: 3 }];
+
+      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      genClassificationZH.mockReturnValue(['出版物']);
+      classificationToString.mockReturnValue('出版物');
+      jsonToList.mockReturnValue(
+        mockSource.json.sourceDataSet.sourceInformation.dataSetInformation
+          .classificationInformation['common:classification']['common:class'],
+      );
+      getLangText.mockReturnValue('测试来源');
+
+      const result = await getSourceTablePgroongaSearch({}, 'zh', 'tg', '出版物', {});
+
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources', {
+        query_text: '出版物',
+        filter_condition: {},
+        page_size: 10,
+        page_current: 1,
+        data_source: 'tg',
+        this_user_id: 'user-123',
+      });
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Source', 'zh', ['all']);
+      expect(result).toMatchObject({ page: 1, success: true, total: 3 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-123',
+        shortName: '测试来源',
+        classification: '出版物',
+      });
+    });
+
+    it('should return the raw result when no session exists for pgroonga search', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await getSourceTablePgroongaSearch(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'query',
+        mockFilterCondition,
+      );
+
+      expect(supabase.rpc).not.toHaveBeenCalled();
+      expect(result).toEqual({});
+    });
+
+    it('should fall back to id-only rows when pgroonga row mapping throws', async () => {
+      const rpcRows: any = [{ ...mockSource, total_count: 1 }];
+      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      getLangText.mockImplementation(() => {
+        throw new Error('Transformation error');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getSourceTablePgroongaSearch(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'broken',
+        mockFilterCondition,
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'source-123' });
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('source_hybrid_search', () => {
+    it('should invoke the edge function and map english hybrid results', async () => {
+      const hybridRows: any = [
+        {
+          ...mockSource,
+          json: {
+            sourceDataSet: {
+              sourceInformation: {
+                dataSetInformation: {
+                  'common:shortName': [{ '@xml:lang': 'en', '#text': 'Hybrid Source' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ '#text': 'Hybrid Publication' }],
+                    },
+                  },
+                  sourceCitation: 'Hybrid citation',
+                  publicationType: 'Book',
+                },
+              },
+            },
+          },
+        },
+      ];
+      hybridRows.total_count = 5;
+
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ data: hybridRows }),
+      );
+      getLangText.mockReturnValue('Hybrid Source');
+      jsonToList.mockReturnValue([{ '#text': 'Hybrid Publication' }]);
+      classificationToString.mockReturnValue('Hybrid Publication');
+
+      const result = await source_hybrid_search(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'hybrid query',
+        mockFilterCondition,
+      );
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('source_hybrid_search', {
+        headers: {
+          Authorization: 'Bearer test-token',
+        },
+        body: { query: 'hybrid query', filter: mockFilterCondition },
+        region: FunctionRegion.UsEast1,
+      });
+      expect(result).toMatchObject({ page: 1, success: true, total: 5 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-123',
+        shortName: 'Hybrid Source',
+        classification: 'Hybrid Publication',
+      });
+    });
+
+    it('should include state_code and map chinese hybrid results', async () => {
+      const hybridRows: any = [{ ...mockSource }];
+      hybridRows.total_count = 2;
+
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ data: hybridRows }),
+      );
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      genClassificationZH.mockReturnValue(['出版物']);
+      classificationToString.mockReturnValue('出版物');
+      jsonToList.mockReturnValue(
+        mockSource.json.sourceDataSet.sourceInformation.dataSetInformation
+          .classificationInformation['common:classification']['common:class'],
+      );
+      getLangText.mockReturnValue('测试来源');
+
+      const result = await source_hybrid_search({}, 'zh', 'my', '来源', {}, 100);
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith(
+        'source_hybrid_search',
+        expect.objectContaining({
+          body: { query: '来源', filter: {}, state_code: 100 },
+        }),
+      );
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Source', 'zh', ['all']);
+      expect(result).toMatchObject({ page: 1, success: true, total: 2 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-123',
+        shortName: '测试来源',
+        classification: '出版物',
+      });
+    });
+
+    it('should return empty success when hybrid search yields no rows', async () => {
+      supabase.functions.invoke.mockResolvedValue(createMockEdgeFunctionResponse({ data: [] }));
+
+      const result = await source_hybrid_search(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'none',
+        mockFilterCondition,
+      );
+
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
+    });
+
+    it('should return raw result when no session exists for hybrid search', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await source_hybrid_search(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'query',
+        mockFilterCondition,
+      );
+
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(result).toEqual({});
+    });
+
+    it('should log edge function errors and return the raw error response', async () => {
+      const mockError = { message: 'Hybrid failed' };
+      supabase.functions.invoke.mockResolvedValue({ data: null, error: mockError });
+
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const result = await source_hybrid_search(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'query',
+        mockFilterCondition,
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
+      expect(result).toEqual({ data: null, error: mockError });
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it('should fall back to id-only rows when hybrid row mapping throws', async () => {
+      const hybridRows: any = [{ ...mockSource }];
+      hybridRows.total_count = 1;
+
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ data: hybridRows }),
+      );
+      getLangText.mockImplementation(() => {
+        throw new Error('Hybrid transformation error');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await source_hybrid_search(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'query',
+        mockFilterCondition,
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'source-123' });
+
+      consoleErrorSpy.mockRestore();
     });
   });
 

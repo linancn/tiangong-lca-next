@@ -27,6 +27,7 @@ import {
   getRoleByuserId,
   getSystemMembersApi,
   getSystemUserRoleApi,
+  getTeamInvitationCountApi,
   getTeamInvitationStatusApi,
   getTeamRoles,
   getUserIdsByTeamIds,
@@ -515,6 +516,130 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
     });
   });
 
+  describe('getTeamInvitationCountApi', () => {
+    it('should get invitation count with default time filter', async () => {
+      getUserId.mockResolvedValue(mockUserId);
+      const mockRoles = [{ user_id: mockUserId, team_id: mockTeamId, role: 'is_invited' }];
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockNeq = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockGte = jest.fn().mockResolvedValue({ data: mockRoles, error: null, count: 1 });
+
+      supabase.from.mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEq.mockReturnValue({
+            in: mockIn.mockReturnValue({
+              neq: mockNeq.mockReturnValue({
+                order: mockOrder.mockReturnValue({
+                  gte: mockGte,
+                }),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await getTeamInvitationCountApi(3);
+
+      expect(mockIn).toHaveBeenCalledWith('role', ['is_invited']);
+      expect(mockOrder).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(mockGte).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        data: mockRoles,
+        total: 1,
+      });
+    });
+
+    it('should prefer lastViewTime over timeFilter', async () => {
+      getUserId.mockResolvedValue(mockUserId);
+      const lastViewTime = Date.parse('2024-01-01T00:00:00Z');
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockNeq = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockGt = jest.fn().mockResolvedValue({ data: [], error: null, count: 0 });
+      const mockGte = jest.fn();
+
+      supabase.from.mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEq.mockReturnValue({
+            in: mockIn.mockReturnValue({
+              neq: mockNeq.mockReturnValue({
+                order: mockOrder.mockReturnValue({
+                  gt: mockGt,
+                  gte: mockGte,
+                }),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await getTeamInvitationCountApi(3, lastViewTime);
+
+      expect(mockGt).toHaveBeenCalledWith('modified_at', new Date(lastViewTime).toISOString());
+      expect(mockGte).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        data: [],
+        total: 0,
+      });
+    });
+
+    it('should return failure when user ID is unavailable', async () => {
+      getUserId.mockResolvedValue('');
+
+      const result = await getTeamInvitationCountApi();
+
+      expect(result).toEqual({
+        success: false,
+        data: [],
+        total: 0,
+      });
+      expect(supabase.from).not.toHaveBeenCalled();
+    });
+
+    it('should return failure when the role query errors', async () => {
+      getUserId.mockResolvedValue(mockUserId);
+      const mockError = { message: 'count failed' };
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockNeq = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockGte = jest.fn().mockResolvedValue({ data: null, error: mockError, count: null });
+
+      supabase.from.mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEq.mockReturnValue({
+            in: mockIn.mockReturnValue({
+              neq: mockNeq.mockReturnValue({
+                order: mockOrder.mockReturnValue({
+                  gte: mockGte,
+                }),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await getTeamInvitationCountApi();
+
+      expect(result).toEqual({
+        success: false,
+        data: [],
+        total: 0,
+      });
+    });
+  });
+
   describe('createTeamMessage', () => {
     it('should create team and assign owner role', async () => {
       const teamData = { name: 'New Team', description: 'Test team' };
@@ -643,6 +768,15 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           }),
         );
       }
+    });
+
+    it('should return undefined when no session exists', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
+
+      const result = await updateRoleApi(mockTeamId, mockUserId, 'admin');
+
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
     });
   });
 

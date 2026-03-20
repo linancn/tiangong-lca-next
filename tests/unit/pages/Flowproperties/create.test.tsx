@@ -17,6 +17,22 @@ const mockIntl = {
   locale: 'en-US',
   formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
 };
+const mockGetImportedId = jest.fn(() => undefined);
+const mockIsSupabaseDuplicateKeyError = jest.fn(() => false);
+const mockGetFlowpropertyDetail = jest.fn(async () => ({
+  data: {
+    json: {
+      flowPropertyDataSet: {
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          },
+        },
+      },
+    },
+    version: '1.0.0',
+  },
+}));
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -195,28 +211,32 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
 const mockCreateFlowproperties = jest.fn(async () => ({
   data: [{ id: 'fp-created', version: '1.0.0' }],
 }));
+const mockGenFlowpropertyFromData = jest.fn((payload: any) => payload ?? {});
 
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
   createFlowproperties: (...args: any[]) => mockCreateFlowproperties(...args),
-  getFlowpropertyDetail: jest.fn(),
+  getFlowpropertyDetail: (...args: any[]) => mockGetFlowpropertyDetail(...args),
 }));
 
 jest.mock('@/services/flowproperties/util', () => ({
   __esModule: true,
-  genFlowpropertyFromData: jest.fn((payload: any) => payload ?? {}),
+  genFlowpropertyFromData: (...args: any[]) => mockGenFlowpropertyFromData(...args),
 }));
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   formatDateTime: jest.fn(() => '2024-01-01T00:00:00Z'),
-  getImportedId: jest.fn(() => undefined),
-  isSupabaseDuplicateKeyError: jest.fn(() => false),
+  getImportedId: (...args: any[]) => mockGetImportedId(...args),
+  isSupabaseDuplicateKeyError: (...args: any[]) => mockIsSupabaseDuplicateKeyError(...args),
 }));
 
 describe('FlowpropertiesCreate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetImportedId.mockReturnValue(undefined);
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
+    mockCreateFlowproperties.mockResolvedValue({ data: [{ id: 'fp-created', version: '1.0.0' }] });
   });
 
   it('creates a flow property and reloads table on success', async () => {
@@ -248,5 +268,129 @@ describe('FlowpropertiesCreate', () => {
     expect(message.success).toHaveBeenCalledWith('Created successfully!');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('loads the existing flow property when creating a new version and reuses the original id', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate
+          actionRef={actionRef}
+          lang='en'
+          actionType='createVersion'
+          id='fp-1'
+          version='1.0.0'
+          newVersion='02.00.000'
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '1.0.0'));
+
+    const nameInput = await screen.findByLabelText(/flow property name/i);
+    await userEvent.clear(nameInput);
+    await userEvent.type(nameInput, 'Versioned flow property');
+
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockCreateFlowproperties).toHaveBeenCalledWith(
+        'fp-1',
+        expect.objectContaining({
+          flowPropertiesInformation: expect.any(Object),
+        }),
+      ),
+    );
+  });
+
+  it('opens automatically for imported data and reuses the imported uuid on submit', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+    mockGetImportedId.mockReturnValue('123e4567-e89b-12d3-a456-426614174000');
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate
+          actionRef={actionRef}
+          lang='en'
+          importData={[
+            {
+              flowPropertyDataSet: {
+                flowPropertiesInformation: {
+                  dataSetInformation: {
+                    'common:name': [{ '#text': 'Imported property', '@lang': 'en' }],
+                  },
+                },
+              },
+            },
+          ]}
+        />,
+      );
+    });
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: /create flow property/i })).toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockCreateFlowproperties).toHaveBeenCalledWith(
+        '123e4567-e89b-12d3-a456-426614174000',
+        expect.any(Object),
+      ),
+    );
+  });
+
+  it('shows the duplicate-id error when createFlowproperties returns a unique constraint error', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+    mockCreateFlowproperties.mockResolvedValue({
+      data: null,
+      error: { code: '23505', message: 'duplicate key value violates unique constraint' },
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(true);
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate actionRef={actionRef} lang='en' onClose={jest.fn()} />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    const nameInput = await screen.findByLabelText(/flow property name/i);
+    await userEvent.type(nameInput, 'Duplicate property');
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    const { message } = jest.requireMock('antd');
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Data with the same ID already exists.'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('shows the backend error message for non-duplicate create failures', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+    mockCreateFlowproperties.mockResolvedValue({
+      data: null,
+      error: { message: 'create failed' },
+    });
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate actionRef={actionRef} lang='en' onClose={jest.fn()} />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    const nameInput = await screen.findByLabelText(/flow property name/i);
+    await userEvent.type(nameInput, 'Broken property');
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    const { message } = jest.requireMock('antd');
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('create failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /create flow property/i })).toBeInTheDocument();
   });
 });

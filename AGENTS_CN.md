@@ -23,6 +23,8 @@ npm install
 npm start
 npm run lint
 npm test
+npm run test:coverage
+npm run test:coverage:report
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
@@ -30,6 +32,10 @@ npm run build
 说明：
 
 - `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
+- 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
+- `npm run test:coverage` 和 `npm run test:coverage:report` 已内置 `NODE_OPTIONS=--max-old-space-size=8192`，全量覆盖率直接用脚本即可。
+- `npm run test:coverage:report` 是默认的覆盖率 review 产物。它会输出全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个未完成文件。
+- `node scripts/test-coverage-report.js --full` 会输出完整的有序未完成文件队列。它用于查看完整逐文件状态或刷新队列快照，而不是主观按“收益”重新排序。
 - 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
 
 ## 按需文档路由（省 token）
@@ -45,8 +51,8 @@ npm run build
 3. 生命周期模型计算逻辑
    - `docs/agents/util_calculate.md`
 4. 覆盖率缺口与测试补全计划
-   - `docs/agents/test_todo_list.md`（可执行待办）
-   - `docs/agents/test_improvement_plan.md`（长期背景）
+   - `docs/agents/test_todo_list.md`（可执行事实来源）
+   - `docs/agents/test_improvement_plan.md`（长期背景与策略）
 5. 团队管理/数据审核流程
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
@@ -68,6 +74,10 @@ npm run build
 - 变更必须配套测试。
 - `npm run lint` 必须通过。
 - 运行与变更相关的聚焦 Jest 套件。
+- 如果目标是把覆盖率推向 100%，按 `docs/agents/test_todo_list.md` / `npm run test:coverage:report` 的有序清零队列逐文件推进。
+- 允许的队列例外只有两类：相邻文件共享同一套 mock/fixture/test harness 时可成批处理；当前文件或紧邻文件被测试基础设施问题卡住时，可先修 blocker。
+- 如果当前队列文件里存在可证明不可达或业务上无效的分支，优先在不改变行为的前提下删除死分支，而不是为了抬覆盖率去编造测试，然后再继续队列顺序。
+- 如果测试工程发生变化（命令、覆盖率基线、backlog 状态、工作流），必须同步 `docs/agents/ai-testing-guide.md`、`docs/agents/test_todo_list.md`；若长期策略也变化，还要同步 `docs/agents/test_improvement_plan.md` 及全部 `_CN` 镜像。
 - 控制 diff 范围；行为或流程变化时同步更新文档。
 - 严禁手改 `docker/volumes/functions/**`；需要同步时执行 `./docker/pull-edge-functions.sh`。
 
@@ -79,3 +89,4 @@ npm run build
 2. 命令示例必须能在当前脚本下直接执行。
 3. 避免跨文档复制长段说明，优先引用来源文档。
 4. 若工作流变化，优先更新本入口文档（保证入口准确）。
+5. 涉及测试相关变化时，优先更新 `docs/agents/test_todo_list.md`；若长期计划或基线摘要变化，再同步更新 `docs/agents/test_improvement_plan.md`。

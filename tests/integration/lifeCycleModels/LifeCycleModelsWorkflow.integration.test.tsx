@@ -38,8 +38,6 @@ jest.mock('@ant-design/icons', () =>
   require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
 );
 
-jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
-
 jest.mock('@ant-design/pro-components', () =>
   require('@/tests/mocks/proComponents').createProComponentsMock(),
 );

@@ -67,7 +67,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.contact.id' defaultMessage='ID' />}
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -102,7 +102,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.contact.telephone' defaultMessage='Telephone' />}
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.contactInformation?.dataSetInformation?.telephone ?? '-'}
           </Descriptions.Item>
@@ -112,7 +112,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.contact.telefax' defaultMessage='Telefax' />}
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.contactInformation?.dataSetInformation?.telefax ?? '-'}
           </Descriptions.Item>
@@ -122,7 +122,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />}
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.contactInformation?.dataSetInformation?.email ?? '-'}
           </Descriptions.Item>
@@ -132,7 +132,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.contact.WWWAddress' defaultMessage='WWW-Address' />}
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {initData.contactInformation?.dataSetInformation?.WWWAddress ?? '-'}
           </Descriptions.Item>
@@ -232,7 +232,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '160px' }}
+              styles={{ label: { width: '160px' } }}
             >
               <Space>
                 {initData.administrativeInformation?.publicationAndOwnership?.[
@@ -281,7 +281,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                   defaultMessage='Permanent data set URI'
                 />
               }
-              labelStyle={{ width: '220px' }}
+              styles={{ label: { width: '220px' } }}
             >
               {initData.administrativeInformation?.publicationAndOwnership?.[
                 'common:permanentDataSetURI'

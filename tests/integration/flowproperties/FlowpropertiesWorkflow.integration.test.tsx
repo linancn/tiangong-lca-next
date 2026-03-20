@@ -36,8 +36,6 @@ jest.mock('@ant-design/pro-components', () =>
   require('@/tests/mocks/proComponents').createProComponentsMock(),
 );
 
-jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
-
 jest.mock('@/components/ToolBarButton', () => {
   const React = require('react');
   return {

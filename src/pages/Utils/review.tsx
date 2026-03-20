@@ -32,8 +32,8 @@ export class ConcurrencyController {
   }
 
   async add<T>(task: () => Promise<T>): Promise<T> {
-    let outerResolve: (value: T | PromiseLike<T>) => void = () => {};
-    let outerReject: (reason?: any) => void = () => {};
+    let outerResolve!: (value: T | PromiseLike<T>) => void;
+    let outerReject!: (reason?: any) => void;
 
     const promise = new Promise<T>((resolve, reject) => {
       outerResolve = resolve;
@@ -650,7 +650,6 @@ export const dealProcress = (
     });
     return;
   }
-
   const procressRef = {
     '@type': 'process data set',
     '@refObjectId': processDetail.id,
@@ -1193,7 +1192,7 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
   if (!formData || Object.keys(formData).length === 0) {
     return { checkResult: false, errTabNames };
   }
-  const collectErrTabNames = (tabName: string) => {
+  const collectErrTabNames = (tabName: string | null | undefined) => {
     if (tabName && tabName?.length && !collectedTabNames.has(tabName)) {
       errTabNames.push(tabName);
       collectedTabNames.add(tabName);
@@ -1204,7 +1203,7 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
     if (field === 'modellingAndValidation.validation.review') {
       const { checkResult, tabName } = checkValidationFields(value);
       if (!checkResult) {
-        collectErrTabNames(tabName ?? '');
+        collectErrTabNames(tabName);
         // return { checkResult, tabName };
       }
     }
@@ -1212,7 +1211,7 @@ export const checkRequiredFields = (requiredFields: any, formData: any) => {
     if (field === 'modellingAndValidation.complianceDeclarations.compliance') {
       const { checkResult, tabName } = checkComplianceFields(value);
       if (!checkResult) {
-        collectErrTabNames(tabName ?? '');
+        collectErrTabNames(tabName);
         // return { checkResult, tabName };
       }
     }
@@ -1362,10 +1361,6 @@ export const getRejectedComments = async (processId: string, processVersion: str
   }
 
   const reviewIds = reviewData.map((review) => review?.id);
-
-  if (!reviewIds.length) {
-    return [];
-  }
 
   const { data: commentsData, error: commentsError } =
     await getRejectedCommentsByReviewIds(reviewIds);

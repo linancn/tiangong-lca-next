@@ -121,23 +121,53 @@ describe('FlowpropertiesDelete', () => {
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
   });
 
-  it('disables delete trigger when disabled is true', async () => {
+  it('shows the returned error message when delete fails', async () => {
+    mockDeleteFlowproperties.mockResolvedValueOnce({
+      status: 400,
+      error: { message: 'Delete failed' },
+    });
+
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
     await act(async () => {
       renderWithProviders(
         <FlowpropertiesDelete
-          disabled
           id='fp-1'
           version='1.0.0'
-          buttonType='text'
-          actionRef={{ current: { reload: jest.fn() } } as any}
-          setViewDrawerVisible={jest.fn()}
+          buttonType='icon'
+          actionRef={actionRef as any}
+          setViewDrawerVisible={setViewDrawerVisible}
         />,
       );
     });
 
-    expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('button', { name: /confirm/i }));
+
+    const { message } = jest.requireMock('antd');
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Delete failed'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('closes the modal without deleting when cancel is clicked', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesDelete
+          id='fp-1'
+          version='1.0.0'
+          buttonType='text'
+          actionRef={actionRef as any}
+          setViewDrawerVisible={setViewDrawerVisible}
+        />,
+      );
+    });
 
     await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(mockDeleteFlowproperties).not.toHaveBeenCalled();

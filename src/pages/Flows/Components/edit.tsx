@@ -557,7 +557,7 @@ const FlowsEdit: FC<Props> = ({
         </Tooltip>
       )}
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}
         width='90%'

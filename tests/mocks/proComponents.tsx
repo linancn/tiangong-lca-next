@@ -350,16 +350,24 @@ export const createProComponentsMock = () => {
     );
   };
 
-  const PageContainer = ({ title, header, children }: any) => (
+  const PageContainer = ({ title, header, children, extra }: any) => (
     <div data-testid='page-container'>
       <div data-testid='page-container-title'>{header?.title ?? title}</div>
       <div data-testid='page-title'>{header?.title ?? title}</div>
+      {extra ? <div data-testid='page-container-extra'>{extra}</div> : null}
       <div>{children}</div>
     </div>
   );
 
   const ProConfigProvider = ({ children }: any) => <>{children}</>;
   const ProLayout = ({ children }: any) => <div data-testid='pro-layout'>{children}</div>;
+  const TableDropdown = ({ menus = [] }: any) => (
+    <div data-testid='table-dropdown'>
+      {menus.map((menu: any) => (
+        <div key={menu.key}>{menu.name}</div>
+      ))}
+    </div>
+  );
 
   return {
     __esModule: true,
@@ -372,6 +380,7 @@ export const createProComponentsMock = () => {
     ProFormText,
     ProLayout,
     ProTable,
+    TableDropdown,
     LoginForm,
     __ProFormContext: ProFormContext,
   };

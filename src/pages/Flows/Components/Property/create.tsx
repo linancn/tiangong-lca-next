@@ -55,7 +55,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
         />
       </Tooltip> */}
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage

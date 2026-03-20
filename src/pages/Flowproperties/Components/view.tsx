@@ -107,7 +107,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='ID'
               />
             }
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData?.flowPropertiesInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -193,7 +193,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
                 defaultMessage='Approval of overall compliance'
               />
             }
-            labelStyle={{ width: '240px' }}
+            styles={{ label: { width: '240px' } }}
           >
             {getComplianceLabel(compliance?.['common:approvalOfOverallCompliance'] ?? '-')}
           </Descriptions.Item>
@@ -258,7 +258,7 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
                   defaultMessage='Data set version'
                 />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               <Space>
                 {initData?.administrativeInformation?.publicationAndOwnership?.[

@@ -9,6 +9,7 @@ import {
   getLifeCycleModelDetail,
   updateLifeCycleModelJsonApi,
 } from '@/services/lifeCycleModels/api';
+import { mergeCommentDataIntoProcessJson } from '@/services/lifeCycleModels/persistencePlan';
 import {
   getProcessDetail,
   getProcessDetailByIdAndVersion,
@@ -299,43 +300,6 @@ export default function ReviewProgress({
     },
   ];
 
-  // Helper function: Merge commentReview and commentCompliance into process JSON
-  const mergeCommentDataIntoProcessJson = (
-    processJson: any,
-    commentReview: any[],
-    commentCompliance: any[],
-  ) => {
-    const json = {
-      ...processJson,
-    };
-
-    // Merge commentReview into review
-    const _review = json?.processDataSet?.modellingAndValidation?.validation?.review ?? [];
-    const _compliance =
-      json?.processDataSet?.modellingAndValidation?.complianceDeclarations?.compliance ?? [];
-    json.processDataSet.modellingAndValidation = {
-      ...json.processDataSet.modellingAndValidation,
-      validation: {
-        ...json.processDataSet.modellingAndValidation.validation,
-        review: Array.isArray(_review)
-          ? [..._review, ...commentReview]
-          : _review
-            ? [_review, ...commentReview]
-            : [...commentReview],
-      },
-      complianceDeclarations: {
-        ...json.processDataSet.modellingAndValidation.complianceDeclarations,
-        compliance: Array.isArray(_compliance)
-          ? [..._compliance, ...commentCompliance]
-          : _compliance
-            ? [_compliance, ...commentCompliance]
-            : [...commentCompliance],
-      },
-    };
-
-    return json;
-  };
-
   const updateProcessJson = async (process: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
     if (!error && commentData && commentData.length) {
@@ -460,57 +424,73 @@ export default function ReviewProgress({
   // model
   const updateLifeCycleModelJson = async (lifeCycleModel: any) => {
     const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-    if (!error && commentData && commentData.length) {
-      const allReviews: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.validation?.review) {
-          allReviews.push(...item?.json?.modellingAndValidation.validation.review);
-        }
-      });
-      const allCompliance: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
-          allCompliance.push(
-            ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
-          );
-        }
-      });
-
-      const _review =
-        lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
-      const _compliance =
-        lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
-          ?.compliance;
-      const json = {
-        ...lifeCycleModel?.json,
+    if (error || !commentData || commentData.length === 0) {
+      return {
+        ok: true as const,
+        newLifeCycleModel: lifeCycleModel,
+        commentReview: [],
+        commentCompliance: [],
       };
-      json.lifeCycleModelDataSet.modellingAndValidation = {
-        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation,
-        validation: {
-          ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation,
-          review: Array.isArray(_review)
-            ? [..._review, ...allReviews]
-            : _review
-              ? [_review, ...allReviews]
-              : [...allReviews],
-        },
-        complianceDeclarations: {
-          ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation
-            ?.complianceDeclarations,
-          compliance: Array.isArray(_compliance)
-            ? [..._compliance, ...allCompliance]
-            : _compliance
-              ? [_compliance, ...allCompliance]
-              : [...allCompliance],
-        },
-      };
-      const { data: newLifeCycleModel } = await updateLifeCycleModelJsonApi(
-        dataId,
-        dataVersion,
-        json,
-      );
-      return { newLifeCycleModel, commentReview: allReviews, commentCompliance: allCompliance };
     }
+
+    const allReviews: any[] = [];
+    commentData.forEach((item: any) => {
+      if (item?.json?.modellingAndValidation?.validation?.review) {
+        allReviews.push(...item?.json?.modellingAndValidation.validation.review);
+      }
+    });
+    const allCompliance: any[] = [];
+    commentData.forEach((item: any) => {
+      if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
+        allCompliance.push(...item?.json?.modellingAndValidation.complianceDeclarations.compliance);
+      }
+    });
+
+    const _review =
+      lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
+    const _compliance =
+      lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
+        ?.compliance;
+    const json = {
+      ...lifeCycleModel?.json,
+    };
+    json.lifeCycleModelDataSet.modellingAndValidation = {
+      ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation,
+      validation: {
+        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation,
+        review: Array.isArray(_review)
+          ? [..._review, ...allReviews]
+          : _review
+            ? [_review, ...allReviews]
+            : [...allReviews],
+      },
+      complianceDeclarations: {
+        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation
+          ?.complianceDeclarations,
+        compliance: Array.isArray(_compliance)
+          ? [..._compliance, ...allCompliance]
+          : _compliance
+            ? [_compliance, ...allCompliance]
+            : [...allCompliance],
+      },
+    };
+    const result = await updateLifeCycleModelJsonApi(dataId, dataVersion, json, {
+      commentReview: allReviews,
+      commentCompliance: allCompliance,
+    });
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        message: result.message ?? 'Failed to update lifecycle model review data',
+      };
+    }
+
+    return {
+      ok: true as const,
+      newLifeCycleModel: result.lifecycleModel ?? lifeCycleModel,
+      commentReview: allReviews,
+      commentCompliance: allCompliance,
+    };
   };
 
   // Helper function: Merge commentReview and commentCompliance into process review and compliance fields
@@ -541,7 +521,10 @@ export default function ReviewProgress({
     }
 
     // 1. Batch fetch process details
-    const { data: processes } = await getProcessDetailByIdAndVersion(processParams);
+    const dedupedProcessParams = Array.from(
+      new Map(processParams.map((item) => [`${item.id}:${item.version}`, item])).values(),
+    );
+    const { data: processes } = await getProcessDetailByIdAndVersion(dedupedProcessParams);
 
     // 2. Concurrently update all processes
     const controller = new ConcurrencyController(5);
@@ -596,12 +579,29 @@ export default function ReviewProgress({
     };
 
     const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
+    if (!success) {
+      return {
+        ok: false as const,
+        message: 'Failed to load lifecycle model before approving review',
+      };
+    }
+
     if (success) {
       const updateModelRes = await updateLifeCycleModelJson(lifeCycleModel);
-      if (!updateModelRes) {
-        return;
+      if (!updateModelRes.ok) {
+        return updateModelRes;
       }
       const { newLifeCycleModel, commentReview, commentCompliance } = updateModelRes;
+      const submodels = Array.isArray(lifeCycleModel?.json_tg?.submodels)
+        ? lifeCycleModel.json_tg.submodels
+        : lifeCycleModel?.json_tg?.submodels
+          ? [lifeCycleModel.json_tg.submodels]
+          : [];
+      const currentSubmodelIds = new Set(
+        submodels
+          .map((item: any) => item?.id)
+          .filter((submodelId: string | undefined): submodelId is string => Boolean(submodelId)),
+      );
 
       if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
         result.push({
@@ -643,8 +643,7 @@ export default function ReviewProgress({
           }
         }
       }
-      const submodels = lifeCycleModel?.json_tg?.submodels;
-      if (submodels) {
+      if (submodels.length > 0) {
         submodels.forEach((item: any) => {
           result.push({
             '@refObjectId': item.id,
@@ -656,7 +655,8 @@ export default function ReviewProgress({
       // Batch update the review and compliance fields of the process
       const processParams = result
         .filter((item) => item['@type'] === 'process data set')
-        .map((item) => ({ id: item['@refObjectId'], version: item['@version'] }));
+        .map((item) => ({ id: item['@refObjectId'], version: item['@version'] }))
+        .filter((item) => !currentSubmodelIds.has(item.id));
       await updateSubmodelProcessesWithCommentData(processParams, commentReview, commentCompliance);
     }
     for (const item of result) {
@@ -667,32 +667,49 @@ export default function ReviewProgress({
         100,
       );
     }
+
+    return {
+      ok: true as const,
+    };
   };
   const approveModelReview = async () => {
     setSpinning(true);
-    await updateModelReviewDataToPublic(dataId, dataVersion);
-    const { error } = await updateCommentApi(
-      reviewId,
-      {
-        state_code: 2,
-      },
-      tabType,
-    );
+    try {
+      const publishResult = await updateModelReviewDataToPublic(dataId, dataVersion);
+      if (!publishResult.ok) {
+        message.error(publishResult.message ?? 'Failed to approve review');
+        return;
+      }
 
-    const { error: error2 } = await updateReviewApi([reviewId], {
-      state_code: 2,
-    });
-    if (!error && !error2) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.ReviewProcessDetail.assigned.success',
-          defaultMessage: 'Review approved successfully',
-        }),
+      const { error } = await updateCommentApi(
+        reviewId,
+        {
+          state_code: 2,
+        },
+        tabType,
       );
-      setDrawerVisible(false);
-      actionRef.current?.reload();
+
+      const { error: error2 } = await updateReviewApi([reviewId], {
+        state_code: 2,
+      });
+      if (!error && !error2) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.review.ReviewProcessDetail.assigned.success',
+            defaultMessage: 'Review approved successfully',
+          }),
+        );
+        setDrawerVisible(false);
+        actionRef.current?.reload();
+        return;
+      }
+
+      message.error('Failed to approve review');
+    } catch (error: any) {
+      message.error(error?.message ?? 'Failed to approve review');
+    } finally {
+      setSpinning(false);
     }
-    setSpinning(false);
   };
 
   return (
@@ -713,7 +730,7 @@ export default function ReviewProgress({
         />
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         title={
           <FormattedMessage
             id='pages.review.progress.drawer.title'
@@ -770,18 +787,7 @@ export default function ReviewProgress({
                 actionRef={tableRef}
               />,
             ]}
-            request={async () => {
-              try {
-                return await fetchTableData();
-              } catch (error) {
-                console.error(error);
-                return {
-                  data: [],
-                  success: true,
-                  total: 0,
-                };
-              }
-            }}
+            request={fetchTableData}
             actionRef={tableRef}
           />
         </Spin>

@@ -110,6 +110,24 @@ jest.mock('@/services/teams/api', () => ({
   addTeamMemberApi: jest.fn(),
 }));
 
+jest.mock('@/pages/Teams/Components/AddMemberModal', () => ({
+  __esModule: true,
+  default: ({ open, onCancel, onSuccess, teamId }: any) =>
+    open ? (
+      <div data-testid='add-member-modal'>
+        <div>{teamId}</div>
+        <button type='button' onClick={() => onSuccess?.()}>
+          modal-success
+        </button>
+        <button type='button' onClick={() => onCancel?.()}>
+          modal-cancel
+        </button>
+      </div>
+    ) : null,
+}));
+
+const mockModalConfirm = jest.fn();
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -290,7 +308,27 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Upload = () => <div data-testid='upload' />;
+  const Upload = ({ beforeUpload, onRemove, fileList = [], disabled }: any) => (
+    <div data-testid='upload'>
+      <button
+        type='button'
+        disabled={disabled}
+        onClick={() =>
+          beforeUpload?.({
+            name: 'logo.png',
+            type: 'image/png',
+          })
+        }
+      >
+        upload-file
+      </button>
+      {fileList?.length > 0 ? (
+        <button type='button' disabled={disabled} onClick={() => onRemove?.()}>
+          remove-file
+        </button>
+      ) : null}
+    </div>
+  );
 
   const Button = React.forwardRef((props: any, ref: any) => {
     const { children, onClick, disabled, icon, ...rest } = props ?? {};
@@ -339,8 +377,6 @@ jest.mock('antd', () => {
     });
   };
 
-  const Modal = ({ open }: any) => (open ? <div data-testid='modal'>modal</div> : null);
-
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
   };
@@ -354,7 +390,9 @@ jest.mock('antd', () => {
     Flex,
     Form,
     Input,
-    Modal,
+    Modal: {
+      confirm: (config: any) => mockModalConfirm(config),
+    },
     Spin,
     Switch,
     Tabs,
@@ -368,6 +406,15 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const { Form } = require('antd');
+  const mockToText = (node: any): string => {
+    if (node === null || node === undefined) return '';
+    if (typeof node === 'string' || typeof node === 'number') return String(node);
+    if (Array.isArray(node)) return node.map(mockToText).join('');
+    if (node?.props?.defaultMessage) return node.props.defaultMessage;
+    if (node?.props?.id) return node.props.id;
+    if (node?.props?.children) return mockToText(node.props.children);
+    return '';
+  };
 
   const ProForm = ({ formRef, onFinish, submitter, children, disabled }: any) => {
     const internalFormRef = React.useRef<any>(null);
@@ -410,25 +457,48 @@ jest.mock('@ant-design/pro-components', () => {
     );
   };
 
-  const ProTable = ({ actionRef, toolBarRender }: any) => {
+  const ProTable = ({ actionRef, toolBarRender, request, columns = [], headerTitle }: any) => {
+    const [rows, setRows] = React.useState<any[]>([]);
+    const requestRef = React.useRef(request);
+    requestRef.current = request;
+
+    const reload = React.useCallback(async () => {
+      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
+      setRows(result?.data ?? []);
+      return result;
+    }, []);
+
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
-          reload: jest.fn(),
+          reload,
         };
       }
-    }, [actionRef]);
+      void reload();
+    }, [actionRef, reload]);
 
     const toolbarNodes = toolBarRender?.() ?? [];
     const toolbar = Array.isArray(toolbarNodes) ? toolbarNodes : [toolbarNodes];
 
     return (
       <div data-testid='pro-table'>
+        <div data-testid='pro-table-header'>{mockToText(headerTitle)}</div>
         <div data-testid='pro-table-toolbar'>
           {toolbar.map((node, index) => (
             <React.Fragment key={`toolbar-${index}`}>{node}</React.Fragment>
           ))}
         </div>
+        {rows.map((row: any, rowIndex: number) => (
+          <div key={`${row.user_id ?? row.email ?? rowIndex}`} data-testid={`team-row-${rowIndex}`}>
+            {columns.map((column: any, columnIndex: number) => (
+              <div key={`${column.key ?? column.dataIndex ?? columnIndex}`}>
+                {column.render
+                  ? column.render(row[column.dataIndex], row, rowIndex)
+                  : row[column.dataIndex]}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     );
   };
@@ -449,16 +519,39 @@ jest.mock('@ant-design/pro-components', () => {
 });
 
 import Team from '@/pages/Teams';
-import { createTeamMessage, getUserRoles } from '@/services/roles/api';
+import {
+  createTeamMessage,
+  delRoleApi,
+  getUserRoles,
+  reInvitedApi,
+  updateRoleApi,
+} from '@/services/roles/api';
+import { getBase64, isImage, removeLogoApi, uploadLogoApi } from '@/services/supabase/storage';
 import { editTeamMessage, getTeamMembersApi, getTeamMessageApi } from '@/services/teams/api';
+import { act } from '@testing-library/react';
+import { history } from '@umijs/max';
 import { message } from 'antd';
-import { fireEvent, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import {
+  fireEvent,
+  renderWithProviders,
+  screen,
+  waitFor,
+  within,
+} from '../../../helpers/testUtils';
 
 const mockCreateTeamMessage = createTeamMessage as jest.MockedFunction<any>;
+const mockDelRoleApi = delRoleApi as jest.MockedFunction<any>;
+const mockGetBase64 = getBase64 as jest.MockedFunction<any>;
 const mockGetUserRoles = getUserRoles as jest.MockedFunction<any>;
+const mockIsImage = isImage as jest.MockedFunction<any>;
+const mockReInvitedApi = reInvitedApi as jest.MockedFunction<any>;
+const mockRemoveLogoApi = removeLogoApi as jest.MockedFunction<any>;
 const mockGetTeamMessageApi = getTeamMessageApi as jest.MockedFunction<any>;
 const mockEditTeamMessage = editTeamMessage as jest.MockedFunction<any>;
 const mockGetTeamMembersApi = getTeamMembersApi as jest.MockedFunction<any>;
+const mockUpdateRoleApi = updateRoleApi as jest.MockedFunction<any>;
+const mockUploadLogoApi = uploadLogoApi as jest.MockedFunction<any>;
+const mockHistory = history as { replace: jest.Mock; push: jest.Mock };
 
 const setWindowLocation = (search: string) => {
   const path = `/team${search.startsWith('?') ? search : `?${search}`}`;
@@ -473,6 +566,37 @@ const resetMessages = () => {
   });
 };
 
+const memberRows = [
+  {
+    user_id: 'owner-1',
+    team_id: 'team-123',
+    role: 'owner',
+    display_name: 'Owner User',
+    email: 'owner@example.com',
+  },
+  {
+    user_id: 'member-1',
+    team_id: 'team-123',
+    role: 'member',
+    display_name: 'Member User',
+    email: 'member@example.com',
+  },
+  {
+    user_id: 'admin-1',
+    team_id: 'team-123',
+    role: 'admin',
+    display_name: 'Admin User',
+    email: 'admin@example.com',
+  },
+  {
+    user_id: 'rejected-1',
+    team_id: 'team-123',
+    role: 'rejected',
+    display_name: 'Rejected User',
+    email: 'rejected@example.com',
+  },
+];
+
 describe('Team page validations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -482,6 +606,14 @@ describe('Team page validations', () => {
       success: true,
       total: 0,
     } as any);
+    mockUpdateRoleApi.mockResolvedValue({ error: null } as any);
+    mockDelRoleApi.mockResolvedValue({ error: null } as any);
+    mockReInvitedApi.mockResolvedValue(null as any);
+    mockIsImage.mockReturnValue(true);
+    mockGetBase64.mockResolvedValue('data:image/mock;base64');
+    mockUploadLogoApi.mockResolvedValue({ data: { path: 'uploaded-logo.png' } } as any);
+    mockRemoveLogoApi.mockResolvedValue(null as any);
+    mockModalConfirm.mockReset();
   });
 
   it('prevents submission when rank requires logos but none are provided', async () => {
@@ -532,5 +664,593 @@ describe('Team page validations', () => {
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('Failed to get details, please refresh!');
     });
+  });
+
+  it('creates a team successfully and redirects back into edit mode', async () => {
+    setWindowLocation('?action=create');
+    const originalLocation = window.location;
+    const reloadSpy = jest.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...window.location,
+        reload: reloadSpy,
+      },
+    });
+    mockCreateTeamMessage.mockResolvedValueOnce(null);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Created Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Fresh team description' },
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockCreateTeamMessage).toHaveBeenCalledWith(
+        'unit-test-team-id',
+        expect.objectContaining({
+          title: [{ '#text': 'Created Team', '@xml:lang': 'en' }],
+          description: [{ '#text': 'Fresh team description', '@xml:lang': 'en' }],
+        }),
+        undefined,
+        undefined,
+      );
+    });
+    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(mockHistory.replace).toHaveBeenCalledWith('/team?action=edit');
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
+  it('shows a generic error when team creation fails', async () => {
+    setWindowLocation('?action=create');
+    mockCreateTeamMessage.mockResolvedValueOnce(new Error('create failed') as any);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Broken Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Broken description' },
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to update team information.');
+    });
+    expect(mockHistory.replace).not.toHaveBeenCalled();
+  });
+
+  it('logs thrown submit errors from team creation', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      setWindowLocation('?action=create');
+      mockCreateTeamMessage.mockRejectedValueOnce(new Error('create crashed'));
+
+      renderWithProviders(<Team />);
+
+      fireEvent.change(screen.getByLabelText('Team Name'), {
+        target: { value: 'Exploding Team' },
+      });
+      fireEvent.change(screen.getByLabelText('Team Description'), {
+        target: { value: 'Exploding description' },
+      });
+
+      fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+      await waitFor(() => {
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(Error));
+      });
+      expect(message.success).not.toHaveBeenCalled();
+      expect(mockHistory.replace).not.toHaveBeenCalled();
+    } finally {
+      consoleLogSpy.mockRestore();
+    }
+  });
+
+  it('loads existing team details and submits edit updates successfully', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockEditTeamMessage.mockResolvedValueOnce({ error: null } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockEditTeamMessage).toHaveBeenCalledWith(
+        'team-123',
+        expect.objectContaining({
+          title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+          description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+          lightLogo: 'logos/light.png',
+          darkLogo: 'logos/dark.png',
+        }),
+        -1,
+        true,
+      );
+    });
+    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+  });
+
+  it('shows a generic error when edit submission fails', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockEditTeamMessage.mockResolvedValueOnce({ error: new Error('edit failed') } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to update team information.');
+    });
+  });
+
+  it('loads edit mode without stored logos and allows add-member modal cancel', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: false,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+          },
+        },
+      ],
+      error: null,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    expect(screen.getByTestId('add-member-modal')).toHaveTextContent('team-123');
+
+    fireEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
+    await waitFor(() => {
+      expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+    });
+  });
+
+  it('updates local logo state through upload and remove interactions', async () => {
+    setWindowLocation('?action=create');
+
+    renderWithProviders(<Team />);
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(2);
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'remove-file' })[1]);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'remove-file' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'remove-file' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('loads team members and handles owner actions across the members tab', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockGetTeamMembersApi.mockResolvedValue({
+      data: memberRows,
+      success: true,
+      total: memberRows.length,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).toHaveBeenCalledWith(
+        { current: 1, pageSize: 10 },
+        {},
+        'team-123',
+      );
+    });
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('My Team / Members Message');
+    expect(screen.getByText('member@example.com')).toBeInTheDocument();
+    expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+    expect(screen.getByText('rejected@example.com')).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(
+        within(screen.getByTestId('pro-table-toolbar')).getByRole('button', { name: 'Add' }),
+      );
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('add-member-modal')).toHaveTextContent('team-123');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'modal-success' }));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(2);
+    });
+
+    const memberRow = screen.getByTestId('team-row-1');
+    await act(async () => {
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'admin');
+    });
+    expect(message.success).toHaveBeenCalledWith('Action success!');
+
+    const adminRow = screen.getByTestId('team-row-2');
+    await act(async () => {
+      fireEvent.click(within(adminRow).getByRole('button', { name: 'Set Member' }));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-123', 'admin-1', 'member');
+    });
+
+    const rejectedRow = screen.getByTestId('team-row-3');
+    await act(async () => {
+      fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockReInvitedApi).toHaveBeenCalledWith('rejected-1', 'team-123');
+    });
+
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(mockModalConfirm).toHaveBeenCalledTimes(1);
+    });
+    await act(async () => {
+      await mockModalConfirm.mock.calls[0][0].onOk();
+    });
+
+    await waitFor(() => {
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1');
+    });
+    expect(message.success).toHaveBeenCalledWith('Action success!');
+    expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(6);
+  });
+
+  it('short-circuits rejected users in the members tab', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'rejected' }],
+      success: true,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).not.toHaveBeenCalled();
+    });
+    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+    expect(mockGetTeamMessageApi).not.toHaveBeenCalled();
+  });
+
+  it('shows action errors in the members tab', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      setWindowLocation('?action=edit');
+      mockGetUserRoles.mockResolvedValueOnce({
+        data: [{ team_id: 'team-123', role: 'owner' }],
+        success: true,
+      } as any);
+      mockGetTeamMessageApi.mockResolvedValueOnce({
+        data: [
+          {
+            rank: -1,
+            is_public: true,
+            json: {
+              title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+              description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+              lightLogo: 'logos/light.png',
+              darkLogo: 'logos/dark.png',
+            },
+          },
+        ],
+        error: null,
+      } as any);
+      mockGetTeamMembersApi.mockResolvedValue({
+        data: memberRows,
+        success: true,
+        total: memberRows.length,
+      } as any);
+      mockUpdateRoleApi.mockRejectedValueOnce(new Error('update failed'));
+      mockReInvitedApi.mockResolvedValueOnce({ message: 'invite failed' } as any);
+      mockDelRoleApi.mockResolvedValueOnce({ error: new Error('delete failed') } as any);
+
+      renderWithProviders(<Team />);
+
+      await waitFor(() => {
+        expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('member@example.com')).toBeInTheDocument();
+      });
+
+      const memberRow = screen.getByTestId('team-row-1');
+      await act(async () => {
+        fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+        await Promise.resolve();
+      });
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalled();
+      });
+
+      const rejectedRow = screen.getByTestId('team-row-3');
+      await act(async () => {
+        fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+        await Promise.resolve();
+      });
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith('Action failed!');
+      });
+
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+      await waitFor(() => {
+        expect(mockModalConfirm).toHaveBeenCalledTimes(1);
+      });
+      await act(async () => {
+        await mockModalConfirm.mock.calls[0][0].onOk();
+      });
+
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith('Action failed!');
+      });
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
+
+  it('shows inline member-action errors when apis return error objects', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockGetTeamMembersApi.mockResolvedValue({
+      data: memberRows,
+      success: true,
+      total: memberRows.length,
+    } as any);
+    mockUpdateRoleApi.mockResolvedValueOnce({ error: new Error('role failed') } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('member@example.com')).toBeInTheDocument();
+    });
+
+    const memberRow = screen.getByTestId('team-row-1');
+    await act(async () => {
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Action failed!');
+    });
+  });
+
+  it('logs delete and request failures in the members tab', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      setWindowLocation('?action=edit');
+      mockGetUserRoles.mockResolvedValueOnce({
+        data: [{ team_id: 'team-123', role: 'owner' }],
+        success: true,
+      } as any);
+      mockGetTeamMessageApi.mockResolvedValueOnce({
+        data: [
+          {
+            rank: -1,
+            is_public: true,
+            json: {
+              title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+              description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+              lightLogo: 'logos/light.png',
+              darkLogo: 'logos/dark.png',
+            },
+          },
+        ],
+        error: null,
+      } as any);
+      mockGetTeamMembersApi.mockRejectedValueOnce(new Error('members failed')).mockResolvedValue({
+        data: memberRows,
+        success: true,
+        total: memberRows.length,
+      } as any);
+      mockDelRoleApi.mockRejectedValueOnce(new Error('delete crashed'));
+
+      renderWithProviders(<Team />);
+
+      await waitFor(() => {
+        expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalled();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Team Information' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('member@example.com')).toBeInTheDocument();
+      });
+
+      const memberRow = screen.getByTestId('team-row-1');
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+      await waitFor(() => {
+        expect(mockModalConfirm).toHaveBeenCalledTimes(1);
+      });
+      await act(async () => {
+        await mockModalConfirm.mock.calls[0][0].onOk();
+      });
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalled();
+      });
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
   });
 });

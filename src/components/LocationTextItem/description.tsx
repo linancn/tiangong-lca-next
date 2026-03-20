@@ -1,14 +1,16 @@
 import { getILCDLocationByValue } from '@/services/ilcd/api';
 import { Descriptions, Spin } from 'antd';
-import { FC, ReactNode, useEffect, useState } from 'react';
+import { CSSProperties, FC, ReactNode, useEffect, useState } from 'react';
 type Props = {
   lang: any;
   data: any;
   label: ReactNode | string;
-  labelStyle: any;
+  styles?: {
+    label?: CSSProperties;
+  };
 };
 
-const LocationTextItemDescription: FC<Props> = ({ lang, data, label, labelStyle }) => {
+const LocationTextItemDescription: FC<Props> = ({ lang, data, label, styles }) => {
   const [spinning, setSpinning] = useState<boolean>(false);
   const [dataDes, setDataDes] = useState<string>('');
   useEffect(() => {
@@ -24,7 +26,7 @@ const LocationTextItemDescription: FC<Props> = ({ lang, data, label, labelStyle 
   return (
     <Spin spinning={spinning}>
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label={label} labelStyle={labelStyle}>
+        <Descriptions.Item key={0} label={label} styles={styles}>
           {dataDes}
         </Descriptions.Item>
       </Descriptions>

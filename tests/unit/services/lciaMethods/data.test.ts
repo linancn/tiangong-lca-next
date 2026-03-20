@@ -24,11 +24,13 @@ describe('LCIA Methods Data Types (src/services/lciaMethods/data.ts)', () => {
           ],
         },
         meanAmount: 123.45,
+        referenceQuantityDesc: 'kg CO2 eq',
       };
 
       expect(mockResult.key).toBe('result-123');
       expect(mockResult.meanAmount).toBe(123.45);
       expect(mockResult.referenceToLCIAMethodDataSet['@refObjectId']).toBe('method-456');
+      expect(mockResult.referenceQuantityDesc).toBe('kg CO2 eq');
     });
 
     it('should support short descriptions in different languages', () => {
@@ -127,6 +129,25 @@ describe('LCIA Methods Data Types (src/services/lciaMethods/data.ts)', () => {
 
       expect(results).toHaveLength(2);
       expect(results[0].meanAmount).toBeGreaterThan(results[1].meanAmount);
+    });
+
+    it('should allow LCIA results without optional quantity descriptions', () => {
+      const result: LCIAResultTable = {
+        key: 'minimal',
+        referenceToLCIAMethodDataSet: {
+          '@refObjectId': 'method-min',
+          '@type': 'LCIA method data set',
+          '@uri': '../lciamethods/method-min.xml',
+          '@version': '01.00.000',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Minimal method' }],
+        },
+        meanAmount: 1,
+      };
+
+      expect(result.referenceQuantityDesc).toBeUndefined();
+      expect(result.referenceToLCIAMethodDataSet['common:shortDescription'][0]['#text']).toBe(
+        'Minimal method',
+      );
     });
   });
 });

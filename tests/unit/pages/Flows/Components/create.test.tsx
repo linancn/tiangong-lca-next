@@ -22,6 +22,7 @@ const mockFormatDateTime = jest.fn(() => 'formatted-time');
 const mockGetImportedId = jest.fn();
 const mockIsSupabaseDuplicateKeyError = jest.fn();
 let mockUuid = 0;
+let mockValidateFieldsShouldReject = false;
 
 const mockSetFlowFormProps = jest.fn();
 const mockFlowFormActions: Record<string, () => void> = {};
@@ -53,12 +54,17 @@ jest.mock('antd', () => {
       {toText(children)}
     </button>
   );
-  const Drawer = ({ open, children, extra, footer }: any) =>
+  const Drawer = ({ open, children, extra, footer, getContainer, onClose, title }: any) =>
     open ? (
       <div data-testid='drawer'>
+        {getContainer?.() && null}
+        <div data-testid='drawer-title'>{toText(title)}</div>
         {extra}
         {children}
         <div data-testid='drawer-footer'>{footer}</div>
+        <button type='button' onClick={onClose}>
+          close-drawer
+        </button>
       </div>
     ) : null;
   const Space = ({ children }: any) => <div>{children}</div>;
@@ -78,7 +84,7 @@ jest.mock('antd', () => {
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
-  const ProForm = ({ formRef, onValuesChange, onFinish, children }: any) => {
+  const ProForm = ({ formRef, onValuesChange, onFinish, submitter, children }: any) => {
     const instance = {
       values: {},
       setFieldsValue: jest.fn((vals: any) => {
@@ -88,7 +94,11 @@ jest.mock('@ant-design/pro-components', () => {
       resetFields: jest.fn(() => {
         instance.values = {};
       }),
-      validateFields: jest.fn(() => Promise.resolve(true)),
+      validateFields: jest.fn(() =>
+        mockValidateFieldsShouldReject
+          ? Promise.reject(new Error('validation failed'))
+          : Promise.resolve(true),
+      ),
       submit: jest.fn(() => onFinish?.()),
       setFieldValue: jest.fn(),
     };
@@ -97,8 +107,12 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <div
         data-testid='proform'
-        onClick={() => onValuesChange?.({}, { flowInformation: { name: 'changed' } })}
+        onClick={() => {
+          instance.values = { ...instance.values, flowInformation: { name: 'changed' } };
+          onValuesChange?.({}, { flowInformation: { name: 'changed' } });
+        }}
       >
+        <div data-testid='submitter-render-output'>{submitter?.render?.()}</div>
         {children}
       </div>
     );
@@ -182,6 +196,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUuid = 0;
+    mockValidateFieldsShouldReject = false;
     mockFormatDateTime.mockReturnValue('formatted-time');
     mockGetImportedId.mockReturnValue(undefined);
     mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
@@ -220,6 +235,39 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       expect(onClose).toHaveBeenCalled();
     });
     expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+  });
+
+  it('opens from copy trigger and handles tab/data/property callbacks', async () => {
+    mockGenFlowFromData.mockReturnValue({
+      flowInformation: { name: 'Copied flow' },
+      flowProperties: { flowProperty: [{ id: 'copy' }] },
+      modellingAndValidation: { LCIMethod: { typeOfDataSet: 'Waste flow' } },
+    });
+
+    renderComponent({
+      actionType: 'copy',
+      id: 'flow-1',
+      version: '1.0',
+    });
+
+    fireEvent.click(screen.getByTestId('icon-copy').closest('button')!);
+
+    await waitFor(() => {
+      expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0');
+    });
+
+    fireEvent.click(screen.getByText('switch-tab'));
+    await waitFor(() => {
+      expect(screen.getByTestId('flowform-active-tab').textContent).toBe('modellingAndValidation');
+    });
+
+    fireEvent.click(screen.getByTestId('proform'));
+    fireEvent.click(screen.getByText('sync-data'));
+    fireEvent.click(screen.getByText('set-properties'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('flowform-property-count').textContent).toBe('1');
+    });
   });
 
   it('auto-opens with import data and populates properties and flow type', async () => {
@@ -261,7 +309,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
 
   it('loads existing data when copying or creating new version', async () => {
     mockGenFlowFromData.mockReturnValue({
-      flowProperties: { flowProperty: [{ id: 'copy' }] },
+      flowProperties: { flowProperty: { id: 'copy' } },
       administrativeInformation: {
         publicationAndOwnership: { 'common:dataSetVersion': 'old-version' },
       },
@@ -285,6 +333,56 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       expect(screen.getByTestId('flowform-property-count').textContent).toBe('1');
     });
     expect(screen.getByTestId('flowform-flow-type').textContent).toBe('Waste flow');
+  });
+
+  it('uses the existing id when saving a create-version flow', async () => {
+    mockGenFlowFromData.mockReturnValue({
+      flowProperties: { flowProperty: [{ id: 'copy' }] },
+      administrativeInformation: {
+        publicationAndOwnership: { 'common:dataSetVersion': 'old-version' },
+      },
+      modellingAndValidation: { LCIMethod: { typeOfDataSet: 'Waste flow' } },
+    });
+
+    renderComponent({
+      actionType: 'createVersion',
+      id: 'flow-1',
+      version: '1.0',
+      newVersion: '2.0',
+    });
+
+    fireEvent.click(screen.getByText('Create'));
+
+    await waitFor(() => {
+      expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0');
+    });
+
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(mockCreateFlows).toHaveBeenCalled();
+    });
+    expect(mockCreateFlows).toHaveBeenCalledWith('flow-1', expect.any(Object));
+  });
+
+  it('falls back to an empty flow dataset payload when detail data is missing', async () => {
+    mockGenFlowFromData.mockImplementationOnce((data: any) => ({ ...data }));
+    mockGetFlowDetail.mockResolvedValueOnce({
+      data: { json: {}, version: 'v1' },
+    });
+
+    renderComponent({
+      actionType: 'createVersion',
+      id: 'flow-1',
+      version: '1.0',
+      newVersion: '2.0',
+    });
+
+    fireEvent.click(screen.getByText('Create'));
+
+    await waitFor(() => {
+      expect(mockGenFlowFromData).toHaveBeenCalledWith({});
+    });
   });
 
   it('submits successfully, resets state, and reloads table', async () => {
@@ -344,5 +442,83 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
     await waitFor(() => {
       expect(mockMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.');
     });
+  });
+
+  it('falls back to a generic error message when the create API error has no message', async () => {
+    mockCreateFlows.mockResolvedValueOnce({ error: {} });
+    renderComponent();
+
+    fireEvent.click(screen.getByText('Create'));
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(mockMessage.error).toHaveBeenCalledWith('Error');
+    });
+  });
+
+  it('does not fetch details when copy mode is called without ids and uses the default onClose', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+
+    render(<FlowsCreate lang='en' actionRef={actionRef as any} actionType={'copy' as any} />);
+
+    fireEvent.click(screen.getByTestId('icon-copy').closest('button')!);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+    expect(mockGetFlowDetail).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('close-drawer'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+    });
+  });
+
+  it('closes the drawer from the header close button and drawer onClose handler', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByText('Create'));
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('icon-close').closest('button')!);
+    await waitFor(() => {
+      expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Create'));
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('close-drawer'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+    });
+  });
+
+  it('returns false without creating when form validation fails', async () => {
+    mockValidateFieldsShouldReject = true;
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    renderComponent();
+
+    fireEvent.click(screen.getByText('Create'));
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('err', expect.any(Error));
+    });
+    expect(mockCreateFlows).not.toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
   });
 });

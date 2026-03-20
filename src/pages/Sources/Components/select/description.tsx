@@ -23,7 +23,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
               label={
                 <FormattedMessage id='pages.source.refObjectId' defaultMessage='Ref object id' />
               }
-              labelStyle={{ width: locale === 'zh-CN' ? '150px' : '250px' }}
+              styles={{ label: { width: locale === 'zh-CN' ? '150px' : '250px' } }}
             >
               -
             </Descriptions.Item>
@@ -52,7 +52,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                         defaultMessage='Ref object id'
                       />
                     }
-                    labelStyle={{ width: locale === 'zh-CN' ? '150px' : '250px' }}
+                    styles={{ label: { width: locale === 'zh-CN' ? '150px' : '250px' } }}
                   >
                     {item?.['@refObjectId'] ?? '-'}
                   </Descriptions.Item>
@@ -72,7 +72,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                 <Descriptions.Item
                   key={0}
                   label={<FormattedMessage id='pages.contact.version' defaultMessage='Version' />}
-                  labelStyle={{ width: '140px' }}
+                  styles={{ label: { width: '140px' } }}
                 >
                   {item?.['@version'] ?? '-'}
                 </Descriptions.Item>

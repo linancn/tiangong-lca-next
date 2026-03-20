@@ -47,7 +47,7 @@ describe('LocationTextItemDescription', () => {
         lang='en'
         data='US'
         label='Location'
-        labelStyle={{ width: 120 }}
+        styles={{ label: { width: 120 } }}
       />,
     );
 
@@ -66,7 +66,7 @@ describe('LocationTextItemDescription', () => {
         lang='en'
         data={null}
         label='Location'
-        labelStyle={{ width: 120 }}
+        styles={{ label: { width: 120 } }}
       />,
     );
 

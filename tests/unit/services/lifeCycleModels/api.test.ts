@@ -1,11 +1,5 @@
 /**
- * Tests for life cycle model service API functions
- * Path: src/services/lifeCycleModels/api.ts
- *
- * Coverage:
- * - Table listings & search (used in src/pages/LifeCycleModels/index.tsx)
- * - Detail fetch & destructive actions (used in src/pages/LifeCycleModels/Components/*)
- * - Review flows & JSON patching (used in src/pages/Review/Components/.../viewInfo.tsx)
+ * Focused tests for the lifecycle model service bundle persistence flow.
  */
 
 jest.mock('@/pages/LifeCycleModels/lifecyclemodels.json', () => ({}), { virtual: true });
@@ -15,7 +9,15 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
   createLifeCycleModel: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
   }),
+  createProcess: jest.fn().mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  }),
 }));
+
+const {
+  createLifeCycleModel: mockCreateTidasLifeCycleModel,
+  createProcess: mockCreateTidasProcess,
+} = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
@@ -25,24 +27,28 @@ const mockRpc = jest.fn();
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
   supabase: {
-    from: (...args: any[]) => mockFrom.apply(null, args),
+    from: (...args: any[]) => mockFrom(...args),
     auth: {
-      getSession: (...args: any[]) => mockAuthGetSession.apply(null, args),
+      getSession: (...args: any[]) => mockAuthGetSession(...args),
     },
     functions: {
-      invoke: (...args: any[]) => mockFunctionsInvoke.apply(null, args),
+      invoke: (...args: any[]) => mockFunctionsInvoke(...args),
     },
-    rpc: (...args: any[]) => mockRpc.apply(null, args),
+    rpc: (...args: any[]) => mockRpc(...args),
   },
 }));
 
 const mockGetTeamIdByUserId = jest.fn();
-const mockResolveFunctionInvokeError = jest.fn(async (error: any) => error);
+const mockContributeSource = jest.fn();
+const mockGetRefData = jest.fn();
+const mockNormalizeLangPayloadForSave = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
-  getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
-  resolveFunctionInvokeError: (...args: any[]) => mockResolveFunctionInvokeError.apply(null, args),
+  contributeSource: (...args: any[]) => mockContributeSource(...args),
+  getRefData: (...args: any[]) => mockGetRefData(...args),
+  getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId(...args),
+  normalizeLangPayloadForSave: (...args: any[]) => mockNormalizeLangPayloadForSave(...args),
 }));
 
 const mockClassificationToString = jest.fn();
@@ -52,108 +58,71 @@ const mockJsonToList = jest.fn();
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
-  genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
-  getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
-  jsonToList: (...args: any[]) => mockJsonToList.apply(null, args),
+  classificationToString: (...args: any[]) => mockClassificationToString(...args),
+  genClassificationZH: (...args: any[]) => mockGenClassificationZH(...args),
+  getLangText: (...args: any[]) => mockGetLangText(...args),
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 const mockGetILCDClassification = jest.fn();
 
 jest.mock('@/services/ilcd/api', () => ({
   __esModule: true,
-  getILCDClassification: (...args: any[]) => mockGetILCDClassification.apply(null, args),
+  getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
 }));
 
-const mockCreateProcess = jest.fn();
-const mockDeleteProcess = jest.fn();
 const mockGetProcessDetailByIdsAndVersion = jest.fn();
-const mockGetProcessesByIdAndVersion = jest.fn();
-const mockUpdateProcess = jest.fn();
-const mockValidateProcessesByIdAndVersion = jest.fn();
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
-  createProcess: (...args: any[]) => mockCreateProcess.apply(null, args),
-  deleteProcess: (...args: any[]) => mockDeleteProcess.apply(null, args),
-  getProcessDetailByIdsAndVersion: (...args: any[]) =>
-    mockGetProcessDetailByIdsAndVersion.apply(null, args),
-  getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion.apply(null, args),
-  updateProcess: (...args: any[]) => mockUpdateProcess.apply(null, args),
-  validateProcessesByIdAndVersion: (...args: any[]) =>
-    mockValidateProcessesByIdAndVersion.apply(null, args),
+  getProcessDetailByIdsAndVersion: (...args: any[]) => mockGetProcessDetailByIdsAndVersion(...args),
 }));
 
 const mockGenProcessName = jest.fn();
+const mockGenProcessJsonOrdered = jest.fn();
 
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
-  genProcessName: (...args: any[]) => mockGenProcessName.apply(null, args),
+  genProcessJsonOrdered: (...args: any[]) => mockGenProcessJsonOrdered(...args),
+  genProcessName: (...args: any[]) => mockGenProcessName(...args),
 }));
 
-const mockGetUserId = jest.fn();
+const mockGetCurrentUser = jest.fn();
 
-jest.mock('@/services/users/api', () => ({
+jest.mock('@/services/auth', () => ({
   __esModule: true,
-  getUserId: (...args: any[]) => mockGetUserId.apply(null, args),
+  getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
 }));
 
 const mockGenLifeCycleModelJsonOrdered = jest.fn();
-
-const mockGenReferenceToResultingProcess = jest
-  .fn()
-  .mockImplementation((processes: any, version: string, data: any) => {
-    // Return data with referenceToResultingProcess added (matching real implementation)
-    return {
-      ...data,
-      lifeCycleModelDataSet: {
-        ...(data?.lifeCycleModelDataSet ?? {}),
-        lifeCycleModelInformation: {
-          ...(data?.lifeCycleModelDataSet?.lifeCycleModelInformation ?? {}),
-          dataSetInformation: {
-            ...(data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation ?? {}),
-            referenceToResultingProcess:
-              processes?.map((p: any) => ({
-                '@refObjectId': p?.modelInfo?.id,
-                '@type': 'process data set',
-                '@uri': `../processes/${p?.modelInfo?.id}.xml`,
-                '@version': version,
-                'common:shortDescription':
-                  p?.data?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
-              })) ?? [],
-          },
-        },
-      },
-    };
-  });
+const mockGenReferenceToResultingProcess = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
-  genLifeCycleModelJsonOrdered: (...args: any[]) =>
-    mockGenLifeCycleModelJsonOrdered.apply(null, args),
-  genReferenceToResultingProcess: (...args: any[]) =>
-    mockGenReferenceToResultingProcess.apply(null, args),
+  genLifeCycleModelJsonOrdered: (...args: any[]) => mockGenLifeCycleModelJsonOrdered(...args),
+  genReferenceToResultingProcess: (...args: any[]) => mockGenReferenceToResultingProcess(...args),
 }));
 
 const mockGenLifeCycleModelProcesses = jest.fn();
 
 jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
   __esModule: true,
-  genLifeCycleModelProcesses: (...args: any[]) => mockGenLifeCycleModelProcesses.apply(null, args),
+  genLifeCycleModelProcesses: (...args: any[]) => mockGenLifeCycleModelProcesses(...args),
 }));
 
-const mockControllerAdd = jest.fn();
-const mockControllerWaitForAll = jest.fn();
+const mockGetAllRefObj = jest.fn();
+const mockGetRefTableName = jest.fn();
 const mockValidateDatasetRuleVerification = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   ConcurrencyController: jest.fn().mockImplementation(() => ({
-    add: (...args: any[]) => mockControllerAdd.apply(null, args),
-    waitForAll: (...args: any[]) => mockControllerWaitForAll.apply(null, args),
+    add: jest.fn(),
+    waitForAll: jest.fn().mockResolvedValue(undefined),
   })),
-  validateDatasetRuleVerification: (...args: any[]) =>
-    mockValidateDatasetRuleVerification.apply(null, args),
+  getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
+  getRefTableName: (...args: any[]) => mockGetRefTableName(...args),
+  validateDatasetRuleVerification: (...args: any[]) => mockValidateDatasetRuleVerification(...args),
 }));
 
 import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
@@ -161,22 +130,97 @@ import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
 import {
   createMockEdgeFunctionResponse,
   createMockNoSession,
-  createMockRpcResponse,
   createMockSession,
   createQueryBuilder,
 } from '../../../helpers/mockBuilders';
-import { mockFilterCondition, mockPaginationParams } from '../../../helpers/testData';
-
-const waitForMicrotasks = async () =>
-  new Promise((resolve) => {
-    setTimeout(resolve, 0);
-  });
 
 const sampleModelId = '11111111-1111-1111-1111-111111111111';
 const sampleProcessId = '22222222-2222-2222-2222-222222222222';
 const sampleVersion = '01.00.000';
 const sampleUserId = 'user-0001';
 const sampleAccessToken = 'access-token-0001';
+
+const buildProcessDataSet = () => ({
+  processInformation: {
+    dataSetInformation: {},
+    technology: {},
+  },
+  modellingAndValidation: {
+    complianceDeclarations: {},
+    validation: {},
+  },
+  administrativeInformation: {
+    dataEntryBy: {},
+    publicationAndOwnership: {},
+  },
+});
+
+const buildLifecycleModelJsonOrdered = (includedProcessIds: string[] = []) => ({
+  lifeCycleModelDataSet: {
+    administrativeInformation: {
+      publicationAndOwnership: {
+        'common:dataSetVersion': sampleVersion,
+      },
+    },
+    lifeCycleModelInformation: {
+      dataSetInformation: {
+        name: {},
+      },
+      technology: {
+        processes: {
+          processInstance: includedProcessIds.map((id) => ({
+            referenceToProcess: { '@refObjectId': id },
+          })),
+        },
+      },
+    },
+    modellingAndValidation: {
+      complianceDeclarations: {},
+      validation: {},
+    },
+  },
+});
+
+const buildSaveResult = (overrides: Record<string, unknown> = {}) => ({
+  ok: true as const,
+  modelId: sampleModelId,
+  version: sampleVersion,
+  lifecycleModel: {
+    id: sampleModelId,
+    version: sampleVersion,
+    json: {},
+    json_tg: { submodels: [] },
+    ruleVerification: true,
+  },
+  ...overrides,
+});
+
+const createInvokeError = ({
+  status = 500,
+  jsonPayload,
+  text = '',
+  jsonError,
+  textError,
+  message = 'Function error',
+}: {
+  status?: number;
+  jsonPayload?: unknown;
+  text?: string;
+  jsonError?: Error;
+  textError?: Error;
+  message?: string;
+} = {}) => ({
+  message,
+  context: {
+    status,
+    clone: jest.fn(() => ({
+      json: jsonError
+        ? jest.fn().mockRejectedValue(jsonError)
+        : jest.fn().mockResolvedValue(jsonPayload),
+      text: textError ? jest.fn().mockRejectedValue(textError) : jest.fn().mockResolvedValue(text),
+    })),
+  },
+});
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -186,33 +230,35 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
-  mockResolveFunctionInvokeError.mockReset().mockImplementation(async (error: any) => error);
+  mockContributeSource.mockReset();
+  mockGetRefData.mockReset();
+  mockNormalizeLangPayloadForSave.mockReset();
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
   mockJsonToList.mockReset();
   mockGetILCDClassification.mockReset();
-  mockCreateProcess.mockReset();
-  mockDeleteProcess.mockReset();
-  mockGetProcessesByIdAndVersion.mockReset();
-  mockUpdateProcess.mockReset();
-  mockValidateProcessesByIdAndVersion.mockReset();
+  mockGetProcessDetailByIdsAndVersion.mockReset();
   mockGenProcessName.mockReset();
-  mockGetUserId.mockReset();
+  mockGenProcessJsonOrdered.mockReset();
+  mockGetCurrentUser.mockReset();
   mockGenLifeCycleModelJsonOrdered.mockReset();
+  mockGenReferenceToResultingProcess.mockReset();
   mockGenLifeCycleModelProcesses.mockReset();
-  mockControllerAdd.mockReset();
-  mockControllerWaitForAll.mockReset();
-  mockValidateDatasetRuleVerification.mockReset().mockResolvedValue({
-    datasetSdkIssues: [],
-    datasetSdkValid: true,
-    nonExistentRef: [],
-    ruleVerification: true,
-    unRuleVerification: [],
-  });
+  mockGetAllRefObj.mockReset();
+  mockGetRefTableName.mockReset();
+  mockValidateDatasetRuleVerification.mockReset();
+  mockCreateTidasLifeCycleModel.mockReset();
+  mockCreateTidasProcess.mockReset();
 
   mockAuthGetSession.mockResolvedValue(createMockSession(sampleUserId, sampleAccessToken));
   mockGetTeamIdByUserId.mockResolvedValue('team-default');
+  mockContributeSource.mockResolvedValue({ success: true });
+  mockGetRefData.mockResolvedValue({ success: true, data: null });
+  mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
+    payload,
+    validationError: undefined,
+  }));
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
   mockGetLangText.mockReturnValue('localized-text');
@@ -220,553 +266,796 @@ beforeEach(() => {
     Array.isArray(value) ? value : value ? [value] : [],
   );
   mockGetILCDClassification.mockResolvedValue({ data: { dictionary: true } });
-  mockCreateProcess.mockResolvedValue(undefined);
-  mockDeleteProcess.mockResolvedValue(undefined);
-  mockGetProcessesByIdAndVersion.mockResolvedValue({ data: [] });
-  mockUpdateProcess.mockResolvedValue(undefined);
-  mockValidateProcessesByIdAndVersion.mockResolvedValue(true);
+  mockGetProcessDetailByIdsAndVersion.mockResolvedValue({ data: [] });
   mockGenProcessName.mockReturnValue('Life Cycle Model Name');
-  mockGetUserId.mockResolvedValue(sampleUserId);
-  mockGenLifeCycleModelJsonOrdered.mockReturnValue({ lifeCycleModelDataSet: {} });
-  mockGenLifeCycleModelProcesses.mockResolvedValue({ lifeCycleModelProcesses: [] });
-  mockControllerWaitForAll.mockResolvedValue(undefined);
+  mockGenProcessJsonOrdered.mockImplementation((_id: string, data: any) => ({
+    processDataSet: data,
+  }));
+  mockGetCurrentUser.mockResolvedValue({ userid: sampleUserId });
+  mockGenLifeCycleModelJsonOrdered.mockReturnValue(buildLifecycleModelJsonOrdered());
+  mockGenReferenceToResultingProcess.mockImplementation(
+    (processes: any[], version: string, data: any) => ({
+      ...data,
+      lifeCycleModelDataSet: {
+        ...(data?.lifeCycleModelDataSet ?? {}),
+        lifeCycleModelInformation: {
+          ...(data?.lifeCycleModelDataSet?.lifeCycleModelInformation ?? {}),
+          dataSetInformation: {
+            ...(data?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation ?? {}),
+            referenceToResultingProcess: (processes ?? []).map((process: any) => ({
+              '@refObjectId': process?.modelInfo?.id,
+              '@type': 'process data set',
+              '@uri': `../processes/${process?.modelInfo?.id}.xml`,
+              '@version': version,
+              'common:shortDescription':
+                process?.data?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
+            })),
+          },
+        },
+      },
+    }),
+  );
+  mockGenLifeCycleModelProcesses.mockResolvedValue({
+    lifeCycleModelProcesses: [],
+    up2DownEdges: [],
+  });
+  mockGetAllRefObj.mockReturnValue([]);
+  mockGetRefTableName.mockImplementation((type: string) => {
+    if (type === 'process data set') return 'processes';
+    if (type === 'lifeCycleModel data set') return 'lifecyclemodels';
+    if (type === 'source data set') return 'sources';
+    return '';
+  });
+  mockValidateDatasetRuleVerification.mockResolvedValue({
+    ruleVerification: true,
+  });
+  mockCreateTidasLifeCycleModel.mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  });
+  mockCreateTidasProcess.mockReturnValue({
+    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  });
 });
 
 describe('getLifeCycleModelTableAll', () => {
-  it('returns paginated data for english locale with tg data source', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: sampleModelId,
-          name: { en: 'Sample model' },
-          'common:class': [{ '#text': 'class-1' }],
-          'common:generalComment': { en: 'Comment' },
-          version: sampleVersion,
-          modified_at: '2023-07-10T12:00:00.000Z',
-          team_id: 'team-123',
-        },
-      ],
-      count: 7,
-      error: null,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
-      { current: 2, pageSize: 5 },
-      { modified_at: 'ascend' } as Record<string, any>,
-      'en',
-      'tg',
-      'team-123',
-    );
-
-    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
-    expect(builder.select).toHaveBeenCalled();
-    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: true });
-    expect(builder.range).toHaveBeenCalledWith(5, 9);
-    expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
-    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-123');
-    expect(mockJsonToList).toHaveBeenCalledWith(supabaseResult.data[0]['common:class']);
-    expect(mockGenProcessName).toHaveBeenCalledWith({ en: 'Sample model' }, 'en');
-    expect(mockClassificationToString).toHaveBeenCalledWith(expect.any(Array));
-
-    expect(result).toEqual({
-      data: [
-        {
-          key: sampleModelId,
-          id: sampleModelId,
-          name: 'Life Cycle Model Name',
-          generalComment: 'localized-text',
-          classification: 'classification-string',
-          version: sampleVersion,
-          modifiedAt: new Date('2023-07-10T12:00:00.000Z'),
-          teamId: 'team-123',
-        },
-      ],
-      page: 2,
-      success: true,
-      total: 7,
-    });
-  });
-
-  it('generates zh locale rows using ILCD classification data', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          id: sampleModelId,
-          name: { zh: '中文模型' },
-          'common:class': [{ '#text': '分类' }],
-          'common:generalComment': { zh: '备注' },
-          version: sampleVersion,
-          modified_at: '2023-08-15T08:30:00.000Z',
-          team_id: 'team-zh',
-        },
-      ],
-      count: 1,
-      error: null,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-    mockGenProcessName.mockReturnValueOnce('中文名称');
-    mockGetLangText.mockReturnValueOnce('中文备注');
-    mockClassificationToString.mockReturnValueOnce('中文分类');
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
-      { current: 1, pageSize: 10 },
-      {},
-      'zh',
-      'co',
-      '',
-    );
-
-    expect(mockGetILCDClassification).toHaveBeenCalledWith('LifeCycleModel', 'zh', ['all']);
-    expect(mockGenClassificationZH).toHaveBeenCalledWith(supabaseResult.data[0]['common:class'], {
-      dictionary: true,
-    });
-    expect(mockClassificationToString).toHaveBeenCalledWith(['classification-zh']);
-    expect(result.data[0]).toMatchObject({
-      id: sampleModelId,
-      name: '中文名称',
-      generalComment: '中文备注',
-      classification: '中文分类',
-    });
-  });
-
-  it('returns failure result when my data source lacks active session', async () => {
-    const builder = createQueryBuilder({ data: [], count: 0, error: null });
-    mockFrom.mockReturnValueOnce(builder);
-    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
-      { current: 1, pageSize: 20 },
-      {},
-      'en',
-      'my',
-      '',
-      100,
-    );
-
-    expect(mockAuthGetSession).toHaveBeenCalled();
-    expect(result).toEqual({ data: [], success: false });
-  });
-
-  it('returns empty success when team data source has no team id', async () => {
-    const builder = createQueryBuilder({ data: [], count: 0, error: null });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'te',
-      '',
-    );
-
-    expect(mockGetTeamIdByUserId).toHaveBeenCalled();
-    expect(result).toEqual({ data: [], success: true });
-  });
-});
-
-describe('getLifeCycleModelTablePgroongaSearch', () => {
-  it('maps RPC search results when user session is available', async () => {
-    const rpcPayload: any = [
-      {
-        id: sampleModelId,
-        version: sampleVersion,
-        modified_at: '2024-03-03T12:00:00.000Z',
-        team_id: 'team-search',
-        json: {
-          lifeCycleModelDataSet: {
-            lifeCycleModelInformation: {
-              dataSetInformation: {
-                name: { en: 'Search model' },
-                classificationInformation: {
-                  'common:classification': {
-                    'common:class': [{ '#text': 'class-1' }],
-                  },
-                },
-                'common:generalComment': { en: 'Search comment' },
-              },
-            },
+  it('maps lifecycle model rows for the english table view', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            id: sampleModelId,
+            name: {},
+            'common:class': [{ id: 'class-1' }],
+            'common:generalComment': {},
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
           },
-        },
-        total_count: 15,
-      },
-    ];
-    (rpcPayload as any).total_count = 15;
-    mockRpc.mockResolvedValueOnce(createMockRpcResponse(rpcPayload));
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
-      mockPaginationParams,
-      'en',
-      'my',
-      'cement',
-      mockFilterCondition,
-      100,
-    );
-
-    expect(mockAuthGetSession).toHaveBeenCalled();
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
-      query_text: 'cement',
-      filter_condition: mockFilterCondition,
-      page_size: mockPaginationParams.pageSize,
-      page_current: mockPaginationParams.current,
-      data_source: 'my',
-      order_by: undefined,
-      state_code: 100,
-    });
-    expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'class-1' }]);
-    expect(mockGenProcessName).toHaveBeenCalledWith({ en: 'Search model' }, 'en');
-    expect(result).toMatchObject({ success: true, total: 15 });
-    expect(result.data[0]).toMatchObject({
-      id: sampleModelId,
-      teamId: 'team-search',
-      generalComment: 'localized-text',
-    });
-  });
-
-  it('returns empty success payload when RPC yields no rows', async () => {
-    mockRpc.mockResolvedValueOnce(createMockRpcResponse([]));
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
-      mockPaginationParams,
-      'en',
-      'tg',
-      'steel',
-      {},
-    );
-
-    expect(result).toEqual({ data: [], success: true });
-  });
-
-  it('returns raw result when user session is missing', async () => {
-    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
-      mockPaginationParams,
-      'en',
-      'my',
-      'cement',
-      {},
-      100,
-    );
-
-    expect(mockRpc).not.toHaveBeenCalled();
-    expect(result).toEqual({});
-  });
-});
-
-describe('lifeCycleModel_hybrid_search', () => {
-  it('invokes edge function with auth token and maps results', async () => {
-    const hybridData: any = [
-      {
-        id: sampleModelId,
-        version: sampleVersion,
-        modified_at: '2024-03-05T10:00:00.000Z',
-        team_id: 'team-hybrid',
-        json: {
-          lifeCycleModelDataSet: {
-            lifeCycleModelInformation: {
-              dataSetInformation: {
-                name: { en: 'Hybrid search model' },
-                classificationInformation: {
-                  'common:classification': {
-                    'common:class': [{ '#text': 'hybrid-class' }],
-                  },
-                },
-                'common:generalComment': { en: 'Hybrid comment' },
-              },
-            },
-          },
-        },
-      },
-    ];
-    (hybridData as any).total_count = 5;
-    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse({ data: hybridData }));
-
-    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
-      mockPaginationParams,
-      'en',
-      'tg',
-      'cement',
-      {},
-      100,
-    );
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
-      'lifecyclemodel_hybrid_search',
-      expect.objectContaining({
-        headers: { Authorization: `Bearer ${sampleAccessToken}` },
-        body: { query: 'cement', filter: {}, state_code: 100 },
-        region: 'us-east-1',
+        ],
+        error: null,
+        count: 1,
       }),
     );
-    expect(mockJsonToList).toHaveBeenCalledWith([{ '#text': 'hybrid-class' }]);
-    expect(result).toMatchObject({ success: true, total: 5 });
-    expect(result.data[0]).toMatchObject({ id: sampleModelId, teamId: 'team-hybrid' });
-  });
 
-  it('returns empty success when edge function yields no data', async () => {
-    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse({ data: [] }));
-
-    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
-      mockPaginationParams,
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'descend' } as any,
       'en',
       'tg',
-      'steel',
-      {},
+      '',
     );
 
-    expect(result).toEqual({ data: [], success: true });
-  });
-
-  it('skips invocation when no active session', async () => {
-    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
-
-    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
-      mockPaginationParams,
-      'en',
-      'tg',
-      'cement',
-      {},
-      200,
-    );
-
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toEqual({});
+    expect(result).toMatchObject({
+      success: true,
+      total: 1,
+      data: [
+        {
+          id: sampleModelId,
+          name: 'Life Cycle Model Name',
+          classification: 'classification-string',
+          generalComment: 'localized-text',
+          version: sampleVersion,
+          teamId: 'team-1',
+        },
+      ],
+    });
   });
 });
 
-// getSubmodelsByProcessIds function no longer exists in the API
-// Tests removed as the function has been deprecated
-
 describe('getLifeCycleModelDetail', () => {
-  it('enriches nodes with ownership and related model data when requested', async () => {
-    const supabaseResult = {
-      data: [
-        {
-          json: { some: 'json' },
-          json_tg: {
-            xflow: {
-              nodes: [
-                {
-                  data: { id: sampleProcessId, version: '02.00.000' },
-                },
-                {
-                  data: { id: '44444444-4444-4444-4444-444444444444', version: '03.00.000' },
-                },
-              ],
-            },
+  it('returns the lifecycle model detail payload', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            json: { foo: 'bar' },
+            json_tg: { submodels: [] },
+            state_code: 0,
+            rule_verification: true,
+            team_id: 'team-1',
           },
-          state_code: 100,
-          rule_verification: { valid: true },
-          team_id: 'team-xyz',
-        },
-      ],
-      error: null,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    mockGetProcessesByIdAndVersion.mockResolvedValueOnce({
-      data: [
-        { id: sampleProcessId, version: '02.00.000', user_id: sampleUserId },
-        { id: '44444444-4444-4444-4444-444444444444', version: '03.00.000', user_id: 'user-9999' },
-      ],
-    });
-
-    const result = await lifeCycleModelsApi.getLifeCycleModelDetail(sampleModelId, sampleVersion);
-
-    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
-    expect(builder.select).toHaveBeenCalledWith(
-      'json, json_tg,state_code,rule_verification,team_id',
+        ],
+        error: null,
+      }),
     );
-    expect(builder.eq).toHaveBeenCalledWith('id', sampleModelId);
-    expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
-    expect(result.success).toBe(true);
-    if (!result.success) {
-      throw new Error('expected success response');
-    }
-    expect(result.data).toMatchObject({
-      id: sampleModelId,
-      version: sampleVersion,
-      json: supabaseResult.data[0].json,
-      json_tg: supabaseResult.data[0].json_tg,
-      stateCode: supabaseResult.data[0].state_code,
-      ruleVerification: supabaseResult.data[0].rule_verification,
-      teamId: supabaseResult.data[0].team_id,
-    });
-  });
-
-  it('returns unsuccessful result when record is not found', async () => {
-    const builder = createQueryBuilder({ data: [], error: null });
-    mockFrom.mockReturnValueOnce(builder);
 
     const result = await lifeCycleModelsApi.getLifeCycleModelDetail(sampleModelId, sampleVersion);
 
-    expect(result).toEqual({ data: {}, success: false });
+    expect(result).toEqual({
+      data: {
+        id: sampleModelId,
+        version: sampleVersion,
+        json: { foo: 'bar' },
+        json_tg: { submodels: [] },
+        stateCode: 0,
+        ruleVerification: true,
+        teamId: 'team-1',
+      },
+      success: true,
+    });
   });
 });
 
 describe('deleteLifeCycleModel', () => {
-  it('cleans up related processes before removing the lifecycle model', async () => {
-    const selectResult = {
-      data: [
-        {
-          submodels: [{ id: sampleProcessId }, { id: '55555555-5555-5555-5555-555555555555' }],
-        },
-      ],
-      error: null,
-    };
-    const deleteResponse = { status: 204, error: null };
-    const selectBuilder = createQueryBuilder(selectResult);
-    const deleteBuilder = createQueryBuilder(deleteResponse);
-    mockFrom.mockReturnValueOnce(selectBuilder);
-    mockFrom.mockReturnValueOnce(deleteBuilder);
+  it('returns auth error when deleting without a session', async () => {
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
-    expect(mockFrom).toHaveBeenNthCalledWith(1, 'lifecyclemodels');
-    expect(selectBuilder.select).toHaveBeenCalledWith('id, version, json_tg->submodels');
-    expect(mockDeleteProcess).toHaveBeenCalledTimes(2);
-    expect(mockDeleteProcess).toHaveBeenNthCalledWith(1, sampleProcessId, sampleVersion);
-    expect(mockDeleteProcess).toHaveBeenNthCalledWith(
-      2,
-      '55555555-5555-5555-5555-555555555555',
-      sampleVersion,
-    );
-    expect(deleteBuilder.delete).toHaveBeenCalled();
-    expect(deleteBuilder.eq).toHaveBeenCalledWith('id', sampleModelId);
-    expect(deleteBuilder.eq).toHaveBeenCalledWith('version', sampleVersion);
-    expect(result).toEqual(deleteResponse);
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'AUTH_REQUIRED',
+      message: 'Authentication required',
+    });
   });
 
-  it('still removes lifecycle model when no submodels are found', async () => {
-    const selectBuilder = createQueryBuilder({ data: [], error: null });
-    const deleteResponse = { status: 204, error: null };
-    const deleteBuilder = createQueryBuilder(deleteResponse);
-    mockFrom.mockReturnValueOnce(selectBuilder);
-    mockFrom.mockReturnValueOnce(deleteBuilder);
+  it('normalizes session lookup failures into a mutation error', async () => {
+    mockAuthGetSession.mockRejectedValueOnce(new Error('session lookup failed'));
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
-    expect(mockDeleteProcess).not.toHaveBeenCalled();
-    expect(result).toEqual(deleteResponse);
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'session lookup failed',
+    });
+  });
+
+  it('invokes the delete bundle endpoint', async () => {
+    const edgePayload = {
+      ok: true,
+      modelId: sampleModelId,
+      version: sampleVersion,
+    };
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('delete_lifecycle_model_bundle', {
+      headers: { Authorization: `Bearer ${sampleAccessToken}` },
+      body: {
+        modelId: sampleModelId,
+        version: sampleVersion,
+      },
+      region: expect.any(String),
+    });
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('normalizes bundle invocation rejects into a mutation error', async () => {
+    mockFunctionsInvoke.mockRejectedValueOnce(new Error('network down'));
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'network down',
+    });
+  });
+
+  it('returns a mutation result payload from the edge-function JSON error body', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 409,
+        jsonPayload: {
+          ok: false,
+          code: 'VERSION_CONFLICT',
+          message: 'Version conflict',
+          details: { latest: '02.00.000' },
+        },
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'VERSION_CONFLICT',
+      message: 'Version conflict',
+      details: { latest: '02.00.000' },
+    });
+  });
+
+  it('normalizes coded JSON error bodies from the bundle endpoint', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 400,
+        jsonPayload: {
+          code: 'INVALID_PLAN',
+          message: 'Plan payload is invalid',
+          details: { field: 'processMutations' },
+        },
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'INVALID_PLAN',
+      message: 'Plan payload is invalid',
+      details: { field: 'processMutations' },
+    });
+  });
+
+  it('falls back to text-based status handling when JSON parsing fails', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 403,
+        jsonError: new Error('json parse failed'),
+        text: 'Forbidden by policy',
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FORBIDDEN',
+      message: 'Forbidden by policy',
+      details: undefined,
+    });
+  });
+
+  it('maps 401 text responses to AUTH_REQUIRED', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 401,
+        jsonError: new Error('json parse failed'),
+        text: 'Login again',
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'AUTH_REQUIRED',
+      message: 'Login again',
+      details: undefined,
+    });
+  });
+
+  it('maps 404 text responses to MODEL_NOT_FOUND', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 404,
+        jsonError: new Error('json parse failed'),
+        text: 'Lifecycle model is gone',
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'MODEL_NOT_FOUND',
+      message: 'Lifecycle model is gone',
+      details: undefined,
+    });
+  });
+
+  it.each([
+    [401, 'AUTH_REQUIRED', 'Authentication required'],
+    [403, 'FORBIDDEN', 'Forbidden'],
+    [404, 'MODEL_NOT_FOUND', 'Lifecycle model not found'],
+  ])(
+    'uses the default status message for %s responses when the text body is empty',
+    async (status, code, message) => {
+      mockFunctionsInvoke.mockResolvedValueOnce({
+        data: null,
+        error: createInvokeError({
+          status,
+          jsonError: new Error('json parse failed'),
+          text: '',
+        }),
+      });
+
+      const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+      expect(result).toEqual({
+        ok: false,
+        code,
+        message,
+        details: undefined,
+      });
+    },
+  );
+
+  it('falls back to a generic function error when only plain text is available', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 500,
+        jsonError: new Error('json parse failed'),
+        text: 'Plain text failure',
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'Plain text failure',
+      details: { status: 500 },
+    });
+  });
+
+  it('falls back to the generic function error when the edge-function error has no context or message', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {},
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'Lifecycle model bundle request failed',
+      details: {},
+    });
+  });
+
+  it('falls back to status defaults when response parsing fails entirely', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 404,
+        jsonError: new Error('json parse failed'),
+        textError: new Error('text parse failed'),
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'MODEL_NOT_FOUND',
+      message: 'Lifecycle model not found',
+      details: undefined,
+    });
+  });
+
+  it('falls back to status defaults when there is no cloneable response payload', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: 'missing response body',
+        context: { status: 401 },
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'AUTH_REQUIRED',
+      message: 'Authentication required',
+      details: undefined,
+    });
+  });
+
+  it('maps 403 status defaults when there is no cloneable response payload', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: 'forbidden',
+        context: { status: 403 },
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FORBIDDEN',
+      message: 'Forbidden',
+      details: undefined,
+    });
+  });
+
+  it('falls back to the original error message when there is no status mapping', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: 'Unexpected lifecycle bundle failure',
+        context: { status: 500 },
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'Unexpected lifecycle bundle failure',
+      details: {
+        message: 'Unexpected lifecycle bundle failure',
+        context: { status: 500 },
+      },
+    });
+  });
+
+  it('returns a generic function error when the bundle endpoint response is missing', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(undefined);
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'Lifecycle model bundle request failed',
+      details: undefined,
+    });
+  });
+
+  it('returns INVALID_RESPONSE when the bundle endpoint returns malformed data', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { unexpected: true },
+      error: null,
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'INVALID_RESPONSE',
+      message: 'Lifecycle model bundle endpoint returned an invalid response',
+      details: { unexpected: true },
+    });
+  });
+
+  it('falls back to the generic bundle error message when an invoke rejection has no message', async () => {
+    mockFunctionsInvoke.mockRejectedValueOnce({});
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'Lifecycle model bundle request failed',
+      details: {},
+    });
+  });
+
+  it('falls back to the generic bundle error message when session lookup rejects without a message', async () => {
+    mockAuthGetSession.mockRejectedValueOnce({});
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'FUNCTION_ERROR',
+      message: 'Lifecycle model bundle request failed',
+      details: {},
+    });
   });
 });
 
 describe('createLifeCycleModel', () => {
-  it('stores lifecycle model payload with derived json and processes', async () => {
-    const generatedProcesses = {
-      lifeCycleModelProcesses: [
-        {
-          modelInfo: { id: sampleProcessId },
-          data: { processDataSet: { foo: 'bar' } },
-        },
-      ],
-    };
-    mockGenLifeCycleModelProcesses.mockResolvedValueOnce(generatedProcesses);
+  it('returns a language validation error when normalization fails', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { ignored: true },
+      validationError: 'Invalid multilingual payload',
+    });
 
-    const insertResult = {
-      data: [{ id: sampleModelId, version: sampleVersion }],
-      error: null,
-    };
-    const selectMock = jest.fn().mockResolvedValue(insertResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
-
-    const payload = {
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
       id: sampleModelId,
-      model: {
-        nodes: [{ data: { id: sampleProcessId, quantitativeReference: '1', targetAmount: 10 } }],
-        edges: [],
-      },
-    };
+      model: { nodes: [], edges: [] },
+    });
 
-    const result = await lifeCycleModelsApi.createLifeCycleModel(payload);
-    await waitForMicrotasks();
-
-    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(sampleModelId, payload);
-    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalled();
-    expect(insertMock).toHaveBeenCalledWith([
-      {
-        id: sampleModelId,
-        json_ordered: {
-          lifeCycleModelDataSet: {
-            lifeCycleModelInformation: {
-              dataSetInformation: {
-                referenceToResultingProcess: [
-                  {
-                    '@refObjectId': sampleProcessId,
-                    '@type': 'process data set',
-                    '@uri': `../processes/${sampleProcessId}.xml`,
-                    '@version': undefined,
-                    'common:shortDescription': {},
-                  },
-                ],
-              },
-            },
-          },
-        },
-        json_tg: {
-          xflow: payload.model,
-          submodels: [{ id: sampleProcessId }],
-        },
-        rule_verification: true,
-      },
-    ]);
-    expect(selectMock).toHaveBeenCalled();
-    expect(mockCreateProcess).toHaveBeenCalledWith(sampleProcessId, { foo: 'bar' }, sampleModelId);
-    expect(result).toBe(insertResult);
+    expect(mockGenLifeCycleModelProcesses).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'LANG_VALIDATION_ERROR',
+      message: 'Invalid multilingual payload',
+    });
   });
 
-  test.failing('passes reference target amount when generating processes', async () => {
-    const insertResult = { data: [], error: null };
-    const selectMock = jest.fn().mockResolvedValue(insertResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
+  it('builds a create bundle plan and invokes the save endpoint', async () => {
+    const secondaryProcessId = '33333333-3333-3333-3333-333333333333';
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(
+      buildLifecycleModelJsonOrdered(['included-primary']),
+    );
+    mockCreateTidasLifeCycleModel.mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {
+          issues: [{ path: ['lifeCycleModelDataSet', 'name'] }, { path: ['validation'] }],
+        },
+      }),
+    });
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [
+        {
+          option: 'update',
+          modelInfo: { id: sampleProcessId, type: 'primary', finalId: {} },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+        {
+          modelInfo: { id: secondaryProcessId, type: 'secondary', finalId: {} },
+          refProcesses: {
+            id: '44444444-4444-4444-4444-444444444444',
+            version: sampleVersion,
+            'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Secondary Ref Process' }],
+          },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+      up2DownEdges: [
+        {
+          upstreamNodeId: 'node-a',
+          downstreamNodeId: 'node-b',
+          flowUUID: 'flow-1',
+          isBalanced: false,
+          unbalancedAmount: 2,
+          exchangeAmount: 5,
+        },
+      ],
+    });
+    const edgePayload = buildSaveResult({
+      lifecycleModel: {
+        id: sampleModelId,
+        version: sampleVersion,
+        json: {},
+        json_tg: {
+          submodels: [
+            { id: sampleProcessId, version: sampleVersion },
+            { id: secondaryProcessId, version: sampleVersion },
+          ],
+        },
+        ruleVerification: false,
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+    mockValidateDatasetRuleVerification
+      .mockResolvedValueOnce({ ruleVerification: false })
+      .mockResolvedValue({ ruleVerification: true });
 
-    const payload = {
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
       id: sampleModelId,
       model: {
-        nodes: [
+        nodes: [],
+        edges: [
           {
-            data: {
-              id: sampleProcessId,
-              quantitativeReference: '1',
-              targetAmount: 42,
-            },
+            source: { cell: 'node-a' },
+            target: { cell: 'node-b' },
+            data: { connection: { outputExchange: { '@flowUUID': 'flow-1' } } },
           },
         ],
-        edges: [],
       },
-    };
+    });
 
-    await lifeCycleModelsApi.createLifeCycleModel(payload);
-
-    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
-      sampleModelId,
-      42,
-      expect.anything(),
-      [],
+    const [, request] = mockFunctionsInvoke.mock.calls[0];
+    const body = request.body;
+    const primaryMutation = body.processMutations.find((item: any) => item.id === sampleProcessId);
+    const secondaryMutation = body.processMutations.find(
+      (item: any) => item.id === secondaryProcessId,
     );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'save_lifecycle_model_bundle',
+      expect.objectContaining({
+        headers: { Authorization: `Bearer ${sampleAccessToken}` },
+        region: expect.any(String),
+      }),
+    );
+    expect(body.mode).toBe('create');
+    expect(body.modelId).toBe(sampleModelId);
+    expect(body.parent.ruleVerification).toBe(false);
+    expect(body.parent.jsonTg.submodels).toEqual([
+      { id: sampleProcessId, type: 'primary', finalId: {}, version: sampleVersion },
+      { id: secondaryProcessId, type: 'secondary', finalId: {}, version: sampleVersion },
+    ]);
+    expect(body.parent.jsonTg.xflow.edges).toEqual([
+      expect.objectContaining({
+        labels: [],
+        data: expect.objectContaining({
+          connection: expect.objectContaining({
+            isBalanced: false,
+            unbalancedAmount: 2,
+            exchangeAmount: 5,
+          }),
+        }),
+      }),
+    ]);
+    expect(primaryMutation).toMatchObject({
+      op: 'create',
+      id: sampleProcessId,
+      modelId: sampleModelId,
+    });
+    expect(
+      primaryMutation.jsonOrdered.processDataSet.processInformation.technology
+        .referenceToIncludedProcesses,
+    ).toEqual([{ '@refObjectId': 'included-primary' }]);
+    expect(secondaryMutation).toMatchObject({
+      op: 'create',
+      id: secondaryProcessId,
+      modelId: sampleModelId,
+    });
+    expect(
+      secondaryMutation.jsonOrdered.processDataSet.processInformation.technology
+        .referenceToIncludedProcesses,
+    ).toEqual([
+      expect.objectContaining({
+        '@refObjectId': '44444444-4444-4444-4444-444444444444',
+        '@version': sampleVersion,
+      }),
+    ]);
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('surfaces plan-building errors when a generated process payload is invalid', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: { id: sampleProcessId, type: 'primary', finalId: {} },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+      up2DownEdges: [],
+    });
+    mockNormalizeLangPayloadForSave
+      .mockResolvedValueOnce({
+        payload: buildLifecycleModelJsonOrdered(),
+        validationError: undefined,
+      })
+      .mockResolvedValueOnce({
+        payload: { ignored: true },
+        validationError: 'Generated process payload is invalid',
+      });
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'LANG_VALIDATION_ERROR',
+      message: 'Generated process payload is invalid',
+    });
+  });
+
+  it('uses raw normalized fallbacks and default empty model arrays during create', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+    });
+
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(sampleModelId, [], rawJson, []);
+    expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], sampleVersion, rawJson);
+    expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
+      mode: 'create',
+      modelId: sampleModelId,
+      parent: {
+        jsonOrdered: rawJson,
+      },
+      processMutations: [],
+    });
+    expect(result).toEqual(edgePayload);
   });
 });
 
 describe('updateLifeCycleModel', () => {
-  it('updates lifecycle model json and synchronizes child processes', async () => {
-    const keepFinalId = {
-      nodeId: 'node-keep',
-      processId: 'proc-keep',
-      allocatedExchangeDirection: 'input',
-      allocatedExchangeFlowId: 'flow-keep',
-    };
+  it('returns MODEL_LOOKUP_FAILED when the current lifecycle model query errors', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: null,
+        error: { message: 'lookup failed' },
+      }),
+    );
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MODEL_LOOKUP_FAILED',
+      message: 'Failed to load lifecycle model before saving',
+      details: { message: 'lookup failed' },
+    });
+  });
+
+  it('returns a language validation error before invoking the save endpoint', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: [] }],
+        error: null,
+      }),
+    );
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { ignored: true },
+      validationError: 'Update payload is invalid',
+    });
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockGenLifeCycleModelProcesses).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'LANG_VALIDATION_ERROR',
+      message: 'Update payload is invalid',
+    });
+  });
+
+  it('returns model-not-found when the current lifecycle model snapshot is missing', async () => {
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [], error: null }));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MODEL_NOT_FOUND',
+      message: 'Lifecycle model not found',
+    });
+  });
+
+  it('builds delete, update, and create mutations for the bundle save endpoint', async () => {
     const oldSubmodels = [
       {
         id: 'old-secondary-keep',
         type: 'secondary',
-        finalId: keepFinalId,
+        finalId: {
+          nodeId: 'node-keep',
+          processId: 'proc-keep',
+          allocatedExchangeDirection: 'input',
+          allocatedExchangeFlowId: 'flow-keep',
+        },
       },
       {
         id: 'old-secondary-delete',
@@ -779,270 +1068,260 @@ describe('updateLifeCycleModel', () => {
         },
       },
     ];
-    const selectBuilder = createQueryBuilder({
-      data: [
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: oldSubmodels }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(
+      buildLifecycleModelJsonOrdered(['included-primary']),
+    );
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [
         {
-          json: { previous: true },
-          submodels: oldSubmodels,
+          option: 'update',
+          modelInfo: {
+            id: 'old-secondary-keep',
+            type: 'primary',
+            finalId: oldSubmodels[0].finalId,
+          },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+        {
+          option: 'create',
+          modelInfo: {
+            id: 'new-secondary-id',
+            type: 'secondary',
+            finalId: {
+              nodeId: 'node-new',
+              processId: 'proc-new',
+              allocatedExchangeDirection: 'output',
+              allocatedExchangeFlowId: 'flow-new',
+            },
+          },
+          refProcesses: [
+            {
+              id: '55555555-5555-5555-5555-555555555555',
+              version: sampleVersion,
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Secondary Ref 2' }],
+            },
+          ],
+          data: { processDataSet: buildProcessDataSet() },
         },
       ],
-      error: null,
+      up2DownEdges: [],
     });
-    mockFrom.mockReturnValueOnce(selectBuilder);
-
-    const updateResponse = createMockEdgeFunctionResponse({ updated: true });
-    mockFunctionsInvoke.mockResolvedValueOnce(updateResponse);
-
-    const processDataSkeleton = {
-      processDataSet: {
-        processInformation: {
-          dataSetInformation: {},
-          technology: {},
-        },
-        modellingAndValidation: {
-          complianceDeclarations: {},
-          validation: {},
-        },
-        administrativeInformation: {
-          dataEntryBy: {},
-          publicationAndOwnership: {},
-        },
-      },
-    };
-
-    const newProcessList = [
-      {
-        option: 'update',
-        modelInfo: {
-          id: sampleProcessId,
-          finalId: keepFinalId,
-        },
-        data: {
-          ...processDataSkeleton,
-        },
-      },
-      {
-        option: 'create',
-        modelInfo: {
-          id: 'new-process-id',
-          finalId: {
-            nodeId: 'node-new',
-            processId: 'proc-new',
-            allocatedExchangeDirection: 'output',
-            allocatedExchangeFlowId: 'flow-new',
-          },
-        },
-        data: {
-          ...processDataSkeleton,
-        },
-      },
-    ];
-    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
-      lifeCycleModelProcesses: newProcessList,
-    });
-
     mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({
       data: [
         {
-          id: sampleProcessId,
+          id: 'old-secondary-keep',
           version: sampleVersion,
           json: {
             processDataSet: {
+              ...buildProcessDataSet(),
               processInformation: {
                 dataSetInformation: {
-                  identifierOfSubDataSet: 'old-id',
-                  'common:synonyms': [],
+                  identifierOfSubDataSet: 'legacy-id',
                 },
-                technology: {
-                  technologyDescriptionAndIncludedProcesses: 'desc',
-                  technologicalApplicability: 'applicability',
-                  referenceToTechnologyPictogramme: 'pictogram',
-                  referenceToTechnologyFlowDiagrammOrPicture: 'diagram',
-                },
-                time: {},
-                geography: {},
-                mathematicalRelations: {},
-              },
-              modellingAndValidation: {
-                LCIMethodAndAllocation: 'allocation',
-                dataSourcesTreatmentAndRepresentativeness: 'sources',
-                completeness: 'complete',
-                complianceDeclarations: { compliance: 'legacy-compliance' },
-                validation: { review: 'legacy-review' },
-              },
-              administrativeInformation: {
-                dataEntryBy: {
-                  'common:referenceToConvertedOriginalDataSetFrom': 'ref-convert',
-                  'common:referenceToDataSetUseApproval': 'ref-approval',
-                },
-                publicationAndOwnership: {
-                  'common:dateOfLastRevision': '2024-01-01',
-                  'common:workflowAndPublicationStatus': 'status',
-                  'common:referenceToUnchangedRepublication': 'ref-republish',
-                  'common:referenceToRegistrationAuthority': 'ref-registrar',
-                  'common:registrationNumber': 'reg-001',
-                },
+                technology: {},
               },
             },
           },
         },
       ],
     });
-
-    const payload = {
-      id: sampleModelId,
-      version: sampleVersion,
-      model: {
-        nodes: [
-          {
-            data: {
-              quantitativeReference: '1',
-              targetAmount: 42,
-            },
-          },
-        ],
-      },
-    };
-
-    const result = await lifeCycleModelsApi.updateLifeCycleModel(payload);
-
-    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
-    expect(selectBuilder.select).toHaveBeenCalledWith('id, json, json_tg->submodels');
-    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(sampleModelId, payload);
-    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
-      sampleModelId,
-      payload.model.nodes,
-      expect.anything(),
-      oldSubmodels,
-    );
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: `Bearer ${sampleAccessToken}` },
-      body: expect.objectContaining({ id: sampleModelId, version: sampleVersion }),
-      region: expect.any(String),
-    });
-    expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith(
-      newProcessList.map((p) => p.modelInfo.id),
-      sampleVersion,
-    );
-    expect(mockDeleteProcess).toHaveBeenCalledWith('old-secondary-delete', sampleVersion);
-    expect(mockUpdateProcess).toHaveBeenCalledWith(
-      sampleProcessId,
-      sampleVersion,
-      expect.anything(),
-      sampleModelId,
-    );
-    expect(mockCreateProcess).toHaveBeenCalledWith(
-      'new-process-id',
-      expect.anything(),
-      sampleModelId,
-    );
-    expect(result).toEqual({ updated: true });
-  });
-
-  it('returns undefined when lifecycle model is not found or session missing', async () => {
-    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [], error: null }));
-    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+    const edgePayload = buildSaveResult();
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
 
     const result = await lifeCycleModelsApi.updateLifeCycleModel({
       id: sampleModelId,
       version: sampleVersion,
-      model: { nodes: [] },
+      model: { nodes: [], edges: [] },
+    });
+
+    const [, request] = mockFunctionsInvoke.mock.calls[0];
+    const body = request.body;
+    const deleteMutation = body.processMutations.find(
+      (item: any) => item.id === 'old-secondary-delete',
+    );
+    const updateMutation = body.processMutations.find(
+      (item: any) => item.id === 'old-secondary-keep',
+    );
+    const createMutation = body.processMutations.find(
+      (item: any) => item.id === 'new-secondary-id',
+    );
+
+    expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith(
+      ['old-secondary-keep', 'new-secondary-id'],
+      sampleVersion,
+    );
+    expect(body.mode).toBe('update');
+    expect(body.version).toBe(sampleVersion);
+    expect(deleteMutation).toEqual({
+      op: 'delete',
+      id: 'old-secondary-delete',
+      version: sampleVersion,
+    });
+    expect(updateMutation).toMatchObject({
+      op: 'update',
+      id: 'old-secondary-keep',
+      version: sampleVersion,
+      modelId: sampleModelId,
+    });
+    expect(
+      updateMutation.jsonOrdered.processDataSet.processInformation.dataSetInformation
+        .identifierOfSubDataSet,
+    ).toBe('legacy-id');
+    expect(
+      updateMutation.jsonOrdered.processDataSet.processInformation.technology
+        .referenceToIncludedProcesses,
+    ).toEqual([{ '@refObjectId': 'included-primary' }]);
+    expect(createMutation).toMatchObject({
+      op: 'create',
+      id: 'new-secondary-id',
+      modelId: sampleModelId,
+    });
+    expect(
+      createMutation.jsonOrdered.processDataSet.processInformation.technology
+        .referenceToIncludedProcesses,
+    ).toEqual([
+      expect.objectContaining({
+        '@refObjectId': '55555555-5555-5555-5555-555555555555',
+        '@version': sampleVersion,
+      }),
+    ]);
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('returns plan errors from save-plan generation during updates', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: [] }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [
+        {
+          option: 'update',
+          modelInfo: { id: sampleProcessId, type: 'primary', finalId: {} },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+      up2DownEdges: [],
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({
+      data: [],
+    });
+    mockNormalizeLangPayloadForSave
+      .mockResolvedValueOnce({
+        payload: buildLifecycleModelJsonOrdered(),
+        validationError: undefined,
+      })
+      .mockResolvedValueOnce({
+        payload: { ignored: true },
+        validationError: 'Updated process payload is invalid',
+      });
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
     });
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'LANG_VALIDATION_ERROR',
+      message: 'Updated process payload is invalid',
+    });
+  });
+
+  it('uses raw normalized fallbacks and empty legacy collections during update', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: undefined }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce(undefined as any);
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+    });
+
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(sampleModelId, [], rawJson, []);
+    expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith([], sampleVersion);
+    expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
+      mode: 'update',
+      modelId: sampleModelId,
+      version: sampleVersion,
+      parent: {
+        jsonOrdered: rawJson,
+      },
+      processMutations: [],
+    });
+    expect(result).toEqual(edgePayload);
   });
 });
 
 describe('updateLifeCycleModelJsonApi', () => {
-  it('invokes edge function and schedules process updates when session is active', async () => {
-    const scheduledTasks: Array<() => Promise<unknown>> = [];
-    mockControllerAdd.mockImplementation((task: () => Promise<unknown>) => {
-      scheduledTasks.push(task);
-    });
-    mockControllerWaitForAll.mockImplementation(async () => {
-      for (const task of scheduledTasks) {
-        await task();
-      }
-    });
-
-    const edgeResponse = createMockEdgeFunctionResponse({
-      data: [
-        {
-          json_tg: {
-            submodels: [{ id: sampleProcessId }, { id: 'process-999' }],
-          },
-        },
-      ],
-    });
-    mockFunctionsInvoke
-      .mockResolvedValueOnce(edgeResponse)
-      .mockResolvedValueOnce(createMockEdgeFunctionResponse({ success: true }))
-      .mockResolvedValueOnce(createMockEdgeFunctionResponse({ success: true }));
-
-    const processSelectResult = {
-      data: [
-        {
-          json_ordered: {
-            processDataSet: {
-              modellingAndValidation: {
-                complianceDeclarations: { compliance: 'legacy' },
-                validation: { review: 'legacy' },
-              },
-            },
-          },
-        },
-      ],
-      error: null,
-    };
-    const processBuilder1 = createQueryBuilder(processSelectResult);
-    const processBuilder2 = createQueryBuilder(processSelectResult);
-    mockFrom.mockReturnValueOnce(processBuilder1);
-    mockFrom.mockReturnValueOnce(processBuilder2);
-
-    const payload = {
-      lifeCycleModelDataSet: {
-        modellingAndValidation: {
-          complianceDeclarations: { compliance: 'fresh' },
-          validation: { review: 'fresh' },
-        },
-      },
-    };
+  it('returns MODEL_LOOKUP_FAILED when the current lifecycle model query errors', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: null,
+        error: { message: 'model lookup failed' },
+      }),
+    );
 
     const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
       sampleModelId,
       sampleVersion,
-      payload,
+      {},
     );
 
-    expect(mockFunctionsInvoke).toHaveBeenNthCalledWith(
-      1,
-      'update_data',
-      expect.objectContaining({
-        headers: { Authorization: `Bearer ${sampleAccessToken}` },
-        body: {
-          id: sampleModelId,
-          version: sampleVersion,
-          table: 'lifecyclemodels',
-          data: { json_ordered: payload },
-        },
-      }),
-    );
-    expect(mockControllerAdd).toHaveBeenCalledTimes(2);
-    expect(mockFrom).toHaveBeenCalledWith('processes');
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
-      'update_data',
-      expect.objectContaining({
-        body: expect.objectContaining({ table: 'processes' }),
-      }),
-    );
-    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(3);
-    expect(mockControllerWaitForAll).toHaveBeenCalled();
-    expect(result).toEqual(edgeResponse.data);
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MODEL_LOOKUP_FAILED',
+      message: 'Failed to load lifecycle model before review update',
+      details: { message: 'model lookup failed' },
+    });
   });
 
-  it('returns undefined when no active session exists', async () => {
-    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+  it('returns a language validation error before loading current process snapshots', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { ignored: true },
+      validationError: 'JSON payload is invalid',
+    });
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      { raw: true },
+    );
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'LANG_VALIDATION_ERROR',
+      message: 'JSON payload is invalid',
+    });
+  });
+
+  it('returns model-not-found when the current lifecycle model cannot be loaded', async () => {
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [], error: null }));
 
     const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
       sampleModelId,
@@ -1051,6 +1330,1607 @@ describe('updateLifeCycleModelJsonApi', () => {
     );
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MODEL_NOT_FOUND',
+      message: 'Lifecycle model not found',
+    });
+  });
+
+  it('returns PROCESS_LOOKUP_FAILED when the current submodel process query errors', async () => {
+    mockFrom
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: [
+            {
+              json_tg: {
+                submodels: [{ id: sampleProcessId, version: sampleVersion }],
+              },
+              rule_verification: true,
+            },
+          ],
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: null,
+          error: { message: 'process lookup failed' },
+        }),
+      );
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      {
+        lifeCycleModelDataSet: {
+          modellingAndValidation: {
+            complianceDeclarations: { compliance: [] },
+            validation: { review: [] },
+          },
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'PROCESS_LOOKUP_FAILED',
+      message: 'Failed to load current submodel processes before review update',
+      details: { message: 'process lookup failed' },
+    });
+  });
+
+  it('returns INVALID_PAYLOAD when a referenced submodel snapshot is missing', async () => {
+    mockFrom
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: [
+            {
+              json_tg: {
+                submodels: [{ id: sampleProcessId, version: sampleVersion }],
+              },
+              rule_verification: true,
+            },
+          ],
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: [],
+          error: null,
+        }),
+      );
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      {
+        lifeCycleModelDataSet: {
+          modellingAndValidation: {
+            complianceDeclarations: { compliance: [] },
+            validation: { review: [] },
+          },
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'INVALID_PAYLOAD',
+      message: `Missing current process snapshot for submodel ${sampleProcessId}`,
+    });
+  });
+
+  it('saves successfully when the current lifecycle model has no submodels', async () => {
+    const edgePayload = buildSaveResult();
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            json_tg: {},
+            rule_verification: true,
+          },
+        ],
+        error: null,
+      }),
+    );
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      {
+        lifeCycleModelDataSet: {
+          modellingAndValidation: {
+            complianceDeclarations: { compliance: [] },
+            validation: { review: [] },
+          },
+        },
+      },
+    );
+
+    const [, request] = mockFunctionsInvoke.mock.calls[0];
+    expect(request.body.processMutations).toEqual([]);
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('builds a review update bundle plan and merges comment data into submodels', async () => {
+    mockFrom
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: [
+            {
+              json_tg: {
+                submodels: [{ id: sampleProcessId, version: sampleVersion }],
+              },
+              rule_verification: false,
+            },
+          ],
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: [
+            {
+              id: sampleProcessId,
+              version: sampleVersion,
+              json_ordered: {
+                processDataSet: {
+                  ...buildProcessDataSet(),
+                  modellingAndValidation: {
+                    complianceDeclarations: { compliance: [{ id: 'legacy-compliance' }] },
+                    validation: { review: [{ id: 'legacy-review' }] },
+                  },
+                },
+              },
+              rule_verification: true,
+            },
+          ],
+          error: null,
+        }),
+      );
+    const edgePayload = buildSaveResult({
+      lifecycleModel: {
+        id: sampleModelId,
+        version: sampleVersion,
+        json: {},
+        json_tg: {
+          submodels: [{ id: sampleProcessId, version: sampleVersion }],
+        },
+        ruleVerification: false,
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const payload = {
+      lifeCycleModelDataSet: {
+        modellingAndValidation: {
+          complianceDeclarations: { compliance: [{ id: 'model-compliance' }] },
+          validation: { review: [{ id: 'model-review' }] },
+        },
+      },
+    };
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      payload,
+      {
+        commentReview: [{ id: 'assigned-review' }],
+        commentCompliance: [{ id: 'assigned-compliance' }],
+      },
+    );
+
+    const [, request] = mockFunctionsInvoke.mock.calls[0];
+    const body = request.body;
+    const processMutation = body.processMutations[0];
+
+    expect(body.mode).toBe('update');
+    expect(body.modelId).toBe(sampleModelId);
+    expect(body.version).toBe(sampleVersion);
+    expect(body.parent).toEqual({
+      jsonOrdered: payload,
+      jsonTg: {
+        submodels: [{ id: sampleProcessId, version: sampleVersion }],
+      },
+      ruleVerification: false,
+    });
+    expect(processMutation).toMatchObject({
+      op: 'update',
+      id: sampleProcessId,
+      version: sampleVersion,
+      modelId: sampleModelId,
+      ruleVerification: true,
+    });
+    expect(
+      processMutation.jsonOrdered.processDataSet.modellingAndValidation.validation.review,
+    ).toEqual([{ id: 'model-review' }, { id: 'assigned-review' }]);
+    expect(
+      processMutation.jsonOrdered.processDataSet.modellingAndValidation.complianceDeclarations
+        .compliance,
+    ).toEqual([{ id: 'model-compliance' }, { id: 'assigned-compliance' }]);
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('uses raw review payloads and defaults missing current json_tg/rule verification fields', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ json_tg: undefined, rule_verification: undefined }],
+        error: null,
+      }),
+    );
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      rawJson,
+    );
+
+    expect(mockFunctionsInvoke.mock.calls[0][1].body).toEqual({
+      mode: 'update',
+      modelId: sampleModelId,
+      version: sampleVersion,
+      parent: {
+        jsonOrdered: rawJson,
+        jsonTg: {},
+        ruleVerification: false,
+      },
+      processMutations: [],
+    });
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('treats missing current process query data as an empty array before building the review plan', async () => {
+    mockFrom
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: [
+            {
+              json_tg: { submodels: [{ id: 'missing-process' }] },
+              rule_verification: true,
+            },
+          ],
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(
+        createQueryBuilder({
+          data: undefined,
+          error: null,
+        }),
+      );
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModelJsonApi(
+      sampleModelId,
+      sampleVersion,
+      buildLifecycleModelJsonOrdered(),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'INVALID_PAYLOAD',
+      message: 'Missing current process snapshot for submodel missing-process',
+    });
+  });
+});
+
+describe('getLifeCyclesByIdAndVersion', () => {
+  it('returns an empty data array when no id/version pairs are provided', async () => {
+    const result = await lifeCycleModelsApi.getLifeCyclesByIdAndVersion([]);
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [] });
+  });
+
+  it('builds OR conditions for lifecycle model id/version pairs', async () => {
+    const builder = createQueryBuilder({
+      data: [{ id: sampleModelId, version: sampleVersion }],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await lifeCycleModelsApi.getLifeCyclesByIdAndVersion([
+      { id: sampleModelId, version: sampleVersion },
+      { id: '33333333-3333-3333-3333-333333333333', version: '02.00.000' },
+    ]);
+
+    expect(mockFrom).toHaveBeenCalledWith('lifecyclemodels');
+    expect(builder.or).toHaveBeenCalledWith(
+      `and(id.eq.${sampleModelId},version.eq.${sampleVersion}),and(id.eq.33333333-3333-3333-3333-333333333333,version.eq.02.00.000)`,
+    );
+    expect(result).toEqual({
+      data: [{ id: sampleModelId, version: sampleVersion }],
+      error: null,
+    });
+  });
+});
+
+describe('table/search helpers', () => {
+  it('applies co filters with a concrete team id', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'descend' } as any,
+      'en',
+      'co',
+      'team-234',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 200);
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-234');
+  });
+
+  it('applies the current user filter for my-data table queries with an active session', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'en',
+      'my',
+      '',
+      30,
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 30);
+    expect(builder.eq).toHaveBeenCalledWith('user_id', sampleUserId);
+  });
+
+  it('applies tg filters with a concrete team id', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'ascend' } as any,
+      'en',
+      'tg',
+      'team-123',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-123');
+  });
+
+  it('returns a failed empty result for my-data queries without a session', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'en',
+      'my',
+      '',
+      20,
+    );
+
+    expect(result).toEqual({
+      data: [],
+      success: false,
+    });
+  });
+
+  it('returns an empty success result for team-data queries without a team id', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'en',
+      'te',
+      '',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      success: true,
+    });
+  });
+
+  it('applies the resolved team id for team-data queries', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetTeamIdByUserId.mockResolvedValueOnce('team-te');
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'en',
+      'te',
+      '',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-te');
+  });
+
+  it('returns a failed empty result when the lifecycle model table query returns no data', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: undefined,
+        error: { message: 'query failed' },
+        count: null,
+      }),
+    );
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith('error', { message: 'query failed' });
+    expect(result).toEqual({
+      data: [],
+      success: false,
+    });
+    consoleSpy.mockRestore();
+  });
+
+  it('falls back to a bare id row when zh classification mapping throws', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            id: sampleModelId,
+            name: {},
+            'common:class': [{ id: 'class-1' }],
+            'common:generalComment': {},
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+        count: 1,
+      }),
+    );
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('classification parsing failed');
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'zh',
+      'tg',
+      '',
+    );
+
+    expect(result.data).toEqual([{ id: sampleModelId }]);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('maps zh lifecycle model table search rows when classification resolution succeeds', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            id: sampleModelId,
+            name: {},
+            'common:class': [{ id: 'class-1' }],
+            'common:generalComment': {},
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+        count: 1,
+      }),
+    );
+    mockGenClassificationZH.mockReturnValueOnce(['zh-classification']);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'zh',
+      'tg',
+      '',
+    );
+
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        id: sampleModelId,
+        classification: 'classification-string',
+      }),
+    ]);
+  });
+
+  it('uses zh table fallbacks for missing row fields and undefined classification output', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            id: sampleModelId,
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+        count: 1,
+      }),
+    );
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'zh',
+      'tg',
+      '',
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'zh');
+    expect(mockGetLangText).toHaveBeenCalledWith(undefined, 'zh');
+    expect(mockClassificationToString).toHaveBeenCalledWith({});
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        id: sampleModelId,
+        classification: 'classification-string',
+      }),
+    ]);
+  });
+
+  it('uses table fallbacks for missing english row fields and count metadata', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleModelId,
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+        },
+      ],
+      error: null,
+      count: undefined,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      {},
+      {} as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(mockGetLangText).toHaveBeenCalledWith(undefined, 'en');
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('falls back to a bare id row when english classification parsing throws', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            id: sampleModelId,
+            name: {},
+            'common:class': [{ id: 'class-1' }],
+            'common:generalComment': {},
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+        count: 1,
+      }),
+    );
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('english classification parsing failed');
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      {} as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(result.data).toEqual([{ id: sampleModelId }]);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('calls the pgroonga lifecycle model search with state_code and handles empty results', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [],
+      error: null,
+    });
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 2, pageSize: 5 },
+      'en',
+      'my',
+      'keyword',
+      { filter: true },
+      20,
+      { key: 'baseName', lang: 'en', order: 'desc' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
+      query_text: 'keyword',
+      filter_condition: { filter: true },
+      page_size: 5,
+      page_current: 2,
+      data_source: 'my',
+      order_by: { key: 'baseName', lang: 'en', order: 'desc' },
+      state_code: 20,
+    });
+    expect(result).toEqual({
+      data: [],
+      success: true,
+    });
+  });
+
+  it('uses default pagination values in the numeric state-code pgroonga RPC branch', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [],
+      error: null,
+    });
+
+    await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      {},
+      'en',
+      'my',
+      'keyword',
+      {},
+      20,
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
+      query_text: 'keyword',
+      filter_condition: {},
+      page_size: 10,
+      page_current: 1,
+      data_source: 'my',
+      order_by: undefined,
+      state_code: 20,
+    });
+  });
+
+  it('logs pgroonga errors and returns the raw response when no data payload is present', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'rpc failed' },
+    });
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith('error', { message: 'rpc failed' });
+    expect(result).toEqual({
+      data: undefined,
+      error: { message: 'rpc failed' },
+    });
+    consoleSpy.mockRestore();
+  });
+
+  it('maps zh pgroonga search rows when classification lookup succeeds', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {},
+                  'common:generalComment': {},
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ id: 'class-1' }],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+          total_count: 1,
+        },
+      ],
+      error: null,
+    });
+    mockGenClassificationZH.mockReturnValueOnce(['zh-classification']);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+  });
+
+  it('uses zh pgroonga fallbacks for missing row fields and undefined classification output', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+          total_count: 1,
+        },
+      ],
+      error: null,
+    });
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'zh');
+    expect(mockGetLangText).toHaveBeenCalledWith({}, 'zh');
+    expect(mockClassificationToString).toHaveBeenCalledWith(undefined);
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        id: sampleModelId,
+        classification: 'classification-string',
+      }),
+    ]);
+  });
+
+  it('falls back to a bare id row when zh pgroonga classification mapping throws', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {},
+                  'common:generalComment': {},
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ id: 'class-1' }],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+          total_count: 1,
+        },
+      ],
+      error: null,
+    });
+    mockGenClassificationZH.mockImplementationOnce(() => {
+      throw new Error('pgroonga zh parsing failed');
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result.data).toEqual([{ id: sampleModelId }]);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('maps english pgroonga search rows when classification parsing succeeds', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {},
+                  'common:generalComment': {},
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ id: 'class-1' }],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+          total_count: 1,
+        },
+      ],
+      error: null,
+    });
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+  });
+
+  it('uses pgroonga fallbacks for missing english row fields and total count metadata', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+        },
+      ],
+      error: null,
+    });
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      {},
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(mockGetLangText).toHaveBeenCalledWith({}, 'en');
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('falls back to a bare id row when english pgroonga search row parsing throws', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {
+                  name: {},
+                  'common:generalComment': {},
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ id: 'class-1' }],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          version: sampleVersion,
+          modified_at: '2026-03-17T10:00:00.000Z',
+          team_id: 'team-1',
+          total_count: 1,
+        },
+      ],
+      error: null,
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('pgroonga english parsing failed');
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result.data).toEqual([{ id: sampleModelId }]);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('returns the raw pgroonga result when there is no session', async () => {
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(result).toEqual({});
+  });
+
+  it('returns the raw hybrid-search result when there is no session', async () => {
+    mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({});
+  });
+
+  it('uses an empty bearer token when the hybrid-search session exists without an access token', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: sampleUserId } } },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [],
+      }),
+    );
+
+    await lifeCycleModelsApi.lifeCycleModel_hybrid_search({}, 'en', 'my', 'keyword', {});
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('lifecyclemodel_hybrid_search', {
+      headers: {
+        Authorization: 'Bearer ',
+      },
+      body: { query: 'keyword', filter: {} },
+      region: expect.any(String),
+    });
+  });
+
+  it('calls the lifecycle model hybrid-search function and handles empty data', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [],
+      }),
+    );
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'keyword',
+      { filter: true },
+      100,
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('lifecyclemodel_hybrid_search', {
+      headers: {
+        Authorization: `Bearer ${sampleAccessToken}`,
+      },
+      body: { query: 'keyword', filter: { filter: true }, state_code: 100 },
+      region: expect.any(String),
+    });
+    expect(result).toEqual({
+      data: [],
+      success: true,
+    });
+  });
+
+  it('logs hybrid-search errors and returns the raw response when no data payload is present', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'hybrid failed' },
+    });
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith('error', { message: 'hybrid failed' });
+    expect(result).toEqual({
+      data: undefined,
+      error: { message: 'hybrid failed' },
+    });
+    consoleSpy.mockRestore();
+  });
+
+  it('maps zh hybrid-search rows when classification lookup succeeds', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [
+          {
+            id: sampleModelId,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {
+                    name: {},
+                    'common:generalComment': {},
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ id: 'class-1' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+            total_count: 1,
+          },
+        ],
+      }),
+    );
+    mockGenClassificationZH.mockReturnValueOnce(['zh-classification']);
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses zh hybrid-search fallbacks for missing row fields and undefined classification output', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [
+          {
+            id: sampleModelId,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {},
+                },
+              },
+            },
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+          },
+        ],
+      }),
+    );
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'zh');
+    expect(mockGetLangText).toHaveBeenCalledWith({}, 'zh');
+    expect(mockClassificationToString).toHaveBeenCalledWith(undefined);
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        id: sampleModelId,
+        classification: 'classification-string',
+      }),
+    ]);
+  });
+
+  it('falls back to a bare id row when zh hybrid-search classification mapping throws', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [
+          {
+            id: sampleModelId,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {
+                    name: {},
+                    'common:generalComment': {},
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ id: 'class-1' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+            total_count: 1,
+          },
+        ],
+      }),
+    );
+    mockGenClassificationZH.mockImplementationOnce(() => {
+      throw new Error('hybrid zh parsing failed');
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result.data).toEqual([{ id: sampleModelId }]);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('maps english hybrid-search rows when classification parsing succeeds', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [
+          {
+            id: sampleModelId,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {
+                    name: {},
+                    'common:generalComment': {},
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ id: 'class-1' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+            total_count: 1,
+          },
+        ],
+      }),
+    );
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses hybrid-search fallbacks for missing english row fields and page metadata', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [
+          {
+            id: sampleModelId,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {},
+                },
+              },
+            },
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+          },
+        ],
+      }),
+    );
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      {},
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(mockGetLangText).toHaveBeenCalledWith({}, 'en');
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          id: sampleModelId,
+          classification: 'classification-string',
+        }),
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('falls back to a bare id row when english hybrid-search row parsing throws', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({
+        data: [
+          {
+            id: sampleModelId,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {
+                    name: {},
+                    'common:generalComment': {},
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ id: 'class-1' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            version: sampleVersion,
+            modified_at: '2026-03-17T10:00:00.000Z',
+            team_id: 'team-1',
+            total_count: 1,
+          },
+        ],
+      }),
+    );
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('hybrid english parsing failed');
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'my',
+      'keyword',
+      {},
+    );
+
+    expect(result.data).toEqual([{ id: sampleModelId }]);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+});
+
+describe('getLifeCycleModelDetail fallbacks', () => {
+  it('returns a failed empty payload when no lifecycle model detail row exists', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [],
+        error: null,
+      }),
+    );
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelDetail(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      data: {},
+      success: false,
+    });
+  });
+});
+
+describe('contributeLifeCycleModel', () => {
+  it('returns an error when the current user cannot be resolved', async () => {
+    mockGetCurrentUser.mockResolvedValueOnce(undefined);
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      error: true,
+      message: 'Failed to get current user',
+    });
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to get current user');
+    consoleSpy.mockRestore();
+  });
+
+  it('contributes only the lifecycle model itself when there are no local refs to recurse', async () => {
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            json: { id: 'detail-json' },
+            json_tg: { submodels: [] },
+            state_code: 0,
+            rule_verification: true,
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+      }),
+    );
+    mockGetAllRefObj.mockReturnValueOnce([]);
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      success: true,
+      needContribute: [
+        {
+          id: sampleModelId,
+          version: sampleVersion,
+          type: 'lifeCycleModel data set',
+        },
+      ],
+      contributeResults: [
+        {
+          success: true,
+          data: { success: true },
+          id: sampleModelId,
+          version: sampleVersion,
+          type: 'lifeCycleModel data set',
+        },
+      ],
+    });
+    expect(mockContributeSource).toHaveBeenCalledTimes(1);
+    expect(mockContributeSource).toHaveBeenCalledWith(
+      'lifecyclemodels',
+      sampleModelId,
+      sampleVersion,
+    );
+  });
+
+  it('recursively collects local refs, skips duplicates, and preserves contribute failures', async () => {
+    const nestedJson = { marker: 'nested-json' };
+    mockGetRefTableName.mockImplementation((type: string) => {
+      if (type === 'process data set') return 'processes';
+      if (type === 'source data set') return 'sources';
+      if (type === 'lifeCycleModel data set') return '';
+      return '';
+    });
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [
+          {
+            json: { id: 'detail-json' },
+            json_tg: { submodels: [] },
+            state_code: 0,
+            rule_verification: true,
+            team_id: 'team-1',
+          },
+        ],
+        error: null,
+      }),
+    );
+    mockGetAllRefObj.mockImplementation((value: any) => {
+      if (value?.success) {
+        return [
+          {
+            '@refObjectId': 'process-ref-a',
+            '@version': sampleVersion,
+            '@type': 'process data set',
+          },
+          {
+            '@refObjectId': 'process-ref-a',
+            '@version': sampleVersion,
+            '@type': 'process data set',
+          },
+          {
+            '@refObjectId': 'source-ref-b',
+            '@version': sampleVersion,
+            '@type': 'source data set',
+          },
+          {
+            '@refObjectId': 'invalid-ref',
+            '@version': sampleVersion,
+            '@type': 'unknown data set',
+          },
+          {
+            '@refObjectId': 'error-ref',
+            '@version': sampleVersion,
+            '@type': 'process data set',
+          },
+        ];
+      }
+      if (value === nestedJson) {
+        return [
+          {
+            '@refObjectId': 'source-ref-c',
+            '@version': sampleVersion,
+            '@type': 'source data set',
+          },
+        ];
+      }
+      return [];
+    });
+    mockGetRefData.mockImplementation(async (id: string) => {
+      if (id === 'process-ref-a') {
+        return {
+          success: true,
+          data: {
+            stateCode: 10,
+            userId: sampleUserId,
+            json: null,
+          },
+        };
+      }
+      if (id === 'source-ref-b') {
+        return {
+          success: true,
+          data: {
+            stateCode: 100,
+            userId: sampleUserId,
+            json: nestedJson,
+          },
+        };
+      }
+      if (id === 'source-ref-c') {
+        return {
+          success: true,
+          data: {
+            stateCode: 10,
+            userId: sampleUserId,
+            json: null,
+          },
+        };
+      }
+      if (id === 'error-ref') {
+        throw new Error('ref fetch failed');
+      }
+      return {
+        success: false,
+        data: null,
+      };
+    });
+    mockContributeSource.mockImplementation(async (tableName: string, id: string) => {
+      if (tableName === 'sources' && id === 'source-ref-c') {
+        throw new Error('contribute source failed');
+      }
+      return { success: true, tableName, id };
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const result = await lifeCycleModelsApi.contributeLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({
+      success: true,
+      needContribute: [
+        expect.objectContaining({ id: 'process-ref-a', type: 'process data set' }),
+        expect.objectContaining({ id: 'source-ref-c', type: 'source data set' }),
+        expect.objectContaining({ id: sampleModelId, type: 'lifeCycleModel data set' }),
+      ],
+      contributeResults: [
+        expect.objectContaining({
+          success: true,
+          id: 'process-ref-a',
+          type: 'process data set',
+        }),
+        expect.objectContaining({
+          success: false,
+          id: 'source-ref-c',
+        }),
+        expect.objectContaining({
+          success: false,
+          id: sampleModelId,
+          error: 'Invalid table name',
+        }),
+      ],
+    });
+    expect(mockContributeSource).toHaveBeenCalledWith('processes', 'process-ref-a', sampleVersion);
+    expect(mockContributeSource).toHaveBeenCalledWith('sources', 'source-ref-c', sampleVersion);
+    expect(consoleSpy).toHaveBeenCalledWith('Error fetching ref data:', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith('Error contributing data:', expect.any(Error));
+    consoleSpy.mockRestore();
   });
 });

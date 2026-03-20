@@ -206,7 +206,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           <Descriptions.Item
             key={0}
             label={<FormattedMessage id='pages.unitgroup.id' defaultMessage='ID' />}
-            labelStyle={{ width: '100px' }}
+            styles={{ label: { width: '100px' } }}
           >
             {initData.unitGroupInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
           </Descriptions.Item>
@@ -260,7 +260,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                 defaultMessage='Approval of overall compliance'
               />
             }
-            labelStyle={{ width: '240px' }}
+            styles={{ label: { width: '240px' } }}
           >
             {getComplianceLabel(
               (complianceRecord?.['common:approvalOfOverallCompliance'] as string | undefined) ??
@@ -310,7 +310,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                 defaultMessage='Data set version'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             <Space>
               {initData.administrativeInformation?.publicationAndOwnership?.[
@@ -359,7 +359,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
                 defaultMessage='Permanent data set URI'
               />
             }
-            labelStyle={{ width: '220px' }}
+            styles={{ label: { width: '220px' } }}
           >
             {initData.administrativeInformation?.publicationAndOwnership?.[
               'common:permanentDataSetURI'

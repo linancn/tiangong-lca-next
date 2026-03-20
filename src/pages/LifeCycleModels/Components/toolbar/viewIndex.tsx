@@ -62,6 +62,28 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
+  const edgeLabelText = {
+    balanced: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.balanced',
+      defaultMessage: 'Bal',
+    }),
+    deficit: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.deficit',
+      defaultMessage: 'Def',
+    }),
+    surplus: intl.formatMessage({
+      id: 'pages.button.model.edgeStatus.surplus',
+      defaultMessage: 'Sur',
+    }),
+    input: intl.formatMessage({
+      id: 'pages.button.input',
+      defaultMessage: 'Input',
+    }),
+    output: intl.formatMessage({
+      id: 'pages.button.output',
+      defaultMessage: 'Output',
+    }),
+  };
 
   const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
   const edges: GraphEdge[] = useGraphStore((state) => state.edges);
@@ -222,22 +244,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       refY: 8,
       textAnchor: 'middle',
       textVerticalAnchor: 'top',
-    },
-  };
-
-  const nodeTemplate = {
-    id: '',
-    label: '',
-    shape: 'rect',
-    x: 200,
-    y: 100,
-    width: 350,
-    height: 80,
-    attrs: nodeAttrs,
-    data: {
-      label: [],
-      quantitativeReference: '0',
-      generalComment: [],
     },
   };
 
@@ -412,7 +418,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                     ...item?.attrs,
                     text: {
                       ...item?.attrs?.text,
-                      text: `${genPortLabel(itemTextWithAllocation ?? '', lang, node?.size?.width ?? node?.width ?? nodeTemplate.width ?? 350)}`,
+                      text: `${genPortLabel(
+                        itemTextWithAllocation ?? '',
+                        lang,
+                        node?.size?.width ?? node?.width ?? 350,
+                      )}`,
                       title: itemTextWithAllocation,
                       fill: getPortTextColor(
                         item?.data?.quantitativeReference,
@@ -448,6 +458,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                 token,
                 edge?.data?.connection?.unbalancedAmount as number,
                 edge?.data?.connection?.exchangeAmount as number,
+                edgeLabelText,
               );
               return {
                 ...edge,
@@ -562,13 +573,18 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         disabled={false}
       /> */}
       <ModelResult
-        submodels={jsonTg?.submodels ?? []}
+        submodels={(jsonTg?.submodels ?? []).map((submodel) => ({
+          id: submodel.id,
+          version: submodel.version ?? version,
+        }))}
         modelId={id}
         modelVersion={version}
         lang={lang}
         actionType='view'
       />
-      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
+      <Control
+        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
+      />
       <Spin spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}

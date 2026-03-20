@@ -99,7 +99,11 @@ jest.mock('antd', () => {
       {toText(children)}
     </button>
   );
-  const ConfigProvider = ({ children }: any) => <div>{children}</div>;
+  const ConfigProvider = ({ children, theme: providerTheme }: any) => (
+    <div data-testid='config-provider' data-algorithm={providerTheme?.algorithm}>
+      {children}
+    </div>
+  );
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
   const Tabs = ({ items }: any) => (
@@ -164,6 +168,7 @@ umiModule.default = { ...(umiModule.default || {}), useIntl: umiModule.useIntl }
 describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.setItem('isDarkMode', 'false');
     mockGetCurrentUser.mockResolvedValue({ email: 'init@test.com' });
     mockForgotPasswordSendEmail.mockResolvedValue({ status: 'ok' });
   });
@@ -233,6 +238,29 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
         description: 'Error: boom',
         placement: 'top',
       });
+    });
+  });
+
+  it('falls back to empty init data and supports dark mode toggle from localStorage', async () => {
+    localStorage.setItem('isDarkMode', 'true');
+    mockGetCurrentUser.mockResolvedValueOnce(undefined);
+
+    render(<PasswordForgot />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('initial-values')).toHaveTextContent('{}');
+    });
+    const rootConfigProvider = screen.getAllByTestId('config-provider')[0];
+    expect(rootConfigProvider).toHaveAttribute('data-algorithm', 'dark');
+
+    fireEvent.click(screen.getByLabelText('toggle-dark-mode'));
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('config-provider')[0]).toHaveAttribute(
+        'data-algorithm',
+        'default',
+      );
+      expect(localStorage.getItem('isDarkMode')).toBe('false');
     });
   });
 });

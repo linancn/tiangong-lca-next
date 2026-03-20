@@ -74,6 +74,7 @@ Keep behavior aligned with existing feature implementations.
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to changed files.
 - Supabase edge-function payload shape changes must include unit tests in `tests/unit/services/**`.
+- When test engineering changes, sync `docs/agents/test_todo_list.md`; if the long-term testing plan or baseline summary changes too, sync `docs/agents/test_improvement_plan.md` and the related testing docs plus `_CN` mirrors.
 
 ## Delivery Rules
 

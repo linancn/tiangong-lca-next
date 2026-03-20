@@ -3,6 +3,7 @@
  * Path: src/services/lifeCycleModels/util.ts
  */
 
+import { jsonToList } from '@/services/general/util';
 import {
   genEdgeExchangeTableData,
   genLifeCycleModelData,
@@ -10,6 +11,7 @@ import {
   genLifeCycleModelJsonOrdered,
   genNodeLabel,
   genPortLabel,
+  genReferenceToResultingProcess,
 } from '@/services/lifeCycleModels/util';
 
 const createLangText = (text: string, lang = 'en') => ({ '@xml:lang': lang, '#text': text });
@@ -237,6 +239,10 @@ describe('genNodeLabel', () => {
     expect(result.endsWith('...')).toBe(true);
     expect(result.length).toBeLessThan(label.length);
   });
+
+  it('should keep short labels unchanged', () => {
+    expect(genNodeLabel('Short label', 'en', 300)).toBe('Short label');
+  });
 });
 
 describe('genPortLabel', () => {
@@ -254,6 +260,71 @@ describe('genPortLabel', () => {
     const result = genPortLabel(label, 'zh', 240);
 
     expect(result.endsWith('...')).toBe(true);
+  });
+
+  it('should keep short port labels unchanged', () => {
+    expect(genPortLabel('Port', 'en', 300)).toBe('Port');
+  });
+});
+
+describe('genReferenceToResultingProcess', () => {
+  it('should return original data when process list is empty or data is missing', () => {
+    const data = {
+      lifeCycleModelDataSet: { lifeCycleModelInformation: { dataSetInformation: {} } },
+    };
+
+    expect(genReferenceToResultingProcess([], '01.00.000', data)).toBe(data);
+    expect(genReferenceToResultingProcess(null, '01.00.000', data)).toBe(data);
+    expect(
+      genReferenceToResultingProcess(
+        [{ modelInfo: { id: 'proc-1' }, data: {} }],
+        '01.00.000',
+        null,
+      ),
+    ).toBeNull();
+  });
+
+  it('should attach resulting process references with generated short descriptions', () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {},
+        },
+      },
+    };
+
+    const result = genReferenceToResultingProcess(
+      [
+        {
+          modelInfo: { id: 'proc-1' },
+          data: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: [createLangText('Process One')],
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      '01.00.000',
+      data,
+    );
+
+    expect(
+      result.lifeCycleModelDataSet.lifeCycleModelInformation.dataSetInformation
+        .referenceToResultingProcess,
+    ).toEqual([
+      expect.objectContaining({
+        '@refObjectId': 'proc-1',
+        '@type': 'process data set',
+        '@uri': '../processes/proc-1.xml',
+        '@version': '01.00.000',
+      }),
+    ]);
   });
 });
 
@@ -288,6 +359,226 @@ describe('genLifeCycleModelJsonOrdered', () => {
     expect(firstOutput.downstreamProcess['@id']).toBe('1');
     expect(firstOutput.downstreamProcess['@flowUUID']).toBe('flow-2');
   });
+
+  it('should group multiple downstream processes under one output flow UUID', () => {
+    const data = {
+      ...baseModelData,
+      model: {
+        nodes: [
+          ...baseModelData.model.nodes,
+          {
+            id: 'node-c',
+            data: {
+              index: '2',
+              id: 'proc-c',
+              version: '03.00.000',
+              shortDescription: [createLangText('Process C')],
+            },
+          },
+        ],
+        edges: [
+          ...baseModelData.model.edges,
+          {
+            source: { cell: 'node-a' },
+            target: { cell: 'node-c' },
+            data: {
+              connection: {
+                outputExchange: {
+                  '@flowUUID': 'flow-1',
+                  downstreamProcess: {
+                    '@flowUUID': 'flow-3',
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    const result = genLifeCycleModelJsonOrdered('model-123', data);
+    const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+      .processInstance as any[];
+    const groupedOutput = processes[0].connections.outputExchange;
+
+    expect(groupedOutput['@flowUUID']).toBe('flow-1');
+    expect(groupedOutput.downstreamProcess).toEqual([
+      expect.objectContaining({ '@id': '1', '@flowUUID': 'flow-2' }),
+      expect.objectContaining({ '@id': '2', '@flowUUID': 'flow-3' }),
+    ]);
+  });
+
+  it('should keep sparse process, review, and compliance records structurally valid when optional fields are missing', () => {
+    const result = genLifeCycleModelJsonOrdered('model-sparse', {
+      lifeCycleModelInformation: {
+        dataSetInformation: {},
+      },
+      modellingAndValidation: {
+        validation: {
+          review: [
+            {
+              'common:reviewDetails': [createLangText('Sparse review')],
+              'common:scope': [
+                {
+                  'common:method': { '@name': 'method-sparse' },
+                },
+              ],
+              'common:dataQualityIndicators': {
+                'common:dataQualityIndicator': [{ '@name': 'coverage' }],
+              },
+              'common:referenceToNameOfReviewerAndInstitution': { '@type': 'person' },
+              'common:referenceToCompleteReviewReport': { '@type': 'document' },
+            },
+          ],
+        },
+        complianceDeclarations: {
+          compliance: [
+            {
+              'common:approvalOfOverallCompliance': 'approved',
+              'common:referenceToComplianceSystem': { '@type': 'system' },
+            },
+          ],
+        },
+      },
+      model: {
+        nodes: [
+          {
+            id: 'node-sparse',
+            data: {},
+          },
+        ],
+        edges: [],
+      },
+    });
+
+    const process = jsonToList(
+      result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance,
+    )[0] as any;
+    const review = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.validation.review,
+    )[0] as any;
+    const compliance = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance,
+    )[0] as any;
+
+    expect(process.referenceToProcess).toEqual(
+      expect.objectContaining({
+        '@type': 'process data set',
+        '@uri': '../processes/undefined.xml',
+      }),
+    );
+    expect(review['common:scope']).toEqual(
+      expect.objectContaining({
+        'common:method': { '@name': 'method-sparse' },
+      }),
+    );
+    expect(review['common:dataQualityIndicators']['common:dataQualityIndicator']).toEqual(
+      expect.objectContaining({
+        '@name': 'coverage',
+      }),
+    );
+    expect(review['common:referenceToNameOfReviewerAndInstitution']).toEqual(
+      expect.objectContaining({
+        '@type': 'person',
+      }),
+    );
+    expect(review['common:referenceToCompleteReviewReport']).toEqual(
+      expect.objectContaining({
+        '@type': 'document',
+      }),
+    );
+    expect(compliance['common:referenceToComplianceSystem']).toEqual(
+      expect.objectContaining({
+        '@type': 'system',
+      }),
+    );
+    expect(compliance['common:approvalOfOverallCompliance']).toBe('approved');
+  });
+
+  it('should keep identifier-only review and compliance references when secondary fields are missing', () => {
+    const result = genLifeCycleModelJsonOrdered('model-sparse-refs', {
+      lifeCycleModelInformation: {
+        dataSetInformation: {},
+      },
+      modellingAndValidation: {
+        validation: {
+          review: [
+            {
+              'common:reviewDetails': [createLangText('Sparse review refs')],
+              'common:scope': [
+                {
+                  '@name': 'scope-sparse',
+                  'common:method': {},
+                },
+              ],
+              'common:dataQualityIndicators': {
+                'common:dataQualityIndicator': [{ '@value': 'high' }],
+              },
+              'common:referenceToNameOfReviewerAndInstitution': {
+                '@refObjectId': 'reviewer-sparse',
+              },
+              'common:referenceToCompleteReviewReport': {
+                '@refObjectId': 'report-sparse',
+              },
+            },
+          ],
+        },
+        complianceDeclarations: {
+          compliance: [
+            {
+              'common:referenceToComplianceSystem': {
+                '@refObjectId': 'system-sparse',
+              },
+            },
+          ],
+        },
+      },
+      model: {
+        nodes: [
+          {
+            id: 'node-sparse-refs',
+            data: {
+              index: '5',
+            },
+          },
+        ],
+        edges: [],
+      },
+    });
+
+    const review = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.validation.review,
+    )[0] as any;
+    const compliance = jsonToList(
+      result.lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance,
+    )[0] as any;
+
+    expect(review['common:scope']).toEqual(
+      expect.objectContaining({
+        '@name': 'scope-sparse',
+      }),
+    );
+    expect(review['common:dataQualityIndicators']['common:dataQualityIndicator']).toEqual(
+      expect.objectContaining({
+        '@value': 'high',
+      }),
+    );
+    expect(review['common:referenceToNameOfReviewerAndInstitution']).toEqual(
+      expect.objectContaining({
+        '@refObjectId': 'reviewer-sparse',
+      }),
+    );
+    expect(review['common:referenceToCompleteReviewReport']).toEqual(
+      expect.objectContaining({
+        '@refObjectId': 'report-sparse',
+      }),
+    );
+    expect(compliance['common:referenceToComplianceSystem']).toEqual(
+      expect.objectContaining({
+        '@refObjectId': 'system-sparse',
+      }),
+    );
+  });
 });
 
 describe('genLifeCycleModelInfoFromData', () => {
@@ -312,6 +603,44 @@ describe('genLifeCycleModelInfoFromData', () => {
     const classificationList = classification as { id?: string[]; value?: string[] };
     expect(classificationList.value).toEqual(['Systems', 'Unspecific parts']);
     expect(classificationList.id).toEqual(['class-0', 'class-1']);
+  });
+
+  it('should preserve review and compliance collections after round-tripping', () => {
+    const ordered = genLifeCycleModelJsonOrdered('model-789', baseModelData);
+
+    const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
+    const reviewList = Array.isArray(result.modellingAndValidation.validation.review)
+      ? result.modellingAndValidation.validation.review
+      : [result.modellingAndValidation.validation.review];
+    const complianceList = Array.isArray(
+      result.modellingAndValidation.complianceDeclarations.compliance,
+    )
+      ? result.modellingAndValidation.complianceDeclarations.compliance
+      : [result.modellingAndValidation.complianceDeclarations.compliance];
+    const review = reviewList[0] as any;
+    const compliance = complianceList[0] as any;
+
+    expect(review['@type']).toBe('internal');
+    expect(review['common:scope']).toEqual([
+      expect.objectContaining({
+        '@name': 'scope-1',
+        'common:method': expect.objectContaining({ '@name': 'method-1' }),
+      }),
+    ]);
+    expect(review['common:referenceToCompleteReviewReport']['@refObjectId']).toBe('report-1');
+    expect(compliance['common:referenceToComplianceSystem']['@refObjectId']).toBe('system-1');
+    expect(compliance['common:approvalOfOverallCompliance']).toBe('approved');
+  });
+
+  it('should fallback common:UUID to "-" when the ordered dataset omits it', () => {
+    const ordered = genLifeCycleModelJsonOrdered('model-uuid-fallback', baseModelData);
+    delete ordered.lifeCycleModelDataSet.lifeCycleModelInformation.dataSetInformation[
+      'common:UUID'
+    ];
+
+    const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
+
+    expect(result.lifeCycleModelInformation.dataSetInformation['common:UUID']).toBe('-');
   });
 });
 
@@ -362,6 +691,81 @@ describe('genLifeCycleModelData', () => {
     expect(result.nodes[0].ports.items[0].tools).toEqual([{ id: 'portTool' }]);
     expect(result.edges).toEqual(sample.xflow.edges);
   });
+
+  it('should use fallback width, labels, and empty edge defaults', () => {
+    const sample = {
+      xflow: {
+        nodes: [
+          {
+            id: 'node-fallback',
+            data: {},
+            ports: {
+              items: [
+                {
+                  id: 'port-fallback',
+                  data: {},
+                  attrs: {
+                    text: {},
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    const result = genLifeCycleModelData(sample as any, 'en');
+
+    expect(result.nodes[0].label).toBe('-');
+    expect(result.nodes[0].ports.items[0].attrs.text.text).toBe('');
+    expect(result.nodes[0].ports.items[0].attrs.text.title).toBeUndefined();
+    expect(result.edges).toEqual([]);
+  });
+
+  it('should prefer node.size.width and attrs text when textLang is missing', () => {
+    const sample = {
+      xflow: {
+        nodes: [
+          {
+            id: 'node-sized',
+            width: 400,
+            size: { width: 84, height: 40 },
+            data: {
+              label: {
+                baseName: [createLangText('Compact label that should truncate')],
+              },
+            },
+            ports: {
+              items: [
+                {
+                  id: 'port-sized',
+                  attrs: {
+                    text: {
+                      text: 'Fallback port name',
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    const result = genLifeCycleModelData(sample as any, 'en');
+
+    expect(result.nodes[0].label).toBe('Compact ...');
+    expect(result.nodes[0].ports.items[0].attrs.text.text).toBe('Fa...');
+    expect(result.nodes[0].ports.items[0].attrs.text.title).toBe('Fallback port name');
+  });
+
+  it('should fallback to an empty node list when xflow nodes are missing', () => {
+    const result = genLifeCycleModelData({ xflow: { edges: [{ id: 'edge-only' }] } } as any, 'en');
+
+    expect(result.nodes).toEqual([]);
+    expect(result.edges).toEqual([{ id: 'edge-only' }]);
+  });
 });
 
 describe('genEdgeExchangeTableData', () => {
@@ -402,7 +806,24 @@ describe('genEdgeExchangeTableData', () => {
     expect(result[0].targetInputFlowId).toBe('flow-b');
   });
 
+  it('should generate fallback ids and targetInputFlowId defaults', () => {
+    const result = genEdgeExchangeTableData(
+      [
+        {
+          sourceOutputFlowName: [createLangText('Only source')],
+        },
+      ] as any,
+      'en',
+    );
+
+    expect(result[0].id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+    expect(result[0].targetInputFlowId).toBe('-');
+  });
+
   it('should return empty array when input is nullish', () => {
     expect(genEdgeExchangeTableData(undefined, 'en')).toEqual([]);
+    expect(genEdgeExchangeTableData(null, 'en')).toEqual([]);
   });
 });

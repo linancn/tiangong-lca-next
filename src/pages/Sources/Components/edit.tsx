@@ -462,7 +462,7 @@ const SourceEdit: FC<Props> = ({
 
       <Drawer
         getContainer={() => document.body}
-        destroyOnClose={true}
+        destroyOnHidden
         title={
           <FormattedMessage id='pages.source.drawer.title.edit' defaultMessage='Edit Source' />
         }

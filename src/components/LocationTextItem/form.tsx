@@ -31,7 +31,7 @@ const LocationTextItemForm: FC<Props> = ({
       if (res.success) {
         const data: any = res.data?.[0]?.location ?? [];
         setLocationData(
-          data?.map((l: any) => {
+          data.map((l: any) => {
             if (l?.['@value'] === 'NULL') {
               return { label: '', value: 'NULL' };
             }
@@ -39,7 +39,7 @@ const LocationTextItemForm: FC<Props> = ({
               label: l?.['@value'] + ' (' + l?.['#text'] + ')',
               value: l?.['@value'],
             };
-          }) ?? [],
+          }),
         );
       }
     });

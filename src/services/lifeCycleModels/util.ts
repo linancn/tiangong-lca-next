@@ -863,7 +863,7 @@ export function genLifeCycleModelData(data: any, lang: string) {
         const label = genProcessName(node?.data?.label, lang);
         return {
           ...node,
-          label: genNodeLabel(label ?? '', lang, nodeWidth),
+          label: genNodeLabel(label, lang, nodeWidth),
           ports: {
             ...node?.ports,
             items: node?.ports?.items?.map((item: any) => {

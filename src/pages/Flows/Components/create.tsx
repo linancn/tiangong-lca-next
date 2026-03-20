@@ -127,6 +127,9 @@ const FlowsCreate: FC<CreateProps> = ({
     getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
       const dataset = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
+        dataset.administrativeInformation = dataset.administrativeInformation ?? {};
+        dataset.administrativeInformation.publicationAndOwnership =
+          dataset.administrativeInformation.publicationAndOwnership ?? {};
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
           newVersion;
       }
@@ -278,7 +281,7 @@ const FlowsCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -332,67 +335,72 @@ const FlowsCreate: FC<CreateProps> = ({
               } as FormFlow);
             }}
             onFinish={async () => {
+              setSpinning(true);
               try {
-                await formRefCreate.current?.validateFields();
-              } catch (err) {
-                console.log('err', err);
-                return;
+                try {
+                  await formRefCreate.current?.validateFields();
+                } catch (err) {
+                  console.log('err', err);
+                  return false;
+                }
+                const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
+                const fieldsValue = formRefCreate.current?.getFieldsValue();
+                const flowProperties = fromData?.flowProperties;
+                // if (
+                //   !flowProperties ||
+                //   !flowProperties?.flowProperty ||
+                //   flowProperties?.flowProperty?.length === 0
+                // ) {
+                //   message.error(
+                //     intl.formatMessage({
+                //       id: 'pages.flow.validator.flowProperties.required',
+                //       defaultMessage: 'Please select flow properties',
+                //     }),
+                //   );
+                //   return true;
+                // } else if (
+                //   flowProperties.flowProperty.filter((item) => item?.quantitativeReference)
+                //     .length !== 1
+                // ) {
+                //   message.error(
+                //     intl.formatMessage({
+                //       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
+                //       defaultMessage:
+                //         'Flow property needs to have exactly one quantitative reference open',
+                //     }),
+                //   );
+                //   return false;
+                // }
+                const result = await createFlows(paramsId, {
+                  ...fieldsValue,
+                  flowProperties,
+                });
+                if (result.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  formRefCreate.current?.resetFields();
+                  setDrawerVisible(false);
+                  setActiveTabKey('flowInformation');
+                  setFromData(undefined);
+                  reload();
+                } else {
+                  message.error(
+                    isSupabaseDuplicateKeyError(result.error)
+                      ? intl.formatMessage({
+                          id: 'pages.button.create.error.duplicateId',
+                          defaultMessage: 'Data with the same ID already exists.',
+                        })
+                      : (result.error?.message ?? 'Error'),
+                  );
+                }
+                return true;
+              } finally {
+                setSpinning(false);
               }
-              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
-              const fieldsValue = formRefCreate.current?.getFieldsValue();
-              const flowProperties = fromData?.flowProperties;
-              // if (
-              //   !flowProperties ||
-              //   !flowProperties?.flowProperty ||
-              //   flowProperties?.flowProperty?.length === 0
-              // ) {
-              //   message.error(
-              //     intl.formatMessage({
-              //       id: 'pages.flow.validator.flowProperties.required',
-              //       defaultMessage: 'Please select flow properties',
-              //     }),
-              //   );
-              //   return true;
-              // } else if (
-              //   flowProperties.flowProperty.filter((item) => item?.quantitativeReference)
-              //     .length !== 1
-              // ) {
-              //   message.error(
-              //     intl.formatMessage({
-              //       id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-              //       defaultMessage:
-              //         'Flow property needs to have exactly one quantitative reference open',
-              //     }),
-              //   );
-              //   return false;
-              // }
-              const result = await createFlows(paramsId, {
-                ...fieldsValue,
-                flowProperties,
-              });
-              if (result.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.button.create.success',
-                    defaultMessage: 'Created successfully!',
-                  }),
-                );
-                formRefCreate.current?.resetFields();
-                setDrawerVisible(false);
-                setActiveTabKey('flowInformation');
-                setFromData(undefined);
-                reload();
-              } else {
-                message.error(
-                  isSupabaseDuplicateKeyError(result.error)
-                    ? intl.formatMessage({
-                        id: 'pages.button.create.error.duplicateId',
-                        defaultMessage: 'Data with the same ID already exists.',
-                      })
-                    : (result.error?.message ?? 'Error'),
-                );
-              }
-              return true;
             }}
           >
             <FlowForm

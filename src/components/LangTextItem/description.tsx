@@ -10,7 +10,7 @@ const LangTextItemDescription: FC<Props> = ({ data }) => {
   if (!data || getLangList(data).length === 0) {
     return (
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} labelStyle={{ display: 'none' }}>
+        <Descriptions.Item key={0} styles={{ label: { display: 'none' } }}>
           -
         </Descriptions.Item>
       </Descriptions>
@@ -29,7 +29,7 @@ const LangTextItemDescription: FC<Props> = ({ data }) => {
                 ? '简体中文'
                 : '-'
           }
-          labelStyle={{ width: '100px' }}
+          styles={{ label: { width: '100px' } }}
         >
           {name?.['#text'] ?? '-'}
         </Descriptions.Item>

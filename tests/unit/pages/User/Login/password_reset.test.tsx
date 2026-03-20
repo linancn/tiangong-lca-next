@@ -19,6 +19,8 @@ var mockSetPassword: any;
 var mockGetCurrentUser: any;
 // eslint-disable-next-line no-var
 var mockHistory: any;
+// eslint-disable-next-line no-var
+var mockLatestPasswordFields: Record<string, any>;
 
 jest.mock('umi', () => {
   const React = require('react');
@@ -55,9 +57,11 @@ jest.mock('@umijs/max', () => {
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
-  const LoginForm = ({ children, onFinish, submitter, fields }: any) => (
+  mockLatestPasswordFields = {};
+  const LoginForm = ({ children, onFinish, submitter, fields, logo }: any) => (
     <div data-testid='login-form'>
       <div data-testid='fields'>{JSON.stringify(fields)}</div>
+      <div data-testid='logo'>{String(logo ?? '')}</div>
       {children}
       <button
         type='button'
@@ -80,9 +84,10 @@ jest.mock('@ant-design/pro-components', () => {
     <input placeholder={toText(placeholder)} disabled={disabled} />
   );
   const ProLayout = ({ children }: any) => <div>{children}</div>;
-  ProFormText.Password = ({ placeholder }: any) => (
-    <input placeholder={toText(placeholder)} type='password' />
-  );
+  ProFormText.Password = (props: any) => {
+    mockLatestPasswordFields[props.name] = props;
+    return <input placeholder={toText(props.placeholder)} type='password' />;
+  };
   return { __esModule: true, LoginForm, ProConfigProvider, ProFormText, ProLayout };
 });
 
@@ -139,6 +144,15 @@ jest.mock('@/components', () => ({
   Footer: () => <div data-testid='footer' />,
 }));
 
+jest.mock('@/pages/User/Login/Components/LoginTopActions', () => ({
+  __esModule: true,
+  default: ({ onDarkModeToggle, isDarkMode }: any) => (
+    <button type='button' data-testid='toggle-dark-mode' onClick={onDarkModeToggle}>
+      {isDarkMode ? 'dark' : 'light'}
+    </button>
+  ),
+}));
+
 const PasswordReset = require('@/pages/User/Login/password_reset').default;
 const umiModule = require('umi');
 if (umiModule.useIntl) {
@@ -155,6 +169,8 @@ umiModule.default = { ...(umiModule.default || {}), useIntl: umiModule.useIntl }
 describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
+    localStorage.setItem('isDarkMode', 'false');
     mockSetPassword.mockResolvedValue({ status: 'ok' });
     mockGetCurrentUser.mockResolvedValue({ userid: 'u1', email: 'user@test.com' });
   });
@@ -180,6 +196,25 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
         duration: 3,
       });
       expect(mockHistory.push).toHaveBeenCalledWith('/');
+    });
+  });
+
+  it('hydrates the email field payload and toggles dark mode branding', async () => {
+    render(<PasswordReset />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('fields')).toHaveTextContent('user@test.com');
+    });
+
+    const initialLogo = screen.getByTestId('logo').textContent;
+    expect(initialLogo).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId('toggle-dark-mode'));
+
+    await waitFor(() => {
+      expect(localStorage.getItem('isDarkMode')).toBe('true');
+      expect(screen.getByTestId('logo').textContent).not.toBe(initialLogo);
+      expect(screen.getByTestId('toggle-dark-mode')).toHaveTextContent('dark');
     });
   });
 
@@ -209,5 +244,44 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
       expect(mockMessageApi.error).toHaveBeenCalledWith('Password reset failed, please try again.');
     });
     expect(mockHistory.push).not.toHaveBeenCalled();
+  });
+
+  it('renders weak, medium and strong password strength states', async () => {
+    render(<PasswordReset />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+
+    const statusRender = mockLatestPasswordFields.newPassword.fieldProps.statusRender;
+    expect(toText(statusRender('Ab1!'))).toContain('Strength: Weak');
+    expect(toText(statusRender('Abcdefg1!'))).toContain('Strength: Medium');
+    expect(toText(statusRender('Abcdefghijk1!'))).toContain('Strength: Strong');
+  });
+
+  it('validates confirmation password matches the new password', async () => {
+    render(<PasswordReset />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+
+    const confirmRuleFactory = mockLatestPasswordFields.confirmNewPassword.rules[1];
+    const confirmRule = confirmRuleFactory({
+      getFieldValue: (name: string) => (name === 'newPassword' ? 'NewPassword1!' : ''),
+    });
+
+    await expect(confirmRule.validator({}, 'NewPassword1!')).resolves.toBeUndefined();
+    await expect(confirmRule.validator({}, 'Mismatch1!')).rejects.toThrow(
+      'The two passwords do not match!',
+    );
+  });
+
+  it('keeps the form in loading state when the current user is unavailable', async () => {
+    mockGetCurrentUser.mockResolvedValueOnce({ userid: '', email: 'ghost@test.com' });
+
+    render(<PasswordReset />);
+
+    await waitFor(() => {
+      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(screen.getByTestId('fields')).toHaveTextContent('[]');
+      expect(screen.getByTestId('spin')).toBeInTheDocument();
+    });
   });
 });

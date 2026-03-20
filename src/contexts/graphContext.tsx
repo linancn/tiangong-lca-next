@@ -1,3 +1,4 @@
+import { scheduleGraphEdgeAnchorRefresh } from '@/components/X6Graph/edgeRouting';
 import { Graph } from '@antv/x6';
 import { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
@@ -8,10 +9,10 @@ interface GraphContextValue {
   edges: any[];
   setNodes: (nodes: any[]) => void;
   setEdges: (edges: any[]) => void;
-  addNodes: (nodes: any[]) => void;
-  updateNode: (nodeId: string, data: any) => void;
+  addNodes: (nodes: any[], options?: Record<string, any>) => void;
+  updateNode: (nodeId: string, data: any, options?: Record<string, any>) => void;
   removeNodes: (nodeIds: string[]) => void;
-  updateEdge: (edgeId: string, data: any) => void;
+  updateEdge: (edgeId: string, data: any, options?: Record<string, any>) => void;
   removeEdges: (edgeIds: string[]) => void;
   initData: (data: { nodes: any[]; edges: any[] }) => void;
   syncGraphData: () => void;
@@ -46,10 +47,15 @@ const GraphContext = createContext<GraphContextValue | null>(null);
 
 export const GraphProvider = ({ children }: { children: ReactNode }) => {
   const graphRef = useRef<Graph | null>(null);
+  const pendingEdgeAnchorRefreshRef = useRef<(() => void) | null>(null);
   const [nodes, setNodesState] = useState<any[]>([]);
   const [edges, setEdgesState] = useState<any[]>([]);
 
   const setGraph = (graph: Graph | null) => {
+    if (!graph) {
+      pendingEdgeAnchorRefreshRef.current?.();
+      pendingEdgeAnchorRefreshRef.current = null;
+    }
     graphRef.current = graph;
   };
 
@@ -61,16 +67,14 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
     setEdgesState(newEdges);
   };
 
-  const addNodes = (nodesToAdd: any[]) => {
+  const addNodes = (nodesToAdd: any[], options: Record<string, any> = {}) => {
     if (graphRef.current) {
-      nodesToAdd.forEach((node) => {
-        graphRef.current?.addNode(node);
-      });
+      graphRef.current.addNodes(nodesToAdd, options);
       setNodesState((prev) => [...prev, ...nodesToAdd]);
     }
   };
 
-  const updateNode = (nodeId: string, data: any) => {
+  const updateNode = (nodeId: string, data: any, options: Record<string, any> = {}) => {
     if (graphRef.current) {
       const cell = graphRef.current.getCellById(nodeId);
       if (cell && cell.isNode()) {
@@ -78,18 +82,17 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
         // 更新节点数据
         if (data.data) {
           const currentData = node.getData() || {};
-          node.setData({ ...currentData, ...data.data });
+          node.setData({ ...currentData, ...data.data }, options);
         }
 
         // 更新工具
         if (data.tools) {
-          node.removeTools();
-          node.addTools(data.tools);
+          node.addTools(data.tools, { ...options, reset: true });
         }
 
         // 更新端口
         if (data.ports) {
-          node.prop('ports', data.ports);
+          node.prop('ports', data.ports, options);
         }
 
         // 更新尺寸
@@ -97,17 +100,18 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
           node.resize(
             data.width !== undefined ? data.width : node.getSize().width,
             data.height !== undefined ? data.height : node.getSize().height,
+            options,
           );
         }
 
         // 更新标签
         if (data.label !== undefined) {
-          node.setAttrByPath('label/text', data.label);
+          node.setAttrByPath('label/text', data.label, options);
         }
 
         // 更新属性
         if (data.attrs) {
-          node.setAttrs(data.attrs);
+          node.setAttrs(data.attrs, options);
         }
 
         // 更新选中状态
@@ -144,7 +148,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateEdge = (edgeId: string, data: any) => {
+  const updateEdge = (edgeId: string, data: any, options: Record<string, any> = {}) => {
     if (graphRef.current) {
       const edge = graphRef.current.getCellById(edgeId);
       let isConnect = false;
@@ -152,7 +156,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
         // 更新边数据
         if (data.data) {
           const currentData = edge.getData() || {};
-          edge.setData({ ...currentData, ...data.data });
+          edge.setData({ ...currentData, ...data.data }, options);
           if (data?.data?.connection) {
             isConnect = true;
           }
@@ -160,22 +164,22 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
 
         // 更新属性
         if (data.attrs) {
-          edge.setAttrs(data.attrs);
+          edge.setAttrs(data.attrs, options);
         }
 
         // 更新标签
         if (data.labels) {
-          edge.setLabels(data.labels);
+          edge.setLabels(data.labels, options);
         }
 
         // 更新目标
         if (data.target) {
-          edge.setTarget(data.target);
+          edge.setTarget(data.target, options);
         }
 
         // 更新源
         if (data.source) {
-          edge.setSource(data.source);
+          edge.setSource(data.source, options);
         }
 
         // 更新选中状态
@@ -219,6 +223,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
 
   const initData = (data: { nodes: any[]; edges: any[] }) => {
     if (graphRef.current) {
+      pendingEdgeAnchorRefreshRef.current?.();
       graphRef.current.clearCells();
       if (data.nodes && data.nodes.length > 0) {
         graphRef.current.addNodes(data.nodes);
@@ -226,6 +231,9 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
       if (data.edges && data.edges.length > 0) {
         graphRef.current.addEdges(data.edges);
       }
+      pendingEdgeAnchorRefreshRef.current = scheduleGraphEdgeAnchorRefresh(graphRef.current, {
+        ignoreHistory: true,
+      });
       setNodesState(data.nodes || []);
       setEdgesState(data.edges || []);
     }
@@ -234,8 +242,20 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
   // 同步图中的实际数据到状态
   const syncGraphData = () => {
     if (graphRef.current) {
-      const graphNodes = graphRef.current.getNodes().map((node) => node.toJSON());
-      const graphEdges = graphRef.current.getEdges().map((edge) => edge.toJSON());
+      const selectedCellIds = new Set(
+        (typeof graphRef.current.getSelectedCells === 'function'
+          ? graphRef.current.getSelectedCells()
+          : []
+        ).map((cell) => cell.id),
+      );
+      const graphNodes = graphRef.current.getNodes().map((node) => ({
+        ...node.toJSON(),
+        selected: selectedCellIds.has(node.id),
+      }));
+      const graphEdges = graphRef.current.getEdges().map((edge) => ({
+        ...edge.toJSON(),
+        selected: selectedCellIds.has(edge.id),
+      }));
       setNodesState(graphNodes);
       setEdgesState(graphEdges);
     }
@@ -256,6 +276,14 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
     initData,
     syncGraphData,
   };
+
+  useEffect(
+    () => () => {
+      pendingEdgeAnchorRefreshRef.current?.();
+      pendingEdgeAnchorRefreshRef.current = null;
+    },
+    [],
+  );
 
   return <GraphContext.Provider value={value}>{children}</GraphContext.Provider>;
 };

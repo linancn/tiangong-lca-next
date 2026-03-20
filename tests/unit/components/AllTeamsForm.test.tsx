@@ -305,6 +305,29 @@ describe('TeamForm component', () => {
         darkLogo: [darkFile],
       });
     });
+
+    onLogoChange.mockClear();
+    await waitFor(() => {
+      expect(uploadRegistry.darkLogo?.onRemove).toBeDefined();
+    });
+    await act(async () => {
+      uploadRegistry.darkLogo?.onRemove?.();
+    });
+
+    await waitFor(() => {
+      const darkPreview = screen.getByRole('img', { name: /dark logo preview/i });
+      expect(darkPreview).toBeEmptyDOMElement();
+    });
+    expect(screen.getByRole('img', { name: /dark logo placeholder/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(onLogoChange).toHaveBeenCalled();
+      const calls = onLogoChange.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall?.[0]).toEqual({
+        lightLogo: [],
+        darkLogo: [],
+      });
+    });
   });
 
   it('keeps placeholders visible when previews are unavailable', async () => {

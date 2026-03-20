@@ -119,6 +119,7 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
     expect(button).not.toBeDisabled();
+    expect(mockGetDataSource).toHaveBeenCalledWith('/test-path');
   });
 
   it('should render disabled button when disabled prop is true', () => {
@@ -376,6 +377,117 @@ describe('AllVersionsList Component', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('children')).toBeInTheDocument();
+    });
+    expect(mockAddVersionComponent).toHaveBeenCalled();
+  });
+
+  it('should compute the next version from the highest loaded version after reopening', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      data: [
+        { id: '1', version: '01.00.001', name: 'Older Version' },
+        { id: '2', version: '01.00.010', name: 'Latest Version' },
+      ],
+      success: true,
+      total: 2,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const openButton = screen.getByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
+
+    const closeButton = screen.getByRole('button', { name: /close/i });
+    fireEvent.click(closeButton);
+
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '01.00.011' });
+    });
+  });
+
+  it('should roll over patch and minor versions when the current max version reaches limits', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      data: [{ id: '1', version: '01.99.999', name: 'Boundary Version' }],
+      success: true,
+      total: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const openButton = screen.getByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '02.00.000' });
+    });
+  });
+
+  it('should roll over only the patch version into the next minor version when needed', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      data: [{ id: '1', version: '01.02.999', name: 'Patch Boundary Version' }],
+      success: true,
+      total: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const openButton = screen.getByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '01.03.000' });
+    });
+  });
+
+  it('should fall back to 00.00.000 when no versions are returned', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      data: [],
+      success: true,
+      total: 0,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const openButton = screen.getByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '00.00.000' });
     });
   });
 });

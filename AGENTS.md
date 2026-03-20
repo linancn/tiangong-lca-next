@@ -23,6 +23,8 @@ npm install
 npm start
 npm run lint
 npm test
+npm run test:coverage
+npm run test:coverage:report
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
@@ -30,6 +32,10 @@ npm run build
 Notes:
 
 - `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
+- The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
+- `npm run test:coverage` and `npm run test:coverage:report` already include `NODE_OPTIONS=--max-old-space-size=8192`; use the scripts directly for full coverage work.
+- `npm run test:coverage:report` is the default coverage review artifact. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files.
+- `node scripts/test-coverage-report.js --full` prints the full ordered incomplete-file queue. Use it to inspect the full file-by-file state or refresh the queue snapshot, not to subjectively re-rank by ROI.
 - For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
 
 ## Token-Efficient Doc Routing
@@ -45,8 +51,8 @@ Read only what matches the current task:
 3. Lifecycle-model calculation changes
    - `docs/agents/util_calculate.md`
 4. Test coverage backlog tracking
-   - `docs/agents/test_todo_list.md` (actionable execution backlog)
-   - `docs/agents/test_improvement_plan.md` (long-term context)
+   - `docs/agents/test_todo_list.md` (actionable source of truth)
+   - `docs/agents/test_improvement_plan.md` (long-term context and strategy)
 5. Team/data audit process tasks
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
@@ -68,6 +74,10 @@ Read only what matches the current task:
 - Add/adjust tests matching scope.
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to the change.
+- For coverage-to-100 work, follow the ordered closure queue in `docs/agents/test_todo_list.md` / `npm run test:coverage:report` one file at a time.
+- Allowed queue exceptions: batch adjacent files that share the same mock/fixture/test harness, and fix blocking test-infrastructure issues first when they block the current file or its immediate neighbors.
+- If a queued file contains a provably unreachable or business-invalid branch, remove the dead branch without changing behavior instead of inventing synthetic tests, then continue queue order.
+- If test engineering changed (commands, coverage baseline, backlog status, workflow), sync `docs/agents/ai-testing-guide.md`, `docs/agents/test_todo_list.md`, and when strategic context changed also `docs/agents/test_improvement_plan.md`, plus all `_CN` mirrors.
 - Keep diffs scoped; update docs when expectations or workflows change.
 - Never hand-edit `docker/volumes/functions/**`; sync it via `./docker/pull-edge-functions.sh`.
 
@@ -79,3 +89,4 @@ When editing any English doc (`*.md` without `_CN`):
 2. Keep command examples executable against current scripts.
 3. Avoid duplicating long guidance across files; link back to the source doc.
 4. If workflow changed, update this file first (entry-point accuracy).
+5. For testing-related changes, update `docs/agents/test_todo_list.md` first; if the long-term plan or baseline summary changed, update `docs/agents/test_improvement_plan.md` too.

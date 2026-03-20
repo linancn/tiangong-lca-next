@@ -46,7 +46,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
           <Space direction='vertical' style={{ width: '100%' }}>
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.approvalOfOverallCompliance'
@@ -57,13 +57,13 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                 {getOptionLabel(
                   approvalOfOverallComplianceOptions,
                   item['common:approvalOfOverallCompliance'],
-                ) || '-'}
+                )}
               </Descriptions.Item>
             </Descriptions>
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.nomenclatureCompliance'
@@ -74,13 +74,13 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                 {getOptionLabel(
                   nomenclatureComplianceOptions,
                   item['common:nomenclatureCompliance'],
-                ) || '-'}
+                )}
               </Descriptions.Item>
             </Descriptions>
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.methodologicalCompliance'
@@ -91,13 +91,13 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                 {getOptionLabel(
                   methodologicalComplianceOptions,
                   item['common:methodologicalCompliance'],
-                ) || '-'}
+                )}
               </Descriptions.Item>
             </Descriptions>
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.reviewCompliance'
@@ -105,13 +105,13 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getOptionLabel(reviewComplianceOptions, item['common:reviewCompliance']) || '-'}
+                {getOptionLabel(reviewComplianceOptions, item['common:reviewCompliance'])}
               </Descriptions.Item>
             </Descriptions>
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.documentationCompliance'
@@ -122,13 +122,13 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                 {getOptionLabel(
                   documentationComplianceOptions,
                   item['common:documentationCompliance'],
-                ) || '-'}
+                )}
               </Descriptions.Item>
             </Descriptions>
             <br />
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                labelStyle={{ width: '180px' }}
+                styles={{ label: { width: '180px' } }}
                 label={
                   <FormattedMessage
                     id='pages.process.validation.modellingAndValidation.compliance.qualityCompliance'
@@ -136,7 +136,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getOptionLabel(qualityComplianceOptions, item['common:qualityCompliance']) || '-'}
+                {getOptionLabel(qualityComplianceOptions, item['common:qualityCompliance'])}
               </Descriptions.Item>
             </Descriptions>
             <br />

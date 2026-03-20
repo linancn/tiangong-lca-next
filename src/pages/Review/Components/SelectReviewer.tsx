@@ -286,7 +286,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         />
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         styles={{ body: { paddingTop: 0 } }}
         getContainer={() => document.body}
         title={<FormattedMessage id='pages.review.drawer.title' defaultMessage='Select Reviewer' />}
@@ -364,7 +364,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
                 (item: any) => !defaultSelectedRowKeys.current.includes(item.user_id),
               );
               return {
-                data: data || [],
+                data,
                 success: result.success,
                 total: result.total,
               };

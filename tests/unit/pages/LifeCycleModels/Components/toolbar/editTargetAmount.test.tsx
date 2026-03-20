@@ -17,7 +17,7 @@ jest.mock('@/style/custom.less', () => ({
 
 jest.mock('@/pages/Flows/Components/view', () => ({
   __esModule: true,
-  default: () => <span>flows-view</span>,
+  default: ({ id, version }: any) => <span data-testid='flows-view'>{`${id}:${version}`}</span>,
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -27,7 +27,9 @@ jest.mock('@/components/LangTextItem/description', () => ({
 
 jest.mock('@/pages/Unitgroups/Components/select/descriptionMini', () => ({
   __esModule: true,
-  default: () => <div>unit-group</div>,
+  default: ({ id, version, idType }: any) => (
+    <div data-testid='unitgroup-mini'>{`${id ?? ''}:${version ?? ''}:${idType}`}</div>
+  ),
 }));
 
 const mockGetProcessDetail = jest.fn();
@@ -59,11 +61,16 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
     const label = toText(title) || 'drawer';
+    const container = getContainer?.();
     return (
-      <section role='dialog' aria-label={label}>
+      <section
+        role='dialog'
+        aria-label={label}
+        data-container={container === globalThis.document?.body ? 'body' : 'other'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -294,6 +301,41 @@ const buildProcessDataset = () => ({
 });
 
 describe('TargetAmount', () => {
+  it('opens from the trigger and closes through the drawer actions', async () => {
+    const setDrawerVisible = jest.fn();
+    const { rerender } = render(
+      <TargetAmount
+        refNode={{ data: { id: 'proc-1', version: '1.0' } }}
+        drawerVisible={false}
+        lang='en'
+        setDrawerVisible={setDrawerVisible}
+        onData={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button'));
+    expect(setDrawerVisible).toHaveBeenCalledWith(true);
+
+    mockGetProcessDetail.mockResolvedValue({ data: { json: { processDataSet: {} } } });
+    mockGenProcessFromData.mockReturnValue(buildProcessDataset());
+
+    rerender(
+      <TargetAmount
+        refNode={{ data: { id: 'proc-1', version: '1.0' } }}
+        drawerVisible={true}
+        lang='en'
+        setDrawerVisible={setDrawerVisible}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'body'),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(setDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
   it('prefills target and scaling amounts when drawer opens', async () => {
     const dataset = buildProcessDataset();
     mockGetProcessDetail.mockResolvedValue({ data: { json: { processDataSet: {} } } });
@@ -320,6 +362,38 @@ describe('TargetAmount', () => {
       originalAmount: 10,
       scalingFactor: 1,
     });
+    expect(screen.getByTestId('flows-view')).toHaveTextContent('flow-1:1.0');
+    expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-1:1.0:flow');
+  });
+
+  it('prefers target, original amount, and scaling factor from the graph node when provided', async () => {
+    mockGetProcessDetail.mockResolvedValue({ data: { json: { processDataSet: {} } } });
+    mockGenProcessFromData.mockReturnValue(buildProcessDataset());
+
+    render(
+      <TargetAmount
+        refNode={{
+          data: {
+            id: 'proc-1',
+            version: '1.0',
+            targetAmount: 18,
+            originalAmount: 9,
+            scalingFactor: 2,
+          },
+        }}
+        drawerVisible={true}
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(1));
+    expect(proFormApi.getFieldsValue()).toEqual({
+      targetAmount: 18,
+      originalAmount: 9,
+      scalingFactor: 2,
+    });
   });
 
   it('updates scaling factor when target amount changes', async () => {
@@ -345,6 +419,131 @@ describe('TargetAmount', () => {
 
     expect(proFormApi.getFieldValue('targetAmount')).toBe(25);
     expect(proFormApi.getFieldValue('scalingFactor')).toBe('2.5');
+  });
+
+  it('supports array-based flow references and missing versions', async () => {
+    mockGetProcessDetail.mockResolvedValue({ data: { json: { processDataSet: {} } } });
+    mockGenProcessFromData.mockReturnValue({
+      ...buildProcessDataset(),
+      exchanges: {
+        exchange: [
+          {
+            '@dataSetInternalID': 'ref-1',
+            meanAmount: 8,
+            referenceToFlowDataSet: [
+              {
+                '@refObjectId': 'flow-array',
+                '@type': 'type-array',
+                '@uri': 'uri-array',
+                'common:shortDescription': [{ '@lang': 'en', '#text': 'array short' }],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    render(
+      <TargetAmount
+        refNode={{ data: { id: 'proc-1', version: '1.0' } }}
+        drawerVisible={true}
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByTestId('flows-view')).toHaveTextContent('flow-array:');
+    expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-array::flow');
+    expect(screen.getAllByTestId('lang-text')[0]).toHaveTextContent('array short');
+  });
+
+  it('handles sparse process details and zero-based scaling fallbacks', async () => {
+    mockGetProcessDetail.mockResolvedValue({ data: { json: {} } });
+    mockGenProcessFromData.mockReturnValue({
+      processInformation: {
+        quantitativeReference: {
+          referenceToReferenceFlow: 'missing-ref',
+        },
+      },
+    });
+
+    render(
+      <TargetAmount
+        refNode={{ data: { originalAmount: 5 } }}
+        drawerVisible={true}
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('', ''));
+    expect(proFormApi.getFieldsValue()).toEqual({
+      targetAmount: undefined,
+      originalAmount: 5,
+      scalingFactor: 0,
+    });
+    expect(screen.queryByTestId('flows-view')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('lang-text')[0]).toHaveTextContent('');
+  });
+
+  it('keeps the initial scaling factor at zero when the graph node original amount is zero', async () => {
+    mockGetProcessDetail.mockResolvedValue({ data: { json: {} } });
+    mockGenProcessFromData.mockReturnValue({
+      processInformation: {
+        quantitativeReference: {
+          referenceToReferenceFlow: 'missing-ref',
+        },
+      },
+    });
+
+    render(
+      <TargetAmount
+        refNode={{ data: { originalAmount: 0 } }}
+        drawerVisible={true}
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('', ''));
+    expect(proFormApi.getFieldsValue()).toEqual({
+      targetAmount: undefined,
+      originalAmount: 0,
+      scalingFactor: 0,
+    });
+  });
+
+  it('uses input fallbacks when values are missing and keeps scaling factor at zero when original amount is zero', async () => {
+    render(
+      <TargetAmount
+        refNode={undefined as any}
+        drawerVisible={true}
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    await act(async () => {
+      proFormApi.setFieldValue('unrelatedField', 'x');
+    });
+    expect(proFormApi.getFieldValue('scalingFactor')).toBe('0');
+
+    await act(async () => {
+      proFormApi.setFieldValue('originalAmount', 0);
+      proFormApi.setFieldValue('targetAmount', 7);
+    });
+    expect(proFormApi.getFieldValue('scalingFactor')).toBe('0');
+
+    await act(async () => {
+      proFormApi.setFieldValue('scalingFactor', 'manual');
+    });
+    expect(proFormApi.getFieldValue('scalingFactor')).toBe('manual');
   });
 
   it('submits form values and closes drawer', async () => {

@@ -194,6 +194,16 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                     resizing: true,
                     rotating: true,
                   }}
+                  historyOptions={{
+                    enabled: true,
+                  }}
+                  clipboardOptions={{
+                    enabled: true,
+                    useLocalStorage: false,
+                  }}
+                  keyboardOptions={{
+                    enabled: true,
+                  }}
                 />
               </Content>
             </Layout>

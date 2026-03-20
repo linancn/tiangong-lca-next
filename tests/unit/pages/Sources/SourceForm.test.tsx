@@ -138,6 +138,8 @@ jest.mock('@/pages/Sources/sources_schema.json', () => ({
   },
 }));
 
+const mockSchema = jest.requireMock('@/pages/Sources/sources_schema.json').default;
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -216,6 +218,12 @@ jest.mock('antd', () => {
       <button type='button' onClick={() => preview?.onVisibleChange?.(false)}>
         close-preview
       </button>
+      <button type='button' onClick={() => preview?.afterOpenChange?.(true)}>
+        after-open-true
+      </button>
+      <button type='button' onClick={() => preview?.afterOpenChange?.(false)}>
+        after-open-false
+      </button>
     </div>
   );
 
@@ -262,6 +270,27 @@ describe('SourceForm component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsImage.mockReturnValue(true);
+    mockSchema.sourceDataSet.sourceInformation.dataSetInformation['common:shortName'].rules = [
+      { required: true },
+    ];
+    mockSchema.sourceDataSet.sourceInformation.dataSetInformation.classificationInformation[
+      'common:classification'
+    ]['common:class']['@classId'].rules = [{ required: true }];
+    mockSchema.sourceDataSet.sourceInformation.dataSetInformation.sourceCitation.rules = [
+      { required: true },
+    ];
+    mockSchema.sourceDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules = [
+      { required: true },
+    ];
+    mockSchema.sourceDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToDataSetFormat'
+    ]['@refObjectId'].rules = [{ required: true }];
+    mockSchema.sourceDataSet.administrativeInformation.publicationAndOwnership[
+      'common:dataSetVersion'
+    ].rules = [{ required: true }];
+    mockSchema.sourceDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToOwnershipOfDataSet'
+    ]['@refObjectId'].rules = [{ required: true }];
   });
 
   const renderForm = (props: Record<string, any> = {}) =>
@@ -329,6 +358,93 @@ describe('SourceForm component', () => {
     });
   });
 
+  it('loads the original file url when previewing an existing image', async () => {
+    renderForm({
+      fileList: [{ uid: 'existing-image', name: 'existing.png', url: 'https://cdn/existing.png' }],
+    });
+
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+
+    await waitFor(() => {
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('existing-image', 'existing.png');
+    });
+    expect(mockGetBase64).not.toHaveBeenCalled();
+  });
+
+  it('falls back to an empty preview url when the original file lookup has no url', async () => {
+    mockGetOriginalFileUrl.mockResolvedValueOnce({});
+
+    renderForm({
+      fileList: [{ uid: 'existing-image', name: 'existing.png', url: 'https://cdn/existing.png' }],
+    });
+
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+
+    await waitFor(() => {
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('existing-image', 'existing.png');
+    });
+    expect(screen.queryByRole('button', { name: 'open-preview' })).not.toBeInTheDocument();
+  });
+
+  it('opens non-image files in a new window when previewed', async () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null as any);
+    mockIsImage.mockReturnValue(false);
+
+    renderForm({
+      fileList: [{ uid: 'doc-1', name: 'document.pdf', url: 'https://cdn/document.pdf' }],
+    });
+
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+
+    await waitFor(() => {
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('doc-1', 'document.pdf');
+    });
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalledWith('https://example.com/file', '_blank');
+    });
+
+    openSpy.mockRestore();
+  });
+
+  it('does not inject the default source name outside create mode', () => {
+    renderForm({ formType: 'edit' });
+
+    const dataSetFormatCall = mockSourceSelectForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') ===
+          'administrativeInformation.dataEntryBy.common:referenceToDataSetFormat',
+    );
+
+    expect(dataSetFormatCall?.[0]?.defaultSourceName).toBeUndefined();
+  });
+
+  it('uses the default showRules=false value when the prop is omitted', () => {
+    render(
+      <SourceForm
+        lang='en'
+        activeTabKey='sourceInformation'
+        formRef={React.createRef()}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        loadFiles={[]}
+        setLoadFiles={jest.fn()}
+        fileList={[]}
+        setFileList={jest.fn()}
+        formType='create'
+      />,
+    );
+
+    const shortNameCall = mockLangTextItemForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') === 'sourceInformation.dataSetInformation.common:shortName',
+    );
+
+    expect(shortNameCall?.[0]?.rules).toEqual([]);
+    expect(mockGetRules).toHaveBeenCalledTimes(1);
+  });
+
   it('applies validation rules when showRules is true', () => {
     renderForm({ showRules: true });
 
@@ -341,5 +457,68 @@ describe('SourceForm component', () => {
     expect(shortNameCall).toBeDefined();
     expect(shortNameCall?.[0]?.rules?.length).toBeGreaterThan(0);
     expect(mockGetRules).toHaveBeenCalled();
+  });
+
+  it('falls back to empty rule arrays on source information fields when schema rules are missing', () => {
+    mockSchema.sourceDataSet.sourceInformation.dataSetInformation['common:shortName'].rules =
+      undefined;
+    mockSchema.sourceDataSet.sourceInformation.dataSetInformation.classificationInformation[
+      'common:classification'
+    ]['common:class']['@classId'].rules = undefined;
+    mockSchema.sourceDataSet.sourceInformation.dataSetInformation.sourceCitation.rules = undefined;
+
+    renderForm({ showRules: true });
+
+    expect(mockGetRules).toHaveBeenCalledWith([]);
+
+    const shortNameCall = mockLangTextItemForm.mock.calls.find(
+      ([props]: any[]) =>
+        Array.isArray(props?.name) &&
+        props.name.join('.') === 'sourceInformation.dataSetInformation.common:shortName',
+    );
+
+    expect(shortNameCall?.[0]?.rules).toEqual([{ required: true, message: 'Required' }]);
+  });
+
+  it('falls back to empty rule arrays on administrative information fields when schema rules are missing', async () => {
+    mockSchema.sourceDataSet.administrativeInformation.dataEntryBy['common:timeStamp'].rules =
+      undefined;
+    mockSchema.sourceDataSet.administrativeInformation.dataEntryBy[
+      'common:referenceToDataSetFormat'
+    ]['@refObjectId'].rules = undefined;
+    mockSchema.sourceDataSet.administrativeInformation.publicationAndOwnership[
+      'common:dataSetVersion'
+    ].rules = undefined;
+    mockSchema.sourceDataSet.administrativeInformation.publicationAndOwnership[
+      'common:referenceToOwnershipOfDataSet'
+    ]['@refObjectId'].rules = undefined;
+
+    renderForm({ activeTabKey: 'administrativeInformation', showRules: true });
+
+    expect(mockGetRules).toHaveBeenCalledWith([]);
+    expect(screen.getAllByRole('textbox').some((input) => input.hasAttribute('disabled'))).toBe(
+      true,
+    );
+    expect(screen.getByTestId('source-select-ILCD format')).toBeInTheDocument();
+  });
+
+  it('clears the preview image after the image preview closes', async () => {
+    renderForm();
+
+    fireEvent.click(screen.getByTestId('upload-trigger'));
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+
+    await waitFor(() => {
+      expect(mockGetBase64).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'open-preview' }));
+    fireEvent.click(screen.getByRole('button', { name: 'close-preview' }));
+    fireEvent.click(screen.getByRole('button', { name: 'after-open-true' }));
+    fireEvent.click(screen.getByRole('button', { name: 'after-open-false' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'after-open-false' })).not.toBeInTheDocument();
+    });
   });
 });

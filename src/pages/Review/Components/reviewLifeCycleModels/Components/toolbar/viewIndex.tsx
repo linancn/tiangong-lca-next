@@ -217,7 +217,7 @@ const ToolbarView: FC<Props> = ({
           },
           {
             tagName: 'text',
-            textContent: genNodeLabel(title ?? '', lang, width),
+            textContent: genNodeLabel(title, lang, width),
             selector: 'text',
             attrs: {
               fill: 'white',
@@ -571,7 +571,9 @@ const ToolbarView: FC<Props> = ({
         buttonType={'toolResultIcon'}
         disabled={false}
       />
-      <Control items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin']} />
+      <Control
+        items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
+      />
       <Spin spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}

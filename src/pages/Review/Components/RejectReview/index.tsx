@@ -114,10 +114,6 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     };
 
     const processRef = async (ref: any) => {
-      if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
-        await handelSameModelWithProcress(ref);
-        return;
-      }
       const refResult = await getRefData(
         ref['@refObjectId'],
         ref['@version'],
@@ -268,23 +264,25 @@ const RejectReview: React.FC<RejectReviewProps> = ({
         },
       });
 
+      if (error) {
+        throw error;
+      }
+
       await updateUnderReviewCommentRefToRejected();
 
-      if (!error) {
-        if (isModel) {
-          await hendleRejectModel();
-        } else {
-          await hendleRejectProcress();
-        }
-        message.success(
-          intl.formatMessage({
-            id: 'component.rejectReview.success',
-            defaultMessage: 'Rejected successfully!',
-          }),
-        );
-        formRef?.current?.resetFields();
-        setOpen(false);
+      if (isModel) {
+        await hendleRejectModel();
+      } else {
+        await hendleRejectProcress();
       }
+      message.success(
+        intl.formatMessage({
+          id: 'component.rejectReview.success',
+          defaultMessage: 'Rejected successfully!',
+        }),
+      );
+      formRef?.current?.resetFields();
+      setOpen(false);
     } catch (error) {
       message.error(
         intl.formatMessage({

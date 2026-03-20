@@ -12,7 +12,7 @@
 ## 快速流程（必做）
 
 1. 明确范围：功能、用户流程、测试类型（unit/integration/component）。
-2. 先看现有代码和测试（`src/pages/**`、`src/services/**`、`tests/**`）。
+2. 先看现有代码和测试（`src/pages/**`、`src/services/**`、`tests/**`），并检查 `docs/agents/test_todo_list.md` 里的当前 backlog。
 3. 复用 `testing-patterns.md` 的项目模式。
 4. 先 mock 服务，再 render。
 5. 用语义化断言（`getByRole`、`findByText`、`waitFor`）。
@@ -33,6 +33,13 @@
 # 全量本地门禁（与 CI 风格一致）
 npm test
 
+# 全量覆盖率
+npm run test:coverage
+npm run test:coverage:report
+
+# 共享 runner 实际使用的全量 unit/src 阶段命令
+npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
+
 # 聚焦集成测试
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 
@@ -52,20 +59,41 @@ npm run lint
 
 ## 覆盖率预期
 
-- 方向目标：逐步接近 100% 的有效覆盖。
+- 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
-- 覆盖率排查命令：
-
-```bash
-npm run test:coverage
-npm run test:coverage:report
-```
+- 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
+- 截至 2026年3月18日，最新已验证全量运行（`npm run test:coverage`）是 `286 suites / 2842 tests`，全局覆盖率为：
+  - Statements: `94.97%` (19080/20090)
+  - Branches: `87.97%` (10285/11691)
+  - Functions: `94.01%` (4116/4378)
+  - Lines: `95.15%` (18278/19208)
+- 同一轮运行得到的逐文件库存摘要：
+  - 追踪的源码文件：`312`
+  - 已全满文件（`100/100/100/100`）：`197`
+  - 仍有缺口的文件：`115`
+  - Branch 分桶：`<50 = 1`、`50-70 = 8`、`70-90 = 68`、`90-<100 = 27`
+  - `line=100` 但 `branch<100` 的文件：`27`
+- 当前 branch 门禁依然安全，但 lifecycle-model persistence bundle 同步重新打开了 1 个 `<50` 热点和 8 个 `50-70` 热点；当前执行重心重新回到这些低 branch 文件，收完后再继续处理更大的 `70-90` 桶和 branch-only 缺口。
+- 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
+- `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
+- 报告粒度规则：
+  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件。
+  - `node scripts/test-coverage-report.js --full`：看完整的有序未完成文件队列，用于查看全量逐文件状态或刷新 backlog 快照。
+  - 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
+  - 当前队头已变为 `src/services/lifeCycleModels/api.ts`、`src/pages/Processes/Components/lcaGroupedResults.ts`、`src/services/lifeCycleModels/persistencePlan.ts`、`src/pages/Processes/Analysis/index.tsx`。
+- 队列执行规则：
+  - 不再按主观“哪个收益更高”重新排优先级。
+  - 直接拿有序队列的第一个文件，尽量把该文件推进到 `100/100/100/100` 后再移动。
+  - 允许的例外很少：相邻文件共享同一套 mock/fixture/test harness 时可成批推进；当前文件或紧邻文件被共享测试基础设施问题卡住时，可先修 blocker。
+  - 如果当前队列分支被证明不可达或业务上无效，优先删除死分支且不改变行为，而不是为了抬覆盖率去硬造测试。
+- 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自持续缩小热点列表，而不是把门槛抬上去。
 
 ## 相关文档
 
 - `docs/agents/testing-patterns.md`：模板与可复用模式。
 - `docs/agents/testing-troubleshooting.md`：失败排障矩阵。
-- `docs/agents/test_improvement_plan.md`：剩余覆盖缺口优先级。
+- `docs/agents/test_todo_list.md`：可执行 backlog 与当前执行状态。
+- `docs/agents/test_improvement_plan.md`：长期背景与优先级方向。
 
 ## 交付清单
 
@@ -73,4 +101,4 @@ npm run test:coverage:report
 - `npm run lint` 通过。
 - 聚焦 Jest 命令通过。
 - 顽固套件可用 `--detectOpenHandles` 验证无句柄泄漏。
-- 若流程有变化，同步更新英文与 `_CN` 文档。
+- 若测试流程、backlog 或基线有变化，先同步 `test_todo_list.md`；若长期计划或基线摘要也变化，再同步 `test_improvement_plan.md`，并保持英文与 `_CN` 镜像一致。

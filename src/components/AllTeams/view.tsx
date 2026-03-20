@@ -30,7 +30,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
               <Descriptions.Item
                 key={index}
                 label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
-                labelStyle={{ width: '120px' }}
+                styles={{ label: { width: '120px' } }}
               >
                 {item['#text'] || '-'}
               </Descriptions.Item>
@@ -51,7 +51,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
               <Descriptions.Item
                 key={index}
                 label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
-                labelStyle={{ width: '120px' }}
+                styles={{ label: { width: '120px' } }}
               >
                 {item['#text'] || '-'}
               </Descriptions.Item>
@@ -67,7 +67,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
             label={<FormattedMessage id='pages.team.info.public' defaultMessage='Public Display' />}
-            labelStyle={{ width: '120px' }}
+            styles={{ label: { width: '120px' } }}
           >
             {initData?.rank === -1 ? (
               <FormattedMessage
@@ -96,7 +96,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
               label={
                 <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
               }
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData?.json?.lightLogoPreviewUrl ? (
                 <Image width={100} src={initData?.json?.lightLogoPreviewUrl} alt='Light Logo' />
@@ -108,15 +108,11 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
           <Descriptions bordered size={'small'} column={1}>
             <Descriptions.Item
               label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {initData?.json?.darkLogoPreviewUrl ? (
                 <Image
-                  style={
-                    initData?.json?.darkLogoPreviewUrl
-                      ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
-                      : {}
-                  }
+                  style={{ background: '#141414', display: 'inline-block', borderRadius: '8px' }}
                   width={100}
                   src={initData?.json?.darkLogoPreviewUrl}
                   alt='Dark Logo'

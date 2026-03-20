@@ -13,12 +13,9 @@ jest.mock('antd', () => ({
     mockDropdown(props);
     return <div data-testid='dropdown'>{props.children}</div>;
   },
-}));
-
-const mockStyles = { dropdown: 'generated-dropdown-class' };
-
-jest.mock('antd-style', () => ({
-  createStyles: jest.fn(() => () => ({ styles: mockStyles })),
+  theme: {
+    useToken: () => ({ token: { screenXS: 480 } }),
+  },
 }));
 
 describe('HeaderDropdown', () => {
@@ -26,7 +23,7 @@ describe('HeaderDropdown', () => {
     mockDropdown.mockClear();
   });
 
-  it('applies generated overlay class along with provided overlayClassName', () => {
+  it('passes overlayClassName and placement to Dropdown', () => {
     render(
       <HeaderDropdown overlayClassName='custom-class' placement='bottomRight'>
         <span>Trigger</span>
@@ -35,8 +32,7 @@ describe('HeaderDropdown', () => {
 
     expect(mockDropdown).toHaveBeenCalledTimes(1);
     const props = mockDropdown.mock.calls[0][0];
-    expect(props.overlayClassName).toContain('generated-dropdown-class');
-    expect(props.overlayClassName).toContain('custom-class');
+    expect(props.overlayClassName).toBe('custom-class');
     expect(props.placement).toBe('bottomRight');
   });
 
@@ -52,5 +48,17 @@ describe('HeaderDropdown', () => {
     const props = mockDropdown.mock.calls[0][0];
     expect(props.menu).toBe(menu);
     expect(props.trigger).toEqual(['click']);
+  });
+
+  it('works without overlayClassName', () => {
+    render(
+      <HeaderDropdown placement='bottomLeft'>
+        <span>Trigger</span>
+      </HeaderDropdown>,
+    );
+
+    const props = mockDropdown.mock.calls[0][0];
+    expect(props.overlayClassName).toBeUndefined();
+    expect(props.placement).toBe('bottomLeft');
   });
 });

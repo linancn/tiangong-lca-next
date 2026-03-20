@@ -74,6 +74,7 @@ npm run build
 - `npm run lint` 必须通过。
 - 运行与改动相关的聚焦 Jest 套件。
 - 涉及 Supabase edge function payload 形态变更时，必须在 `tests/unit/services/**` 增加单测。
+- 若测试工程发生变化，必须同步 `docs/agents/test_todo_list.md`；若长期测试计划或基线摘要也变化，再同步 `docs/agents/test_improvement_plan.md`、相关测试文档及 `_CN` 镜像。
 
 ## 交付要求
 

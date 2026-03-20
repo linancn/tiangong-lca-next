@@ -224,7 +224,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
         )}
       </Tooltip>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -302,34 +302,39 @@ const UnitGroupCreate: FC<CreateProps> = ({
               },
             }}
             onFinish={async () => {
-              const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
-              const units = fromData?.units;
-              const formFieldsValue = {
-                ...formRefCreate.current?.getFieldsValue(),
-                units,
-              };
-              const result = await createUnitGroup(paramsId, formFieldsValue);
-              if (result.data) {
-                message.success(
-                  intl.formatMessage({
-                    id: 'pages.button.create.success',
-                    defaultMessage: 'Created successfully!',
-                  }),
-                );
-                formRefCreate.current?.resetFields();
-                setDrawerVisible(false);
-                reload();
-              } else {
-                message.error(
-                  isSupabaseDuplicateKeyError(result.error)
-                    ? intl.formatMessage({
-                        id: 'pages.button.create.error.duplicateId',
-                        defaultMessage: 'Data with the same ID already exists.',
-                      })
-                    : (result.error?.message ?? 'Error'),
-                );
+              setSpinning(true);
+              try {
+                const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
+                const units = fromData?.units;
+                const formFieldsValue = {
+                  ...formRefCreate.current?.getFieldsValue(),
+                  units,
+                };
+                const result = await createUnitGroup(paramsId, formFieldsValue);
+                if (result.data) {
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.button.create.success',
+                      defaultMessage: 'Created successfully!',
+                    }),
+                  );
+                  formRefCreate.current?.resetFields();
+                  setDrawerVisible(false);
+                  reload();
+                } else {
+                  message.error(
+                    isSupabaseDuplicateKeyError(result.error)
+                      ? intl.formatMessage({
+                          id: 'pages.button.create.error.duplicateId',
+                          defaultMessage: 'Data with the same ID already exists.',
+                        })
+                      : (result.error?.message ?? 'Error'),
+                  );
+                }
+                return true;
+              } finally {
+                setSpinning(false);
               }
-              return true;
             }}
           >
             <UnitGroupForm

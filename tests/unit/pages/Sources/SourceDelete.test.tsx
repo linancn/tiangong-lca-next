@@ -142,7 +142,10 @@ jest.mock('@/services/supabase/key', () => ({
 
 const { deleteSource: mockDeleteSource, getSourceDetail: mockGetSourceDetail } =
   jest.requireMock('@/services/sources/api');
-const { removeFile: mockRemoveFile } = jest.requireMock('@/services/supabase/storage');
+const { genSourceFromData: mockGenSourceFromData } = jest.requireMock('@/services/sources/util');
+const { getThumbFileUrls: mockGetThumbFileUrls, removeFile: mockRemoveFile } = jest.requireMock(
+  '@/services/supabase/storage',
+);
 
 describe('SourceDelete component', () => {
   beforeEach(() => {
@@ -199,12 +202,11 @@ describe('SourceDelete component', () => {
     );
   });
 
-  it('disables delete trigger when disabled is true', async () => {
+  it('closes the confirmation modal when cancelled', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(
       <SourceDelete
-        disabled
         id='source-123'
         version='01.00.000'
         buttonType='icon'
@@ -213,12 +215,106 @@ describe('SourceDelete component', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('dialog', { name: 'Delete' });
+    await user.click(within(modal).getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Delete' })).not.toBeInTheDocument(),
+    );
+    expect(mockDeleteSource).not.toHaveBeenCalled();
+  });
+
+  it('shows a file-removal error and skips deleting the source', async () => {
+    const user = userEvent.setup();
+
+    mockRemoveFile.mockResolvedValueOnce({ error: { message: 'remove failed' } });
+
+    renderWithProviders(
+      <SourceDelete
+        id='source-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Delete' }));
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(mockGetSourceDetail).not.toHaveBeenCalled();
+    const modal = await screen.findByRole('dialog', { name: 'Delete' });
+    await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('remove failed'));
     expect(mockDeleteSource).not.toHaveBeenCalled();
+  });
+
+  it('shows the backend error when deletion fails after file cleanup', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    mockGetThumbFileUrls.mockResolvedValueOnce([]);
+    mockDeleteSource.mockResolvedValueOnce({
+      status: 400,
+      error: { message: 'delete failed' },
+    });
+
+    renderWithProviders(
+      <SourceDelete
+        id='source-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={setViewDrawerVisible}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('dialog', { name: 'Delete' });
+    await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('delete failed'));
+    expect(mockRemoveFile).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(setViewDrawerVisible).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Delete' })).toBeInTheDocument();
+  });
+
+  it('supports the text-button flow and falls back to default error messaging for sparse payloads', async () => {
+    const user = userEvent.setup();
+
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        json: {},
+      },
+    });
+    mockGenSourceFromData.mockReturnValueOnce({});
+    mockGetThumbFileUrls.mockResolvedValueOnce([]);
+    mockDeleteSource.mockResolvedValueOnce({
+      status: 500,
+      error: null,
+    });
+
+    renderWithProviders(
+      <SourceDelete
+        id='source-123'
+        version='01.00.000'
+        buttonType='text'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const modal = await screen.findByRole('dialog', { name: 'Delete' });
+    await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => expect(mockGenSourceFromData).toHaveBeenCalledWith({}));
+    await waitFor(() => expect(mockGetThumbFileUrls).toHaveBeenCalledWith(undefined));
+    await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Error'));
   });
 });

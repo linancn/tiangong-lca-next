@@ -9,6 +9,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import TeamForm from './form';
 
+const getDrawerContainer = () => document.body;
+
 type Props = {
   id: string;
   buttonType: string;
@@ -75,17 +77,19 @@ const TeamEdit: FC<Props> = ({
         }
 
         try {
-          const suffix: string = file.name.split('.').pop() || '';
+          const suffix: string = file.name.split('.').pop()!;
           const { data } = await uploadLogoApi(file.name, file, suffix);
+          const path = data?.path;
           if (type === 'lightLogo') {
-            setBeforeLightLogoPath(data?.path);
-            return data.path;
+            setBeforeLightLogoPath(path ?? '');
+            return path;
           } else {
-            setBeforeDarkLogoPath(data?.path);
-            return data.path;
+            setBeforeDarkLogoPath(path ?? '');
+            return path;
           }
         } catch (error) {
-          console.log('upload error', error);
+          console.error('upload error', error);
+          return;
         }
       }
     }
@@ -96,7 +100,6 @@ const TeamEdit: FC<Props> = ({
     const result = await getTeamMessageApi(id);
     if (result.data && result.data.length > 0) {
       const teamData = result.data[0];
-      setInitData(teamData);
       const formValues = {
         title: teamData.json?.title || [
           { '#text': '', '@xml:lang': 'zh' },
@@ -109,6 +112,7 @@ const TeamEdit: FC<Props> = ({
         lightLogo: teamData.json?.lightLogo,
         darkLogo: teamData.json?.darkLogo,
       };
+      setInitData({ ...teamData, ...formValues });
       setLightLogo(teamData.json?.lightLogo);
       setDarkLogo(teamData.json?.darkLogo);
 
@@ -150,7 +154,7 @@ const TeamEdit: FC<Props> = ({
       )}
 
       <Drawer
-        getContainer={() => document.body}
+        getContainer={getDrawerContainer}
         title={
           <FormattedMessage id='component.allTeams.drawer.title.edit' defaultMessage='Edit Team' />
         }
@@ -197,6 +201,16 @@ const TeamEdit: FC<Props> = ({
                   typeof lightLogo === 'string'
                     ? lightLogo
                     : await uploadLogo(lightLogo, 'lightLogo');
+                if (!lightLogoPath) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'teams.logo.uploadError',
+                      defaultMessage: 'Failed to upload team logo.',
+                    }),
+                  );
+                  setSpinning(false);
+                  return false;
+                }
                 formValues.lightLogo =
                   typeof lightLogo === 'string' ? lightLogo : `../sys-files/${lightLogoPath}`;
               }
@@ -206,6 +220,16 @@ const TeamEdit: FC<Props> = ({
               } else {
                 const darkLogoPath =
                   typeof darkLogo === 'string' ? darkLogo : await uploadLogo(darkLogo, 'darkLogo');
+                if (!darkLogoPath) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'teams.logo.uploadError',
+                      defaultMessage: 'Failed to upload team logo.',
+                    }),
+                  );
+                  setSpinning(false);
+                  return false;
+                }
                 formValues.darkLogo =
                   typeof darkLogo === 'string' ? darkLogo : `../sys-files/${darkLogoPath}`;
               }

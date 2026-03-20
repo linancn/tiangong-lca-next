@@ -2,6 +2,8 @@ const { configUmiAlias, createConfig } = require('@umijs/max/test');
 
 module.exports = async () => {
   const isCI = process.env.CI === 'true' || process.env.CI === '1';
+  // Local Docker bind mounts can be root-owned and unreadable to Jest crawlers.
+  const dockerPathIgnores = ['<rootDir>/docker/volumes/db/data'];
   const config = await configUmiAlias({
     ...createConfig({
       target: 'browser',
@@ -49,10 +51,14 @@ module.exports = async () => {
         statements: 50,
       },
     },
-    coverageReporters: ['text', 'lcov', 'html'],
+    coverageReporters: ['text', 'text-summary', 'json', 'json-summary', 'lcov', 'html'],
     testMatch: [
       '<rootDir>/tests/**/*.test.{ts,tsx,js,jsx}',
       '<rootDir>/src/**/*.test.{ts,tsx,js,jsx}',
+    ],
+    modulePathIgnorePatterns: [
+      ...(config.modulePathIgnorePatterns || []),
+      ...dockerPathIgnores,
     ],
     moduleNameMapper: {
       '^@/tests/(.*)$': '<rootDir>/tests/$1',
@@ -60,5 +66,9 @@ module.exports = async () => {
     },
     reporters: ['default', '<rootDir>/tests/reporters/failureSkippedSummaryReporter.js'],
     verbose: !isCI,
+    watchPathIgnorePatterns: [
+      ...(config.watchPathIgnorePatterns || []),
+      ...dockerPathIgnores,
+    ],
   };
 };

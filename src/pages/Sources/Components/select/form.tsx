@@ -197,7 +197,7 @@ const SourceSelectForm: FC<Props> = ({
 
   const requiredRules = rules.filter(isRequiredRule);
   const isRequired = requiredRules.length > 0;
-  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule));
 
   return (
     <Card
@@ -293,7 +293,11 @@ const SourceSelectForm: FC<Props> = ({
           {id && (
             <Button
               onClick={() => {
-                formRef.current?.setFieldValue([...name], {});
+                if (parentName) {
+                  formRef.current?.setFieldValue([...parentName, ...name], {});
+                } else {
+                  formRef.current?.setFieldValue([...name], {});
+                }
                 onData();
                 validateRefObjectId(formRef, name, parentName);
               }}

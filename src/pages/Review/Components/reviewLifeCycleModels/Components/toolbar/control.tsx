@@ -2,13 +2,15 @@ import {
   AimOutlined,
   CompressOutlined,
   ExpandOutlined,
-  MinusOutlined,
-  PlusOutlined,
+  PartitionOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
 } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 // import 'tippy.js/dist/tippy.css';
 
 import { useGraphEvent, useGraphInstance } from '@/contexts/graphContext';
+import { applyDagreLayoutWithHistory } from '@/pages/LifeCycleModels/Components/toolbar/utils/layout';
 import { Button, Space, Tooltip } from 'antd';
 import { FormattedMessage } from 'umi';
 import './styles/index.less';
@@ -19,6 +21,7 @@ export enum ControlEnum {
   ZoomOut = 'zoomOut',
   ZoomToFit = 'zoomToFit',
   ZoomToOrigin = 'zoomToOrigin',
+  AutoLayoutLR = 'autoLayoutLR',
 }
 
 const dropDownItems = [
@@ -44,7 +47,14 @@ const dropDownItems = [
   },
 ];
 
-const ControlActionList = ['zoomTo', 'zoomIn', 'zoomOut', 'zoomToFit', 'zoomToOrigin'] as const;
+const ControlActionList = [
+  'zoomTo',
+  'zoomIn',
+  'zoomOut',
+  'zoomToFit',
+  'zoomToOrigin',
+  'autoLayoutLR',
+] as const;
 
 type ControlAction = (typeof ControlActionList)[number];
 
@@ -74,11 +84,11 @@ const Control = (props: ControlIProps) => {
   const ControlToolMap = {
     [ControlEnum.ZoomIn]: {
       label: <FormattedMessage id='pages.button.model.zoomIn' defaultMessage='Zoom In' />,
-      icon: <PlusOutlined />,
+      icon: <ZoomInOutlined />,
     },
     [ControlEnum.ZoomOut]: {
       label: <FormattedMessage id='pages.button.model.zoomOut' defaultMessage='Zoom Out' />,
-      icon: <MinusOutlined />,
+      icon: <ZoomOutOutlined />,
     },
     [ControlEnum.ZoomTo]: {
       label: <FormattedMessage id='pages.button.model.zoomTo' defaultMessage='Zoom To' />,
@@ -93,6 +103,10 @@ const Control = (props: ControlIProps) => {
         <FormattedMessage id='pages.button.model.zoomToOrigin' defaultMessage='Zoom To Origin' />
       ),
       icon: <ExpandOutlined />,
+    },
+    [ControlEnum.AutoLayoutLR]: {
+      label: <FormattedMessage id='pages.button.model.autoLayoutLR' defaultMessage='Auto Layout' />,
+      icon: <PartitionOutlined />,
     },
   };
 
@@ -120,6 +134,13 @@ const Control = (props: ControlIProps) => {
       case ControlEnum.ZoomTo:
         graph.zoomTo(zoomNum);
         break;
+      case ControlEnum.AutoLayoutLR: {
+        const didLayout = applyDagreLayoutWithHistory(graph, 'LR');
+        if (didLayout) {
+          graph.zoomToFit({ maxScale: 1 });
+        }
+        break;
+      }
       default:
         break;
     }

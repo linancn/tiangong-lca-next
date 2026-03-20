@@ -95,7 +95,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       });
     }, [refCheckData, parentRefCheckContext]);
     const intl = useIntl();
-    let modelDetail: LifeCycleModelDetailData | undefined;
+    const modelDetailRef = useRef<LifeCycleModelDetailData | undefined>(undefined);
 
     useEffect(() => {
       if (showRules) {
@@ -245,8 +245,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
 
       const userTeamId = await getUserTeamId();
 
-      const unReview: refDataType[] = []; //stateCode < 20
-      const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
+      const unReview: refDataType[] = [];
+      const underReview: refDataType[] = [];
       const unRuleVerification: refDataType[] = [];
       const nonExistentRef: refDataType[] = [];
       const allRefs = new Set<string>();
@@ -255,8 +255,9 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         data.id ?? '',
         data.version ?? '',
       );
-      modelDetail = modelDetailResp.success ? modelDetailResp.data : undefined;
-      if (!modelDetail) {
+      const currentModelDetail = modelDetailResp.success ? modelDetailResp.data : undefined;
+      modelDetailRef.current = currentModelDetail;
+      if (!currentModelDetail) {
         if (!silent) {
           message.error(
             intl.formatMessage({
@@ -268,7 +269,11 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         setSpinning(false);
         return { checkResult: false, unReview };
       }
-      if (modelDetail.stateCode >= 20 && modelDetail.stateCode < 100 && from === 'checkData') {
+      if (
+        currentModelDetail.stateCode >= 20 &&
+        currentModelDetail.stateCode < 100 &&
+        from === 'checkData'
+      ) {
         if (!silent) {
           message.error(
             intl.formatMessage({
@@ -280,6 +285,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         setSpinning(false);
         return { checkResult: false, unReview };
       }
+
       const rootRef = {
         '@refObjectId': data.id ?? '',
         '@version': data.version ?? '',
@@ -288,8 +294,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       const sdkValidation = validateDatasetWithSdk(
         'lifeCycleModel data set',
         genLifeCycleModelJsonOrdered(data.id ?? '', {
-          ...modelDetail.json.lifeCycleModelDataSet,
-          model: { ...modelDetail.json_tg?.xflow },
+          ...currentModelDetail.json.lifeCycleModelDataSet,
+          model: { ...currentModelDetail.json_tg?.xflow },
         }),
       );
       const issues: LifeCycleModelValidationIssue[] = sdkValidation.issues;
@@ -316,7 +322,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
           formRefEdit.current?.validateFields();
         }, 200);
       }
-      dealModel(modelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
+      dealModel(currentModelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const { data: sameProcressWithModel } = await getProcessDetail(
         data.id ?? '',
@@ -332,7 +338,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         );
       }
 
-      const refObjs = getAllRefObj(modelDetail);
+      const refObjs = getAllRefObj(currentModelDetail);
       const path = await checkReferences(
         refObjs,
         new Map<string, unknown>(),
@@ -341,7 +347,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         underReview,
         unRuleVerification,
         nonExistentRef,
-        new ReffPath(rootRef, modelDetail.ruleVerification, false),
+        new ReffPath(rootRef, currentModelDetail.ruleVerification, false),
         allRefs,
       );
       allRefs.add(`${data.id}:${data.version}:lifeCycleModel data set`);
@@ -364,7 +370,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         setRefCheckData([]);
       }
 
-      const submodels: LifeCycleModelSubModel[] = modelDetail?.json_tg?.submodels ?? [];
+      const submodels: LifeCycleModelSubModel[] = currentModelDetail?.json_tg?.submodels ?? [];
       if (submodels) {
         submodels.forEach((item) => {
           if (item.type === 'secondary') {
@@ -395,7 +401,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         return { checkResult: true, unReview, problemNodes };
       }
 
-      const modelDataset = modelDetail?.json?.lifeCycleModelDataSet;
+      const modelDataset = currentModelDetail?.json?.lifeCycleModelDataSet;
       nonExistentRef.forEach((item) => {
         const tabName = getErrRefTab(item, modelDataset);
         if (tabName && !errTabNames.includes(tabName)) {
@@ -506,16 +512,27 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
 
     const submitReview = async (unReview: refDataType[]) => {
       setSpinning(true);
+      const currentModelDetail = modelDetailRef.current;
+      if (!currentModelDetail) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.lifecyclemodel.review.submitError',
+            defaultMessage: 'Submit review failed',
+          }),
+        );
+        setSpinning(false);
+        return;
+      }
 
       const reviewId = v4();
       const result = await updateReviewsAfterCheckData(
-        modelDetail?.teamId ?? '',
+        currentModelDetail.teamId ?? '',
         {
           id: data.id,
           version: data.version,
           name:
-            modelDetail?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation
-              ?.name ?? {},
+            currentModelDetail.json?.lifeCycleModelDataSet?.lifeCycleModelInformation
+              ?.dataSetInformation?.name ?? {},
         },
         reviewId,
       );
@@ -558,7 +575,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         </Tooltip>
         <Drawer
           getContainer={() => document.body}
-          destroyOnClose
+          destroyOnHidden
           title={
             <FormattedMessage
               id='pages.flow.model.drawer.title.info'

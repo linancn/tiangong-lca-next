@@ -267,8 +267,6 @@ jest.mock('@/services/unitgroups/api', () => ({
   getUnitGroupDetail: jest.fn(),
 }));
 
-jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
-
 jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
 jest.mock('@ant-design/pro-components', () =>

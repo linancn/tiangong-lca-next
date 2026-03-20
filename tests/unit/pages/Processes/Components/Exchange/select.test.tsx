@@ -50,21 +50,41 @@ jest.mock('@/services/processes/util', () => ({
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, onClick, disabled, icon }: any) => (
-    <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick}>
+  const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => (
+    <button
+      type='button'
+      data-button-type={type}
+      disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+      {...rest}
+    >
       {icon ? <span data-testid='button-icon'>{icon}</span> : null}
       {toText(children)}
     </button>
   );
 
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ title, children }: any) => {
+    const label = toText(title);
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children, {
+        'aria-label': children.props['aria-label'] ?? label,
+      });
+    }
+    return <>{children}</>;
+  };
 
-  const Drawer = ({ open, title, extra, footer, children }: any) => {
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     const label = toText(title) || 'drawer';
     return (
       <section role='dialog' aria-label={label}>
-        <header>{extra}</header>
+        <header>
+          {extra}
+          <button type='button' onClick={onClose}>
+            close
+          </button>
+        </header>
         <div>{children}</div>
         <footer>{footer}</footer>
       </section>
@@ -97,7 +117,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ dataSource = [], rowSelection, actionRef, loading }: any) => {
+  const ProTable = ({ dataSource = [], rowSelection, actionRef, loading, columns = [] }: any) => {
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
@@ -110,9 +130,18 @@ jest.mock('@ant-design/pro-components', () => {
       <div data-testid='pro-table' data-loading={loading}>
         {dataSource.map((row: any) => (
           <div key={row.dataSetInternalID ?? row.key}>
-            <span>{row.referenceToFlowDataSet}</span>
+            {columns.map((column: any, index: number) => (
+              <div key={`${row.dataSetInternalID ?? row.key}:${column.dataIndex ?? index}`}>
+                {column.render
+                  ? column.render(row[column.dataIndex], row, index)
+                  : row[column.dataIndex]}
+              </div>
+            ))}
             <button
               type='button'
+              data-selected={String(
+                (rowSelection?.selectedRowKeys ?? []).includes(row.dataSetInternalID),
+              )}
               onClick={() => {
                 rowSelection?.onChange?.([row.dataSetInternalID], [row]);
               }}
@@ -163,14 +192,11 @@ describe('ExchangeSelect', () => {
     mockGetProcessDetail.mockReset();
     mockGenProcessFromData.mockReset();
 
-    mockGetProcessDetail.mockImplementationOnce(() =>
+    mockGetProcessDetail.mockImplementation((processId: string) =>
       Promise.resolve({
-        data: { json: { processDataSet: { type: 'source' } } },
-      }),
-    );
-    mockGetProcessDetail.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: { json: { processDataSet: { type: 'target' } } },
+        data: {
+          json: { processDataSet: { type: processId === 'source-id' ? 'source' : 'target' } },
+        },
       }),
     );
 
@@ -197,6 +223,8 @@ describe('ExchangeSelect', () => {
 
     expect(screen.getByRole('dialog', { name: 'Create exchange relation' })).toBeInTheDocument();
     expect(screen.getAllByTestId('pro-table')).toHaveLength(2);
+    expect(screen.getAllByTestId('quantitative-icon')).toHaveLength(2);
+    expect(screen.getAllByTestId('exchange-view')).toHaveLength(2);
   });
 
   it('submits selected exchanges and closes drawer', async () => {
@@ -221,6 +249,46 @@ describe('ExchangeSelect', () => {
     );
   });
 
+  it('updates the selected source and target rows before submit', async () => {
+    const onData = jest.fn();
+    const sourceAlt = {
+      '@dataSetInternalID': 'source-2',
+      exchangeDirection: 'output',
+      referenceToFlowDataSet: 'Source Flow 2',
+    };
+    const targetAlt = {
+      '@dataSetInternalID': 'target-2',
+      exchangeDirection: 'input',
+      referenceToFlowDataSet: 'Target Flow 2',
+    };
+
+    mockGenProcessFromData.mockImplementation((data: any) => {
+      if (data.type === 'source') {
+        return { exchanges: { exchange: [sourceExchange, sourceAlt] } };
+      }
+      if (data.type === 'target') {
+        return { exchanges: { exchange: [targetExchange, targetAlt] } };
+      }
+      return { exchanges: { exchange: [] } };
+    });
+
+    render(<ExchangeSelect {...baseProps} onData={onData} sourceRowKeys={[]} targetRowKeys={[]} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    fireEvent.click(screen.getByRole('button', { name: 'select-source-2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'select-target-2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    expect(onData).toHaveBeenCalledWith({
+      id: 'edge-1',
+      selectedSource: sourceAlt,
+      selectedTarget: targetAlt,
+    });
+  });
+
   it('disables submit button when selections are missing', async () => {
     render(<ExchangeSelect {...baseProps} sourceRowKeys={[]} targetRowKeys={[]} />);
 
@@ -230,5 +298,119 @@ describe('ExchangeSelect', () => {
 
     const submitButton = screen.getByRole('button', { name: 'Submit' });
     expect(submitButton).toBeDisabled();
+  });
+
+  it('renders the edit trigger, filters rows by exchange direction, and closes on cancel', async () => {
+    const sourceInput = {
+      '@dataSetInternalID': 'source-input',
+      exchangeDirection: 'input',
+      referenceToFlowDataSet: 'Hidden Source Input',
+    };
+    const targetOutput = {
+      '@dataSetInternalID': 'target-output',
+      exchangeDirection: 'output',
+      referenceToFlowDataSet: 'Hidden Target Output',
+    };
+
+    mockGenProcessFromData.mockImplementation((data: any) => {
+      if (data.type === 'source') {
+        return { exchanges: { exchange: [sourceExchange, sourceInput] } };
+      }
+      if (data.type === 'target') {
+        return { exchanges: { exchange: [targetExchange, targetOutput] } };
+      }
+      return { exchanges: { exchange: [] } };
+    });
+
+    render(<ExchangeSelect {...baseProps} buttonType='text' optionType='edit' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Edit exchange relation' })).toBeInTheDocument(),
+    );
+
+    expect(screen.getByText('Source Flow')).toBeInTheDocument();
+    expect(screen.queryByText('Hidden Source Input')).not.toBeInTheDocument();
+    expect(screen.getByText('Target Flow')).toBeInTheDocument();
+    expect(screen.queryByText('Hidden Target Output')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Edit exchange relation' }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
+  it('supports create text trigger and closes from the icon and drawer close actions', async () => {
+    render(<ExchangeSelect {...baseProps} buttonType='text' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Create exchange relation' })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Create exchange relation' }),
+      ).not.toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    await screen.findByRole('dialog', { name: 'Create exchange relation' });
+    fireEvent.click(screen.getAllByRole('button', { name: 'close' })[1]);
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Create exchange relation' }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
+  it('falls back to placeholder flow names when exchange rows are incomplete', async () => {
+    mockGenProcessFromData.mockImplementation(() => ({
+      exchanges: {
+        exchange: [{ '@dataSetInternalID': 'fallback-row', exchangeDirection: 'output' }],
+      },
+    }));
+
+    render(<ExchangeSelect {...baseProps} targetRowKeys={[]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+  });
+
+  it('falls back to empty exchange arrays when process details do not contain exchange data', async () => {
+    mockGetProcessDetail.mockImplementation(() =>
+      Promise.resolve({
+        data: { json: {} },
+      }),
+    );
+    mockGenProcessFromData.mockImplementation(() => ({}));
+
+    render(<ExchangeSelect {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole('button', { name: 'select-source-1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'select-target-1' })).not.toBeInTheDocument();
+  });
+
+  it('opens from the icon edit trigger', async () => {
+    render(<ExchangeSelect {...baseProps} optionType='edit' buttonType='icon' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Edit exchange relation' })).toBeInTheDocument(),
+    );
   });
 });

@@ -108,7 +108,7 @@ const ProcessExchangeCreate: FC<Props> = ({
       />
       <Drawer
         getContainer={() => document.body}
-        destroyOnClose={true}
+        destroyOnHidden
         title={
           <FormattedMessage
             id='pages.process.exchange.drawer.title.create'

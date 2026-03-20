@@ -36,13 +36,16 @@ jest.mock('@/services/supabase', () => ({
 const mockGetTeamIdByUserId = jest.fn();
 const mockGetRefData = jest.fn();
 const mockContributeSource = jest.fn();
-const mockResolveFunctionInvokeError = jest.fn(async (error: any) => error);
+const mockNormalizeLangPayloadForSave = jest.fn();
+const mockResolveFunctionInvokeError = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
   getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
+  normalizeLangPayloadForSave: (...args: any[]) =>
+    mockNormalizeLangPayloadForSave.apply(null, args),
   resolveFunctionInvokeError: (...args: any[]) => mockResolveFunctionInvokeError.apply(null, args),
 }));
 
@@ -121,6 +124,7 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
     or: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
     then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
   };
   return builder;
@@ -135,6 +139,8 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
+  mockNormalizeLangPayloadForSave.mockReset();
+  mockResolveFunctionInvokeError.mockReset();
   mockGetCachedLocationData.mockReset();
   mockGetCachedClassificationData.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockReset();
@@ -144,14 +150,9 @@ beforeEach(() => {
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
   mockJsonToList.mockReset();
-  mockResolveFunctionInvokeError.mockReset().mockImplementation(async (error: any) => error);
-  mockValidateDatasetRuleVerification.mockReset().mockResolvedValue({
-    datasetSdkIssues: [],
-    datasetSdkValid: true,
-    nonExistentRef: [],
-    ruleVerification: true,
-    unRuleVerification: [],
-  });
+  mockGetAllRefObj.mockReset();
+  mockGetRefTableName.mockReset();
+  mockValidateDatasetRuleVerification.mockReset();
 
   mockGenProcessJsonOrdered.mockReturnValue({ ordered: true });
   mockGenProcessName.mockReturnValue('Process Name');
@@ -164,8 +165,147 @@ beforeEach(() => {
   mockGetCachedLocationData.mockResolvedValue([]);
   mockGetCachedClassificationData.mockResolvedValue({});
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
+  mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+  mockResolveFunctionInvokeError.mockImplementation(async (error: any) => error);
+  mockValidateDatasetRuleVerification.mockResolvedValue({ ruleVerification: true });
   (mockCreateTidasProcess as jest.Mock).mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+  });
+});
+
+describe('listMyProcessesForLca', () => {
+  it('returns unauthorized when the current session has no user id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await processesApi.listMyProcessesForLca('en');
+
+    expect(result).toEqual({ data: [], success: false, error: 'unauthorized' });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('propagates query errors from the processes table', async () => {
+    const builder = createQueryBuilder({
+      data: null,
+      error: { message: 'list failed' },
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'user-1' } } },
+    });
+
+    const result = await processesApi.listMyProcessesForLca('en');
+
+    expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(builder.limit).toHaveBeenCalledWith(200);
+    expect(result).toEqual({
+      data: [],
+      success: false,
+      error: { message: 'list failed' },
+    });
+  });
+
+  it('clamps limit values, filters invalid rows, and falls back to id@version names', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: '  process-1  ',
+          version: ' 01.00.000 ',
+          name: {},
+        },
+        {
+          id: 'process-2',
+          version: '',
+          name: { en: 'ignored' },
+        },
+        {
+          id: 'process-3',
+          version: '02.00.000',
+          name: { en: 'provided-name' },
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'user-2' } } },
+    });
+    mockGenProcessName.mockReturnValueOnce('').mockReturnValueOnce('Resolved Name');
+
+    const result = await processesApi.listMyProcessesForLca('en', { limit: 999 });
+
+    expect(builder.limit).toHaveBeenCalledWith(500);
+    expect(result).toEqual({
+      data: [
+        {
+          id: 'process-1',
+          version: '01.00.000',
+          name: 'process-1@01.00.000',
+        },
+        {
+          id: 'process-3',
+          version: '02.00.000',
+          name: 'Resolved Name',
+        },
+      ],
+      success: true,
+    });
+  });
+
+  it('handles missing row fields by filtering invalid ids and falling back to id@version names', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: undefined,
+          version: '01.00.000',
+        },
+        {
+          id: 'process-missing-version',
+          version: undefined,
+        },
+        {
+          id: 'process-fallback',
+          version: '03.00.000',
+          name: undefined,
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'user-3' } } },
+    });
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await processesApi.listMyProcessesForLca('en');
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: 'process-fallback',
+          version: '03.00.000',
+          name: 'process-fallback@03.00.000',
+        },
+      ],
+      success: true,
+    });
+  });
+
+  it('returns an empty success list when the query payload is undefined', async () => {
+    const builder = createQueryBuilder({
+      data: undefined,
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'user-4' } } },
+    });
+
+    const result = await processesApi.listMyProcessesForLca('en');
+
+    expect(result).toEqual({
+      data: [],
+      success: true,
+    });
   });
 });
 
@@ -192,13 +332,7 @@ describe('createProcess', () => {
   });
 
   it('sets rule verification to false when non-validation issues exist', async () => {
-    mockValidateDatasetRuleVerification.mockResolvedValueOnce({
-      datasetSdkIssues: [{ path: ['processDataSet', 'name'] }],
-      datasetSdkValid: false,
-      nonExistentRef: [],
-      ruleVerification: false,
-      unRuleVerification: [],
-    });
+    mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
     const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
     const selectMock = jest.fn().mockResolvedValue(insertResult);
     const insertMock = jest.fn().mockReturnValue({ select: selectMock });
@@ -214,6 +348,30 @@ describe('createProcess', () => {
         rule_verification: false,
       },
     ]);
+  });
+
+  it('returns a structured validation error when language normalization fails', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { normalized: true },
+      validationError: 'invalid_language_payload',
+    });
+
+    const result = await processesApi.createProcess(sampleId, { raw: true });
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'invalid_language_payload',
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    });
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });
 
@@ -275,13 +433,7 @@ describe('updateProcess', () => {
   });
 
   it('uses fallback bearer token and keeps rule verification false when validation fails', async () => {
-    mockValidateDatasetRuleVerification.mockResolvedValueOnce({
-      datasetSdkIssues: [{ path: ['processDataSet', 'exchanges'] }],
-      datasetSdkValid: false,
-      nonExistentRef: [],
-      ruleVerification: false,
-      unRuleVerification: [],
-    });
+    mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
@@ -307,6 +459,30 @@ describe('updateProcess', () => {
       },
       region: FunctionRegion.UsEast1,
     });
+  });
+
+  it('returns a structured validation error when language normalization fails', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { normalized: true },
+      validationError: 'invalid_language_payload',
+    });
+
+    const result = await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' });
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'invalid_language_payload',
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    });
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
   });
 });
 
@@ -347,7 +523,7 @@ describe('updateProcessApi', () => {
     expect(result).toBeUndefined();
   });
 
-  it('logs invocation errors and returns undefined payload', async () => {
+  it('logs invocation errors and returns normalized error payload', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
@@ -465,6 +641,16 @@ describe('getProcessDetail', () => {
       },
       success: true,
     });
+  });
+
+  it('returns null data when the process id is invalid or no row is found', async () => {
+    const result = await processesApi.getProcessDetail('short-id', sampleVersion);
+
+    expect(result).toEqual({
+      data: null,
+      success: true,
+    });
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });
 
@@ -598,6 +784,53 @@ describe('getProcessTableAll', () => {
     expect(result).toEqual({ data: [], success: true });
   });
 
+  it('filters my-source queries by state code and current user id', async () => {
+    const builder = createQueryBuilder({ data: [], count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-my',
+          },
+        },
+      },
+    });
+
+    const result = await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'my',
+      [],
+      300,
+      'all',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 300);
+    expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-my');
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('applies the resolved team id for team-source table queries', async () => {
+    const builder = createQueryBuilder({ data: [], count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetTeamIdByUserId.mockResolvedValueOnce('team-resolved');
+
+    const result = await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'te',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-resolved');
+    expect(result).toEqual({ data: [], success: true });
+  });
+
   it('returns query error response for failed database request', async () => {
     const builder = createQueryBuilder({
       data: null,
@@ -680,6 +913,123 @@ describe('getProcessTableAll', () => {
     });
   });
 
+  it('maps sparse rows when cache and classification helpers return empty fallbacks', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-03-11T00:00:00Z',
+          'common:class': undefined,
+          'common:generalComment': undefined,
+          '@location': undefined,
+        },
+      ],
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+    mockGetCachedClassificationData.mockResolvedValueOnce(undefined as any);
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await processesApi.getProcessTableAll(
+      {} as any,
+      {},
+      'zh',
+      'tg',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: 'zh',
+          name: sampleId,
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          location: '-',
+          modifiedAt: new Date('2024-03-11T00:00:00Z'),
+          teamId: undefined,
+          modelId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+  });
+
+  it('falls back to the trimmed id when name formatting returns an empty string', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: ` ${sampleId} `,
+          version: sampleVersion,
+          modified_at: '2024-03-12T00:00:00Z',
+          name: undefined,
+          'common:generalComment': undefined,
+          '@location': undefined,
+        },
+      ],
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await processesApi.getProcessTableAll(
+      {} as any,
+      {},
+      'en',
+      'tg',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(result.data[0].name).toBe(sampleId);
+  });
+
+  it('uses an empty-string fallback when both name formatting and id are missing', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: undefined,
+          version: sampleVersion,
+          modified_at: '2024-03-12T00:00:00Z',
+          name: undefined,
+          'common:generalComment': undefined,
+          '@location': undefined,
+        },
+      ],
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await processesApi.getProcessTableAll(
+      {} as any,
+      {},
+      'en',
+      'tg',
+      [],
+      undefined,
+      'all',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: undefined,
+      name: '',
+    });
+  });
+
   it('falls back to id-only row when row transform throws', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     const builder = createQueryBuilder({
@@ -715,6 +1065,990 @@ describe('getProcessTableAll', () => {
       total: 1,
     });
     errorSpy.mockRestore();
+  });
+});
+
+describe('listProcessesForLcaAnalysis', () => {
+  it('loads only the requested page for a single-source analysis list', async () => {
+    const buildProcessRow = (index: number) => ({
+      id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+      version: '01.00.000',
+      modified_at: `2024-03-${String((index % 28) + 1).padStart(2, '0')}T12:00:00Z`,
+      team_id: 'team-open',
+      model_id: `model-${index}`,
+      name: { en: `Open process ${index}` },
+      'common:class': { '#text': `class-${index}` },
+      'common:generalComment': { en: `comment-${index}` },
+      typeOfDataSet: 'background',
+      'common:referenceYear': '2024',
+      '@location': 'CN',
+    });
+
+    const requestedPageRows = Array.from({ length: 50 }, (_, index) => buildProcessRow(index + 51));
+    const builder = createQueryBuilder({
+      data: requestedPageRows,
+      count: 250,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 50 },
+      'en',
+      'open_data',
+    );
+
+    expect(builder.range).toHaveBeenCalledWith(50, 99);
+    expect(result.success).toBe(true);
+    expect(result.total).toBe(250);
+    expect(result.data).toHaveLength(50);
+  });
+
+  it('queries all_data in one paginated request for non-search loading', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+          version: '01.00.000',
+          modified_at: '2024-03-01T12:00:00Z',
+          team_id: 'team-my',
+          model_id: 'model-my',
+          name: { en: 'My process' },
+          'common:class': { '#text': 'class-my' },
+          'common:generalComment': { en: 'mine' },
+          typeOfDataSet: 'foreground',
+          'common:referenceYear': '2024',
+          '@location': 'CN',
+        },
+        {
+          id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+          version: '02.00.000',
+          modified_at: '2024-03-02T12:00:00Z',
+          team_id: 'team-open',
+          model_id: 'model-open-2',
+          name: { en: 'Open process' },
+          'common:class': { '#text': 'class-open' },
+          'common:generalComment': { en: 'open' },
+          typeOfDataSet: 'background',
+          'common:referenceYear': '2023',
+          '@location': 'US',
+        },
+      ],
+      count: 42,
+    });
+
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-1',
+          },
+        },
+      },
+    });
+    mockGetCachedLocationData.mockResolvedValue([
+      { '@value': 'CN', '#text': 'China' },
+      { '@value': 'US', '#text': 'United States' },
+    ]);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 20 },
+      'en',
+      'all_data',
+    );
+
+    expect(builder.or).toHaveBeenCalledWith('state_code.eq.100,user_id.eq.user-1');
+    expect(builder.range).toHaveBeenCalledWith(20, 39);
+    expect(result.success).toBe(true);
+    expect(result.page).toBe(2);
+    expect(result.total).toBe(42);
+    expect(result.data).toHaveLength(2);
+  });
+
+  it('uses default page and total fallbacks for successful all_data table rows', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-03-03T12:00:00Z',
+          name: {},
+          'common:class': undefined,
+          'common:generalComment': undefined,
+          '@location': undefined,
+        },
+      ],
+      count: undefined,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-3',
+          },
+        },
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis({} as any, 'en', 'all_data');
+
+    expect(result.page).toBe(1);
+    expect(result.total).toBe(0);
+    expect(result.data).toHaveLength(1);
+  });
+
+  it('searches current-user and open-data sources for all_data keyword lookups', async () => {
+    const myProcessId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const openProcessId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: myProcessId,
+            version: '01.00.000',
+            modified_at: '2024-06-03T00:00:00Z',
+            team_id: 'team-my',
+            model_id: 'model-my',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'My search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-my' },
+                      },
+                    },
+                    'common:generalComment': { en: 'mine' },
+                  },
+                  time: {
+                    'common:referenceYear': '2024',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'CN',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'foreground',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: openProcessId,
+            version: '02.00.000',
+            modified_at: '2024-06-04T00:00:00Z',
+            team_id: 'team-open',
+            model_id: 'model-open',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'Open search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-open' },
+                      },
+                    },
+                    'common:generalComment': { en: 'open' },
+                  },
+                  time: {
+                    'common:referenceYear': '2023',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'US',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'background',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: myProcessId,
+            version: '01.00.000',
+            modified_at: '2024-06-03T00:00:00Z',
+            team_id: 'team-my',
+            model_id: 'model-my',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'My search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-my' },
+                      },
+                    },
+                    'common:generalComment': { en: 'mine' },
+                  },
+                  time: {
+                    'common:referenceYear': '2024',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'CN',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'foreground',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: openProcessId,
+            version: '02.00.000',
+            modified_at: '2024-06-04T00:00:00Z',
+            team_id: 'team-open',
+            model_id: 'model-open',
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    name: { en: 'Open search result' },
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': { '#text': 'class-open' },
+                      },
+                    },
+                    'common:generalComment': { en: 'open' },
+                  },
+                  time: {
+                    'common:referenceYear': '2023',
+                  },
+                  geography: {
+                    locationOfOperationSupplyOrProduction: {
+                      '@location': 'US',
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethodAndAllocation: {
+                    typeOfDataSet: 'background',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      });
+    mockGetCachedLocationData.mockResolvedValue([
+      { '@value': 'CN', '#text': 'China' },
+      { '@value': 'US', '#text': 'United States' },
+    ]);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 10 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      1,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'my',
+        page_size: 1,
+        page_current: 1,
+      }),
+    );
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      2,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'tg',
+        page_size: 1,
+        page_current: 1,
+      }),
+    );
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      3,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'my',
+        page_size: 10,
+        page_current: 1,
+      }),
+    );
+    expect(mockRpc).toHaveBeenNthCalledWith(
+      4,
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'tg',
+        page_size: 9,
+        page_current: 1,
+      }),
+    );
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({ id: myProcessId }),
+        expect.objectContaining({ id: openProcessId }),
+      ],
+      page: 1,
+      success: true,
+      total: 2,
+    });
+  });
+
+  it('returns unauthorized for all_data list loading when there is no session user id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: null,
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 10 },
+      'en',
+      'all_data',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      success: false,
+      error: 'unauthorized',
+    });
+  });
+
+  it('returns an error when the all_data base query fails', async () => {
+    const builder = createQueryBuilder({
+      data: null,
+      error: { message: 'all-data query failed' },
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-1',
+          },
+        },
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 3, pageSize: 5 },
+      'en',
+      'all_data',
+      '',
+      {},
+      {},
+      'all',
+      'foreground',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith(
+      'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
+      'foreground',
+    );
+    expect(result).toEqual({
+      data: [],
+      success: false,
+      error: { message: 'all-data query failed' },
+    });
+  });
+
+  it('returns an empty success page when the all_data base query has no rows', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-2',
+          },
+        },
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 4, pageSize: 5 },
+      'en',
+      'all_data',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 4,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses default paging values for open_data keyword searches with empty results', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-empty-open',
+        },
+      },
+    });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      {} as any,
+      'en',
+      'open_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: true,
+      total: 0,
+      error: undefined,
+    });
+  });
+
+  it('normalizes open_data non-search table failures through the shared response helper', async () => {
+    const builder = createQueryBuilder({
+      data: null,
+      error: { message: 'open table failed' },
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 5 },
+      'en',
+      'open_data',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 2,
+      success: false,
+      total: 0,
+      error: { message: 'open table failed' },
+    });
+  });
+
+  it('uses default paging and total fallbacks for empty all_data table results', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: undefined,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-fallback',
+          },
+        },
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis({} as any, 'en', 'all_data');
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses default paging values for current_user non-search scopes', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: {
+            id: 'user-current',
+          },
+        },
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis({} as any, 'en', 'current_user');
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: true,
+      total: 0,
+      error: undefined,
+    });
+  });
+
+  it('normalizes open_data keyword searches with no session into an empty response object', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: null,
+      },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      {} as any,
+      'en',
+      'open_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: false,
+      total: 0,
+      error: 'unauthorized',
+    });
+  });
+
+  it('uses normalized data-length totals and merge fallbacks for all_data keyword searches', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-normalized',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 'current-user-row',
+            version: undefined,
+            json: {},
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: undefined,
+            version: sampleVersion,
+            json: {},
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 'current-user-row',
+            version: undefined,
+            json: {},
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: undefined,
+            version: sampleVersion,
+            json: {},
+          },
+        ],
+        error: null,
+      });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      {} as any,
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result.page).toBe(1);
+    expect(result.success).toBe(true);
+    expect(result.total).toBe(2);
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0]).toMatchObject({
+      key: 'current-user-row:undefined',
+      id: 'current-user-row',
+      version: undefined,
+      name: 'Process Name',
+      generalComment: 'General comment',
+      classification: 'classification-string',
+      typeOfDataSet: '-',
+      referenceYear: '-',
+      location: '-',
+      teamId: undefined,
+      modelId: undefined,
+    });
+    expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
+    expect(Number.isNaN(result.data[0].modifiedAt.getTime())).toBe(true);
+  });
+
+  it('returns the first search-head error for all_data keyword requests', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'my search failed' } });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 5 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 2,
+      success: false,
+      total: 0,
+    });
+  });
+
+  it('returns the open-data head error for all_data keyword requests', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            total_count: 1,
+            json: {},
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: { message: 'open search failed' } });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 5 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 2,
+      success: false,
+      total: 1,
+    });
+  });
+
+  it('returns only the current-user page when it already fills the requested page size', async () => {
+    const rows = Array.from({ length: 2 }, (_, index) => ({
+      id: `my-only-${index + 1}`,
+      version: sampleVersion,
+      total_count: 2,
+      json: {},
+    }));
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({ data: rows.slice(0, 1), error: null })
+      .mockResolvedValueOnce({ data: [], error: null })
+      .mockResolvedValueOnce({ data: rows, error: null });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 2 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({ id: 'my-only-1' }),
+        expect.objectContaining({ id: 'my-only-2' }),
+      ],
+      page: 1,
+      success: true,
+      total: 2,
+    });
+  });
+
+  it('returns the open-data follow-up error when the open-data tail page fails', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [{ id: 'my-1', version: sampleVersion, total_count: 1, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'open-1', version: sampleVersion, total_count: 3, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'my-1', version: sampleVersion, total_count: 1, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: { message: 'open tail failed' } });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 2 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: false,
+      total: 4,
+    });
+  });
+
+  it('returns the offset open-data slice for later all_data keyword pages', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [{ id: 'my-head', version: sampleVersion, total_count: 1, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'open-head', version: sampleVersion, total_count: 6, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          { id: 'open-1', version: sampleVersion, total_count: 6, json: {} },
+          { id: 'open-2', version: sampleVersion, total_count: 6, json: {} },
+          { id: 'open-3', version: sampleVersion, total_count: 6, json: {} },
+          { id: 'open-4', version: sampleVersion, total_count: 6, json: {} },
+        ],
+        error: null,
+      });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 2 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [expect.objectContaining({ id: 'open-2' }), expect.objectContaining({ id: 'open-3' })],
+      page: 2,
+      success: true,
+      total: 7,
+    });
+  });
+
+  it('returns the current-user page error when the requested all_data keyword page starts in current-user rows', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [{ id: 'my-head', version: sampleVersion, total_count: 3, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'open-head', version: sampleVersion, total_count: 4, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: { message: 'my page failed' } });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 2 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: false,
+      total: 7,
+      error: undefined,
+    });
+  });
+
+  it('returns the open-data page error when a later all_data keyword page depends on open-data rows', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [{ id: 'my-head', version: sampleVersion, total_count: 1, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'open-head', version: sampleVersion, total_count: 6, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: { message: 'open later page failed' } });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 2 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 2,
+      success: false,
+      total: 7,
+      error: undefined,
+    });
+  });
+
+  it('uses the keyword search branch for open_data scopes', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 10 },
+      'en',
+      'open_data',
+      ' battery ',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'pgroonga_search_processes_v1',
+      expect.objectContaining({
+        query_text: 'battery',
+        data_source: 'tg',
+      }),
+    );
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: true,
+      total: 0,
+      error: undefined,
+    });
+  });
+
+  it('deduplicates overlapping current-user and open-data rows in all_data keyword results', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-xyz',
+        },
+      },
+    });
+    mockRpc
+      .mockResolvedValueOnce({
+        data: [{ id: 'dup', version: sampleVersion, total_count: 1, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'dup', version: sampleVersion, total_count: 2, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'dup', version: sampleVersion, total_count: 1, json: {} }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'dup', version: sampleVersion, total_count: 2, json: {} }],
+        error: null,
+      });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 2 },
+      'en',
+      'all_data',
+      'battery',
+    );
+
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0]).toMatchObject({ id: 'dup' });
+    expect(result.total).toBe(3);
   });
 });
 
@@ -956,6 +2290,275 @@ describe('process_hybrid_search', () => {
       total: 7,
     });
   });
+
+  it('maps sparse zh hybrid rows with default fallbacks when optional fields are missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-zh-sparse',
+        },
+      },
+    });
+    const hybridData: any = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        modified_at: '2024-05-03T00:00:00Z',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: undefined,
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': undefined,
+                  },
+                },
+                'common:generalComment': undefined,
+              },
+              geography: {
+                locationOfOperationSupplyOrProduction: {
+                  '@location': undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    (hybridData as any).total_count = 4;
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+    mockGetCachedClassificationData.mockResolvedValueOnce(undefined as any);
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+
+    const result = await processesApi.process_hybrid_search(
+      {} as any,
+      'zh',
+      'tg',
+      '关键词',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          referenceYear: '-',
+          location: '-',
+          version: sampleVersion,
+          typeOfDataSet: '-',
+          modifiedAt: new Date('2024-05-03T00:00:00Z'),
+          teamId: undefined,
+          modelId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 4,
+    });
+  });
+
+  it('maps sparse en hybrid rows with default fallbacks when optional fields are missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-en-sparse',
+        },
+      },
+    });
+    const hybridData: any = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        modified_at: '2024-05-02T00:00:00Z',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: undefined,
+                'common:generalComment': undefined,
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': undefined,
+                  },
+                },
+              },
+              geography: {
+                locationOfOperationSupplyOrProduction: {
+                  '@location': undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    (hybridData as any).total_count = 5;
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+
+    const result = await processesApi.process_hybrid_search(
+      {} as any,
+      'en',
+      'tg',
+      'keyword',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          referenceYear: '-',
+          location: '-',
+          version: sampleVersion,
+          typeOfDataSet: '-',
+          modifiedAt: new Date('2024-05-02T00:00:00Z'),
+          teamId: undefined,
+          modelId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 5,
+    });
+  });
+
+  it('falls back to id-only rows when zh hybrid mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-zh',
+        },
+      },
+    });
+    const hybridData: any = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        total_count: 1,
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': { '#text': 'zh-class' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad zh hybrid class');
+    });
+
+    const result = await processesApi.process_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      '关键词',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [{ id: sampleId }],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('falls back to id-only rows when en hybrid mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-en',
+        },
+      },
+    });
+    const hybridData: any = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        total_count: 1,
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': { '#text': 'en-class' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad en hybrid class');
+    });
+
+    const result = await processesApi.process_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'keyword',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [{ id: sampleId }],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('returns the raw fallback result when no session is available for hybrid search', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await processesApi.process_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'keyword',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({});
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
 });
 
 describe('getProcessDetailByIdAndVersion', () => {
@@ -1002,6 +2605,16 @@ describe('getProcessDetailByIdAndVersion', () => {
     ]);
 
     expect(result).toBeDefined();
+  });
+
+  it('should return an empty success result when no id/version pairs are provided', async () => {
+    const result = await processesApi.getProcessDetailByIdAndVersion([]);
+
+    expect(result).toEqual({
+      data: [],
+      success: true,
+    });
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });
 
@@ -1092,6 +2705,52 @@ describe('getProcessesByIdAndVersion', () => {
     });
   });
 
+  it('uses empty name and general-comment payloads when lang formatting fields are undefined', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-06-03T00:00:00Z',
+          name: undefined,
+          'common:generalComment': undefined,
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(builder);
+    mockGenProcessName.mockReturnValueOnce('Formatted Name');
+    mockGetLangText.mockReturnValueOnce('Formatted Comment');
+
+    const result = await processesApi.getProcessesByIdAndVersion(
+      [{ id: sampleId, version: sampleVersion }],
+      'en',
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(mockGetLangText).toHaveBeenCalledWith({}, 'en');
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: 'en',
+          name: 'Formatted Name',
+          generalComment: 'Formatted Comment',
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          modifiedAt: new Date('2024-06-03T00:00:00Z'),
+          teamId: undefined,
+          modelId: undefined,
+        },
+      ],
+      success: true,
+      page: 1,
+      total: 1,
+    });
+  });
+
   it('returns raw name branch when lang is omitted', async () => {
     const builder = createQueryBuilder({
       data: [
@@ -1131,6 +2790,22 @@ describe('getProcessesByIdAndVersion', () => {
       success: true,
       page: 1,
       total: 1,
+    });
+  });
+
+  it('returns empty raw rows when lang is omitted and the query payload is missing', async () => {
+    const builder = createQueryBuilder({ data: null, error: null });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessesByIdAndVersion([
+      { id: sampleId, version: sampleVersion },
+    ]);
+
+    expect(result).toEqual({
+      data: [],
+      success: true,
+      page: 1,
+      total: 0,
     });
   });
 });
@@ -1181,6 +2856,18 @@ describe('getProcessDetailByIdsAndVersion', () => {
 
   it('should handle database errors gracefully', async () => {
     const builder = createQueryBuilder({ data: null, error: { message: 'DB error' } });
+    mockFrom.mockReturnValue(builder);
+
+    const result = await processesApi.getProcessDetailByIdsAndVersion([sampleId], sampleVersion);
+
+    expect(result).toEqual({
+      data: [],
+      success: true,
+    });
+  });
+
+  it('should return an empty array when the query payload is undefined', async () => {
+    const builder = createQueryBuilder({ data: undefined, error: null });
     mockFrom.mockReturnValue(builder);
 
     const result = await processesApi.getProcessDetailByIdsAndVersion([sampleId], sampleVersion);
@@ -1443,6 +3130,252 @@ describe('getConnectableProcessesTable', () => {
       success: true,
     });
   });
+
+  it('supports the co data source and returns empty success when no matches remain', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          exchange: [
+            {
+              exchangeDirection: 'input',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-co' },
+            },
+          ],
+        },
+      ],
+      error: null,
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'co',
+      'team-co',
+      'input:flow-co',
+      '',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 200);
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-co');
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('maps zh connectable rows with translated classification and location', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-01-01T00:00:00Z',
+          team_id: 'team-zh',
+          '@location': 'CN',
+          exchange: [
+            {
+              exchangeDirection: 'output',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-zh' },
+            },
+          ],
+          name: { zh: '流程' },
+          'common:class': [{ '#text': 'zh-class' }],
+          'common:generalComment': { zh: '备注' },
+        },
+      ],
+      error: null,
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': '中国' }]);
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'zh-class', '#text': '分类' },
+    ]);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'zh',
+      'tg',
+      [],
+      'input:flow-zh',
+      '',
+    );
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', 'zh', ['all']);
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: 'zh',
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          location: '中国',
+          modifiedAt: new Date('2024-01-01T00:00:00Z'),
+          teamId: 'team-zh',
+        },
+      ],
+      success: true,
+    });
+  });
+
+  it('maps sparse zh connectable rows with fallback values when optional fields are missing', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-01-03T00:00:00Z',
+          exchange: [
+            {
+              exchangeDirection: 'output',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-zh-sparse' },
+            },
+          ],
+          name: undefined,
+          'common:class': undefined,
+          'common:generalComment': undefined,
+          '@location': undefined,
+        },
+      ],
+      error: null,
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+    mockGetCachedClassificationData.mockResolvedValueOnce(undefined as any);
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'zh',
+      'tg',
+      [],
+      'input:flow-zh-sparse',
+      '',
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          version: sampleVersion,
+          lang: 'zh',
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          typeOfDataSet: '-',
+          referenceYear: '-',
+          location: '-',
+          modifiedAt: new Date('2024-01-03T00:00:00Z'),
+          teamId: undefined,
+        },
+      ],
+      success: true,
+    });
+  });
+
+  it('falls back to id-only rows when connectable-row mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          modified_at: '2024-01-01T00:00:00Z',
+          exchange: [
+            {
+              exchangeDirection: 'output',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-err' },
+            },
+          ],
+        },
+      ],
+      error: null,
+      count: 1,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad connectable class');
+    });
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      [],
+      'input:flow-err',
+      '',
+    );
+
+    expect(result).toEqual({
+      data: [{ id: sampleId }],
+      success: true,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('applies the tg team filter and returns empty success when no connectable rows remain', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'tg',
+      'team-tg',
+      'input:flow-tg',
+      '',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-tg');
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('applies the resolved team id for team-scope connectable queries', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetTeamIdByUserId.mockResolvedValueOnce('team-connect');
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      {},
+      'en',
+      'te',
+      [],
+      'input:flow-connect',
+      '',
+    );
+
+    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-connect');
+    expect(result).toEqual({ data: [], success: true });
+  });
 });
 
 describe('getProcessTablePgroongaSearch', () => {
@@ -1617,6 +3550,172 @@ describe('getProcessTablePgroongaSearch', () => {
       success: true,
       total: 3,
     });
+  });
+
+  it('maps sparse zh pgroonga rows with cache and field fallbacks', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-zh' } } });
+    const rpcRows: any[] = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        modified_at: '2024-06-04T00:00:00Z',
+        total_count: 2,
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: undefined,
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': undefined,
+                  },
+                },
+                'common:generalComment': undefined,
+              },
+              geography: {
+                locationOfOperationSupplyOrProduction: {
+                  '@location': undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    mockRpc.mockResolvedValueOnce({ data: rpcRows, error: null });
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+    mockGetCachedClassificationData.mockResolvedValueOnce(undefined as any);
+    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      {} as any,
+      'zh',
+      'tg',
+      '中文',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          referenceYear: '-',
+          location: '-',
+          version: sampleVersion,
+          typeOfDataSet: '-',
+          modifiedAt: new Date('2024-06-04T00:00:00Z'),
+          teamId: undefined,
+          modelId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 2,
+    });
+  });
+
+  it('falls back to id-only rows when zh pgroonga mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          total_count: 1,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': { '#text': 'zh-class' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad zh pgroonga class');
+    });
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      '中文',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [{ id: sampleId }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('falls back to id-only rows when en pgroonga mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          total_count: 1,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': { '#text': 'en-class' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad en pgroonga class');
+    });
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'english',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [{ id: sampleId }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    errorSpy.mockRestore();
   });
 });
 

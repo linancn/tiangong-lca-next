@@ -16,8 +16,13 @@ import {
   unitgroup_hybrid_search,
 } from '@/services/unitgroups/api';
 import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -56,6 +61,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const keyWordRef = useRef<string>('');
+  const stateCodeRef = useRef<string | number>('all');
   const attachReviewState = async (result: {
     data?: UnitGroupTable[];
     page?: number;
@@ -309,6 +316,7 @@ const TableList: FC = () => {
     });
   }, []);
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -380,8 +388,9 @@ const TableList: FC = () => {
               <TableFilter
                 disabled={!isSystemAdmin}
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -412,10 +421,19 @@ const TableList: FC = () => {
               total: 0,
             };
           }
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
+          if (currentKeyWord.length > 0) {
             if (openAI) {
               return attachReviewState(
-                await unitgroup_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+                await unitgroup_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  currentKeyWord,
+                  {},
+                  currentStateCode,
+                ),
               );
             }
             return attachReviewState(
@@ -423,14 +441,14 @@ const TableList: FC = () => {
                 params,
                 lang,
                 dataSource,
-                keyWord,
+                currentKeyWord,
                 {},
-                stateCode,
+                currentStateCode,
               ),
             );
           }
           return attachReviewState(
-            await getUnitGroupTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+            await getUnitGroupTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode),
           );
         }}
         columns={unitGroupColumns}

@@ -14,8 +14,13 @@ import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -53,6 +58,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const stateCodeRef = useRef<string | number>('all');
+  const keyWordRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: ContactTable[];
     page?: number;
@@ -186,6 +193,7 @@ const TableList: FC = () => {
                 buttonType={'icon'}
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
+                showSyncOpenDataButton={true}
               />
               <ContactDelete
                 disabled={actionDisabled}
@@ -276,6 +284,7 @@ const TableList: FC = () => {
   }, []);
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -337,8 +346,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -361,18 +371,34 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
+          if (currentKeyWord.length > 0) {
             if (openAI) {
               return attachReviewState(
-                await contact_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+                await contact_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  currentKeyWord,
+                  {},
+                  currentStateCode,
+                ),
               );
             }
             return attachReviewState(
-              await getContactTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode),
+              await getContactTablePgroongaSearch(
+                params,
+                lang,
+                dataSource,
+                currentKeyWord,
+                {},
+                currentStateCode,
+              ),
             );
           }
           return attachReviewState(
-            await getContactTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+            await getContactTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode),
           );
         }}
         columns={contactColumns}

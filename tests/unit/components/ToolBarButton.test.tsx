@@ -78,4 +78,14 @@ describe('ToolBarButton Component', () => {
 
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it('uses pointer cursor styling when enabled', () => {
+    renderComponent();
+
+    const icon = screen.getByLabelText('Calculate');
+    const wrapper = icon.closest('.ant-pro-table-list-toolbar-setting-item') as HTMLElement;
+
+    expect(wrapper).toHaveStyle({ cursor: 'pointer' });
+    expect(wrapper).not.toHaveClass('ant-btn-disabled');
+  });
 });

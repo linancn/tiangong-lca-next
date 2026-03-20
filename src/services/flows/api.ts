@@ -9,7 +9,12 @@ import {
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId, resolveFunctionInvokeError } from '../general/api';
+import {
+  getDataDetail,
+  getTeamIdByUserId,
+  normalizeLangPayloadForSave,
+  resolveFunctionInvokeError,
+} from '../general/api';
 import { getILCDLocationByValues } from '../ilcd/api';
 import { getCachedFlowCategorizationAll, getCachedLocationData } from '../ilcd/cache';
 import { genFlowJsonOrdered, genFlowName } from './util';
@@ -58,8 +63,37 @@ function resolveLocationOfSupply(
   return match?.['#text'] ?? code;
 }
 
+type FlowClassificationFilter = {
+  scope: 'elementary' | 'classification';
+  code: string;
+};
+
+type FlowSearchFilters = {
+  flowType?: string;
+  asInput?: boolean;
+  classification?: FlowClassificationFilter[];
+};
+
 export async function createFlows(id: string, data: any) {
-  const newData = genFlowJsonOrdered(id, data);
+  const rawData = genFlowJsonOrdered(id, data);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
     'flow data set',
@@ -74,7 +108,25 @@ export async function createFlows(id: string, data: any) {
 }
 
 export async function updateFlows(id: string, version: string, data: any) {
-  const newData = genFlowJsonOrdered(id, data);
+  const rawData = genFlowJsonOrdered(id, data);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  if (validationError) {
+    return {
+      data: null,
+      error: {
+        message: validationError,
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    };
+  }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
     'flow data set',
@@ -115,10 +167,7 @@ export async function getFlowTableAll(
   lang: string,
   dataSource: string,
   tid: string | [],
-  filters?: {
-    flowType?: string;
-    asInput?: boolean;
-  },
+  filters?: FlowSearchFilters,
   stateCode?: string | number,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
@@ -160,6 +209,54 @@ export async function getFlowTableAll(
         'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
         flowTypes[0],
       );
+    }
+  }
+
+  if (Array.isArray(filters?.classification) && filters.classification.length > 0) {
+    const validClassifications = filters.classification.filter(
+      (item): item is FlowClassificationFilter =>
+        !!item?.code && (item.scope === 'elementary' || item.scope === 'classification'),
+    );
+
+    const getClassificationPath = (scope: 'elementary' | 'classification') =>
+      scope === 'elementary'
+        ? 'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category"'
+        : 'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"';
+
+    const getClassificationMatcher = (
+      scope: 'elementary' | 'classification',
+      code: string,
+    ): string =>
+      JSON.stringify([
+        scope === 'elementary'
+          ? {
+              '@catId': code,
+            }
+          : {
+              '@classId': code,
+            },
+      ]);
+
+    if (validClassifications.length === 1) {
+      const onlyItem = validClassifications[0];
+      query = query.filter(
+        getClassificationPath(onlyItem.scope),
+        'cs',
+        getClassificationMatcher(onlyItem.scope, onlyItem.code),
+      );
+    } else if (validClassifications.length > 1) {
+      const classificationConditions = Array.from(
+        new Set(
+          validClassifications.map((item) => {
+            const path = getClassificationPath(item.scope);
+            const matcher = getClassificationMatcher(item.scope, item.code);
+            return `${path}.cs.${matcher}`;
+          }),
+        ),
+      );
+      if (classificationConditions.length > 0) {
+        query = query.or(classificationConditions.join(','));
+      }
     }
   }
 
@@ -331,7 +428,7 @@ export async function getFlowTablePgroongaSearch(
   lang: string,
   dataSource: string,
   queryText: string,
-  filter: any,
+  filter: FlowSearchFilters,
   stateCode?: string | number,
   orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
 ) {
@@ -495,7 +592,7 @@ export async function flow_hybrid_search(
   lang: string,
   dataSource: string,
   query: string,
-  filter: any,
+  filter: FlowSearchFilters,
   stateCode?: string | number,
 ) {
   let result: any = {};

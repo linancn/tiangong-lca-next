@@ -105,6 +105,31 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
         currentAuthority: 'guest',
       });
     });
+
+    it('falls back to empty password fields when change-password inputs are missing', async () => {
+      authMock.signInWithPassword.mockResolvedValueOnce({
+        data: { user: { role: 'member' } },
+        error: null,
+      });
+      authMock.updateUser.mockResolvedValueOnce({ error: null });
+
+      const result = await changePassword({
+        email: undefined,
+        currentPassword: undefined,
+        confirmNewPassword: undefined,
+        type: 'changePassword',
+      });
+
+      expect(authMock.signInWithPassword).toHaveBeenCalledWith({
+        email: '',
+        password: '',
+      });
+      expect(authMock.updateUser).toHaveBeenCalledWith({
+        email: '',
+        password: '',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'changePassword', currentAuthority: 'member' });
+    });
   });
 
   describe('setPassword', () => {
@@ -146,6 +171,25 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
         currentAuthority: 'guest',
       });
     });
+
+    it('falls back to empty reset fields when the payload is incomplete', async () => {
+      authMock.updateUser.mockResolvedValueOnce({
+        data: { user: { role: 'member' } },
+        error: null,
+      });
+
+      const result = await setPassword({
+        email: undefined,
+        confirmNewPassword: undefined,
+        type: 'reset',
+      });
+
+      expect(authMock.updateUser).toHaveBeenCalledWith({
+        email: '',
+        password: '',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'reset', currentAuthority: 'member' });
+    });
   });
 
   describe('forgotPasswordSendEmail', () => {
@@ -179,6 +223,20 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
         type: 'forgot',
         currentAuthority: 'guest',
       });
+    });
+
+    it('falls back to an empty email when the forgot-password payload omits it', async () => {
+      authMock.resetPasswordForEmail.mockResolvedValueOnce({ error: null });
+
+      const result = await forgotPasswordSendEmail({
+        email: undefined,
+        type: 'forgot',
+      });
+
+      expect(authMock.resetPasswordForEmail).toHaveBeenCalledWith('', {
+        redirectTo: 'https://lca.tiangong.earth/user/login/password_reset',
+      });
+      expect(result).toEqual({ status: 'ok', type: 'forgot', currentAuthority: 'guest' });
     });
   });
 });

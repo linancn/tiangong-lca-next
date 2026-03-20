@@ -42,9 +42,6 @@ function parseProcessRef(value?: string): { process_id: string; process_version:
   }
   const processId = text.slice(0, delimiterIndex).trim();
   const processVersion = text.slice(delimiterIndex + 2).trim();
-  if (!processId || !processVersion) {
-    return null;
-  }
   return {
     process_id: processId,
     process_version: processVersion,
@@ -102,15 +99,12 @@ const LcaSolveToolbar = () => {
   };
 
   const onClose = () => {
-    if (submitting) {
-      return;
-    }
     setOpen(false);
   };
 
   const onSubmit = async () => {
     const values = await form.validateFields();
-    const mode = values.demand_mode ?? DEFAULT_VALUES.demand_mode;
+    const mode = values.demand_mode;
 
     let request: LcaSolveRequest;
     if (mode === 'single') {
@@ -200,14 +194,10 @@ const LcaSolveToolbar = () => {
           defaultMessage: 'LCA Calculate',
         })}
         open={open}
-        okText={
-          submitting
-            ? intl.formatMessage({
-                id: 'pages.process.lca.modal.okRunning',
-                defaultMessage: 'Submitting...',
-              })
-            : intl.formatMessage({ id: 'pages.process.lca.modal.ok', defaultMessage: 'Calculate' })
-        }
+        okText={intl.formatMessage({
+          id: 'pages.process.lca.modal.ok',
+          defaultMessage: 'Calculate',
+        })}
         cancelText={intl.formatMessage({
           id: 'pages.process.lca.modal.cancel',
           defaultMessage: 'Close',

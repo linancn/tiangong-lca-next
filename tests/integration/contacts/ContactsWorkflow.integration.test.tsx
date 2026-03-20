@@ -49,8 +49,6 @@ jest.mock('@ant-design/pro-components', () =>
   require('@/tests/mocks/proComponents').createProComponentsMock(),
 );
 
-jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
-
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
   default: ({ tooltip, onClick }: any) => {

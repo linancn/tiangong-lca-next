@@ -8,6 +8,10 @@
 
 import type {
   FlowPropertyDataSetObjectKeys,
+  FlowpropertyDetailResponse,
+  FlowpropertyImportData,
+  FlowpropertyReference,
+  FlowpropertyRefUnitDisplay,
   FlowpropertyTable,
   FormFlowProperty,
 } from '@/services/flowproperties/data';
@@ -285,6 +289,60 @@ describe('Flow Properties Data Types (src/services/flowproperties/data.ts)', () 
       expect(names).toHaveLength(3);
       expect(names[0]['@xml:lang']).toBe('en');
       expect(names[1]['@xml:lang']).toBe('zh');
+    });
+
+    it('should support references, import payloads, and detail responses used by drawers', () => {
+      const formState: Partial<FormFlowProperty> = {
+        flowPropertiesInformation: {
+          dataSetInformation: {
+            'common:UUID': 'flowprop-1',
+          },
+        } as any,
+      };
+      const refUnitDisplay: FlowpropertyRefUnitDisplay = {
+        name: [{ '@xml:lang': 'en', '#text': 'Mass' }],
+        refUnitName: 'kg',
+        refUnitGeneralComment: [{ '@xml:lang': 'en', '#text': 'Reference unit' }],
+      };
+      const reference: FlowpropertyReference = {
+        '@refObjectId': 'flowprop-1',
+        '@type': 'flow property data set',
+        '@uri': '../flowproperties/flowprop-1.xml',
+        '@version': '01.00.000',
+        'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Mass' }],
+      };
+      const importData: FlowpropertyImportData = [
+        {
+          flowPropertyDataSet: {
+            flowPropertiesInformation: {
+              dataSetInformation: { 'common:UUID': 'flowprop-import-1' } as any,
+            } as any,
+          } as any,
+        },
+      ];
+      const response: FlowpropertyDetailResponse = {
+        success: true,
+        data: {
+          id: 'flowprop-1',
+          version: '01.00.000',
+          json: { flowPropertyDataSet: formState as any },
+          modifiedAt: '2026-03-13T00:00:00Z',
+          stateCode: 20,
+          ruleVerification: true,
+          userId: 'user-1',
+        },
+      };
+
+      expect(refUnitDisplay.refUnitName).toBe('kg');
+      expect((reference as Exclude<FlowpropertyReference, FlowpropertyReference[]>)['@type']).toBe(
+        'flow property data set',
+      );
+      expect(
+        importData[0].flowPropertyDataSet.flowPropertiesInformation?.dataSetInformation?.[
+          'common:UUID'
+        ],
+      ).toBe('flowprop-import-1');
+      expect(response.data?.json?.flowPropertyDataSet).toBe(formState);
     });
   });
 });

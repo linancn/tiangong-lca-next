@@ -115,6 +115,17 @@ describe('RightContent Components', () => {
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
   });
 
+  it('opens the English documentation link when locale starts with en', () => {
+    const umiMax = jest.requireMock('@umijs/max');
+    umiMax.useIntl = () => ({ locale: 'en-US' });
+
+    render(<Question />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'question-icon' }));
+
+    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
+  });
+
   it('renders the language selector with padding style', () => {
     render(<SelectLang />);
 
@@ -122,6 +133,15 @@ describe('RightContent Components', () => {
 
     expect(selector).toBeInTheDocument();
     expect(selector).toHaveStyle({ padding: '4px' });
+  });
+
+  it('merges custom styles into the language selector', () => {
+    render(<SelectLang style={{ marginLeft: 12 }} />);
+
+    expect(screen.getByTestId('select-lang')).toHaveStyle({
+      padding: '4px',
+      marginLeft: '12px',
+    });
   });
 });
 afterAll(() => {

@@ -228,7 +228,7 @@ const IoPortSelect: FC<Props> = ({
   return (
     <>
       <Drawer
-        destroyOnClose={true}
+        destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage

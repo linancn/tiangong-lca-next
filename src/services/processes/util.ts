@@ -1658,7 +1658,7 @@ export function genProcessExchangeTableData(data: any, lang: string) {
   return [];
 }
 
-export function genProcessName(name: any, lang: string) {
+export function genProcessName(name: any, lang: string): string {
   const baseName = getLangText(name?.baseName, lang);
   const treatmentStandardsRoutes = getLangText(name?.treatmentStandardsRoutes, lang);
   const mixAndLocationTypes = getLangText(name?.mixAndLocationTypes, lang);
@@ -1679,6 +1679,7 @@ export function genProcessName(name: any, lang: string) {
   if (nameStr.length === 0) {
     return '-';
   }
+  return nameStr;
 }
 
 export function genProcessNameJson(name: any) {

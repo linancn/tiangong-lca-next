@@ -18,8 +18,13 @@ import type {
 } from '@/services/lifeCycleModels/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -34,7 +39,7 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState('');
-  const [stateCode, setStateCode] = useState<string | number>('all');
+  const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -56,6 +61,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const keyWordRef = useRef('');
+  const stateCodeRef = useRef<string | number>('all');
   const attachReviewState = async (result: {
     data?: LifeCycleModelTable[];
     page?: number;
@@ -262,15 +269,13 @@ const TableList: FC = () => {
   ];
 
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
 
   useEffect(() => {
-    if (team) {
-      return;
-    }
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) {
         setTeam(res.data[0] as TeamTable);
@@ -333,8 +338,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -358,7 +364,9 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current;
+          if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
               | undefined;
@@ -381,9 +389,9 @@ const TableList: FC = () => {
                   params,
                   lang,
                   dataSource,
-                  keyWord,
+                  currentKeyWord,
                   {},
-                  stateCode,
+                  currentStateCode,
                 ),
               );
             }
@@ -392,15 +400,22 @@ const TableList: FC = () => {
                 params,
                 lang,
                 dataSource,
-                keyWord,
+                currentKeyWord,
                 {},
-                stateCode,
+                currentStateCode,
                 orderBy,
               ),
             );
           }
           return attachReviewState(
-            await getLifeCycleModelTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+            await getLifeCycleModelTableAll(
+              params,
+              sort,
+              lang,
+              dataSource,
+              tid ?? '',
+              currentStateCode,
+            ),
           );
         }}
         columns={processColumns}

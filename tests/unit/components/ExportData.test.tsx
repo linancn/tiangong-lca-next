@@ -1,15 +1,9 @@
-/**
- * Tests for ExportData component
- * Path: src/components/ExportData/index.tsx
- */
-
 import ExportData from '@/components/ExportData';
 import { submitTidasPackageExportTask } from '@/services/tidasPackage/taskCenter';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { message } from 'antd';
 
 type ReactNode = import('react').ReactNode;
-type TidasPackageRootTable = import('@/services/general/api').TidasPackageRootTable;
 
 type MockMessage = Record<'success' | 'error' | 'info' | 'warning' | 'loading', jest.Mock>;
 
@@ -77,15 +71,11 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
 const mockedSubmitTidasPackageExportTask = jest.mocked(submitTidasPackageExportTask);
 const mockMessage = message as unknown as MockMessage;
 
-const baseProps: {
-  tableName: TidasPackageRootTable;
-  id: string;
-  version: string;
-} = {
+const baseProps = {
   tableName: 'flows',
   id: 'test-id',
   version: 'v00000001',
-};
+} as const;
 
 const renderComponent = (props: Partial<typeof baseProps> = {}) =>
   render(<ExportData {...baseProps} {...props} />);
@@ -99,18 +89,10 @@ describe('ExportData Component', () => {
     jest.clearAllMocks();
     mockedSubmitTidasPackageExportTask.mockReturnValue({
       id: 'task-1',
-      sequence: 1,
-      kind: 'tidas_package_export',
-      state: 'running',
-      phase: 'submitting',
-      message: 'Submitting export task',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      rootCount: 1,
     } as any);
   });
 
-  it('submits a ZIP export task successfully for a selected root dataset', async () => {
+  it('submits a background export task and shows success feedback', async () => {
     renderComponent();
 
     expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
@@ -120,59 +102,60 @@ describe('ExportData Component', () => {
     expect(mockedSubmitTidasPackageExportTask).toHaveBeenCalledWith({
       roots: [
         {
-          table: baseProps.tableName,
-          id: baseProps.id,
-          version: baseProps.version,
+          table: 'flows',
+          id: 'test-id',
+          version: 'v00000001',
         },
       ],
     });
 
-    await waitFor(() => {
-      expect(mockMessage.success).toHaveBeenCalledTimes(1);
-    });
-
-    expect(mockMessage.success.mock.calls[0][0]).toBe(
-      'Export task submitted. Check the task center for progress and download.',
+    await waitFor(() =>
+      expect(mockMessage.success).toHaveBeenCalledWith(
+        'Export task submitted. Check the task center for progress and download.',
+      ),
     );
     expect(mockMessage.error).not.toHaveBeenCalled();
-
-    await waitFor(() => {
-      expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
-    });
+    expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
   });
 
-  it('uses lifecyclemodels as the export root table when exporting lifecycle models', async () => {
-    renderComponent({ tableName: 'lifecyclemodels' as const });
-    clickExportButton();
+  it('uses the provided root table when submitting lifecycle model exports', async () => {
+    renderComponent({ tableName: 'lifecyclemodels' });
 
-    await waitFor(() => {
-      expect(mockMessage.success).toHaveBeenCalledTimes(1);
-    });
+    clickExportButton();
 
     expect(mockedSubmitTidasPackageExportTask).toHaveBeenCalledWith({
       roots: [
         {
           table: 'lifecyclemodels',
-          id: baseProps.id,
-          version: baseProps.version,
+          id: 'test-id',
+          version: 'v00000001',
         },
       ],
     });
+    await waitFor(() => expect(mockMessage.success).toHaveBeenCalledTimes(1));
   });
 
-  it('shows error feedback when task submission throws', async () => {
-    mockedSubmitTidasPackageExportTask.mockImplementation(() => {
-      throw new Error('failure');
+  it('shows the thrown error message when task submission throws an Error', async () => {
+    mockedSubmitTidasPackageExportTask.mockImplementationOnce(() => {
+      throw new Error('network down');
     });
 
     renderComponent();
     clickExportButton();
 
-    await waitFor(() => {
-      expect(mockMessage.error).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('network down'));
+    expect(mockMessage.success).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the generic export error message for non-Error throws', async () => {
+    mockedSubmitTidasPackageExportTask.mockImplementationOnce(() => {
+      throw 'non-error failure';
     });
 
-    expect(mockMessage.error.mock.calls[0][0]).toBe('failure');
+    renderComponent();
+    clickExportButton();
+
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Export data failed'));
     expect(mockMessage.success).not.toHaveBeenCalled();
   });
 });

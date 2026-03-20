@@ -86,7 +86,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 defaultMessage='Target amount'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {refNode?.data?.targetAmount ?? '-'}
           </Descriptions.Item>
@@ -101,7 +101,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 defaultMessage='Original amount'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {refNode?.data?.originalAmount ?? '-'}
           </Descriptions.Item>
@@ -116,7 +116,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 defaultMessage='Scaling factor'
               />
             }
-            labelStyle={{ width: '140px' }}
+            styles={{ label: { width: '140px' } }}
           >
             {refNode?.data?.scalingFactor ?? '-'}
           </Descriptions.Item>
@@ -141,7 +141,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                     defaultMessage='Ref object id'
                   />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {refExchange?.referenceToFlowDataSet?.['@refObjectId'] ?? '-'}
               </Descriptions.Item>
@@ -163,7 +163,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               label={
                 <FormattedMessage id='pages.process.view.exchange.type' defaultMessage='Type' />
               }
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {refExchange?.referenceToFlowDataSet?.['@type'] ?? '-'}
             </Descriptions.Item>
@@ -173,7 +173,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             <Descriptions.Item
               key={0}
               label={<FormattedMessage id='pages.process.view.exchange.uri' defaultMessage='URI' />}
-              labelStyle={{ width: '140px' }}
+              styles={{ label: { width: '140px' } }}
             >
               {refExchange?.referenceToFlowDataSet?.['@uri'] ?? '-'}
             </Descriptions.Item>
@@ -183,7 +183,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             <Descriptions.Item
               key={0}
               label={<FormattedMessage id='pages.version' defaultMessage='Version' />}
-              labelStyle={{ width: '120px' }}
+              styles={{ label: { width: '120px' } }}
             >
               {refExchange?.referenceToFlowDataSet?.['@version'] ?? '-'}
             </Descriptions.Item>

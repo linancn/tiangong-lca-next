@@ -6,7 +6,14 @@
  * Since these are type definitions, tests verify type correctness and usage patterns.
  */
 
-import type { ContactDataSetObjectKeys, ContactTable, FormContact } from '@/services/contacts/data';
+import type {
+  ContactDataSetObjectKeys,
+  ContactDetailResponse,
+  ContactImportData,
+  ContactReference,
+  ContactTable,
+  FormContact,
+} from '@/services/contacts/data';
 import { createMockTableResponse } from '../../../helpers/testData';
 import type { Equal, ExpectTrue } from '../../../helpers/typeAssertions';
 
@@ -214,6 +221,73 @@ describe('Contacts Data Types (src/services/contacts/data.ts)', () => {
 
       expect(formData.contactInformation?.dataSetInformation?.email).toBe('newcontact@example.com');
       expect(formData.contactInformation?.dataSetInformation?.['common:shortName']).toHaveLength(2);
+    });
+
+    it('should support contact references, import payloads, and detail responses', () => {
+      const formState: FormContact = {
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-1',
+            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact 1' }],
+          } as any,
+        } as any,
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          } as any,
+        } as any,
+      };
+      const singleRef: ContactReference = {
+        '@refObjectId': 'contact-1',
+        '@type': 'contact data set',
+        '@uri': '../contacts/contact-1.xml',
+        '@version': '01.00.000',
+        'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Contact 1' }],
+      };
+      const multiRef: ContactReference = [
+        singleRef,
+        {
+          '@refObjectId': 'contact-2',
+          '@type': 'contact data set',
+          '@uri': '../contacts/contact-2.xml',
+          '@version': '02.00.000',
+          'common:shortDescription': [{ '@xml:lang': 'zh', '#text': '联系人 2' }],
+        },
+      ];
+      const importData: ContactImportData = [
+        {
+          contactDataSet: {
+            contactInformation: {
+              dataSetInformation: { 'common:UUID': 'contact-import-1' } as any,
+            } as any,
+          } as any,
+        },
+      ];
+      const detailResponse: ContactDetailResponse = {
+        success: true,
+        data: {
+          id: 'contact-1',
+          version: '01.00.000',
+          json: { contactDataSet: formState as any },
+          modifiedAt: '2026-03-13T00:00:00Z',
+          stateCode: 20,
+          ruleVerification: true,
+          userId: 'user-1',
+        },
+      };
+
+      expect(
+        ((multiRef as ContactReference[])[1] as Exclude<ContactReference, ContactReference[]>)[
+          '@refObjectId'
+        ],
+      ).toBe('contact-2');
+      expect(
+        importData[0].contactDataSet.contactInformation?.dataSetInformation?.['common:UUID'],
+      ).toBe('contact-import-1');
+      expect(detailResponse.data?.json?.contactDataSet).toBe(formState);
+      expect((singleRef as Exclude<ContactReference, ContactReference[]>)['@type']).toBe(
+        'contact data set',
+      );
     });
   });
 });

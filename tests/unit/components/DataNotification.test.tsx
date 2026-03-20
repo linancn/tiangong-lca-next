@@ -22,6 +22,8 @@ jest.mock('@/services/reviews/api', () => ({
   getNotifyReviews: jest.fn(),
 }));
 
+let mockIntlLocale = 'en';
+
 jest.mock('umi', () => ({
   useIntl: () => ({
     formatMessage: (
@@ -37,7 +39,7 @@ jest.mock('umi', () => ({
         return acc.replace(new RegExp(`{${key}}`, 'g'), String(value));
       }, message);
     },
-    locale: 'en',
+    locale: mockIntlLocale,
   }),
 }));
 
@@ -88,6 +90,7 @@ describe('DataNotification Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIntlLocale = 'en';
     mockGetNotifyReviews.mockResolvedValue(mockReviewData);
     onDataLoadedMock.mockResolvedValue(undefined);
   });
@@ -260,7 +263,7 @@ describe('DataNotification Component', () => {
     });
   });
 
-  it('should render empty string for missing modified date', async () => {
+  it('should render dash for missing modified date', async () => {
     const noDateData = {
       ...mockReviewData,
       data: [
@@ -280,8 +283,55 @@ describe('DataNotification Component', () => {
     );
 
     await waitFor(() => {
-      const table = screen.getByRole('table');
-      expect(table).toBeInTheDocument();
+      expect(screen.getByText('-')).toBeInTheDocument();
+    });
+  });
+
+  it('should render dash for invalid modified date strings', async () => {
+    const invalidDateData = {
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          modifiedAt: 'not-a-date',
+        },
+      ],
+      page: 1,
+    };
+    mockGetNotifyReviews.mockResolvedValue(invalidDateData);
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('-')).toBeInTheDocument();
+    });
+  });
+
+  it('should render dash when modified date is undefined', async () => {
+    const undefinedDateData = {
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          modifiedAt: undefined,
+        },
+      ],
+      page: 1,
+    };
+    mockGetNotifyReviews.mockResolvedValue(undefinedDateData);
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('-')).toBeInTheDocument();
     });
   });
 
@@ -407,6 +457,27 @@ describe('DataNotification Component', () => {
     });
   });
 
+  it('should tolerate successful responses with no rows and zero total', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      success: true,
+      data: undefined,
+      total: 0,
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(onDataLoadedMock).toHaveBeenCalledTimes(1);
+      expect(screen.getAllByText('No data').length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText('View')).not.toBeInTheDocument();
+  });
+
   it('should render tooltip with reject reason', async () => {
     render(
       <ConfigProvider>
@@ -447,5 +518,93 @@ describe('DataNotification Component', () => {
     await waitFor(() => {
       expect(screen.getByText('Test Process')).toBeInTheDocument();
     });
+  });
+
+  it('should render zh names when locale is zh-CN and fall back to the first entry when zh is missing', async () => {
+    mockIntlLocale = 'zh-CN';
+    const zhPreferredData = {
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          name: [
+            { '@xml:lang': 'zh', '#text': '测试流程' },
+            { '@xml:lang': 'en', '#text': 'Test Process' },
+          ],
+        },
+        {
+          ...mockReviewData.data[1],
+          name: [{ '@xml:lang': 'en', '#text': 'Fallback English First' }],
+        },
+      ],
+      page: 1,
+    };
+    mockGetNotifyReviews.mockResolvedValue(zhPreferredData);
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('测试流程')).toBeInTheDocument();
+      expect(screen.getByText('Fallback English First')).toBeInTheDocument();
+    });
+  });
+
+  it('should fall back to the first name entry when english is missing', async () => {
+    const fallbackNameData = {
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          json: {
+            data: { id: 'process-3', version: '3.0.0' },
+          },
+          name: [{ '@xml:lang': 'zh', '#text': 'Only Chinese Name' }],
+        },
+      ],
+      page: 1,
+    };
+    mockGetNotifyReviews.mockResolvedValue(fallbackNameData);
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Only Chinese Name')).toBeInTheDocument();
+      expect(screen.getByText('Approved')).toBeInTheDocument();
+    });
+  });
+
+  it('does not call onDataLoaded when only pagination changes', async () => {
+    const paginatedData = {
+      ...mockReviewData,
+      total: 25,
+      page: 1,
+    };
+    mockGetNotifyReviews.mockResolvedValue(paginatedData);
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(onDataLoadedMock).toHaveBeenCalledTimes(1);
+    });
+
+    const nextButton = await screen.findByTitle('Next Page');
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+      expect(mockGetNotifyReviews).toHaveBeenCalledWith({ pageSize: 10, current: 2 }, 'en', 3);
+    });
+    expect(onDataLoadedMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -22,32 +22,23 @@ const LCIACacheMonitor = () => {
         };
 
         // Check if we need to cache
-        let shouldCache = false;
-        if (!cachedManifest) {
-          shouldCache = true;
-        } else {
-          if (cachedManifest.version !== currentManifest.version) {
-            shouldCache = true;
-          } else if (
-            JSON.stringify(cachedManifest.files) !== JSON.stringify(currentManifest.files)
-          ) {
-            shouldCache = true;
-          } else if (!cachedManifest.decompressed) {
-            shouldCache = true;
-          } else {
+        if (cachedManifest) {
+          const manifestChanged =
+            cachedManifest.version !== currentManifest.version ||
+            JSON.stringify(cachedManifest.files) !== JSON.stringify(currentManifest.files) ||
+            !cachedManifest.decompressed;
+
+          if (!manifestChanged) {
             const hoursSinceCache = (Date.now() - cachedManifest.cachedAt) / (1000 * 60 * 60);
-            if (hoursSinceCache > 24) {
-              shouldCache = true;
-            } else {
+
+            if (hoursSinceCache <= 24) {
               // Verify that all files are actually in IndexedDB
               const cachedFiles = await getCachedMethodList();
               const missingFiles = currentManifest.files.filter(
                 (file) => !cachedFiles.includes(file),
               );
 
-              if (missingFiles.length > 0) {
-                shouldCache = true;
-              } else {
+              if (missingFiles.length === 0) {
                 console.log('✅ LCIA methods cache is up to date.');
                 return;
               }
@@ -55,19 +46,12 @@ const LCIACacheMonitor = () => {
           }
         }
 
-        if (!shouldCache) return;
-
         console.log('🎯 Starting LCIA methods caching...');
         let successCount = 0;
         let errorCount = 0;
 
-        // Process files in batches to avoid overwhelming the browser
-        const batchSize = 3;
-        for (let i = 0; i < currentManifest.files.length; i += batchSize) {
-          const batch = currentManifest.files.slice(i, i + batchSize);
-
-          // Process batch in parallel
-          const batchPromises = batch.map(async (file) => {
+        const results = await Promise.all(
+          currentManifest.files.map(async (file) => {
             try {
               const success = await cacheAndDecompressMethod(file);
               return success;
@@ -75,26 +59,14 @@ const LCIACacheMonitor = () => {
               console.error(`Failed to cache ${file}:`, error);
               return false;
             }
-          });
+          }),
+        );
 
-          const results = await Promise.all(batchPromises);
-
-          // Update counters based on results
-          for (const success of results) {
-            if (success) {
-              successCount++;
-            } else {
-              errorCount++;
-            }
-          }
-
-          // Small delay between batches
-          if (i + batchSize < currentManifest.files.length) {
-            await new Promise<void>((resolve) => {
-              setTimeout(() => {
-                resolve();
-              }, 100);
-            });
+        for (const success of results) {
+          if (success) {
+            successCount++;
+          } else {
+            errorCount++;
           }
         }
 

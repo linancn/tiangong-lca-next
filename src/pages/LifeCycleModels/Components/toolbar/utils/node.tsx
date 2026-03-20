@@ -67,7 +67,7 @@ export const nodeTitleTool = (
         },
         {
           tagName: 'text',
-          textContent: genNodeLabel(title ?? '', lang, width),
+          textContent: genNodeLabel(title, lang, width),
           selector: 'text',
           attrs: {
             fill: 'white',

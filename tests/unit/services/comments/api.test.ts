@@ -13,6 +13,8 @@ import {
   addCommentApi,
   getCommentApi,
   getPendingComment,
+  getRejectedComment,
+  getRejectedCommentsByReviewIds,
   getReviewedComment,
   getReviewerIdsByReviewId,
   getUserManageComments,
@@ -186,6 +188,30 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       consoleSpy.mockRestore();
     });
+
+    it('falls back to an empty bearer token when the session access token is missing', async () => {
+      (mockAuthGetSession as jest.Mock).mockResolvedValue({
+        data: { session: {} },
+      });
+      (mockFunctionsInvoke as jest.Mock).mockResolvedValue({
+        data: { success: true },
+        error: null,
+      });
+
+      await updateCommentApi('review-456', { content: 'Updated' }, 'admin-rejected');
+
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_comment', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          id: 'review-456',
+          data: { content: 'Updated' },
+          tabType: 'admin-rejected',
+        },
+        region: 'us-east-1',
+      });
+    });
   });
 
   describe('getCommentApi', () => {
@@ -222,6 +248,48 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       const result = await getCommentApi('review-123', 'review');
 
       expect(result).toEqual({ error: true, data: [] });
+    });
+
+    it('fetches admin-rejected comments without narrowing to the current reviewer', async () => {
+      mockGetUserId.mockResolvedValue('current-user-id');
+
+      const mockData = [{ id: 'comment-1', content: 'Admin rejected' }];
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEqReviewId = jest.fn().mockResolvedValue({ data: mockData, error: null });
+
+      (mockFrom as jest.Mock).mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEqReviewId,
+        }),
+      });
+
+      const result = await getCommentApi('review-123', 'admin-rejected');
+
+      expect(mockGetUserId).toHaveBeenCalledTimes(1);
+      expect(mockEqReviewId).toHaveBeenCalledWith('review_id', 'review-123');
+      expect(result).toEqual({ data: mockData, error: null });
+    });
+
+    it('treats reviewer-rejected comments the same as review comments for reviewer filtering', async () => {
+      mockGetUserId.mockResolvedValue('current-user-id');
+
+      const mockData = [{ id: 'comment-2', content: 'Rejected by reviewer' }];
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEqReviewId = jest.fn().mockReturnThis();
+      const mockEqReviewerId = jest.fn().mockResolvedValue({ data: mockData, error: null });
+
+      (mockFrom as jest.Mock).mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEqReviewId.mockReturnValue({
+            eq: mockEqReviewerId,
+          }),
+        }),
+      });
+
+      const result = await getCommentApi('review-123', 'reviewer-rejected');
+
+      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
+      expect(result).toEqual({ data: mockData, error: null });
     });
 
     it('fetches all comments for assigned action type', async () => {
@@ -293,6 +361,22 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       expect(builder.range).toHaveBeenCalledWith(0, 9);
     });
 
+    it('supports explicit paging and ascending sorting for reviewed comments', async () => {
+      const supabaseResult = { data: [{ review_id: 'review-3' }], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getReviewedComment(
+        { current: 2, pageSize: 5 },
+        { created_at: 'ascend' } as any,
+        'specific-user-id',
+      );
+
+      expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: true });
+      expect(builder.range).toHaveBeenCalledWith(5, 9);
+      expect(result).toEqual(supabaseResult);
+    });
+
     it('returns error when user ID is not available', async () => {
       mockGetUserId.mockResolvedValue('');
 
@@ -326,6 +410,51 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       mockGetUserId.mockResolvedValue('');
 
       const result = await getPendingComment();
+
+      expect(result).toEqual({ error: true, data: [] });
+    });
+
+    it('supports explicit paging and ascending sorting for pending comments', async () => {
+      const supabaseResult = { data: [{ review_id: 'review-pending' }], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getPendingComment(
+        { current: 3, pageSize: 2 },
+        { created_at: 'ascend' } as any,
+        'specific-user-id',
+      );
+
+      expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: true });
+      expect(builder.range).toHaveBeenCalledWith(4, 5);
+      expect(result).toEqual(supabaseResult);
+    });
+  });
+
+  describe('getRejectedComment', () => {
+    it('fetches rejected comments for the reviewer with paging and sort applied', async () => {
+      const supabaseResult = { data: [{ review_id: 'review-rejected' }], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getRejectedComment(
+        { current: 2, pageSize: 4 },
+        { created_at: 'ascend' } as any,
+        'specific-user-id',
+      );
+
+      expect(builder.eq).toHaveBeenNthCalledWith(1, 'reviewer_id', 'specific-user-id');
+      expect(builder.eq).toHaveBeenNthCalledWith(2, 'state_code', -1);
+      expect(builder.eq).toHaveBeenNthCalledWith(3, 'reviews.state_code', -1);
+      expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: true });
+      expect(builder.range).toHaveBeenCalledWith(4, 7);
+      expect(result).toEqual(supabaseResult);
+    });
+
+    it('returns error when user ID is not available for rejected comments', async () => {
+      mockGetUserId.mockResolvedValue('');
+
+      const result = await getRejectedComment();
 
       expect(result).toEqual({ error: true, data: [] });
     });
@@ -399,6 +528,30 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       expect(mockSelect).toHaveBeenCalledWith('state_code,reviewer_id');
       expect(mockEq).toHaveBeenCalledWith('review_id', 'review-123');
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getRejectedCommentsByReviewIds', () => {
+    it('fetches rejected comment payloads for the provided review ids', async () => {
+      const mockResult = {
+        data: [{ json: { reason: 'Rejected' } }],
+        error: null,
+      };
+      const builder: any = {
+        select: jest.fn().mockReturnThis(),
+        in: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue(mockResult),
+      };
+
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getRejectedCommentsByReviewIds(['review-1', 'review-2']);
+
+      expect(mockFrom).toHaveBeenCalledWith('comments');
+      expect(builder.select).toHaveBeenCalledWith('json');
+      expect(builder.in).toHaveBeenCalledWith('review_id', ['review-1', 'review-2']);
+      expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+      expect(result).toEqual(mockResult);
     });
   });
 });

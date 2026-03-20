@@ -193,14 +193,14 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                       defaultMessage='Ref object id'
                     />
                   }
-                  labelStyle={{ width: '140px' }}
+                  styles={{ label: { width: '140px' } }}
                 >
                   {refFlow?.['@refObjectId'] ?? '-'}
                 </Descriptions.Item>
               </Descriptions>
               {refFlow?.['@refObjectId'] && (
                 <FlowsView
-                  id={refFlow?.['@refObjectId'] ?? ''}
+                  id={refFlow['@refObjectId']}
                   version={refFlow?.['@version'] ?? ''}
                   lang={lang}
                   buttonType='text'
@@ -215,7 +215,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 label={
                   <FormattedMessage id='pages.process.view.exchange.type' defaultMessage='Type' />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {refFlow?.['@type'] ?? '-'}
               </Descriptions.Item>
@@ -227,7 +227,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 label={
                   <FormattedMessage id='pages.process.view.exchange.uri' defaultMessage='URI' />
                 }
-                labelStyle={{ width: '140px' }}
+                styles={{ label: { width: '140px' } }}
               >
                 {refFlow?.['@uri'] ?? '-'}
               </Descriptions.Item>
@@ -237,7 +237,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               <Descriptions.Item
                 key={0}
                 label={<FormattedMessage id='pages.version' defaultMessage='Version' />}
-                labelStyle={{ width: '120px' }}
+                styles={{ label: { width: '120px' } }}
               >
                 {refFlow?.['@version'] ?? '-'}
               </Descriptions.Item>

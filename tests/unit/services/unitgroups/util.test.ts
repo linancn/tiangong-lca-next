@@ -226,6 +226,38 @@ describe('Unit Group Utility Functions', () => {
         },
       ]);
     });
+
+    it('should keep all units as non-reference when no reference unit is defined', () => {
+      const sample = createSampleUnitGroupData();
+      delete sample.unitGroupInformation.quantitativeReference;
+
+      const result = genUnitGroupFromData(sample);
+
+      expect(result.units?.unit).toEqual([
+        expect.objectContaining({
+          '@dataSetInternalID': 'u-0',
+          quantitativeReference: false,
+        }),
+        expect.objectContaining({
+          '@dataSetInternalID': 'u-1',
+          quantitativeReference: false,
+        }),
+      ]);
+    });
+
+    it('should default missing UUIDs and preserve permanent dataset URIs from persisted data', () => {
+      const sample = createSampleUnitGroupData();
+      delete sample.unitGroupInformation.dataSetInformation['common:UUID'];
+      sample.administrativeInformation.publicationAndOwnership['common:permanentDataSetURI'] =
+        'https://lcdn.tiangong.earth/unitgroups/original';
+
+      const result = genUnitGroupFromData(sample);
+
+      expect(result.unitGroupInformation?.dataSetInformation?.['common:UUID']).toBe('-');
+      expect(
+        result.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],
+      ).toBe('https://lcdn.tiangong.earth/unitgroups/original');
+    });
   });
 
   describe('genUnitGroupJsonOrdered', () => {
@@ -308,6 +340,41 @@ describe('Unit Group Utility Functions', () => {
         ),
       ).toBe(false);
     });
+
+    it('should drop empty fallback objects when ordered output is built from sparse form data', () => {
+      const result = genUnitGroupJsonOrdered('sparse-unit-group-id', {
+        unitGroupInformation: {
+          dataSetInformation: {},
+        },
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: {},
+          },
+        },
+        administrativeInformation: {
+          dataEntryBy: {},
+          publicationAndOwnership: {},
+        },
+      });
+
+      expect(result.unitGroupDataSet.unitGroupInformation.dataSetInformation['common:UUID']).toBe(
+        'sparse-unit-group-id',
+      );
+      expect(result.unitGroupDataSet.unitGroupInformation.dataSetInformation.email).toBeUndefined();
+      expect(result.unitGroupDataSet.unitGroupInformation.quantitativeReference).toBeUndefined();
+      expect(result.unitGroupDataSet.modellingAndValidation).toBeUndefined();
+      expect(
+        result.unitGroupDataSet.administrativeInformation?.dataEntryBy?.[
+          'common:referenceToDataSetFormat'
+        ],
+      ).toBeUndefined();
+      expect(
+        result.unitGroupDataSet.administrativeInformation?.publicationAndOwnership?.[
+          'common:dataSetVersion'
+        ],
+      ).toBeUndefined();
+      expect(result.unitGroupDataSet.units).toBeUndefined();
+    });
   });
 
   describe('genUnitTableData', () => {
@@ -333,6 +400,58 @@ describe('Unit Group Utility Functions', () => {
           quantitativeReference: false,
         },
       ]);
+    });
+
+    it('should return an empty object when no unit data is supplied', () => {
+      expect(genUnitTableData(undefined, 'en')).toEqual({});
+    });
+
+    it('should fall back to placeholder values for sparse unit rows', () => {
+      const rows = genUnitTableData(
+        [
+          {
+            '@dataSetInternalID': 'u-2',
+          },
+        ],
+        'en',
+      );
+
+      expect(rows).toEqual([
+        {
+          dataSetInternalID: 'u-2',
+          name: '-',
+          generalComment: '-',
+          quantitativeReference: false,
+          meanValue: '-',
+        },
+      ]);
+    });
+  });
+
+  describe('additional edge cases', () => {
+    it('should omit quantitativeReference when no unit is marked as reference in ordered output', () => {
+      const sample = createSampleUnitGroupData();
+      sample.unitGroupInformation.quantitativeReference.referenceToReferenceUnit = 'missing';
+
+      const formData = genUnitGroupFromData(sample);
+      const result = genUnitGroupJsonOrdered('new-unit-group-id', formData);
+
+      expect(result.unitGroupDataSet.unitGroupInformation.quantitativeReference).toBeUndefined();
+    });
+
+    it('should keep an existing permanentDataSetURI untouched in ordered output', () => {
+      const sample = createSampleUnitGroupData();
+      sample.administrativeInformation.publicationAndOwnership['common:permanentDataSetURI'] =
+        'https://lcdn.tiangong.earth/unitgroups/ug-1';
+
+      const formData = genUnitGroupFromData(sample);
+      const result = genUnitGroupJsonOrdered('new-unit-group-id', formData);
+
+      expect(
+        result.unitGroupDataSet.administrativeInformation?.publicationAndOwnership?.[
+          'common:permanentDataSetURI'
+        ],
+      ).toBe('https://lcdn.tiangong.earth/unitgroups/ug-1');
     });
   });
 });

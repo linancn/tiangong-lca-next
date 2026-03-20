@@ -167,4 +167,50 @@ describe('ReviewDetail component', () => {
       }),
     );
   });
+
+  it('falls back to placeholder values when log entries are incomplete', async () => {
+    mockGetReviewsByProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'review-2',
+          json: {
+            logs: [{ time: undefined, action: undefined, user: {} }],
+          },
+        },
+      ],
+      error: null,
+    });
+
+    render(<ReviewDetail {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    let result;
+    await act(async () => {
+      result = await mockLastRequest?.({});
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: true,
+        data: [
+          {
+            key: 'review-2-0',
+            operator: '-',
+            time: '-',
+            action: '-',
+          },
+        ],
+      }),
+    );
+  });
+
+  it('closes the drawer when the close button is clicked', () => {
+    render(<ReviewDetail {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByRole('dialog', { name: 'Review Logs' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button')[1]);
+    expect(screen.queryByRole('dialog', { name: 'Review Logs' })).not.toBeInTheDocument();
+  });
 });

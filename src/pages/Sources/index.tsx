@@ -19,8 +19,13 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { SourceImportData, SourceTable } from '@/services/sources/data';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -55,6 +60,8 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const stateCodeRef = useRef<string | number>('all');
+  const keyWordRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: SourceTable[];
     page?: number;
@@ -280,6 +287,7 @@ const TableList: FC = () => {
     });
   }, []);
   const onSearch: SearchProps['onSearch'] = (value) => {
+    keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
@@ -339,8 +347,9 @@ const TableList: FC = () => {
             return [
               <TableFilter
                 key={2}
-                onChange={async (val) => {
-                  await setStateCode(val);
+                onChange={(val) => {
+                  stateCodeRef.current = val;
+                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -363,18 +372,34 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (keyWord.length > 0) {
+          const currentKeyWord = keyWordRef.current || keyWord;
+          const currentStateCode = stateCodeRef.current ?? stateCode;
+          if (currentKeyWord.length > 0) {
             if (openAI) {
               return attachReviewState(
-                await source_hybrid_search(params, lang, dataSource, keyWord, {}, stateCode),
+                await source_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  currentKeyWord,
+                  {},
+                  currentStateCode,
+                ),
               );
             }
             return attachReviewState(
-              await getSourceTablePgroongaSearch(params, lang, dataSource, keyWord, {}, stateCode),
+              await getSourceTablePgroongaSearch(
+                params,
+                lang,
+                dataSource,
+                currentKeyWord,
+                {},
+                currentStateCode,
+              ),
             );
           }
           return attachReviewState(
-            await getSourceTableAll(params, sort, lang, dataSource, tid ?? '', stateCode),
+            await getSourceTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode),
           );
         }}
         columns={sourceColumns}
