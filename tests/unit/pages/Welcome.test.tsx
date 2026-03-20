@@ -54,6 +54,7 @@ const mockGetLang = getLang as jest.MockedFunction<any>;
 const mockGetLangText = getLangText as jest.MockedFunction<any>;
 const mockGetTeams = getTeams as jest.MockedFunction<any>;
 const mockGetThumbFileUrls = getThumbFileUrls as jest.MockedFunction<any>;
+const originalLocation = window.location;
 
 const teamsPayload = [
   {
@@ -75,10 +76,30 @@ const teamsPayload = [
 ];
 
 describe('Welcome page', () => {
+  beforeAll(() => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        href: 'http://localhost:8000/',
+        assign: jest.fn(),
+        replace: jest.fn(),
+      } as unknown as Location,
+      writable: true,
+    });
+  });
+
+  afterAll(() => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
+    window.location.href = 'http://localhost:8000/';
     mockLocale = 'en-US';
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => {
@@ -140,6 +161,23 @@ describe('Welcome page', () => {
     expect(mockGetTeams).toHaveBeenCalledTimes(3);
   });
 
+  it('navigates to the team models page when an ecosystem card is clicked', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TianGong Data Ecosystem' }));
+
+    await waitFor(() => expect(screen.getByText('Team Alpha')).toBeInTheDocument());
+
+    const teamCard = screen.getByText('Team Alpha').closest('.ant-card');
+    expect(teamCard).not.toBeNull();
+    await user.click(teamCard as Element);
+
+    expect(window.location.href).toContain('/tgdata/models?tid=team-1');
+  });
+
   it('renders an empty ecosystem list without thumbnail lookups when no teams are returned', async () => {
     const user = userEvent.setup();
     mockGetTeams.mockResolvedValue({
@@ -174,5 +212,120 @@ describe('Welcome page', () => {
       'href',
       'https://tidas.tiangong.earth/docs/intro',
     );
+  });
+
+  it('uses the zh light-mode TIDAS asset when dark mode is off', async () => {
+    const user = userEvent.setup();
+    mockLocale = 'zh-CN';
+    mockGetLang.mockReturnValue('zh');
+    localStorage.setItem('isDarkMode', 'false');
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TIDAS 数据体系架构' }));
+
+    const tidasImage = await screen.findByAltText(/天工LCA数据平台/);
+    expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN.svg');
+  });
+
+  it('falls back to english TIDAS content and a zero team count when locale and team data are missing', async () => {
+    const user = userEvent.setup();
+    mockLocale = 'fr-FR';
+    mockGetLang.mockReturnValue('fr');
+    localStorage.setItem('isDarkMode', 'true');
+    mockGetTeams.mockResolvedValue({ success: true });
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('0')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+
+    const tidasImage = await screen.findByAltText(/TianGong LCA Data Platform/i);
+    expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-en-dark.svg');
+    expect(screen.getByRole('link', { name: 'Learn more' })).toHaveAttribute(
+      'href',
+      'https://tidas.tiangong.earth/en/docs/intro',
+    );
+  });
+
+  it('prefers inline dark preview logos and renders ecosystem cards without team ids', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem('isDarkMode', 'true');
+    mockGetTeams.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: 'team-dark',
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Team Dark' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Dark description' }],
+            previewLightUrl: 'https://cdn.example/light-preview.png',
+            previewDarkUrl: 'https://cdn.example/dark-preview.png',
+          },
+        },
+        {
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Team Without Id' }],
+            description: [{ '@xml:lang': 'en', '#text': 'No id description' }],
+          },
+        },
+      ],
+    });
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TianGong Data Ecosystem' }));
+
+    await waitFor(() => expect(screen.getByText('Team Dark')).toBeInTheDocument());
+    expect(screen.getByText('Team Without Id')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Team Dark' })).toHaveAttribute(
+      'src',
+      'https://cdn.example/dark-preview.png',
+    );
+    expect(mockGetThumbFileUrls).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the viewport width when the computed modal width would be non-positive', async () => {
+    const user = userEvent.setup();
+    const originalInnerWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 0,
+      writable: true,
+    });
+
+    try {
+      renderWithProviders(<Welcome />);
+
+      await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+      await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        value: originalInnerWidth,
+        writable: true,
+      });
+    }
+  });
+
+  it('closes the TIDAS modal from the modal close control', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

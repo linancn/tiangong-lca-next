@@ -353,6 +353,15 @@ jest.mock('@/pages/Sources/Components/form', () => {
           <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
             switch-source-tab
           </button>
+          <button
+            type='button'
+            onClick={() => {
+              context.setFieldValue?.(['administrativeInformation'], undefined);
+              onData?.();
+            }}
+          >
+            clear-source-active-tab
+          </button>
           {showRules ? <span>source-rules-visible</span> : null}
         </div>
       );
@@ -905,6 +914,134 @@ describe('SourceEdit component', () => {
     expect(mockGetErrRefTab).toHaveBeenCalled();
   });
 
+  it('handles missing detail payloads and undefined problem nodes during source data checks', async () => {
+    const user = userEvent.setup();
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        json: {},
+      },
+    });
+    mockUpdateSource.mockResolvedValueOnce({
+      data: [{}],
+    });
+    mockFindProblemNodes.mockReturnValueOnce(undefined);
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+  });
+
+  it('uses the false default when rule verification is missing during data checks', async () => {
+    const user = userEvent.setup();
+    mockUpdateSource.mockResolvedValueOnce({
+      data: [{}],
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(mockCheckData).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Array),
+        expect.any(Array),
+        expect.objectContaining({
+          findProblemNodes: expect.any(Function),
+        }),
+      ),
+    );
+  });
+
+  it('adds unique error tab names for unverified source references', async () => {
+    const user = userEvent.setup();
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'contact-1', '@version': '1.0.0' });
+    });
+    mockFindProblemNodes.mockReturnValue([]);
+    mockGetErrRefTab.mockReturnValue('administrativeInformation');
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'administrativeInformation：Data check failed!',
+      ),
+    );
+  });
+
+  it('adds unique error tab names for source problem nodes', async () => {
+    const user = userEvent.setup();
+    mockFindProblemNodes.mockReturnValueOnce([
+      {
+        '@refObjectId': 'process-1',
+        '@version': '3.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockGetErrRefTab.mockReturnValue('modellingAndValidation');
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'modellingAndValidation：Data check failed!',
+      ),
+    );
+  });
+
   it('stops source data checks when the background save fails', async () => {
     const user = userEvent.setup();
     mockUpdateSource.mockResolvedValueOnce({
@@ -1052,5 +1189,44 @@ describe('SourceEdit component', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Edit Source' })).not.toBeInTheDocument(),
     );
+  });
+
+  it('falls back to the default edit message when buttonType is empty', async () => {
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType=''
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+  });
+
+  it('keeps saving stable when the active source tab value is cleared', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'switch-source-tab' }));
+    await user.click(within(drawer).getByRole('button', { name: 'clear-source-active-tab' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(mockUpdateSource).toHaveBeenCalled());
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved Successfully!');
   });
 });

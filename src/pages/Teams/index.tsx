@@ -275,12 +275,21 @@ const Team = () => {
             } else {
               setDarkLogo([]);
             }
-            return;
+            return null;
           }
 
           try {
             const suffix: string = file.name.split('.').pop() || '';
             const { data } = await uploadLogoApi(file.name, file, suffix);
+            if (!data?.path) {
+              message.error(
+                intl.formatMessage({
+                  id: 'teams.logo.uploadError',
+                  defaultMessage: 'Failed to upload logo.',
+                }),
+              );
+              return null;
+            }
             if (type === 'lightLogo') {
               setLightLogoError(false);
               setBeforeLightLogoPath(data?.path);
@@ -292,9 +301,17 @@ const Team = () => {
             }
           } catch (error) {
             console.log('upload error', error);
+            message.error(
+              intl.formatMessage({
+                id: 'teams.logo.uploadError',
+                defaultMessage: 'Failed to upload logo.',
+              }),
+            );
+            return null;
           }
         }
       }
+      return null;
     };
 
     const handleRemoveLogo = async (type: 'lightLogo' | 'darkLogo') => {
@@ -328,12 +345,20 @@ const Team = () => {
 
         setTeamInfoSpinning(true);
 
+        const needsLightLogoUpload = lightLogo.length > 0 && typeof lightLogo[0] !== 'string';
+        const needsDarkLogoUpload = darkLogo.length > 0 && typeof darkLogo[0] !== 'string';
         const lightLogoPath =
           typeof lightLogo[0] === 'string'
             ? lightLogo[0]
             : await uploadLogo(lightLogo, 'lightLogo');
+        if (needsLightLogoUpload && !lightLogoPath) {
+          return;
+        }
         const darkLogoPath =
           typeof darkLogo[0] === 'string' ? darkLogo[0] : await uploadLogo(darkLogo, 'darkLogo');
+        if (needsDarkLogoUpload && !darkLogoPath) {
+          return;
+        }
         values.lightLogo =
           typeof lightLogo[0] === 'string' ? lightLogo[0] : `../sys-files/${lightLogoPath}`;
         values.darkLogo =
@@ -348,8 +373,9 @@ const Team = () => {
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        setTeamInfoSpinning(false);
       }
-      setTeamInfoSpinning(false);
     };
 
     return (

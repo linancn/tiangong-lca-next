@@ -58,13 +58,17 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'unknown'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
-            close
+            drawer-on-close
           </button>
         </header>
         <div>{children}</div>
@@ -213,8 +217,73 @@ describe('ReviewExchangeView', () => {
     expect(screen.getByText('1.25')).toBeInTheDocument();
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
     expect(screen.getByText('quantitative-no')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'body');
 
     await userEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes through the drawer onClose handler', async () => {
+    render(<ProcessExchangeView id='ex-1' data={[baseExchange]} lang='en' buttonType='icon' />);
+
+    await userEvent.click(screen.getByRole('button', { name: /view-icon/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'drawer-on-close' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('falls back to placeholder values when the selected exchange id is missing', async () => {
+    render(
+      <ProcessExchangeView id='missing-id' data={[baseExchange]} lang='en' buttonType='icon' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view-icon/i }));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('flow-description')).toHaveTextContent('en:undefined:Flow');
+  });
+
+  it('renders placeholder minimum and maximum amounts for uniform uncertainty rows', async () => {
+    render(
+      <ProcessExchangeView
+        id='ex-1'
+        data={[
+          {
+            ...baseExchange,
+            uncertaintyDistributionType: 'uniform',
+            minimumAmount: undefined,
+            maximumAmount: undefined,
+          },
+        ]}
+        lang='en'
+        buttonType='text'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view/i }));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+  });
+
+  it('renders placeholder relative deviation when normal uncertainty omits it', async () => {
+    render(
+      <ProcessExchangeView
+        id='ex-1'
+        data={[
+          {
+            ...baseExchange,
+            uncertaintyDistributionType: 'normal',
+            relativeStandardDeviation95In: undefined,
+          },
+        ]}
+        lang='en'
+        buttonType='text'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view/i }));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });
 });
