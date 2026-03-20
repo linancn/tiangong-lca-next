@@ -15,7 +15,19 @@ import {
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Empty, List, Modal, Popover, Space, Tag, Tooltip, Typography } from 'antd';
+import {
+  Badge,
+  Button,
+  Empty,
+  List,
+  Modal,
+  Popover,
+  Space,
+  Tag,
+  Tooltip,
+  Typography,
+  theme,
+} from 'antd';
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { useIntl } from 'umi';
 
@@ -136,12 +148,11 @@ type PhaseDurationSegment = {
 };
 
 const PHASE_ORDER: LcaTrackedTaskPhase[] = ['submitting', 'building_snapshot', 'solving'];
-const PHASE_COLOR: Record<LcaTrackedTaskPhase, string> = {
-  submitting: '#8c8c8c',
-  building_snapshot: '#1677ff',
-  solving: '#52c41a',
-};
-function timelineSegments(task: LcaBackgroundTask, intl: IntlShapeLike): PhaseDurationSegment[] {
+function timelineSegments(
+  task: LcaBackgroundTask,
+  intl: IntlShapeLike,
+  phaseColors: Record<LcaTrackedTaskPhase, string>,
+): PhaseDurationSegment[] {
   const phaseText: Record<LcaTrackedTaskPhase, string> = {
     submitting: intl.formatMessage({
       id: 'pages.process.lca.taskCenter.phase.submitting',
@@ -173,7 +184,7 @@ function timelineSegments(task: LcaBackgroundTask, intl: IntlShapeLike): PhaseDu
   const segments = PHASE_ORDER.map((phase) => ({
     phase,
     label: phaseText[phase],
-    color: PHASE_COLOR[phase],
+    color: phaseColors[phase],
     durationMs: totals[phase],
   })).filter((item) => item.durationMs > 0);
   if (segments.length > 0) {
@@ -184,7 +195,7 @@ function timelineSegments(task: LcaBackgroundTask, intl: IntlShapeLike): PhaseDu
     {
       phase: fallbackPhase,
       label: phaseText[fallbackPhase],
-      color: PHASE_COLOR[fallbackPhase],
+      color: phaseColors[fallbackPhase],
       durationMs: 0,
     },
   ];
@@ -194,7 +205,13 @@ const TaskTimeline: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> =
   task,
   intl,
 }) => {
-  const segments = timelineSegments(task, intl);
+  const { token } = theme.useToken();
+  const phaseColors: Record<LcaTrackedTaskPhase, string> = {
+    submitting: token.colorTextTertiary,
+    building_snapshot: token.colorPrimary,
+    solving: token.colorSuccess,
+  };
+  const segments = timelineSegments(task, intl, phaseColors);
   if (segments.length === 0) {
     return null;
   }
@@ -227,7 +244,7 @@ const TaskTimeline: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> =
           display: 'flex',
           borderRadius: 99,
           overflow: 'hidden',
-          background: '#f0f0f0',
+          background: token.colorFillSecondary,
         }}
       >
         {segments.map((segment) => {

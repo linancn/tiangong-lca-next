@@ -179,6 +179,13 @@ jest.mock('antd', () => {
   Empty.PRESENTED_IMAGE_SIMPLE = 'empty';
 
   const Spin = ({ children }: any) => <div>{children}</div>;
+  const theme = {
+    useToken: () => ({
+      token: {
+        colorTextTertiary: '#595959',
+      },
+    }),
+  };
 
   return {
     __esModule: true,
@@ -191,6 +198,7 @@ jest.mock('antd', () => {
     Modal,
     Spin,
     message,
+    theme,
   };
 });
 

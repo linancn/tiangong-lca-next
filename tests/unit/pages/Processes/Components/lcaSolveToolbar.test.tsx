@@ -253,6 +253,14 @@ jest.mock('antd', () => {
   const Typography = {
     Text: ({ children }: { children: ReactNode }) => <span>{children}</span>,
   };
+  const theme = {
+    useToken: () => ({
+      token: {
+        colorBorderSecondary: '#f0f0f0',
+        colorFillAlter: '#fafafa',
+      },
+    }),
+  };
 
   const message = {
     success: jest.fn(),
@@ -275,6 +283,7 @@ jest.mock('antd', () => {
     Space,
     Typography,
     message,
+    theme,
   };
 });
 

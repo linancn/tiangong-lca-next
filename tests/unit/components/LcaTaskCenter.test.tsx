@@ -98,6 +98,16 @@ jest.mock('antd', () => {
   const Typography = {
     Text: ({ children }: any) => <span>{children}</span>,
   };
+  const theme = {
+    useToken: () => ({
+      token: {
+        colorFillSecondary: '#fafafa',
+        colorTextTertiary: '#595959',
+        colorPrimary: '#1677ff',
+        colorSuccess: '#52c41a',
+      },
+    }),
+  };
 
   return {
     __esModule: true,
@@ -111,6 +121,7 @@ jest.mock('antd', () => {
     Tag,
     Tooltip,
     Typography,
+    theme,
   };
 });
 

@@ -17,6 +17,7 @@ import {
   message,
   Modal,
   Spin,
+  theme,
 } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
@@ -55,6 +56,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
   const [contactLoading, setContactLoading] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const { token } = theme.useToken();
   const intl = useIntl();
   const lang = getLang(intl.locale);
 
@@ -353,7 +355,14 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
       )}
 
       {userInfo && !contactInfo && (
-        <div style={{ marginTop: 8, textAlign: 'center', color: '#999', fontSize: '12px' }}>
+        <div
+          style={{
+            marginTop: 8,
+            textAlign: 'center',
+            color: token.colorTextTertiary,
+            fontSize: '12px',
+          }}
+        >
           <FormattedMessage
             id='pages.review.members.saveDisabled'
             defaultMessage='Both user information and contact information are required to save'

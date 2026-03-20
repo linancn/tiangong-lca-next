@@ -6,12 +6,12 @@
 
 // selection
 .x6-node-selected rect {
-  stroke: #239edd;
+  stroke: var(--ant-color-primary);
 }
 
 .x6-edge-selected {
   path:nth-child(2) {
-    stroke: #239edd;
+    stroke: var(--ant-color-primary);
     stroke-width: 1.5px;
   }
 }
@@ -19,23 +19,23 @@
 // snapline
 .x6-widget-snapline-horizontal,
 .x6-widget-snapline-vertical {
-  stroke: #239edd;
+  stroke: var(--ant-color-primary);
 }
 
 // transform
 .x6-widget-transform {
   margin: -1px 0 0 -1px;
   padding: 0px;
-  border: 1px solid #239edd;
+  border: 1px solid var(--ant-color-primary);
 }
 .x6-widget-transform > div {
-  border: 1px solid #239edd;
+  border: 1px solid var(--ant-color-primary);
 }
 .x6-widget-transform > div:hover {
-  background-color: #3dafe4;
+  background-color: var(--ant-color-primary-hover);
 }
 .x6-widget-transform-active-handle {
-  background-color: #3dafe4;
+  background-color: var(--ant-color-primary-hover);
 }
 .x6-widget-transform-resize {
   border-radius: 0;
@@ -47,15 +47,15 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e6e8eb;
+  border: 1px solid var(--ant-color-border-secondary);
   border-radius: 6px;
 
   button {
     min-width: 36px !important;
     height: 36px;
-    border: 1px solid #fff;
+    border: 1px solid var(--ant-color-bg-container);
     border-radius: 4px;
-    background-color: #fff;
+    background-color: var(--ant-color-bg-container);
     outline: none;
     user-select: none;
     touch-action: manipulation;
@@ -63,14 +63,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgb(0, 0, 0);
+    color: var(--ant-color-text);
 
     &:disabled {
-      background-color: rgba(0, 0, 0, 0.04);
-      color: rgba(0, 0, 0, 0.25);
+      background-color: var(--ant-color-fill-tertiary);
+      color: var(--ant-color-text-disabled);
     }
     &:hover {
-      border: 1px solid #4096ff;
+      border: 1px solid var(--ant-color-primary-hover);
     }
   }
 
@@ -81,11 +81,8 @@
 
   .tippy-box {
     border: none !important;
-    box-shadow:
-      0 6px 16px 0 rgba(0, 0, 0, 0.08),
-      0 3px 6px -4px rgba(0, 0, 0, 0.12),
-      0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
-    background-color: #ffffff;
+    box-shadow: var(--ant-box-shadow) !important;
+    background-color: var(--ant-color-bg-container);
   }
 
   .tippy-content {
@@ -104,7 +101,7 @@
 
       &:hover {
         border: none !important;
-        background-color: rgba(0, 0, 0, 0.04);
+        background-color: var(--ant-color-fill-tertiary);
       }
     }
   }

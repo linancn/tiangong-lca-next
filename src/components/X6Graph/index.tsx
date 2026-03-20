@@ -112,8 +112,8 @@ const X6GraphComponent = ({
           name: 'stroke',
           args: {
             attrs: {
-              fill: '#fff',
-              stroke: '#47C769',
+              fill: token.colorBgContainer,
+              stroke: token.colorSuccess,
             },
           },
         },

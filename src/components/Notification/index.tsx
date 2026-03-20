@@ -127,7 +127,7 @@ const Notification: React.FC = () => {
   };
 
   const badgeStyles = {
-    backgroundColor: '#ff4d4f',
+    backgroundColor: token.colorError,
     borderRadius: '7px',
     minWidth: '14px',
     height: '14px',
