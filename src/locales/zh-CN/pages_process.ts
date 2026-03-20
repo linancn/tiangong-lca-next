@@ -36,7 +36,7 @@ export default {
   'pages.process.lca.message.requestFailed': '计算请求失败: {message}',
   'pages.process.lca.latestJob': '最近任务: {jobId} ({status})',
   'pages.process.lca.latestResult': '最近结果: {resultId}',
-  'pages.process.lca.taskCenter.title': 'LCA 任务',
+  'pages.process.lca.taskCenter.title': '任务中心',
   'pages.process.lca.taskCenter.clearFinished': '清除已完成',
   'pages.process.lca.taskCenter.empty': '暂无任务',
   'pages.process.lca.taskCenter.remove': '移除',

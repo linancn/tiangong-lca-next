@@ -36,7 +36,7 @@ export default {
   'pages.process.lca.message.requestFailed': 'Calculation request failed: {message}',
   'pages.process.lca.latestJob': 'Latest job: {jobId} ({status})',
   'pages.process.lca.latestResult': 'Latest result: {resultId}',
-  'pages.process.lca.taskCenter.title': 'LCA Tasks',
+  'pages.process.lca.taskCenter.title': 'Task Center',
   'pages.process.lca.taskCenter.clearFinished': 'Clear finished',
   'pages.process.lca.taskCenter.empty': 'No tasks',
   'pages.process.lca.taskCenter.remove': 'Remove',

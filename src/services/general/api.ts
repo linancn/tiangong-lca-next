@@ -33,6 +33,538 @@ export async function exportDataApi(tableName: string, id: string, version: stri
   return result;
 }
 
+export type TidasPackageRootTable =
+  | 'contacts'
+  | 'sources'
+  | 'unitgroups'
+  | 'flowproperties'
+  | 'flows'
+  | 'processes'
+  | 'lifecyclemodels';
+
+export type TidasPackageScope = 'current_user' | 'open_data' | 'current_user_and_open_data';
+
+export type TidasPackageManifestScope = TidasPackageScope | 'selected_roots';
+
+export type TidasPackageRoot = {
+  table: TidasPackageRootTable;
+  id: string;
+  version: string;
+};
+
+export type TidasPackageSummary = {
+  total_entries: number;
+  filtered_open_data_count: number;
+  user_conflict_count: number;
+  importable_count: number;
+  imported_count?: number;
+};
+
+export type TidasPackageConflict = {
+  table: string;
+  id: string;
+  version: string;
+  state_code: number | null;
+  user_id?: string | null;
+};
+
+export type TidasPackageJobMode = 'queued' | 'in_progress' | 'cache_hit' | 'completed';
+
+export type TidasPackageArtifactKind =
+  | 'import_source'
+  | 'export_zip'
+  | 'export_report'
+  | 'import_report';
+
+export type TidasPackageJobStatus =
+  | 'queued'
+  | 'running'
+  | 'ready'
+  | 'completed'
+  | 'failed'
+  | 'stale';
+
+export type ExportTidasPackageQueueResponse = {
+  ok: boolean;
+  mode: Exclude<TidasPackageJobMode, 'completed'>;
+  job_id: string;
+  scope: TidasPackageManifestScope;
+  root_count: number;
+  code?: string;
+  message?: string;
+};
+
+export type ImportTidasPackageResponse = {
+  ok: boolean;
+  code: string;
+  message: string;
+  summary: TidasPackageSummary;
+  filtered_open_data: TidasPackageConflict[];
+  user_conflicts: TidasPackageConflict[];
+};
+
+export type PrepareImportTidasPackageResponse = {
+  ok: boolean;
+  action: 'prepare_upload';
+  job_id: string;
+  source_artifact_id: string;
+  artifact_url: string;
+  upload: {
+    bucket: string;
+    object_path: string;
+    token: string;
+    path: string;
+    signed_url: string | null;
+    expires_in_seconds: number;
+    filename: string;
+    byte_size: number;
+    content_type: string;
+  };
+  code?: string;
+  message?: string;
+};
+
+export type EnqueueImportTidasPackageResponse = {
+  ok: boolean;
+  mode: 'queued' | 'in_progress' | 'completed';
+  job_id: string;
+  source_artifact_id: string;
+  code?: string;
+  message?: string;
+};
+
+export type TidasPackageArtifact = {
+  artifact_id: string;
+  artifact_kind: TidasPackageArtifactKind;
+  status: string;
+  artifact_format: string;
+  content_type: string;
+  artifact_sha256: string | null;
+  artifact_byte_size: number | null;
+  artifact_url: string;
+  storage_bucket: string | null;
+  storage_object_path: string | null;
+  signed_download_url: string | null;
+  signed_download_expires_in_seconds: number | null;
+  metadata: Record<string, any>;
+  expires_at: string | null;
+  is_pinned: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type TidasPackageJobResponse = {
+  ok: boolean;
+  job_id: string;
+  job_type: 'export_package' | 'import_package';
+  status: TidasPackageJobStatus;
+  scope: TidasPackageManifestScope | null;
+  root_count: number;
+  request_key: string | null;
+  timestamps: {
+    created_at: string | null;
+    started_at: string | null;
+    finished_at: string | null;
+    updated_at: string | null;
+  };
+  payload: any;
+  diagnostics: any;
+  artifacts: TidasPackageArtifact[];
+  artifacts_by_kind: Partial<Record<TidasPackageArtifactKind, TidasPackageArtifact>>;
+  request_cache: {
+    id: string;
+    status: string;
+    error_code: string | null;
+    error_message: string | null;
+    hit_count: number;
+    last_accessed_at: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+    export_artifact_id: string | null;
+    report_artifact_id: string | null;
+  } | null;
+};
+
+export type ExportTidasPackageResponse = {
+  ok: boolean;
+  job_id: string;
+  filename: string;
+};
+
+type TidasPackageReportEnvelope<T> = {
+  payload?: T;
+};
+
+const TIDAS_PACKAGE_POLL_INTERVAL_MS = 1500;
+const TIDAS_PACKAGE_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
+async function parseFunctionErrorPayload(error: any) {
+  if (!error?.context || typeof error.context.json !== 'function') {
+    return null;
+  }
+
+  try {
+    return await error.context.json();
+  } catch (_parseError) {
+    return null;
+  }
+}
+
+export type ExportTidasPackageRequest = {
+  scope?: TidasPackageScope;
+  roots?: TidasPackageRoot[];
+};
+
+async function invokeTidasPackageFunction<T>(name: string, body?: any) {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    return {
+      data: null,
+      error: new Error('Unauthorized'),
+    };
+  }
+
+  const result = await supabase.functions.invoke<T>(name, {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body,
+    region: FunctionRegion.UsEast1,
+  });
+
+  if (result.error) {
+    const errorPayload = await parseFunctionErrorPayload(result.error);
+    return {
+      data: errorPayload as T | null,
+      error: result.error,
+    };
+  }
+
+  return result;
+}
+
+export async function queueExportTidasPackageApi(request: ExportTidasPackageRequest = {}) {
+  return await invokeTidasPackageFunction<ExportTidasPackageQueueResponse>(
+    'export_tidas_package',
+    request,
+  );
+}
+
+export async function prepareImportTidasPackageUploadApi(file: {
+  filename: string;
+  byte_size: number;
+  content_type: string;
+}) {
+  return await invokeTidasPackageFunction<PrepareImportTidasPackageResponse>(
+    'import_tidas_package',
+    {
+      action: 'prepare_upload',
+      ...file,
+    },
+  );
+}
+
+export async function enqueueImportTidasPackageApi(request: {
+  job_id: string;
+  source_artifact_id: string;
+  artifact_sha256: string;
+  artifact_byte_size: number;
+  filename: string;
+  content_type: string;
+}) {
+  return await invokeTidasPackageFunction<EnqueueImportTidasPackageResponse>(
+    'import_tidas_package',
+    {
+      action: 'enqueue',
+      ...request,
+    },
+  );
+}
+
+export async function getTidasPackageJobApi(jobId: string) {
+  if (!jobId) {
+    return {
+      data: null,
+      error: new Error('Missing job id'),
+    };
+  }
+
+  return await invokeTidasPackageFunction<TidasPackageJobResponse>('tidas_package_jobs', {
+    job_id: jobId,
+  });
+}
+
+async function waitForTidasPackageJob(
+  jobId: string,
+  isDone: (job: TidasPackageJobResponse) => boolean,
+) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt <= TIDAS_PACKAGE_POLL_TIMEOUT_MS) {
+    const { data, error } = await getTidasPackageJobApi(jobId);
+    if (error || !data?.ok) {
+      throw error ?? new Error('Failed to load TIDAS package job status');
+    }
+
+    if (data.status === 'failed' || isDone(data)) {
+      return data;
+    }
+
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, TIDAS_PACKAGE_POLL_INTERVAL_MS);
+    });
+  }
+
+  throw new Error('Timed out waiting for the TIDAS package job to finish');
+}
+
+async function downloadArtifactBySignedUrl(signedUrl: string, filename: string) {
+  const response = await fetch(signedUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to download artifact (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+
+  try {
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function resolveExportArtifactFilename(
+  job: TidasPackageJobResponse,
+  fallbackFilename = 'tidas-package.zip',
+) {
+  const exportArtifact = job.artifacts_by_kind.export_zip;
+  if (!exportArtifact) {
+    return fallbackFilename;
+  }
+
+  const metadataFilename = exportArtifact.metadata?.filename;
+  if (typeof metadataFilename === 'string' && metadataFilename.trim()) {
+    return metadataFilename.trim();
+  }
+
+  return fallbackFilename;
+}
+
+async function fetchPackageReport<T>(artifact: TidasPackageArtifact): Promise<T> {
+  if (!artifact.signed_download_url) {
+    throw new Error('Package report is not available');
+  }
+
+  const response = await fetch(artifact.signed_download_url, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load package report (${response.status})`);
+  }
+
+  const parsed = (await response.json()) as TidasPackageReportEnvelope<T> | T;
+  return ((parsed as TidasPackageReportEnvelope<T>).payload ?? parsed) as T;
+}
+
+async function computeSha256Hex(file: Blob) {
+  const buffer = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function uploadTidasPackageToSignedUrl(
+  upload: PrepareImportTidasPackageResponse['upload'],
+  file: File,
+) {
+  const result = await supabase.storage
+    .from(upload.bucket)
+    .uploadToSignedUrl(upload.path, upload.token, file, {
+      cacheControl: '3600',
+      contentType: upload.content_type,
+      upsert: true,
+    });
+
+  if (result.error) {
+    throw result.error;
+  }
+}
+
+function extractPackageJobError(job: TidasPackageJobResponse) {
+  const requestCacheMessage = job.request_cache?.error_message;
+  const diagnosticsMessage =
+    typeof job.diagnostics?.error === 'string'
+      ? job.diagnostics.error
+      : typeof job.diagnostics?.message === 'string'
+        ? job.diagnostics.message
+        : null;
+
+  return requestCacheMessage || diagnosticsMessage || 'TIDAS package job failed';
+}
+
+export async function exportTidasPackageApi(request: ExportTidasPackageRequest = {}) {
+  const queued = await queueExportTidasPackageApi(request);
+  if (queued.error || !queued.data?.ok) {
+    return {
+      data: null,
+      error: queued.error ?? new Error((queued.data as any)?.message ?? 'Export failed'),
+    };
+  }
+
+  try {
+    const job = await waitForTidasPackageJob(
+      queued.data.job_id,
+      (candidate) => candidate.status === 'ready' || candidate.status === 'completed',
+    );
+
+    if (job.status === 'failed') {
+      throw new Error(extractPackageJobError(job));
+    }
+
+    const exportArtifact = job.artifacts_by_kind.export_zip;
+    if (!exportArtifact?.signed_download_url) {
+      throw new Error('Export package is not available for download');
+    }
+
+    const filename = resolveExportArtifactFilename(
+      job,
+      request.roots?.length ? `${request.roots[0].table}-package.zip` : 'tidas-package.zip',
+    );
+
+    await downloadArtifactBySignedUrl(exportArtifact.signed_download_url, filename);
+
+    return {
+      data: {
+        ok: true,
+        job_id: job.job_id,
+        filename,
+      } satisfies ExportTidasPackageResponse,
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error,
+    };
+  }
+}
+
+export async function downloadReadyTidasPackageExportApi(
+  jobId: string,
+  fallbackFilename = 'tidas-package.zip',
+) {
+  const { data, error } = await getTidasPackageJobApi(jobId);
+  if (error || !data?.ok) {
+    return {
+      data: null,
+      error: error ?? new Error('Failed to load TIDAS package job status'),
+    };
+  }
+
+  if (data.status === 'failed') {
+    return {
+      data: null,
+      error: new Error(extractPackageJobError(data)),
+    };
+  }
+
+  const exportArtifact = data.artifacts_by_kind.export_zip;
+  if (!exportArtifact?.signed_download_url) {
+    return {
+      data: null,
+      error: new Error('Export package is not ready for download'),
+    };
+  }
+
+  try {
+    const filename = resolveExportArtifactFilename(data, fallbackFilename);
+    await downloadArtifactBySignedUrl(exportArtifact.signed_download_url, filename);
+    return {
+      data: {
+        ok: true,
+        job_id: data.job_id,
+        filename,
+      } satisfies ExportTidasPackageResponse,
+      error: null,
+    };
+  } catch (downloadError: any) {
+    return {
+      data: null,
+      error: downloadError,
+    };
+  }
+}
+
+export async function importTidasPackageApi(file: File) {
+  const contentType = file.type || 'application/zip';
+  const prepared = await prepareImportTidasPackageUploadApi({
+    filename: file.name,
+    byte_size: file.size,
+    content_type: contentType,
+  });
+
+  if (prepared.error || !prepared.data?.ok) {
+    return {
+      data: null,
+      error: prepared.error ?? new Error((prepared.data as any)?.message ?? 'Import failed'),
+    };
+  }
+
+  try {
+    const artifactSha256 = await computeSha256Hex(file);
+    await uploadTidasPackageToSignedUrl(prepared.data.upload, file);
+
+    const queued = await enqueueImportTidasPackageApi({
+      job_id: prepared.data.job_id,
+      source_artifact_id: prepared.data.source_artifact_id,
+      artifact_sha256: artifactSha256,
+      artifact_byte_size: file.size,
+      filename: file.name,
+      content_type: contentType,
+    });
+
+    if (queued.error || !queued.data?.ok) {
+      throw queued.error ?? new Error((queued.data as any)?.message ?? 'Import failed');
+    }
+
+    const job = await waitForTidasPackageJob(
+      queued.data.job_id,
+      (candidate) => candidate.status === 'completed',
+    );
+
+    if (job.status === 'failed') {
+      throw new Error(extractPackageJobError(job));
+    }
+
+    const reportArtifact = job.artifacts_by_kind.import_report;
+    if (!reportArtifact) {
+      throw new Error('Import report is not available');
+    }
+
+    const report = await fetchPackageReport<ImportTidasPackageResponse>(reportArtifact);
+    return {
+      data: report,
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error,
+    };
+  }
+}
+
 const VERSION_PATTERN = /^\d{2}\.\d{2}\.\d{3}$/;
 
 export async function getDataDetail(id: string, version: string, table: string) {

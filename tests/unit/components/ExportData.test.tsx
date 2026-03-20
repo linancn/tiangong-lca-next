@@ -4,11 +4,12 @@
  */
 
 import ExportData from '@/components/ExportData';
-import { exportDataApi } from '@/services/general/api';
+import { submitTidasPackageExportTask } from '@/services/tidasPackage/taskCenter';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { message } from 'antd';
 
 type ReactNode = import('react').ReactNode;
+type TidasPackageRootTable = import('@/services/general/api').TidasPackageRootTable;
 
 type MockMessage = Record<'success' | 'error' | 'info' | 'warning' | 'loading', jest.Mock>;
 
@@ -68,14 +69,19 @@ jest.mock('antd', () => {
     message: mockMessage,
   };
 });
-jest.mock('@/services/general/api', () => ({
-  exportDataApi: jest.fn(),
+
+jest.mock('@/services/tidasPackage/taskCenter', () => ({
+  submitTidasPackageExportTask: jest.fn(),
 }));
 
-const mockedExportDataApi = jest.mocked(exportDataApi);
+const mockedSubmitTidasPackageExportTask = jest.mocked(submitTidasPackageExportTask);
 const mockMessage = message as unknown as MockMessage;
 
-const baseProps = {
+const baseProps: {
+  tableName: TidasPackageRootTable;
+  id: string;
+  version: string;
+} = {
   tableName: 'flows',
   id: 'test-id',
   version: 'v00000001',
@@ -84,201 +90,89 @@ const baseProps = {
 const renderComponent = (props: Partial<typeof baseProps> = {}) =>
   render(<ExportData {...baseProps} {...props} />);
 
-let createObjectURLSpy: jest.SpyInstance<string, [Blob | MediaSource]>;
-let revokeObjectURLSpy: jest.Mock<void, [string]>;
-let originalRevokeObjectURL: typeof URL.revokeObjectURL | undefined;
-let anchorClickSpy: jest.SpyInstance<void, []>;
-let appendChildSpy: jest.SpyInstance<Node, [Node]>;
-let removeChildSpy: jest.SpyInstance<Node, [Node]>;
-let blobMock: jest.SpyInstance<
-  Blob,
-  [blobParts?: BlobPart[] | undefined, options?: BlobPropertyBag | undefined]
->;
-let blobArgs: { parts: BlobPart[]; options?: BlobPropertyBag } | undefined;
-
-beforeEach(() => {
-  jest.clearAllMocks();
-
-  blobArgs = undefined;
-  createObjectURLSpy = jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:url');
-  originalRevokeObjectURL = URL.revokeObjectURL;
-  revokeObjectURLSpy = jest.fn();
-  (URL as any).revokeObjectURL = revokeObjectURLSpy;
-  anchorClickSpy = jest
-    .spyOn(HTMLAnchorElement.prototype, 'click')
-    .mockImplementation(() => undefined);
-  appendChildSpy = jest.spyOn(document.body, 'appendChild');
-  removeChildSpy = jest.spyOn(document.body, 'removeChild');
-  blobMock = jest
-    .spyOn(globalThis as unknown as { Blob: typeof Blob }, 'Blob')
-    .mockImplementation((parts: BlobPart[] = [], options?: BlobPropertyBag) => {
-      blobArgs = { parts, options };
-      return {
-        parts,
-        options,
-      } as unknown as Blob;
-    });
-});
-
-afterEach(() => {
-  createObjectURLSpy.mockRestore();
-  if (originalRevokeObjectURL) {
-    URL.revokeObjectURL = originalRevokeObjectURL;
-  } else {
-    delete (URL as any).revokeObjectURL;
-  }
-  anchorClickSpy.mockRestore();
-  appendChildSpy.mockRestore();
-  removeChildSpy.mockRestore();
-  blobMock.mockRestore();
-});
-
 const clickExportButton = () => {
   fireEvent.click(screen.getByTestId(EXPORT_BUTTON_TEST_ID));
 };
 
 describe('ExportData Component', () => {
-  it('exports data successfully for non-lifecycle tables', async () => {
-    mockedExportDataApi.mockResolvedValue({
-      data: [{ json_ordered: { foo: 'bar' } }],
-      error: null,
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockedSubmitTidasPackageExportTask.mockReturnValue({
+      id: 'task-1',
+      sequence: 1,
+      kind: 'tidas_package_export',
+      state: 'running',
+      phase: 'submitting',
+      message: 'Submitting export task',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      rootCount: 1,
     } as any);
+  });
 
+  it('submits a ZIP export task successfully for a selected root dataset', async () => {
     renderComponent();
 
     expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
 
-    const initialAppendCalls = appendChildSpy.mock.calls.length;
-    const initialRemoveCalls = removeChildSpy.mock.calls.length;
-
     clickExportButton();
 
-    expect(mockedExportDataApi).toHaveBeenCalledWith(
-      baseProps.tableName,
-      baseProps.id,
-      baseProps.version,
-    );
-    expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'true');
+    expect(mockedSubmitTidasPackageExportTask).toHaveBeenCalledWith({
+      roots: [
+        {
+          table: baseProps.tableName,
+          id: baseProps.id,
+          version: baseProps.version,
+        },
+      ],
+    });
 
     await waitFor(() => {
       expect(mockMessage.success).toHaveBeenCalledTimes(1);
     });
 
-    expect(mockMessage.success.mock.calls[0][0]).toBe('Export data successfully');
+    expect(mockMessage.success.mock.calls[0][0]).toBe(
+      'Export task submitted. Check the task center for progress and download.',
+    );
     expect(mockMessage.error).not.toHaveBeenCalled();
-
-    expect(blobMock).toHaveBeenCalledTimes(1);
-    expect(blobArgs?.parts[0]).toBe(JSON.stringify([{ foo: 'bar' }], null, 2));
-    expect(blobArgs?.options?.type).toBe('application/json');
-
-    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:url');
-    expect(anchorClickSpy).toHaveBeenCalledTimes(1);
-
-    const appendedAnchors = appendChildSpy.mock.calls
-      .slice(initialAppendCalls)
-      .map(([node]) => node)
-      .filter((node): node is HTMLAnchorElement => node instanceof HTMLAnchorElement);
-    expect(appendedAnchors).toHaveLength(1);
-    const appendedAnchor = appendedAnchors[0];
-    expect(appendedAnchor.getAttribute('download')).toBe('flows_test-id_v00000001.json');
-    expect(appendedAnchor.getAttribute('href')).toBe('blob:url');
-
-    const removedAnchors = removeChildSpy.mock.calls
-      .slice(initialRemoveCalls)
-      .map(([node]) => node)
-      .filter((node): node is HTMLAnchorElement => node instanceof HTMLAnchorElement);
-    expect(removedAnchors).toHaveLength(1);
-    expect(removedAnchors[0]).toBe(appendedAnchor);
 
     await waitFor(() => {
       expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
     });
   });
 
-  it('includes lifecycle model metadata when exporting lifecyclemodels table', async () => {
-    mockedExportDataApi.mockResolvedValue({
-      data: [
-        {
-          json_ordered: { foo: 'bar' },
-          json_tg: { baz: 'qux' },
-        },
-      ],
-      error: null,
-    } as any);
-
-    renderComponent({ tableName: 'lifecyclemodels' });
+  it('uses lifecyclemodels as the export root table when exporting lifecycle models', async () => {
+    renderComponent({ tableName: 'lifecyclemodels' as const });
     clickExportButton();
 
     await waitFor(() => {
       expect(mockMessage.success).toHaveBeenCalledTimes(1);
     });
 
-    expect(blobArgs?.parts[0]).toBe(
-      JSON.stringify(
-        [
-          {
-            foo: 'bar',
-            json_tg: { baz: 'qux' },
-          },
-        ],
-        null,
-        2,
-      ),
-    );
+    expect(mockedSubmitTidasPackageExportTask).toHaveBeenCalledWith({
+      roots: [
+        {
+          table: 'lifecyclemodels',
+          id: baseProps.id,
+          version: baseProps.version,
+        },
+      ],
+    });
   });
 
-  it('shows error feedback when the export request returns an error', async () => {
-    mockedExportDataApi.mockResolvedValue({
-      data: null,
-      error: new Error('failure'),
-    } as any);
+  it('shows error feedback when task submission throws', async () => {
+    mockedSubmitTidasPackageExportTask.mockImplementation(() => {
+      throw new Error('failure');
+    });
 
     renderComponent();
-
     clickExportButton();
 
     await waitFor(() => {
       expect(mockMessage.error).toHaveBeenCalledTimes(1);
     });
 
-    expect(mockMessage.error.mock.calls[0][0]).toBe('Export data failed');
+    expect(mockMessage.error.mock.calls[0][0]).toBe('failure');
     expect(mockMessage.success).not.toHaveBeenCalled();
-    expect(blobMock).not.toHaveBeenCalled();
-    expect(createObjectURLSpy).not.toHaveBeenCalled();
-
-    await waitFor(() => {
-      expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
-    });
-  });
-
-  it('does not create a download when the export returns no data', async () => {
-    mockedExportDataApi.mockResolvedValue({
-      data: [],
-      error: null,
-    } as any);
-
-    renderComponent();
-    const initialAppendCalls = appendChildSpy.mock.calls.length;
-    clickExportButton();
-
-    await waitFor(() => {
-      expect(mockedExportDataApi).toHaveBeenCalledTimes(1);
-    });
-
-    expect(mockMessage.success).not.toHaveBeenCalled();
-    expect(mockMessage.error).not.toHaveBeenCalled();
-    expect(blobMock).not.toHaveBeenCalled();
-    expect(createObjectURLSpy).not.toHaveBeenCalled();
-
-    const appendedAnchors = appendChildSpy.mock.calls
-      .slice(initialAppendCalls)
-      .map(([node]) => node)
-      .filter((node): node is HTMLAnchorElement => node instanceof HTMLAnchorElement);
-    expect(appendedAnchors).toHaveLength(0);
-
-    await waitFor(() => {
-      expect(screen.getByTestId(EXPORT_SPINNER_TEST_ID)).toHaveAttribute('data-spinning', 'false');
-    });
   });
 });
