@@ -3,7 +3,7 @@
  * Path: src/components/RightContent/AvatarDropdown.tsx
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockHistoryPush: jest.Mock<void, [unknown?]> = jest.fn();
@@ -252,6 +252,29 @@ describe('AvatarDropdown', () => {
     });
   });
 
+  it('updates loading hover state and keeps loading when the current user has no name', async () => {
+    const setInitialState = jest.fn();
+    mockUseModel.mockImplementation((model: string) => {
+      if (model === '@@initialState') {
+        return { initialState: { currentUser: {} }, setInitialState };
+      }
+      return {};
+    });
+
+    render(<AvatarDropdown>trigger</AvatarDropdown>);
+
+    const loading = screen.getByRole('status', { name: /loading user menu/i }).parentElement;
+    expect(loading).not.toBeNull();
+
+    fireEvent.mouseEnter(loading!);
+    fireEvent.mouseLeave(loading!);
+
+    expect(screen.getByRole('status', { name: /loading user menu/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockedGetSystemUserRoleApi).toHaveBeenCalled();
+    });
+  });
+
   it('renders menu items for privileged users and handles navigation and logout', async () => {
     const setInitialState = jest.fn();
     mockUseModel.mockImplementation((model: string) => {
@@ -289,6 +312,11 @@ describe('AvatarDropdown', () => {
     await user.click(screen.getByRole('button', { name: 'Logout' }));
 
     expect(setInitialState).toHaveBeenCalledWith(expect.any(Function));
+    const stateUpdater = setInitialState.mock.calls[0]?.[0];
+    expect(stateUpdater({ currentUser: { name: 'Alice' }, extra: true })).toEqual({
+      currentUser: undefined,
+      extra: true,
+    });
 
     await waitFor(() => {
       expect(mockedLogout).toHaveBeenCalled();
@@ -395,6 +423,89 @@ describe('AvatarDropdown', () => {
     expect(mockHistoryPush).toHaveBeenCalledWith('/team?action=create');
   });
 
+  it('replaces the team page query and reloads when creating a team from the current /team page', async () => {
+    const setInitialState = jest.fn();
+    mockUseModel.mockImplementation((model: string) => {
+      if (model === '@@initialState') {
+        return { initialState: { currentUser: { name: 'Casey' } }, setInitialState };
+      }
+      return {};
+    });
+
+    mockedGetUserRoles.mockResolvedValue({ data: [{ role: 'rejected' }] });
+    mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'member' });
+    window.history.pushState({}, '', '/team?view=detail');
+    const reloadSpy = jest.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...originalLocation,
+        reload: reloadSpy,
+      },
+    });
+
+    const user = userEvent.setup();
+
+    render(<AvatarDropdown>avatar</AvatarDropdown>);
+
+    await user.click(await screen.findByRole('button', { name: 'Team Management' }));
+
+    const confirmConfig = mockModalConfirm.mock.calls[mockModalConfirm.mock.calls.length - 1]?.[0];
+    expect(confirmConfig).toBeTruthy();
+
+    if (confirmConfig?.footer) {
+      const { getByRole, unmount } = render(<div>{confirmConfig.footer()}</div>);
+      await user.click(getByRole('button', { name: 'Create Team' }));
+      unmount();
+    }
+
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/team',
+      search: 'view=detail&action=create',
+    });
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
+  it('closes the all-teams modal through the modal onCancel action', async () => {
+    const setInitialState = jest.fn();
+    mockUseModel.mockImplementation((model: string) => {
+      if (model === '@@initialState') {
+        return { initialState: { currentUser: { name: 'Bob' } }, setInitialState };
+      }
+      return {};
+    });
+
+    mockedGetUserRoles.mockResolvedValue({ data: [{ role: 'rejected' }] });
+    mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'member' });
+
+    const user = userEvent.setup();
+
+    render(<AvatarDropdown>avatar</AvatarDropdown>);
+
+    await user.click(await screen.findByRole('button', { name: 'Team Management' }));
+
+    const confirmConfig = mockModalConfirm.mock.calls[mockModalConfirm.mock.calls.length - 1]?.[0];
+    expect(confirmConfig).toBeTruthy();
+
+    if (confirmConfig?.footer) {
+      const { getByRole, unmount } = render(<div>{confirmConfig.footer()}</div>);
+      await user.click(getByRole('button', { name: 'Join Team' }));
+      unmount();
+    }
+
+    const modal = await screen.findByRole('dialog');
+    await user.click(within(modal).getByRole('button', { name: 'Close' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('region', { name: 'All Teams table' })).not.toBeInTheDocument();
+    });
+  });
+
   it('does not replace login history when a redirect query already exists during logout', async () => {
     const setInitialState = jest.fn();
     mockUseModel.mockImplementation((model: string) => {
@@ -443,6 +554,22 @@ describe('AvatarName', () => {
     mockUseModel.mockImplementation((model: string) => {
       if (model === '@@initialState') {
         return { initialState: {} };
+      }
+      return {};
+    });
+
+    const { container } = render(<AvatarName />);
+
+    expect(
+      container.querySelector('[data-testid="icon-user"], .anticon-user, [data-icon="user"]'),
+    ).not.toBeNull();
+    expect(screen.queryByText('Taylor')).not.toBeInTheDocument();
+  });
+
+  it('renders without crashing when initial state is undefined', () => {
+    mockUseModel.mockImplementation((model: string) => {
+      if (model === '@@initialState') {
+        return { initialState: undefined };
       }
       return {};
     });

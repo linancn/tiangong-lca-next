@@ -12,10 +12,12 @@ const toText = (node: any): string => {
   return '';
 };
 
+const mockGetLocale = jest.fn(() => 'en-US');
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => 'en-US',
+  getLocale: () => mockGetLocale(),
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -54,6 +56,10 @@ describe('ContactSelectDescription', () => {
   const ContactSelectDescription =
     require('@/pages/Contacts/Components/select/description').default;
 
+  beforeEach(() => {
+    mockGetLocale.mockReturnValue('en-US');
+  });
+
   it('renders fallback content when no contact reference is provided', () => {
     renderWithProviders(<ContactSelectDescription title='Contact' lang='en' />);
 
@@ -78,5 +84,23 @@ describe('ContactSelectDescription', () => {
     expect(screen.getByTestId('contact-view')).toHaveTextContent('contact-1:1.0');
     expect(screen.getByText('1.0')).toBeInTheDocument();
     expect(screen.getByText('Contact short desc')).toBeInTheDocument();
+  });
+
+  it('renders zh locale layout and falls back to an empty version for object references', () => {
+    mockGetLocale.mockReturnValue('zh-CN');
+
+    renderWithProviders(
+      <ContactSelectDescription
+        title='Contact'
+        lang='zh'
+        data={{
+          '@refObjectId': 'contact-2',
+          'common:shortDescription': [{ '@xml:lang': 'zh', '#text': '联系人说明' }],
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId('contact-view')).toHaveTextContent('contact-2:');
+    expect(screen.getByText('联系人说明')).toBeInTheDocument();
   });
 });

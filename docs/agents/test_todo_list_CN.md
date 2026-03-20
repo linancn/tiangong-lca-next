@@ -75,6 +75,7 @@
   - 清零队列摘要，
   - 共享夹具批次，
   - 下一个 25 个有序未完成文件。
+- 队列和批次区块会输出完整的项目相对路径；文件和批次标签不再用 `...` 截断。
 - `node scripts/test-coverage-report.js --full` 会输出所有剩余文件的完整有序未完成队列。
 - 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
 

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import SourcesPage from '@/pages/Sources';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -121,25 +121,42 @@ jest.mock('@/pages/Utils', () => ({
 
 jest.mock('@/pages/Sources/Components/create', () => ({
   __esModule: true,
-  default: ({ actionType = 'create', importData, newVersion }: any) => (
+  default: ({ actionType = 'create', importData, newVersion, onClose }: any) => (
     <div data-testid='source-create'>
       {JSON.stringify({
         actionType,
         importCount: importData?.length ?? 0,
         newVersion,
       })}
+      <button type='button' onClick={() => onClose?.()}>
+        close-source-create
+      </button>
     </div>
   ),
 }));
 
 jest.mock('@/pages/Sources/Components/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='source-delete'>{`delete:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <div data-testid='source-delete'>
+      {`delete:${id}`}
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close-source-delete
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Sources/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='source-edit'>{`edit:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <div data-testid='source-edit'>
+      {`edit:${id}`}
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close-source-edit
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Sources/Components/view', () => ({
@@ -236,7 +253,14 @@ jest.mock('@ant-design/pro-components', () => {
     </div>
   );
 
-  const ProTable = ({ actionRef, request, columns = [], toolBarRender, headerTitle }: any) => {
+  const ProTable = ({
+    actionRef,
+    request,
+    columns = [],
+    toolBarRender,
+    headerTitle,
+    rowKey,
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
 
@@ -266,7 +290,7 @@ jest.mock('@ant-design/pro-components', () => {
         <div>{toText(headerTitle)}</div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row: any, rowIndex: number) => (
-          <div key={`${row.id}-${rowIndex}`}>
+          <div key={rowKey?.(row) ?? `${row.id}-${rowIndex}`}>
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
                 {column.render ? column.render(undefined, row) : row[column.dataIndex]}
@@ -326,6 +350,9 @@ describe('SourcesPage', () => {
     expect(screen.getByTestId('source-edit')).toHaveTextContent('edit:source-1');
     expect(screen.getByTestId('source-delete')).toHaveTextContent('delete:source-1');
     expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"actionType":"create"');
+
+    await userEvent.click(screen.getByRole('button', { name: /close-source-edit/i }));
+    await userEvent.click(screen.getByRole('button', { name: /close-source-delete/i }));
   });
 
   it('supports pgroonga search, AI search, and contribute flows', async () => {
@@ -399,5 +426,67 @@ describe('SourcesPage', () => {
         '20',
       ),
     );
+
+    await userEvent.click(
+      within(screen.getAllByTestId('source-create')[0]).getByRole('button', {
+        name: /close-source-create/i,
+      }),
+    );
+    expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"importCount":0');
+  });
+
+  it('renders the non-my toolbar variant without edit, delete, or contribute actions', async () => {
+    mockLocation = {
+      pathname: '/tgdata/sources',
+      search: '',
+    };
+    mockGetDataSource.mockReturnValue('tg');
+    mockGetTeamById.mockResolvedValue({ data: [] });
+
+    renderWithProviders(<SourcesPage />);
+
+    await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalled());
+    expect(await screen.findByTestId('source-view')).toHaveTextContent('view:source-1');
+    expect(screen.queryByTestId('source-edit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('source-delete')).not.toBeInTheDocument();
+    expect(
+      screen
+        .getAllByTestId('source-create')
+        .find((node) => node.textContent?.includes('"actionType":"copy"')),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+  });
+
+  it('logs contribute failures without showing success for my data rows', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    mockContributeSource.mockResolvedValue({ error: { message: 'contribute failed' } });
+
+    renderWithProviders(<SourcesPage />);
+
+    await screen.findByTestId('source-view');
+    await act(async () => {
+      await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockContributeSource).toHaveBeenCalledWith('sources', 'source-1', '1.0.0'),
+    );
+    const { message } = jest.requireMock('antd');
+    expect(message.success).not.toHaveBeenCalled();
+    expect(consoleLogSpy).toHaveBeenCalledWith({ message: 'contribute failed' });
+    consoleLogSpy.mockRestore();
+  });
+
+  it('renders a dash when classification is missing or invalid', async () => {
+    mockGetSourceTableAll.mockResolvedValue({
+      data: [{ ...baseSourceRow, classification: 'undefined' }],
+      success: true,
+    });
+
+    renderWithProviders(<SourcesPage />);
+
+    expect(await screen.findByText('-')).toBeInTheDocument();
   });
 });

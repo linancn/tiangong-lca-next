@@ -1006,7 +1006,20 @@ describe('FlowsEdit', () => {
     });
     await waitFor(() => expect(screen.queryByTestId('refs-drawer')).not.toBeInTheDocument());
 
-    await userEvent.click(within(reopenedDrawer).getByRole('button', { name: /cancel/i }));
+    const headerCloseButton = within(reopenedDrawer)
+      .getAllByRole('button')
+      .find((button) => button.textContent === 'close');
+    expect(headerCloseButton).toBeTruthy();
+    await userEvent.click(headerCloseButton!);
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: /edit/i })).not.toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const reopenedAfterHeaderClose = await screen.findByRole('dialog', { name: /edit/i });
+    await userEvent.click(
+      within(reopenedAfterHeaderClose).getByRole('button', { name: /cancel/i }),
+    );
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: /edit/i })).not.toBeInTheDocument(),
     );
@@ -1022,5 +1035,173 @@ describe('FlowsEdit', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: /edit/i })).not.toBeInTheDocument(),
     );
+  });
+
+  it('handles sparse detail payloads, single flow-property objects, and missing active-tab values', async () => {
+    const flowUtils = jest.requireMock('@/services/flows/util');
+
+    mockGetFlowDetail.mockResolvedValueOnce({
+      data: {},
+      version: '1.0.0',
+    });
+    flowUtils.genFlowFromData.mockImplementationOnce(() => ({
+      id: 'flow-1',
+      flowInformation: {
+        dataSetInformation: {
+          name: { baseName: [{ '@xml:lang': 'en', '#text': 'Sparse flow' }] },
+        },
+      },
+      flowProperties: {
+        flowProperty: {
+          quantitativeReference: true,
+          referenceToFlowPropertyDataSet: {
+            'common:shortDescription': [],
+          },
+        },
+      },
+    }));
+    mockGetRefsOfNewVersion.mockResolvedValueOnce({ newRefs: [], oldRefs: [] });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    expect(await screen.findByTestId('property-count')).toHaveTextContent('1');
+    expect(flowUtils.genFlowFromData).toHaveBeenCalledWith({});
+
+    await userEvent.click(screen.getByRole('button', { name: /switch-flow-tab/i }));
+    await act(async () => {
+      latestFlowFormProps.formRef.current.setFieldsValue({ unrelated: true });
+    });
+    await userEvent.click(screen.getByRole('button', { name: /sync-flow-data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('', ''));
+  });
+
+  it('dedupes repeated error tabs during data checks', async () => {
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
+      unRule.push({ '@refObjectId': 'source-1', '@version': '1.0.0' });
+      nonExistent.push({ '@refObjectId': 'process-1', '@version': '1.0.0' });
+    });
+    mockFindProblemNodes.mockReturnValue([
+      {
+        '@refObjectId': 'contact-1',
+        '@version': '1.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockGetErrRefTab.mockReturnValue('flowInformation');
+    mockValidateEnhanced.mockReturnValue({
+      success: false,
+      error: {
+        issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
+      },
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        expect.stringContaining('Data check failed!'),
+      ),
+    );
+    expect(mockGetErrRefTab).toHaveBeenCalledTimes(3);
+  });
+
+  it('adds new error tabs from refs, problem nodes, and type-of-dataset issues', async () => {
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
+      unRule.push({ '@refObjectId': 'source-2', '@version': '1.0.0' });
+      expect(nonExistent).toEqual([]);
+    });
+    mockFindProblemNodes.mockReturnValue([
+      {
+        '@refObjectId': 'contact-2',
+        '@version': '2.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockGetErrRefTab
+      .mockImplementationOnce(() => 'modellingAndValidation')
+      .mockImplementationOnce(() => 'administrativeInformation');
+    mockValidateEnhanced.mockReturnValue({
+      success: false,
+      error: {
+        issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
+      },
+    });
+
+    renderWithProviders(<FlowsEdit id='flow-1' version='1.0.0' buttonType='text' lang='en' />);
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        expect.stringContaining('flowInformation'),
+      ),
+    );
+    expect(mockGetErrRefTab).toHaveBeenCalledTimes(2);
+  });
+
+  it('supports icon triggers and closes AI suggestions without dataset payloads', async () => {
+    const flowUtils = jest.requireMock('@/services/flows/util');
+
+    flowUtils.genFlowFromData
+      .mockImplementationOnce(() => loadedFlowData)
+      .mockImplementationOnce(() => ({
+        flowInformation: {
+          dataSetInformation: {
+            name: { baseName: [{ '@xml:lang': 'en', '#text': 'Empty AI flow' }] },
+          },
+        },
+      }));
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='icon'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /ai-suggestion/i }));
+
+    expect(flowUtils.genFlowFromData).toHaveBeenLastCalledWith({});
+  });
+
+  it('falls back to the default edit label when buttonType is empty', async () => {
+    renderWithProviders(
+      <FlowsEdit id='flow-1' version='1.0.0' buttonType='' lang='en' updateErrRef={jest.fn()} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+    expect(await screen.findByRole('dialog', { name: /edit/i })).toBeInTheDocument();
   });
 });

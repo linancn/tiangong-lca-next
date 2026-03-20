@@ -38,6 +38,14 @@ jest.mock('@/services/flows/classification/CPCClassification_zh-CN.json', () => 
   },
 }));
 
+function createThrowingClassificationMock() {
+  return {
+    get CategorySystem() {
+      throw new Error('classification read failure');
+    },
+  };
+}
+
 describe('Flows Classification API (src/services/flows/classification/api.ts)', () => {
   describe('getCPCClassification', () => {
     it('should return all data when request is "all"', () => {
@@ -139,6 +147,51 @@ describe('Flows Classification API (src/services/flows/classification/api.ts)', 
 
       expect(resultZH.data!.length).toBe(1);
       expect(resultZH.data![0]['@id']).toBe(firstId);
+    });
+  });
+
+  describe('error handling', () => {
+    afterEach(() => {
+      jest.resetModules();
+      jest.clearAllMocks();
+    });
+
+    it('should return null data when English classification access throws', () => {
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      jest.resetModules();
+      jest.doMock(
+        '@/services/flows/classification/CPCClassification_en-US.json',
+        createThrowingClassificationMock,
+      );
+
+      let isolatedGetCPCClassification: any;
+      jest.isolateModules(() => {
+        ({
+          getCPCClassification: isolatedGetCPCClassification,
+        } = require('@/services/flows/classification/api'));
+      });
+
+      expect(isolatedGetCPCClassification(['all'])).toEqual({ data: null });
+      expect(errorSpy).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it('should return null data when Chinese classification access throws', () => {
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      jest.resetModules();
+      jest.doMock(
+        '@/services/flows/classification/CPCClassification_zh-CN.json',
+        createThrowingClassificationMock,
+      );
+
+      let isolatedGetCPCClassificationZH: any;
+      jest.isolateModules(() => {
+        ({
+          getCPCClassificationZH: isolatedGetCPCClassificationZH,
+        } = require('@/services/flows/classification/api'));
+      });
+
+      expect(isolatedGetCPCClassificationZH(['all'])).toEqual({ data: null });
+      expect(errorSpy).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });

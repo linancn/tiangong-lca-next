@@ -97,10 +97,9 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   };
 
   const getFormDetail = () => {
-    if (!id || !version) return;
     setSpinning(true);
     formRefCreate.current?.resetFields();
-    getFlowpropertyDetail(id, version).then((result: FlowpropertyDetailResponse) => {
+    getFlowpropertyDetail(id!, version!).then((result: FlowpropertyDetailResponse) => {
       const dataset = genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
       if (actionType === 'createVersion' && newVersion) {
         dataset.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
@@ -269,7 +268,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             onFinish={async () => {
               setSpinning(true);
               try {
-                const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
+                const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
                 const formFieldsValue = formRefCreate.current?.getFieldsValue();
                 const result: SupabaseMutationResult<unknown> = await createFlowproperties(
                   paramsId,

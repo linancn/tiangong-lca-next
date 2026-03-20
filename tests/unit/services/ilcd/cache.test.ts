@@ -17,6 +17,7 @@
 import {
   clearILCDCache,
   clearILCDCacheByPrefix,
+  getCachedClassificationData,
   getCachedFlowCategorizationAll,
   getCachedLocationData,
   ilcdCache,
@@ -289,6 +290,58 @@ describe('ILCD Cache Service (src/services/ilcd/cache.ts)', () => {
       expect(result).toEqual(mockGenerated);
     });
 
+    it('should map known category types to Chinese labels for RPC classification requests', async () => {
+      const mockData = [{ '@id': 'contact1', '@name': 'Contact 1' }];
+      const mockDataZH = [{ '@id': 'contact1', '@name': '联系信息1' }];
+      const mockGenerated = [{ id: 'contact1', label: '联系信息1' }];
+
+      supabase.rpc
+        .mockResolvedValueOnce({ data: mockData })
+        .mockResolvedValueOnce({ data: mockDataZH });
+      genClassZH.mockReturnValue(mockGenerated);
+
+      const result = await ilcdCache.getILCDClassification('Contact', 'zh', ['contact1']);
+
+      expect(supabase.rpc).toHaveBeenNthCalledWith(1, 'ilcd_classification_get', {
+        this_file_name: 'ILCDClassification',
+        category_type: 'Contact',
+        get_values: ['contact1'],
+      });
+      expect(supabase.rpc).toHaveBeenNthCalledWith(2, 'ilcd_classification_get', {
+        this_file_name: 'ILCDClassification_zh',
+        category_type: '联系信息',
+        get_values: ['contact1'],
+      });
+      expect(genClassZH).toHaveBeenCalledWith(mockData, mockDataZH);
+      expect(result).toEqual(mockGenerated);
+    });
+
+    it('should fall back to the original category type when no Chinese mapping exists', async () => {
+      const mockData = [{ '@id': 'other1', '@name': 'Other 1' }];
+      const mockDataZH = [{ '@id': 'other1', '@name': '其他1' }];
+      const mockGenerated = [{ id: 'other1', label: '其他1' }];
+
+      supabase.rpc
+        .mockResolvedValueOnce({ data: mockData })
+        .mockResolvedValueOnce({ data: mockDataZH });
+      genClassZH.mockReturnValue(mockGenerated);
+
+      const result = await ilcdCache.getILCDClassification('UnmappedType', 'zh', ['other1']);
+
+      expect(supabase.rpc).toHaveBeenNthCalledWith(1, 'ilcd_classification_get', {
+        this_file_name: 'ILCDClassification',
+        category_type: 'UnmappedType',
+        get_values: ['other1'],
+      });
+      expect(supabase.rpc).toHaveBeenNthCalledWith(2, 'ilcd_classification_get', {
+        this_file_name: 'ILCDClassification_zh',
+        category_type: 'UnmappedType',
+        get_values: ['other1'],
+      });
+      expect(genClassZH).toHaveBeenCalledWith(mockData, mockDataZH);
+      expect(result).toEqual(mockGenerated);
+    });
+
     it('should return cached data on subsequent calls with same parameters', async () => {
       const mockData = [{ '@id': 'proc1', '@name': 'Process 1' }];
       const mockGenerated = [{ id: 'proc1', label: 'Process 1' }];
@@ -339,6 +392,13 @@ describe('ILCD Cache Service (src/services/ilcd/cache.ts)', () => {
         get_values: ['CN', 'US'],
       });
       expect(result).toEqual(mockLocations);
+    });
+
+    it('should return empty array when all provided location values are invalid', async () => {
+      const result = await ilcdCache.getILCDLocationByValues('en', [null as any, undefined as any]);
+
+      expect(result).toEqual([]);
+      expect(supabase.rpc).not.toHaveBeenCalled();
     });
 
     it('should fetch and cache location data for English', async () => {
@@ -490,6 +550,20 @@ describe('ILCD Cache Service (src/services/ilcd/cache.ts)', () => {
         get_values: ['CN'],
       });
       expect(result).toEqual(mockLocations);
+    });
+
+    it('getCachedClassificationData should call getILCDClassification', async () => {
+      const mockData = [{ '@id': 'proc1', '@name': 'Process 1' }];
+      const mockGenerated = [{ id: 'proc1', label: 'Process 1' }];
+
+      getISICClassification.mockReturnValue({ data: mockData });
+      genClass.mockReturnValue(mockGenerated);
+
+      const result = await getCachedClassificationData('Process', 'en', ['proc1']);
+
+      expect(getISICClassification).toHaveBeenCalledWith(['proc1']);
+      expect(genClass).toHaveBeenCalledWith(mockData);
+      expect(result).toEqual(mockGenerated);
     });
   });
 

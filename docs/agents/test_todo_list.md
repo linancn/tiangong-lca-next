@@ -75,6 +75,7 @@ Current repo-wide status from the same run:
   - closure-queue summary,
   - shared-fixture batches,
   - next 25 ordered incomplete files.
+- The queue and batch sections print full project-relative paths; file and cluster labels are not shortened with `...`.
 - `node scripts/test-coverage-report.js --full` prints the full ordered incomplete-file queue for all remaining files.
 - Queue order is deterministic: `branches asc -> lines asc -> statements asc -> functions asc -> path`.
 

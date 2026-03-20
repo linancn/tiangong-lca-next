@@ -212,9 +212,6 @@ const TaskTimeline: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> =
     solving: token.colorSuccess,
   };
   const segments = timelineSegments(task, intl, phaseColors);
-  if (segments.length === 0) {
-    return null;
-  }
   const totalMs = segments.reduce((sum, item) => sum + item.durationMs, 0);
   const fallbackWidth = 100 / segments.length;
 

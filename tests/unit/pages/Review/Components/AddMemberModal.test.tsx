@@ -394,6 +394,53 @@ describe('ReviewAddMemberModal', () => {
     expect(mockUpdateUserContact).not.toHaveBeenCalled();
   });
 
+  it('falls back to empty user id, empty contact short descriptions, and dash display names', async () => {
+    renderModal();
+
+    mockGetUserInfoByEmail.mockResolvedValue({
+      success: true,
+      user: {
+        raw_user_meta_data: {
+          email: 'fallback@example.com',
+        },
+      },
+      contact: null,
+    });
+    mockGetContactDetail.mockResolvedValueOnce({
+      data: {
+        version: '2.0.0',
+        json: {},
+      },
+    });
+    mockGenContactFromData.mockReturnValueOnce({
+      contactInformation: {
+        dataSetInformation: {},
+      },
+    });
+    mockAddReviewMemberApi.mockResolvedValue({ success: true });
+    mockUpdateUserContact.mockResolvedValue({ error: null });
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'fallback@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() => expect(screen.getByText('-')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: /pick-contact/i }));
+    await waitFor(() => expect(mockGenContactFromData).toHaveBeenCalledWith({}));
+
+    await userEvent.click(screen.getByRole('button', { name: 'ok' }));
+
+    await waitFor(() => expect(mockAddReviewMemberApi).toHaveBeenCalledWith(''));
+    expect(mockUpdateUserContact).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({
+        'common:shortDescription': [],
+      }),
+    );
+  });
+
   it('shows generic failure when updating associated contact fails', async () => {
     renderModal();
 
@@ -438,5 +485,79 @@ describe('ReviewAddMemberModal', () => {
 
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(mockAddReviewMemberApi).not.toHaveBeenCalled();
+  });
+
+  it('resets queried user and contact state when the modal closes and reopens', async () => {
+    const onCancel = jest.fn();
+    const onSuccess = jest.fn();
+    mockGetUserInfoByEmail.mockResolvedValue({
+      success: true,
+      user: {
+        id: 'user-reset',
+        raw_user_meta_data: {
+          email: 'reset@example.com',
+          display_name: 'Reset User',
+        },
+      },
+      contact: {
+        '@refObjectId': 'contact-reset',
+        '@type': 'contact data set',
+        '@uri': '../contacts/contact-reset.xml',
+        '@version': '1.0.0',
+        'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Reset contact' }],
+      },
+    });
+
+    const { rerender } = render(<AddMemberModal open onCancel={onCancel} onSuccess={onSuccess} />);
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'reset@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() => expect(screen.getByText('user-reset')).toBeInTheDocument());
+
+    rerender(<AddMemberModal open={false} onCancel={onCancel} onSuccess={onSuccess} />);
+    rerender(<AddMemberModal open onCancel={onCancel} onSuccess={onSuccess} />);
+
+    expect(screen.queryByText('user-reset')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Please enter email and click query')).toHaveValue('');
+  });
+
+  it('logs unexpected errors during member creation and leaves the modal open', async () => {
+    renderModal();
+
+    const contactInfo = {
+      '@refObjectId': 'contact-1',
+      '@type': 'contact data set',
+      '@uri': '../contacts/contact-1.xml',
+      '@version': '1.0.0',
+      'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Primary contact' }],
+    };
+
+    mockGetUserInfoByEmail.mockResolvedValue({
+      success: true,
+      user: {
+        id: 'user-1',
+        raw_user_meta_data: {
+          email: 'reviewer@example.com',
+          display_name: 'Reviewer One',
+        },
+      },
+      contact: contactInfo,
+    });
+    mockAddReviewMemberApi.mockRejectedValue(new Error('add failed'));
+
+    await userEvent.type(
+      screen.getByPlaceholderText('Please enter email and click query'),
+      'reviewer@example.com',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() => expect(screen.getByText('Primary contact')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: 'ok' }));
+
+    await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(Error)));
+    expect(screen.getByTestId('modal')).toBeInTheDocument();
   });
 });

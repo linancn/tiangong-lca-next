@@ -63,4 +63,19 @@ describe('ReviewFormScopeView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to dash placeholders when scope or method names are missing', () => {
+    render(
+      <ScopeItemView
+        data={[
+          {
+            '@name': '',
+            'common:method': { '@name': '' },
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText('-')).toHaveLength(2);
+  });
 });

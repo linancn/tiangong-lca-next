@@ -91,10 +91,12 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
                 const filteredRows = (selectedRows as RefVersionItem[]).filter(
                   (r) => r.id !== currentId,
                 );
-                const filteredKeys = selectedRowKeys.filter((k) => {
-                  const r = (selectedRows as RefVersionItem[]).find((sr) => sr.key === k);
-                  return r ? r.id !== currentId : true;
-                });
+                const filteredKeys = selectedRowKeys.filter(
+                  (k) =>
+                    !(selectedRows as RefVersionItem[]).some(
+                      (sr) => sr.key === k && sr.id === currentId,
+                    ),
+                );
                 const newRows = [...filteredRows, record as RefVersionItem];
                 const newKeys = [...filteredKeys, currentKey];
                 setSelectedRows(newRows);

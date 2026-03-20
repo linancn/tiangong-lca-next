@@ -264,4 +264,60 @@ describe('genLifeCycleModelProcesses allocation-heavy paths', () => {
       Number(primary?.data?.processDataSet?.LCIAResults?.LCIAResult?.[0]?.meanAmount),
     ).toBeGreaterThan(4);
   });
+
+  it('treats non-finite remaining ratios as zero when allocation leftovers are extremely large', async () => {
+    mockOr.mockResolvedValue({ data: clone(createAllocationSupabaseProcesses()) });
+    mockAllocateSupplyToDemand
+      .mockReturnValueOnce({
+        allocations: {
+          'nodeA:flow-A-to-B': {
+            'nodeB:flow-A-to-B': 1,
+          },
+        },
+        remaining_supply: {
+          'nodeA:flow-A-to-B': '1e309',
+        },
+        remaining_demand: {
+          'nodeB:flow-A-to-B': 0,
+        },
+      })
+      .mockReturnValueOnce({
+        allocations: {},
+        remaining_supply: {},
+        remaining_demand: {},
+      });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'allocation-non-finite-remaining-rate',
+      [
+        {
+          id: 'graph-node-a',
+          data: {
+            index: 'nodeA',
+            quantitativeReference: '1',
+            targetAmount: 8,
+          },
+        },
+        {
+          id: 'graph-node-b',
+          data: {
+            index: 'nodeB',
+          },
+        },
+      ] as any,
+      createAllocationModelData(),
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find(
+      (process) => process?.modelInfo?.type === 'primary',
+    );
+    const refExchange = primary?.data?.processDataSet?.exchanges?.exchange?.find(
+      (exchange: any) => exchange?.quantitativeReference === true,
+    );
+
+    expect(refExchange?.meanAmount).toBe('8');
+    expect(primary?.modelInfo?.type).toBe('primary');
+  });
 });

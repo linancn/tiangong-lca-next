@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -48,9 +48,15 @@ jest.mock('@ant-design/pro-components', () => {
       return (
         <div data-testid={`table-${title}`}>
           {rows.map((row, index) => (
-            <div
-              key={`${title}-${index}`}
-            >{`${row.referenceToFlowDataSetId}:${row.stateCode ?? 'na'}:${row.classification ?? '-'}`}</div>
+            <div key={`${title}-${index}`}>
+              <div>{`${row.referenceToFlowDataSetId}:${row.stateCode ?? 'na'}:${row.classification ?? '-'}`}</div>
+              {(columns ?? []).map((column: any, columnIndex: number) => {
+                const rendered = column.render
+                  ? column.render(row?.[column.dataIndex], row, index)
+                  : row?.[column.dataIndex];
+                return <div key={`${title}-${index}-${columnIndex}`}>{toText(rendered)}</div>;
+              })}
+            </div>
           ))}
         </div>
       );
@@ -206,6 +212,15 @@ jest.mock('@/services/users/api', () => ({
 describe('Review process TabsDetail', () => {
   const TabsDetail = require('@/pages/Review/Components/reviewProcess/tabsDetail').TabsDetail;
 
+  const renderTabsDetail = async (props: any) => {
+    let view: any;
+    await act(async () => {
+      view = renderWithProviders(<TabsDetail {...props} />);
+      await Promise.resolve();
+    });
+    return view!;
+  };
+
   const exchangeRow = {
     dataSetInternalID: 'ex-1',
     referenceToFlowDataSetId: 'flow-1',
@@ -246,19 +261,17 @@ describe('Review process TabsDetail', () => {
     });
     const formRef = { current: { getFieldValue, setFieldValue } };
 
-    renderWithProviders(
-      <TabsDetail
-        lang='en'
-        activeTabKey='validation'
-        formRef={formRef as any}
-        onData={jest.fn()}
-        onExchangeData={jest.fn()}
-        onTabChange={jest.fn()}
-        exchangeDataSource={[exchangeRow]}
-        initData={{ modellingAndValidation: {} }}
-        type='edit'
-      />,
-    );
+    await renderTabsDetail({
+      lang: 'en',
+      activeTabKey: 'validation',
+      formRef: formRef as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [exchangeRow],
+      initData: { modellingAndValidation: {} },
+      type: 'edit',
+    });
 
     await waitFor(() =>
       expect(setFieldValue).toHaveBeenCalledWith(
@@ -280,79 +293,107 @@ describe('Review process TabsDetail', () => {
     );
   });
 
-  it('flattens rejected validation and compliance comments in edit mode', async () => {
-    renderWithProviders(
-      <TabsDetail
-        lang='en'
-        activeTabKey='validation'
-        formRef={{ current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any}
-        onData={jest.fn()}
-        onExchangeData={jest.fn()}
-        onTabChange={jest.fn()}
-        exchangeDataSource={[exchangeRow]}
-        initData={{ modellingAndValidation: {} }}
-        rejectedComments={[
-          {
-            modellingAndValidation: {
-              validation: { review: [{ id: 'review-1' }, { id: 'review-2' }] },
-            },
-          },
-          {
-            modellingAndValidation: {
-              validation: { review: { id: 'review-3' } },
-              complianceDeclarations: { compliance: [{ id: 'compliance-1' }] },
-            },
-          },
-        ]}
-        type='edit'
-      />,
+  it('keeps existing validation review rows without injecting a default row', async () => {
+    const existingReview = [{ id: 'existing-review' }];
+    const getFieldValue = jest.fn(() => existingReview);
+    const setFieldValue = jest.fn();
+
+    await renderTabsDetail({
+      lang: 'en',
+      activeTabKey: 'validation',
+      formRef: { current: { getFieldValue, setFieldValue } } as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [exchangeRow],
+      initData: { modellingAndValidation: { validation: { review: existingReview } } },
+      type: 'edit',
+    });
+
+    await waitFor(() => expect(mockGetUserDetail).toHaveBeenCalled());
+    expect(setFieldValue).not.toHaveBeenCalledWith(
+      ['modellingAndValidation', 'validation', 'review'],
+      [{ 'common:scope': [{}] }],
     );
+    expect(setFieldValue).toHaveBeenCalledWith(
+      [
+        'modellingAndValidation',
+        'validation',
+        'review',
+        0,
+        'common:referenceToNameOfReviewerAndInstitution',
+      ],
+      expect.objectContaining({ '@refObjectId': 'contact-1' }),
+    );
+  });
+
+  it('flattens rejected validation and compliance comments in edit mode', async () => {
+    await renderTabsDetail({
+      lang: 'en',
+      activeTabKey: 'validation',
+      formRef: { current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [exchangeRow],
+      initData: { modellingAndValidation: {} },
+      rejectedComments: [
+        {
+          modellingAndValidation: {
+            validation: { review: [{ id: 'review-1' }, { id: 'review-2' }] },
+          },
+        },
+        {
+          modellingAndValidation: {
+            validation: { review: { id: 'review-3' } },
+            complianceDeclarations: { compliance: [{ id: 'compliance-1' }] },
+          },
+        },
+      ],
+      type: 'edit',
+    });
 
     expect(await screen.findByText('review-view-3')).toBeInTheDocument();
 
-    renderWithProviders(
-      <TabsDetail
-        lang='en'
-        activeTabKey='complianceDeclarations'
-        formRef={{ current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any}
-        onData={jest.fn()}
-        onExchangeData={jest.fn()}
-        onTabChange={jest.fn()}
-        exchangeDataSource={[exchangeRow]}
-        initData={{ modellingAndValidation: {} }}
-        rejectedComments={[
-          {
-            modellingAndValidation: {
-              complianceDeclarations: { compliance: { id: 'compliance-1' } },
-            },
+    await renderTabsDetail({
+      lang: 'en',
+      activeTabKey: 'complianceDeclarations',
+      formRef: { current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [exchangeRow],
+      initData: { modellingAndValidation: {} },
+      rejectedComments: [
+        {
+          modellingAndValidation: {
+            complianceDeclarations: { compliance: { id: 'compliance-1' } },
           },
-          {
-            modellingAndValidation: {
-              complianceDeclarations: { compliance: [{ id: 'compliance-2' }] },
-            },
+        },
+        {
+          modellingAndValidation: {
+            complianceDeclarations: { compliance: [{ id: 'compliance-2' }] },
           },
-        ]}
-        type='edit'
-      />,
-    );
+        },
+      ],
+      type: 'edit',
+    });
 
     expect(await screen.findByText('compliance-view-2')).toBeInTheDocument();
   });
 
   it('loads exchange tables and enriches rows with flow review state data', async () => {
-    renderWithProviders(
-      <TabsDetail
-        lang='en'
-        activeTabKey='exchanges'
-        formRef={{ current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any}
-        onData={jest.fn()}
-        onExchangeData={jest.fn()}
-        onTabChange={jest.fn()}
-        exchangeDataSource={[exchangeRow]}
-        initData={{ modellingAndValidation: {} }}
-        type='view'
-      />,
-    );
+    await renderTabsDetail({
+      lang: 'en',
+      activeTabKey: 'exchanges',
+      formRef: { current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [exchangeRow],
+      initData: { modellingAndValidation: {} },
+      type: 'view',
+    });
 
     await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalledTimes(4));
     expect(mockGenProcessExchangeTableData).toHaveBeenCalledWith([exchangeRow], 'en');
@@ -361,5 +402,168 @@ describe('Review process TabsDetail', () => {
       'en',
     );
     expect(await screen.findAllByText('flow-1:30:class-a')).toHaveLength(2);
+  });
+
+  it('renders mapped option labels across process, modelling, and administrative tabs', async () => {
+    const sharedProps = {
+      lang: 'en',
+      formRef: { current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [exchangeRow],
+      type: 'view' as const,
+    };
+
+    const { rerender } = await renderTabsDetail({
+      ...sharedProps,
+      activeTabKey: 'processInformation',
+      initData: {
+        processInformation: {
+          mathematicalRelations: {
+            variableParameter: {
+              uncertaintyDistributionType: 'distribution-a',
+            },
+          },
+        },
+      },
+    });
+
+    expect(screen.getByText('Distribution A')).toBeInTheDocument();
+
+    await act(async () => {
+      rerender(
+        <TabsDetail
+          {...sharedProps}
+          activeTabKey='modellingAndValidation'
+          initData={{
+            modellingAndValidation: {
+              LCIMethodAndAllocation: {
+                typeOfDataSet: 'process-a',
+                LCIMethodPrinciple: 'principle-a',
+                LCIMethodApproaches: 'approach-a',
+              },
+              completeness: {
+                completenessProductModel: 'product-a',
+                completenessElementaryFlows: {
+                  '@type': 'type-a',
+                  '@value': 'value-a',
+                },
+              },
+            },
+          }}
+        />,
+      );
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText('Process A')).toBeInTheDocument();
+    expect(screen.getByText('Principle A')).toBeInTheDocument();
+    expect(screen.getByText('Approach A')).toBeInTheDocument();
+    expect(screen.getByText('Product A')).toBeInTheDocument();
+    expect(screen.getByText('Type A')).toBeInTheDocument();
+    expect(screen.getByText('Value A')).toBeInTheDocument();
+
+    await act(async () => {
+      rerender(
+        <TabsDetail
+          {...sharedProps}
+          activeTabKey='administrativeInformation'
+          initData={{
+            administrativeInformation: {
+              publicationAndOwnership: {
+                'common:copyright': 'yes',
+                'common:licenseType': 'license-a',
+              },
+            },
+          }}
+        />,
+      );
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+    expect(screen.getByText('License A')).toBeInTheDocument();
+  });
+
+  it('renders exchange column renderers for reviewed, unreviewed, and unknown flows', async () => {
+    const reviewedRow = {
+      dataSetInternalID: 'ex-reviewed',
+      referenceToFlowDataSetId: 'flow-reviewed',
+      referenceToFlowDataSetVersion: '1.0.0',
+      referenceToFlowDataSet: 'Reviewed flow',
+      generalComment: 'Reviewed comment',
+      meanAmount: 1.23,
+      resultingAmount: 4.56,
+      refUnitRes: {
+        name: 'Kilogram',
+        refUnitGeneralComment: 'kg comment',
+        refUnitName: 'kg',
+      },
+      quantitativeReference: true,
+    };
+    const unreviewedRow = {
+      ...reviewedRow,
+      dataSetInternalID: 'ex-unreviewed',
+      referenceToFlowDataSetId: 'flow-unreviewed',
+      referenceToFlowDataSet: 'Unreviewed flow',
+      quantitativeReference: false,
+    };
+    const unknownRow = {
+      ...reviewedRow,
+      dataSetInternalID: 'ex-unknown',
+      referenceToFlowDataSetId: 'flow-unknown',
+      referenceToFlowDataSet: 'Unknown flow',
+      referenceToFlowDataSetVersion: '2.0.0',
+    };
+
+    mockGenProcessExchangeTableData.mockReturnValue([reviewedRow, unreviewedRow, unknownRow]);
+    mockGetProcessExchange.mockImplementation(async (data: any[]) => ({
+      success: true,
+      data,
+    }));
+    mockGetUnitData.mockImplementation(async (_type: string, data: any[]) => data);
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValue({
+      error: null,
+      data: [
+        {
+          id: 'flow-reviewed',
+          version: '1.0.0',
+          stateCode: 100,
+          classification: 'class-reviewed',
+        },
+        {
+          id: 'flow-unreviewed',
+          version: '1.0.0',
+          stateCode: 30,
+          classification: 'class-unreviewed',
+        },
+      ],
+    });
+
+    await renderTabsDetail({
+      lang: 'en',
+      activeTabKey: 'exchanges',
+      formRef: { current: { getFieldValue: jest.fn(), setFieldValue: jest.fn() } } as any,
+      onData: jest.fn(),
+      onExchangeData: jest.fn(),
+      onTabChange: jest.fn(),
+      exchangeDataSource: [reviewedRow, unreviewedRow, unknownRow],
+      initData: { modellingAndValidation: {} },
+      type: 'view',
+    });
+
+    await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalledTimes(4));
+    expect(await screen.findAllByText('Reviewed')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Unreviewed')).not.toHaveLength(0);
+    expect(await screen.findAllByText('ex-reviewed')).not.toHaveLength(0);
+    expect(await screen.findAllByText('ex-unreviewed')).not.toHaveLength(0);
+    expect(await screen.findAllByText('ex-unknown')).not.toHaveLength(0);
+    expect(
+      await screen.findAllByText((text) => text.includes('Kilogram') && text.includes('kg')),
+    ).not.toHaveLength(0);
+    expect(await screen.findAllByText('flow-reviewed:100:class-reviewed')).not.toHaveLength(0);
+    expect(await screen.findAllByText('flow-unreviewed:30:class-unreviewed')).not.toHaveLength(0);
+    expect(await screen.findAllByText('flow-unknown:na:-')).not.toHaveLength(0);
   });
 });

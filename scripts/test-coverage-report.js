@@ -490,17 +490,16 @@ function printBatchCandidates(clusters) {
   }
 
   printDivider();
-  console.log(
-    colorize('  Cluster                             Files   Min Branch   Avg Branch', 'gray'),
-  );
+  console.log(colorize('  Cluster', 'gray'));
   printDivider();
 
   clusters.forEach((cluster) => {
-    const label =
-      cluster.key.length > 34 ? `...${cluster.key.slice(-31)}` : cluster.key.padEnd(34, ' ');
+    console.log(`  ${cluster.key}`);
     console.log(
-      `  ${label} ${String(cluster.count).padStart(5, ' ')}     ` +
-        `${formatPercent(cluster.minBranch)}%      ${formatPercent(cluster.avgBranch)}%`,
+      colorize(
+        `    Files ${String(cluster.count).padStart(3, ' ')} | Min Branch ${formatPercent(cluster.minBranch)}% | Avg Branch ${formatPercent(cluster.avgBranch)}%`,
+        'gray',
+      ),
     );
   });
 }
@@ -528,21 +527,17 @@ function printOrderedQueue(title, files, limit = files.length) {
   }
 
   printDivider();
-  console.log(
-    colorize(
-      '  File                                  Stmt   Line   Branch   Func   Uncovered',
-      'gray',
-    ),
-  );
+  console.log(colorize('  File', 'gray'));
   printDivider();
 
   files.slice(0, limit).forEach((file) => {
-    const fileName =
-      file.path.length > 36 ? `...${file.path.slice(-33)}` : file.path.padEnd(36, ' ');
     const uncovered = truncate(compressRanges(file.uncoveredLines), 58);
+    console.log(`  ${file.path}`);
     console.log(
-      `  ${fileName} ${formatPercent(file.coverage.statements.pct)}% ${formatPercent(file.coverage.lines.pct)}% ` +
-        `${formatPercent(file.coverage.branches.pct)}% ${formatPercent(file.coverage.functions.pct)}%   ${uncovered}`,
+      colorize(
+        `    Stmt ${formatPercent(file.coverage.statements.pct)}% | Line ${formatPercent(file.coverage.lines.pct)}% | Branch ${formatPercent(file.coverage.branches.pct)}% | Func ${formatPercent(file.coverage.functions.pct)}% | Uncovered ${uncovered}`,
+        'gray',
+      ),
     );
   });
 }

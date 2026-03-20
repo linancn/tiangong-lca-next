@@ -295,6 +295,107 @@ describe('General Utility Functions', () => {
 
       expect(result[0].refUnitRes).toBeUndefined();
     });
+
+    it('should fallback to unit group ID and unit ID matches for flow type', async () => {
+      const mockData = [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '01.00.000',
+        },
+      ];
+
+      (getFlowProperties as jest.Mock).mockResolvedValue({
+        data: [
+          {
+            id: 'flow-1',
+            version: '01.00.000',
+            refFlowPropertytId: 'fp-1',
+            typeOfDataSet: 'Product flow',
+          },
+        ],
+      });
+      (getReferenceUnitGroups as jest.Mock).mockResolvedValue({
+        data: [
+          {
+            id: 'fp-1',
+            version: '99.00.000',
+            refUnitGroupId: 'ug-1',
+          },
+        ],
+      });
+      (getReferenceUnits as jest.Mock).mockResolvedValue({
+        data: [
+          {
+            id: 'ug-1',
+            version: '88.00.000',
+            name: 'fallback-unit',
+          },
+        ],
+      });
+
+      const result = (await getUnitData('flow', mockData)) as any[];
+
+      expect(result[0].refUnitRes).toEqual({
+        id: 'ug-1',
+        version: '88.00.000',
+        name: 'fallback-unit',
+      });
+    });
+
+    it('should fallback to unit group ID and unit ID matches for flowproperty type', async () => {
+      const mockData = [
+        {
+          referenceToFlowPropertyDataSetId: 'fp-1',
+          referenceToFlowPropertyDataSetVersion: '01.00.000',
+        },
+      ];
+
+      (getReferenceUnitGroups as jest.Mock).mockResolvedValue({
+        data: [
+          {
+            id: 'fp-1',
+            version: '99.00.000',
+            refUnitGroupId: 'ug-1',
+            refUnitGroupVersion: '99.00.000',
+          },
+        ],
+      });
+      (getReferenceUnits as jest.Mock).mockResolvedValue({
+        data: [
+          {
+            id: 'ug-1',
+            version: '88.00.000',
+            name: 'flowproperty-fallback-unit',
+          },
+        ],
+      });
+
+      const result = (await getUnitData('flowproperty', mockData)) as any[];
+
+      expect(result[0].refUnitRes).toEqual({
+        id: 'ug-1',
+        version: '88.00.000',
+        name: 'flowproperty-fallback-unit',
+      });
+    });
+
+    it('should use "-" when referenced flow property cannot be found', async () => {
+      const mockData = [
+        {
+          referenceToFlowDataSetId: 'missing-flow',
+          referenceToFlowDataSetVersion: '01.00.000',
+        },
+      ];
+
+      (getFlowProperties as jest.Mock).mockResolvedValue({ data: [] });
+      (getReferenceUnitGroups as jest.Mock).mockResolvedValue({ data: [] });
+      (getReferenceUnits as jest.Mock).mockResolvedValue({ data: [] });
+
+      const result = (await getUnitData('flow', mockData)) as any[];
+
+      expect(result[0].typeOfDataSet).toBe('-');
+      expect(result[0].refUnitRes).toBeUndefined();
+    });
   });
 
   describe('removeEmptyObjects', () => {
@@ -410,6 +511,11 @@ describe('General Utility Functions', () => {
       const result = genClassStr(['category1', 'unknown'], 0, classification);
       expect(result).toBe('Category 1 > unknown');
     });
+
+    it('should recurse through multiple unmatched classification levels', () => {
+      const result = genClassStr(['unknown-1', 'unknown-2'], 0, classification);
+      expect(result).toBe('unknown-1 > unknown-2');
+    });
   });
 
   describe('genClassIdList', () => {
@@ -428,6 +534,19 @@ describe('General Utility Functions', () => {
     it('should handle mixed matched/unmatched classifications', () => {
       const result = genClassIdList(['category1', 'unknown'], 0, classification);
       expect(result).toEqual(['1', '']);
+    });
+
+    it('should recurse through unmatched classification levels', () => {
+      const result = genClassIdList(['unknown-1', 'unknown-2'], 0, classification);
+      expect(result).toEqual(['', '']);
+    });
+
+    it('should fallback to empty ID when matched classification has no id', () => {
+      const result = genClassIdList(['category-no-id'], 0, [
+        { value: 'category-no-id', label: 'Category without id', children: [] } as any,
+      ]);
+
+      expect(result).toEqual(['']);
     });
   });
 
@@ -477,6 +596,35 @@ describe('General Utility Functions', () => {
     it('should return "-" for missing text', () => {
       const langTexts = [{ '@xml:lang': 'en' }];
       expect(getLangText(langTexts, 'en')).toBe('-');
+    });
+
+    it('should fallback to "-" when English fallback exists without text', () => {
+      expect(getLangText([{ '@xml:lang': 'en' }], 'fr')).toBe('-');
+    });
+
+    it('should fallback to "-" when first array item has no text', () => {
+      expect(getLangText([{ '@xml:lang': 'zh' }], 'fr')).toBe('-');
+    });
+
+    it('should fallback to "-" when single object has no text', () => {
+      expect(getLangText({ '@xml:lang': 'en' }, 'en')).toBe('-');
+    });
+
+    it('should swallow unexpected lang payload errors and log them', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const badLangTexts = new Proxy(
+        {},
+        {
+          get() {
+            throw new Error('boom');
+          },
+        },
+      );
+
+      expect(getLangText(badLangTexts, 'en')).toBe('-');
+      expect(consoleSpy).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -574,6 +722,13 @@ describe('General Utility Functions', () => {
       const result = mergeLangArrays();
       expect(result).toEqual([]);
     });
+
+    it('should fallback to empty text when a common language entry is missing text', () => {
+      const arr1 = [{ '@xml:lang': 'en' }];
+      const arr2 = [{ '@xml:lang': 'en', '#text': 'World' }];
+
+      expect(mergeLangArrays(arr1, arr2)).toEqual([{ '@xml:lang': 'en', '#text': 'World' }]);
+    });
   });
 
   describe('normalizeLangPayloadBeforeSave', () => {
@@ -661,6 +816,102 @@ describe('General Utility Functions', () => {
       expect(result.issues).toEqual([]);
       expect(result.payload.classes).toEqual(payload.classes);
     });
+
+    it('should reuse cached translations for repeated invalid English source text', async () => {
+      const payload = {
+        title: [
+          { '@xml:lang': 'en', '#text': '钢铁制造' },
+          { '@xml:lang': 'zh', '#text': '钢铁制造' },
+        ],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue(undefined);
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(translateZhToEn).toHaveBeenCalledTimes(1);
+      expect(result.issues).toHaveLength(1);
+      expect(result.issues[0]).toMatchObject({
+        path: 'title',
+        code: 'invalid_en',
+      });
+    });
+
+    it('should skip invalid language entries and normalize primitive text values', async () => {
+      const payload = {
+        title: [
+          {},
+          { '@xml:lang': '', '#text': 'ignored' },
+          { '@xml:lang': 'en', '#text': 'Hello' },
+          { '@xml:lang': 'zh', '#text': 123 },
+          { '@xml:lang': 'en', '#text': '' },
+        ],
+      };
+
+      const result = await normalizeLangPayloadBeforeSave(payload);
+
+      expect(result.issues).toEqual([]);
+      expect(result.payload.title).toEqual([
+        { '@xml:lang': 'en', '#text': 'Hello' },
+        { '@xml:lang': 'zh', '#text': '123' },
+      ]);
+    });
+
+    it('should normalize a single language object and preserve null sibling values', async () => {
+      const payload = {
+        title: { '@xml:lang': 'zh', '#text': '钢铁制造' },
+        note: null,
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue('Steel manufacturing');
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(result.payload.note).toBeNull();
+      expect(result.payload.title).toEqual([
+        { '@xml:lang': 'en', '#text': 'Steel manufacturing' },
+        { '@xml:lang': 'zh', '#text': '钢铁制造' },
+      ]);
+    });
+
+    it('should preserve empty objects when all language entries are filtered out', async () => {
+      const payload = {
+        title: [{ '@xml:lang': 'en', '#text': '' }],
+      };
+
+      const result = await normalizeLangPayloadBeforeSave(payload);
+
+      expect(result.payload.title).toEqual({});
+    });
+
+    it('should skip entries with non-string language codes', async () => {
+      const payload = {
+        title: [
+          { '@xml:lang': 42, '#text': 'ignored' },
+          { '@xml:lang': 'en', '#text': 'Hello' },
+        ],
+      };
+
+      const result = await normalizeLangPayloadBeforeSave(payload);
+
+      expect(result.payload.title).toEqual({ '@xml:lang': 'en', '#text': 'Hello' });
+    });
+
+    it('should prefer translated Chinese content over retranslating invalid English directly', async () => {
+      const payload = {
+        title: [
+          { '@xml:lang': 'en', '#text': 'Steel钢铁' },
+          { '@xml:lang': 'zh', '#text': '钢铁制造' },
+        ],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue('Steel manufacturing');
+
+      const result = await normalizeLangPayloadBeforeSave(payload, { translateZhToEn });
+
+      expect(translateZhToEn).toHaveBeenCalledTimes(1);
+      expect(result.payload.title).toEqual([
+        { '@xml:lang': 'en', '#text': 'Steel manufacturing' },
+        { '@xml:lang': 'zh', '#text': '钢铁制造' },
+      ]);
+    });
   });
 
   describe('getLangValidationErrorMessage', () => {
@@ -671,6 +922,32 @@ describe('General Utility Functions', () => {
       ]);
 
       expect(message).toBe('Language validation failed: a, b.');
+    });
+
+    it('should return empty string when there are no issues', () => {
+      expect(getLangValidationErrorMessage([])).toBe('');
+      expect(getLangValidationErrorMessage(undefined as any)).toBe('');
+    });
+
+    it('should summarize extra issue paths beyond the display limit', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          { path: 'a', code: 'missing_en', message: 'x' },
+          { path: 'b', code: 'missing_en', message: 'x' },
+          { path: 'c', code: 'missing_en', message: 'x' },
+          { path: 'd', code: 'missing_en', message: 'x' },
+        ],
+        2,
+      );
+
+      expect(message).toBe('Language validation failed: a, b and 2 more field(s).');
+    });
+
+    it('should treat empty issue paths as root', () => {
+      const message = getLangValidationErrorMessage([
+        { path: '', code: 'missing_en', message: 'x' },
+      ]);
+      expect(message).toBe('Language validation failed: (root).');
     });
   });
 
@@ -694,6 +971,23 @@ describe('General Utility Functions', () => {
       const classifications = [{ '@level': '0', '#text': 'Level 0' }];
       const result = classificationToString(classifications);
       expect(result).toBe('Level 0');
+    });
+
+    it('should return an empty string when classification parsing throws', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const badClassifications = new Proxy(
+        {},
+        {
+          get() {
+            throw new Error('boom');
+          },
+        },
+      );
+
+      expect(classificationToString(badClassifications as any)).toBe('');
+      expect(consoleSpy).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -726,6 +1020,45 @@ describe('General Utility Functions', () => {
       const classification = { '@level': '0', '@classId': 'id1', '#text': 'Class 1' };
       const result = classificationToStringList(classification, false);
       expect(result).toEqual({
+        id: ['id1'],
+        value: ['Class 1'],
+      });
+    });
+
+    it('should handle a single elementary-flow classification object', () => {
+      const classification = { '@level': '0', '@catId': 'cat1', '#text': 'Category 1' };
+      const result = classificationToStringList(classification, true);
+
+      expect(result).toEqual({
+        id: ['cat1'],
+        value: ['Category 1'],
+      });
+    });
+
+    it('should swallow parsing errors and return empty lists', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const badClassifications = new Proxy(
+        {},
+        {
+          get() {
+            throw new Error('boom');
+          },
+        },
+      );
+
+      expect(classificationToStringList(badClassifications as any, false)).toEqual({
+        id: [],
+        value: [],
+      });
+      expect(consoleSpy).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should use the default elementaryFlow flag when omitted', () => {
+      const classification = { '@level': '0', '@classId': 'id1', '#text': 'Class 1' };
+
+      expect(classificationToStringList(classification)).toEqual({
         id: ['id1'],
         value: ['Class 1'],
       });
@@ -777,6 +1110,47 @@ describe('General Utility Functions', () => {
       const input = [{ '@level': '0', '@classId': 'id1', '#text': 'Class 1' }];
       const result = classificationToJsonList(input, false);
       expect(result).toEqual(input);
+    });
+
+    it('should convert multiple elementary-flow values to a JSON array', () => {
+      const input = {
+        id: ['cat1', 'cat2'],
+        value: ['Category 1', 'Category 2'],
+      };
+
+      expect(classificationToJsonList(input, true)).toEqual([
+        { '@level': '0', '@catId': 'cat1', '#text': 'Category 1' },
+        { '@level': '1', '@catId': 'cat2', '#text': 'Category 2' },
+      ]);
+    });
+
+    it('should use empty fallback IDs when classification IDs are missing', () => {
+      expect(classificationToJsonList({ value: ['Class 1'] }, false)).toEqual({
+        '@level': '0',
+        '@classId': '',
+        '#text': 'Class 1',
+      });
+      expect(classificationToJsonList({ value: ['Category 1'] }, true)).toEqual({
+        '@level': '0',
+        '@catId': '',
+        '#text': 'Category 1',
+      });
+      expect(classificationToJsonList({ value: ['Class 1', 'Class 2'] }, false)).toEqual([
+        { '@level': '0', '@classId': '', '#text': 'Class 1' },
+        { '@level': '1', '@classId': '', '#text': 'Class 2' },
+      ]);
+      expect(classificationToJsonList({ value: ['Category 1', 'Category 2'] }, true)).toEqual([
+        { '@level': '0', '@catId': '', '#text': 'Category 1' },
+        { '@level': '1', '@catId': '', '#text': 'Category 2' },
+      ]);
+    });
+
+    it('should use the default elementaryFlow flag when omitted', () => {
+      expect(classificationToJsonList({ id: ['id1'], value: ['Class 1'] })).toEqual({
+        '@level': '0',
+        '@classId': 'id1',
+        '#text': 'Class 1',
+      });
     });
   });
 
@@ -1082,6 +1456,21 @@ describe('General Utility Functions', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({ '@level': '0', '#text': 'Unknown Category' });
+    });
+
+    it('should fallback to source translation text when label is missing', () => {
+      const classifications = [{ '@level': '0', '#text': 'Category A' }];
+      const categoryData = [
+        {
+          value: 'Category A',
+          '#text': '分类 A',
+          children: [],
+        },
+      ];
+
+      expect(genClassJsonZH(classifications, 0, categoryData as any)).toEqual([
+        { '@level': '0', '#text': '分类 A' },
+      ]);
     });
 
     it('should return empty array for empty classifications', () => {

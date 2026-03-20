@@ -71,9 +71,7 @@ type FlowSearchFilters = {
 
 export async function createFlows(id: string, data: any) {
   const rawData = genFlowJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {
@@ -102,9 +100,7 @@ export async function createFlows(id: string, data: any) {
 
 export async function updateFlows(id: string, version: string, data: any) {
   const rawData = genFlowJsonOrdered(id, data);
-  const normalizedResult = normalizeLangPayloadForSave
-    ? await normalizeLangPayloadForSave(rawData)
-    : { payload: rawData, validationError: undefined };
+  const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
   if (validationError) {

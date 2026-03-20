@@ -327,7 +327,7 @@ export async function getSystemMembersApi(params: any, sort: any) {
     }
 
     return {
-      data: res || [],
+      data: res,
       success: true,
       total: count || 0,
     };
@@ -449,7 +449,7 @@ export async function getUserManageTableData(params: any, sort: any, role?: stri
     }
 
     return {
-      data: res || [],
+      data: res,
       success: true,
       total: count || 0,
     };
@@ -502,7 +502,7 @@ export async function getReviewMembersApi(params: any, sort: any, role?: string)
     }
 
     return {
-      data: res || [],
+      data: res,
       success: true,
       total: count || 0,
     };

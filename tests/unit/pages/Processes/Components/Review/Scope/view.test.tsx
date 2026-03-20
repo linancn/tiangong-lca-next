@@ -63,4 +63,20 @@ describe('ProcessReviewScopeView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to dash placeholders for empty-string and missing scope or method names', () => {
+    render(
+      <ScopeItemView
+        data={[
+          {
+            '@name': '',
+            'common:method': { '@name': '' },
+          },
+          {},
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(4);
+  });
 });

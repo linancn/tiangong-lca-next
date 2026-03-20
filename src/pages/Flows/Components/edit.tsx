@@ -313,7 +313,7 @@ const FlowsEdit: FC<Props> = ({
       nonExistentRef,
       pathRef,
     );
-    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
+    const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
         return {

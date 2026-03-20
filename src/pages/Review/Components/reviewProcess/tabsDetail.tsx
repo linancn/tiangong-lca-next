@@ -1656,10 +1656,7 @@ export const TabsDetail: FC<Props> = ({
 
   const getValidationReview = () => {
     const result: any[] = [];
-    if (!rejectedComments || rejectedComments.length === 0) {
-      return result;
-    }
-    rejectedComments.forEach((comment) => {
+    (rejectedComments ?? []).forEach((comment) => {
       const review = comment?.modellingAndValidation?.validation?.review;
       if (review) {
         result.push(...(Array.isArray(review) ? review : [review]));
@@ -1670,10 +1667,7 @@ export const TabsDetail: FC<Props> = ({
 
   const getValidationCompliance = () => {
     const result: any[] = [];
-    if (!rejectedComments || rejectedComments.length === 0) {
-      return result;
-    }
-    rejectedComments.forEach((comment) => {
+    (rejectedComments ?? []).forEach((comment) => {
       const compliance = comment?.modellingAndValidation?.complianceDeclarations?.compliance;
       if (compliance) {
         result.push(...(Array.isArray(compliance) ? compliance : [compliance]));

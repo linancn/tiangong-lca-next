@@ -77,7 +77,7 @@ npm run lint
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
 - 报告粒度规则：
-  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件。
+  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件；文件和批次标签使用完整的项目相对路径，不再用 `...` 截断。
   - `node scripts/test-coverage-report.js --full`：看完整的有序未完成文件队列，用于查看全量逐文件状态或刷新 backlog 快照。
   - 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
   - 当前队头已变为 `src/services/lifeCycleModels/api.ts`、`src/pages/Processes/Components/lcaGroupedResults.ts`、`src/services/lifeCycleModels/persistencePlan.ts`、`src/pages/Processes/Analysis/index.tsx`。

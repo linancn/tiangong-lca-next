@@ -63,9 +63,13 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={String(getContainer?.() === global.document?.body)}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -83,8 +87,16 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Collapse = ({ items = [] }: any) => (
+  const Collapse = ({ items = [], expandIcon }: any) => (
     <section>
+      <div data-testid='collapse-icons'>
+        {expandIcon ? (
+          <>
+            <span>{toText(expandIcon({ isActive: true }))}</span>
+            <span>{toText(expandIcon({ isActive: false }))}</span>
+          </>
+        ) : null}
+      </div>
       {items.map((item: any) => (
         <div key={item.key}>
           <div>{toText(item.label)}</div>
@@ -219,9 +231,74 @@ describe('ProcessExchangeView', () => {
     await userEvent.click(screen.getByRole('button', { name: /view/i }));
 
     expect(screen.getByRole('dialog', { name: 'View exchange' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'View exchange' })).toHaveAttribute(
+      'data-container',
+      'true',
+    );
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
 
-    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
+    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[1]);
     expect(screen.queryByRole('dialog', { name: 'View exchange' })).not.toBeInTheDocument();
+  });
+
+  it('falls back to placeholders for missing uncertainty amounts and renders both collapse icon states', async () => {
+    render(
+      <ProcessExchangeView
+        id='ex-1'
+        data={[
+          {
+            ...baseExchange,
+            uncertaintyDistributionType: 'uniform',
+            minimumAmount: undefined,
+            maximumAmount: undefined,
+            relativeStandardDeviation95In: undefined,
+          },
+          {
+            ...baseExchange,
+            '@dataSetInternalID': 'ex-2',
+            uncertaintyDistributionType: 'log-normal',
+            relativeStandardDeviation95In: undefined,
+          },
+        ]}
+        lang='en'
+        buttonType='text'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view/i }));
+
+    expect(screen.getByTestId('collapse-icons')).toBeInTheDocument();
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+  });
+
+  it('closes through the header close icon action', async () => {
+    render(<ProcessExchangeView id='missing' data={[]} lang='en' buttonType='text' />);
+
+    await userEvent.click(screen.getByRole('button', { name: /view/i }));
+    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
+
+    expect(screen.queryByRole('dialog', { name: 'View exchange' })).not.toBeInTheDocument();
+  });
+
+  it('falls back to a placeholder for missing log-normal deviation values', async () => {
+    render(
+      <ProcessExchangeView
+        id='ex-2'
+        data={[
+          {
+            ...baseExchange,
+            '@dataSetInternalID': 'ex-2',
+            uncertaintyDistributionType: 'log-normal',
+            relativeStandardDeviation95In: undefined,
+          },
+        ]}
+        lang='en'
+        buttonType='text'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /view/i }));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });
 });

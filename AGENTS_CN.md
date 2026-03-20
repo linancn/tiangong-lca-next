@@ -34,7 +34,7 @@ npm run build
 - `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
 - 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已内置 `NODE_OPTIONS=--max-old-space-size=8192`，全量覆盖率直接用脚本即可。
-- `npm run test:coverage:report` 是默认的覆盖率 review 产物。它会输出全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个未完成文件。
+- `npm run test:coverage:report` 是默认的覆盖率 review 产物。它会输出全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个未完成文件，并使用完整的项目相对路径（文件/批次标签不再用 `...` 截断）。
 - `node scripts/test-coverage-report.js --full` 会输出完整的有序未完成文件队列。它用于查看完整逐文件状态或刷新队列快照，而不是主观按“收益”重新排序。
 - 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
 

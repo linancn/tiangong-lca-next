@@ -77,6 +77,7 @@ jest.mock('@/services/ilcd/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  normalizeLangPayloadForSave: jest.fn(),
 }));
 
 jest.mock('@/services/sources/util', () => ({
@@ -87,7 +88,8 @@ const { supabase } = jest.requireMock('@/services/supabase');
 const { classificationToString, genClassificationZH, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
-const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
+const { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } =
+  jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
 const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
@@ -97,6 +99,10 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    normalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
+      payload,
+      validationError: undefined,
+    }));
     // Setup default SDK mock behavior
     mockCreateSource.mockReturnValue({
       validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -122,6 +128,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const result = await createSource(mockId, mockData);
 
       expect(genSourceJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
+      expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
       expect(mockCreateSource).toHaveBeenCalledWith(mockOrderedData);
       expect(mockValidateEnhanced).toHaveBeenCalled();
       expect(supabase.from).toHaveBeenCalledWith('sources');
@@ -130,6 +137,29 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       ]);
       expect(builder.select).toHaveBeenCalled();
       expect(result).toEqual(mockInsertResult);
+    });
+
+    it('should return a language validation error instead of inserting invalid source data', async () => {
+      const mockId = 'source-lang-error';
+      const mockOrderedData = { ordered: true };
+
+      genSourceJsonOrdered.mockReturnValue(mockOrderedData);
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: mockOrderedData,
+        validationError: 'Missing required multilingual value',
+      });
+
+      const result = await createSource(mockId, { sourceDataSet: {} });
+
+      expect(supabase.from).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        data: null,
+        error: {
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'Missing required multilingual value',
+        },
+        status: 400,
+      });
     });
 
     it('should handle validation failure', async () => {
@@ -172,6 +202,29 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       expect(result).toEqual(mockError);
     });
+
+    it('should fall back to raw ordered data when normalization omits the payload', async () => {
+      const mockId = 'source-raw-fallback';
+      const mockData = { sourceDataSet: {} };
+      const rawOrderedData = { ordered: 'raw' };
+      const mockInsertResult = createMockSuccessResponse([{ id: mockId }]);
+
+      genSourceJsonOrdered.mockReturnValue(rawOrderedData);
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: undefined,
+      });
+
+      const builder = createQueryBuilder(mockInsertResult);
+      supabase.from.mockReturnValue(builder);
+
+      await createSource(mockId, mockData);
+
+      expect(mockCreateSource).toHaveBeenCalledWith(rawOrderedData);
+      expect(builder.insert).toHaveBeenCalledWith([
+        { id: mockId, json_ordered: rawOrderedData, rule_verification: true },
+      ]);
+    });
   });
 
   describe('updateSource', () => {
@@ -191,6 +244,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
+      expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
       expect(supabase.auth.getSession).toHaveBeenCalled();
       expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
         headers: {
@@ -205,6 +259,30 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
         region: FunctionRegion.UsEast1,
       });
       expect(result).toEqual({ success: true });
+    });
+
+    it('should return a language validation error instead of invoking the update edge function', async () => {
+      const mockId = 'source-123';
+      const mockVersion = '01.00.000';
+      const mockOrderedData = { ordered: true };
+
+      genSourceJsonOrdered.mockReturnValue(mockOrderedData);
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: mockOrderedData,
+        validationError: 'Source title language payload is invalid',
+      });
+
+      const result = await updateSource(mockId, mockVersion, { sourceDataSet: {} });
+
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        data: null,
+        error: {
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'Source title language payload is invalid',
+        },
+        status: 400,
+      });
     });
 
     it('should return empty object when no session', async () => {
@@ -244,6 +322,44 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result).toBeNull();
 
       consoleLogSpy.mockRestore();
+    });
+
+    it('should fall back to raw ordered data and an empty bearer token when normalization omits the payload', async () => {
+      const mockId = 'source-123';
+      const mockVersion = '01.00.000';
+      const rawOrderedData = { ordered: 'raw-update' };
+
+      supabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-123' },
+          },
+        },
+      });
+      genSourceJsonOrdered.mockReturnValue(rawOrderedData);
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: undefined,
+      });
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ success: true }),
+      );
+
+      await updateSource(mockId, mockVersion, { sourceDataSet: {} });
+
+      expect(mockCreateSource).toHaveBeenCalledWith(rawOrderedData);
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          id: mockId,
+          version: mockVersion,
+          table: 'sources',
+          data: { json_ordered: rawOrderedData, rule_verification: true },
+        },
+        region: FunctionRegion.UsEast1,
+      });
     });
   });
 
@@ -483,6 +599,46 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       consoleErrorSpy.mockRestore();
     });
+
+    it('should fall back to id-only rows when Chinese table mapping throws', async () => {
+      const mockResult = createMockSuccessResponse([mockSource], 1);
+
+      const builder = createQueryBuilder(mockResult);
+      supabase.from.mockReturnValue(builder);
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      jsonToList.mockImplementation(() => {
+        throw new Error('Chinese transformation error');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'zh', 'tg', []);
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'source-123' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should default total to zero when non-empty table results omit the count', async () => {
+      const mockResult = {
+        data: [mockSource],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
+
+      const builder = createQueryBuilder(mockResult);
+      supabase.from.mockReturnValue(builder);
+      getLangText.mockReturnValue('Countless Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('-');
+
+      const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', []);
+
+      expect(result).toMatchObject({ total: 0 });
+    });
   });
 
   describe('getSourceTablePgroongaSearch', () => {
@@ -651,6 +807,117 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       consoleErrorSpy.mockRestore();
     });
+
+    it('should fall back to id-only rows when Chinese pgroonga row mapping throws', async () => {
+      const rpcRows: any = [{ ...mockSource, total_count: 1 }];
+      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      jsonToList.mockImplementation(() => {
+        throw new Error('Chinese pgroonga transformation error');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await getSourceTablePgroongaSearch(
+        mockPaginationParams,
+        'zh',
+        'tg',
+        'broken-zh',
+        mockFilterCondition,
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'source-123' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should default pagination, totals, and sparse fields in English pgroonga search', async () => {
+      const rpcRows: any = [
+        {
+          id: 'source-sparse-en',
+          version: '01.00.000',
+          json: {
+            sourceDataSet: {
+              sourceInformation: {
+                dataSetInformation: {
+                  'common:shortName': [{ '@xml:lang': 'en', '#text': 'Sparse EN Source' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          team_id: 'team-en',
+        },
+      ];
+
+      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      getLangText.mockReturnValue('Sparse EN Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('Sparse Classification');
+
+      const result = await getSourceTablePgroongaSearch({}, 'en', 'my', 'sparse', {}, 100);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources', {
+        query_text: 'sparse',
+        filter_condition: {},
+        page_size: 10,
+        page_current: 1,
+        data_source: 'my',
+        this_user_id: 'user-123',
+        state_code: 100,
+      });
+      expect(result).toMatchObject({ page: 1, success: true, total: 0 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-sparse-en',
+        sourceCitation: '-',
+        publicationType: '-',
+      });
+    });
+
+    it('should default sparse fields in Chinese pgroonga search rows', async () => {
+      const rpcRows: any = [
+        {
+          id: 'source-sparse-zh',
+          version: '01.00.001',
+          json: {
+            sourceDataSet: {
+              sourceInformation: {
+                dataSetInformation: {
+                  'common:shortName': [{ '@xml:lang': 'zh', '#text': '稀疏来源' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          team_id: 'team-zh',
+        },
+      ];
+
+      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      genClassificationZH.mockReturnValue(['分类']);
+      classificationToString.mockReturnValue('分类');
+      jsonToList.mockReturnValue([]);
+      getLangText.mockReturnValue('稀疏来源');
+
+      const result = await getSourceTablePgroongaSearch({}, 'zh', 'tg', '稀疏', {});
+
+      expect(result).toMatchObject({ page: 1, success: true, total: 0 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-sparse-zh',
+        sourceCitation: '-',
+        publicationType: '-',
+      });
+    });
   });
 
   describe('source_hybrid_search', () => {
@@ -818,6 +1085,130 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result.data[0]).toEqual({ id: 'source-123' });
 
       consoleErrorSpy.mockRestore();
+    });
+
+    it('should fall back to id-only rows when Chinese hybrid row mapping throws', async () => {
+      const hybridRows: any = [{ ...mockSource }];
+      hybridRows.total_count = 1;
+
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ data: hybridRows }),
+      );
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      jsonToList.mockImplementation(() => {
+        throw new Error('Chinese hybrid transformation error');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const result = await source_hybrid_search(
+        mockPaginationParams,
+        'zh',
+        'tg',
+        'query-zh',
+        mockFilterCondition,
+      );
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'source-123' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should default sparse fields, totals, and bearer token for English hybrid search', async () => {
+      const hybridRows: any = [
+        {
+          id: 'source-hybrid-en',
+          version: '02.00.000',
+          json: {
+            sourceDataSet: {
+              sourceInformation: {
+                dataSetInformation: {
+                  'common:shortName': [{ '@xml:lang': 'en', '#text': 'Sparse Hybrid Source' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          team_id: 'team-hybrid-en',
+        },
+      ];
+
+      supabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-123' },
+          },
+        },
+      });
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ data: hybridRows }),
+      );
+      getLangText.mockReturnValue('Sparse Hybrid Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('Sparse Hybrid Classification');
+
+      const result = await source_hybrid_search({}, 'en', 'tg', 'hybrid-sparse', {});
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('source_hybrid_search', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: { query: 'hybrid-sparse', filter: {} },
+        region: FunctionRegion.UsEast1,
+      });
+      expect(result).toMatchObject({ page: 1, success: true, total: 0 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-hybrid-en',
+        sourceCitation: '-',
+        publicationType: '-',
+      });
+    });
+
+    it('should default sparse fields in Chinese hybrid search rows', async () => {
+      const hybridRows: any = [
+        {
+          id: 'source-hybrid-zh',
+          version: '02.00.001',
+          json: {
+            sourceDataSet: {
+              sourceInformation: {
+                dataSetInformation: {
+                  'common:shortName': [{ '@xml:lang': 'zh', '#text': '稀疏混合来源' }],
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          team_id: 'team-hybrid-zh',
+        },
+      ];
+
+      supabase.functions.invoke.mockResolvedValue(
+        createMockEdgeFunctionResponse({ data: hybridRows }),
+      );
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+      genClassificationZH.mockReturnValue(['混合分类']);
+      classificationToString.mockReturnValue('混合分类');
+      jsonToList.mockReturnValue([]);
+      getLangText.mockReturnValue('稀疏混合来源');
+
+      const result = await source_hybrid_search({}, 'zh', 'tg', 'hybrid-zh', {});
+
+      expect(result).toMatchObject({ page: 1, success: true, total: 0 });
+      expect(result.data[0]).toMatchObject({
+        id: 'source-hybrid-zh',
+        sourceCitation: '-',
+        publicationType: '-',
+      });
     });
   });
 

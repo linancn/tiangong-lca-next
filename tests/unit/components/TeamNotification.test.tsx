@@ -34,11 +34,13 @@ jest.mock('@/services/teams/api', () => ({
   getTeamById: jest.fn(),
 }));
 
+let mockLocale = 'en';
+
 jest.mock('umi', () => ({
   useIntl: () => ({
     formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
       defaultMessage || id,
-    locale: 'en',
+    locale: mockLocale,
   }),
 }));
 
@@ -82,6 +84,7 @@ describe('TeamNotification Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'en';
     mockGetTeamInvitationStatusApi.mockResolvedValue(mockInvitationData);
     mockGetTeamById.mockResolvedValue(mockTeamData);
     onDataLoadedMock.mockResolvedValue(undefined);
@@ -537,6 +540,59 @@ describe('TeamNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Test Team')).toBeInTheDocument();
+    });
+  });
+
+  it('prefers the zh title when the locale is zh-CN', async () => {
+    mockLocale = 'zh-CN';
+    mockGetTeamById.mockResolvedValue({
+      ...mockTeamData,
+      data: [
+        {
+          ...mockTeamData.data[0],
+          json: {
+            title: [
+              { '@xml:lang': 'en', '#text': 'Test Team' },
+              { '@xml:lang': 'zh', '#text': '测试团队' },
+            ],
+          },
+        },
+      ],
+    });
+
+    render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('测试团队')).toBeInTheDocument();
+    });
+  });
+
+  it('falls back to the first title when the zh locale is missing a zh entry', async () => {
+    mockLocale = 'zh-CN';
+    mockGetTeamById.mockResolvedValue({
+      ...mockTeamData,
+      data: [
+        {
+          ...mockTeamData.data[0],
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Fallback Team' }],
+          },
+        },
+      ],
+    });
+
+    render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Fallback Team')).toBeInTheDocument();
     });
   });
 

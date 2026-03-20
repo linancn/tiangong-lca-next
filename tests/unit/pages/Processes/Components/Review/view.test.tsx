@@ -123,6 +123,12 @@ describe('ProcessReviewView', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('uses the default empty review array when the data prop is omitted', () => {
+    const { container } = render(<ReviewItemView {...({} as any)} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('falls back to raw review types and dash placeholders when values are missing', () => {
     render(
       <ReviewItemView

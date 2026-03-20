@@ -65,4 +65,19 @@ describe('ReviewFormDataQualityIndicatorView', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('falls back to dash placeholders when indicator name or value is missing', () => {
+    render(
+      <DataQualityIndicatorItemView
+        data={[
+          {
+            '@name': '',
+            '@value': '',
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText('-')).toHaveLength(2);
+  });
 });

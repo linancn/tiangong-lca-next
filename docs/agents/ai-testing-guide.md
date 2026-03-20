@@ -77,7 +77,7 @@ npm run lint
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
 - Report detail policy:
-  - `npm run test:coverage:report`: default review output. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files.
+  - `npm run test:coverage:report`: default review output. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files using full project-relative paths (no `...` truncation for file or cluster labels).
   - `node scripts/test-coverage-report.js --full`: full ordered incomplete-file queue. Use this to inspect the entire file-by-file state or refresh the backlog snapshot.
   - Queue order is deterministic: `branches asc -> lines asc -> statements asc -> functions asc -> path`.
   - The current queue head is led by `src/services/lifeCycleModels/api.ts`, `src/pages/Processes/Components/lcaGroupedResults.ts`, `src/services/lifeCycleModels/persistencePlan.ts`, and `src/pages/Processes/Analysis/index.tsx`.

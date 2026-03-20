@@ -25,6 +25,37 @@ jest.mock('@/services/general/util', () => ({
   getDataSource: jest.fn(),
 }));
 
+jest.mock('antd', () => {
+  const actual = jest.requireActual('antd');
+
+  return {
+    ...actual,
+    Drawer: ({
+      open,
+      onClose,
+      title,
+      extra,
+      children,
+      getContainer,
+    }: {
+      open?: boolean;
+      onClose?: () => void;
+      title?: React.ReactNode;
+      extra?: React.ReactNode;
+      children?: React.ReactNode;
+      getContainer?: () => HTMLElement;
+    }) =>
+      open ? (
+        <div role='dialog' data-has-container={String(Boolean(getContainer?.()))}>
+          <button type='button' aria-label='drawer-close-handler' onClick={() => onClose?.()} />
+          <div>{title}</div>
+          <div>{extra}</div>
+          <div>{children}</div>
+        </div>
+      ) : null,
+  };
+});
+
 jest.mock('umi', () => ({
   FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
     <span>{defaultMessage || id}</span>
@@ -122,6 +153,20 @@ describe('AllVersionsList Component', () => {
     expect(mockGetDataSource).toHaveBeenCalledWith('/test-path');
   });
 
+  it('should default disabled to false when the prop is omitted', () => {
+    const propsWithoutDisabled = Object.fromEntries(
+      Object.entries(defaultProps).filter(([key]) => key !== 'disabled'),
+    ) as typeof defaultProps;
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...propsWithoutDisabled} />
+      </ConfigProvider>,
+    );
+
+    expect(screen.getByRole('button')).not.toBeDisabled();
+  });
+
   it('should render disabled button when disabled prop is true', () => {
     render(
       <ConfigProvider>
@@ -175,12 +220,27 @@ describe('AllVersionsList Component', () => {
     // Drawer should be open
     expect(screen.getByRole('dialog')).toBeVisible();
 
-    const closeButton = screen.getByRole('button', { name: /close/i });
+    const closeButton = screen.getByRole('button', { name: /^close$/i });
     fireEvent.click(closeButton);
 
-    // Drawer should be hidden
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { hidden: true })).not.toBeVisible();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should close the drawer through the Drawer onClose handler as well', async () => {
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
 
@@ -333,6 +393,7 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
+      expect(screen.getByText('Test Process')).toBeInTheDocument();
       expect(screen.queryByTestId('process-view')).not.toBeInTheDocument();
       expect(screen.queryByTestId('flow-view')).not.toBeInTheDocument();
       expect(screen.queryByTestId('lifecyclemodel-view')).not.toBeInTheDocument();
@@ -404,8 +465,7 @@ describe('AllVersionsList Component', () => {
       expect(mockGetAllVersions).toHaveBeenCalled();
     });
 
-    const closeButton = screen.getByRole('button', { name: /close/i });
-    fireEvent.click(closeButton);
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
 
     fireEvent.click(openButton);
 
@@ -434,11 +494,73 @@ describe('AllVersionsList Component', () => {
       expect(mockGetAllVersions).toHaveBeenCalled();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
     fireEvent.click(openButton);
 
     await waitFor(() => {
       expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '02.00.000' });
+    });
+  });
+
+  it('should keep the current max version when later rows compare lower than the first version', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      data: [
+        { id: '1', version: '03.00.000', name: 'Highest Version' },
+        { id: '2', version: '02.99.999', name: 'Lower Version' },
+      ],
+      success: true,
+      total: 2,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const openButton = screen.getByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '03.00.001' });
+    });
+  });
+
+  it('should keep the same max version when later rows compare equal before incrementing the patch', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      data: [
+        { id: '1', version: '03.00.000', name: 'Duplicate Highest Version A' },
+        { id: '2', version: '3.0.0', name: 'Duplicate Highest Version B' },
+      ],
+      success: true,
+      total: 2,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const openButton = screen.getByRole('button');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '03.00.001' });
     });
   });
 
@@ -462,7 +584,7 @@ describe('AllVersionsList Component', () => {
       expect(mockGetAllVersions).toHaveBeenCalled();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
     fireEvent.click(openButton);
 
     await waitFor(() => {

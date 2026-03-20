@@ -69,10 +69,14 @@ const {
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  normalizeLangPayloadForSave: jest.fn(),
 }));
 
-const { getDataDetail: mockGetDataDetail, getTeamIdByUserId: mockGetTeamIdByUserId } =
-  jest.requireMock('@/services/general/api');
+const {
+  getDataDetail: mockGetDataDetail,
+  getTeamIdByUserId: mockGetTeamIdByUserId,
+  normalizeLangPayloadForSave: mockNormalizeLangPayloadForSave,
+} = jest.requireMock('@/services/general/api');
 
 class MockQuery<T = any> {
   public calls = {
@@ -227,6 +231,10 @@ beforeEach(() => {
 
   mockGetDataDetail.mockResolvedValue({ data: null });
   mockGetTeamIdByUserId.mockResolvedValue(null);
+  mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
+    payload,
+    validationError: undefined,
+  }));
 
   mockAuthGetSession.mockResolvedValue({
     data: {
@@ -259,6 +267,28 @@ describe('createFlows', () => {
       }),
     ]);
     expect(result).toBe(insertResult);
+  });
+
+  it('returns a language validation error when normalization fails', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: undefined,
+      validationError: 'English translation required',
+    });
+
+    const result = await createFlows('flow-id', { name: 'Flow payload' });
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: expect.objectContaining({
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'English translation required',
+        }),
+      }),
+    );
   });
 });
 
@@ -307,6 +337,48 @@ describe('updateFlows', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
     expect(response).toBeNull();
     consoleLogSpy.mockRestore();
+  });
+
+  it('returns a language validation error before invoking the update edge function', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: undefined,
+      validationError: 'Missing english base name',
+    });
+
+    const response = await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(response).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: expect.objectContaining({
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'Missing english base name',
+        }),
+      }),
+    );
+  });
+
+  it('uses an empty bearer token when the session lacks an access token', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: { id: 'user-id' },
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValue({ data: [{ id: 'flow-id' }] });
+
+    await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'update_data',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer ' },
+      }),
+    );
   });
 });
 
@@ -447,6 +519,50 @@ describe('getFlowTableAll', () => {
     expect(result.data[0].locationOfSupply).toBe('China');
   });
 
+  it('falls back to the raw location code when location lookups return no normalized rows', async () => {
+    const tableResult = {
+      data: [
+        {
+          id: 'flow-raw-location',
+          version: '01.00.000',
+          modified_at: '2024-01-02T00:00:00Z',
+          team_id: 'team-2',
+          name: {
+            baseName: [{ '@xml:lang': 'en', '#text': 'Steel' }],
+          },
+          typeOfDataSet: 'Product flow',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [{ '#text': 'Products' }],
+            },
+          },
+          'common:synonyms': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+          CASNumber: '1234-56-7',
+          referenceToFlowPropertyDataSet: {
+            '@refObjectId': 'prop-2',
+          },
+          locationOfSupply: 'US',
+        },
+      ],
+      count: 1,
+      error: null,
+    };
+    const query = createQuery(tableResult);
+    mockFrom.mockReturnValue(query as any);
+    mockGetCachedLocationData.mockResolvedValue(null);
+    mockGetILCDLocationByValues.mockResolvedValue(null);
+
+    const result = await getFlowTableAll(
+      { current: 1, pageSize: 10 },
+      { modified_at: 'descend' },
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(result.data[0].locationOfSupply).toBe('US');
+  });
+
   it('applies single classification filter', async () => {
     const tableResult = { data: [], count: 0, error: null };
     const query = createQuery(tableResult);
@@ -545,6 +661,45 @@ describe('getFlowTableAll', () => {
     expect(result).toEqual({ data: [], success: true });
   });
 
+  it('applies single flow type filters and company team filters', async () => {
+    const query = createQuery({ data: [], count: 0, error: null });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'co', 'team-co', {
+      flowType: 'Product flow',
+    });
+
+    expect(query.calls.eqArgs).toEqual(
+      expect.arrayContaining([
+        {
+          field: 'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
+          value: 'Product flow',
+        },
+        { field: 'state_code', value: 200 },
+        { field: 'team_id', value: 'team-co' },
+      ]),
+    );
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('applies TianGong team filters and logs query errors before returning empty success', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    const query = createQuery({ data: [], count: 0, error: { message: 'query failed' } });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', 'team-tg');
+
+    expect(query.calls.eqArgs).toEqual(
+      expect.arrayContaining([
+        { field: 'state_code', value: 100 },
+        { field: 'team_id', value: 'team-tg' },
+      ]),
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'query failed' });
+    expect(result).toEqual({ data: [], success: true });
+    consoleLogSpy.mockRestore();
+  });
+
   it('returns empty success when team dataset has no team id', async () => {
     mockGetTeamIdByUserId.mockResolvedValue(null);
 
@@ -552,6 +707,19 @@ describe('getFlowTableAll', () => {
 
     expect(result).toEqual({ data: [], success: true });
     expect(mockGetCachedLocationData).not.toHaveBeenCalled();
+  });
+
+  it('filters team datasets by the resolved team id', async () => {
+    const query = createQuery({ data: [], count: 0, error: null });
+    mockFrom.mockReturnValue(query as any);
+    mockGetTeamIdByUserId.mockResolvedValue('team-42');
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', '');
+
+    expect(query.calls.eqArgs).toEqual(
+      expect.arrayContaining([{ field: 'team_id', value: 'team-42' }]),
+    );
+    expect(result).toEqual({ data: [], success: true });
   });
 
   it('localizes chinese table rows for non-elementary flows', async () => {
@@ -615,6 +783,179 @@ describe('getFlowTableAll', () => {
         locationOfSupply: '中国',
       }),
     );
+  });
+
+  it('uses sparse chinese table fallbacks when localized flow rows omit optional fields', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: 'flow-zh-defaults',
+          version: '01.00.018',
+          modified_at: '2024-01-18T00:00:00Z',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [],
+            },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [],
+      category: [],
+    });
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', '');
+
+    expect(result.data[0]).toEqual({
+      key: 'flow-zh-defaults:01.00.018',
+      id: 'flow-zh-defaults',
+      name: '-',
+      flowType: '-',
+      classification: '',
+      synonyms: '-',
+      CASNumber: '-',
+      refFlowPropertyId: '-',
+      locationOfSupply: '-',
+      version: '01.00.018',
+      modifiedAt: new Date('2024-01-18T00:00:00Z'),
+      teamId: undefined,
+    });
+  });
+
+  it('returns id-only rows when english table mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const query = createQuery({
+      data: [
+        {
+          id: 'flow-table-bad-en',
+          version: '01.00.009',
+          modified_at: '2024-01-09T00:00:00Z',
+          team_id: 'team-en',
+          name: {},
+          typeOfDataSet: 'Product flow',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [{ '#text': 'Products' }],
+            },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('english mapping failed');
+    });
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', '');
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      data: [{ id: 'flow-table-bad-en' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('returns id-only rows when chinese table mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const query = createQuery({
+      data: [
+        {
+          id: 'flow-table-bad-zh',
+          version: '01.00.010',
+          modified_at: '2024-01-10T00:00:00Z',
+          team_id: 'team-zh',
+          name: {},
+          typeOfDataSet: 'Elementary flow',
+          classificationInformation: {
+            'common:elementaryFlowCategorization': {
+              'common:category': [{ '@value': 'Air', '#text': 'Air' }],
+            },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+      category: [],
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('chinese mapping failed');
+    });
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', '');
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      data: [{ id: 'flow-table-bad-zh' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('returns failure when the table query resolves without data', async () => {
+    const query = createQuery({ data: null, count: 0, error: null });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getFlowTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', '');
+
+    expect(result).toEqual({ data: [], success: false });
+  });
+
+  it('uses default pagination and sparse-field fallbacks for english table rows', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: 'flow-defaults',
+          version: '01.00.014',
+          modified_at: '2024-01-14T00:00:00Z',
+          classificationInformation: {},
+        },
+      ],
+      count: undefined,
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockGetCachedLocationData.mockResolvedValue([]);
+    mockGetILCDLocationByValues.mockResolvedValue([]);
+
+    const result = await getFlowTableAll({}, {}, 'en', 'tg', '');
+
+    expect(query.calls.rangeArgs).toEqual({ from: 0, to: 9 });
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'flow-defaults:01.00.014',
+          id: 'flow-defaults',
+          name: '-',
+          flowType: '-',
+          classification: '',
+          synonyms: '-',
+          CASNumber: '-',
+          refFlowPropertyId: '-',
+          locationOfSupply: '-',
+          version: '01.00.014',
+          modifiedAt: new Date('2024-01-14T00:00:00Z'),
+          teamId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
   });
 });
 
@@ -914,6 +1255,63 @@ describe('getFlowTablePgroongaSearch', () => {
     });
   });
 
+  it('maps chinese PGroonga elementary flows and falls back to dash when location is missing', async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        {
+          id: 'flow-zh-search-elementary',
+          version: '01.00.008',
+          modified_at: '2024-01-08T00:00:00Z',
+          team_id: 'team-zh',
+          total_count: 1,
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: [{ '@xml:lang': 'zh', '#text': '排放' }],
+                  },
+                  classificationInformation: {
+                    'common:elementaryFlowCategorization': {
+                      'common:category': [{ '@value': 'Air', '#text': 'Air' }],
+                    },
+                  },
+                  'common:synonyms': [{ '@xml:lang': 'zh', '#text': '气体' }],
+                },
+              },
+              modellingAndValidation: {
+                LCIMethod: {
+                  typeOfDataSet: 'Elementary flow',
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+      category: [],
+    });
+
+    const result = await getFlowTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      '排放',
+      {},
+    );
+
+    expect(result.data[0]).toEqual(
+      expect.objectContaining({
+        id: 'flow-zh-search-elementary',
+        classification: '空气',
+        locationOfSupply: '-',
+      }),
+    );
+  });
+
   it('falls back to id-only rows when PGroonga mapping throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     mockRpc.mockResolvedValue({
@@ -961,6 +1359,57 @@ describe('getFlowTablePgroongaSearch', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('falls back to id-only rows when chinese PGroonga mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    mockRpc.mockResolvedValue({
+      data: [
+        {
+          id: 'flow-pgroonga-bad-zh',
+          version: '01.00.011',
+          modified_at: '2024-01-11T00:00:00Z',
+          total_count: 1,
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                dataSetInformation: {},
+              },
+              modellingAndValidation: {
+                LCIMethod: {
+                  typeOfDataSet: 'Elementary flow',
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+      category: [],
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('pgroonga zh parse failed');
+    });
+
+    const result = await getFlowTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'bad',
+      {},
+    );
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      data: [{ id: 'flow-pgroonga-bad-zh' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
   it('passes classification filters to rpc search', async () => {
     mockRpc.mockResolvedValue({ data: [] });
 
@@ -978,6 +1427,133 @@ describe('getFlowTablePgroongaSearch', () => {
         },
       }),
     );
+  });
+
+  it('uses default rpc pagination and sparse chinese fallbacks when state code is provided', async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        {
+          id: 'flow-pgroonga-defaults-zh',
+          version: '01.00.015',
+          modified_at: '2024-01-15T00:00:00Z',
+          total_count: undefined,
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [],
+      category: [],
+    });
+
+    const result = await getFlowTablePgroongaSearch({}, 'zh', 'my', 'steel', {}, 300);
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_v1', {
+      query_text: 'steel',
+      filter_condition: {},
+      page_size: 10,
+      page_current: 1,
+      data_source: 'my',
+      state_code: 300,
+      order_by: undefined,
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'flow-pgroonga-defaults-zh:01.00.015',
+          id: 'flow-pgroonga-defaults-zh',
+          name: '-',
+          synonyms: '-',
+          flowType: '-',
+          classification: '',
+          CASNumber: '-',
+          locationOfSupply: '-',
+          version: '01.00.015',
+          modifiedAt: new Date('2024-01-15T00:00:00Z'),
+          teamId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses default rpc pagination for non-state-code PGroonga searches', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+
+    await getFlowTablePgroongaSearch({}, 'en', 'tg', 'default-query', {});
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_v1', {
+      query_text: 'default-query',
+      filter_condition: {},
+      page_size: 10,
+      page_current: 1,
+      data_source: 'tg',
+      order_by: undefined,
+    });
+  });
+
+  it('uses sparse english PGroonga field fallbacks', async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        {
+          id: 'flow-pgroonga-defaults-en',
+          version: '01.00.019',
+          modified_at: '2024-01-19T00:00:00Z',
+          total_count: 1,
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    const result = await getFlowTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'fallbacks',
+      {},
+    );
+
+    expect(result.data[0]).toEqual({
+      key: 'flow-pgroonga-defaults-en:01.00.019',
+      id: 'flow-pgroonga-defaults-en',
+      name: '-',
+      synonyms: '-',
+      classification: '',
+      flowType: '-',
+      CASNumber: '-',
+      locationOfSupply: '-',
+      version: '01.00.019',
+      modifiedAt: new Date('2024-01-19T00:00:00Z'),
+      teamId: undefined,
+    });
   });
 });
 
@@ -1125,6 +1701,38 @@ describe('flow_hybrid_search', () => {
     });
   });
 
+  it('uses an empty bearer token and default pagination when hybrid search has sparse metadata', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: { id: 'user-id' },
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [],
+      },
+      error: null,
+    });
+
+    const result = await flow_hybrid_search({}, 'en', 'tg', 'steam', {});
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'flow_hybrid_search',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer ' },
+        body: { query: 'steam', filter: {} },
+      }),
+    );
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
   it('passes classification filters to hybrid search function', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
@@ -1254,6 +1862,156 @@ describe('flow_hybrid_search', () => {
     });
   });
 
+  it('maps chinese elementary hybrid results with localized categories', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 'flow-hybrid-zh-elementary',
+            version: '01.00.012',
+            modified_at: '2024-01-12T00:00:00Z',
+            team_id: 'team-zh',
+            json: {
+              flowDataSet: {
+                flowInformation: {
+                  dataSetInformation: {
+                    name: {
+                      baseName: [{ '@xml:lang': 'zh', '#text': '排放到空气' }],
+                    },
+                    classificationInformation: {
+                      'common:elementaryFlowCategorization': {
+                        'common:category': [{ '@value': 'Air', '#text': 'Air' }],
+                      },
+                    },
+                    'common:synonyms': [{ '@xml:lang': 'zh', '#text': '废气' }],
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethod: {
+                    typeOfDataSet: 'Elementary flow',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        total_count: 1,
+      },
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+      category: [],
+    });
+
+    const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'zh', 'tg', '排放', {});
+
+    expect(result.data[0]).toEqual(
+      expect.objectContaining({
+        id: 'flow-hybrid-zh-elementary',
+        classification: '空气',
+        locationOfSupply: '-',
+      }),
+    );
+  });
+
+  it('uses sparse chinese hybrid field fallbacks', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 'flow-hybrid-zh-fallbacks',
+            version: '01.00.016',
+            modified_at: '2024-01-16T00:00:00Z',
+            json: {
+              flowDataSet: {
+                flowInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        total_count: 1,
+      },
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [],
+      category: [],
+    });
+
+    const result = await flow_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'fallback',
+      {},
+    );
+
+    expect(result.data[0]).toEqual(
+      expect.objectContaining({
+        id: 'flow-hybrid-zh-fallbacks',
+        name: '-',
+        synonyms: '-',
+        flowType: '-',
+      }),
+    );
+  });
+
+  it('falls back to id-only rows when chinese hybrid mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 'flow-hybrid-bad-zh',
+            version: '01.00.013',
+            modified_at: '2024-01-13T00:00:00Z',
+            json: {
+              flowDataSet: {
+                flowInformation: {
+                  dataSetInformation: {},
+                },
+                modellingAndValidation: {
+                  LCIMethod: {
+                    typeOfDataSet: 'Elementary flow',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        total_count: 1,
+      },
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+      category: [],
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('hybrid zh parse failed');
+    });
+
+    const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'zh', 'tg', 'bad', {});
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      data: [{ id: 'flow-hybrid-bad-zh' }],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
   it('falls back to id-only rows when hybrid mapping throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     mockFunctionsInvoke.mockResolvedValue({
@@ -1295,6 +2053,109 @@ describe('flow_hybrid_search', () => {
       total: 1,
     });
     consoleErrorSpy.mockRestore();
+  });
+
+  it('maps english hybrid classification fallbacks for non-elementary sparse rows', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 'flow-hybrid-en-fallbacks',
+            version: '01.00.017',
+            modified_at: '2024-01-17T00:00:00Z',
+            json: {
+              flowDataSet: {
+                flowInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [],
+                      },
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethod: {
+                    typeOfDataSet: 'Product flow',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        total_count: 1,
+      },
+      error: null,
+    });
+
+    const result = await flow_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'fallback',
+      {},
+    );
+
+    expect(result.data[0]).toEqual(
+      expect.objectContaining({
+        id: 'flow-hybrid-en-fallbacks',
+        name: '-',
+        classification: '',
+        flowType: 'Product flow',
+      }),
+    );
+  });
+
+  it('uses sparse english hybrid field fallbacks and default page numbers', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 'flow-hybrid-en-defaults',
+            version: '01.00.020',
+            modified_at: '2024-01-20T00:00:00Z',
+            json: {
+              flowDataSet: {
+                flowInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        total_count: 1,
+      },
+      error: null,
+    });
+
+    const result = await flow_hybrid_search({}, 'en', 'tg', 'fallback-defaults', {});
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'flow-hybrid-en-defaults:01.00.020',
+          id: 'flow-hybrid-en-defaults',
+          name: '-',
+          synonyms: '-',
+          classification: '',
+          flowType: '-',
+          CASNumber: '-',
+          locationOfSupply: '-',
+          version: '01.00.020',
+          modifiedAt: new Date('2024-01-20T00:00:00Z'),
+          teamId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
   });
 });
 
@@ -1422,6 +2283,37 @@ describe('getFlowProperties', () => {
 
     expect(result).toEqual({ data: [], success: false });
   });
+
+  it('uses sparse property fallbacks when a matched flow property entry is missing', async () => {
+    const flowId = '11111111-1111-1111-1111-111111111111';
+    const query = createQuery({
+      data: [
+        {
+          id: flowId,
+          version: '03.00.000',
+          referenceToReferenceFlowProperty: 'missing',
+          flowProperty: [],
+        },
+      ],
+    });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getFlowProperties([{ id: flowId, version: '03.00.000' }]);
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: flowId,
+          version: '03.00.000',
+          name: '-',
+          typeOfDataSet: '-',
+          refFlowPropertytId: '-',
+          refFlowPropertyShortDescription: {},
+        },
+      ],
+      success: true,
+    });
+  });
 });
 
 describe('getReferenceProperty', () => {
@@ -1534,6 +2426,77 @@ describe('getReferenceProperty', () => {
 
     expect(result).toBeUndefined();
     expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('loads the latest version directly when no version is provided', async () => {
+    const flowId = '11111111-1111-1111-1111-111111111111';
+    const query = createQuery({
+      data: [
+        {
+          id: flowId,
+          version: '02.00.000',
+          name: {
+            baseName: [{ '@xml:lang': 'en', '#text': 'Steam' }],
+          },
+          referenceToReferenceFlowProperty: '1',
+          flowProperty: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowPropertyDataSet: {
+                '@refObjectId': 'prop-latest',
+                shortDescription: { '@xml:lang': 'en', '#text': 'Energy' },
+              },
+            },
+          ],
+        },
+      ],
+    });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getReferenceProperty(flowId, '');
+
+    expect(query.calls.orderArgs).toEqual([{ field: 'version', options: { ascending: false } }]);
+    expect(query.calls.rangeArgs).toEqual({ from: 0, to: 0 });
+    expect(result).toEqual({
+      data: {
+        id: flowId,
+        version: '02.00.000',
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Steam' }],
+        },
+        refFlowPropertytId: 'prop-latest',
+        refFlowPropertyShortDescription: { '@xml:lang': 'en', '#text': 'Energy' },
+      },
+      success: true,
+    });
+  });
+
+  it('uses sparse reference-property fallbacks when the reference entry is missing', async () => {
+    const flowId = '11111111-1111-1111-1111-111111111111';
+    const query = createQuery({
+      data: [
+        {
+          id: flowId,
+          version: '04.00.000',
+          flowProperty: [],
+          referenceToReferenceFlowProperty: 'missing',
+        },
+      ],
+    });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getReferenceProperty(flowId, '04.00.000');
+
+    expect(result).toEqual({
+      data: {
+        id: flowId,
+        version: '04.00.000',
+        name: '-',
+        refFlowPropertytId: '-',
+        refFlowPropertyShortDescription: {},
+      },
+      success: true,
+    });
   });
 });
 
@@ -1677,5 +2640,184 @@ describe('getFlowStateCodeByIdsAndVersions', () => {
         },
       ],
     });
+  });
+
+  it('maps english elementary state-code lookups', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: '44444444-4444-4444-4444-444444444444',
+          version: '01.00.000',
+          state_code: 200,
+          typeOfDataSet: 'Elementary flow',
+          classificationInformation: {
+            'common:elementaryFlowCategorization': {
+              'common:category': [{ '#text': 'Air' }],
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+
+    const result = await getFlowStateCodeByIdsAndVersions(
+      [{ id: '44444444-4444-4444-4444-444444444444', version: '01.00.000' }],
+      'en',
+    );
+
+    expect(result).toEqual({
+      error: null,
+      data: [
+        {
+          key: '44444444-4444-4444-4444-444444444444:01.00.000',
+          id: '44444444-4444-4444-4444-444444444444',
+          version: '01.00.000',
+          stateCode: 200,
+          classification: 'Air',
+        },
+      ],
+    });
+  });
+
+  it('localizes chinese non-elementary state-code lookups', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: '55555555-5555-5555-5555-555555555555',
+          version: '01.00.000',
+          state_code: 100,
+          typeOfDataSet: 'Product flow',
+          locationOfSupply: 'CN',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [{ '@value': 'Products', '#text': 'Products' }],
+            },
+          },
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                geography: {
+                  locationOfSupply: 'CN',
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockGetCachedLocationData.mockResolvedValue([{ '@value': 'CN', '#text': '中国' }]);
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      category: [{ '@value': 'Products', '#text': '产品' }],
+      categoryElementaryFlow: [],
+    });
+
+    const result = await getFlowStateCodeByIdsAndVersions(
+      [{ id: '55555555-5555-5555-5555-555555555555', version: '01.00.000' }],
+      'zh',
+    );
+
+    expect(result).toEqual({
+      error: null,
+      data: [
+        {
+          key: '55555555-5555-5555-5555-555555555555:01.00.000',
+          id: '55555555-5555-5555-5555-555555555555',
+          version: '01.00.000',
+          stateCode: 100,
+          classification: '产品',
+          locationOfSupply: '中国',
+        },
+      ],
+    });
+  });
+
+  it('falls back to id-only rows when english state-code mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const query = createQuery({
+      data: [
+        {
+          id: '66666666-6666-6666-6666-666666666666',
+          version: '01.00.000',
+          state_code: 100,
+          typeOfDataSet: 'Product flow',
+          classificationInformation: {
+            'common:classification': {
+              'common:class': [{ '#text': 'Products' }],
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('state-code parse failed');
+    });
+
+    const result = await getFlowStateCodeByIdsAndVersions(
+      [{ id: '66666666-6666-6666-6666-666666666666', version: '01.00.000' }],
+      'en',
+    );
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      error: null,
+      data: [{ id: '66666666-6666-6666-6666-666666666666' }],
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('falls back to id-only rows when chinese state-code mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const query = createQuery({
+      data: [
+        {
+          id: '77777777-7777-7777-7777-777777777777',
+          version: '01.00.000',
+          state_code: 100,
+          typeOfDataSet: 'Elementary flow',
+          locationOfSupply: 'CN',
+          classificationInformation: {
+            'common:elementaryFlowCategorization': {
+              'common:category': [{ '@value': 'Air', '#text': 'Air' }],
+            },
+          },
+          json: {
+            flowDataSet: {
+              flowInformation: {
+                geography: {
+                  locationOfSupply: 'CN',
+                },
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(query as any);
+    mockGetCachedLocationData.mockResolvedValue([{ '@value': 'CN', '#text': '中国' }]);
+    mockGetCachedFlowCategorizationAll.mockResolvedValue({
+      category: [],
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('zh state-code parse failed');
+    });
+
+    const result = await getFlowStateCodeByIdsAndVersions(
+      [{ id: '77777777-7777-7777-7777-777777777777', version: '01.00.000' }],
+      'zh',
+    );
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      error: null,
+      data: [{ id: '77777777-7777-7777-7777-777777777777' }],
+    });
+    consoleErrorSpy.mockRestore();
   });
 });

@@ -57,8 +57,9 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) => {
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     const label = toText(title) || 'drawer';
     return (
       <section role='dialog' aria-label={label}>
@@ -167,7 +168,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, columns }: any) => {
     const requestRef = React.useRef(request);
     const initializedRef = React.useRef(false);
 
@@ -176,8 +177,8 @@ jest.mock('@ant-design/pro-components', () => {
     }, [request]);
 
     React.useEffect(() => {
-      latestProTableProps = { actionRef, request, rowSelection };
-    }, [actionRef, request, rowSelection]);
+      latestProTableProps = { actionRef, request, rowSelection, columns };
+    }, [actionRef, request, rowSelection, columns]);
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
@@ -320,6 +321,28 @@ describe('ModelToolbarAddThroughFlow', () => {
     );
   });
 
+  it('reloads TianGong data after switching back from My Data', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalledTimes(1));
+
+    await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalledTimes(2));
+
+    await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalledTimes(3));
+    expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'tg',
+      [],
+    );
+  });
+
   it('submits selected flow key list', async () => {
     mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
     const onData = jest.fn();
@@ -361,6 +384,39 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
+  });
+
+  it('renders column helpers and supports icon trigger plus both close paths', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAddThroughFlow buttonType='icon' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button'));
+    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+
+    expect(latestProTableProps?.columns).toHaveLength(7);
+    const nameCell = latestProTableProps.columns[1].render(null, {
+      id: 'flow-1',
+      version: '01.00.000',
+      name: 'Hydrogen',
+      synonyms: 'H2',
+    });
+    expect(String(nameCell[0].props.children)).toContain('Hydrogen');
+
+    const optionCell = latestProTableProps.columns[6].render(null, {
+      id: 'flow-1',
+      version: '01.00.000',
+    });
+    expect(optionCell).toHaveLength(1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button'));
+    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
     expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
   });
 });

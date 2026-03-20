@@ -60,10 +60,14 @@ const { getCachedClassificationData: mockGetCachedClassificationData } =
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  normalizeLangPayloadForSave: jest.fn(),
 }));
 
-const { getDataDetail: mockGetDataDetail, getTeamIdByUserId: mockGetTeamIdByUserId } =
-  jest.requireMock('@/services/general/api');
+const {
+  getDataDetail: mockGetDataDetail,
+  getTeamIdByUserId: mockGetTeamIdByUserId,
+  normalizeLangPayloadForSave: mockNormalizeLangPayloadForSave,
+} = jest.requireMock('@/services/general/api');
 
 class MockQuery<T = any> {
   public calls = {
@@ -199,6 +203,10 @@ beforeEach(() => {
   mockGetCachedClassificationData.mockResolvedValue([]);
   mockGetTeamIdByUserId.mockResolvedValue(null);
   mockGetDataDetail.mockResolvedValue({ data: null });
+  mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
+    payload,
+    validationError: undefined,
+  }));
 
   mockAuthGetSession.mockResolvedValue({
     data: {
@@ -233,6 +241,28 @@ describe('createUnitGroup', () => {
     ]);
     expect(query.calls.selectArgs).toEqual([]);
     expect(result).toBe(insertResult);
+  });
+
+  it('returns a language validation error when normalization fails', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: undefined,
+      validationError: 'English translation required',
+    });
+
+    const result = await createUnitGroup('ug-1', { name: 'Unit Group' });
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: expect.objectContaining({
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'English translation required',
+        }),
+      }),
+    );
   });
 });
 
@@ -301,6 +331,28 @@ describe('updateUnitGroup', () => {
     expect(logSpy).toHaveBeenCalledWith('error', { message: 'invoke failed' });
     expect(result).toBeUndefined();
     logSpy.mockRestore();
+  });
+
+  it('returns a language validation error before invoking the update edge function', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: undefined,
+      validationError: 'Missing english base name',
+    });
+
+    const result = await updateUnitGroup('ug-1', '01.00.000', { name: 'Updated' });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: expect.objectContaining({
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'Missing english base name',
+        }),
+      }),
+    );
   });
 });
 
@@ -640,6 +692,91 @@ describe('getUnitGroupTableAll', () => {
     });
     errorSpy.mockRestore();
   });
+
+  it('uses default pagination and fallback ref-unit fields for sparse zh rows', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: 'ug-zh-sparse',
+          version: '02.00.000',
+          modified_at: '2024-08-01T00:00:00Z',
+          team_id: 'team-zh-sparse',
+          'common:name': [{ '@xml:lang': 'zh', '#text': '稀疏单位组' }],
+          'common:class': [{ '@value': 'zh-sparse', '#text': '原分类' }],
+          unit: [],
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(query as any);
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'zh-sparse', '#text': '分类-稀疏' },
+    ]);
+
+    const result = await getUnitGroupTableAll({}, {}, 'zh', 'tg', '');
+
+    expect(query.calls.rangeArgs).toEqual({ from: 0, to: 9 });
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-zh-sparse',
+          id: 'ug-zh-sparse',
+          name: '稀疏单位组',
+          classification: '分类-稀疏',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '02.00.000',
+          modifiedAt: new Date('2024-08-01T00:00:00Z'),
+          teamId: 'team-zh-sparse',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses english fallback ref-unit fields when quantitative reference is missing', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: 'ug-en-sparse',
+          version: '02.00.001',
+          modified_at: '2024-08-02T00:00:00Z',
+          team_id: 'team-en-sparse',
+          'common:name': [{ '@xml:lang': 'en', '#text': 'Sparse Unit Group' }],
+          'common:class': [{ '#text': 'Sparse Class' }],
+          unit: [],
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getUnitGroupTableAll({}, {}, 'en', 'tg', '');
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-en-sparse',
+          id: 'ug-en-sparse',
+          name: 'Sparse Unit Group',
+          classification: 'Sparse Class',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '02.00.001',
+          modifiedAt: new Date('2024-08-02T00:00:00Z'),
+          teamId: 'team-en-sparse',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 1,
+    });
+  });
 });
 
 describe('getUnitGroupTablePgroongaSearch', () => {
@@ -914,6 +1051,127 @@ describe('getUnitGroupTablePgroongaSearch', () => {
       total: 1,
     });
     errorSpy.mockRestore();
+  });
+
+  it('uses numeric-state defaults and zh fallback fields for sparse rpc rows', async () => {
+    mockGetCachedClassificationData.mockResolvedValueOnce([{ '@value': 'z3', '#text': '分类-三' }]);
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'ug-zh-defaults',
+          version: '03.00.000',
+          modified_at: '2024-08-03T00:00:00Z',
+          team_id: 'team-zh-defaults',
+          json: {
+            unitGroupDataSet: {
+              unitGroupInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ '@value': 'z3', '#text': '原分类-三' }],
+                    },
+                  },
+                },
+              },
+              units: {
+                unit: [{ '@dataSetInternalID': 'u-other', name: 'Other unit' }],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    } as any);
+
+    const result = await getUnitGroupTablePgroongaSearch({}, 'zh', 'tg', 'defaults', {}, 500);
+
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_unitgroups', {
+      query_text: 'defaults',
+      filter_condition: {},
+      page_size: 10,
+      page_current: 1,
+      data_source: 'tg',
+      this_user_id: 'user-id',
+      state_code: 500,
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-zh-defaults:03.00.000',
+          id: 'ug-zh-defaults',
+          name: '-',
+          classification: '分类-三',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '03.00.000',
+          modifiedAt: new Date('2024-08-03T00:00:00Z'),
+          teamId: 'team-zh-defaults',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses english fallback fields and default total when rpc rows are sparse', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'ug-en-defaults',
+          version: '03.00.001',
+          modified_at: '2024-08-04T00:00:00Z',
+          team_id: 'team-en-defaults',
+          json: {
+            unitGroupDataSet: {
+              unitGroupInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:classification': {
+                      'common:class': [{ '#text': 'Fallback Class' }],
+                    },
+                  },
+                },
+              },
+              units: {
+                unit: [{ '@dataSetInternalID': 'u-other', name: 'Other unit' }],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    } as any);
+
+    const result = await getUnitGroupTablePgroongaSearch(
+      { current: 2, pageSize: 5 },
+      'en',
+      'tg',
+      'fallback',
+      {},
+      undefined,
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-en-defaults:03.00.001',
+          id: 'ug-en-defaults',
+          name: '-',
+          classification: 'Fallback Class',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '03.00.001',
+          modifiedAt: new Date('2024-08-04T00:00:00Z'),
+          teamId: 'team-en-defaults',
+        },
+      ],
+      page: 2,
+      success: true,
+      total: 0,
+    });
   });
 });
 
@@ -1231,6 +1489,125 @@ describe('unitgroup_hybrid_search', () => {
     });
     errorSpy.mockRestore();
   });
+
+  it('uses default total and zh fallback fields for sparse hybrid rows', async () => {
+    mockGetCachedClassificationData.mockResolvedValueOnce([
+      { '@value': 'h-zh', '#text': '混合分类' },
+    ]);
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: 'ug-hzh-defaults',
+            version: '04.00.000',
+            modified_at: '2024-08-05T00:00:00Z',
+            team_id: 'team-hzh-defaults',
+            json: {
+              unitGroupDataSet: {
+                unitGroupInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '@value': 'h-zh', '#text': '原混合分类' }],
+                      },
+                    },
+                  },
+                },
+                units: {
+                  unit: [{ '@dataSetInternalID': 'u-other', name: 'Other unit' }],
+                },
+              },
+            },
+          },
+        ],
+      },
+      error: null,
+    } as any);
+
+    const result = await unitgroup_hybrid_search({}, 'zh', 'tg', 'hybrid-defaults', {}, undefined);
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-hzh-defaults:04.00.000',
+          id: 'ug-hzh-defaults',
+          name: '-',
+          classification: '混合分类',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '04.00.000',
+          modifiedAt: new Date('2024-08-05T00:00:00Z'),
+          teamId: 'team-hzh-defaults',
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('uses english fallback fields when hybrid rows are sparse', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: 'ug-hen-defaults',
+            version: '04.00.001',
+            modified_at: '2024-08-06T00:00:00Z',
+            team_id: 'team-hen-defaults',
+            json: {
+              unitGroupDataSet: {
+                unitGroupInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '#text': 'Hybrid Fallback Class' }],
+                      },
+                    },
+                  },
+                },
+                units: {
+                  unit: [{ '@dataSetInternalID': 'u-other', name: 'Other unit' }],
+                },
+              },
+            },
+          },
+        ],
+        total_count: 4,
+      },
+      error: null,
+    } as any);
+
+    const result = await unitgroup_hybrid_search(
+      { current: 2, pageSize: 5 },
+      'en',
+      'tg',
+      'hybrid-fallback',
+      {},
+      undefined,
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'ug-hen-defaults:04.00.001',
+          id: 'ug-hen-defaults',
+          name: '-',
+          classification: 'Hybrid Fallback Class',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: '-',
+          version: '04.00.001',
+          modifiedAt: new Date('2024-08-06T00:00:00Z'),
+          teamId: 'team-hen-defaults',
+        },
+      ],
+      page: 2,
+      success: true,
+      total: 4,
+    });
+  });
 });
 
 describe('getUnitGroupDetail', () => {
@@ -1397,6 +1774,37 @@ describe('getReferenceUnits', () => {
     const result = await getReferenceUnits([{ id: validId, version: '01.00.000' }]);
 
     expect(result).toEqual({ data: [], success: false });
+  });
+
+  it('uses fallback reference fields when the reference unit is missing', async () => {
+    const query = createQuery({
+      data: [
+        {
+          id: validId,
+          version: '01.00.012',
+          'common:name': 'Sparse references',
+          unit: [{ '@dataSetInternalID': 'u-other', name: 'Other' }],
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(query as any);
+
+    const result = await getReferenceUnits([{ id: validId, version: '01.00.012' }]);
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: validId,
+          version: '01.00.012',
+          name: 'Sparse references',
+          refUnitId: '-',
+          refUnitName: '-',
+          refUnitGeneralComment: undefined,
+          unit: [{ '@dataSetInternalID': 'u-other', name: 'Other' }],
+        },
+      ],
+      success: true,
+    });
   });
 });
 

@@ -560,6 +560,31 @@ describe('Process Utility Functions', () => {
       ).toEqual({});
     });
 
+    it('should handle missing reference year and NULL subLocation', () => {
+      const dataWithNullSubLocation = {
+        ...mockProcessData,
+        processInformation: {
+          ...mockProcessData.processInformation,
+          time: {},
+          geography: {
+            ...mockProcessData.processInformation.geography,
+            subLocationOfOperationSupplyOrProduction: {
+              '@subLocation': 'NULL',
+            },
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithNullSubLocation);
+
+      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
+      expect(
+        result.processDataSet.processInformation.geography.subLocationOfOperationSupplyOrProduction[
+          '@subLocation'
+        ],
+      ).toEqual({});
+    });
+
     it('should include xmlns attributes', () => {
       const result = genProcessJsonOrdered('test-id', mockProcessData);
 
@@ -657,6 +682,130 @@ describe('Process Utility Functions', () => {
           '@internalReferenceToCoProduct'
         ],
       ).toBe('co-product-1');
+    });
+
+    it('should include exchange data source references', () => {
+      const dataWithExchangeSources = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+              exchangeDirection: 'Input',
+              meanAmount: '1',
+              referencesToDataSource: {
+                referenceToDataSource: {
+                  '@type': 'source data set',
+                  '@refObjectId': 'source-id-1',
+                  '@uri': 'http://example.com/source-1',
+                  '@version': '01.00.000',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Exchange source' }],
+                },
+              },
+            },
+          ],
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithExchangeSources);
+
+      expect(
+        result.processDataSet.exchanges.exchange[0].referencesToDataSource.referenceToDataSource[0][
+          '@refObjectId'
+        ],
+      ).toBe('source-id-1');
+    });
+
+    it('should include modelling data source references', () => {
+      const dataWithModellingSources = {
+        ...mockProcessData,
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            referenceToDataSource: {
+              '@type': 'source data set',
+              '@refObjectId': 'source-id-2',
+              '@uri': 'http://example.com/source-2',
+              '@version': '02.00.000',
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Method source' }],
+            },
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithModellingSources);
+
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .referenceToDataSource['@refObjectId'],
+      ).toBe('source-id-2');
+    });
+
+    it('should normalize array review, scope, data quality indicator and compliance entries', () => {
+      const dataWithArrayValidation = {
+        ...mockProcessData,
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          validation: {
+            review: [
+              {
+                '@type': 'internal',
+                'common:scope': [
+                  {
+                    '@name': 'goal',
+                    'common:method': {
+                      '@name': 'method-a',
+                    },
+                  },
+                ],
+                'common:dataQualityIndicators': {
+                  'common:dataQualityIndicator': [
+                    {
+                      '@name': 'representativeness',
+                      '@value': 'good',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          complianceDeclarations: {
+            compliance: [
+              {
+                'common:referenceToComplianceSystem': {
+                  '@refObjectId': 'compliance-id-1',
+                },
+              },
+            ],
+          },
+          dataSourcesTreatmentAndRepresentativeness: {
+            referenceToDataSource: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Sparse source' }],
+            },
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithArrayValidation);
+      const review = result.processDataSet.modellingAndValidation.validation.review;
+      const compliance =
+        result.processDataSet.modellingAndValidation.complianceDeclarations.compliance;
+      const modellingSource =
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .referenceToDataSource;
+
+      expect(review['common:scope']['@name']).toBe('goal');
+      expect(review['common:dataQualityIndicators']['common:dataQualityIndicator']['@name']).toBe(
+        'representativeness',
+      );
+      expect(compliance['common:referenceToComplianceSystem']['@refObjectId']).toBe(
+        'compliance-id-1',
+      );
+      expect(modellingSource['@type']).toEqual({});
+      expect(modellingSource['@refObjectId']).toEqual({});
+      expect(modellingSource['@version']).toEqual({});
+      expect(modellingSource['@uri']).toEqual({});
     });
   });
 
@@ -934,6 +1083,101 @@ describe('Process Utility Functions', () => {
           (result.processInformation.technology as any)?.technologyDescriptionAndIncludedProcesses,
         ),
       ).toBe(true);
+    });
+
+    it('should fall back for missing location and type of data set', () => {
+      const sparseData = {
+        ...mockRawData,
+        processInformation: {
+          ...mockRawData.processInformation,
+          geography: {
+            locationOfOperationSupplyOrProduction: {},
+          },
+        },
+        modellingAndValidation: {
+          LCIMethodAndAllocation: {},
+        },
+      };
+
+      const result = genProcessFromData(sparseData);
+
+      expect(
+        (result.processInformation.geography as any)?.locationOfOperationSupplyOrProduction?.[
+          '@location'
+        ],
+      ).toEqual({});
+      expect((result.modellingAndValidation as any)?.LCIMethodAndAllocation?.typeOfDataSet).toEqual(
+        {},
+      );
+    });
+
+    it('should preserve exchange data source references for quantitative and non-quantitative flows', () => {
+      const dataWithExchangeSources = {
+        ...mockRawData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@type': 'flow data set',
+                '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+              },
+              exchangeDirection: 'Input',
+              meanAmount: '10',
+              referencesToDataSource: {
+                referenceToDataSource: {
+                  '@type': 'source data set',
+                  '@refObjectId': 'source-id-input',
+                  '@uri': 'http://example.com/source-input',
+                  '@version': '01.00.000',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Input source' }],
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': '2',
+              referenceToFlowDataSet: {
+                '@type': 'flow data set',
+                '@refObjectId': 'flow-id-2',
+                '@version': '01.00.000',
+              },
+              exchangeDirection: 'Output',
+              meanAmount: '1',
+              allocations: {
+                allocation: {
+                  '@allocatedFraction': '50%',
+                },
+              },
+              referencesToDataSource: {
+                referenceToDataSource: {
+                  '@type': 'source data set',
+                  '@refObjectId': 'source-id-output',
+                  '@uri': 'http://example.com/source-output',
+                  '@version': '02.00.000',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Output source' }],
+                },
+              },
+            },
+          ],
+        },
+      };
+
+      const result = genProcessFromData(dataWithExchangeSources);
+
+      expect(
+        (result.exchanges.exchange[0] as any).referencesToDataSource.referenceToDataSource[0][
+          '@refObjectId'
+        ],
+      ).toBe('source-id-input');
+      expect(
+        (result.exchanges.exchange[1] as any).referencesToDataSource.referenceToDataSource[0][
+          '@refObjectId'
+        ],
+      ).toBe('source-id-output');
+      expect(
+        (result.exchanges.exchange[1] as any).allocations.allocation['@allocatedFraction'],
+      ).toBe('50');
     });
   });
 
