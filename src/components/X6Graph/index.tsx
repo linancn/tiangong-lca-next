@@ -1,6 +1,7 @@
 import { executeX6HistoryCommand } from '@/components/X6Graph/history';
 import { useGraphStore } from '@/contexts/graphContext';
 import { Clipboard, Graph, History, Keyboard, Selection, Snapline, Transform } from '@antv/x6';
+import { theme } from 'antd';
 import { useEffect, useRef } from 'react';
 
 interface X6GraphProps {
@@ -65,6 +66,8 @@ const X6GraphComponent = ({
 }: X6GraphProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const setGraph = useGraphStore((state) => state.setGraph);
+  const { token } = theme.useToken();
+  const defaultGridColor = token.colorTextTertiary;
 
   useEffect(() => {
     const graph = new Graph({
@@ -99,7 +102,7 @@ const X6GraphComponent = ({
               visible: true,
               type: (gridOptions?.type as any) ?? 'dot',
               args: {
-                color: gridOptions?.color ?? '#595959',
+                color: gridOptions?.color ?? defaultGridColor,
                 thickness: gridOptions?.thickness ?? 1,
               },
             }
