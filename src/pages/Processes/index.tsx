@@ -25,8 +25,13 @@ import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/es/table/interface';

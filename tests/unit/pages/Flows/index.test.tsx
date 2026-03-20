@@ -250,11 +250,6 @@ jest.mock('antd', () => {
   };
 });
 
-jest.mock('@ant-design/pro-table', () => ({
-  __esModule: true,
-  TableDropdown: ({ menus = [] }: any) => <div>{menus.map((menu: any) => menu.name)}</div>,
-}));
-
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
@@ -262,6 +257,13 @@ jest.mock('@ant-design/pro-components', () => {
     <div>
       {header?.title ? <h1>{toText(header.title)}</h1> : null}
       {children}
+    </div>
+  );
+  const TableDropdown = ({ menus = [] }: any) => (
+    <div>
+      {menus.map((menu: any) => (
+        <div key={menu.key}>{menu.name}</div>
+      ))}
     </div>
   );
 
@@ -369,6 +371,7 @@ jest.mock('@ant-design/pro-components', () => {
     PageContainer,
     ProColumns: {},
     ProTable,
+    TableDropdown,
   };
 });
 

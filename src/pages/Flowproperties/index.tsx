@@ -7,7 +7,13 @@ import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproper
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -24,7 +30,6 @@ import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
 import { getUnitData } from '@/services/general/util';
-import { TableDropdown } from '@ant-design/pro-table';
 import { theme } from 'antd';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';

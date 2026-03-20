@@ -232,6 +232,7 @@ jest.mock('antd', () => {
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
+  const TableDropdown = () => <span>table-dropdown</span>;
 
   const ProTable = ({ actionRef, request, rowSelection, columns, toolBarRender }: any) => {
     const requestRef = React.useRef(request);
@@ -274,13 +275,9 @@ jest.mock('@ant-design/pro-components', () => {
   return {
     __esModule: true,
     ProTable,
+    TableDropdown,
   };
 });
-
-jest.mock('@ant-design/pro-table', () => ({
-  __esModule: true,
-  TableDropdown: () => <span>table-dropdown</span>,
-}));
 
 beforeEach(() => {
   latestProTableProps = null;

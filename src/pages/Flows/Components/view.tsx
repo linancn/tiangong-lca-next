@@ -17,8 +17,8 @@ import { genFlowFromData, genFlowPropertyTabTableData } from '@/services/flows/u
 import { ListPagination, ReferenceItem } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
+import type { ActionType } from '@ant-design/pro-components';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import type { ActionType } from '@ant-design/pro-table';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';

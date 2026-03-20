@@ -45,8 +45,6 @@ jest.mock('@ant-design/pro-components', () =>
   require('@/tests/mocks/proComponents').createProComponentsMock(),
 );
 
-jest.mock('@ant-design/pro-table', () => require('@/tests/mocks/proTable').createProTableMock());
-
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
   default: ({ children }: any) => <div data-testid='all-versions'>{children}</div>,

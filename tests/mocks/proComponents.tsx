@@ -361,6 +361,13 @@ export const createProComponentsMock = () => {
 
   const ProConfigProvider = ({ children }: any) => <>{children}</>;
   const ProLayout = ({ children }: any) => <div data-testid='pro-layout'>{children}</div>;
+  const TableDropdown = ({ menus = [] }: any) => (
+    <div data-testid='table-dropdown'>
+      {menus.map((menu: any) => (
+        <div key={menu.key}>{menu.name}</div>
+      ))}
+    </div>
+  );
 
   return {
     __esModule: true,
@@ -373,6 +380,7 @@ export const createProComponentsMock = () => {
     ProFormText,
     ProLayout,
     ProTable,
+    TableDropdown,
     LoginForm,
     __ProFormContext: ProFormContext,
   };

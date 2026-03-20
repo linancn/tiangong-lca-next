@@ -63,7 +63,6 @@
     "@ant-design/charts": "^2.6.7",
     "@ant-design/icons": "^6.1.0",
     "@ant-design/pro-components": "^2.8.10",
-    "@ant-design/pro-table": "^3.21.0",
     "@antv/x6": "^3.1.7",
     "@antv/x6-react-shape": "^3.0.1",
     "@dagrejs/dagre": "^2.0.4",

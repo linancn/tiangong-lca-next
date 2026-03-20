@@ -19,8 +19,13 @@ import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getCachedFlowCategorizationAll } from '@/services/ilcd/cache';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { TableDropdown } from '@ant-design/pro-table';
+import {
+  ActionType,
+  PageContainer,
+  ProColumns,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/lib/table/interface';
