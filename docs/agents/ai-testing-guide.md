@@ -62,31 +62,32 @@ npm run lint
 - Directional goal: move toward 100% meaningful coverage across `src/**`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
-- Latest verified full run on March 18, 2026 (`npm run test:coverage`) is `286 suites / 2842 tests` with:
-  - Statements: `94.97%` (19080/20090)
-  - Branches: `87.97%` (10285/11691)
-  - Functions: `94.01%` (4116/4378)
-  - Lines: `95.15%` (18278/19208)
+- Latest verified full run on March 20, 2026 (`npm run test:coverage:report`, which reruns `npm run test:coverage`) is `288 suites / 3476 tests` with:
+  - Statements: `100.00%` (20013/20013)
+  - Branches: `100.00%` (11419/11419)
+  - Functions: `100.00%` (4379/4379)
+  - Lines: `100.00%` (19143/19143)
 - Current all-file inventory from the same run:
-  - Source files tracked: `312`
-  - Fully covered files (`100/100/100/100`): `197`
-  - Files with remaining gaps: `115`
-  - Branch buckets: `<50 = 1`, `50-70 = 8`, `70-90 = 68`, `90-<100 = 27`
-  - `line=100` but `branch<100`: `27`
-- The branch gate is still healthy, but the lifecycle-model persistence bundle sync reopened one `<50` hotspot and eight `50-70` hotspots. Execution stays queue-ordered, with the immediate closure focus back on those reopened low-branch files before returning to the wider `70-90` bucket and branch-only gaps.
+  - Source files tracked: `313`
+  - Fully covered files (`100/100/100/100`): `313`
+  - Files with remaining gaps: `0`
+  - Branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 0`, `90-<100 = 0`
+  - `line=100` but `branch<100`: `0`
+- The closure queue is empty. The repo is now in maintenance mode: keep every touched or newly added `src/**` file at `100/100/100/100`, and only reopen queue execution when a future regression appears in the coverage report.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
 - Report detail policy:
   - `npm run test:coverage:report`: default review output. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files using full project-relative paths (no `...` truncation for file or cluster labels).
   - `node scripts/test-coverage-report.js --full`: full ordered incomplete-file queue. Use this to inspect the entire file-by-file state or refresh the backlog snapshot.
+  - When the repo is fully covered, both report commands explicitly print `No files with remaining coverage gaps.`; keep using them to verify maintenance-mode health after meaningful changes.
   - Queue order is deterministic: `branches asc -> lines asc -> statements asc -> functions asc -> path`.
-  - The current queue head is led by `src/services/lifeCycleModels/api.ts`, `src/pages/Processes/Components/lcaGroupedResults.ts`, `src/services/lifeCycleModels/persistencePlan.ts`, and `src/pages/Processes/Analysis/index.tsx`.
 - Queue strategy:
   - Do not re-rank work by ad hoc “highest ROI” judgments.
-  - Pick the first file in the ordered closure queue and drive it toward `100/100/100/100` where meaningful before moving on.
+  - While the queue is empty, keep every touched or newly added `src/**` file at `100/100/100/100`.
+  - If the queue reopens, pick the first file in the ordered closure queue and drive it toward `100/100/100/100` where meaningful before moving on.
   - Allowed queue exceptions are narrow: batch adjacent files that share the same mock/fixture/test harness, or fix a shared test-infrastructure blocker first if it blocks the current file or its immediate neighbors.
   - If a queued branch is provably unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests just to satisfy coverage.
-- Do not raise coverage thresholds yet; the next quality gain should come from shrinking the hotspot list, not from moving the gate.
+- Do not raise coverage thresholds yet; the next quality gain should come from keeping full closure intact, not from moving the gate.
 
 ## Related Docs
 
