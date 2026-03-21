@@ -12,6 +12,7 @@
  * 3. Owner edits the newly created contact, sees success feedback and refreshed list.
  * 4. Owner deletes the edited contact, verifying success toast and refreshed list.
  * 5. Owner searches contacts, triggering getContactTablePgroongaSearch and rendering search results.
+ * 6. Open-data users land on /tgdata contacts and only see the read-only source matrix.
  *
  * Services mocked:
  * - getContactTableAll
@@ -26,6 +27,12 @@ import ContactsPage from '@/pages/Contacts';
 import userEvent from '@testing-library/user-event';
 import { createMockTableResponse } from '../../helpers/testData';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+
+const setContactsLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
+};
+
 jest.mock('umi', () => {
   const umi = require('@/tests/mocks/umi');
   umi.setUmiLocation({ pathname: '/mydata/contacts', search: '' });
@@ -292,6 +299,7 @@ describe('Contacts workflow', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    setContactsLocation('/mydata/contacts');
 
     mockGetContactTableAll
       .mockResolvedValueOnce(createMockTableResponse([existingContact], 1, 1))
@@ -462,5 +470,47 @@ describe('Contacts workflow', () => {
     ]);
 
     await waitFor(() => expect(screen.getByText('Search Result Contact')).toBeInTheDocument());
+  });
+
+  it('uses the open-data route matrix for tgdata contacts', async () => {
+    setContactsLocation('/tgdata/contacts', 'tid=team-open');
+
+    mockGetContactTableAll.mockReset();
+    mockGetContactTableAll.mockResolvedValue(
+      createMockTableResponse(
+        [
+          {
+            ...existingContact,
+            id: 'contact-open',
+            shortName: 'Open Contact',
+            version: '01.00.000',
+            teamId: null,
+          },
+        ],
+        1,
+        1,
+      ),
+    );
+
+    await renderContacts();
+
+    await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalledTimes(1));
+
+    const firstCall = mockGetContactTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-open');
+
+    expect(await screen.findByText('Open Contact')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Contacts');
+
+    expect(
+      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: 'Create' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'view' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
   });
 });

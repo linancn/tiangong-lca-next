@@ -6,6 +6,7 @@
  * - Create drawer flow calling createUnitGroup and reloading the table.
  * - Edit drawer flow calling getUnitGroupDetail + updateUnitGroup.
  * - Delete confirmation invoking deleteUnitGroup and refreshing data.
+ * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
  * - getUnitGroupTableAll, getUnitGroupTablePgroongaSearch, unitgroup_hybrid_search
@@ -19,13 +20,17 @@ import UnitgroupsPage from '@/pages/Unitgroups';
 import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+
+const setUnitgroupsLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
+};
+
 jest.mock('umi', () => {
   const umi = require('@/tests/mocks/umi');
   umi.setUmiLocation({ pathname: '/mydata/unitgroups', search: '' });
   return umi.createUmiMock();
 });
-
-const { setUmiLocation } = require('@/tests/mocks/umi');
 
 jest.mock('uuid', () => ({
   __esModule: true,
@@ -202,7 +207,13 @@ jest.mock('@/services/unitgroups/util', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  getDataSource: jest.fn(() => 'my'),
+  getDataSource: jest.fn((pathname: string = '') => {
+    if (pathname.includes('/mydata')) return 'my';
+    if (pathname.includes('/tgdata')) return 'tg';
+    if (pathname.includes('/codata')) return 'co';
+    if (pathname.includes('/tedata')) return 'te';
+    return '';
+  }),
   getLang: jest.fn(() => 'en'),
   getLangText: jest.fn((value: any) => {
     if (typeof value === 'string') return value;
@@ -300,7 +311,7 @@ const baseUnitGroupRow = {
 describe('Unitgroups Workflow Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    setUmiLocation({ pathname: '/mydata/unitgroups', search: '' });
+    setUnitgroupsLocation('/mydata/unitgroups');
     getUnitGroupTableAll.mockResolvedValue({
       data: [baseUnitGroupRow],
       success: true,
@@ -487,5 +498,46 @@ describe('Unitgroups Workflow Integration', () => {
         searchCallsBeforeDelete,
       );
     });
+  });
+
+  it('uses the open-data route matrix for tgdata unit groups', async () => {
+    setUnitgroupsLocation('/tgdata/unitgroups', 'tid=team-open');
+
+    getUnitGroupTableAll.mockResolvedValueOnce({
+      data: [
+        {
+          ...baseUnitGroupRow,
+          id: 'unitgroup-open',
+          name: 'Open unit group',
+          version: '1.0',
+          teamId: null,
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() => {
+      expect(getUnitGroupTableAll).toHaveBeenCalledTimes(1);
+    });
+
+    const firstCall = getUnitGroupTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-open');
+
+    expect(await screen.findByText('Open unit group')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Unit Groups');
+
+    expect(
+      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: /create/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'view' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
   });
 });

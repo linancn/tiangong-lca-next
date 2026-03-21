@@ -29,12 +29,42 @@
 - Always run `npm run lint` after test changes.
 - Do not raise coverage thresholds again yet; first prove that full closure can be preserved under maintenance.
 
+## Integration Testing North Star
+
+- Now that full coverage closure has been achieved, the next major quality gain should come from stronger workflow confidence, not from forcing `tests/integration` alone to hit `100%` code coverage.
+- Define integration success by the 100-point scorecard in `docs/agents/ai-testing-guide.md`:
+  - workflow coverage,
+  - route/role/query matrix coverage,
+  - failure and fallback behavior,
+  - navigation and browser-adjacent side effects,
+  - engineering quality.
+- Default expansion layer: integration tests.
+- Default E2E scope: thin smoke only, reserved for browser-real behavior that integration tests cannot credibly model.
+- Release-ready target for a high-risk workflow: `>=85/100`.
+- Brownfield target: raise one phase at a time; do not rewrite every existing integration suite in one pass.
+
+## Phased Integration Roadmap
+
+1. Route/data-source matrix phase
+   - Exit criteria: every pathname-driven shared-data page has `/mydata` plus at least one non-`/mydata` prefix covered in integration.
+   - Promotion rule: if the page truly behaves differently across sources, expand to the full `/mydata` + `/tgdata` + `/codata` + `/tedata` matrix.
+2. Permission and role phase
+   - Exit criteria: `Teams`, `ManageSystem`, and `Review` each cover allow, restricted, and failure states.
+3. URL/query and navigation phase
+   - Exit criteria: login redirect, deep-link open states, and cross-page navigation contracts are asserted in integration.
+4. Failure and fallback phase
+   - Exit criteria: user-visible handling exists for list-load failure, create/update failure, delete failure or cancel, and meaningful empty states.
+5. Optional browser-real smoke phase
+   - Exit criteria: only a very small E2E smoke layer exists, focused on redirect chains, uploads/previews, reload behavior, and full-page navigation.
+
 ## Maintenance Backlog
 
 - [ ] Keep the repo in maintenance mode by preserving `100/100/100/100` on every touched or newly added `src/**` file.
 - [ ] Treat any newly uncovered branch as an immediate regression, not as future backlog.
 - [ ] Re-run `npm run test:coverage:report` after meaningful test-engineering changes to confirm the queue remains empty.
 - [ ] Keep the local push gate aligned with the docs and scripts (`npm run prepush:gate` must remain the authoritative local enforcement command).
+- [ ] When humans request broader workflow-confidence work, execute the phased integration rollout from `docs/agents/test_todo_list.md` instead of adding ad hoc one-off scenarios.
+- [ ] Keep any future E2E investment intentionally thin and browser-real only.
 
 ## Execution Loop
 

@@ -12,6 +12,7 @@
  * 3. Owner edits the created source via SourceEdit drawer, sees success feedback and refreshed list.
  * 4. Owner deletes the updated source via SourceDelete modal, verifying success toast and refreshed list.
  * 5. Owner searches sources, triggering getSourceTablePgroongaSearch and rendering search results.
+ * 6. Open-data users land on /tgdata sources and only see the read-only source matrix.
  *
  * Services mocked:
  * - getSourceTableAll
@@ -27,6 +28,12 @@ import SourcesPage from '@/pages/Sources';
 import userEvent from '@testing-library/user-event';
 import { createMockTableResponse } from '../../helpers/testData';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+
+const setSourcesLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
+};
+
 jest.mock('umi', () => {
   const umi = require('@/tests/mocks/umi');
   umi.setUmiLocation({ pathname: '/mydata/sources', search: '' });
@@ -203,9 +210,17 @@ const {
   getSourceDetail: mockGetSourceDetail,
 } = jest.requireMock('@/services/sources/api');
 
+const mockGetDataSource = jest.fn((pathname = '') => {
+  if (pathname.includes('/mydata')) return 'my';
+  if (pathname.includes('/tgdata')) return 'tg';
+  if (pathname.includes('/codata')) return 'co';
+  if (pathname.includes('/tedata')) return 'te';
+  return '';
+}) as jest.Mock<any, any[]>;
+
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  getDataSource: jest.fn(() => 'my'),
+  getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: jest.fn(() => 'en'),
   getLangText: jest.fn((textArray: any[], lang: string) => {
     if (!Array.isArray(textArray)) return '';
@@ -290,9 +305,17 @@ jest.mock('@/services/sources/data', () => ({
   SourceDataSetObjectKeys: ['sourceInformation'],
 }));
 
+const mockGetDataTitle = jest.fn((dataSource = '') => {
+  if (dataSource === 'my') return 'My Data';
+  if (dataSource === 'tg') return 'Open Data';
+  if (dataSource === 'co') return 'Commercial Data';
+  if (dataSource === 'te') return 'Team Data';
+  return '';
+}) as jest.Mock<any, any[]>;
+
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
-  getDataTitle: jest.fn(() => 'My Data'),
+  getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
   getAllVersionsColumns: jest.fn((columns: any) => columns),
 }));
 
@@ -373,6 +396,7 @@ describe('Sources workflow', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    setSourcesLocation('/mydata/sources');
 
     mockGetSourceTableAll
       .mockResolvedValueOnce(createMockTableResponse([existingSource], 1, 1))
@@ -579,5 +603,47 @@ describe('Sources workflow', () => {
     ]);
 
     await waitFor(() => expect(screen.getByText('Search Result Source')).toBeInTheDocument());
+  });
+
+  it('uses the open-data route matrix for tgdata sources', async () => {
+    setSourcesLocation('/tgdata/sources', 'tid=team-open');
+
+    mockGetSourceTableAll.mockReset();
+    mockGetSourceTableAll.mockResolvedValue(
+      createMockTableResponse(
+        [
+          {
+            ...existingSource,
+            id: 'source-open',
+            shortName: 'Open Source',
+            version: '01.00.000',
+            teamId: null,
+          },
+        ],
+        1,
+        1,
+      ),
+    );
+
+    await renderSources();
+
+    await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalledTimes(1));
+
+    const firstCall = mockGetSourceTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-open');
+
+    expect(await screen.findByText('Open Source')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Sources');
+
+    expect(
+      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: 'Create' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'view' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
   });
 });

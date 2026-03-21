@@ -40,6 +40,34 @@ Latest verified full run (`npm run test:coverage:report`, which reruns `npm run 
 - Any code change is a hard requirement to preserve repo-wide `100%` statements / branches / functions / lines.
 - Local push is blocked unless the repo passes `.husky/pre-push`, which now runs `npm run prepush:gate`.
 
+## Integration Expansion Program (Separate from Coverage Queue)
+
+- This program exists to deepen workflow confidence after coverage closure. It does not replace the coverage-maintenance rules above.
+- Measure progress with the 100-point integration scorecard in `docs/agents/ai-testing-guide.md`, not by trying to make `tests/integration` alone reach `100%` code coverage.
+- Target state:
+  - New or materially refactored high-risk workflows should reach `>=85/100` before being called integration-complete.
+  - Existing legacy workflows can be raised phase by phase instead of being rewritten all at once.
+
+## Ordered Integration Rollout
+
+1. Phase 1 – Route/data-source matrix
+   - [x] Expand `tests/integration/lifeCycleModels/LifeCycleModelsWorkflow.integration.test.tsx` and `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` so each suite now covers `/mydata` plus `/tgdata`.
+   - [x] Expand `tests/integration/flows/FlowsWorkflow.integration.test.tsx` and `tests/integration/flowproperties/FlowpropertiesWorkflow.integration.test.tsx` so each suite now covers `/mydata` plus `/tgdata`.
+   - [x] Expand `tests/integration/unitgroups/UnitgroupsWorkflow.integration.test.tsx`, `tests/integration/sources/SourcesWorkflow.integration.test.tsx`, and `tests/integration/contacts/ContactsWorkflow.integration.test.tsx` so each suite now covers `/mydata` plus `/tgdata`.
+   - [ ] When UI or service behavior genuinely differs by source type, promote that feature to the full `/mydata` + `/tgdata` + `/codata` + `/tedata` matrix instead of stopping at one secondary prefix.
+2. Phase 2 – Permission and role matrix
+   - [x] Expand `tests/integration/teams/TeamsWorkflow.integration.test.tsx`, `tests/integration/manageSystem/ManageSystemWorkflow.integration.test.tsx`, and `tests/integration/reviews/ReviewWorkflow.integration.test.tsx` so each suite now covers allow, restricted, and failure states.
+   - [x] Assert both user-visible controls and the allowed/prevented `@/services/**` calls.
+3. Phase 3 – URL/query and navigation flows
+   - [ ] Keep `tests/integration/user/LoginWorkflow.integration.test.tsx` responsible for `redirect` query handling.
+   - [ ] Keep `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` responsible for `id/version` deep-link auto-open behavior.
+   - [ ] Expand entry/navigation assertions in `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`, `tests/integration/account/AccountProfileWorkflow.integration.test.tsx`, and the `/mydata/processes/analysis` jump from the Processes page.
+4. Phase 4 – Failure and fallback behavior
+   - [ ] For each workflow anchor above, cover list-load failure, create/update failure, delete failure or cancel, and empty-state rendering where meaningful.
+   - [ ] Prefer user-visible recovery assertions over console-only assertions.
+5. Phase 5 – Optional browser-real smoke
+   - [ ] Only if a human explicitly chooses to add E2E later, promote a very small smoke set: login redirect, welcome entry jump, one representative CRUD path, and one upload/preview flow.
+
 ## All-File Inventory
 
 Current repo-wide status from the same run:
@@ -85,6 +113,7 @@ Current repo-wide status from the same run:
 5. Allowed infrastructure exception: if a shared test blocker prevents coverage on the current file or its immediate neighbors, fix the blocker first and then resume queue order.
 6. If the remaining branch is provably unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests.
 7. Keep wrapper/page-level orchestration tests in scope; do not rely only on child-component coverage.
+8. When a human explicitly asks for broader integration confidence work, execute the phased integration rollout above in order instead of adding ad hoc one-off scenarios.
 
 ## Current Ordered Closure Queue (Head Snapshot)
 
@@ -104,6 +133,8 @@ No batching candidates are currently active because the queue is empty.
 - When a queue file still misses only dead or business-invalid branches, prefer behavior-preserving branch removal over synthetic test scaffolding.
 - Keep the default report concise; only add more default detail if it changes execution order. Deep per-file detail stays behind `--full`.
 - In maintenance mode, treat any newly uncovered branch as a regression to eliminate immediately rather than as backlog to postpone.
+- For integration-expansion work, prefer matrix-driven suites (`describe.each(...)`) over one-file-per-variant duplication.
+- Keep future E2E scope intentionally thin and browser-real only.
 
 ## Execution Protocol (per task)
 

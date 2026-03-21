@@ -7,6 +7,7 @@
  * 2. Owner creates a new flow property (FlowpropertiesCreate -> createFlowproperties -> reload).
  * 3. Owner triggers edit workflow (FlowpropertiesEdit -> updateFlowproperties -> reload).
  * 4. Owner deletes an existing flow property (FlowpropertiesDelete -> deleteFlowproperties -> reload).
+ * 5. Open-data users land on /tgdata flow properties and only see the read-only source matrix.
  *
  * Services mocked:
  * - getFlowpropertyTableAll, createFlowproperties, updateFlowproperties, deleteFlowproperties
@@ -15,6 +16,12 @@
 import FlowpropertiesPage from '@/pages/Flowproperties';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+
+const setFlowpropertiesLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
+};
+
 jest.mock('umi', () => {
   const umi = require('@/tests/mocks/umi');
   umi.setUmiLocation({ pathname: '/mydata/flowproperties', search: '' });
@@ -172,7 +179,13 @@ jest.mock('@/services/flowproperties/util', () => ({
   genFlowpropertyJsonOrdered: jest.fn((id: string, data: any) => ({ id, ...data })),
 }));
 
-const mockGetDataSource = jest.fn(() => 'my') as jest.Mock<any, any[]>;
+const mockGetDataSource = jest.fn((pathname = '') => {
+  if (pathname.includes('/mydata')) return 'my';
+  if (pathname.includes('/tgdata')) return 'tg';
+  if (pathname.includes('/codata')) return 'co';
+  if (pathname.includes('/tedata')) return 'te';
+  return '';
+}) as jest.Mock<any, any[]>;
 const mockGetLang = jest.fn(() => 'en') as jest.Mock<any, any[]>;
 const mockGetLangText = jest.fn((value: any) => {
   if (typeof value === 'string') return value;
@@ -295,6 +308,7 @@ const baseRow = {
 describe('Flowproperties workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    setFlowpropertiesLocation('/mydata/flowproperties');
     mockGetFlowpropertyTableAll.mockResolvedValue({
       data: [baseRow],
       success: true,
@@ -350,5 +364,44 @@ describe('Flowproperties workflow integration', () => {
     await userEvent.click(deleteButton);
     await waitFor(() => expect(mockDeleteFlowproperties).toHaveBeenCalledWith('fp-1', '1.0.0'));
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalledTimes(4));
+  });
+
+  it('uses the open-data route matrix for tgdata flow properties', async () => {
+    setFlowpropertiesLocation('/tgdata/flowproperties', 'tid=team-open');
+
+    mockGetFlowpropertyTableAll.mockResolvedValueOnce({
+      data: [
+        {
+          ...baseRow,
+          id: 'fp-open',
+          name: 'Open Water mass',
+          version: '1.0.0',
+          teamId: null,
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+
+    await renderFlowproperties();
+
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalledTimes(1));
+
+    const firstCall = mockGetFlowpropertyTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-open');
+
+    expect(await screen.findByText('Open Water mass')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Flow Properties');
+
+    expect(
+      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: /create/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /edit fp-open/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /delete fp-open/i })).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'view fp-open:1.0.0' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
   });
 });

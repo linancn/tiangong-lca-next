@@ -12,6 +12,7 @@
  * 3. Owner opens inline edit drawer, saves changes, and observes another table reload.
  * 4. Owner expands review detail from the actions dropdown.
  * 5. Query parameters with id/version auto-open the edit drawer for deep links.
+ * 6. Open-data users land on /tgdata processes list and only see the read-only matrix for that source.
  *
  * Services mocked:
  * - getProcessTableAll
@@ -377,5 +378,43 @@ describe('Processes workflow integration', () => {
     );
 
     secondRender.unmount();
+  });
+
+  it('uses the open-data route matrix for tgdata processes', async () => {
+    setLocation('/tgdata/processes?tid=team-1');
+
+    const tgRow = {
+      ...baseRow,
+      id: 'process-open-1',
+      teamId: null,
+      name: 'Open process dataset',
+    };
+
+    getProcessTableAll.mockResolvedValueOnce({
+      data: [tgRow],
+      success: true,
+      total: 1,
+    });
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(1));
+
+    const firstCall = getProcessTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-1');
+
+    expect(await screen.findByText('Open process dataset')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Processes');
+
+    expect(screen.queryByTestId('import-data')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create Process' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Edit process process-open-1' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete process-open-1')).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'Copy Process' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View review process-open-1' })).toBeInTheDocument();
   });
 });
