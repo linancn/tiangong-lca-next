@@ -585,7 +585,7 @@ const ValidationIssueModalRenderer = ({
         centered
         closable
         closeIcon={<ValidationIssueCloseIcon />}
-        destroyOnClose
+        destroyOnHidden
         footer={
           <ValidationIssueFooter
             intl={intl}
