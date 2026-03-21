@@ -63,6 +63,13 @@ Latest verified full run (`npm run test:coverage:report`, which reruns `npm run 
    - [x] Keep `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` responsible for `id/version` deep-link auto-open behavior.
    - [x] Expand entry/navigation assertions in `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`, `tests/integration/account/AccountProfileWorkflow.integration.test.tsx`, and the `/mydata/processes/analysis` jump from the Processes page.
 4. Phase 4 – Failure and fallback behavior
+   - [x] `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx` already keeps the Data Ecosystem modal responsive when `getTeams()` returns no teams.
+   - [x] `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx` now also keeps team cards visible when thumbnail lookups fail.
+   - [x] `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` now covers an empty initial table result and visible recovery after the user hits reload.
+   - [x] `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` now covers thrown list-request failures with a visible toast plus reload recovery.
+   - [x] `tests/integration/user/LoginWorkflow.integration.test.tsx` now covers duplicate-registration fallback plus inline feedback when validation-email delivery fails.
+   - [x] `tests/integration/account/AccountProfileWorkflow.integration.test.tsx` now covers invalid current password and invalid-credential fallback during API key generation.
+   - [x] `tests/integration/account/AccountProfileWorkflow.integration.test.tsx` now covers initial profile-load failure and change-email failure messaging.
    - [ ] For each workflow anchor above, cover list-load failure, create/update failure, delete failure or cancel, and empty-state rendering where meaningful.
    - [ ] Prefer user-visible recovery assertions over console-only assertions.
 5. Phase 5 – Optional browser-real smoke

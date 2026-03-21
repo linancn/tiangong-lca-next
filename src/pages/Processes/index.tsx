@@ -567,29 +567,42 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          const currentTypeOfDataSet = typeOfDataSetRef.current;
-          if (currentKeyWord.length > 0) {
-            let orderBy:
-              | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
-              | undefined;
-            if (sort && Object.keys(sort).length > 0) {
-              const field = Object.keys(sort)[0];
-              const order = sort[field];
-              if (field === 'name') {
-                orderBy = {
-                  key: 'baseName',
-                  lang: lang,
-                  order: order === 'ascend' ? 'asc' : 'desc',
-                };
-              } else if (field === 'classification') {
-                orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+          try {
+            const currentKeyWord = keyWordRef.current || keyWord;
+            const currentStateCode = stateCodeRef.current;
+            const currentTypeOfDataSet = typeOfDataSetRef.current;
+            if (currentKeyWord.length > 0) {
+              let orderBy:
+                | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
+                | undefined;
+              if (sort && Object.keys(sort).length > 0) {
+                const field = Object.keys(sort)[0];
+                const order = sort[field];
+                if (field === 'name') {
+                  orderBy = {
+                    key: 'baseName',
+                    lang: lang,
+                    order: order === 'ascend' ? 'asc' : 'desc',
+                  };
+                } else if (field === 'classification') {
+                  orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+                }
               }
-            }
-            if (openAI) {
+              if (openAI) {
+                return applyProcessTableResult(
+                  await process_hybrid_search(
+                    params,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    {},
+                    currentStateCode,
+                    currentTypeOfDataSet,
+                  ),
+                );
+              }
               return applyProcessTableResult(
-                await process_hybrid_search(
+                await getProcessTablePgroongaSearch(
                   params,
                   lang,
                   dataSource,
@@ -597,50 +610,47 @@ const TableList: FC = () => {
                   {},
                   currentStateCode,
                   currentTypeOfDataSet,
+                  orderBy,
                 ),
               );
             }
+
+            const sortFields: Record<string, string> = {
+              name: 'json->processDataSet->processInformation->dataSetInformation->name',
+              classification:
+                'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
+            };
+
+            const convertedSort: Record<string, SortOrder> = {};
+            if (sort && Object.keys(sort).length > 0) {
+              const field = Object.keys(sort)[0];
+              if (sortFields[field]) {
+                convertedSort[sortFields[field]] = sort[field];
+              } else {
+                convertedSort[field] = sort[field];
+              }
+            }
+
             return applyProcessTableResult(
-              await getProcessTablePgroongaSearch(
+              await getProcessTableAll(
                 params,
+                convertedSort,
                 lang,
                 dataSource,
-                currentKeyWord,
-                {},
+                tid ?? '',
                 currentStateCode,
                 currentTypeOfDataSet,
-                orderBy,
               ),
             );
+          } catch (error) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.process.list.loadError',
+                defaultMessage: 'Failed to load process list.',
+              }),
+            );
+            return applyProcessTableResult();
           }
-
-          const sortFields: Record<string, string> = {
-            name: 'json->processDataSet->processInformation->dataSetInformation->name',
-            classification:
-              'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
-          };
-
-          const convertedSort: Record<string, SortOrder> = {};
-          if (sort && Object.keys(sort).length > 0) {
-            const field = Object.keys(sort)[0];
-            if (sortFields[field]) {
-              convertedSort[sortFields[field]] = sort[field];
-            } else {
-              convertedSort[field] = sort[field];
-            }
-          }
-
-          return applyProcessTableResult(
-            await getProcessTableAll(
-              params,
-              convertedSort,
-              lang,
-              dataSource,
-              tid ?? '',
-              currentStateCode,
-              currentTypeOfDataSet,
-            ),
-          );
         }}
         columns={processColumns}
       />

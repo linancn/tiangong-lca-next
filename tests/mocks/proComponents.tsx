@@ -342,36 +342,40 @@ export const createProComponentsMock = () => {
         <div data-testid='pro-table-header'>{resolvedHeader}</div>
         <div data-testid='pro-table-options'>{renderToolbar(renderedOptions)}</div>
         <div data-testid='pro-table-toolbar'>{renderToolbar(toolbar)}</div>
-        <table>
-          <tbody>
-            {rows.map((row, rowIndex) => {
-              const identifier =
-                typeof rowKey === 'function'
-                  ? rowKey(row, rowIndex)
-                  : rowKey && row[rowKey]
-                    ? row[rowKey]
-                    : rowIndex;
-              return (
-                <tr key={identifier} data-testid={`pro-table-row-${identifier}`}>
-                  {columns.map((column: any, columnIndex: number) => {
-                    const value = column.dataIndex ? row[column.dataIndex] : undefined;
-                    const cell = column.render
-                      ? column.render(value, row, rowIndex)
-                      : (value ?? column.title ?? null);
-                    return (
-                      <td
-                        key={columnIndex}
-                        data-testid={`pro-table-cell-${column.dataIndex ?? columnIndex}-${identifier}`}
-                      >
-                        {renderContent(cell, `render-${columnIndex}`)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {rows.length === 0 ? (
+          <div data-testid='pro-table-empty'>No Data</div>
+        ) : (
+          <table>
+            <tbody>
+              {rows.map((row, rowIndex) => {
+                const identifier =
+                  typeof rowKey === 'function'
+                    ? rowKey(row, rowIndex)
+                    : rowKey && row[rowKey]
+                      ? row[rowKey]
+                      : rowIndex;
+                return (
+                  <tr key={identifier} data-testid={`pro-table-row-${identifier}`}>
+                    {columns.map((column: any, columnIndex: number) => {
+                      const value = column.dataIndex ? row[column.dataIndex] : undefined;
+                      const cell = column.render
+                        ? column.render(value, row, rowIndex)
+                        : (value ?? column.title ?? null);
+                      return (
+                        <td
+                          key={columnIndex}
+                          data-testid={`pro-table-cell-${column.dataIndex ?? columnIndex}-${identifier}`}
+                        >
+                          {renderContent(cell, `render-${columnIndex}`)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     );
   };

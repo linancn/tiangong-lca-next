@@ -63,6 +63,13 @@
    - [x] 让 `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` 负责 `id/version` 深链自动打开行为。
    - [x] 扩展 `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`、`tests/integration/account/AccountProfileWorkflow.integration.test.tsx`，以及从 Processes 页跳转到 `/mydata/processes/analysis` 的导航断言。
 4. Phase 4 – 失败与回退行为
+   - [x] `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx` 已覆盖当 `getTeams()` 返回空结果时，Data Ecosystem modal 仍保持可交互。
+   - [x] `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx` 现已覆盖缩略图查询失败时，team card 仍然保持可见。
+   - [x] `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` 现已覆盖首轮列表为空时的可见空态，以及用户点击 reload 后的恢复。
+   - [x] `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` 现已覆盖列表请求抛错时的可见 toast，以及 reload 后的恢复。
+   - [x] `tests/integration/user/LoginWorkflow.integration.test.tsx` 现已覆盖重复注册回退，以及验证邮件发送失败时的内联反馈。
+   - [x] `tests/integration/account/AccountProfileWorkflow.integration.test.tsx` 现已覆盖当前密码错误，以及生成 API key 时凭证无效的回退路径。
+   - [x] `tests/integration/account/AccountProfileWorkflow.integration.test.tsx` 现已覆盖首次资料加载失败，以及邮箱变更失败时的提示信息。
    - [ ] 对上述每个工作流锚点，补齐列表加载失败、create/update 失败、delete 失败或取消、以及有意义时的空状态渲染。
    - [ ] 优先断言用户可见恢复行为，不要停留在 console-only 断言。
 5. Phase 5 – 可选的浏览器真实冒烟

@@ -68,15 +68,23 @@ const Welcome: React.FC = () => {
         const processTeams = [...res.data];
         const promises = processTeams.map(async (team, index) => {
           if (team.json?.lightLogo) {
-            const thumbResult = await getThumbFileUrls([{ '@uri': `${team.json.lightLogo}` }]);
-            if (thumbResult[0]?.status === 'done') {
-              processTeams[index].json.previewLightUrl = thumbResult[0].thumbUrl;
+            try {
+              const thumbResult = await getThumbFileUrls([{ '@uri': `${team.json.lightLogo}` }]);
+              if (thumbResult[0]?.status === 'done') {
+                processTeams[index].json.previewLightUrl = thumbResult[0].thumbUrl;
+              }
+            } catch (error) {
+              processTeams[index].json.previewLightUrl = undefined;
             }
           }
           if (team.json?.darkLogo) {
-            const thumbResult = await getThumbFileUrls([{ '@uri': `${team.json.darkLogo}` }]);
-            if (thumbResult[0]?.status === 'done') {
-              processTeams[index].json.previewDarkUrl = thumbResult[0].thumbUrl;
+            try {
+              const thumbResult = await getThumbFileUrls([{ '@uri': `${team.json.darkLogo}` }]);
+              if (thumbResult[0]?.status === 'done') {
+                processTeams[index].json.previewDarkUrl = thumbResult[0].thumbUrl;
+              }
+            } catch (error) {
+              processTeams[index].json.previewDarkUrl = undefined;
             }
           }
           return team;

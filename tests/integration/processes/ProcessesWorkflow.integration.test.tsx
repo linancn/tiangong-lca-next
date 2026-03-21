@@ -12,8 +12,10 @@
  * 3. Owner opens inline edit drawer, saves changes, and observes another table reload.
  * 4. Owner expands review detail from the actions dropdown.
  * 5. Owner can jump from the table toolbar to the analysis page.
- * 6. Query parameters with id/version auto-open the edit drawer for deep links.
- * 7. Open-data users land on /tgdata processes list and only see the read-only matrix for that source.
+ * 6. Empty initial results fall back to a visible empty state and recover after a reload.
+ * 7. Request failures surface a toast and recover to rows after reload.
+ * 8. Query parameters with id/version auto-open the edit drawer for deep links.
+ * 9. Open-data users land on /tgdata processes list and only see the read-only matrix for that source.
  *
  * Services mocked:
  * - getProcessTableAll
@@ -420,6 +422,51 @@ describe('Processes workflow integration', () => {
     await user.click(screen.getByRole('button', { name: 'LCA Analysis' }));
 
     expect(umiMocks.historyPush).toHaveBeenCalledWith('/mydata/processes/analysis');
+  });
+
+  it('shows an empty fallback and recovers after a reload when the first list request returns nothing', async () => {
+    const user = userEvent.setup();
+
+    getProcessTableAll.mockReset();
+    getProcessTableAll.mockResolvedValueOnce(undefined).mockResolvedValueOnce({
+      data: [baseRow],
+      success: true,
+      total: 1,
+    });
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('pro-table-empty')).toHaveTextContent('No Data');
+    expect(screen.getByRole('button', { name: 'Create Process' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+    expect(screen.queryByTestId('pro-table-empty')).not.toBeInTheDocument();
+  });
+
+  it('shows a request failure toast and recovers after a reload', async () => {
+    const user = userEvent.setup();
+
+    getProcessTableAll.mockReset();
+    getProcessTableAll.mockRejectedValueOnce(new Error('request down')).mockResolvedValueOnce({
+      data: [baseRow],
+      success: true,
+      total: 1,
+    });
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(1));
+    expect(message.error).toHaveBeenCalledWith('Failed to load process list.');
+    expect(screen.getByTestId('pro-table-empty')).toHaveTextContent('No Data');
+
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
   });
 
   it('uses the open-data route matrix for tgdata processes', async () => {
