@@ -1,19 +1,14 @@
+import HeaderActionIcon from '@/components/HeaderActionIcon';
 import { ImportTidasPackageResponse, importTidasPackageApi } from '@/services/general/api';
 import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
-import { Modal, Tooltip, Upload, message } from 'antd';
+import { Modal, Upload, message } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
-import type { CSSProperties, FC } from 'react';
+import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   onImported?: () => void;
-};
-
-const headerActionStyle: CSSProperties = {
-  fontSize: 16,
-  opacity: 0.5,
-  cursor: 'pointer',
 };
 
 const formatConflicts = (response: ImportTidasPackageResponse) => {
@@ -151,16 +146,16 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
 
   return (
     <>
-      <Tooltip
+      <HeaderActionIcon
         title={
           <FormattedMessage
             id='component.tidasPackage.import.tooltip'
             defaultMessage='Import TIDAS ZIP Package'
           />
         }
-      >
-        <CloudUploadOutlined style={headerActionStyle} onClick={() => setOpen(true)} />
-      </Tooltip>
+        icon={<CloudUploadOutlined />}
+        onClick={() => setOpen(true)}
+      />
       <Modal
         title={intl.formatMessage({
           id: 'component.tidasPackage.import.title',

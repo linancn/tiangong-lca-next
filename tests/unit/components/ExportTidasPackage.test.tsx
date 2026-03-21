@@ -27,9 +27,13 @@ const CANCEL_BUTTON_TEST_ID = 'export-cancel-button';
 const OPTION_PREFIX = 'scope-option-';
 
 jest.mock('@ant-design/icons', () => ({
-  CloudDownloadOutlined: ({ onClick }: { onClick?: () => void }) => (
-    <button type='button' data-testid={OPEN_BUTTON_TEST_ID} onClick={onClick} />
-  ),
+  CloudDownloadOutlined: ({
+    onClick,
+    style,
+  }: {
+    onClick?: () => void;
+    style?: React.CSSProperties;
+  }) => <button type='button' data-testid={OPEN_BUTTON_TEST_ID} onClick={onClick} style={style} />,
 }));
 
 jest.mock('umi', () => ({
@@ -111,6 +115,10 @@ describe('ExportTidasPackage', () => {
 
   it('shows current-user scope for non-admin users and submits default scope', async () => {
     render(<ExportTidasPackage />);
+
+    expect(screen.getByTestId(OPEN_BUTTON_TEST_ID).style.opacity).toBe('0.5');
+    expect(screen.getByTestId(OPEN_BUTTON_TEST_ID).style.fontSize).toBe('16px');
+
     fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
 
     await waitFor(() => {

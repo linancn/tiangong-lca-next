@@ -113,7 +113,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       <SelectLang key='SelectLang' />,
       <Question key='doc' />,
       <LcaTaskCenter key='LcaTaskCenter' />,
-      <Notification key='Notification'></Notification>,
+      <Notification key='Notification' />,
     ],
     avatarProps: {
       title: <AvatarName />,

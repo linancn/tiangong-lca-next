@@ -1,5 +1,7 @@
 import * as Components from '@/components';
+import ExportTidasPackage from '@/components/ExportTidasPackage';
 import Footer from '@/components/Footer';
+import ImportTidasPackage from '@/components/ImportTidasPackage';
 import LcaTaskCenter from '@/components/LcaTaskCenter';
 import Notification from '@/components/Notification';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
@@ -12,6 +14,8 @@ describe('components barrel exports', () => {
     expect(Components.LcaTaskCenter).toBe(LcaTaskCenter);
     expect(Components.Notification).toBe(Notification);
     expect(Components.QuantitativeReferenceIcon).toBe(QuantitativeReferenceIcon);
+    expect(Components.ExportTidasPackage).toBe(ExportTidasPackage);
+    expect(Components.ImportTidasPackage).toBe(ImportTidasPackage);
     expect(Components.DarkMode).toBe(DarkMode);
     expect(Components.Question).toBe(Question);
     expect(Components.SelectLang).toBe(SelectLang);

@@ -1,3 +1,4 @@
+import HeaderActionIcon from '@/components/HeaderActionIcon';
 import type {
   LcaBackgroundTask,
   LcaTaskPhase,
@@ -28,7 +29,6 @@ import {
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import {
-  Badge,
   Button,
   Empty,
   List,
@@ -626,14 +626,17 @@ const LcaTaskCenter: React.FC = () => {
 
   return (
     <>
-      <Badge count={runningCount} size='small' offset={[-5, 6]} showZero={false}>
-        <ClockCircleOutlined
-          style={{ fontSize: 16, opacity: 0.5, cursor: 'pointer' }}
-          onClick={() => {
-            setOpen(true);
-          }}
-        />
-      </Badge>
+      <HeaderActionIcon
+        title={intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.title',
+          defaultMessage: 'Task Center',
+        })}
+        icon={<ClockCircleOutlined />}
+        badgeCount={runningCount}
+        onClick={() => {
+          setOpen(true);
+        }}
+      />
       <Modal
         title={intl.formatMessage({
           id: 'pages.process.lca.taskCenter.title',
