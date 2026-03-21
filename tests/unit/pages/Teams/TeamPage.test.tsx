@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+let mockUmiLocation = { pathname: '/', search: '' };
+
 jest.mock('@ant-design/icons', () => {
   const React = require('react');
   return {
@@ -25,6 +27,7 @@ jest.mock('@umijs/max', () => {
       locale: 'en-US',
       formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
     }),
+    useLocation: () => mockUmiLocation,
     history,
   };
 });
@@ -555,7 +558,9 @@ const mockUploadLogoApi = uploadLogoApi as jest.MockedFunction<any>;
 const mockHistory = history as { replace: jest.Mock; push: jest.Mock };
 
 const setWindowLocation = (search: string) => {
-  const path = `/team${search.startsWith('?') ? search : `?${search}`}`;
+  const normalizedSearch = search.startsWith('?') ? search : `?${search}`;
+  const path = `/team${normalizedSearch}`;
+  mockUmiLocation = { pathname: '/team', search: normalizedSearch };
   window.history.pushState({}, '', path);
 };
 
@@ -601,6 +606,7 @@ const memberRows = [
 describe('Team page validations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUmiLocation = { pathname: '/', search: '' };
     resetMessages();
     mockUploadFileName = 'logo.png';
     mockGetTeamMembersApi.mockResolvedValue({

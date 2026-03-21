@@ -16,7 +16,7 @@ import Login from '@/pages/User/Login';
 import { login, signUp } from '@/services/auth';
 import { fireEvent, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 import { antdMocks } from '../../mocks/antd';
-import { umiMocks } from '../../mocks/umi';
+import { setUmiLocation, umiMocks } from '../../mocks/umi';
 import { umijsMaxMocks } from '../../mocks/umijsMax';
 
 jest.mock('@/services/auth', () => ({
@@ -84,6 +84,7 @@ describe('Login workflow integration', () => {
     jest.clearAllMocks();
     localStorage.clear();
     window.history.replaceState({}, '', '/');
+    setUmiLocation({ pathname: '/user/login', search: '' });
     mockHistoryPush.mockClear();
     mockFetchUserInfo.mockReset();
     mockSetInitialState.mockReset();
@@ -142,6 +143,7 @@ describe('Login workflow integration', () => {
     mockLogin.mockResolvedValue({ status: 'ok' });
     mockFetchUserInfo.mockResolvedValue({ id: 'user-1' });
     window.history.replaceState({}, '', '/user/login?redirect=/mydata/processes');
+    setUmiLocation({ pathname: '/user/login', search: '?redirect=/mydata/processes' });
 
     renderWithProviders(<Login />);
 

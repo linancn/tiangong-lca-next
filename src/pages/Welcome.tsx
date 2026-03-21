@@ -30,7 +30,7 @@ import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import CountUp from 'react-countup';
-import { FormattedMessage, useIntl } from 'umi';
+import { FormattedMessage, history, useIntl } from 'umi';
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
@@ -517,7 +517,7 @@ const Welcome: React.FC = () => {
                         </div>
                       }
                       onClick={() => {
-                        window.location.href = `/tgdata/models?tid=${team.id}`;
+                        history.push(`/tgdata/models?tid=${team.id}`);
                       }}
                     >
                       <Meta

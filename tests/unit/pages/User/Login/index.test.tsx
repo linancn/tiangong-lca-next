@@ -14,6 +14,8 @@ const toText = (node: any): string => {
 // eslint-disable-next-line no-var
 var mockHistory: any = { push: jest.fn() };
 // eslint-disable-next-line no-var
+var mockLocation = { pathname: '/', search: '' };
+// eslint-disable-next-line no-var
 var mockLogin: jest.Mock = jest.fn();
 // eslint-disable-next-line no-var
 var mockMessageApi: any = {
@@ -54,6 +56,7 @@ jest.mock('umi', () => {
     __esModule: true,
     Helmet: ({ children }: any) => <>{children}</>,
     history: mockHistory,
+    useLocation: () => mockLocation,
     useIntl: () => ({
       locale: 'en-US',
       formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -76,6 +79,7 @@ jest.mock('@umijs/max', () => ({
     }, baseText);
   },
   history: mockHistory,
+  useLocation: () => mockLocation,
   useIntl: () => ({
     locale: 'en-US',
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -274,6 +278,7 @@ describe('Login page', () => {
     mockGetLocalizedLoginSubtitle.mockReturnValue('Sustainable life cycle data');
     window.localStorage.clear();
     window.localStorage.setItem('isDarkMode', 'false');
+    mockLocation = { pathname: '/', search: '' };
     mockLogin.mockResolvedValue({ status: 'ok' });
     mockSignUp.mockResolvedValue({ status: 'ok' });
     mockUseModelState.initialState = {
@@ -302,6 +307,7 @@ describe('Login page', () => {
 
   it('redirects to the redirect query parameter after a successful login', async () => {
     window.history.pushState({}, '', '/login?redirect=%2Ftedata%2Fprocesses');
+    mockLocation = { pathname: '/login', search: '?redirect=%2Ftedata%2Fprocesses' };
 
     render(<LoginPage />);
 
@@ -312,6 +318,7 @@ describe('Login page', () => {
     });
 
     window.history.pushState({}, '', '/');
+    mockLocation = { pathname: '/', search: '' };
   });
 
   it('shows the login error alert when the login service returns an error status', async () => {

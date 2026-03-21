@@ -9,7 +9,7 @@ import {
 } from '@ant-design/pro-components';
 import { Alert, App, Button, ConfigProvider, Tabs, message, theme } from 'antd';
 import React, { useState } from 'react';
-import { Helmet, history, useIntl, useModel } from 'umi';
+import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
@@ -55,6 +55,7 @@ const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
   const [type, setType] = useState<string>('login');
   const [loading, setLoading] = useState<boolean>(false);
+  const location = useLocation();
   const { initialState, setInitialState } = useModel('@@initialState');
   const [sendComplete, setSendComplete] = useState(false);
   const intl = useIntl();
@@ -124,7 +125,7 @@ const Login: React.FC = () => {
           });
           messageApi.success(defaultLoginSuccessMessage);
           await fetchUserInfo();
-          const urlParams = new URL(window.location.href).searchParams;
+          const urlParams = new URLSearchParams(location.search);
           history.push(urlParams.get('redirect') || '/');
           return;
         }

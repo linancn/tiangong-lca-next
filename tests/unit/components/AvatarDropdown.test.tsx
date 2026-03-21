@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
 const mockHistoryPush: jest.Mock<void, [unknown?]> = jest.fn();
 const mockHistoryReplace: jest.Mock<void, [unknown?]> = jest.fn();
 const mockUseModel: jest.Mock<any, [string]> = jest.fn();
+let mockLocation = { pathname: '/', search: '' };
 const mockUseIntl: jest.Mock<
   {
     formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => string;
@@ -199,11 +200,13 @@ setupModuleMocks();
 
 const umiMax = require('@umijs/max') as {
   useIntl?: (...args: any[]) => any;
+  useLocation?: (...args: any[]) => any;
   useModel?: (...args: any[]) => any;
   history?: { push?: (...args: any[]) => any; replace?: (...args: any[]) => any };
 };
 
 umiMax.useIntl = () => mockUseIntl();
+umiMax.useLocation = () => mockLocation;
 umiMax.useModel = (model: string) => mockUseModel(model);
 umiMax.history = {
   push: mockHistoryPush,
@@ -226,6 +229,7 @@ describe('AvatarDropdown', () => {
     mockUseIntl.mockClear();
     mockModalConfirm.mockReset();
     mockModalDestroyAll.mockReset();
+    mockLocation = { pathname: '/', search: '' };
 
     mockedLogout.mockResolvedValue(undefined);
     mockedGetUserRoles.mockResolvedValue({ data: [{ role: 'member' }] });
@@ -434,7 +438,7 @@ describe('AvatarDropdown', () => {
 
     mockedGetUserRoles.mockResolvedValue({ data: [{ role: 'rejected' }] });
     mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'member' });
-    window.history.pushState({}, '', '/team?view=detail');
+    mockLocation = { pathname: '/team', search: '?view=detail' };
     const reloadSpy = jest.fn();
     const originalLocation = window.location;
     Object.defineProperty(window, 'location', {
@@ -515,7 +519,7 @@ describe('AvatarDropdown', () => {
       return {};
     });
 
-    window.history.pushState({}, '', '/?redirect=%2Fteam');
+    mockLocation = { pathname: '/', search: '?redirect=%2Fteam' };
     const user = userEvent.setup();
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);

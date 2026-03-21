@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
 let mockLocale = 'en-US';
+const mockHistoryPush = jest.fn();
 
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
@@ -21,6 +22,9 @@ jest.mock('react-countup', () => ({
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  history: {
+    push: (...args: any[]) => mockHistoryPush(...args),
+  },
   useIntl: () => ({
     locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -97,6 +101,7 @@ describe('Welcome page', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockHistoryPush.mockReset();
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
     window.location.href = 'http://localhost:8000/';
@@ -175,7 +180,7 @@ describe('Welcome page', () => {
     expect(teamCard).not.toBeNull();
     await user.click(teamCard as Element);
 
-    expect(window.location.href).toContain('/tgdata/models?tid=team-1');
+    expect(mockHistoryPush).toHaveBeenCalledWith('/tgdata/models?tid=team-1');
   });
 
   it('renders an empty ecosystem list without thumbnail lookups when no teams are returned', async () => {

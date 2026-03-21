@@ -34,7 +34,7 @@ import {
   ProFormInstance,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, history, useIntl } from '@umijs/max';
+import { FormattedMessage, history, useIntl, useLocation } from '@umijs/max';
 import {
   Button,
   Flex,
@@ -80,8 +80,8 @@ const Team = () => {
 
   const [rank, setRank] = useState(-1);
   const actionRef = useRef<any>(null);
-  const [searchParams] = useState(new URLSearchParams(window.location.search));
-  const action = searchParams.get('action');
+  const location = useLocation();
+  const action = new URLSearchParams(location.search).get('action');
 
   const intl = useIntl();
 
@@ -94,12 +94,10 @@ const Team = () => {
   };
 
   useEffect(() => {
-    if (action === 'create') {
-    }
     if (action === 'edit') {
-      initialUseTeamId();
+      void initialUseTeamId();
     }
-  }, []);
+  }, [action]);
 
   const getTeamInfo = async (id: string) => {
     setTeamInfoSpinning(true);
