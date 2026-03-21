@@ -1511,7 +1511,8 @@ describe('ProcessEdit component', () => {
     );
   });
 
-  it.skip('surfaces current-process published-version conflicts during data check', async () => {
+  it('surfaces current-process published-version conflicts in the validation modal during data check', async () => {
+    const validationIssues = [{ code: 'versionIsInTg' }];
     mockCheckReferences.mockResolvedValue({
       findProblemNodes: () => [
         {
@@ -1521,6 +1522,17 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
+    mockBuildValidationIssues.mockImplementationOnce(({ problemNodes }: any) => {
+      expect(problemNodes).toEqual([
+        expect.objectContaining({
+          '@refObjectId': 'process-1',
+          '@version': '1.0.0',
+          versionIsInTg: true,
+        }),
+      ]);
+      return validationIssues;
+    });
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ id: 'ref-check-version-tg' }]);
 
     render(<ProcessEdit {...baseProps} />);
 
@@ -1529,8 +1541,11 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
+      expect(showValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: validationIssues,
+          title: 'Data validation issues',
+        }),
       ),
     );
   });
@@ -1570,28 +1585,6 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
     await waitFor(() => expect(mockUpdateRefsData).toHaveBeenCalledTimes(3));
     expect(mockGetFlowDetail).not.toHaveBeenCalled();
-  });
-
-  it.skip('fails review submission when the saved process state is already under review', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 30,
-          rule_verification: true,
-        },
-      ],
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed'));
   });
 
   it('surfaces tab-level check errors and triggers field validation after switching tabs', async () => {

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import LcaTaskCenter from '@/components/LcaTaskCenter';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 let mockTasks: any[] = [];
 let mockPackageTasks: any[] = [];
@@ -637,28 +637,34 @@ describe('LcaTaskCenter', () => {
 
     const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
     fireEvent.click(downloadButtons[0]);
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
-      1,
-      'pkg-completed-default-name',
-    );
-    expect(message.success).toHaveBeenCalledWith('Downloaded downloaded.zip');
+    await waitFor(() => {
+      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
+        1,
+        'pkg-completed-default-name',
+      );
+    });
+    await waitFor(() => {
+      expect(message.success).toHaveBeenCalledWith('Downloaded downloaded.zip');
+    });
 
     fireEvent.click(downloadButtons[1]);
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(2, 'pkg-completed');
-    expect(message.error).toHaveBeenCalledWith('Failed to download TIDAS package');
+    await waitFor(() => {
+      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(2, 'pkg-completed');
+    });
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to download TIDAS package');
+    });
 
     fireEvent.click(downloadButtons[0]);
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
-      3,
-      'pkg-completed-default-name',
-    );
-    expect(message.error).toHaveBeenCalledWith('download broken');
+    await waitFor(() => {
+      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
+        3,
+        'pkg-completed-default-name',
+      );
+    });
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('download broken');
+    });
 
     const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
     removeButtons.forEach((button) => {

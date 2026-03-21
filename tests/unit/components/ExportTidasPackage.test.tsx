@@ -190,9 +190,14 @@ describe('ExportTidasPackage', () => {
 
     render(<ExportTidasPackage />);
     fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    await waitFor(() => {
+      expect(screen.getByTestId(`${OPTION_PREFIX}current_user`)).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByTestId(CANCEL_BUTTON_TEST_ID));
 
-    expect(screen.queryByTestId('export-modal')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId('export-modal')).not.toBeInTheDocument();
+    });
   });
 
   it('keeps modal open during loading cancel guard and then closes after settle', async () => {
