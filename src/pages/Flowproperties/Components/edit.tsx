@@ -1,7 +1,8 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
-import { checkData } from '@/pages/Utils/review';
+import { buildValidationIssues, checkData, validateDatasetWithSdk } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
   getRefsOfNewVersion,
@@ -21,7 +22,6 @@ import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tidas-sdk';
 import {
   Button,
   Drawer,
@@ -49,7 +49,11 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
+  disabled?: boolean;
   updateErrRef?: (data: RefCheckType | null) => void;
+  autoOpen?: boolean;
+  onDrawerClose?: () => void;
+  autoCheckRequired?: boolean;
 };
 
 type UpdateFlowpropertiesResult = Pick<
@@ -63,7 +67,11 @@ const FlowpropertiesEdit: FC<Props> = ({
   buttonType,
   actionRef,
   lang,
+  disabled = false,
   updateErrRef = () => {},
+  autoOpen = false,
+  onDrawerClose,
+  autoCheckRequired = false,
 }) => {
   const formRefEdit = useRef<ProFormInstance>();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -72,8 +80,10 @@ const FlowpropertiesEdit: FC<Props> = ({
   );
   const [fromData, setFromData] = useState<FormFlowProperty & { id?: string }>();
   const [initData, setInitData] = useState<FormFlowProperty & { id?: string }>();
+  const [detailStateCode, setDetailStateCode] = useState<number>();
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const intl = useIntl();
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
@@ -93,6 +103,12 @@ const FlowpropertiesEdit: FC<Props> = ({
       refCheckData: [...parentRefCheckContext.refCheckData, ...refCheckData],
     });
   }, [refCheckData, parentRefCheckContext]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      setDrawerVisible(true);
+    }
+  }, [autoOpen, id, version]);
 
   // useEffect(() => {
   //   if (showRules) {
@@ -154,11 +170,17 @@ const FlowpropertiesEdit: FC<Props> = ({
     setDrawerVisible(true);
   };
 
+  const closeDrawer = () => {
+    setDrawerVisible(false);
+    onDrawerClose?.();
+  };
+
   const onReset = () => {
     setSpinning(true);
     formRefEdit.current?.resetFields();
     getFlowpropertyDetail(id, version).then(async (result: FlowpropertyDetailResponse) => {
       const fromData0 = await genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {});
+      setDetailStateCode(result.data?.stateCode);
       setInitData({
         ...fromData0,
         id: id,
@@ -178,14 +200,20 @@ const FlowpropertiesEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
+      setAutoCheckTriggered(false);
       return;
     }
     onReset();
   }, [drawerVisible]);
 
-  const handleSubmit = async (autoClose: boolean): Promise<UpdateFlowpropertiesResult | null> => {
+  const handleSubmit = async (
+    autoClose: boolean,
+    options?: { silent?: boolean },
+  ): Promise<UpdateFlowpropertiesResult | null> => {
+    const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
@@ -205,34 +233,38 @@ const FlowpropertiesEdit: FC<Props> = ({
           nonExistent: false,
         });
       }
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.save.success',
-          defaultMessage: 'Saved successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.save.success',
+            defaultMessage: 'Saved successfully!',
+          }),
+        );
+      }
       if (autoClose) {
-        setDrawerVisible(false);
+        closeDrawer();
         actionRef?.current?.reload();
       }
       // setActiveTabKey('flowPropertiesInformation');
     } else {
-      if (updateResult?.error?.state_code === 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.openData',
-            defaultMessage: 'This data is open data, save failed',
-          }),
-        );
-      } else if (updateResult?.error?.state_code === 20) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.underReview',
-            defaultMessage: 'Data is under review, save failed',
-          }),
-        );
-      } else {
-        message.error(updateResult?.error?.message);
+      if (!silent) {
+        if (updateResult?.error?.state_code === 100) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.openData',
+              defaultMessage: 'This data is open data, save failed',
+            }),
+          );
+        } else if (updateResult?.error?.state_code === 20) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.underReview',
+              defaultMessage: 'Data is under review, save failed',
+            }),
+          );
+        } else {
+          message.error(updateResult?.error?.message);
+        }
       }
     }
     if (autoClose) setSpinning(false);
@@ -242,35 +274,39 @@ const FlowpropertiesEdit: FC<Props> = ({
     return null;
   };
 
-  const handleCheckData = async () => {
+  const handleCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.checkData.inReview',
+            defaultMessage: 'This data set is under review and cannot be validated',
+          }),
+        );
+      }
+      return;
+    }
     setSpinning(true);
-    const updateResult = await handleSubmit(false);
+    const updateResult = await handleSubmit(false, { silent });
     if (!updateResult || updateResult.error) {
       setSpinning(false);
       return;
     }
     setShowRules(true);
+    const rootRef = {
+      '@type': 'flow property data set',
+      '@refObjectId': id,
+      '@version': version,
+    } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     const pathRef = new ReffPath(
-      {
-        '@type': 'flow property data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
+      rootRef,
       Boolean(updateResult.data?.[0]?.rule_verification),
       false,
     );
-    await checkData(
-      {
-        '@type': 'flow property data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-    );
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
@@ -285,22 +321,6 @@ const FlowpropertiesEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const unRuleVerificationData = unRuleVerification.map((item) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: false,
-        nonExistent: false,
-      };
-    });
-    const nonExistentRefData = nonExistentRef.map((item) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: true,
-        nonExistent: true,
-      };
-    });
     const errTabNames: string[] = [];
     nonExistentRef.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
@@ -315,73 +335,110 @@ const FlowpropertiesEdit: FC<Props> = ({
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
-    const tidasFlowProperty = createTidasFlowProperty(genFlowpropertyJsonOrdered(id, fromData));
-    const validateResult = tidasFlowProperty.validateEnhanced();
-    const issues = validateResult.success ? [] : validateResult.error.issues;
-    if (issues.length) {
-      issues.forEach((err) => {
+    const sdkValidation = validateDatasetWithSdk(
+      'flow property data set',
+      genFlowpropertyJsonOrdered(id, fromData),
+    );
+    const sdkIssues = sdkValidation.issues;
+    const sdkInvalidTabNames: string[] = [];
+    if (sdkIssues.length) {
+      sdkIssues.forEach((err) => {
         const tabName = err.path[1];
         if (tabName && !errTabNames.includes(tabName as string))
           errTabNames.push(tabName as string);
+        if (tabName && !sdkInvalidTabNames.includes(tabName as string))
+          sdkInvalidTabNames.push(tabName as string);
       });
       formRefEdit.current?.validateFields();
     }
+    const validationIssues = buildValidationIssues({
+      datasetSdkValid: sdkValidation.success,
+      nonExistentRef,
+      rootRef,
+      sdkInvalidTabNames,
+      unRuleVerification,
+    });
     if (
-      unRuleVerificationData.length === 0 &&
-      nonExistentRefData.length === 0 &&
+      unRuleVerification.length === 0 &&
+      nonExistentRef.length === 0 &&
       errTabNames.length === 0 &&
       problemNodes.length === 0 &&
-      issues.length === 0
+      sdkIssues.length === 0
     ) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.check.success',
-          defaultMessage: 'Data check successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.check.success',
+            defaultMessage: 'Data check successfully!',
+          }),
+        );
+      }
     } else {
-      if (errTabNames && errTabNames.length > 0) {
-        message.error(
-          errTabNames
-            .map((tab) =>
-              intl.formatMessage({
-                id: `pages.FlowProperties.view.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
-            .join('，') +
+      const validationHint =
+        errTabNames && errTabNames.length > 0
+          ? errTabNames
+              .map((tab) =>
+                intl.formatMessage({
+                  id: `pages.FlowProperties.view.${tab}`,
+                  defaultMessage: tab,
+                }),
+              )
+              .join('，') +
             '：' +
             intl.formatMessage({
               id: 'pages.button.check.error',
               defaultMessage: 'Data check failed!',
-            }),
-        );
-      } else {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
+            })
+          : intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            });
+      if (!silent && validationIssues.length > 0) {
+        showValidationIssueModal({
+          intl,
+          issues: validationIssues,
+          title: intl.formatMessage({
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
           }),
-        );
+        });
+      } else if (!silent) {
+        message.error(validationHint);
       }
     }
     setSpinning(false);
   };
 
+  useEffect(() => {
+    if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
+      return;
+    }
+    setAutoCheckTriggered(true);
+    void handleCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, handleCheckData, spinning]);
+
   return (
     <>
-      <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
-        {buttonType === 'icon' ? (
-          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
-        ) : (
-          <Button onClick={onEdit}>
-            <FormattedMessage
-              id={buttonType ? buttonType : 'pages.button.edit'}
-              defaultMessage='Edit'
+      {!autoOpen && (
+        <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
+          {buttonType === 'icon' ? (
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<FormOutlined />}
+              size='small'
+              onClick={onEdit}
             />
-          </Button>
-        )}
-      </Tooltip>
+          ) : (
+            <Button disabled={disabled} onClick={onEdit}>
+              <FormattedMessage
+                id={buttonType ? buttonType : 'pages.button.edit'}
+                defaultMessage='Edit'
+              />
+            </Button>
+          )}
+        </Tooltip>
+      )}
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}
@@ -393,19 +450,13 @@ const FlowpropertiesEdit: FC<Props> = ({
         }
         width='90%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         maskClosable={false}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={closeDrawer}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={handleCheckData}>
+            <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
@@ -418,7 +469,7 @@ const FlowpropertiesEdit: FC<Props> = ({
                 defaultMessage='Update Reference'
               />
             </Button>
-            <Button onClick={() => setDrawerVisible(false)}>
+            <Button onClick={closeDrawer}>
               {' '}
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>

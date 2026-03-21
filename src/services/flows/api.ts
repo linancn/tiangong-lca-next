@@ -1,3 +1,4 @@
+import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import {
   classificationToString,
   genClassificationZH,
@@ -7,9 +8,13 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
+import {
+  getDataDetail,
+  getTeamIdByUserId,
+  normalizeLangPayloadForSave,
+  resolveFunctionInvokeError,
+} from '../general/api';
 import { getILCDLocationByValues } from '../ilcd/api';
 import { getCachedFlowCategorizationAll, getCachedLocationData } from '../ilcd/cache';
 import { genFlowJsonOrdered, genFlowName } from './util';
@@ -89,8 +94,12 @@ export async function createFlows(id: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasFlow(newData).validateEnhanced().success;
-  // const teamId = await getTeamIdByUserId();
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'flow data set',
+    newData,
+    userTeamId,
+  );
   const result = await supabase
     .from('flows')
     .insert([{ id: id, json_ordered: newData, rule_verification }])
@@ -118,7 +127,12 @@ export async function updateFlows(id: string, version: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasFlow(newData).validateEnhanced().success;
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'flow data set',
+    newData,
+    userTeamId,
+  );
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
@@ -132,6 +146,9 @@ export async function updateFlows(id: string, version: string, data: any) {
   }
   if (result.error) {
     console.log('error', result.error);
+    return {
+      error: await resolveFunctionInvokeError(result.error),
+    };
   }
   return result?.data;
 }

@@ -12,9 +12,17 @@ type Props = {
   version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDrawerVisible }) => {
+const ProcessDelete: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  disabled = false,
+  setViewDrawerVisible,
+}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const intl = useIntl();
@@ -55,7 +63,13 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
       <Tooltip title={<FormattedMessage id='pages.button.delete' defaultMessage='Delete' />}>
         {buttonType === 'icon' ? (
           <>
-            <Button shape='circle' icon={<DeleteOutlined />} size='small' onClick={showModal} />
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<DeleteOutlined />}
+              size='small'
+              onClick={showModal}
+            />
             <Modal
               title={<FormattedMessage id='pages.button.delete' defaultMessage='Delete' />}
               open={isModalVisible}
@@ -71,7 +85,7 @@ const ProcessDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewD
           </>
         ) : (
           <>
-            <Button size='small' onClick={showModal}>
+            <Button disabled={disabled} size='small' onClick={showModal}>
               <FormattedMessage id='pages.button.delete' defaultMessage='Delete' />
             </Button>
             <Modal

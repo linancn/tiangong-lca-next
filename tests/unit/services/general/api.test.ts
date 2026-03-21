@@ -243,6 +243,45 @@ describe('getDataDetail', () => {
   });
 });
 
+describe('attachStateCodesToRows', () => {
+  it('should attach state codes by exact id and version match', async () => {
+    const payload = {
+      data: [
+        {
+          id: 'row-1',
+          version: '01.00.000',
+          state_code: 20,
+        },
+      ],
+      error: null,
+    };
+    const builder = createQueryBuilder(payload);
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.attachStateCodesToRows('processes', [
+      { id: 'row-1', version: '01.00.000' },
+      { id: 'row-1', version: '02.00.000' },
+    ]);
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(builder.select).toHaveBeenCalledWith('id,version,state_code');
+    expect(builder.in).toHaveBeenCalledWith('id', ['row-1']);
+    expect(result).toEqual([
+      { id: 'row-1', version: '01.00.000', stateCode: 20 },
+      { id: 'row-1', version: '02.00.000' },
+    ]);
+  });
+
+  it('should skip querying when rows already include state codes', async () => {
+    const rows = [{ id: 'row-1', version: '01.00.000', stateCode: 10 }];
+
+    const result = await generalApi.attachStateCodesToRows('processes', rows);
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual(rows);
+  });
+});
+
 describe('getDataDetailById', () => {
   it('should return query result for valid id', async () => {
     const payload = { data: [{ id: sampleId, version: sampleVersion }] };
@@ -321,14 +360,17 @@ describe('getRefData', () => {
     const result = await generalApi.getRefData(sampleId, sampleVersion, 'flows');
 
     expect(builder.select).toHaveBeenCalledWith(
-      'state_code,json,rule_verification,user_id,team_id',
+      'id,version,state_code,json,rule_verification,user_id,team_id',
     );
     expect(builder.eq).toHaveBeenCalledWith('version', sampleVersion);
     expect(result).toEqual({
       data: {
+        id: undefined,
+        version: undefined,
         stateCode: 100,
         json: { foo: 'bar' },
         ruleVerification: 'ok',
+        teamId: undefined,
         userId: 'user-1',
       },
       success: true,
@@ -353,7 +395,7 @@ describe('getRefData', () => {
     await generalApi.getRefData(sampleId, sampleVersion, 'flows', 'team-1');
 
     expect(builder.select).toHaveBeenCalledWith(
-      'state_code,json,rule_verification,user_id,team_id',
+      'id,version,state_code,json,rule_verification,user_id,team_id',
     );
   });
 
@@ -382,12 +424,13 @@ describe('getRefData', () => {
     const result = await generalApi.getRefData(sampleId, sampleVersion, 'flows', 'team-2');
 
     expect(result).toEqual({
-      data: {
+      data: expect.objectContaining({
         stateCode: 200,
+        teamId: 'team-2',
         json: { source: 'team-2' },
         ruleVerification: 'pending',
         userId: 'user-2',
-      },
+      }),
       success: true,
     });
   });
@@ -422,12 +465,13 @@ describe('getRefData', () => {
     );
 
     expect(result).toEqual({
-      data: {
+      data: expect.objectContaining({
         stateCode: 100,
+        teamId: 'team-1',
         json: { source: 'first' },
         ruleVerification: 'ok',
         userId: 'user-1',
-      },
+      }),
       success: true,
     });
   });
@@ -1352,7 +1396,7 @@ describe('Edge Cases and Error Handling', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-      expect(result).toBeNull();
+      expect(result).toEqual({ error: { message: 'Update failed' } });
 
       consoleLogSpy.mockRestore();
     });

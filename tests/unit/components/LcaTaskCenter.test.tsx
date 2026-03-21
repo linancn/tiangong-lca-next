@@ -3,9 +3,14 @@ import LcaTaskCenter from '@/components/LcaTaskCenter';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 let mockTasks: any[] = [];
+let mockPackageTasks: any[] = [];
 const mockClearFinishedLcaTasks = jest.fn();
+const mockClearFinishedTidasPackageTasks = jest.fn();
+const mockDownloadTidasPackageExportTask = jest.fn();
 const mockRemoveLcaTask = jest.fn();
+const mockRemoveTidasPackageTask = jest.fn();
 const mockSubscribeLcaTasks = jest.fn(() => jest.fn());
+const mockSubscribeTidasPackageTasks = jest.fn(() => jest.fn());
 
 const formatWithValues = (message: string, values?: Record<string, any>) =>
   Object.entries(values ?? {}).reduce((text, [key, value]) => {
@@ -18,6 +23,15 @@ jest.mock('@/services/lca/taskCenter', () => ({
   listLcaTasks: () => mockTasks,
   removeLcaTask: (...args: any[]) => mockRemoveLcaTask(...args),
   subscribeLcaTasks: (...args: any[]) => mockSubscribeLcaTasks(...args),
+}));
+
+jest.mock('@/services/tidasPackage/taskCenter', () => ({
+  __esModule: true,
+  clearFinishedTidasPackageTasks: () => mockClearFinishedTidasPackageTasks(),
+  downloadTidasPackageExportTask: (...args: any[]) => mockDownloadTidasPackageExportTask(...args),
+  listTidasPackageTasks: () => mockPackageTasks,
+  removeTidasPackageTask: (...args: any[]) => mockRemoveTidasPackageTask(...args),
+  subscribeTidasPackageTasks: (...args: any[]) => mockSubscribeTidasPackageTasks(...args),
 }));
 
 jest.mock('umi', () => ({
@@ -37,6 +51,7 @@ jest.mock('@ant-design/icons', () => ({
     </button>
   ),
   CloseCircleOutlined: () => <span>close-icon</span>,
+  DownloadOutlined: () => <span>download-icon</span>,
   InfoCircleOutlined: () => <span>info-icon</span>,
 }));
 
@@ -124,14 +139,27 @@ jest.mock('antd', () => {
     Tag,
     Tooltip,
     Typography,
+    message: {
+      success: jest.fn(),
+      error: jest.fn(),
+    },
     theme,
   };
 });
+
+const { message } = jest.requireMock('antd') as {
+  message: {
+    success: jest.Mock;
+    error: jest.Mock;
+  };
+};
 
 describe('LcaTaskCenter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockTasks = [];
+    mockPackageTasks = [];
+    mockDownloadTidasPackageExportTask.mockResolvedValue({ filename: 'downloaded.zip' });
   });
 
   it('shows the empty state when there are no tracked tasks', () => {
@@ -142,12 +170,14 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('LCA Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Task Center')).toBeInTheDocument();
     expect(screen.getByTestId('empty')).toHaveTextContent('No tasks');
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
+    expect(mockClearFinishedTidasPackageTasks).toHaveBeenCalledTimes(1);
     expect(mockSubscribeLcaTasks).toHaveBeenCalled();
+    expect(mockSubscribeTidasPackageTasks).toHaveBeenCalled();
   });
 
   it('renders running and completed tasks, task details, and remove actions', () => {
@@ -239,6 +269,7 @@ describe('LcaTaskCenter', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
+    expect(mockClearFinishedTidasPackageTasks).toHaveBeenCalledTimes(1);
   });
 
   it('renders failed, building, and submitting summaries with their status labels', () => {
@@ -305,7 +336,7 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByText('Submitting task')).toBeInTheDocument();
     expect(screen.getByText('Task failed')).toBeInTheDocument();
     expect(screen.getByText('Building snapshot')).toBeInTheDocument();
-    expect(screen.getByText('Submitting')).toBeInTheDocument();
+    expect(screen.getAllByText('Submitting').length).toBeGreaterThan(0);
     expect(screen.getByText('Failed')).toBeInTheDocument();
     expect(
       screen.getByText((_, element) => element?.textContent === 'Elapsed 500 ms'),
@@ -428,5 +459,213 @@ describe('LcaTaskCenter', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('renders package tasks, supports download/remove actions, and handles download errors', async () => {
+    mockTasks = [
+      {
+        id: 'lca-task-running',
+        sequence: 1,
+        mode: 'single',
+        scope: 'team',
+        state: 'running',
+        phase: 'submitting',
+        message: 'lca running',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+        phaseTimeline: [],
+      },
+    ];
+    mockPackageTasks = [
+      {
+        id: 'pkg-completed',
+        sequence: 2,
+        kind: 'tidas_package_export',
+        state: 'completed',
+        phase: 'completed',
+        message: 'finished',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:04.000Z',
+        filename: 'custom.zip',
+        jobId: 'job-1',
+        scope: 'current_user',
+        rootCount: 1,
+        request: {
+          roots: [{ table: 'processes', id: 'p-1', version: '01.00.000' }],
+        },
+      },
+      {
+        id: 'pkg-completed-default-name',
+        sequence: 2.1,
+        kind: 'tidas_package_export',
+        state: 'completed',
+        phase: 'completed',
+        message: 'finished without filename',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:04.500Z',
+        scope: 'open_data',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-running-queued',
+        sequence: 3,
+        kind: 'tidas_package_export',
+        state: 'running',
+        phase: 'queued',
+        message: 'queueing',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:03.000Z',
+        rootCount: 2,
+        request: {
+          roots: [
+            { table: 'flows', id: 'f-1', version: '01.00.000' },
+            { table: 'flows', id: 'f-2', version: '01.00.000' },
+          ],
+        },
+      },
+      {
+        id: 'pkg-running-collect',
+        sequence: 4,
+        kind: 'tidas_package_export',
+        state: 'running',
+        phase: 'collect_refs',
+        message: 'collecting refs',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:02.000Z',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-running-submit',
+        sequence: 4.5,
+        kind: 'tidas_package_export',
+        state: 'running',
+        phase: 'submitting',
+        message: 'submitting package',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:02.500Z',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-running-finalize',
+        sequence: 5,
+        kind: 'tidas_package_export',
+        state: 'running',
+        phase: 'finalize_zip',
+        message: 'finalizing',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-running-completed-phase',
+        sequence: 5.5,
+        kind: 'tidas_package_export',
+        state: 'running',
+        phase: 'completed',
+        message: 'completed phase while running',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.500Z',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-running-failed-phase',
+        sequence: 5.6,
+        kind: 'tidas_package_export',
+        state: 'running',
+        phase: 'failed',
+        message: 'failed phase while running',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.600Z',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-failed',
+        sequence: 6,
+        kind: 'tidas_package_export',
+        state: 'failed',
+        phase: 'failed',
+        message: 'backend failed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.000Z',
+        error: 'package failed',
+        rootCount: 0,
+      },
+    ];
+    mockDownloadTidasPackageExportTask
+      .mockResolvedValueOnce({ filename: 'downloaded.zip' })
+      .mockRejectedValueOnce({})
+      .mockRejectedValueOnce(new Error('download broken'));
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getByTestId('badge-count')).toHaveTextContent('7');
+    expect(screen.getAllByText('TIDAS Export').length).toBeGreaterThan(0);
+    expect(screen.getByText('Queued')).toBeInTheDocument();
+    expect(screen.getAllByText('Submitting').length).toBeGreaterThan(0);
+    expect(screen.getByText('Collecting related data')).toBeInTheDocument();
+    expect(screen.getByText('Building ZIP')).toBeInTheDocument();
+    expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Failed').length).toBeGreaterThan(0);
+    expect(screen.getByText('Export package failed')).toBeInTheDocument();
+    expect(screen.getByText('Export package ready (custom.zip)')).toBeInTheDocument();
+    expect(screen.getByText('Export package ready (tidas-package.zip)')).toBeInTheDocument();
+    expect(screen.getByText('queueing')).toBeInTheDocument();
+    expect(screen.getByText('package failed')).toBeInTheDocument();
+
+    const detailsButtons = screen.getAllByRole('button', { name: 'Details' });
+    fireEvent.click(detailsButtons[0]);
+    expect(
+      screen.getAllByText((_, element) => element?.textContent?.includes('root_count') ?? false)
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((_, element) => element?.textContent?.includes('root:') ?? false).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'root: p-1 @ 01.00.000'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText((_, element) => element?.textContent?.includes('root: f-1') ?? false),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'filename: custom.zip'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'job_id: job-1'),
+    ).toBeInTheDocument();
+
+    const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
+    fireEvent.click(downloadButtons[0]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
+      1,
+      'pkg-completed-default-name',
+    );
+    expect(message.success).toHaveBeenCalledWith('Downloaded downloaded.zip');
+
+    fireEvent.click(downloadButtons[1]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(2, 'pkg-completed');
+    expect(message.error).toHaveBeenCalledWith('Failed to download TIDAS package');
+
+    fireEvent.click(downloadButtons[0]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
+      3,
+      'pkg-completed-default-name',
+    );
+    expect(message.error).toHaveBeenCalledWith('download broken');
+
+    const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
+    removeButtons.forEach((button) => {
+      fireEvent.click(button);
+    });
+    expect(mockRemoveTidasPackageTask).toHaveBeenCalledWith('pkg-failed');
+    expect(mockRemoveTidasPackageTask).toHaveBeenCalledWith('pkg-completed');
+    expect(mockRemoveTidasPackageTask).toHaveBeenCalledWith('pkg-running-queued');
   });
 });

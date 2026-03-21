@@ -9,6 +9,7 @@ import {
   SelectLang,
 } from '@/components';
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
+import TidasPackageActions from '@/components/TidasPackageActions';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
@@ -99,6 +100,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   return {
     actionsRender: () => [
       <LCIACacheMonitor key='LCIACacheMonitor' />,
+      <TidasPackageActions key='TidasPackageActions' />,
       <DarkMode
         key='DarkMode'
         handleClick={handleClickFunction}

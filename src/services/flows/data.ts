@@ -11,6 +11,7 @@ export type FlowTable = {
   locationOfSupply: string;
   refFlowPropertyId: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
 };
 

@@ -152,4 +152,15 @@ describe('ProcessDelete component', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('disables delete trigger when disabled is true', () => {
+    render(<ProcessDelete {...defaultProps} disabled />);
+
+    expect(screen.getByRole('button')).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mockDeleteProcess).not.toHaveBeenCalled();
+  });
 });

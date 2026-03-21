@@ -112,6 +112,7 @@ jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
 
 const mockGetAllRefObj = jest.fn();
 const mockGetRefTableName = jest.fn();
+const mockValidateDatasetRuleVerification = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
@@ -121,6 +122,7 @@ jest.mock('@/pages/Utils/review', () => ({
   })),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
   getRefTableName: (...args: any[]) => mockGetRefTableName(...args),
+  validateDatasetRuleVerification: (...args: any[]) => mockValidateDatasetRuleVerification(...args),
 }));
 
 import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
@@ -245,6 +247,7 @@ beforeEach(() => {
   mockGenLifeCycleModelProcesses.mockReset();
   mockGetAllRefObj.mockReset();
   mockGetRefTableName.mockReset();
+  mockValidateDatasetRuleVerification.mockReset();
   mockCreateTidasLifeCycleModel.mockReset();
   mockCreateTidasProcess.mockReset();
 
@@ -302,6 +305,9 @@ beforeEach(() => {
     if (type === 'lifeCycleModel data set') return 'lifecyclemodels';
     if (type === 'source data set') return 'sources';
     return '';
+  });
+  mockValidateDatasetRuleVerification.mockResolvedValue({
+    ruleVerification: true,
   });
   mockCreateTidasLifeCycleModel.mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -832,6 +838,9 @@ describe('createLifeCycleModel', () => {
       },
     });
     mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+    mockValidateDatasetRuleVerification
+      .mockResolvedValueOnce({ ruleVerification: false })
+      .mockResolvedValue({ ruleVerification: true });
 
     const result = await lifeCycleModelsApi.createLifeCycleModel({
       id: sampleModelId,
@@ -945,6 +954,7 @@ describe('createLifeCycleModel', () => {
     const edgePayload = buildSaveResult();
     mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
     mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
     mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
       lifeCycleModelProcesses: [],
       up2DownEdges: [],
@@ -957,6 +967,8 @@ describe('createLifeCycleModel', () => {
 
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(sampleModelId, [], rawJson, []);
     expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], sampleVersion, rawJson);
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[0]).toBe('lifeCycleModel data set');
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[2]).toBe('');
     expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
       mode: 'create',
       modelId: sampleModelId,
@@ -1241,6 +1253,7 @@ describe('updateLifeCycleModel', () => {
     );
     mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
     mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
     mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
       lifeCycleModelProcesses: [],
       up2DownEdges: [],
@@ -1255,6 +1268,8 @@ describe('updateLifeCycleModel', () => {
 
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(sampleModelId, [], rawJson, []);
     expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith([], sampleVersion);
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[0]).toBe('lifeCycleModel data set');
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[2]).toBe('');
     expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
       mode: 'update',
       modelId: sampleModelId,

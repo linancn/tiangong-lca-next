@@ -1,3 +1,4 @@
+import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import { FunctionRegion } from '@supabase/supabase-js';
 import {
   classificationToString,
@@ -7,11 +8,16 @@ import {
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
-import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
+import {
+  getDataDetail,
+  getTeamIdByUserId,
+  normalizeLangPayloadForSave,
+  resolveFunctionInvokeError,
+} from '../general/api';
 import { getCachedClassificationData } from '../ilcd/cache';
 import { genFlowpropertyJsonOrdered } from './util';
+
 export async function createFlowproperties(id: string, data: any) {
   const rawData = genFlowpropertyJsonOrdered(id, data);
   const normalizedResult = await normalizeLangPayloadForSave(rawData);
@@ -32,8 +38,12 @@ export async function createFlowproperties(id: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasFlowProperty(newData).validateEnhanced().success;
-  // const teamId = await getTeamIdByUserId();
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'flow property data set',
+    newData,
+    userTeamId,
+  );
   const result = await supabase
     .from('flowproperties')
     .insert([{ id: id, json_ordered: newData, rule_verification }])
@@ -61,7 +71,12 @@ export async function updateFlowproperties(id: string, version: string, data: an
       count: null,
     };
   }
-  const rule_verification = createTidasFlowProperty(newData).validateEnhanced().success;
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'flow property data set',
+    newData,
+    userTeamId,
+  );
 
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -81,6 +96,9 @@ export async function updateFlowproperties(id: string, version: string, data: an
   }
   if (result.error) {
     console.log('error', result.error);
+    return {
+      error: await resolveFunctionInvokeError(result.error),
+    };
   }
   return result?.data;
 }

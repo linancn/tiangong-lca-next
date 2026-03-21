@@ -360,6 +360,35 @@ describe('genLifeCycleModelJsonOrdered', () => {
     expect(firstOutput.downstreamProcess['@flowUUID']).toBe('flow-2');
   });
 
+  it('should preserve empty downstreamProcess placeholders when an edge target node is missing', () => {
+    const result = genLifeCycleModelJsonOrdered('model-missing-node', {
+      ...baseModelData,
+      model: {
+        ...baseModelData.model,
+        edges: [
+          {
+            source: { cell: 'node-a' },
+            target: { cell: 'missing-node' },
+            data: {
+              connection: {
+                outputExchange: {
+                  '@flowUUID': 'flow-missing',
+                  downstreamProcess: {},
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+      .processInstance as any[];
+
+    expect(processes[0].connections.outputExchange['@flowUUID']).toBe('flow-missing');
+    expect(processes[0].connections.outputExchange.downstreamProcess).toEqual({});
+  });
+
   it('should group multiple downstream processes under one output flow UUID', () => {
     const data = {
       ...baseModelData,

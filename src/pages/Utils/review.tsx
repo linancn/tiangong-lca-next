@@ -1,3 +1,4 @@
+import type { RefCheckType } from '@/contexts/refCheckContext';
 import { getRejectedCommentsByReviewIds } from '@/services/comments/api';
 import {
   getRefData,
@@ -11,6 +12,15 @@ import { addReviewsApi, getRejectReviewsByProcess } from '@/services/reviews/api
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
+import {
+  createContact as createTidasContact,
+  createFlow as createTidasFlow,
+  createFlowProperty as createTidasFlowProperty,
+  createLifeCycleModel as createTidasLifeCycleModel,
+  createProcess as createTidasProcess,
+  createSource as createTidasSource,
+  createUnitGroup as createTidasUnitGroup,
+} from '@tiangong-lca/tidas-sdk';
 
 export class ConcurrencyController {
   private maxConcurrency: number;
@@ -99,6 +109,32 @@ type ReffPathNode = {
 
 export type ProblemNode = ReffPathNode;
 
+type SdkValidationIssue = {
+  path: PropertyKey[];
+};
+
+type SdkValidationResult = {
+  success: boolean;
+  issues: SdkValidationIssue[];
+};
+
+export type ValidationIssueCode =
+  | 'sdkInvalid'
+  | 'ruleVerificationFailed'
+  | 'nonExistentRef'
+  | 'underReview'
+  | 'versionUnderReview'
+  | 'versionIsInTg';
+
+export type ValidationIssue = {
+  code: ValidationIssueCode;
+  ref: refDataType;
+  link: string;
+  tabName?: string | null;
+  tabNames?: string[];
+  underReviewVersion?: string;
+};
+
 const tableDict = {
   'contact data set': 'contacts',
   'source data set': 'sources',
@@ -109,8 +145,368 @@ const tableDict = {
   'lifeCycleModel data set': 'lifecyclemodels',
 };
 
+const datasetRouteDict = {
+  'contact data set': '/mydata/contacts',
+  'source data set': '/mydata/sources',
+  'unit group data set': '/mydata/unitgroups',
+  'flow property data set': '/mydata/flowproperties',
+  'flow data set': '/mydata/flows',
+  'process data set': '/mydata/processes',
+  'lifeCycleModel data set': '/mydata/models',
+};
+
 export const getRefTableName = (type: string) => {
   return tableDict[type as keyof typeof tableDict] ?? undefined;
+};
+
+const isSameRef = (
+  leftRef?: Partial<refDataType> | null,
+  rightRef?: Partial<refDataType> | null,
+): boolean => {
+  return (
+    leftRef?.['@type'] === rightRef?.['@type'] &&
+    leftRef?.['@refObjectId'] === rightRef?.['@refObjectId'] &&
+    leftRef?.['@version'] === rightRef?.['@version']
+  );
+};
+
+const getDatasetRootRef = (
+  datasetType: refDataType['@type'],
+  orderedJson: any,
+): refDataType | null => {
+  const datasetRootMap: Record<
+    refDataType['@type'],
+    {
+      datasetKey: string;
+      infoKey: string;
+    }
+  > = {
+    'contact data set': {
+      datasetKey: 'contactDataSet',
+      infoKey: 'contactInformation',
+    },
+    'source data set': {
+      datasetKey: 'sourceDataSet',
+      infoKey: 'sourceInformation',
+    },
+    'unit group data set': {
+      datasetKey: 'unitGroupDataSet',
+      infoKey: 'unitGroupInformation',
+    },
+    'flow property data set': {
+      datasetKey: 'flowPropertyDataSet',
+      infoKey: 'flowPropertiesInformation',
+    },
+    'flow data set': {
+      datasetKey: 'flowDataSet',
+      infoKey: 'flowInformation',
+    },
+    'process data set': {
+      datasetKey: 'processDataSet',
+      infoKey: 'processInformation',
+    },
+    'lifeCycleModel data set': {
+      datasetKey: 'lifeCycleModelDataSet',
+      infoKey: 'lifeCycleModelInformation',
+    },
+  };
+
+  const rootConfig = datasetRootMap[datasetType];
+
+  if (!rootConfig) {
+    return null;
+  }
+
+  const dataset = orderedJson?.[rootConfig.datasetKey];
+  const refObjectId = dataset?.[rootConfig.infoKey]?.dataSetInformation?.['common:UUID'];
+  const version =
+    dataset?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'];
+
+  if (!refObjectId || !version) {
+    return null;
+  }
+
+  return {
+    '@type': datasetType,
+    '@refObjectId': refObjectId,
+    '@version': version,
+  };
+};
+
+const filterOutRootSelfReferences = (refs: refDataType[], rootRef?: refDataType | null) => {
+  if (!rootRef) {
+    return refs;
+  }
+
+  return refs.filter((ref) => !isSameRef(ref, rootRef));
+};
+
+export const getDatasetDetailPath = (ref: refDataType) => {
+  const route = datasetRouteDict[ref['@type'] as keyof typeof datasetRouteDict];
+  if (!route) {
+    return null;
+  }
+  const searchParams = new URLSearchParams({
+    id: ref['@refObjectId'],
+    version: ref['@version'],
+    required: '1',
+  });
+  return `${route}?${searchParams.toString()}`;
+};
+
+export const getDatasetPath = (
+  ref: refDataType,
+  options?: {
+    required?: boolean;
+  },
+) => {
+  const route = datasetRouteDict[ref['@type'] as keyof typeof datasetRouteDict];
+  if (!route) {
+    return null;
+  }
+  const searchParams = new URLSearchParams({
+    id: ref['@refObjectId'],
+    version: ref['@version'],
+  });
+  if (options?.required) {
+    searchParams.set('required', '1');
+  }
+  return `${route}?${searchParams.toString()}`;
+};
+
+export const getDatasetDetailUrl = (
+  ref: refDataType,
+  origin: string = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://lca.tiangong.earth',
+) => {
+  const path = getDatasetPath(ref, { required: true });
+  if (!path) {
+    return '';
+  }
+  return `${origin}${path}`;
+};
+
+const getIssueKey = (code: ValidationIssueCode, ref: refDataType) =>
+  `${code}:${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
+
+const pushValidationIssue = (
+  issues: ValidationIssue[],
+  issueKeys: Set<string>,
+  issue: ValidationIssue,
+) => {
+  const key = getIssueKey(issue.code, issue.ref);
+  if (issueKeys.has(key)) {
+    return;
+  }
+  issueKeys.add(key);
+  issues.push(issue);
+};
+
+export const mapValidationIssuesToRefCheckData = (issues: ValidationIssue[]): RefCheckType[] => {
+  const issueMap = new Map<string, RefCheckType>();
+
+  issues.forEach((issue) => {
+    const key = `${issue.ref['@type']}:${issue.ref['@refObjectId']}:${issue.ref['@version']}`;
+    const current =
+      issueMap.get(key) ??
+      ({
+        id: issue.ref['@refObjectId'],
+        version: issue.ref['@version'],
+        ruleVerification: true,
+        nonExistent: false,
+      } satisfies RefCheckType);
+
+    if (issue.code === 'ruleVerificationFailed') {
+      current.ruleVerification = false;
+    } else if (issue.code === 'nonExistentRef') {
+      current.nonExistent = true;
+    } else if (issue.code === 'underReview') {
+      current.stateCode = 20;
+      current.versionUnderReview = true;
+      current.underReviewVersion = issue.underReviewVersion ?? issue.ref['@version'];
+    } else if (issue.code === 'versionUnderReview') {
+      current.versionUnderReview = true;
+      current.underReviewVersion = issue.underReviewVersion;
+    } else if (issue.code === 'versionIsInTg') {
+      current.versionIsInTg = true;
+    }
+
+    issueMap.set(key, current);
+  });
+
+  return Array.from(issueMap.values());
+};
+
+const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
+  if (result.success) {
+    return {
+      success: true,
+      issues: [],
+    };
+  }
+
+  return {
+    success: false,
+    issues: result.error?.issues ?? [],
+  };
+};
+
+const cloneSdkValidationInput = <T,>(orderedJson: T): T => {
+  return JSON.parse(JSON.stringify(orderedJson)) as T;
+};
+
+export const validateDatasetWithSdk = (
+  datasetType: refDataType['@type'],
+  orderedJson: any,
+): SdkValidationResult => {
+  if (!orderedJson) {
+    return {
+      success: false,
+      issues: [],
+    };
+  }
+
+  const sdkValidationInput = cloneSdkValidationInput(orderedJson);
+
+  switch (datasetType) {
+    case 'contact data set':
+      return normalizeSdkValidationResult(
+        createTidasContact(sdkValidationInput).validateEnhanced(),
+      );
+    case 'source data set':
+      return normalizeSdkValidationResult(createTidasSource(sdkValidationInput).validateEnhanced());
+    case 'unit group data set':
+      return normalizeSdkValidationResult(
+        createTidasUnitGroup(sdkValidationInput).validateEnhanced(),
+      );
+    case 'flow property data set':
+      return normalizeSdkValidationResult(
+        createTidasFlowProperty(sdkValidationInput).validateEnhanced(),
+      );
+    case 'flow data set':
+      return normalizeSdkValidationResult(createTidasFlow(sdkValidationInput).validateEnhanced());
+    case 'process data set': {
+      const result = normalizeSdkValidationResult(
+        createTidasProcess(sdkValidationInput).validateEnhanced(),
+      );
+      if (result.success) {
+        return result;
+      }
+      const filteredIssues = result.issues.filter(
+        (issue) => !issue.path.includes('validation') && !issue.path.includes('compliance'),
+      );
+      return {
+        success: filteredIssues.length === 0,
+        issues: filteredIssues,
+      };
+    }
+    case 'lifeCycleModel data set': {
+      const result = normalizeSdkValidationResult(
+        createTidasLifeCycleModel(sdkValidationInput).validateEnhanced(),
+      );
+      if (result.success) {
+        return result;
+      }
+      const filteredIssues = result.issues.filter(
+        (issue) => !issue.path.includes('validation') && !issue.path.includes('compliance'),
+      );
+      return {
+        success: filteredIssues.length === 0,
+        issues: filteredIssues,
+      };
+    }
+    default:
+      return {
+        success: true,
+        issues: [],
+      };
+  }
+};
+
+export const buildValidationIssues = ({
+  rootRef,
+  datasetSdkValid,
+  sdkInvalidTabNames = [],
+  nonExistentRef = [],
+  problemNodes = [],
+  actionFrom = 'checkData',
+  unRuleVerification = [],
+}: {
+  actionFrom?: 'checkData' | 'review';
+  datasetSdkValid: boolean;
+  sdkInvalidTabNames?: string[];
+  nonExistentRef?: refDataType[];
+  problemNodes?: Array<
+    ProblemNode & {
+      underReviewVersion?: string;
+      versionIsInTg?: boolean;
+      versionUnderReview?: boolean;
+    }
+  >;
+  rootRef: refDataType;
+  unRuleVerification?: refDataType[];
+}) => {
+  const issues: ValidationIssue[] = [];
+  const issueKeys = new Set<string>();
+
+  if (!datasetSdkValid) {
+    pushValidationIssue(issues, issueKeys, {
+      code: 'sdkInvalid',
+      link: getDatasetDetailUrl(rootRef),
+      ref: rootRef,
+      tabNames: sdkInvalidTabNames.filter(
+        (tabName, index) => sdkInvalidTabNames.indexOf(tabName) === index,
+      ),
+    });
+  }
+
+  unRuleVerification.forEach((ref) => {
+    pushValidationIssue(issues, issueKeys, {
+      code: 'ruleVerificationFailed',
+      link: getDatasetDetailUrl(ref),
+      ref,
+    });
+  });
+
+  nonExistentRef.forEach((ref) => {
+    pushValidationIssue(issues, issueKeys, {
+      code: 'nonExistentRef',
+      link: getDatasetDetailUrl(ref),
+      ref,
+    });
+  });
+
+  problemNodes.forEach((node) => {
+    const ref = {
+      '@refObjectId': node['@refObjectId'],
+      '@type': node['@type'],
+      '@version': node['@version'],
+    } satisfies refDataType;
+
+    if (node.versionIsInTg) {
+      pushValidationIssue(issues, issueKeys, {
+        code: 'versionIsInTg',
+        link: getDatasetDetailUrl(ref),
+        ref,
+      });
+      return;
+    }
+
+    if (node.versionUnderReview) {
+      pushValidationIssue(issues, issueKeys, {
+        code:
+          actionFrom === 'review' && node.underReviewVersion === node['@version']
+            ? 'underReview'
+            : 'versionUnderReview',
+        link: getDatasetDetailUrl(ref),
+        ref,
+        underReviewVersion: node.underReviewVersion,
+      });
+    }
+  });
+
+  return issues;
 };
 
 export const getAllRefObj = (obj: any): any[] => {
@@ -203,23 +599,18 @@ export class ReffPath {
     const visited = new Set<ReffPath>();
     const uniqueKeys = new Set<string>();
 
-    const getUniqueKey = (node: ReffPath) => `${node['@refObjectId']}_${node['@version']}`;
+    const getUniqueKey = (node: ReffPath) =>
+      `${node['@type']}_${node['@refObjectId']}_${node['@version']}`;
 
     const traverse = (node: ReffPath, parentPath: ReffPath[] = []) => {
       if (visited.has(node)) return;
       visited.add(node);
 
-      let isProblemNode =
-        node.ruleVerification === false ||
-        node.nonExistent === true ||
-        node?.versionIsInTg === true;
+      let isProblemNode = node.ruleVerification === false || node.nonExistent === true;
 
-      if (actionFrom === 'checkData') {
+      if (actionFrom === 'review') {
         isProblemNode =
-          isProblemNode ||
-          (node?.versionUnderReview === true && node['@version'] !== node.underReviewVersion);
-      } else if (actionFrom === 'review') {
-        isProblemNode = isProblemNode || node?.versionUnderReview === true;
+          isProblemNode || node?.versionIsInTg === true || node?.versionUnderReview === true;
       }
 
       if (isProblemNode) {
@@ -253,8 +644,18 @@ export const dealProcress = (
   underReview: refDataType[],
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
+  options: {
+    includeRuleVerification?: boolean;
+  } = {},
 ) => {
-  void nonExistentRef;
+  if (!processDetail) {
+    nonExistentRef.push({
+      '@type': 'process data set',
+      '@refObjectId': '',
+      '@version': '',
+    });
+    return;
+  }
   const procressRef = {
     '@type': 'process data set',
     '@refObjectId': processDetail.id,
@@ -267,6 +668,7 @@ export const dealProcress = (
     underReview.push(procressRef);
   }
   if (
+    options.includeRuleVerification !== false &&
     processDetail?.ruleVerification === false &&
     processDetail.stateCode !== 100 &&
     processDetail.stateCode !== 200
@@ -281,7 +683,19 @@ export const dealModel = (
   underReview: refDataType[],
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
+  options: {
+    includeRuleVerification?: boolean;
+  } = {},
 ) => {
+  if (!modelDetail) {
+    nonExistentRef.push({
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': '',
+      '@version': '',
+    });
+    return;
+  }
+
   if (modelDetail?.stateCode < 20) {
     unReview.push({
       '@type': 'lifeCycleModel data set',
@@ -297,18 +711,12 @@ export const dealModel = (
     });
   }
   if (
+    options.includeRuleVerification !== false &&
     modelDetail?.ruleVerification === false &&
     modelDetail?.stateCode !== 100 &&
     modelDetail?.stateCode !== 200
   ) {
     unRuleVerification.unshift({
-      '@type': 'lifeCycleModel data set',
-      '@refObjectId': modelDetail?.id,
-      '@version': modelDetail?.version,
-    });
-  }
-  if (!modelDetail) {
-    nonExistentRef.push({
       '@type': 'lifeCycleModel data set',
       '@refObjectId': modelDetail?.id,
       '@version': modelDetail?.version,
@@ -439,6 +847,9 @@ export const checkReferences = async (
   nonExistentRef: refDataType[],
   parentPath?: ReffPath,
   requestKeysSet?: Set<string>,
+  options: {
+    exactVersion?: boolean;
+  } = {},
 ): Promise<ReffPath | undefined> => {
   let currentPath: ReffPath | undefined;
   const requestKeys = requestKeysSet || new Set<string>();
@@ -461,6 +872,7 @@ export const checkReferences = async (
           nonExistentRef,
           currentPath,
           requestKeys,
+          options,
         );
       }
     }
@@ -484,6 +896,9 @@ export const checkReferences = async (
       ref['@version'],
       getRefTableName(ref['@type']),
       userTeamId,
+      {
+        fallbackToLatest: options.exactVersion !== true,
+      },
     );
     refMaps.set(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`, refResult?.data);
 
@@ -543,6 +958,7 @@ export const checkReferences = async (
           nonExistentRef,
           currentPath,
           requestKeys,
+          options,
         );
       }
       await handelSameModelWithProcress(ref, requestKeys);
@@ -586,9 +1002,13 @@ export const checkData = async (
     data['@refObjectId'],
     data['@version'],
     getRefTableName(data['@type']),
+    '',
+    {
+      fallbackToLatest: false,
+    },
   );
   if (detail) {
-    const refs = getAllRefObj(detail?.json);
+    const refs = filterOutRootSelfReferences(getAllRefObj(detail?.json), data);
     await checkReferences(
       refs,
       new Map<string, any>(),
@@ -598,8 +1018,52 @@ export const checkData = async (
       unRuleVerification,
       nonExistentRef,
       pathRef,
+      undefined,
+      {
+        exactVersion: true,
+      },
     );
   }
+};
+
+export const validateDatasetRuleVerification = async (
+  datasetType: refDataType['@type'],
+  orderedJson: any,
+  userTeamId: string = '',
+) => {
+  const sdkValidation = validateDatasetWithSdk(datasetType, orderedJson);
+  const unRuleVerification: refDataType[] = [];
+  const nonExistentRef: refDataType[] = [];
+  const refs = filterOutRootSelfReferences(
+    getAllRefObj(orderedJson),
+    getDatasetRootRef(datasetType, orderedJson),
+  );
+
+  if (refs.length > 0) {
+    await checkReferences(
+      refs,
+      new Map<string, any>(),
+      userTeamId,
+      [],
+      [],
+      unRuleVerification,
+      nonExistentRef,
+      undefined,
+      undefined,
+      {
+        exactVersion: true,
+      },
+    );
+  }
+
+  return {
+    datasetSdkValid: sdkValidation.success,
+    datasetSdkIssues: sdkValidation.issues,
+    nonExistentRef,
+    ruleVerification:
+      sdkValidation.success && unRuleVerification.length === 0 && nonExistentRef.length === 0,
+    unRuleVerification,
+  };
 };
 
 export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {

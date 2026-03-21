@@ -21,6 +21,7 @@ export type UnitGroupTable = {
   refUnitGeneralComment: string;
   version: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
 };
 

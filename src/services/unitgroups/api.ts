@@ -1,3 +1,4 @@
+import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import { FunctionRegion } from '@supabase/supabase-js';
 import {
   classificationToString,
@@ -7,9 +8,13 @@ import {
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
-import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
+import {
+  getDataDetail,
+  getTeamIdByUserId,
+  normalizeLangPayloadForSave,
+  resolveFunctionInvokeError,
+} from '../general/api';
 import { getCachedClassificationData } from '../ilcd/cache';
 import { genUnitGroupJsonOrdered } from './util';
 
@@ -33,8 +38,12 @@ export async function createUnitGroup(id: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasUnitGroup(newData).validateEnhanced().success;
-  // const teamId = await getTeamIdByUserId();
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'unit group data set',
+    newData,
+    userTeamId,
+  );
   const result = await supabase
     .from('unitgroups')
     .insert([{ id: id, json_ordered: newData, rule_verification }])
@@ -62,7 +71,12 @@ export async function updateUnitGroup(id: string, version: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasUnitGroup(newData).validateEnhanced().success;
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'unit group data set',
+    newData,
+    userTeamId,
+  );
 
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -82,6 +96,9 @@ export async function updateUnitGroup(id: string, version: string, data: any) {
   }
   if (result.error) {
     console.log('error', result.error);
+    return {
+      error: await resolveFunctionInvokeError(result.error),
+    };
   }
   return result?.data;
 }

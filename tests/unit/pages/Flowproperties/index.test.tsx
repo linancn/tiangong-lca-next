@@ -1,7 +1,7 @@
 // @ts-nocheck
 import FlowpropertiesPage from '@/pages/Flowproperties';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -60,6 +60,7 @@ jest.mock('@/services/general/util', () => ({
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
+  isDataUnderReview: () => false,
 }));
 
 jest.mock('@/services/teams/api', () => ({
@@ -69,6 +70,7 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: (...args: any[]) => mockContributeSource(...args),
 }));
 
@@ -159,7 +161,14 @@ jest.mock('@/pages/Flowproperties/Components/delete', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/edit', () => ({
   __esModule: true,
-  default: () => <div data-testid='flowproperty-edit' />,
+  default: ({ id, version, autoOpen, onDrawerClose }: any) => (
+    <div data-testid='flowproperty-edit'>
+      {JSON.stringify({ id, version, autoOpen })}
+      <button type='button' onClick={() => onDrawerClose?.()}>
+        flowproperty-edit-close
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Flowproperties/Components/view', () => ({
@@ -567,6 +576,42 @@ describe('FlowpropertiesPage', () => {
         'unitgroup',
         [],
       ]),
+    );
+  });
+
+  it('opens and closes the route-driven edit drawer for my-data links', async () => {
+    mockLocation = {
+      pathname: '/mydata/flowproperties',
+      search: '?tid=team-1&id=fp-route&version=9.9.9',
+    };
+
+    renderWithProviders(<FlowpropertiesPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('flowproperty-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(true),
+    );
+
+    const autoOpenEdit = screen
+      .getAllByTestId('flowproperty-edit')
+      .find((node) => node.textContent?.includes('"autoOpen":true'));
+
+    expect(autoOpenEdit).toHaveTextContent('"id":"fp-route"');
+    expect(autoOpenEdit).toHaveTextContent('"version":"9.9.9"');
+
+    await userEvent.click(
+      within(autoOpenEdit!).getByRole('button', { name: /flowproperty-edit-close/i }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('flowproperty-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(false),
     );
   });
 });

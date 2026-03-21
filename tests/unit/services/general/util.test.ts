@@ -30,6 +30,7 @@ import {
   getLangText,
   getLangValidationErrorMessage,
   getUnitData,
+  isDataUnderReview,
   isSupabaseDuplicateKeyError,
   isValidURL,
   jsonToList,
@@ -467,8 +468,132 @@ describe('General Utility Functions', () => {
       const result = removeEmptyObjects(obj);
 
       expect(result).toEqual({
-        list: [{ keep: 'value' }, undefined, { nested: { value: 1 } }],
+        list: [{ keep: 'value' }, { nested: { value: 1 } }],
       });
+    });
+
+    it('should remove empty arrays and array items that collapse to empty values', () => {
+      const input = {
+        a: [],
+        b: [{}, null, undefined, '', { c: 'value' }],
+        c: ['kept'],
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(result).toEqual({
+        b: [{ c: 'value' }],
+        c: ['kept'],
+      });
+    });
+
+    it('should remove empty strings and whitespace-only strings from nested objects', () => {
+      const input = {
+        a: '',
+        b: '   ',
+        c: {
+          d: '',
+          e: 'value',
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(result).toEqual({
+        c: {
+          e: 'value',
+        },
+      });
+    });
+
+    it('should preserve boolean false and numeric zero values', () => {
+      const input = {
+        a: false,
+        b: 0,
+        c: {
+          d: false,
+          e: 0,
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(result).toEqual({
+        a: false,
+        b: 0,
+        c: {
+          d: false,
+          e: 0,
+        },
+      });
+    });
+
+    it('should preserve empty downstreamProcess placeholders in model connections', () => {
+      const input = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  {
+                    connections: {
+                      outputExchange: {
+                        '@flowUUID': 'flow-1',
+                        downstreamProcess: {},
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(
+        result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+          .processInstance[0].connections.outputExchange.downstreamProcess,
+      ).toEqual({});
+    });
+
+    it('should preserve empty downstreamProcess entries inside arrays that describe model connections', () => {
+      const input = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  {
+                    connections: {
+                      outputExchange: {
+                        downstreamProcess: [{}, { '@refObjectId': 'proc-2' }],
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(
+        result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+          .processInstance[0].connections.outputExchange.downstreamProcess,
+      ).toEqual([{}, { '@refObjectId': 'proc-2' }]);
+    });
+  });
+
+  describe('isDataUnderReview', () => {
+    it('should only treat numeric review states between 20 and 99 as under review', () => {
+      expect(isDataUnderReview(null)).toBe(false);
+      expect(isDataUnderReview(10)).toBe(false);
+      expect(isDataUnderReview(20)).toBe(true);
+      expect(isDataUnderReview(100)).toBe(false);
     });
   });
 
@@ -1127,21 +1252,19 @@ describe('General Utility Functions', () => {
     it('should use empty fallback IDs when classification IDs are missing', () => {
       expect(classificationToJsonList({ value: ['Class 1'] }, false)).toEqual({
         '@level': '0',
-        '@classId': '',
         '#text': 'Class 1',
       });
       expect(classificationToJsonList({ value: ['Category 1'] }, true)).toEqual({
         '@level': '0',
-        '@catId': '',
         '#text': 'Category 1',
       });
       expect(classificationToJsonList({ value: ['Class 1', 'Class 2'] }, false)).toEqual([
-        { '@level': '0', '@classId': '', '#text': 'Class 1' },
-        { '@level': '1', '@classId': '', '#text': 'Class 2' },
+        { '@level': '0', '#text': 'Class 1' },
+        { '@level': '1', '#text': 'Class 2' },
       ]);
       expect(classificationToJsonList({ value: ['Category 1', 'Category 2'] }, true)).toEqual([
-        { '@level': '0', '@catId': '', '#text': 'Category 1' },
-        { '@level': '1', '@catId': '', '#text': 'Category 2' },
+        { '@level': '0', '#text': 'Category 1' },
+        { '@level': '1', '#text': 'Category 2' },
       ]);
     });
 

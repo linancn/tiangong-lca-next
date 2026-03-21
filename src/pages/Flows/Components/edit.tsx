@@ -1,8 +1,15 @@
 import AISuggestion from '@/components/AISuggestion';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
-import { ReffPath, checkData, getErrRefTab } from '@/pages/Utils/review';
+import {
+  ReffPath,
+  buildValidationIssues,
+  checkData,
+  getErrRefTab,
+  validateDatasetWithSdk,
+} from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
   getRefsOfNewVersion,
@@ -23,7 +30,6 @@ import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -36,7 +42,11 @@ type Props = {
   buttonType: string;
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
   updateErrRef?: (data: RefCheckType | null) => void;
+  autoOpen?: boolean;
+  onDrawerClose?: () => void;
+  autoCheckRequired?: boolean;
 };
 
 type UpdateFlowResult = Pick<
@@ -50,7 +60,11 @@ const FlowsEdit: FC<Props> = ({
   buttonType,
   actionRef,
   lang,
+  disabled = false,
   updateErrRef = () => {},
+  autoOpen = false,
+  onDrawerClose,
+  autoCheckRequired = false,
 }) => {
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
   const [refsLoading, setRefsLoading] = useState(false);
@@ -61,12 +75,14 @@ const FlowsEdit: FC<Props> = ({
   const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
   const [fromData, setFromData] = useState<FormFlowWithId>();
   const [initData, setInitData] = useState<FormFlowWithId>();
+  const [detailStateCode, setDetailStateCode] = useState<number>();
   const [originJson, setOriginJson] = useState<FlowDetailData['json'] | null>(null);
   const aiSuggestionDataRef = useRef<Record<string, unknown> | null>(null);
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
@@ -81,6 +97,12 @@ const FlowsEdit: FC<Props> = ({
     });
   }, [refCheckData, parentRefCheckContext]);
 
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      setDrawerVisible(true);
+    }
+  }, [autoOpen, id, version]);
+
   // useEffect(() => {
   //   if (showRules) {
   //     setTimeout(() => {
@@ -88,6 +110,18 @@ const FlowsEdit: FC<Props> = ({
   //     });
   //   }
   // }, [showRules]);
+
+  useEffect(() => {
+    if (!showRules || !drawerVisible) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void formRefEdit.current?.validateFields();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [drawerVisible, showRules]);
 
   const updatePropertyDataSource = async () => {
     for (const property of propertyDataSource) {
@@ -182,21 +216,31 @@ const FlowsEdit: FC<Props> = ({
   };
 
   useEffect(() => {
-    setFromData({
-      ...fromData,
-      flowProperties: {
-        flowProperty: [...propertyDataSource],
-      },
-    } as FormFlowWithId);
+    setFromData((prev) =>
+      prev
+        ? ({
+            ...prev,
+            flowProperties: {
+              flowProperty: [...propertyDataSource],
+            },
+          } as FormFlowWithId)
+        : prev,
+    );
   }, [propertyDataSource]);
 
   const onEdit = () => {
     setDrawerVisible(true);
   };
 
+  const closeDrawer = () => {
+    setDrawerVisible(false);
+    onDrawerClose?.();
+  };
+
   const onReset = () => {
     setSpinning(true);
     getFlowDetail(id, version).then(async (result: FlowDetailResponse) => {
+      setDetailStateCode(result.data?.stateCode);
       setOriginJson(result.data?.json ?? null);
       const fromData0 = await genFlowFromData(result.data?.json?.flowDataSet ?? {});
       setInitData({ ...fromData0, id: id });
@@ -214,14 +258,20 @@ const FlowsEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
+      setAutoCheckTriggered(false);
       return;
     }
     onReset();
   }, [drawerVisible]);
 
-  const handleSubmit = async (autoClose: boolean): Promise<UpdateFlowResult | null | undefined> => {
+  const handleSubmit = async (
+    autoClose: boolean,
+    options?: { silent?: boolean },
+  ): Promise<UpdateFlowResult | null | undefined> => {
+    const silent = options?.silent ?? false;
     try {
       await formRefEdit.current?.validateFields();
     } catch (err) {
@@ -248,34 +298,38 @@ const FlowsEdit: FC<Props> = ({
           nonExistent: false,
         });
       }
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.save.success',
-          defaultMessage: 'Saved successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.save.success',
+            defaultMessage: 'Saved successfully!',
+          }),
+        );
+      }
       if (autoClose) {
-        setDrawerVisible(false);
+        closeDrawer();
         actionRef?.current?.reload();
       }
       // setActiveTabKey('flowInformation');
     } else {
-      if (updateResult?.error?.state_code === 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.openData',
-            defaultMessage: 'This data is open data, save failed',
-          }),
-        );
-      } else if (updateResult?.error?.state_code === 20) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.underReview',
-            defaultMessage: 'Data is under review, save failed',
-          }),
-        );
-      } else {
-        message.error(updateResult?.error?.message);
+      if (!silent) {
+        if (updateResult?.error?.state_code === 100) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.openData',
+              defaultMessage: 'This data is open data, save failed',
+            }),
+          );
+        } else if (updateResult?.error?.state_code === 20) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.underReview',
+              defaultMessage: 'Data is under review, save failed',
+            }),
+          );
+        } else {
+          message.error(updateResult?.error?.message);
+        }
       }
     }
     if (autoClose) setSpinning(false);
@@ -284,35 +338,39 @@ const FlowsEdit: FC<Props> = ({
     }
     return null;
   };
-  const handleCheckData = async () => {
+  const handleCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.checkData.inReview',
+            defaultMessage: 'This data set is under review and cannot be validated',
+          }),
+        );
+      }
+      return;
+    }
     setSpinning(true);
-    const updateResult = await handleSubmit(false);
+    const updateResult = await handleSubmit(false, { silent });
     if (!updateResult || updateResult?.error) {
       setSpinning(false);
       return;
     }
     setShowRules(true);
+    const rootRef = {
+      '@type': 'flow data set',
+      '@refObjectId': id,
+      '@version': version,
+    } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
     const pathRef = new ReffPath(
-      {
-        '@type': 'flow data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
+      rootRef,
       Boolean(updateResult?.data?.[0]?.rule_verification),
       false,
     );
-    await checkData(
-      {
-        '@type': 'flow data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-    );
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
@@ -327,44 +385,10 @@ const FlowsEdit: FC<Props> = ({
     } else {
       setRefCheckData([]);
     }
-    const unRuleVerificationData = unRuleVerification.map((item) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: false,
-        nonExistent: false,
-      };
-    });
-    const nonExistentRefData = nonExistentRef.map((item) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: true,
-        nonExistent: true,
-      };
-    });
 
-    const flowPropertiesList = jsonToList(fromData?.flowProperties?.flowProperty);
-    if (!flowPropertiesList || flowPropertiesList?.length === 0) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.flow.validator.flowProperties.required',
-          defaultMessage: 'Please select flow properties',
-        }),
-      );
-      setSpinning(false);
-      return;
-    } else if (flowPropertiesList?.filter((item) => item?.quantitativeReference).length !== 1) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-          defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
-        }),
-      );
-      setSpinning(false);
-      return;
-    }
     const errTabNames: string[] = [];
+    const currentDatasetTabNames: string[] = [];
+    let datasetValidationMessage: string | null = null;
     nonExistentRef.forEach((item) => {
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
@@ -383,37 +407,81 @@ const FlowsEdit: FC<Props> = ({
       ...fieldsValue,
       flowProperties: fromData?.flowProperties,
     };
-    const tidasFlow = createTidasFlow(genFlowJsonOrdered(id, jsonData));
-    const validateResult = tidasFlow.validateEnhanced();
-    const issues = validateResult.success ? [] : validateResult.error.issues;
-    if (issues.length) {
-      issues.forEach((err) => {
-        if (err.path.includes('typeOfDataSet') && validateResult.success === false) {
+    const sdkValidation = validateDatasetWithSdk('flow data set', genFlowJsonOrdered(id, jsonData));
+    const sdkIssues = sdkValidation.issues;
+    let currentDatasetValid = sdkValidation.success;
+    const flowPropertiesList = jsonToList(fromData?.flowProperties?.flowProperty);
+    if (!flowPropertiesList || flowPropertiesList.length === 0) {
+      currentDatasetValid = false;
+      datasetValidationMessage = intl.formatMessage({
+        id: 'pages.flow.validator.flowProperties.required',
+        defaultMessage: 'Please select flow properties',
+      });
+      if (!errTabNames.includes('flowProperties')) errTabNames.push('flowProperties');
+      if (!currentDatasetTabNames.includes('flowProperties'))
+        currentDatasetTabNames.push('flowProperties');
+      setActiveTabKey('flowProperties');
+    } else if (flowPropertiesList.filter((item) => item?.quantitativeReference).length !== 1) {
+      currentDatasetValid = false;
+      datasetValidationMessage = intl.formatMessage({
+        id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
+        defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
+      });
+      if (!errTabNames.includes('flowProperties')) errTabNames.push('flowProperties');
+      if (!currentDatasetTabNames.includes('flowProperties'))
+        currentDatasetTabNames.push('flowProperties');
+      setActiveTabKey('flowProperties');
+    }
+    if (sdkIssues.length) {
+      sdkIssues.forEach((err) => {
+        if (err.path.includes('typeOfDataSet')) {
           if (!errTabNames.includes('flowInformation')) errTabNames.push('flowInformation');
+          if (!currentDatasetTabNames.includes('flowInformation'))
+            currentDatasetTabNames.push('flowInformation');
         } else {
           const tabName = err.path[1];
           if (tabName && !errTabNames.includes(tabName as string))
             errTabNames.push(tabName as string);
+          if (tabName && !currentDatasetTabNames.includes(tabName as string))
+            currentDatasetTabNames.push(tabName as string);
         }
       });
       formRefEdit.current?.validateFields();
     }
+    const validationIssues = buildValidationIssues({
+      datasetSdkValid: currentDatasetValid,
+      nonExistentRef,
+      rootRef,
+      sdkInvalidTabNames: currentDatasetTabNames,
+      unRuleVerification,
+    });
     if (
-      unRuleVerificationData.length === 0 &&
-      nonExistentRefData.length === 0 &&
-      errTabNames.length === 0 &&
-      problemNodes.length === 0 &&
-      issues.length === 0
+      currentDatasetValid &&
+      unRuleVerification.length === 0 &&
+      nonExistentRef.length === 0 &&
+      problemNodes.length === 0
     ) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.check.success',
-          defaultMessage: 'Data check successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.check.success',
+            defaultMessage: 'Data check successfully!',
+          }),
+        );
+      }
     } else {
-      if (errTabNames && errTabNames.length > 0) {
-        message.error(
+      let validationHint = intl.formatMessage({
+        id: 'pages.button.check.error',
+        defaultMessage: 'Data check failed!',
+      });
+      if (
+        datasetValidationMessage &&
+        errTabNames.length === 1 &&
+        errTabNames[0] === 'flowProperties'
+      ) {
+        validationHint = datasetValidationMessage;
+      } else if (errTabNames && errTabNames.length > 0) {
+        validationHint =
           errTabNames
             .map((tab) =>
               intl.formatMessage({
@@ -422,23 +490,35 @@ const FlowsEdit: FC<Props> = ({
               }),
             )
             .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            }),
-        );
-      } else {
-        message.error(
+          '：' +
           intl.formatMessage({
             id: 'pages.button.check.error',
             defaultMessage: 'Data check failed!',
+          });
+      }
+      if (!silent && validationIssues.length > 0) {
+        showValidationIssueModal({
+          intl,
+          issues: validationIssues,
+          title: intl.formatMessage({
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
           }),
-        );
+        });
+      } else if (!silent) {
+        message.error(validationHint);
       }
     }
     setSpinning(false);
   };
+
+  useEffect(() => {
+    if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
+      return;
+    }
+    setAutoCheckTriggered(true);
+    void handleCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, handleCheckData, spinning]);
   const handleLatestJsonChange = (latestJson: Record<string, unknown>) => {
     aiSuggestionDataRef.current = latestJson;
   };
@@ -456,34 +536,36 @@ const FlowsEdit: FC<Props> = ({
   };
   return (
     <>
-      <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
-        {buttonType === 'icon' ? (
-          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
-        ) : (
-          <Button onClick={onEdit}>
-            <FormattedMessage
-              id={buttonType ? buttonType : 'pages.button.edit'}
-              defaultMessage='Edit'
+      {!autoOpen && (
+        <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
+          {buttonType === 'icon' ? (
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<FormOutlined />}
+              size='small'
+              onClick={onEdit}
             />
-          </Button>
-        )}
-      </Tooltip>
+          ) : (
+            <Button disabled={disabled} onClick={onEdit}>
+              <FormattedMessage
+                id={buttonType ? buttonType : 'pages.button.edit'}
+                defaultMessage='Edit'
+              />
+            </Button>
+          )}
+        </Tooltip>
+      )}
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}
         title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}
         width='90%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         maskClosable={false}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={closeDrawer}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
             <AISuggestion
@@ -492,7 +574,7 @@ const FlowsEdit: FC<Props> = ({
               onClose={handleAISuggestionClose}
               originJson={originJson}
             />
-            <Button onClick={handleCheckData}>
+            <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             <Button
@@ -505,7 +587,7 @@ const FlowsEdit: FC<Props> = ({
                 defaultMessage='Update Reference'
               />
             </Button>
-            <Button onClick={() => setDrawerVisible(false)}>
+            <Button onClick={closeDrawer}>
               {' '}
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>

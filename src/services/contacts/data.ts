@@ -11,6 +11,7 @@ export type ContactTable = {
   classification: string;
   email: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
 };
 

@@ -37,6 +37,7 @@ const mockGetTeamIdByUserId = jest.fn();
 const mockGetRefData = jest.fn();
 const mockContributeSource = jest.fn();
 const mockNormalizeLangPayloadForSave = jest.fn();
+const mockResolveFunctionInvokeError = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
@@ -45,6 +46,7 @@ jest.mock('@/services/general/api', () => ({
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
   normalizeLangPayloadForSave: (...args: any[]) =>
     mockNormalizeLangPayloadForSave.apply(null, args),
+  resolveFunctionInvokeError: (...args: any[]) => mockResolveFunctionInvokeError.apply(null, args),
 }));
 
 const mockGetCachedLocationData = jest.fn();
@@ -101,11 +103,14 @@ jest.mock('@/services/auth', () => ({
 
 const mockGetAllRefObj = jest.fn();
 const mockGetRefTableName = jest.fn();
+const mockValidateDatasetRuleVerification = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   getAllRefObj: (...args: any[]) => mockGetAllRefObj.apply(null, args),
   getRefTableName: (...args: any[]) => mockGetRefTableName.apply(null, args),
+  validateDatasetRuleVerification: (...args: any[]) =>
+    mockValidateDatasetRuleVerification.apply(null, args),
 }));
 
 const createQueryBuilder = <T>(resolvedValue: T) => {
@@ -135,6 +140,7 @@ beforeEach(() => {
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
   mockNormalizeLangPayloadForSave.mockReset();
+  mockResolveFunctionInvokeError.mockReset();
   mockGetCachedLocationData.mockReset();
   mockGetCachedClassificationData.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockReset();
@@ -144,6 +150,9 @@ beforeEach(() => {
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
   mockJsonToList.mockReset();
+  mockGetAllRefObj.mockReset();
+  mockGetRefTableName.mockReset();
+  mockValidateDatasetRuleVerification.mockReset();
 
   mockGenProcessJsonOrdered.mockReturnValue({ ordered: true });
   mockGenProcessName.mockReturnValue('Process Name');
@@ -157,6 +166,8 @@ beforeEach(() => {
   mockGetCachedClassificationData.mockResolvedValue({});
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
   mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+  mockResolveFunctionInvokeError.mockImplementation(async (error: any) => error);
+  mockValidateDatasetRuleVerification.mockResolvedValue({ ruleVerification: true });
   (mockCreateTidasProcess as jest.Mock).mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
   });
@@ -321,18 +332,7 @@ describe('createProcess', () => {
   });
 
   it('sets rule verification to false when non-validation issues exist', async () => {
-    (mockCreateTidasProcess as jest.Mock).mockReturnValueOnce({
-      validateEnhanced: jest.fn().mockReturnValue({
-        success: false,
-        error: {
-          issues: [
-            { path: ['validation'] },
-            { path: ['compliance'] },
-            { path: ['processDataSet', 'name'] },
-          ],
-        },
-      }),
-    });
+    mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
     const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
     const selectMock = jest.fn().mockResolvedValue(insertResult);
     const insertMock = jest.fn().mockReturnValue({ select: selectMock });
@@ -433,14 +433,7 @@ describe('updateProcess', () => {
   });
 
   it('uses fallback bearer token and keeps rule verification false when validation fails', async () => {
-    (mockCreateTidasProcess as jest.Mock).mockReturnValueOnce({
-      validateEnhanced: jest.fn().mockReturnValue({
-        success: false,
-        error: {
-          issues: [{ path: ['processDataSet', 'exchanges'] }],
-        },
-      }),
-    });
+    mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
@@ -530,7 +523,7 @@ describe('updateProcessApi', () => {
     expect(result).toBeUndefined();
   });
 
-  it('logs invocation errors and returns undefined payload', async () => {
+  it('logs invocation errors and returns normalized error payload', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
@@ -554,7 +547,7 @@ describe('updateProcessApi', () => {
       region: FunctionRegion.UsEast1,
     });
     expect(logSpy).toHaveBeenCalledWith('error', { message: 'bad req' });
-    expect(result).toBeUndefined();
+    expect(result).toEqual({ error: { message: 'bad req' } });
     logSpy.mockRestore();
   });
 });

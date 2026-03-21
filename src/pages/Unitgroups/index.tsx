@@ -4,9 +4,9 @@ import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
-import { contributeSource } from '@/services/general/api';
+import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -43,12 +43,18 @@ const TableList: FC = () => {
   const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
+  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
@@ -57,6 +63,29 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
+  const attachReviewState = async (result: {
+    data?: UnitGroupTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    if (dataSource !== 'my' || !Array.isArray(result?.data)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      data: await attachStateCodesToRows('unitgroups', result.data),
+    };
+  };
+
+  useEffect(() => {
+    if (dataSource === 'my' && id && version) {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [dataSource, id, version]);
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
       title: (
@@ -168,6 +197,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
@@ -179,6 +209,7 @@ const TableList: FC = () => {
                 buttonType={'icon'}
               />
               <UnitGroupEdit
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -187,6 +218,7 @@ const TableList: FC = () => {
                 setViewDrawerVisible={() => {}}
               ></UnitGroupEdit>
               <UnitGroupDelete
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -390,28 +422,47 @@ const TableList: FC = () => {
           const currentStateCode = stateCodeRef.current;
           if (currentKeyWord.length > 0) {
             if (openAI) {
-              return unitgroup_hybrid_search(
+              return attachReviewState(
+                await unitgroup_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  currentKeyWord,
+                  {},
+                  currentStateCode,
+                ),
+              );
+            }
+            return attachReviewState(
+              await getUnitGroupTablePgroongaSearch(
                 params,
                 lang,
                 dataSource,
                 currentKeyWord,
                 {},
                 currentStateCode,
-              );
-            }
-            return getUnitGroupTablePgroongaSearch(
-              params,
-              lang,
-              dataSource,
-              currentKeyWord,
-              {},
-              currentStateCode,
+              ),
             );
           }
-          return getUnitGroupTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode);
+          return attachReviewState(
+            await getUnitGroupTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode),
+          );
         }}
         columns={unitGroupColumns}
       ></ProTable>
+
+      {editDrawerVisible && editId && editVersion && (
+        <UnitGroupEdit
+          id={editId}
+          version={editVersion}
+          buttonType={'icon'}
+          lang={lang}
+          actionRef={actionRef}
+          setViewDrawerVisible={setEditDrawerVisible}
+          autoOpen={true}
+          autoCheckRequired={required}
+        ></UnitGroupEdit>
+      )}
     </PageContainer>
   );
 };

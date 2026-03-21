@@ -1,5 +1,5 @@
+import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk';
 import {
   classificationToString,
   genClassificationZH,
@@ -9,9 +9,15 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } from '../general/api';
+import {
+  getDataDetail,
+  getTeamIdByUserId,
+  normalizeLangPayloadForSave,
+  resolveFunctionInvokeError,
+} from '../general/api';
 import { getCachedClassificationData } from '../ilcd/cache';
 import { genSourceJsonOrdered } from './util';
+
 export async function createSource(id: string, data: any) {
   const rawData = genSourceJsonOrdered(id, data);
   const normalizedResult = await normalizeLangPayloadForSave(rawData);
@@ -32,8 +38,12 @@ export async function createSource(id: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasSource(newData).validateEnhanced().success;
-  // const teamId = await getTeamIdByUserId();
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'source data set',
+    newData,
+    userTeamId,
+  );
   const result = await supabase
     .from('sources')
     .insert([{ id: id, json_ordered: newData, rule_verification }])
@@ -61,7 +71,12 @@ export async function updateSource(id: string, version: string, data: any) {
       count: null,
     };
   }
-  const rule_verification = createTidasSource(newData).validateEnhanced().success;
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'source data set',
+    newData,
+    userTeamId,
+  );
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
@@ -75,6 +90,9 @@ export async function updateSource(id: string, version: string, data: any) {
   }
   if (result.error) {
     console.log('error', result.error);
+    return {
+      error: await resolveFunctionInvokeError(result.error),
+    };
   }
   return result?.data;
 }

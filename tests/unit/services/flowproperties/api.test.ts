@@ -68,6 +68,7 @@ jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
+  resolveFunctionInvokeError: jest.fn(),
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
@@ -75,8 +76,12 @@ const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperti
 const { getLangText, classificationToString, jsonToList, genClassificationZH } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
-const { getDataDetail, getTeamIdByUserId } = jest.requireMock('@/services/general/api');
-const { normalizeLangPayloadForSave } = jest.requireMock('@/services/general/api');
+const {
+  getDataDetail,
+  getTeamIdByUserId,
+  normalizeLangPayloadForSave,
+  resolveFunctionInvokeError,
+} = jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
@@ -89,6 +94,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       payload,
       validationError: undefined,
     }));
+    resolveFunctionInvokeError.mockImplementation(async (error: any) => error);
     // Setup default SDK mock behavior
     mockCreateFlowProperty.mockReturnValue({
       validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -258,7 +264,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const result = await updateFlowproperties('id', 'version', {});
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toBeNull(); // Function returns result?.data which is null on error
+      expect(result).toEqual({ error: mockError });
       consoleLogSpy.mockRestore();
     });
 

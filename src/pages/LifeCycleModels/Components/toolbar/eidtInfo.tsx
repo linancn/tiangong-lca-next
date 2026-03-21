@@ -15,19 +15,23 @@ import { FormattedMessage, useIntl } from 'umi';
 import { LifeCycleModelForm } from '../form';
 // const { TextArea } = Input;
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import type { RefCheckType } from '@/contexts/refCheckContext';
 import { RefCheckContext, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import {
+  buildValidationIssues,
   checkReferences,
   checkVersions,
   dealModel,
   dealProcress,
   getAllRefObj,
   getErrRefTab,
+  mapValidationIssuesToRefCheckData,
   ReffPath,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
+  validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
@@ -48,7 +52,6 @@ import type {
 import { genLifeCycleModelJsonOrdered } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
-import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
 import { v4 } from 'uuid';
 
 export type ToolbarEditInfoHandle = LifeCycleModelToolbarEditInfoHandle<refDataType>;
@@ -189,43 +192,51 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       from: 'review' | 'checkData',
       nodes: LifeCycleModelGraphNode[],
       edges: LifeCycleModelGraphEdge[],
+      options?: { silent?: boolean },
     ): Promise<{
       checkResult: boolean;
       unReview: refDataType[];
       problemNodes?: refDataType[];
     }> => {
+      const silent = options?.silent ?? false;
       setSpinning(true);
       if (nodes?.length) {
         const quantitativeReferenceProcress = nodes.find(
           (node) => node?.data?.quantitativeReference === '1',
         );
         if (!quantitativeReferenceProcress) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
-              defaultMessage: 'Please select a node as reference',
-            }),
-          );
+          if (!silent) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.lifecyclemodel.validator.nodes.quantitativeReference.required',
+                defaultMessage: 'Please select a node as reference',
+              }),
+            );
+          }
           setSpinning(false);
           return { checkResult: false, unReview: [] };
         }
       } else {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.lifecyclemodel.validator.nodes.required',
-            defaultMessage: 'Please add node',
-          }),
-        );
+        if (!silent) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.validator.nodes.required',
+              defaultMessage: 'Please add node',
+            }),
+          );
+        }
         setSpinning(false);
         return { checkResult: false, unReview: [] };
       }
       if (!edges?.length) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.lifecyclemodel.validator.exchanges.required',
-            defaultMessage: 'Please add connection line',
-          }),
-        );
+        if (!silent) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.validator.exchanges.required',
+              defaultMessage: 'Please add connection line',
+            }),
+          );
+        }
         setSpinning(false);
         return { checkResult: false, unReview: [] };
       }
@@ -234,8 +245,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
 
       const userTeamId = await getUserTeamId();
 
-      const unReview: refDataType[] = []; //stateCode < 20
-      const underReview: refDataType[] = []; //stateCode >= 20 && stateCode < 100
+      const unReview: refDataType[] = [];
+      const underReview: refDataType[] = [];
       const unRuleVerification: refDataType[] = [];
       const nonExistentRef: refDataType[] = [];
       const allRefs = new Set<string>();
@@ -247,41 +258,70 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       const currentModelDetail = modelDetailResp.success ? modelDetailResp.data : undefined;
       modelDetailRef.current = currentModelDetail;
       if (!currentModelDetail) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
-          }),
-        );
+        if (!silent) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            }),
+          );
+        }
         setSpinning(false);
         return { checkResult: false, unReview };
       }
-      if (currentModelDetail.stateCode >= 20 && currentModelDetail.stateCode < 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.lifecyclemodel.checkData.inReview',
-            defaultMessage: 'This data set is under review and cannot be validated',
-          }),
-        );
+      if (
+        currentModelDetail.stateCode >= 20 &&
+        currentModelDetail.stateCode < 100 &&
+        from === 'checkData'
+      ) {
+        if (!silent) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.checkData.inReview',
+              defaultMessage: 'This data set is under review and cannot be validated',
+            }),
+          );
+        }
         setSpinning(false);
         return { checkResult: false, unReview };
       }
-      const tidasLifeCycleModel = createTidasLifeCycleModel(
+
+      const rootRef = {
+        '@refObjectId': data.id ?? '',
+        '@version': data.version ?? '',
+        '@type': 'lifeCycleModel data set',
+      } satisfies refDataType;
+      const sdkValidation = validateDatasetWithSdk(
+        'lifeCycleModel data set',
         genLifeCycleModelJsonOrdered(data.id ?? '', {
           ...currentModelDetail.json.lifeCycleModelDataSet,
           model: { ...currentModelDetail.json_tg?.xflow },
         }),
       );
-      const validateResult = tidasLifeCycleModel.validateEnhanced();
-      const issues: LifeCycleModelValidationIssue[] = validateResult.success
-        ? []
-        : validateResult.error.issues.filter(
-            (item) =>
-              !item.path.includes('validation') &&
-              !item.path.includes('complianceDeclarations') &&
-              !item.path.includes('quantitativeReference'),
-          );
-      let valid = issues.length === 0;
+      const issues: LifeCycleModelValidationIssue[] = sdkValidation.issues;
+      let currentDatasetValid = sdkValidation.success;
+      let processInstanceValid = true;
+      const errTabNames: string[] = [];
+      const currentDatasetTabNames: string[] = [];
+
+      issues.forEach((err: LifeCycleModelValidationIssue) => {
+        if (err.path.includes('processInstance')) {
+          processInstanceValid = false;
+        } else {
+          const tabName = typeof err?.path[1] === 'string' ? err.path[1] : undefined;
+          if (tabName && !errTabNames.includes(tabName)) {
+            errTabNames.push(tabName);
+          }
+          if (tabName && !currentDatasetTabNames.includes(tabName)) {
+            currentDatasetTabNames.push(tabName);
+          }
+        }
+      });
+      if (!currentDatasetValid) {
+        setTimeout(() => {
+          formRefEdit.current?.validateFields();
+        }, 200);
+      }
       dealModel(currentModelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const { data: sameProcressWithModel } = await getProcessDetail(
@@ -307,15 +347,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         underReview,
         unRuleVerification,
         nonExistentRef,
-        new ReffPath(
-          {
-            '@refObjectId': data.id ?? '',
-            '@version': data.version ?? '',
-            '@type': 'lifeCycleModel data set',
-          },
-          currentModelDetail.ruleVerification,
-          false,
-        ),
+        new ReffPath(rootRef, currentModelDetail.ruleVerification, false),
         allRefs,
       );
       allRefs.add(`${data.id}:${data.version}:lifeCycleModel data set`);
@@ -323,134 +355,19 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       await checkVersions(allRefs, path);
 
       const problemNodes = (path?.findProblemNodes(from) ?? []) as ReviewProblemNode[];
-      if (problemNodes && problemNodes.length > 0) {
-        let underReviewVersionProcessAndModel: ReviewProblemNode[] = [];
-        let versionIsInTgProcessAndModel: ReviewProblemNode[] = [];
-        const result: RefCheckType[] = problemNodes.map((item) => {
-          if (item['@type'] === 'process data set' || item['@type'] === 'lifeCycleModel data set') {
-            if (item.underReviewVersion && item.underReviewVersion !== item['@version']) {
-              underReviewVersionProcessAndModel.push(item);
-            }
-            if (item.versionIsInTg) {
-              versionIsInTgProcessAndModel.push(item);
-            }
-          }
-          return {
-            id: item['@refObjectId'],
-            version: item['@version'],
-            ruleVerification: item.ruleVerification,
-            nonExistent: item.nonExistent,
-            versionUnderReview: item.versionUnderReview,
-            underReviewVersion: item.underReviewVersion,
-            versionIsInTg: item.versionIsInTg,
-          };
-        });
-        setRefCheckData(result);
-        if (underReviewVersionProcessAndModel.length) {
-          const errorMessages: string[] = [];
-          underReviewVersionProcessAndModel.forEach((item) => {
-            if (item['@type'] === 'lifeCycleModel data set') {
-              errorMessages.push(
-                intl.formatMessage(
-                  {
-                    id: 'pages.select.versionUnderReview.lifecycleModel',
-                    defaultMessage:
-                      'The model data set {id} already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted for review.',
-                  },
-                  {
-                    underReviewVersion: item.underReviewVersion,
-                    currentVersion: item['@version'],
-                    id: item['@refObjectId'],
-                  },
-                ),
-              );
-            } else if (item['@type'] === 'process data set') {
-              errorMessages.push(
-                intl.formatMessage(
-                  {
-                    id: 'pages.select.versionUnderReview.process',
-                    defaultMessage:
-                      'The process data set {id} already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted for review.',
-                  },
-                  {
-                    underReviewVersion: item.underReviewVersion,
-                    currentVersion: item['@version'],
-                    id: item['@refObjectId'],
-                  },
-                ),
-              );
-            }
-          });
-          message.error(
-            <div>
-              {errorMessages.map((msg, index) => (
-                <div key={index}>{msg}</div>
-              ))}
-            </div>,
-          );
-          setSpinning(false);
-          return { checkResult: false, unReview, problemNodes };
-        }
-        if (versionIsInTgProcessAndModel.length) {
-          const errorMessages: string[] = [
-            intl.formatMessage({
-              id: 'pages.select.versionIsInTg',
-              defaultMessage:
-                'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
-            }),
-          ];
-          versionIsInTgProcessAndModel.forEach((item) => {
-            if (item['@type'] === 'lifeCycleModel data set') {
-              errorMessages.push(
-                intl.formatMessage(
-                  {
-                    id: 'pages.select.versionIsInTg.model',
-                    defaultMessage: 'model {id}',
-                  },
-                  {
-                    id: item['@refObjectId'],
-                  },
-                ),
-              );
-            }
-            if (item['@type'] === 'process data set') {
-              errorMessages.push(
-                intl.formatMessage(
-                  {
-                    id: 'pages.select.versionIsInTg.process',
-                    defaultMessage: 'process {id}',
-                  },
-                  {
-                    id: item['@refObjectId'],
-                  },
-                ),
-              );
-            }
-          });
-          message.error(
-            <div>
-              {errorMessages.map((msg, index) => (
-                <div key={index}>{msg}</div>
-              ))}
-            </div>,
-          );
-          setSpinning(false);
-          return { checkResult: false, unReview, problemNodes };
-        }
+      const validationIssues = buildValidationIssues({
+        actionFrom: from,
+        datasetSdkValid: currentDatasetValid,
+        nonExistentRef,
+        problemNodes,
+        rootRef,
+        sdkInvalidTabNames: currentDatasetTabNames,
+        unRuleVerification,
+      });
+      if (validationIssues.length > 0) {
+        setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
       } else {
         setRefCheckData([]);
-      }
-
-      if (from === 'review' && underReview && underReview.length > 0) {
-        valid = false;
-        message.error(
-          intl.formatMessage({
-            id: 'pages.lifecyclemodel.review.error',
-            defaultMessage: 'Referenced data is under review, cannot initiate another review',
-          }),
-        );
-        setSpinning(false);
-        return { checkResult: valid, unReview, problemNodes };
       }
 
       const submodels: LifeCycleModelSubModel[] = currentModelDetail?.json_tg?.submodels ?? [];
@@ -466,147 +383,131 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         });
       }
       if (
-        valid &&
+        currentDatasetValid &&
         nonExistentRef?.length === 0 &&
         unRuleVerification.length === 0 &&
         problemNodes?.length === 0 &&
         issues.length === 0
       ) {
-        message.success(
-          intl.formatMessage({
-            id: 'pages.button.check.success',
-            defaultMessage: 'Data check successfully!',
-          }),
-        );
-        setSpinning(false);
-        return { checkResult: true, unReview, problemNodes };
-      } else {
-        const errTabNames: string[] = [];
-        let processInstanceValid = true;
-        const modelDataset = currentModelDetail?.json?.lifeCycleModelDataSet;
-        issues.forEach((err: LifeCycleModelValidationIssue) => {
-          if (err.path.includes('processInstance')) {
-            processInstanceValid = false;
-          } else {
-            const tabName = typeof err?.path[1] === 'string' ? err.path[1] : undefined;
-            if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-          }
-        });
-        nonExistentRef.forEach((item) => {
-          const tabName = getErrRefTab(item, modelDataset);
-          if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-        });
-        unRuleVerification.forEach((item) => {
-          const tabName = getErrRefTab(item, modelDataset);
-          if (
-            tabName &&
-            !errTabNames.includes(tabName) &&
-            item['@type'] !== 'lifeCycleModel data set' &&
-            item['@type'] !== 'process data set'
-          )
-            errTabNames.push(tabName);
-        });
-        problemNodes.forEach((item) => {
-          const tabName = getErrRefTab(item, modelDataset);
-          if (
-            tabName &&
-            !errTabNames.includes(tabName) &&
-            item['@type'] !== 'lifeCycleModel data set' &&
-            item['@type'] !== 'process data set'
-          )
-            errTabNames.push(tabName);
-        });
-        if (errTabNames && errTabNames.length > 0) {
-          message.error(
-            errTabNames
-              .map((tab: string) =>
-                intl.formatMessage({
-                  id: `pages.lifeCycleModel.view.${tab}`,
-                  defaultMessage: tab,
-                }),
-              )
-              .join('，') +
-              '：' +
-              intl.formatMessage({
-                id: 'pages.button.check.error',
-                defaultMessage: 'Data check failed!',
-              }),
-          );
-          if (!drawerVisible) {
-            setDrawerVisible(true);
-            onReset();
-          }
-          if (
-            issues.filter(
-              (item: LifeCycleModelValidationIssue) => !item.path.includes('processInstance'),
-            ).length > 0
-          ) {
-            setTimeout(() => {
-              formRefEdit.current?.validateFields();
-            }, 200);
-          }
-          setSpinning(false);
-          return { checkResult: false, unReview, problemNodes };
-        } else if (!processInstanceValid) {
-          message.error(
+        if (!silent) {
+          message.success(
             intl.formatMessage({
-              id: 'pages.lifecyclemodel.review.processInstanceError',
-              defaultMessage: 'Please complete the process instance data',
+              id: 'pages.button.check.success',
+              defaultMessage: 'Data check successfully!',
             }),
           );
-          setSpinning(false);
-          return { checkResult: false, unReview, problemNodes };
-        } else if (unRuleVerification && unRuleVerification.length > 0) {
-          const unRuleVerificationMainProduce = unRuleVerification.find((item) => {
-            return (
-              item['@refObjectId'] === data.id &&
-              item['@version'] === data.version &&
-              item['@type'] === 'process data set'
-            );
-          });
-          const unRuleVerificationSubProduce = unRuleVerification.find((item) => {
-            return submodels?.find(
-              (sub) =>
-                sub.type === 'secondary' &&
-                sub.id === item['@refObjectId'] &&
-                item['@type'] === 'process data set',
-            );
-          });
-          if (unRuleVerificationMainProduce) {
-            valid = false;
-
-            message.error(
-              intl.formatMessage({
-                id: 'pages.lifecyclemodel.review.mainProduceError',
-                defaultMessage:
-                  'Please complete the main product process data in the model results',
-              }),
-            );
-            setSpinning(false);
-            return { checkResult: valid, unReview, problemNodes };
-          }
-          if (unRuleVerificationSubProduce) {
-            valid = false;
-
-            message.error(
-              intl.formatMessage({
-                id: 'pages.lifecyclemodel.review.subProduceError',
-                defaultMessage: 'Please complete the sub product process data in the model results',
-              }),
-            );
-            setSpinning(false);
-            return { checkResult: valid, unReview, problemNodes };
-          }
         }
-        message.error(
+        setSpinning(false);
+        return { checkResult: true, unReview, problemNodes };
+      }
+
+      const modelDataset = currentModelDetail?.json?.lifeCycleModelDataSet;
+      nonExistentRef.forEach((item) => {
+        const tabName = getErrRefTab(item, modelDataset);
+        if (tabName && !errTabNames.includes(tabName)) {
+          errTabNames.push(tabName);
+        }
+      });
+      unRuleVerification.forEach((item) => {
+        const tabName = getErrRefTab(item, modelDataset);
+        if (
+          tabName &&
+          !errTabNames.includes(tabName) &&
+          item['@type'] !== 'lifeCycleModel data set' &&
+          item['@type'] !== 'process data set'
+        ) {
+          errTabNames.push(tabName);
+        }
+      });
+      problemNodes.forEach((item) => {
+        const tabName = getErrRefTab(item, modelDataset);
+        if (
+          tabName &&
+          !errTabNames.includes(tabName) &&
+          item['@type'] !== 'lifeCycleModel data set' &&
+          item['@type'] !== 'process data set'
+        ) {
+          errTabNames.push(tabName);
+        }
+      });
+
+      let validationHint = intl.formatMessage({
+        id: 'pages.button.check.error',
+        defaultMessage: 'Data check failed!',
+      });
+
+      if (errTabNames.length > 0) {
+        validationHint =
+          errTabNames
+            .map((tab: string) =>
+              intl.formatMessage({
+                id: `pages.lifeCycleModel.view.${tab}`,
+                defaultMessage: tab,
+              }),
+            )
+            .join('，') +
+          '：' +
           intl.formatMessage({
             id: 'pages.button.check.error',
             defaultMessage: 'Data check failed!',
-          }),
-        );
-        setSpinning(false);
-        return { checkResult: false, unReview, problemNodes };
+          });
+        if (!drawerVisible) {
+          setDrawerVisible(true);
+          onReset();
+        }
+      } else if (!processInstanceValid) {
+        validationHint = intl.formatMessage({
+          id: 'pages.lifecyclemodel.review.processInstanceError',
+          defaultMessage: 'Please complete the process instance data',
+        });
+      } else if (unRuleVerification && unRuleVerification.length > 0) {
+        const unRuleVerificationMainProduce = unRuleVerification.find((item) => {
+          return (
+            item['@refObjectId'] === data.id &&
+            item['@version'] === data.version &&
+            item['@type'] === 'process data set'
+          );
+        });
+        const unRuleVerificationSubProduce = unRuleVerification.find((item) => {
+          return submodels?.find(
+            (sub) =>
+              sub.type === 'secondary' &&
+              sub.id === item['@refObjectId'] &&
+              item['@type'] === 'process data set',
+          );
+        });
+        if (unRuleVerificationMainProduce) {
+          validationHint = intl.formatMessage({
+            id: 'pages.lifecyclemodel.review.mainProduceError',
+            defaultMessage: 'Please complete the main product process data in the model results',
+          });
+        } else if (unRuleVerificationSubProduce) {
+          validationHint = intl.formatMessage({
+            id: 'pages.lifecyclemodel.review.subProduceError',
+            defaultMessage: 'Please complete the sub product process data in the model results',
+          });
+        }
       }
+
+      if (!silent && validationIssues.length > 0) {
+        showValidationIssueModal({
+          intl,
+          issues: validationIssues,
+          title: intl.formatMessage({
+            id:
+              from === 'review'
+                ? 'pages.validationIssues.modal.reviewTitle'
+                : 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage:
+              from === 'review' ? 'Review submission blocked' : 'Data validation issues',
+          }),
+        });
+      } else if (!silent) {
+        message.error(validationHint);
+      }
+
+      setSpinning(false);
+      return { checkResult: false, unReview, problemNodes };
     };
 
     const submitReview = async (unReview: refDataType[]) => {

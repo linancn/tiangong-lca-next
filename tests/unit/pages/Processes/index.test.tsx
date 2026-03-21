@@ -55,11 +55,17 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   contributeLifeCycleModel: (...args: any[]) => mockContributeLifeCycleModel(...args),
 }));
 
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
+}));
+
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
+  isDataUnderReview: () => false,
 }));
 
 jest.mock('@/services/teams/api', () => ({
@@ -889,6 +895,16 @@ describe('ProcessesPage', () => {
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
     expect(screen.getByRole('heading', { name: 'Process Team' })).toBeInTheDocument();
+    expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
+  });
+
+  it('falls back to an empty table and shows a toast when loading the process list throws', async () => {
+    mockGetProcessTableAll.mockRejectedValue(new Error('network down'));
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to load process list.'));
     expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
   });
 });

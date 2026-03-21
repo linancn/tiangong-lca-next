@@ -83,10 +83,10 @@ describe('RequiredSelectFormTitle Component', () => {
     expect(screen.getByText('Second error')).toBeInTheDocument();
   });
 
-  it('shows incomplete data message when rule verification fails', () => {
+  it('shows data validation failed message when rule verification fails', () => {
     renderComponent({ ruleErrorState: false, errRef: { ruleVerification: false } });
 
-    const message = screen.getByText('Data is incomplete');
+    const message = screen.getByText('Data validation failed');
 
     expect(message).toBeInTheDocument();
     expect(message).toHaveStyle({ color: '#d32029' });
@@ -146,7 +146,7 @@ describe('RequiredSelectFormTitle Component', () => {
   it('renders without extra feedback when there are no errors', () => {
     renderComponent({ ruleErrorState: false, errRef: { stateCode: 100 } });
 
-    expect(screen.queryByText('Data is incomplete')).not.toBeInTheDocument();
+    expect(screen.queryByText('Data validation failed')).not.toBeInTheDocument();
     expect(screen.queryByText('Data does not exist')).not.toBeInTheDocument();
     expect(screen.queryByText('Under review')).not.toBeInTheDocument();
   });

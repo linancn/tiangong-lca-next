@@ -1,5 +1,5 @@
 export default {
-  'pages.select.unRuleVerification': 'Data is incomplete',
+  'pages.select.unRuleVerification': 'Data validation failed',
   'pages.select.nonExistentRef': 'Data does not exist',
   'pages.select.versionUnderReview': 'The current dataset already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted.',
   'pages.select.versionUnderReview.lifecycleModel': 'The model dataset {id} already has version {underReviewVersion} under review. Your version {currentVersion} cannot be submitted.',

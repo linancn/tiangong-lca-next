@@ -1081,8 +1081,44 @@ describe('ToolbarEdit', () => {
         'checkData',
         expect.any(Array),
         expect.any(Array),
+        expect.objectContaining({ silent: false }),
       ),
     );
+  });
+
+  it('runs a silent auto-check once after lifecycle model info loads when requested', async () => {
+    const { unmount } = render(
+      <ToolbarEdit {...baseProps} drawerVisible={true} autoCheckRequired onClose={jest.fn()} />,
+    );
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'checkData',
+        expect.any(Array),
+        expect.any(Array),
+        expect.objectContaining({ silent: true }),
+      ),
+    );
+
+    unmount();
+  });
+
+  it('skips the silent auto-check when imported lifecycle model info resolves to undefined', async () => {
+    mockGenLifeCycleModelInfoFromData.mockReturnValueOnce(undefined);
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        action='create'
+        drawerVisible={true}
+        autoCheckRequired
+        importData={[{ lifeCycleModelDataSet: {}, json_tg: {} }]}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText('toolbar-edit-info:create:-')).toBeInTheDocument());
+
+    expect(mockToolbarHandleCheckData).not.toHaveBeenCalled();
   });
 
   it('submits a review when review validation passes', async () => {
@@ -1106,6 +1142,35 @@ describe('ToolbarEdit', () => {
     expect(mockToolbarSubmitReview).toHaveBeenCalledWith([
       { '@refObjectId': 'proc-1', '@version': '1.0', '@type': 'process data set' },
     ]);
+  });
+
+  it('notifies the outer editor when review submission succeeds', async () => {
+    mockToolbarHandleCheckData.mockResolvedValue({
+      checkResult: true,
+      unReview: [],
+      problemNodes: [],
+    });
+    const onSubmitReviewSuccess = jest.fn();
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={true}
+        onSubmitReviewSuccess={onSubmitReviewSuccess}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'review',
+        expect.any(Array),
+        expect.any(Array),
+      ),
+    );
+    expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]);
+    expect(onSubmitReviewSuccess).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to empty review queues when validation omits them', async () => {

@@ -60,6 +60,7 @@ const { getCachedClassificationData: mockGetCachedClassificationData } =
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -329,7 +330,7 @@ describe('updateUnitGroup', () => {
       region: FunctionRegion.UsEast1,
     });
     expect(logSpy).toHaveBeenCalledWith('error', { message: 'invoke failed' });
-    expect(result).toBeUndefined();
+    expect(result).toEqual({ error: { message: 'invoke failed' } });
     logSpy.mockRestore();
   });
 

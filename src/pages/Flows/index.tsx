@@ -13,9 +13,9 @@ import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
 import { FlowImportData, FlowTable } from '@/services/flows/data';
-import { contributeSource } from '@/services/general/api';
+import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getCachedFlowCategorizationAll } from '@/services/ilcd/cache';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -48,6 +48,9 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string>('');
+  const [editVersion, setEditVersion] = useState<string>('');
   const [classificationFilterOptions, setClassificationFilterOptions] = useState<
     Array<{ text: ReactNode; value: string }>
   >([]);
@@ -57,6 +60,9 @@ const TableList: FC = () => {
   const [, setStateCode] = useState<string | number>('all');
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
+  const id = searchParams.get('id');
+  const version = searchParams.get('version');
+  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
@@ -90,6 +96,29 @@ const TableList: FC = () => {
   };
 
   const actionRef = useRef<ActionType>();
+  const attachReviewState = async (result: {
+    data?: FlowTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    if (dataSource !== 'my' || !Array.isArray(result?.data)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      data: await attachStateCodesToRows('flows', result.data),
+    };
+  };
+
+  useEffect(() => {
+    if (dataSource === 'my' && id && version) {
+      setEditId(id);
+      setEditVersion(version);
+      setEditDrawerVisible(true);
+    }
+  }, [dataSource, id, version]);
   const flowsColumns: ProColumns<FlowTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -207,6 +236,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
@@ -218,6 +248,7 @@ const TableList: FC = () => {
                 lang={lang}
               />
               <FlowsEdit
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 lang={lang}
@@ -225,6 +256,7 @@ const TableList: FC = () => {
                 actionRef={actionRef}
               />
               <FlowsDelete
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -456,23 +488,27 @@ const TableList: FC = () => {
               }
             }
             if (openAI) {
-              return flow_hybrid_search(
+              return attachReviewState(
+                await flow_hybrid_search(
+                  params,
+                  lang,
+                  dataSource,
+                  currentKeyWord,
+                  searchFilters,
+                  currentStateCode,
+                ),
+              );
+            }
+            return attachReviewState(
+              await getFlowTablePgroongaSearch(
                 params,
                 lang,
                 dataSource,
                 currentKeyWord,
                 searchFilters,
                 currentStateCode,
-              );
-            }
-            return getFlowTablePgroongaSearch(
-              params,
-              lang,
-              dataSource,
-              currentKeyWord,
-              searchFilters,
-              currentStateCode,
-              orderBy,
+                orderBy,
+              ),
             );
           }
 
@@ -490,18 +526,33 @@ const TableList: FC = () => {
             }
           }
 
-          return getFlowTableAll(
-            params,
-            convertedSort,
-            lang,
-            dataSource,
-            tid ?? '',
-            searchFilters,
-            currentStateCode,
+          return attachReviewState(
+            await getFlowTableAll(
+              params,
+              convertedSort,
+              lang,
+              dataSource,
+              tid ?? '',
+              searchFilters,
+              currentStateCode,
+            ),
           );
         }}
         columns={flowsColumns}
       />
+
+      {editDrawerVisible && editId && editVersion && (
+        <FlowsEdit
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          buttonType={'icon'}
+          actionRef={actionRef}
+          autoOpen={true}
+          autoCheckRequired={required}
+          onDrawerClose={() => setEditDrawerVisible(false)}
+        />
+      )}
     </PageContainer>
   );
 };

@@ -17,6 +17,7 @@ import {
   login,
   setProfile,
 } from '@/services/auth';
+import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { message } from 'antd';
 import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
@@ -520,6 +521,51 @@ describe('Account profile page (unit)', () => {
     const updatedState = updater({ currentUser: { name: 'Old Name', locale: 'en-US' } });
     expect(updatedState.currentUser.name).toBe('Alice Prime');
     expect(updatedState.currentUser.locale).toBe('en-US');
+  });
+
+  it('ignores late current-user responses after the page unmounts', async () => {
+    let resolveCurrentUser: (value: any) => void = () => {};
+    mockGetCurrentUser.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveCurrentUser = resolve;
+        }),
+    );
+
+    const { unmount } = renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    unmount();
+
+    await act(async () => {
+      resolveCurrentUser({
+        id: 'user-1',
+        email: 'user@example.com',
+        name: 'Late Alice',
+        role: 'admin',
+      } as any);
+      await Promise.resolve();
+    });
+
+    expect(message.error).not.toHaveBeenCalled();
+    expect(mockSetInitialState).not.toHaveBeenCalled();
+  });
+
+  it('shows an error when loading the current profile fails', async () => {
+    mockGetCurrentUser.mockRejectedValueOnce(new Error('load failed'));
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'An error occurred while loading the account profile.',
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+    expect(mockSetInitialState).not.toHaveBeenCalled();
   });
 
   it('handles unexpected errors during profile update gracefully', async () => {

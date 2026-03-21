@@ -25,7 +25,9 @@ const mockParentRefCheckContext = { refCheckData: [] as any[] };
 const mockCheckData = jest.fn(async () => {});
 const mockFindProblemNodes = jest.fn(() => []);
 const mockGetErrRefTab = jest.fn(() => '');
+const mockBuildValidationIssues = jest.fn(() => []);
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
+const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 const mockJsonToList = jest.fn((value: any) => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
@@ -48,6 +50,11 @@ jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   CloseOutlined: () => <span>close</span>,
   FormOutlined: () => <span>edit</span>,
+}));
+
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
 }));
 
 jest.mock('antd', () => {
@@ -104,6 +111,9 @@ jest.mock('antd', () => {
 });
 
 const mockAntdMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
@@ -328,11 +338,13 @@ jest.mock('@/pages/Utils/updateReference', () => ({
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
+  buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   ReffPath: jest.fn(() => ({
     findProblemNodes: () => mockFindProblemNodes(),
   })),
   checkData: (...args: any[]) => mockCheckData(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
+  validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
 jest.mock('@/services/general/util', () => ({
@@ -422,10 +434,12 @@ describe('FlowsEdit', () => {
     latestRefsDrawerProps = null;
     latestFlowFormProps = null;
     jest.clearAllMocks();
+    mockBuildValidationIssues.mockReturnValue([]);
     mockCheckData.mockResolvedValue(undefined);
     mockFindProblemNodes.mockReturnValue([]);
     mockGetErrRefTab.mockReturnValue('');
     mockValidateEnhanced.mockReturnValue({ success: true });
+    mockValidateDatasetWithSdk.mockReturnValue({ success: true, issues: [] });
     mockJsonToList.mockImplementation((value: any) => {
       if (!value) return [];
       return Array.isArray(value) ? value : [value];
@@ -732,7 +746,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() => expect(mockUpdateFlows).toHaveBeenCalled());
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
-    expect(mockValidateEnhanced).toHaveBeenCalled();
+    expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
     expect(screen.getByText('flow-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
@@ -778,14 +792,12 @@ describe('FlowsEdit', () => {
       },
     ]);
     mockGetErrRefTab.mockReturnValue('flowInformation');
-    mockValidateEnhanced.mockReturnValue({
+    mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      error: {
-        issues: [
-          { path: ['flowDataSet', 'typeOfDataSet'] },
-          { path: ['flowDataSet', 'modellingAndValidation'] },
-        ],
-      },
+      issues: [
+        { path: ['flowDataSet', 'typeOfDataSet'] },
+        { path: ['flowDataSet', 'modellingAndValidation'] },
+      ],
     });
 
     renderWithProviders(
@@ -811,11 +823,9 @@ describe('FlowsEdit', () => {
   });
 
   it('shows the generic flow data-check error when issues do not map to tabs', async () => {
-    mockValidateEnhanced.mockReturnValue({
+    mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      error: {
-        issues: [{ path: ['flowDataSet'] }],
-      },
+      issues: [{ path: ['flowDataSet'] }],
     });
 
     renderWithProviders(
@@ -1100,11 +1110,9 @@ describe('FlowsEdit', () => {
       },
     ]);
     mockGetErrRefTab.mockReturnValue('flowInformation');
-    mockValidateEnhanced.mockReturnValue({
+    mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      error: {
-        issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
-      },
+      issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
     });
 
     renderWithProviders(
@@ -1145,11 +1153,9 @@ describe('FlowsEdit', () => {
     mockGetErrRefTab
       .mockImplementationOnce(() => 'modellingAndValidation')
       .mockImplementationOnce(() => 'administrativeInformation');
-    mockValidateEnhanced.mockReturnValue({
+    mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      error: {
-        issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
-      },
+      issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
     });
 
     renderWithProviders(<FlowsEdit id='flow-1' version='1.0.0' buttonType='text' lang='en' />);
@@ -1203,5 +1209,88 @@ describe('FlowsEdit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
     expect(await screen.findByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('opens automatically and triggers silent auto-check when requested', async () => {
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        autoOpen
+        autoCheckRequired
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit/i });
+    await waitFor(() => expect(mockUpdateFlows).toHaveBeenCalled());
+    expect(mockCheckData).toHaveBeenCalled();
+  });
+
+  it('blocks flow data checks when the current dataset is under review', async () => {
+    mockGetFlowDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: {
+          flowDataSet: loadedFlowData,
+        },
+      },
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'This data set is under review and cannot be validated',
+      ),
+    );
+    expect(mockCheckData).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation-issue modal when structured flow validation issues exist', async () => {
+    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'source-1', '@version': '1.0.0' });
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/mydata/flows?id=flow-1&version=1.0.0',
+        ref: {
+          '@type': 'flow data set',
+          '@refObjectId': 'flow-1',
+          '@version': '1.0.0',
+        },
+      },
+    ]);
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

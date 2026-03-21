@@ -17,9 +17,17 @@ type Props = {
   version: string;
   buttonType: string;
   actionRef: React.MutableRefObject<ActionType | undefined>;
+  disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const SourceDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDrawerVisible }) => {
+const SourceDelete: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  actionRef,
+  disabled = false,
+  setViewDrawerVisible,
+}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 
@@ -76,7 +84,13 @@ const SourceDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDr
       {buttonType === 'icon' ? (
         <>
           <Tooltip title={<FormattedMessage id='pages.button.delete' defaultMessage='Delete' />}>
-            <Button shape='circle' icon={<DeleteOutlined />} size='small' onClick={showModal} />
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<DeleteOutlined />}
+              size='small'
+              onClick={showModal}
+            />
           </Tooltip>
           <Modal
             title={<FormattedMessage id='pages.button.delete' defaultMessage='Delete' />}
@@ -92,7 +106,7 @@ const SourceDelete: FC<Props> = ({ id, version, buttonType, actionRef, setViewDr
         </>
       ) : (
         <>
-          <Button size='small' onClick={showModal}>
+          <Button disabled={disabled} size='small' onClick={showModal}>
             <FormattedMessage id='pages.button.delete' defaultMessage='Delete' />
           </Button>
           <Modal

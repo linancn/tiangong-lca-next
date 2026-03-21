@@ -535,6 +535,7 @@ jest.mock('@/services/general/util', () => ({
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
   getImportedId: jest.fn(() => undefined),
+  isDataUnderReview: jest.fn(() => false),
   isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
@@ -547,6 +548,7 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: jest.fn(),
   getRefData: jest.fn(async () => ({ data: {} })),
 }));

@@ -218,11 +218,13 @@ jest.mock('@/services/general/util', () => ({
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
   formatDateTime: (...args: any[]) => mockFormatDateTime(...args),
   getImportedId: jest.fn(() => undefined),
+  isDataUnderReview: jest.fn(() => false),
   isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: jest.fn(),
   getRefData: jest.fn(async () => ({ data: {} })),
   getTeamIdByUserId: jest.fn(),

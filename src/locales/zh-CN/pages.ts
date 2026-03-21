@@ -1,5 +1,5 @@
 export default {
-  'pages.select.unRuleVerification': '数据不完整',
+  'pages.select.unRuleVerification': '数据校验不通过',
   'pages.select.nonExistentRef': '数据不存在',
   'pages.select.versionUnderReview': '当前数据集已有版本 {underReviewVersion} 处于审核中。你的版本 {currentVersion} 暂不可提交',
   'pages.select.versionUnderReview.lifecycleModel': '模型数据集{id}已有版本 {underReviewVersion} 处于审核中。你的版本 {currentVersion} 暂不可提交',
