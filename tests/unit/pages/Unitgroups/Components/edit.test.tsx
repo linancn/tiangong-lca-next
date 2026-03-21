@@ -204,6 +204,8 @@ jest.mock('@/pages/Utils/updateReference', () => ({
 
 const mockCheckData = jest.fn(async () => undefined);
 const mockGetErrRefTab = jest.fn(() => null);
+const mockBuildValidationIssues = jest.fn(() => []);
+const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
@@ -212,8 +214,15 @@ jest.mock('@/pages/Utils/review', () => ({
       return mockProblemNodes;
     }
   },
+  buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkData: (...args: any[]) => mockCheckData(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
+  validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
+}));
+
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
 }));
 
 const mockGetUnitGroupDetail = jest.fn();
@@ -857,11 +866,9 @@ describe('UnitGroupEdit', () => {
   });
 
   it('adds schema issue tabs that are not already present in the error tab list', async () => {
-    mockValidateEnhanced.mockReturnValue({
+    mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      error: {
-        issues: [{ path: ['root', 'administrativeInformation'] }],
-      },
+      issues: [{ path: ['root', 'administrativeInformation'] }],
     });
 
     renderWithProviders(

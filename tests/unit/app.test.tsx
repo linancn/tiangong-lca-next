@@ -256,13 +256,13 @@ describe('app runtime config', () => {
     });
 
     const actions = runtimeLayout.actionsRender?.();
-    expect(actions).toHaveLength(6);
+    expect(actions).toHaveLength(7);
     expect(actions[0].type).toBe('lcia-cache-monitor');
-    expect(actions[1].type).toBe('dark-mode');
-    expect(actions[4].type).toBe('lca-task-center');
-    expect(actions[5].type).toBe('notification-center');
+    expect(actions[2].type).toBe('dark-mode');
+    expect(actions[5].type).toBe('lca-task-center');
+    expect(actions[6].type).toBe('notification-center');
 
-    actions[1].props.handleClick();
+    actions[2].props.handleClick();
     expect(setInitialState).toHaveBeenCalledTimes(1);
     const updater = setInitialState.mock.calls[0][0];
     const nextState = updater({

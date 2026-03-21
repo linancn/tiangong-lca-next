@@ -60,6 +60,7 @@ jest.mock('@/services/general/util', () => ({
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
+  isDataUnderReview: () => false,
 }));
 
 jest.mock('@/services/teams/api', () => ({
@@ -69,6 +70,7 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: (...args: any[]) => mockContributeSource(...args),
 }));
 

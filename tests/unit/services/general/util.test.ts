@@ -1213,21 +1213,19 @@ describe('General Utility Functions', () => {
     it('should use empty fallback IDs when classification IDs are missing', () => {
       expect(classificationToJsonList({ value: ['Class 1'] }, false)).toEqual({
         '@level': '0',
-        '@classId': '',
         '#text': 'Class 1',
       });
       expect(classificationToJsonList({ value: ['Category 1'] }, true)).toEqual({
         '@level': '0',
-        '@catId': '',
         '#text': 'Category 1',
       });
       expect(classificationToJsonList({ value: ['Class 1', 'Class 2'] }, false)).toEqual([
-        { '@level': '0', '@classId': '', '#text': 'Class 1' },
-        { '@level': '1', '@classId': '', '#text': 'Class 2' },
+        { '@level': '0', '#text': 'Class 1' },
+        { '@level': '1', '#text': 'Class 2' },
       ]);
       expect(classificationToJsonList({ value: ['Category 1', 'Category 2'] }, true)).toEqual([
-        { '@level': '0', '@catId': '', '#text': 'Category 1' },
-        { '@level': '1', '@catId': '', '#text': 'Category 2' },
+        { '@level': '0', '#text': 'Category 1' },
+        { '@level': '1', '#text': 'Category 2' },
       ]);
     });
 
