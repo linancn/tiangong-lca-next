@@ -945,6 +945,17 @@ describe('ToolbarEditInfo', () => {
         '@type': 'flow data set',
       });
     });
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'flow-1',
+          '@version': '1.0',
+          '@type': 'flow data set',
+          versionUnderReview: true,
+          underReviewVersion: '1.0',
+        },
+      ],
+    });
 
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
@@ -954,10 +965,20 @@ describe('ToolbarEditInfo', () => {
       result = await ref.current?.handleCheckData('review', nodes, [{}]);
     });
 
-    expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      'Referenced data is under review, cannot initiate another review',
+    expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionFrom: 'review',
+        problemNodes: expect.arrayContaining([
+          expect.objectContaining({
+            '@refObjectId': 'flow-1',
+            versionUnderReview: true,
+            underReviewVersion: '1.0',
+          }),
+        ]),
+      }),
     );
     expect(result.checkResult).toBe(false);
+    expect(result.problemNodes).toHaveLength(1);
   });
 
   it('blocks review when referenced process or model versions are already under review', async () => {
