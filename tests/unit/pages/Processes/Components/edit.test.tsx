@@ -1729,5 +1729,7 @@ describe('ProcessEdit component', () => {
     );
     expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalledWith([], 'review-uuid');
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
+    expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
   });
 });

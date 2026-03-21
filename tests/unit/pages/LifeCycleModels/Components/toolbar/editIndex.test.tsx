@@ -1081,6 +1081,7 @@ describe('ToolbarEdit', () => {
         'checkData',
         expect.any(Array),
         expect.any(Array),
+        expect.objectContaining({ silent: false }),
       ),
     );
   });
@@ -1106,6 +1107,35 @@ describe('ToolbarEdit', () => {
     expect(mockToolbarSubmitReview).toHaveBeenCalledWith([
       { '@refObjectId': 'proc-1', '@version': '1.0', '@type': 'process data set' },
     ]);
+  });
+
+  it('notifies the outer editor when review submission succeeds', async () => {
+    mockToolbarHandleCheckData.mockResolvedValue({
+      checkResult: true,
+      unReview: [],
+      problemNodes: [],
+    });
+    const onSubmitReviewSuccess = jest.fn();
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={true}
+        onSubmitReviewSuccess={onSubmitReviewSuccess}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'review',
+        expect.any(Array),
+        expect.any(Array),
+      ),
+    );
+    expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]);
+    expect(onSubmitReviewSuccess).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to empty review queues when validation omits them', async () => {

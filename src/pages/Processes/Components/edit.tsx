@@ -792,7 +792,9 @@ const ProcessEdit: FC<Props> = ({
           defaultMessage: 'Review submitted successfully',
         }),
       );
+      actionRef?.current?.reload();
       setDrawerVisible(false);
+      setViewDrawerVisible(false);
       setSpinning(false);
     } else {
       setSpinning(false);

@@ -16,7 +16,56 @@ import {
   mergeCommentsToData,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
+  validateDatasetRuleVerification,
+  validateDatasetWithSdk,
 } from '@/pages/Utils/review';
+
+const mockCreateContact = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+const mockCreateFlow = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+const mockCreateFlowProperty = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+const mockCreateLifeCycleModel = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+const mockCreateProcess = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+const mockCreateSource = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+const mockCreateUnitGroup = jest.fn(() => ({
+  validateEnhanced: () => ({
+    success: true,
+  }),
+}));
+
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createContact: (...args: any[]) => mockCreateContact(...args),
+  createFlow: (...args: any[]) => mockCreateFlow(...args),
+  createFlowProperty: (...args: any[]) => mockCreateFlowProperty(...args),
+  createLifeCycleModel: (...args: any[]) => mockCreateLifeCycleModel(...args),
+  createProcess: (...args: any[]) => mockCreateProcess(...args),
+  createSource: (...args: any[]) => mockCreateSource(...args),
+  createUnitGroup: (...args: any[]) => mockCreateUnitGroup(...args),
+}));
 
 const mockGetRefData = jest.fn();
 const mockGetRefDataByIds = jest.fn();
@@ -95,6 +144,48 @@ describe('review utilities', () => {
     mockGetTeamMessageApi.mockReset();
     mockGetUserId.mockReset();
     mockGetUsersByIds.mockReset();
+    mockCreateContact.mockReset();
+    mockCreateFlow.mockReset();
+    mockCreateFlowProperty.mockReset();
+    mockCreateLifeCycleModel.mockReset();
+    mockCreateProcess.mockReset();
+    mockCreateSource.mockReset();
+    mockCreateUnitGroup.mockReset();
+    mockCreateContact.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
+    mockCreateFlow.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
+    mockCreateFlowProperty.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
+    mockCreateLifeCycleModel.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
+    mockCreateProcess.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
+    mockCreateSource.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
+    mockCreateUnitGroup.mockImplementation(() => ({
+      validateEnhanced: () => ({
+        success: true,
+      }),
+    }));
     jest.useRealTimers();
   });
 
@@ -781,6 +872,105 @@ describe('review utilities', () => {
     expect(underReview).toEqual([ref]);
   });
 
+  it('does not persist workflow version-state failures into rule verification', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-2',
+        stateCode: 30,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+
+    const result = await validateDatasetRuleVerification('contact data set', {
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-1',
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+            'common:referenceToOwnershipOfDataSet': {
+              '@refObjectId': 'contact-2',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+        },
+      },
+    });
+
+    expect(result.ruleVerification).toBe(true);
+    expect(result.datasetSdkValid).toBe(true);
+    expect(result.unRuleVerification).toEqual([]);
+    expect(result.nonExistentRef).toEqual([]);
+    expect(mockGetRefData).toHaveBeenCalledWith('contact-2', '01.00.000', 'contacts', '', {
+      fallbackToLatest: false,
+    });
+  });
+
+  it('does not let sdk validation mutate the original ordered json', async () => {
+    mockCreateContact.mockImplementation((input: any) => ({
+      validateEnhanced: () => {
+        input.contactDataSet.contactInformation.dataSetInformation['common:name'] = [];
+        input.contactDataSet.contactInformation.dataSetInformation['common:synonyms'] = [];
+        input.contactDataSet.contactInformation.dataSetInformation['common:generalComment'] = [];
+        return {
+          success: true,
+        };
+      },
+    }));
+
+    const orderedJson = {
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-1',
+            'common:shortName': {
+              '#text': 'Test Contact',
+              '@xml:lang': 'en',
+            },
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          },
+        },
+      },
+    };
+
+    const before = JSON.parse(JSON.stringify(orderedJson));
+
+    const sdkResult = validateDatasetWithSdk('contact data set', orderedJson);
+    const ruleResult = await validateDatasetRuleVerification('contact data set', orderedJson);
+
+    expect(sdkResult.success).toBe(true);
+    expect(ruleResult.ruleVerification).toBe(true);
+    expect(orderedJson).toEqual(before);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        orderedJson.contactDataSet.contactInformation.dataSetInformation,
+        'common:name',
+      ),
+    ).toBe(false);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        orderedJson.contactDataSet.contactInformation.dataSetInformation,
+        'common:synonyms',
+      ),
+    ).toBe(false);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        orderedJson.contactDataSet.contactInformation.dataSetInformation,
+        'common:generalComment',
+      ),
+    ).toBe(false);
+  });
+
   it('updates under review items to pending review', async () => {
     mockGetReviewsOfData.mockResolvedValue([{ id: 'existing-review' }]);
     mockUpdateDateToReviewState.mockResolvedValue({ success: true });
@@ -1220,12 +1410,16 @@ describe('review utilities', () => {
     );
   });
 
-  it('treats mismatched under-review versions as problems during checkData scans', () => {
-    const parent = new ReffPath({
-      '@refObjectId': 'parent',
-      '@version': '01',
-      '@type': 'flow data set',
-    });
+  it('ignores workflow-only version issues during checkData scans', () => {
+    const parent = new ReffPath(
+      {
+        '@refObjectId': 'parent',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
     const child = new ReffPath(
       {
         '@refObjectId': 'child',
@@ -1254,13 +1448,74 @@ describe('review utilities', () => {
       'underReviewVersion',
       '02',
     );
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'versionIsInTg',
+      true,
+    );
 
-    expect(parent.findProblemNodes()).toEqual(
+    expect(parent.findProblemNodes()).toEqual([]);
+  });
+
+  it('includes workflow-only version issues during review scans', () => {
+    const parent = new ReffPath(
+      {
+        '@refObjectId': 'parent',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
+    const child = new ReffPath(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      true,
+      false,
+    );
+    parent.addChild(child);
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'versionUnderReview',
+      true,
+    );
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'underReviewVersion',
+      '02',
+    );
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'versionIsInTg',
+      true,
+    );
+
+    expect(parent.findProblemNodes('review')).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           '@refObjectId': 'child',
           versionUnderReview: true,
           underReviewVersion: '02',
+          versionIsInTg: true,
         }),
         expect.objectContaining({ '@refObjectId': 'parent' }),
       ]),

@@ -99,6 +99,7 @@ type Props = {
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
   newVersion?: string;
+  onSubmitReviewSuccess?: () => void;
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
@@ -118,6 +119,7 @@ const ToolbarEdit: FC<Props> = ({
   hideReviewButton = false,
   updateNodeCb = async () => {},
   newVersion,
+  onSubmitReviewSuccess = () => {},
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -1423,6 +1425,7 @@ const ToolbarEdit: FC<Props> = ({
 
     if (checkResult) {
       await editInfoRef.current?.submitReview(unReview);
+      onSubmitReviewSuccess();
     }
     setSpinning(false);
   };
