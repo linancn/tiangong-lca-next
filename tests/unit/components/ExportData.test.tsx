@@ -4,6 +4,19 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { message } from 'antd';
 
 type ReactNode = import('react').ReactNode;
+type ExportTableName =
+  | 'contacts'
+  | 'sources'
+  | 'unitgroups'
+  | 'flowproperties'
+  | 'flows'
+  | 'processes'
+  | 'lifecyclemodels';
+type ExportDataProps = {
+  tableName: ExportTableName;
+  id: string;
+  version: string;
+};
 
 type MockMessage = Record<'success' | 'error' | 'info' | 'warning' | 'loading', jest.Mock>;
 
@@ -71,13 +84,13 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
 const mockedSubmitTidasPackageExportTask = jest.mocked(submitTidasPackageExportTask);
 const mockMessage = message as unknown as MockMessage;
 
-const baseProps = {
+const baseProps: ExportDataProps = {
   tableName: 'flows',
   id: 'test-id',
   version: 'v00000001',
-} as const;
+};
 
-const renderComponent = (props: Partial<typeof baseProps> = {}) =>
+const renderComponent = (props: Partial<ExportDataProps> = {}) =>
   render(<ExportData {...baseProps} {...props} />);
 
 const clickExportButton = () => {
