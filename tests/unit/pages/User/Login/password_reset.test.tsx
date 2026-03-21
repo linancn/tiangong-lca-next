@@ -284,4 +284,15 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
       expect(screen.getByTestId('spin')).toBeInTheDocument();
     });
   });
+
+  it('falls back to an empty email string when the current user payload omits email', async () => {
+    mockGetCurrentUser.mockResolvedValueOnce({ userid: 'u1' });
+
+    render(<PasswordReset />);
+
+    await waitFor(() => {
+      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(screen.getByTestId('fields')).toHaveTextContent('"value":""');
+    });
+  });
 });

@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { renderWithProviders, screen } from '../../../../../helpers/testUtils';
 
+let mockLocale = 'en-US';
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -15,7 +17,7 @@ const toText = (node: any): string => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => 'en-US',
+  getLocale: () => mockLocale,
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -63,6 +65,10 @@ describe('FlowpropertySelectDescription', () => {
   const FlowpropertySelectDescription =
     require('@/pages/Flowproperties/Components/select/description').default;
 
+  beforeEach(() => {
+    mockLocale = 'en-US';
+  });
+
   it('renders fallback content when no flow property reference is provided', () => {
     renderWithProviders(
       <FlowpropertySelectDescription title='Flow property' lang='en' data={null} />,
@@ -90,5 +96,16 @@ describe('FlowpropertySelectDescription', () => {
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent(
       'flowproperty-1:1.0:flowproperty',
     );
+  });
+
+  it('supports the zh-CN locale width branch', () => {
+    mockLocale = 'zh-CN';
+
+    renderWithProviders(
+      <FlowpropertySelectDescription title='Flow property' lang='zh' data={null} />,
+    );
+
+    expect(screen.getByText('Flow property')).toBeInTheDocument();
+    expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('::flowproperty');
   });
 });

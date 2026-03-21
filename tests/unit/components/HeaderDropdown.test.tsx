@@ -61,4 +61,28 @@ describe('HeaderDropdown', () => {
     expect(props.overlayClassName).toBeUndefined();
     expect(props.placement).toBe('bottomLeft');
   });
+
+  it('uses full-width overlay style on narrow screens', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 320,
+      writable: true,
+    });
+
+    render(
+      <HeaderDropdown placement='bottomLeft'>
+        <span>Trigger</span>
+      </HeaderDropdown>,
+    );
+
+    const props = mockDropdown.mock.calls[0][0];
+    expect(props.overlayStyle).toEqual({ width: '100%' });
+
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: originalWidth,
+      writable: true,
+    });
+  });
 });

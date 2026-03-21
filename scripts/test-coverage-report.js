@@ -12,6 +12,7 @@ const path = require('path');
 const PROJECT_ROOT = process.cwd();
 const COVERAGE_DIR = path.join(PROJECT_ROOT, 'coverage');
 const SHOW_FULL = process.argv.includes('--full');
+const ASSERT_FULL = process.argv.includes('--assert-full');
 
 const colors = {
   reset: '\x1b[0m',
@@ -490,17 +491,16 @@ function printBatchCandidates(clusters) {
   }
 
   printDivider();
-  console.log(
-    colorize('  Cluster                             Files   Min Branch   Avg Branch', 'gray'),
-  );
+  console.log(colorize('  Cluster', 'gray'));
   printDivider();
 
   clusters.forEach((cluster) => {
-    const label =
-      cluster.key.length > 34 ? `...${cluster.key.slice(-31)}` : cluster.key.padEnd(34, ' ');
+    console.log(`  ${cluster.key}`);
     console.log(
-      `  ${label} ${String(cluster.count).padStart(5, ' ')}     ` +
-        `${formatPercent(cluster.minBranch)}%      ${formatPercent(cluster.avgBranch)}%`,
+      colorize(
+        `    Files ${String(cluster.count).padStart(3, ' ')} | Min Branch ${formatPercent(cluster.minBranch)}% | Avg Branch ${formatPercent(cluster.avgBranch)}%`,
+        'gray',
+      ),
     );
   });
 }
@@ -528,23 +528,70 @@ function printOrderedQueue(title, files, limit = files.length) {
   }
 
   printDivider();
-  console.log(
-    colorize(
-      '  File                                  Stmt   Line   Branch   Func   Uncovered',
-      'gray',
-    ),
-  );
+  console.log(colorize('  File', 'gray'));
   printDivider();
 
   files.slice(0, limit).forEach((file) => {
-    const fileName =
-      file.path.length > 36 ? `...${file.path.slice(-33)}` : file.path.padEnd(36, ' ');
     const uncovered = truncate(compressRanges(file.uncoveredLines), 58);
+    console.log(`  ${file.path}`);
     console.log(
-      `  ${fileName} ${formatPercent(file.coverage.statements.pct)}% ${formatPercent(file.coverage.lines.pct)}% ` +
-        `${formatPercent(file.coverage.branches.pct)}% ${formatPercent(file.coverage.functions.pct)}%   ${uncovered}`,
+      colorize(
+        `    Stmt ${formatPercent(file.coverage.statements.pct)}% | Line ${formatPercent(file.coverage.lines.pct)}% | Branch ${formatPercent(file.coverage.branches.pct)}% | Func ${formatPercent(file.coverage.functions.pct)}% | Uncovered ${uncovered}`,
+        'gray',
+      ),
     );
   });
+}
+
+function assertFullCoverage(total, allFiles, orderedQueue) {
+  const failedMetrics = [
+    ['Statements', total.statements],
+    ['Branches', total.branches],
+    ['Functions', total.functions],
+    ['Lines', total.lines],
+  ].filter(([, metric]) => metric.pct !== 100 || metric.hit !== metric.found);
+
+  if (!failedMetrics.length && orderedQueue.length === 0) {
+    console.log(
+      '\n' +
+        colorize(
+          `✅ Full coverage gate passed: ${allFiles.length}/${allFiles.length} tracked source files are at 100/100/100/100.`,
+          'green',
+        ),
+    );
+    return;
+  }
+
+  console.error(
+    '\n' +
+      colorize(
+        '❌ Full coverage gate failed. All tracked source files must remain at 100% statements/branches/functions/lines before push.',
+        'red',
+      ),
+  );
+
+  if (failedMetrics.length) {
+    console.error(colorize('  Global totals below 100%:', 'red'));
+    failedMetrics.forEach(([label, metric]) => {
+      console.error(
+        colorize(
+          `    ${label}: ${formatPercent(metric.pct)}% (${metric.hit}/${metric.found})`,
+          'red',
+        ),
+      );
+    });
+  }
+
+  if (orderedQueue.length) {
+    console.error(colorize(`  Files with remaining gaps: ${orderedQueue.length}`, 'red'));
+    printOrderedQueue(
+      'Full Coverage Gate Failures',
+      orderedQueue,
+      Math.min(25, orderedQueue.length),
+    );
+  }
+
+  process.exit(2);
 }
 
 function generateReport() {
@@ -589,6 +636,10 @@ function generateReport() {
     orderedQueue,
     SHOW_FULL ? orderedQueue.length : 25,
   );
+
+  if (ASSERT_FULL) {
+    assertFullCoverage(coverageData.total, allFiles, orderedQueue);
+  }
 
   if (!SHOW_FULL) {
     console.log(

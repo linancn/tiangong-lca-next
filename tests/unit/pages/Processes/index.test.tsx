@@ -108,6 +108,15 @@ jest.mock('@/components/TableFilter', () => ({
   ),
 }));
 
+jest.mock('@/components/ToolBarButton', () => ({
+  __esModule: true,
+  default: ({ tooltip, onClick }: any) => (
+    <button type='button' onClick={onClick}>
+      {toText(tooltip)}
+    </button>
+  ),
+}));
+
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
   getAllVersionsColumns: jest.fn(() => []),
@@ -452,6 +461,18 @@ describe('ProcessesPage', () => {
       within(createAction!).getByRole('button', { name: /process-create-close/i }),
     );
     await waitFor(() => expect(createAction).toHaveTextContent('"importCount":0'));
+  });
+
+  it('navigates to the analysis page from the my-data toolbar action', async () => {
+    const { history } = jest.requireMock('umi');
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'LCA Analysis' })[0]);
+
+    expect(history.push).toHaveBeenCalledWith('/mydata/processes/analysis');
   });
 
   it('reloads the table when dataset type and state filters change', async () => {
@@ -859,5 +880,15 @@ describe('ProcessesPage', () => {
       ),
     );
     expect(screen.getByRole('heading').textContent).toBe('');
+  });
+
+  it('falls back to an empty table result when the process list request returns undefined', async () => {
+    mockGetProcessTableAll.mockResolvedValueOnce(undefined);
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    expect(screen.getByRole('heading', { name: 'Process Team' })).toBeInTheDocument();
+    expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
   });
 });

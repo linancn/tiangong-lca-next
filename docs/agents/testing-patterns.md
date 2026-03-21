@@ -177,6 +177,66 @@ describe('MyFeature workflow', () => {
 });
 ```
 
+## 6A) Repo Integration Matrix Pattern
+
+- For large rollouts, prefer matrix-driven suites over copy-pasted one-file-per-variant suites.
+- Keep one anchor workflow file per feature and vary only the axis that changes behavior:
+  - `pathname`: `/mydata`, `/tgdata`, `/codata`, `/tedata`
+  - `role`: owner/admin/member/restricted
+  - `search`: empty, valid deep link, invalid or stale query
+- Assert the stable contract in every row, then add only the row-specific assertion that actually differs.
+
+```ts
+import ProcessesPage from '@/pages/Processes';
+import { renderWithProviders, screen, waitFor } from '@/tests/helpers/testUtils';
+
+const setLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search });
+};
+
+const routeCases = [
+  { label: 'mydata', pathname: '/mydata/processes' },
+  { label: 'tgdata', pathname: '/tgdata/processes' },
+];
+
+describe.each(routeCases)('$label processes workflow', ({ pathname }) => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setLocation(pathname, '');
+    getProcessTableAll.mockResolvedValue({ data: [], success: true, total: 0 });
+  });
+
+  it('loads the shared table contract', async () => {
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('contribute')).toBeInTheDocument();
+  });
+});
+```
+
+## 6B) Permission and URL-State Pattern
+
+- For `Teams`, `ManageSystem`, and `Review`, use a role matrix and assert both:
+  - what the user can see and click,
+  - which `@/services/**` calls are allowed or prevented.
+- For deep links and query-driven flows, keep the matrix small:
+  - empty query,
+  - valid query that auto-opens the intended state,
+  - invalid or stale query that falls back safely.
+- Prefer one suite with `describe.each(...)` over separate near-duplicate files.
+
+## 6C) E2E Escalation Rule
+
+- Keep E2E thin. Integration tests are the default expansion layer for this repo.
+- Promote a workflow to E2E only when the risk is truly browser-real:
+  - redirect chains and full-page navigation,
+  - file upload/preview behavior,
+  - `window.location` mutations,
+  - reload-driven state resets.
+- Do not use E2E to chase branch coverage that is already cheaper and more stable at the integration layer.
+
 ## 7) Component Test Template
 
 ```ts
@@ -239,6 +299,7 @@ No silent skipped tests.
 - Directional target: high branch/line/function coverage, trending toward near-100% meaningful coverage.
 - Enforced threshold: global coverage gates defined in `jest.config.cjs`.
 - Use coverage commands to identify real gaps, then add focused tests.
+- Treat integration depth separately from code coverage. For large integration programs, use the 100-point completion scorecard in `docs/agents/ai-testing-guide.md` instead of trying to make `tests/integration` alone hit `100%` code coverage.
 
 ## 11) Pre-Delivery Checklist
 

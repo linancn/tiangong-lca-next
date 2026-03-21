@@ -53,7 +53,15 @@ jest.mock('@/pages/Sources/Components/select/description', () => ({
 
 jest.mock('@/pages/Review/Components/Compliance/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='compliance-form'>compliance-form</div>,
+  default: ({ onData }: any) => (
+    <button
+      type='button'
+      data-testid='compliance-form'
+      onClick={() => onData?.([{ id: 'updated-compliance' }])}
+    >
+      compliance-form
+    </button>
+  ),
 }));
 
 jest.mock('@/pages/Review/Components/Compliance/view', () => ({
@@ -63,7 +71,15 @@ jest.mock('@/pages/Review/Components/Compliance/view', () => ({
 
 jest.mock('@/pages/Review/Components/ReviewForm/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='review-form'>review-form</div>,
+  default: ({ onData }: any) => (
+    <button
+      type='button'
+      data-testid='review-form'
+      onClick={() => onData?.([{ id: 'updated-review' }])}
+    >
+      review-form
+    </button>
+  ),
 }));
 
 jest.mock('@/pages/Review/Components/ReviewForm/view', () => ({
@@ -119,16 +135,16 @@ jest.mock('@/pages/Utils/review', () => ({
 
 jest.mock('@/pages/Processes/Components/optiondata', () => ({
   __esModule: true,
-  LCIMethodApproachOptions: [],
-  LCIMethodPrincipleOptions: [],
-  completenessElementaryFlowsTypeOptions: [],
-  completenessElementaryFlowsValueOptions: [],
-  completenessProductModelOptions: [],
+  LCIMethodApproachOptions: [{ value: 'approach-a', label: 'Approach A' }],
+  LCIMethodPrincipleOptions: [{ value: 'principle-a', label: 'Principle A' }],
+  completenessElementaryFlowsTypeOptions: [{ value: 'type-a', label: 'Type A' }],
+  completenessElementaryFlowsValueOptions: [{ value: 'value-a', label: 'Value A' }],
+  completenessProductModelOptions: [{ value: 'product-a', label: 'Product A' }],
   copyrightOptions: [{ value: 'true', label: 'Copyrighted' }],
   licenseTypeOptions: [{ value: 'open', label: 'Open License' }],
-  processtypeOfDataSetOptions: [],
-  uncertaintyDistributionTypeOptions: [],
-  workflowAndPublicationStatusOptions: [],
+  processtypeOfDataSetOptions: [{ value: 'process-a', label: 'Process A' }],
+  uncertaintyDistributionTypeOptions: [{ value: 'distribution-a', label: 'Distribution A' }],
+  workflowAndPublicationStatusOptions: [{ value: 'workflow-a', label: 'Workflow A' }],
 }));
 
 jest.mock('antd', () => {
@@ -154,15 +170,16 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) =>
     open ? (
       <section role='dialog' aria-label={toText(title) || 'drawer'}>
         <header>
           <div>{extra}</div>
-          <button type='button' onClick={onClose}>
+          <button type='button' data-testid='drawer-on-close' onClick={onClose}>
             close
           </button>
         </header>
+        <div data-testid='drawer-container'>{getContainer?.() ? 'has-container' : 'none'}</div>
         <div>{children}</div>
         <footer>{footer}</footer>
       </section>
@@ -294,14 +311,56 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
           baseName: [{ '@xml:lang': 'en', '#text': 'Model name' }],
         },
       },
+      mathematicalRelations: {
+        variableParameter: {
+          uncertaintyDistributionType: 'distribution-a',
+        },
+      },
     },
     modellingAndValidation: {
+      LCIMethodAndAllocation: {
+        typeOfDataSet: 'process-a',
+        LCIMethodPrinciple: 'principle-a',
+        LCIMethodApproaches: 'approach-a',
+      },
+      completeness: {
+        completenessProductModel: 'product-a',
+        completenessElementaryFlows: {
+          '@type': 'type-a',
+          '@value': 'value-a',
+        },
+      },
       complianceDeclarations: {
         compliance: [{ id: 'compliance-1' }],
       },
       validation: {},
     },
-    administrativeInformation: {},
+    administrativeInformation: {
+      publicationAndOwnership: {
+        'common:workflowAndPublicationStatus': 'workflow-a',
+        'common:copyright': 'true',
+        'common:licenseType': 'open',
+      },
+    },
+  };
+
+  const sparseData = {
+    lifeCycleModelInformation: {
+      dataSetInformation: {
+        classificationInformation: {},
+      },
+    },
+    modellingAndValidation: {
+      LCIMethodAndAllocation: {},
+      completeness: {
+        completenessElementaryFlows: {},
+      },
+      validation: {},
+      complianceDeclarations: {},
+    },
+    administrativeInformation: {
+      publicationAndOwnership: {},
+    },
   };
 
   const renderComponent = (props: any = {}) => {
@@ -378,6 +437,92 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     expect(screen.getByTestId('review-form')).toBeInTheDocument();
   });
 
+  it('invokes the default validation and compliance onData callbacks without crashing', async () => {
+    renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Validation$/i }));
+    await userEvent.click(screen.getByTestId('review-form'));
+
+    await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
+    await userEvent.click(screen.getByTestId('compliance-form'));
+
+    expect(screen.getByTestId('compliance-form')).toBeInTheDocument();
+  });
+
+  it('keeps existing validation rows when review data is already present', async () => {
+    renderComponent({
+      data: {
+        ...baseData,
+        modellingAndValidation: {
+          ...baseData.modellingAndValidation,
+          validation: { review: [{ id: 'existing-review' }] },
+        },
+      },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Validation$/i }));
+
+    await waitFor(() =>
+      expect(proFormApi.getFieldValue).toHaveBeenCalledWith([
+        'modellingAndValidation',
+        'validation',
+        'review',
+      ]),
+    );
+    expect(proFormApi.setFieldValue).not.toHaveBeenCalledWith(
+      ['modellingAndValidation', 'validation', 'review'],
+      [{ 'common:scope': [{}] }],
+    );
+  });
+
+  it('renders mapped option labels across life-cycle, modelling, and administrative tabs', async () => {
+    renderComponent({ type: 'view', tabType: 'assigned' });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    expect(screen.getByText('uuid-1')).toBeInTheDocument();
+    expect(screen.getAllByTestId('lang-text')[0]).toHaveTextContent('Model name');
+
+    await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
+    expect(screen.getByText('Process A')).toBeInTheDocument();
+    expect(screen.getByText('Principle A')).toBeInTheDocument();
+    expect(screen.getByText('Approach A')).toBeInTheDocument();
+    expect(screen.getByText('Product A')).toBeInTheDocument();
+    expect(screen.getByText('Type A')).toBeInTheDocument();
+    expect(screen.getByText('Value A')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
+    expect(screen.getByText('Workflow A')).toBeInTheDocument();
+    expect(screen.getByText('Copyrighted')).toBeInTheDocument();
+    expect(screen.getByText('Open License')).toBeInTheDocument();
+  });
+
+  it('renders sparse fallback values across info, modelling, and administrative tabs', async () => {
+    renderComponent({ data: sparseData, type: 'view', tabType: 'assigned' });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('source-description')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ textContent: expect.stringContaining('none:') }),
+      ]),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('contact-description')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ textContent: expect.stringContaining('none:') }),
+      ]),
+    );
+  });
+
   it('temporarily saves review comments and reloads the parent table', async () => {
     const { actionRef } = renderComponent();
 
@@ -427,6 +572,23 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
+  it('submits the review when the reference checker returns no path object', async () => {
+    const { actionRef } = renderComponent();
+    mockCheckReferences.mockResolvedValueOnce(undefined);
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
+    await waitFor(() => expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalled());
+    expect(mockUpdateCommentApi).toHaveBeenCalledWith(
+      'review-1',
+      expect.objectContaining({ state_code: 1 }),
+      'review',
+    );
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
   it('blocks submit when reference checks report under-review items', async () => {
     mockCheckReferences.mockImplementationOnce(
       async (_refObjs: any, _cache: any, _teamId: any, _unReview: any[], underReview: any[]) => {
@@ -452,5 +614,61 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
       expect.objectContaining({ state_code: 1 }),
       'review',
     );
+  });
+
+  it('blocks submit and keeps the drawer open when reference checks report problem nodes', async () => {
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'problem-ref',
+          '@version': '2.0.0',
+          ruleVerification: false,
+          nonExistent: true,
+        },
+      ],
+    });
+
+    renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
+    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockUpdateCommentApi).not.toHaveBeenCalledWith(
+      'review-1',
+      expect.objectContaining({ state_code: 1 }),
+      'review',
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('supports footer cancel, header close, and drawer onClose actions in review mode', async () => {
+    renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    expect(screen.getByTestId('drawer-container')).toHaveTextContent('has-container');
+    await userEvent.click(screen.getByRole('button', { name: /^Cancel$/i }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByTestId('drawer-on-close'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('omits review footer actions when tabType is not review', async () => {
+    renderComponent({ tabType: 'assigned', type: 'view' });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    expect(screen.queryByRole('button', { name: /^Cancel$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /pages.button.temporarySave/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Save$/i })).not.toBeInTheDocument();
   });
 });

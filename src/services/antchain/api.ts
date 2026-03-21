@@ -6,8 +6,30 @@ type DataSetParams = {
   version: string;
 };
 
+type AntchainLogger = Pick<Console, 'log' | 'error'>;
+type MainModuleRuntime = {
+  override?: string;
+  argv1?: string;
+  resolveCurrentFilePath?: () => Promise<string>;
+  fallbackRequireMain?: () => boolean;
+};
+type AntchainWorkflowOptions = {
+  params1?: DataSetParams;
+  params2?: DataSetParams;
+  createCalculationFn?: typeof createCalculation;
+  queryCalculationStatusFn?: typeof queryCalculationStatus;
+  queryCalculationResultsFn?: typeof queryCalculationResults;
+  sleepFn?: typeof sleep;
+  logger?: AntchainLogger;
+  now?: () => number;
+};
+type AntchainCliEntryOptions = AntchainWorkflowOptions & {
+  logger?: AntchainLogger;
+  runWorkflowFn?: typeof runCompleteCalculationWorkflow;
+};
+
 // Utility function to avoid linter error with promise executors
-const sleep = (ms: number): Promise<void> =>
+export const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
@@ -109,8 +131,8 @@ export async function queryCalculationResults(coDatasetId: string, limit?: numbe
 
 const FORCE_RUN_ENV_KEY = 'ANTCHAIN_CLI_FORCE_RUN';
 
-const isMainModule = async () => {
-  const override = process.env[FORCE_RUN_ENV_KEY];
+export const isMainModule = async (runtime: MainModuleRuntime = {}) => {
+  const override = runtime.override ?? process.env[FORCE_RUN_ENV_KEY];
   if (override === 'true') {
     return true;
   }
@@ -118,29 +140,40 @@ const isMainModule = async () => {
     return false;
   }
   try {
-    const { fileURLToPath } = await import('url');
-    const { argv } = process;
+    const argv1 = runtime.argv1 ?? process.argv[1];
+    if (!runtime.resolveCurrentFilePath) {
+      return typeof require !== 'undefined' && require.main === module;
+    }
+    const currentFilePath = await runtime.resolveCurrentFilePath();
 
-    return argv[1] === fileURLToPath(import.meta.url);
+    return argv1 === currentFilePath;
   } catch (e) {
-    return typeof require !== 'undefined' && require.main === module;
+    return runtime.fallbackRequireMain
+      ? runtime.fallbackRequireMain()
+      : typeof require !== 'undefined' && require.main === module;
   }
 };
 
-async function runCompleteCalculationWorkflow() {
-  const startTime = Date.now();
-  const params1 = {
+export async function runCompleteCalculationWorkflow(options: AntchainWorkflowOptions = {}) {
+  const now = options.now ?? Date.now;
+  const logger = options.logger ?? console;
+  const createCalculationFn = options.createCalculationFn ?? createCalculation;
+  const queryCalculationStatusFn = options.queryCalculationStatusFn ?? queryCalculationStatus;
+  const queryCalculationResultsFn = options.queryCalculationResultsFn ?? queryCalculationResults;
+  const sleepFn = options.sleepFn ?? sleep;
+  const startTime = now();
+  const params1 = options.params1 ?? {
     dataSetInternalID: '2',
     id: '2fbace5c-b2ff-4fd1-9162-04889ba12bca',
     version: '01.01.000',
   };
-  const params2 = {
+  const params2 = options.params2 ?? {
     dataSetInternalID: '2',
     id: '07c8922f-151c-4013-813a-f9e7a20a7fbe',
     version: '01.01.000',
   };
 
-  const getTimestamp = () => new Date().toLocaleTimeString();
+  const getTimestamp = () => new Date(now()).toLocaleTimeString();
   const formatDuration = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -149,25 +182,25 @@ async function runCompleteCalculationWorkflow() {
   };
 
   const logSection = (title: string, startTime?: number) => {
-    console.log('\n' + '='.repeat(50));
+    logger.log('\n' + '='.repeat(50));
     if (startTime) {
-      const duration = formatDuration(Date.now() - startTime);
-      console.log(`🕒 ${getTimestamp()} | ${title} | Duration: ${duration}`);
+      const duration = formatDuration(now() - startTime);
+      logger.log(`🕒 ${getTimestamp()} | ${title} | Duration: ${duration}`);
     } else {
-      console.log(`🕒 ${getTimestamp()} | ${title}`);
+      logger.log(`🕒 ${getTimestamp()} | ${title}`);
     }
-    console.log('='.repeat(50) + '\n');
+    logger.log('='.repeat(50) + '\n');
   };
 
   try {
     // Step 1: Create calculation task
-    const createStartTime = Date.now();
+    const createStartTime = now();
     logSection('🚀 Starting Calculation Task');
-    console.log('🔑 Node 1 Data:', params1);
-    console.log('🔑 Node 2 Data:', params2);
-    const createResult = await createCalculation(params1, params2);
-    console.log('📋 Creation Result:');
-    console.log(JSON.stringify(createResult, null, 2));
+    logger.log('🔑 Node 1 Data:', params1);
+    logger.log('🔑 Node 2 Data:', params2);
+    const createResult = await createCalculationFn(params1, params2);
+    logger.log('📋 Creation Result:');
+    logger.log(JSON.stringify(createResult, null, 2));
     logSection('✅ Task Creation Completed', createStartTime);
 
     if (!createResult.success) {
@@ -175,10 +208,10 @@ async function runCompleteCalculationWorkflow() {
     }
 
     const instanceId = createResult.instanceId;
-    console.log('🔑 Calculation Instance ID:', instanceId);
+    logger.log('🔑 Calculation Instance ID:', instanceId);
 
     // Step 2: Poll task status until completion
-    const pollStartTime = Date.now();
+    const pollStartTime = now();
     logSection('🔄 Starting Status Polling');
     let status;
     let isComplete = false;
@@ -187,11 +220,11 @@ async function runCompleteCalculationWorkflow() {
 
     while (!isComplete) {
       try {
-        status = await queryCalculationStatus(instanceId);
-        console.log(`📊 Check #${++retryCount} - Current Status:`);
-        console.log(JSON.stringify(status, null, 2));
+        status = await queryCalculationStatusFn(instanceId);
+        logger.log(`📊 Check #${++retryCount} - Current Status:`);
+        logger.log(JSON.stringify(status, null, 2));
       } catch (error) {
-        console.error('⚠️ Status Query Failed:', error);
+        logger.error('⚠️ Status Query Failed:', error);
         continue;
       }
 
@@ -199,12 +232,12 @@ async function runCompleteCalculationWorkflow() {
         isComplete = true;
         coDatasetId = status.coDatasetId;
         logSection('✅ Calculation Task Completed', pollStartTime);
-        console.log('📦 Dataset ID:', coDatasetId);
+        logger.log('📦 Dataset ID:', coDatasetId);
       } else if (['FAILED', 'ERROR'].includes(status.status)) {
         throw new Error(`❌ Calculation task failed, status: ${status.status}`);
       } else {
-        console.log('⏳ Task in progress, checking again in 10 seconds...\n');
-        await sleep(10000);
+        logger.log('⏳ Task in progress, checking again in 10 seconds...\n');
+        await sleepFn(10000);
       }
     }
 
@@ -213,37 +246,49 @@ async function runCompleteCalculationWorkflow() {
     }
 
     // Step 3: Retrieve calculation results
-    const resultStartTime = Date.now();
+    const resultStartTime = now();
     logSection('📊 Retrieving Calculation Results');
-    const results = await queryCalculationResults(coDatasetId);
-    console.log('📋 Final Results:');
-    console.log(JSON.stringify(results, null, 2));
+    const results = await queryCalculationResultsFn(coDatasetId);
+    logger.log('📋 Final Results:');
+    logger.log(JSON.stringify(results, null, 2));
 
     if (results.success && results.data && results.data[0]?.valueList) {
       logSection('✨ Trusted Computation Results', resultStartTime);
-      console.log(JSON.stringify(results.data[0].valueList, null, 2));
+      logger.log(JSON.stringify(results.data[0].valueList, null, 2));
     }
 
     // Output total duration
-    const totalDuration = formatDuration(Date.now() - startTime);
+    const totalDuration = formatDuration(now() - startTime);
     logSection(`🏁 Task Execution Completed | Total Duration: ${totalDuration}`);
   } catch (error) {
-    const errorDuration = formatDuration(Date.now() - startTime);
+    const errorDuration = formatDuration(now() - startTime);
     logSection(`❌ Error Occurred | Runtime: ${errorDuration}`);
-    console.error(error);
+    logger.error(error);
   }
 }
 
-// 示例：在模块作为主程序运行时执行工作流
-(async () => {
-  if (await isMainModule()) {
-    console.log('Running in Node.js environment');
-    await runCompleteCalculationWorkflow();
+export async function runAntchainCliEntry(
+  runtime: MainModuleRuntime = {},
+  options: AntchainCliEntryOptions = {},
+) {
+  const logger = options.logger ?? console;
+  const runWorkflowFn = options.runWorkflowFn ?? runCompleteCalculationWorkflow;
+  if (await isMainModule(runtime)) {
+    logger.log('Running in Node.js environment');
+    await runWorkflowFn({ ...options, logger });
   }
-})().catch((err) => {
-  console.error('执行错误:', err);
-  process.exit(1);
-});
+}
+
+export function handleAntchainCliError(
+  err: unknown,
+  logger: Pick<Console, 'error'> = console,
+  exitFn: (code: number) => void = process.exit,
+) {
+  logger.error('执行错误:', err);
+  exitFn(1);
+}
+
+void runAntchainCliEntry().catch(handleAntchainCliError);
 // npx tsx src/services/antchain/api.ts
 
 /*

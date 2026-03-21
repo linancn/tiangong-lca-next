@@ -36,10 +36,13 @@ jest.mock('antd', () => {
       {toText(children)}
     </button>
   );
-  const Drawer = ({ open, children, extra }: any) =>
+  const Drawer = ({ open, children, extra, onClose, getContainer }: any) =>
     open ? (
-      <div data-testid='drawer'>
+      <div data-testid='drawer' data-has-container={String(Boolean(getContainer?.()))}>
         {extra}
+        <button type='button' onClick={onClose}>
+          drawer-close
+        </button>
         {children}
       </div>
     ) : null;
@@ -145,7 +148,14 @@ describe('FlowsView (src/pages/Flows/Components/view.tsx)', () => {
     mockGenFlowFromData.mockReturnValue({
       id: 'flow-id',
       flowInformation: { dataSetInformation: { name: { baseName: 'Base' } } },
-      modellingAndValidation: { LCIMethod: { typeOfDataSet: 'Product flow' } },
+      modellingAndValidation: {
+        LCIMethod: { typeOfDataSet: 'Product flow' },
+        complianceDeclarations: {
+          compliance: {
+            'common:approvalOfOverallCompliance': 'Fully compliant',
+          },
+        },
+      },
       flowProperties: { flowProperty: [{ dataSetInternalID: 'p1', quantitativeReference: true }] },
     });
     mockGetUnitData.mockResolvedValue([
@@ -176,9 +186,127 @@ describe('FlowsView (src/pages/Flows/Components/view.tsx)', () => {
       expect(screen.getAllByTestId('lang-desc').length).toBeGreaterThan(0);
     });
     await act(async () => {
+      fireEvent.click(screen.getByText('Modelling and validation'));
+    });
+    expect(screen.getByText('Fully compliant')).toBeInTheDocument();
+    await act(async () => {
       fireEvent.click(screen.getByText('Flow property'));
     });
     expect(screen.getByTestId('active-tab').textContent).toBe('flowProperties');
+    expect(screen.getByTestId('property-view')).toBeInTheDocument();
+  });
+
+  it('uses the text-button path, handles empty property data, and closes through both drawer actions', async () => {
+    mockGetFlowDetail.mockResolvedValueOnce({ data: {} });
+    mockGenFlowFromData.mockReturnValueOnce({
+      id: 'flow-id',
+      flowInformation: { dataSetInformation: { name: { baseName: 'Fallback base' } } },
+      modellingAndValidation: { LCIMethod: { typeOfDataSet: 'Product flow' } },
+      flowProperties: {},
+    });
+    mockGetUnitData.mockResolvedValueOnce(undefined);
+
+    render(<FlowsView id='flow-2' version='2.0' lang='en' buttonType='text' />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('View'));
+    });
+
+    await waitFor(() => {
+      expect(mockGenFlowFromData).toHaveBeenCalledWith({});
+      expect(mockGetUnitData).toHaveBeenCalledWith('flowproperty', []);
+    });
+
+    expect(screen.getByTestId('drawer')).toHaveAttribute('data-has-container', 'true');
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Flow property'));
+    });
+    expect(screen.getByTestId('active-tab')).toHaveTextContent('flowProperties');
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('icon-close').parentElement as HTMLElement);
+    });
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('View'));
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('drawer-close'));
+    });
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+  });
+
+  it('renders elementary-flow classification, array compliance, and single flow-property objects', async () => {
+    mockGenFlowFromData.mockReturnValueOnce({
+      id: 'flow-id',
+      flowInformation: {
+        dataSetInformation: {
+          name: { baseName: 'Elementary base' },
+          classificationInformation: {
+            'common:elementaryFlowCategorization': {
+              'common:category': { value: 'air emissions' },
+            },
+          },
+        },
+      },
+      modellingAndValidation: {
+        LCIMethod: { typeOfDataSet: 'Elementary flow' },
+        complianceDeclarations: {
+          compliance: [
+            {
+              'common:approvalOfOverallCompliance': 'unsupported-code',
+            },
+          ],
+        },
+      },
+      flowProperties: {
+        flowProperty: {
+          dataSetInternalID: 'p2',
+          quantitativeReference: false,
+        },
+      },
+    });
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        dataSetInternalID: 'p2',
+        meanValue: 2,
+        quantitativeReference: false,
+        refUnitRes: { name: 'm3', refUnitGeneralComment: 'volume', refUnitName: 'm3' },
+      },
+    ]);
+
+    render(<FlowsView id='flow-3' version='3.0' lang='en' buttonType='icon' />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('icon-profile').parentElement as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(mockGetUnitData).toHaveBeenCalledWith('flowproperty', [
+        {
+          dataSetInternalID: 'p2',
+          quantitativeReference: false,
+        },
+      ]);
+    });
+
+    expect(screen.getByTestId('level-desc')).toHaveTextContent('air emissions');
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Modelling and validation'));
+    });
+    expect(screen.getByTestId('active-tab')).toHaveTextContent('modellingAndValidation');
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Flow property'));
+    });
     expect(screen.getByTestId('property-view')).toBeInTheDocument();
   });
 });

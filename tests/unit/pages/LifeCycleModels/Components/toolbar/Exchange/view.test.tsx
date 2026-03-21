@@ -53,9 +53,13 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'unknown'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -219,5 +223,129 @@ describe('LifeCycleModelEdgeExchangeView', () => {
     );
 
     expect(mockGetProcessDetail).not.toHaveBeenCalled();
+  });
+
+  it('falls back to placeholder values when process details do not include exchange data', async () => {
+    mockGetProcessDetail.mockReset();
+    mockGenProcessFromData.mockReset();
+    mockGetProcessDetail
+      .mockResolvedValueOnce({ data: { json: null } })
+      .mockResolvedValueOnce({ data: { json: null } });
+    mockGenProcessFromData.mockReturnValueOnce(undefined).mockReturnValueOnce(undefined);
+
+    render(
+      <EdgeExchangeView
+        lang='en'
+        sourceProcessId='process-source'
+        sourceProcessVersion='1.0.0'
+        targetProcessId='process-target'
+        targetProcessVersion='2.0.0'
+        sourceOutputFlowID='flow-output'
+        targetInputFlowID='flow-input'
+        drawerVisible
+        onDrawerClose={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenNthCalledWith(1, {}));
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenNthCalledWith(2, {}));
+
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'body');
+    expect(screen.getAllByTestId('flow-description')[0]).toHaveTextContent('en:none:Flow');
+    expect(screen.getAllByTestId('flow-description')[1]).toHaveTextContent('en:none:Flow');
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('quantitative-no')).toHaveLength(2);
+  });
+
+  it('supports object flow references and ignores exchanges with missing directions before finding matches', async () => {
+    mockGetProcessDetail.mockReset();
+    mockGenProcessFromData.mockReset();
+    mockGetProcessDetail
+      .mockResolvedValueOnce({
+        data: {
+          json: {
+            processDataSet: {
+              mocked: 'source-object-ref',
+            },
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          json: {
+            processDataSet: {
+              mocked: 'target-object-ref',
+            },
+          },
+        },
+      });
+    mockGenProcessFromData
+      .mockReturnValueOnce({
+        exchanges: {
+          exchange: [
+            {
+              referenceToFlowDataSet: {
+                '@refObjectId': 'wrong-flow',
+              },
+            },
+            {
+              exchangeDirection: 'output',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-output',
+              },
+              meanAmount: 11,
+              resultingAmount: 13,
+              dataDerivationTypeStatus: 'calculated',
+              generalComment: [{ '@xml:lang': 'en', '#text': 'Output object ref comment' }],
+              quantitativeReference: true,
+              functionalUnitOrOther: [{ '@xml:lang': 'en', '#text': 'Output object ref unit' }],
+            },
+          ],
+        },
+      })
+      .mockReturnValueOnce({
+        exchanges: {
+          exchange: [
+            {
+              referenceToFlowDataSet: {
+                '@refObjectId': 'wrong-input',
+              },
+            },
+            {
+              exchangeDirection: 'input',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-input',
+              },
+              meanAmount: 5,
+              resultingAmount: 6,
+              dataDerivationTypeStatus: 'estimated',
+              generalComment: [{ '@xml:lang': 'en', '#text': 'Input object ref comment' }],
+              quantitativeReference: false,
+              functionalUnitOrOther: [{ '@xml:lang': 'en', '#text': 'Input object ref unit' }],
+            },
+          ],
+        },
+      });
+
+    render(
+      <EdgeExchangeView
+        lang='en'
+        sourceProcessId='process-source'
+        sourceProcessVersion='1.0.0'
+        targetProcessId='process-target'
+        targetProcessVersion='2.0.0'
+        sourceOutputFlowID='flow-output'
+        targetInputFlowID='flow-input'
+        drawerVisible
+        onDrawerClose={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText('11')).toBeInTheDocument());
+    expect(screen.getByText('13')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getByText('6')).toBeInTheDocument();
+    expect(screen.getAllByTestId('flow-description')[0]).toHaveTextContent('en:flow-output:Flow');
+    expect(screen.getAllByTestId('flow-description')[1]).toHaveTextContent('en:flow-input:Flow');
   });
 });

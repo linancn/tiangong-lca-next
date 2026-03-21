@@ -5,7 +5,9 @@
  *
  * User journeys covered:
  * - Successful login updates global state and redirects the user.
+ * - Successful login honors the `redirect` query when present.
  * - Successful registration surfaces the success toast and prevents duplicate submissions.
+ * - Registration fallback states keep the user on the form with inline or toast feedback.
  * - Failed login attempts surface inline validation messaging.
  * - Network errors during login fall back to the global error toast.
  */
@@ -81,6 +83,7 @@ describe('Login workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    window.history.replaceState({}, '', '/');
     mockHistoryPush.mockClear();
     mockFetchUserInfo.mockReset();
     mockSetInitialState.mockReset();
@@ -135,6 +138,29 @@ describe('Login workflow integration', () => {
     expect(mockMessageApi.success).toHaveBeenCalledWith('Login successful!');
   });
 
+  it('uses the redirect query after a successful login', async () => {
+    mockLogin.mockResolvedValue({ status: 'ok' });
+    mockFetchUserInfo.mockResolvedValue({ id: 'user-1' });
+    window.history.replaceState({}, '', '/user/login?redirect=/mydata/processes');
+
+    renderWithProviders(<Login />);
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'user@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'P@ssword123' },
+    });
+
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => expect(mockLogin).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockFetchUserInfo).toHaveBeenCalledTimes(1));
+
+    expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
+    expect(mockMessageApi.success).toHaveBeenCalledWith('Login successful!');
+  });
+
   it('handles registration success by showing toast and disabling follow-up submissions', async () => {
     mockSignUp.mockResolvedValue({ status: 'ok' });
 
@@ -172,6 +198,59 @@ describe('Login workflow integration', () => {
       }),
     );
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sign Up' })).toBeDisabled());
+  });
+
+  it('shows the duplicate-registration fallback and disables further submissions', async () => {
+    mockSignUp.mockResolvedValue({ status: 'existed' });
+
+    renderWithProviders(<Login />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'existing@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'N3wP@ssword!' },
+    });
+    fireEvent.change(screen.getByLabelText('Confirm Password'), {
+      target: { value: 'N3wP@ssword!' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
+    expect(mockMessageApi.open).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'error',
+        content: 'This email has already been registered. Try Login or Forgot Password?',
+      }),
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign Up' })).toBeDisabled());
+  });
+
+  it('keeps the registration form open with inline feedback when validation email delivery fails', async () => {
+    mockSignUp.mockResolvedValue({ status: 'error', type: 'register' });
+
+    renderWithProviders(<Login />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'new@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'N3wP@ssword!' },
+    });
+    fireEvent.change(screen.getByLabelText('Confirm Password'), {
+      target: { value: 'N3wP@ssword!' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Validation email failed to send.');
+    expect(screen.getByRole('button', { name: 'Sign Up' })).not.toBeDisabled();
   });
 
   it('shows inline error messaging when login credentials are rejected', async () => {

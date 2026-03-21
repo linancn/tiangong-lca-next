@@ -168,7 +168,6 @@ const LifeCycleModelEdit: FC<Props> = ({
                   }}
                   gridOptions={{
                     type: 'dot',
-                    color: '#595959',
                     thickness: 1,
                     visible: true,
                   }}

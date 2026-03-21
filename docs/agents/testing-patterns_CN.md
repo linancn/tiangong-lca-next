@@ -177,6 +177,66 @@ describe('MyFeature workflow', () => {
 });
 ```
 
+## 6A）仓库级集成测试矩阵模式
+
+- 大规模推进时，优先写“矩阵驱动”的集成测试，而不是为每个变体复制一份几乎相同的测试文件。
+- 每个功能保留一个主锚点 workflow 文件，只变动真正会改变行为的轴：
+  - `pathname`：`/mydata`、`/tgdata`、`/codata`、`/tedata`
+  - `role`：owner/admin/member/restricted
+  - `search`：空 query、有效深链、无效或过期 query
+- 每一行都断言稳定不变的公共契约，再补充该行真正不同的差异断言。
+
+```ts
+import ProcessesPage from '@/pages/Processes';
+import { renderWithProviders, screen, waitFor } from '@/tests/helpers/testUtils';
+
+const setLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search });
+};
+
+const routeCases = [
+  { label: 'mydata', pathname: '/mydata/processes' },
+  { label: 'tgdata', pathname: '/tgdata/processes' },
+];
+
+describe.each(routeCases)('$label processes workflow', ({ pathname }) => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setLocation(pathname, '');
+    getProcessTableAll.mockResolvedValue({ data: [], success: true, total: 0 });
+  });
+
+  it('loads the shared table contract', async () => {
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('contribute')).toBeInTheDocument();
+  });
+});
+```
+
+## 6B）权限与 URL 状态模式
+
+- 对 `Teams`、`ManageSystem`、`Review` 这类页面，统一用角色矩阵，并同时断言：
+  - 用户能看到和点击什么，
+  - 哪些 `@/services/**` 调用被允许或被阻止。
+- 对深链和 query 驱动流程，保持最小矩阵：
+  - 空 query，
+  - 有效 query 自动打开目标状态，
+  - 无效或过期 query 安全回退。
+- 优先在同一份 suite 里用 `describe.each(...)` 管理矩阵，不要拆成多个高度重复的文件。
+
+## 6C）升级到 E2E 的规则
+
+- 保持 E2E 很薄。这个仓库默认先扩展 integration 层。
+- 只有在风险确实属于“真实浏览器行为”时，才把工作流升级到 E2E：
+  - 重定向链和整页导航，
+  - 文件上传/预览，
+  - `window.location` 变更，
+  - 依赖 reload 的状态重建。
+- 不要用 E2E 去追那些在 integration 层更便宜、更稳定就能覆盖的分支。
+
 ## 7）Component 模板
 
 ```ts
@@ -239,6 +299,7 @@ npm run lint
 - 方向目标：分支/行/函数覆盖持续提升，趋近有意义的高覆盖。
 - 当前强制门禁：以 `jest.config.cjs` 全局阈值为准。
 - 通过覆盖率命令定位缺口后再补精准测试。
+- 集成测试深度要和代码覆盖率分开衡量。大规模推进 integration 时，统一用 `docs/agents/ai-testing-guide.md` 里的 100 分完成度量表，而不是要求 `tests/integration` 单独打满 `100%` 代码覆盖率。
 
 ## 11）交付前清单
 

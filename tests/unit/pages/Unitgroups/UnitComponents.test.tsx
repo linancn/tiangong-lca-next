@@ -468,7 +468,14 @@ jest.mock('@ant-design/pro-components', () => {
 jest.mock('@/pages/Unitgroups/Components/form', () => {
   const React = require('react');
 
-  const UnitGroupForm = ({ formRef, onData, onUnitDataCreate, unitDataSource = [] }: any) => {
+  const UnitGroupForm = ({
+    formRef,
+    onData,
+    onUnitData,
+    onUnitDataCreate,
+    onTabChange,
+    unitDataSource = [],
+  }: any) => {
     const [name, setName] = React.useState('');
 
     const handleName = (value: string) => {
@@ -496,6 +503,24 @@ jest.mock('@/pages/Unitgroups/Components/form', () => {
           }
         >
           Add Unit
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            onUnitData?.([
+              {
+                '@dataSetInternalID': '0',
+                name: 'Replaced Unit',
+                meanValue: '2',
+                quantitativeReference: true,
+              },
+            ])
+          }
+        >
+          Replace Units
+        </button>
+        <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
+          Go Admin Tab
         </button>
         <div>Units: {unitDataSource.length}</div>
       </div>
@@ -747,6 +772,28 @@ describe('Unitgroups unit components', () => {
     expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
   });
 
+  it('falls back to a generic error when unit group creation fails without a backend message', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    mockCreateUnitGroup.mockResolvedValue({
+      data: null,
+      error: {},
+    });
+    mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
+
+    renderWithProviders(<UnitGroupCreate lang='en' actionRef={actionRef} />);
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Error'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
+  });
+
   it('opens copy mode, falls back to promise scheduling, and saves with a generated id', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -792,6 +839,74 @@ describe('Unitgroups unit components', () => {
     }
   });
 
+  it('falls back to empty detail payloads in copy mode', async () => {
+    const user = userEvent.setup();
+
+    mockGetUnitGroupDetail.mockResolvedValue({
+      data: {
+        json: {},
+      },
+    });
+    mockGenUnitGroupFromData.mockReturnValue({});
+
+    renderWithProviders(
+      <UnitGroupCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='copy'
+        id='unit-group-copy'
+        version='1.0.0'
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await waitFor(() =>
+      expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unit-group-copy', '1.0.0'),
+    );
+    expect(within(drawer).getByText('Units: 0')).toBeInTheDocument();
+  });
+
+  it('falls back to empty imported unit-group payloads', async () => {
+    mockGenUnitGroupFromData.mockReturnValue({});
+
+    renderWithProviders(
+      <UnitGroupCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        importData={[{}] as any}
+      />,
+    );
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    expect(within(drawer).getByText('Units: 0')).toBeInTheDocument();
+  });
+
+  it('skips detail loading when createVersion props are missing at runtime and falls back to an empty id', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <UnitGroupCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='createVersion'
+        version='1.0.0'
+        {...({ id: undefined } as any)}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    await waitFor(() => expect(mockGetUnitGroupDetail).not.toHaveBeenCalled());
+
+    await user.click(within(drawer).getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(mockCreateUnitGroup).toHaveBeenCalled());
+    expect(mockCreateUnitGroup).toHaveBeenCalledWith('', expect.any(Object));
+  });
+
   it('closes unit group creation without saving when cancelled', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -806,6 +921,28 @@ describe('Unitgroups unit components', () => {
     expect(screen.queryByRole('dialog', { name: /create/i })).not.toBeInTheDocument();
     expect(mockCreateUnitGroup).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('supports unit replacement, tab changes, and both non-footer close paths', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+
+    renderWithProviders(<UnitGroupCreate lang='en' actionRef={actionRef} />);
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+
+    let drawer = await screen.findByRole('dialog', { name: /create/i });
+    await user.click(within(drawer).getByRole('button', { name: 'Replace Units' }));
+    await user.click(within(drawer).getByRole('button', { name: 'Go Admin Tab' }));
+    expect(within(drawer).getByText('Units: 1')).toBeInTheDocument();
+
+    await user.click(within(drawer).getByTestId('icon-close'));
+    expect(screen.queryByRole('dialog', { name: /create/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+    drawer = await screen.findByRole('dialog', { name: /create/i });
+    await user.click(within(drawer).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog', { name: /create/i })).not.toBeInTheDocument();
   });
 
   it('deletes a unit group successfully and reloads the parent table', async () => {
@@ -865,6 +1002,36 @@ describe('Unitgroups unit components', () => {
     expect(screen.getByRole('dialog', { name: /delete/i })).toBeInTheDocument();
   });
 
+  it('falls back to a generic error when unit group deletion fails without a backend message', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    mockDeleteUnitGroup.mockResolvedValueOnce({
+      status: 400,
+      error: {},
+    });
+
+    renderWithProviders(
+      <UnitGroupDelete
+        id='unit-group-1'
+        version='1.0.0'
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={setViewDrawerVisible}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+
+    const modal = await screen.findByRole('dialog', { name: /delete/i });
+    await user.click(within(modal).getByRole('button', { name: /confirm/i }));
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Error'));
+    expect(setViewDrawerVisible).not.toHaveBeenCalled();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
   it('cancels unit group deletion without calling the api', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -898,26 +1065,24 @@ describe('Unitgroups unit components', () => {
 
     const drawer = await screen.findByRole('dialog', { name: /unit create/i });
 
-    await user.type(within(drawer).getByLabelText('Name of unit'), 'Kilogram');
-    await user.type(within(drawer).getByLabelText('Mean value (of unit)'), '1.00');
-
-    const referenceSwitch = within(drawer).getByRole('checkbox', {
-      name: /quantitative reference/i,
+    await act(async () => {
+      lastUnitEditFormApi.setFieldValue(['name'], 'Kilogram');
+      lastUnitEditFormApi.setFieldValue(['meanValue'], '1.00');
+      lastUnitEditFormApi.setFieldValue(['quantitativeReference'], true);
     });
-    await user.click(referenceSwitch);
-
-    expect((within(drawer).getByLabelText('Name of unit') as HTMLInputElement).value).toBe(
-      'Kilogram',
-    );
-    expect((within(drawer).getByLabelText('Mean value (of unit)') as HTMLInputElement).value).toBe(
-      '1.00',
-    );
 
     await user.click(within(drawer).getByRole('button', { name: /save/i }));
 
     await waitFor(() => {
       expect(onData).toHaveBeenCalledTimes(1);
     });
+    expect(onData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Kilogram',
+        meanValue: '1.00',
+        quantitativeReference: true,
+      }),
+    );
 
     expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
   });
@@ -945,6 +1110,13 @@ describe('Unitgroups unit components', () => {
       '',
     );
 
+    const headerCloseButton = within(drawer).getByTestId('icon-close').closest('button');
+    expect(headerCloseButton).not.toBeNull();
+    await user.click(headerCloseButton!);
+    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /create/i }));
+    drawer = await screen.findByRole('dialog', { name: /unit create/i });
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();

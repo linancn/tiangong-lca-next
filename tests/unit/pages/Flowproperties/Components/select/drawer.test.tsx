@@ -48,7 +48,11 @@ jest.mock('@/pages/Flowproperties/Components/edit', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/delete', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span>{`delete ${id}:${version}`}</span>,
+  default: ({ id, version, setViewDrawerVisible }: any) => (
+    <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+      {`delete ${id}:${version}`}
+    </button>
+  ),
 }));
 
 const mockGetFlowpropertyTableAll = jest.fn(
@@ -123,9 +127,13 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'unknown'}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -292,7 +300,9 @@ describe('FlowpropertySelectDrawer', () => {
     );
     expect(screen.getByText('create-flowproperty')).toBeInTheDocument();
     expect(screen.getByText('edit flowproperty-my:1.0.0')).toBeInTheDocument();
-    expect(screen.getByText('delete flowproperty-my:1.0.0')).toBeInTheDocument();
+    const deleteButton = screen.getByRole('button', { name: 'delete flowproperty-my:1.0.0' });
+    expect(deleteButton).toBeInTheDocument();
+    await userEvent.click(deleteButton);
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
@@ -372,6 +382,49 @@ describe('FlowpropertySelectDrawer', () => {
     await userEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Selete Flow property' });
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+  });
+
+  it('switches back to tg data, exposes getContainer, and closes through extra close and footer cancel', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<FlowpropertySelectDrawer buttonType='icon' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button'));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    expect(drawer).toHaveAttribute('data-container', 'body');
+
+    await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'my',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /TianGong Data/i }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();

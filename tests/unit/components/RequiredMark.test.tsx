@@ -45,6 +45,13 @@ describe('RequiredMark Component', () => {
     expect(screen.queryByText('English is a required language!')).not.toBeInTheDocument();
   });
 
+  it('defaults showError to false when the prop is omitted', () => {
+    render(<RequiredMark label='Dataset Name' {...({} as any)} />);
+
+    expect(screen.getByText('Dataset Name')).toBeInTheDocument();
+    expect(screen.queryByText('English is a required language!')).not.toBeInTheDocument();
+  });
+
   it('displays the provided error label when showError is true', () => {
     renderComponent({ showError: true, errorLabel: 'Custom error message' });
 

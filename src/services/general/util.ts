@@ -549,7 +549,7 @@ async function normalizeLangEntries(
 
   let normalizedList = orderedLangCodes.map((langCode) => ({
     [LANG_KEY]: langCode,
-    [TEXT_KEY]: normalizedMap.get(langCode) ?? '',
+    [TEXT_KEY]: normalizedMap.get(langCode),
   }));
 
   const englishEntry = normalizedList.find((entry) => entry[LANG_KEY] === 'en');
@@ -566,7 +566,7 @@ async function normalizeLangEntries(
         message: `Missing English content at "${path}".`,
       });
     }
-  } else if (hasDisallowedScriptsForEnglish(englishEntry[TEXT_KEY])) {
+  } else if (hasDisallowedScriptsForEnglish(normalizeLangTextValue(englishEntry[TEXT_KEY]))) {
     const translatedFromZh = await getValidEnglishTranslation(chineseEntry?.[TEXT_KEY]);
     const translatedFromEn = translatedFromZh
       ? translatedFromZh

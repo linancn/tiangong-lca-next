@@ -20,6 +20,14 @@ const toText = (node: any): string => {
   return '';
 };
 
+const createDeferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+};
+
 let mockLatestRefsDrawerProps: any = null;
 const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
 const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
@@ -410,6 +418,7 @@ const { getReviewUserRoleApi: mockGetReviewUserRoleApi, getUserTeamId: mockGetUs
   jest.requireMock('@/services/roles/api');
 const { getAllRefObj: mockGetAllRefObj, getRefTableName: mockGetRefTableName } =
   jest.requireMock('@/pages/Utils/review');
+const { ReffPath: mockReffPath } = jest.requireMock('@/pages/Utils/review');
 
 describe('ContactEdit component', () => {
   beforeEach(() => {
@@ -460,6 +469,7 @@ describe('ContactEdit component', () => {
     mockCheckData.mockResolvedValue(undefined);
     mockGetErrRefTab.mockReturnValue('contactInformation');
     mockFindProblemNodes.mockReturnValue([]);
+    mockReffPath.mockImplementation(() => ({ findProblemNodes: () => mockFindProblemNodes() }));
     mockGenContactJsonOrdered.mockReturnValue({ mocked: true });
     mockValidateEnhanced.mockReturnValue({ success: true });
     mockValidateDatasetWithSdk.mockReturnValue({ success: true, issues: [] });
@@ -565,6 +575,80 @@ describe('ContactEdit component', () => {
     expect(syncButton).toBeDisabled();
   });
 
+  it('ignores late review-role responses after the component unmounts', async () => {
+    const user = userEvent.setup();
+    const deferredRole = createDeferred<any>();
+    mockGetReviewUserRoleApi.mockReturnValueOnce(deferredRole.promise);
+
+    const { unmount } = renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    await screen.findByRole('dialog', { name: 'Edit Contact' });
+
+    unmount();
+
+    await act(async () => {
+      deferredRole.resolve({ user_id: 'review-admin-1', role: 'review-admin' });
+      await deferredRole.promise;
+    });
+
+    expect(mockGetReviewUserRoleApi).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens from the text trigger, falls back to the default label, and handles sparse detail payloads', async () => {
+    const user = userEvent.setup();
+    mockGetContactDetail.mockResolvedValueOnce({ data: {} });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType=' '
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await waitFor(() =>
+      expect(mockGetContactDetail).toHaveBeenCalledWith('contact-123', '01.00.000'),
+    );
+    expect(within(drawer).getByLabelText('Short Name')).toHaveValue('');
+    expect(within(drawer).getByLabelText('Email')).toHaveValue('');
+  });
+
+  it('opens from a non-empty text trigger id path', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='pages.custom.edit'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    await waitFor(() =>
+      expect(mockGetContactDetail).toHaveBeenCalledWith('contact-123', '01.00.000'),
+    );
+    expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
+  });
+
   it('syncs to open data after validations pass', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -621,6 +705,51 @@ describe('ContactEdit component', () => {
     expect(getMockAntdMessage().success).toHaveBeenCalledWith(
       'Synchronized to open data successfully!',
     );
+  });
+
+  it('falls back to the original id, version, dataset, and empty team id while syncing', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetUserTeamId.mockResolvedValue(undefined);
+    mockGetAllRefObj.mockReturnValue([
+      { '@type': 'source data set', '@refObjectId': 'source-1', '@version': '1.0.0' },
+    ]);
+    mockUpdateContact.mockResolvedValueOnce({
+      data: [
+        {
+          rule_verification: true,
+        },
+      ],
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(mockGetRefData).toHaveBeenCalledWith('source-1', '1.0.0', 'sources', ''),
+    );
+    expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
+      'contact-123',
+      '01.00.000',
+      'contacts',
+      100,
+    );
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
   });
 
   it('blocks sync when referenced non-contact data is not open', async () => {
@@ -925,6 +1054,61 @@ describe('ContactEdit component', () => {
     expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
   });
 
+  it('keeps an empty object for the active tab when values change after switching tabs', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+
+    await user.click(within(drawer).getByRole('button', { name: 'switch-contact-tab' }));
+    await user.clear(within(drawer).getByLabelText('Short Name'));
+    await user.type(within(drawer).getByLabelText('Short Name'), 'Updated after tab switch');
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockGenContactJsonOrdered).toHaveBeenCalled());
+    expect(mockGenContactJsonOrdered).toHaveBeenLastCalledWith(
+      'contact-123',
+      expect.objectContaining({
+        administrativeInformation: {},
+      }),
+    );
+  });
+
+  it('falls back to false rule verification and an empty problem-node list during data check', async () => {
+    const user = userEvent.setup();
+    mockUpdateContact.mockResolvedValueOnce({
+      data: [{}],
+    });
+    mockReffPath.mockImplementationOnce(() => ({ findProblemNodes: () => undefined }));
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+  });
+
   it('shows contact data-check errors when references or schema issues remain', async () => {
     const user = userEvent.setup();
     mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
@@ -964,6 +1148,48 @@ describe('ContactEdit component', () => {
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
+  });
+
+  it('adds unique tab names from unresolved refs and problem nodes during data check', async () => {
+    const user = userEvent.setup();
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[], nonExistent: any[]) => {
+      unRule.push({ '@refObjectId': 'source-1', '@version': '1.0.0' });
+      nonExistent.push({ '@refObjectId': 'contact-9', '@version': '9.0.0' });
+    });
+    mockFindProblemNodes.mockReturnValue([
+      {
+        '@refObjectId': 'process-1',
+        '@version': '3.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockGetErrRefTab.mockImplementation((item: any) => {
+      if (item?.['@refObjectId'] === 'contact-9') return 'contactInformation';
+      if (item?.['@refObjectId'] === 'source-1') return 'administrativeInformation';
+      if (item?.['@refObjectId'] === 'process-1') return 'modellingAndValidation';
+      return undefined;
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'contactInformation，administrativeInformation，modellingAndValidation：Data check failed!',
+      ),
+    );
   });
 
   it('shows the generic contact data-check error when issues do not map to tabs', async () => {

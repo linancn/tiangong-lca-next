@@ -1,6 +1,8 @@
 // @ts-nocheck
+import { fireEvent, render, screen } from '@testing-library/react';
 
 const mockQueryCurrentUser = jest.fn();
+const mockGetLocalizedAppTitle = jest.fn(() => 'Localized TianGong');
 const mockHistory = {
   location: {
     pathname: '/tgdata',
@@ -42,7 +44,7 @@ jest.mock('../../config/defaultSettings', () => ({
     colorPrimary: '#1677ff',
   },
   defaultAppTitle: 'Tiangong LCA',
-  getLocalizedAppTitle: () => 'Localized TianGong',
+  getLocalizedAppTitle: (...args: any[]) => mockGetLocalizedAppTitle(...args),
 }));
 
 jest.mock('@/requestErrorConfig', () => ({
@@ -68,8 +70,14 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
-  SettingDrawer: ({ settings }: any) => (
-    <div data-testid='setting-drawer'>{JSON.stringify(settings)}</div>
+  SettingDrawer: ({ settings, onSettingChange }: any) => (
+    <button
+      type='button'
+      data-testid='setting-drawer'
+      onClick={() => onSettingChange?.({ navTheme: 'dark' })}
+    >
+      {JSON.stringify(settings)}
+    </button>
   ),
 }));
 
@@ -82,6 +90,7 @@ describe('app runtime config', () => {
     mockHistory.location.pathname = '/tgdata';
     mockHistory.location.search = '';
     mockQueryCurrentUser.mockResolvedValue({ name: 'Current User', access: 'admin' });
+    mockGetLocalizedAppTitle.mockReturnValue('Localized TianGong');
   });
 
   it('getInitialState returns current user and merged settings on protected routes', async () => {
@@ -103,6 +112,16 @@ describe('app runtime config', () => {
   it('getInitialState redirects to login when fetching the current user fails', async () => {
     const { getInitialState } = require('@/app');
     mockQueryCurrentUser.mockRejectedValueOnce(new Error('unauthorized'));
+
+    const state = await getInitialState();
+
+    expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+    expect(state.currentUser).toBeNull();
+  });
+
+  it('getInitialState redirects to login when the current user lookup returns null', async () => {
+    const { getInitialState } = require('@/app');
+    mockQueryCurrentUser.mockResolvedValueOnce(null);
 
     const state = await getInitialState();
 
@@ -166,6 +185,32 @@ describe('app runtime config', () => {
       },
     ]);
 
+    expect(
+      runtimeLayout.menuDataRender?.([
+        {
+          path: '/tgdata',
+        },
+      ]),
+    ).toEqual([
+      {
+        path: '/tgdata',
+        children: undefined,
+      },
+    ]);
+
+    expect(
+      runtimeLayout.menuDataRender?.([
+        {
+          path: '/mydata',
+          children: [{ path: '/mydata/contacts' }],
+        },
+      ]),
+    ).toEqual([]);
+
+    mockHistory.location.search = '';
+    const originalMenu = [{ path: '/mydata', children: [{ path: '/mydata/contacts' }] }];
+    expect(runtimeLayout.menuDataRender?.(originalMenu)).toEqual(originalMenu);
+
     const renderedMenuItem = runtimeLayout.menuItemRender?.(
       { path: '/team', icon: <span>icon</span>, name: 'Team' },
       <span>fallback</span>,
@@ -176,6 +221,23 @@ describe('app runtime config', () => {
     expect(
       runtimeLayout.menuItemRender?.({ isUrl: true }, <span>fallback</span>)?.props.children,
     ).toBe('fallback');
+  });
+
+  it('falls back to the default formatted app title when no localized title is available', () => {
+    mockGetLocalizedAppTitle.mockReturnValueOnce(undefined);
+    const { layout } = require('@/app');
+    const setInitialState = jest.fn();
+
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState,
+    });
+
+    expect(runtimeLayout.title).toBe('Tiangong LCA');
   });
 
   it('layout exposes action items, toggles dark mode, and guards children rendering', () => {
@@ -235,5 +297,36 @@ describe('app runtime config', () => {
     });
     expect(guardedLayout.childrenRender?.(<div>child</div>)).toBeNull();
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+  });
+
+  it('renders the development setting drawer and applies settings changes', () => {
+    const previousEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+    jest.resetModules();
+    const { layout } = require('@/app');
+    const setInitialState = jest.fn();
+
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState,
+    });
+
+    const rendered = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
+    render(rendered);
+
+    fireEvent.click(screen.getByTestId('setting-drawer'));
+
+    expect(setInitialState).toHaveBeenCalledWith(expect.any(Function));
+    const updater = setInitialState.mock.calls[0][0];
+    expect(updater({ currentUser: { name: 'Alice' } })).toEqual({
+      currentUser: { name: 'Alice' },
+      settings: { navTheme: 'dark' },
+    });
+
+    process.env.NODE_ENV = previousEnv;
   });
 });

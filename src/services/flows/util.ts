@@ -26,35 +26,34 @@ export function genFlowJsonOrdered(id: string, data: any) {
     : flowPropertySource
       ? [flowPropertySource]
       : [];
-  const flowProperty =
-    flowPropertyList.map((item: any) => {
-      if (item?.quantitativeReference) {
-        quantitativeReference = {
-          referenceToReferenceFlowProperty: item?.['@dataSetInternalID'],
-        };
-      }
-      return {
-        '@dataSetInternalID': item?.['@dataSetInternalID'],
-        referenceToFlowPropertyDataSet: {
-          '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
-          '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
-          '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
-          '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
-          'common:shortDescription': getLangJson(
-            item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
-          ),
-        },
-        meanValue: item?.['meanValue'],
-        minimumValue: item?.['minimumValue'],
-        maximumValue: item?.['maximumValue'],
-        uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
-        relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
-        dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
-        generalComment: getLangJson(
-          item?.['common:generalComment'] ?? item?.generalComment ?? undefined,
-        ),
+  const flowProperty = flowPropertyList.map((item: any) => {
+    if (item?.quantitativeReference) {
+      quantitativeReference = {
+        referenceToReferenceFlowProperty: item?.['@dataSetInternalID'],
       };
-    }) ?? [];
+    }
+    return {
+      '@dataSetInternalID': item?.['@dataSetInternalID'],
+      referenceToFlowPropertyDataSet: {
+        '@refObjectId': item?.referenceToFlowPropertyDataSet?.['@refObjectId'],
+        '@type': item?.referenceToFlowPropertyDataSet?.['@type'],
+        '@uri': item?.referenceToFlowPropertyDataSet?.['@uri'],
+        '@version': item?.referenceToFlowPropertyDataSet?.['@version'],
+        'common:shortDescription': getLangJson(
+          item?.referenceToFlowPropertyDataSet?.['common:shortDescription'],
+        ),
+      },
+      meanValue: item?.['meanValue'],
+      minimumValue: item?.['minimumValue'],
+      maximumValue: item?.['maximumValue'],
+      uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
+      relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+      dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
+      generalComment: getLangJson(
+        item?.['common:generalComment'] ?? item?.generalComment ?? undefined,
+      ),
+    };
+  });
   let flowPropertyJson: any = {};
   if (flowProperty.length > 1) {
     flowPropertyJson = flowProperty;

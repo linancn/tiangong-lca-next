@@ -4,6 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Card, Form, Space, Upload } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { darkLogoPreviewStyle } from './logoPreviewStyle';
 
 type Props = {
   onLogoChange: (data: any) => void;
@@ -179,13 +180,7 @@ const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) =>
             labelCol={{ span: 4 }}
             name='darkLogo'
           >
-            <div
-              style={
-                darkLogoPreviewUrl
-                  ? { background: '#141414', display: 'inline-block', borderRadius: '8px' }
-                  : {}
-              }
-            >
+            <div style={darkLogoPreviewUrl ? darkLogoPreviewStyle : {}}>
               <Upload
                 beforeUpload={(file) => {
                   getBase64(file as FileType).then((url) => {

@@ -127,6 +127,7 @@ jest.mock('@/pages/Teams/Components/AddMemberModal', () => ({
 }));
 
 const mockModalConfirm = jest.fn();
+let mockUploadFileName = 'logo.png';
 
 jest.mock('antd', () => {
   const React = require('react');
@@ -315,7 +316,7 @@ jest.mock('antd', () => {
         disabled={disabled}
         onClick={() =>
           beforeUpload?.({
-            name: 'logo.png',
+            name: mockUploadFileName,
             type: 'image/png',
           })
         }
@@ -601,6 +602,7 @@ describe('Team page validations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetMessages();
+    mockUploadFileName = 'logo.png';
     mockGetTeamMembersApi.mockResolvedValue({
       data: [],
       success: true,
@@ -843,6 +845,128 @@ describe('Team page validations', () => {
     });
   });
 
+  it('falls back to empty localized fields and preserves array logos from sparse team detail payloads', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: 0,
+          is_public: false,
+          json: {
+            lightLogo: ['logos/light-array.png'],
+            darkLogo: ['logos/dark-array.png'],
+          },
+        },
+      ],
+      error: null,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    expect(screen.getByLabelText('Team Name')).toHaveValue('');
+    expect(screen.getByLabelText('Team Description')).toHaveValue('');
+    expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(2);
+  });
+
+  it('falls back to empty localized fields when the team detail omits json entirely', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+        },
+      ],
+      error: null,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    expect(screen.getByLabelText('Team Name')).toHaveValue('');
+    expect(screen.getByLabelText('Team Description')).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'remove-file' })).not.toBeInTheDocument();
+  });
+
+  it('returns early when edit mode has no resolved team id', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ role: 'owner' }],
+      success: true,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'No Team Id' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Still editable' },
+    });
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockEditTeamMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  it('returns early after successful uploads when edit mode still has no resolved team id', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ role: 'owner' }],
+      success: true,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetUserRoles).toHaveBeenCalled();
+    });
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'No Team Id Upload' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Still no team id' },
+    });
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await waitFor(() => {
+      expect(uploadButtons[0]).not.toBeDisabled();
+      expect(uploadButtons[1]).not.toBeDisabled();
+    });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(2);
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
+    });
+    expect(mockEditTeamMessage).not.toHaveBeenCalled();
+  });
+
   it('loads edit mode without stored logos and allows add-member modal cancel', async () => {
     setWindowLocation('?action=edit');
     mockGetUserRoles.mockResolvedValueOnce({
@@ -915,6 +1039,223 @@ describe('Team page validations', () => {
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: 'remove-file' })).not.toBeInTheDocument();
     });
+  });
+
+  it('uploads new logos before saving a newly created team', async () => {
+    setWindowLocation('?action=create');
+    const originalLocation = window.location;
+    const reloadSpy = jest.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...window.location,
+        reload: reloadSpy,
+      },
+    });
+    mockCreateTeamMessage.mockResolvedValueOnce(null);
+
+    try {
+      renderWithProviders(<Team />);
+
+      fireEvent.change(screen.getByLabelText('Team Name'), {
+        target: { value: 'Uploaded Team' },
+      });
+      fireEvent.change(screen.getByLabelText('Team Description'), {
+        target: { value: 'Uploaded description' },
+      });
+
+      const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+      await act(async () => {
+        fireEvent.click(uploadButtons[0]);
+        fireEvent.click(uploadButtons[1]);
+        await Promise.resolve();
+      });
+
+      fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+      await waitFor(() => {
+        expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
+      });
+      expect(mockCreateTeamMessage).toHaveBeenCalledWith(
+        'unit-test-team-id',
+        expect.objectContaining({
+          title: [{ '#text': 'Uploaded Team', '@xml:lang': 'en' }],
+          description: [{ '#text': 'Uploaded description', '@xml:lang': 'en' }],
+          lightLogo: '../sys-files/uploaded-logo.png',
+          darkLogo: '../sys-files/uploaded-logo.png',
+        }),
+        undefined,
+        undefined,
+      );
+      expect(reloadSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
+  });
+
+  it('uses an empty suffix when uploaded logo filenames have no extension', async () => {
+    setWindowLocation('?action=create');
+    mockUploadFileName = '';
+    mockCreateTeamMessage.mockResolvedValueOnce(new Error('skip create') as any);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Suffixless Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Suffixless description' },
+    });
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockUploadLogoApi).toHaveBeenCalledWith('', expect.anything(), '');
+    });
+  });
+
+  it('toggles homepage visibility off and clears logo validation state', async () => {
+    setWindowLocation('?action=create');
+    mockCreateTeamMessage.mockResolvedValueOnce(new Error('skip create'));
+
+    renderWithProviders(<Team />);
+
+    const showInHomeSwitch = screen.getAllByRole('switch')[1];
+    fireEvent.click(showInHomeSwitch);
+    fireEvent.click(showInHomeSwitch);
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Please upload light logo!')).not.toBeInTheDocument();
+      expect(screen.queryByText('Please upload dark logo!')).not.toBeInTheDocument();
+    });
+  });
+
+  it('aborts saving when a light logo file is not an image', async () => {
+    setWindowLocation('?action=create');
+    mockIsImage.mockReturnValueOnce(false);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Invalid Logo Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Invalid logo description' },
+    });
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Only image files can be uploaded!');
+    });
+    expect(mockCreateTeamMessage).not.toHaveBeenCalled();
+    expect(mockUploadLogoApi).not.toHaveBeenCalled();
+  });
+
+  it('aborts saving when the dark logo file is not an image', async () => {
+    setWindowLocation('?action=create');
+    mockIsImage.mockReturnValueOnce(true).mockReturnValueOnce(false);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Invalid Dark Logo Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Invalid dark logo description' },
+    });
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Only image files can be uploaded!');
+    });
+    expect(mockUploadLogoApi).toHaveBeenCalledTimes(1);
+    expect(mockCreateTeamMessage).not.toHaveBeenCalled();
+  });
+
+  it('aborts saving when a logo upload throws', async () => {
+    setWindowLocation('?action=create');
+    mockUploadLogoApi.mockRejectedValueOnce(new Error('upload failed'));
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Broken Upload Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Broken upload description' },
+    });
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to upload logo.');
+    });
+    expect(mockCreateTeamMessage).not.toHaveBeenCalled();
+  });
+
+  it('aborts saving when a logo upload resolves without a stored path', async () => {
+    setWindowLocation('?action=create');
+    mockUploadLogoApi
+      .mockResolvedValueOnce({ data: { path: 'light-logo.png' } } as any)
+      .mockResolvedValueOnce({ data: {} } as any);
+
+    renderWithProviders(<Team />);
+
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Missing Path Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Missing path description' },
+    });
+
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('Failed to upload logo.');
+    });
+    expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
+    expect(mockCreateTeamMessage).not.toHaveBeenCalled();
   });
 
   it('loads team members and handles owner actions across the members tab', async () => {
@@ -1028,6 +1369,99 @@ describe('Team page validations', () => {
     });
     expect(message.success).toHaveBeenCalledWith('Action success!');
     expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(6);
+  });
+
+  it('renders invited members and enables delete actions for admin users', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'admin' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockGetTeamMembersApi.mockResolvedValueOnce({
+      data: [
+        {
+          user_id: 'invite-1',
+          team_id: 'team-123',
+          role: 'is_invited',
+          display_name: 'Invited User',
+          email: 'invited@example.com',
+        },
+        memberRows[1],
+      ],
+      success: true,
+      total: 2,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    expect(await screen.findByText('Invited')).toBeInTheDocument();
+
+    const deleteButtons = screen
+      .getAllByTestId('icon-delete')
+      .map((icon) => icon.closest('button'));
+    expect(deleteButtons.some((button) => button?.hasAttribute('disabled'))).toBe(false);
+  });
+
+  it('falls back to an empty member table when the member request omits data and success', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockGetTeamMembersApi.mockResolvedValueOnce({} as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).toHaveBeenCalledWith(
+        { current: 1, pageSize: 10 },
+        {},
+        'team-123',
+      );
+    });
+    expect(screen.queryByText('member@example.com')).not.toBeInTheDocument();
   });
 
   it('short-circuits rejected users in the members tab', async () => {

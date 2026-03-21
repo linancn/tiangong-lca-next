@@ -310,15 +310,28 @@ import {
   getReviewsTableDataOfReviewAdmin,
   getReviewsTableDataOfReviewMember,
 } from '@/services/reviews/api';
-import { getReviewUserRoleApi, getUserManageTableData, updateRoleApi } from '@/services/roles/api';
+import {
+  delRoleApi,
+  getReviewUserRoleApi,
+  getUserManageTableData,
+  updateRoleApi,
+} from '@/services/roles/api';
 import { message } from 'antd';
-import { fireEvent, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+import {
+  act,
+  fireEvent,
+  renderWithProviders,
+  screen,
+  waitFor,
+  within,
+} from '../../helpers/testUtils';
 
 const mockGetReviewsTableDataOfReviewAdmin = jest.mocked(getReviewsTableDataOfReviewAdmin);
 const mockGetReviewsTableDataOfReviewMember = jest.mocked(getReviewsTableDataOfReviewMember);
 const mockGetReviewUserRoleApi = jest.mocked(getReviewUserRoleApi);
 const mockGetUserManageTableData = jest.mocked(getUserManageTableData);
 const mockUpdateRoleApi = jest.mocked(updateRoleApi);
+const mockDelRoleApi = jest.mocked(delRoleApi);
 
 describe('Review workflow integration', () => {
   beforeEach(() => {
@@ -338,6 +351,7 @@ describe('Review workflow integration', () => {
       role: 'review-admin',
     } as any);
     mockGetUserManageTableData.mockResolvedValue({ data: [], success: true, total: 0 } as any);
+    mockDelRoleApi.mockResolvedValue({ error: null } as any);
   });
 
   it('loads admin review queues and refreshes when switching tabs', async () => {
@@ -495,6 +509,122 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(mockGetUserManageTableData).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('disables review-member management controls for non-admin users', async () => {
+    const rows = [
+      {
+        email: 'admin@example.com',
+        pendingCount: 2,
+        reviewedCount: 4,
+        display_name: 'Review Admin',
+        role: 'review-admin',
+        user_id: 'admin-1',
+        team_id: 'team-xyz',
+      },
+      {
+        email: 'member@example.com',
+        pendingCount: 1,
+        reviewedCount: 3,
+        display_name: 'Review Member',
+        role: 'review-member',
+        user_id: 'member-1',
+        team_id: 'team-xyz',
+      },
+    ];
+
+    mockGetUserManageTableData.mockResolvedValue({
+      data: rows,
+      success: true,
+      total: rows.length,
+    } as any);
+
+    renderWithProviders(
+      <ReviewMember userData={{ user_id: 'member-self', role: 'review-member' }} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-table-row-admin@example.com')).toBeInTheDocument();
+    });
+
+    const toolbar = screen.getByTestId('pro-table-toolbar');
+    const addButton = within(toolbar).getByTestId('icon-plus').closest('button');
+    expect(addButton).toBeDisabled();
+
+    const adminRow = screen.getByTestId('pro-table-row-admin@example.com');
+    const memberRow = screen.getByTestId('pro-table-row-member@example.com');
+
+    expect(within(adminRow).getByTestId('icon-delete').closest('button')).toBeDisabled();
+    expect(within(adminRow).getByTestId('icon-crown').closest('button')).toBeDisabled();
+    expect(within(adminRow).getByTestId('icon-user').closest('button')).toBeDisabled();
+    expect(within(memberRow).getByTestId('icon-delete').closest('button')).toBeDisabled();
+    expect(within(memberRow).getByTestId('icon-crown').closest('button')).toBeDisabled();
+    expect(within(memberRow).getByTestId('icon-user').closest('button')).toBeDisabled();
+
+    fireEvent.click(addButton!);
+    expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
+    expect(mockUpdateRoleApi).not.toHaveBeenCalled();
+    expect(mockDelRoleApi).not.toHaveBeenCalled();
+  });
+
+  it('shows review-member action errors and only reloads after delete confirmation paths', async () => {
+    const memberRecord = {
+      email: 'member@example.com',
+      pendingCount: 3,
+      reviewedCount: 5,
+      display_name: 'Reviewer Zero',
+      role: 'review-member',
+      user_id: 'member-123',
+      team_id: 'team-xyz',
+    };
+
+    mockGetUserManageTableData.mockResolvedValue({
+      data: [memberRecord],
+      success: true,
+      total: 1,
+    } as any);
+    mockUpdateRoleApi.mockResolvedValue({ error: 'failure' } as any);
+    mockDelRoleApi.mockResolvedValue({ error: 'failure' } as any);
+
+    renderWithProviders(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    const memberRow = await screen.findByTestId('pro-table-row-member@example.com');
+    const loadCountAfterOpen = mockGetUserManageTableData.mock.calls.length;
+
+    await act(async () => {
+      fireEvent.click(within(memberRow).getByTestId('icon-crown').closest('button')!);
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateRoleApi).toHaveBeenCalledWith(
+        memberRecord.team_id,
+        memberRecord.user_id,
+        'review-admin',
+      );
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(message.success).not.toHaveBeenCalledWith('Action success!');
+    expect(mockGetUserManageTableData).toHaveBeenCalledTimes(loadCountAfterOpen);
+
+    await act(async () => {
+      fireEvent.click(within(memberRow).getByTestId('icon-delete').closest('button')!);
+    });
+
+    const confirmCalls = ((require('antd') as any).Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
+    await act(async () => {
+      await confirmConfig.onOk?.();
+    });
+
+    await waitFor(() => {
+      expect(mockDelRoleApi).toHaveBeenCalledWith(memberRecord.team_id, memberRecord.user_id);
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    await waitFor(() => {
+      expect(mockGetUserManageTableData).toHaveBeenCalledTimes(loadCountAfterOpen + 1);
     });
   });
 

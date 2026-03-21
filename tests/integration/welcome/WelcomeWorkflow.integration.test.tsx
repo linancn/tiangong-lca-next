@@ -3,7 +3,7 @@
  * User paths covered:
  * - Visitor scans homepage hero metrics, then opens the Data Ecosystem modal via the Data Teams link and sees team thumbnails hydrated from getTeams + getThumbFileUrls
  * - Visitor launches a team entry from the modal and is redirected to the team models listing
- * - Visitor in dark mode sees dark-themed thumbnails; empty team responses keep the modal responsive without spinner lockups
+ * - Visitor in dark mode sees dark-themed thumbnails; empty team responses and thumbnail lookup failures keep the modal responsive without spinner lockups
  * Services touched under test: getTeams, getThumbFileUrls
  */
 
@@ -215,10 +215,48 @@ describe('WelcomeWorkflow integration', () => {
     expect(screen.getByTestId('modal')).toBeInTheDocument();
   });
 
-  it('binds metric label color to the active primary color variable', () => {
+  it('keeps team cards visible when thumbnail lookups fail', async () => {
+    localStorage.setItem('isDarkMode', 'false');
+
+    mockGetTeams.mockResolvedValue({
+      data: [buildTeam()],
+      success: true,
+    });
+    mockGetThumbFileUrls
+      .mockRejectedValueOnce(new Error('light logo unavailable'))
+      .mockRejectedValueOnce(new Error('dark logo unavailable'));
+
+    renderWithProviders(<Welcome />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('link', { name: /Data Teams/i }));
+
+    const modal = await screen.findByTestId('modal');
+
+    await flushTeamsLoading();
+
+    await waitFor(() => expect(screen.queryByTestId('spin')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Test Team EN')).toBeInTheDocument());
+
+    const [teamCard] = within(modal).getAllByTestId('card-clickable');
+    expect(within(teamCard).queryByRole('img', { hidden: true })).not.toBeInTheDocument();
+  });
+
+  it('binds metric label color to the active primary color variable', async () => {
+    mockGetTeams.mockResolvedValue({
+      data: [buildTeam()],
+      success: true,
+    });
+
     setAntdToken({ colorPrimary: '#0C246A' });
 
     renderWithProviders(<Welcome />);
+
+    await flushTeamsLoading();
+    await waitFor(() => {
+      const countupValues = screen.getAllByTestId('countup-value');
+      expect(countupValues[countupValues.length - 1]).toHaveTextContent('1');
+    });
 
     const metricLabel = screen.getByText('Unit Processes & Inventories', {
       selector: '[data-testid="typography-text"]',

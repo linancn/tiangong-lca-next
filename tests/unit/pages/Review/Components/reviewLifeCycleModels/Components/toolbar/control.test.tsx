@@ -151,4 +151,16 @@ describe('ReviewLifeCycleModelToolbarControl', () => {
     await waitFor(() => expect(mockGraph.zoomToFit).toHaveBeenCalledTimes(2));
     expect(mockGraph.zoomToFit).toHaveBeenNthCalledWith(1, { maxScale: 1 });
   });
+
+  it('returns early when the graph instance is unavailable', async () => {
+    mockGraph = undefined;
+
+    render(<Control items={[ControlEnum.ZoomTo, ControlEnum.ZoomIn, ControlEnum.ZoomOut]} />);
+
+    await userEvent.click(screen.getAllByRole('button', { name: '100%' })[0]);
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'zoom-out' }));
+
+    expect(mockApplyDagreLayoutWithHistory).not.toHaveBeenCalled();
+  });
 });

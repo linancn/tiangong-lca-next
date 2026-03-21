@@ -12,9 +12,12 @@ const toText = (node: any): string => {
   return '';
 };
 
-const mockRefCheckContextValue = { refCheckData: [] as any[] };
+let mockRefCheckContextValue = { refCheckData: [] as any[] };
 let mockCurrentUserId = 'user-1';
 let mockRefDataUserId = 'user-1';
+let mockFormListFields: any[] = [];
+let mockFormListLangValue = 'en';
+const mockCapturedRules = new Map<string, any[]>();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -38,13 +41,20 @@ jest.mock('antd', () => {
     </div>
   );
   const Form = ({ children }: any) => <form>{children}</form>;
-  Form.Item = ({ label, children, getValueProps }: any) => {
+  Form.Item = ({ label, children, getValueProps, name, rules }: any) => {
+    if (name) {
+      mockCapturedRules.set(JSON.stringify(name), rules ?? []);
+    }
     const content = React.Children.only(children);
     if (content && React.isValidElement(content) && getValueProps) {
+      const resolvedValue =
+        Array.isArray(name) && name[name.length - 1] === '@xml:lang'
+          ? mockFormListLangValue
+          : content.props.value;
       return (
         <label>
           <span>{toText(label)}</span>
-          {React.cloneElement(content, getValueProps(content.props.value))}
+          {React.cloneElement(content, getValueProps(resolvedValue))}
         </label>
       );
     }
@@ -58,7 +68,7 @@ jest.mock('antd', () => {
   Form.List = ({ children }: any) => (
     <div>
       {typeof children === 'function'
-        ? children([], { add: () => {}, remove: () => {} })
+        ? children(mockFormListFields, { add: () => {}, remove: () => {} })
         : children}
     </div>
   );
@@ -130,7 +140,27 @@ jest.mock('@/pages/Contacts/Components/view', () => ({
 
 jest.mock('@/pages/Contacts/Components/edit', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span>{`edit ${id}:${version}`}</span>,
+  default: ({ id, version, updateErrRef, setViewDrawerVisible }: any) => (
+    <>
+      <span>{`edit ${id}:${version}`}</span>
+      <button
+        type='button'
+        onClick={() =>
+          updateErrRef?.({
+            id: 'other-contact',
+            version: '9.9.9',
+            ruleVerification: false,
+            nonExistent: false,
+          })
+        }
+      >
+        update err ref
+      </button>
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close edit view
+      </button>
+    </>
+  ),
 }));
 
 const mockGetContactDetail = jest.fn(async () => ({
@@ -177,9 +207,11 @@ jest.mock('@/services/general/api', () => ({
   getRefData: (...args: any[]) => mockGetRefData(...args),
 }));
 
+const mockJsonToList = jest.fn((value: any) => value ?? []);
+
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
-  jsonToList: jest.fn((value: any) => value ?? []),
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 const mockValidateRefObjectId = jest.fn();
@@ -224,9 +256,12 @@ describe('ContactSelectForm', () => {
 
   beforeEach(() => {
     Object.keys(formState).forEach((key) => delete formState[key]);
-    mockRefCheckContextValue.refCheckData = [];
+    mockRefCheckContextValue = { refCheckData: [] };
     mockCurrentUserId = 'user-1';
     mockRefDataUserId = 'user-1';
+    mockFormListFields = [];
+    mockFormListLangValue = 'en';
+    mockCapturedRules.clear();
     jest.clearAllMocks();
   });
 
@@ -280,14 +315,16 @@ describe('ContactSelectForm', () => {
   it('restores an existing selection, shows ref errors, and hides edit actions when disabled', async () => {
     setValueAtPath(['reference', '@refObjectId'], 'contact-1');
     setValueAtPath(['reference', '@version'], '1.0.0');
-    mockRefCheckContextValue.refCheckData = [
-      {
-        id: 'contact-1',
-        version: '1.0.0',
-        ruleVerification: true,
-        nonExistent: true,
-      },
-    ];
+    mockRefCheckContextValue = {
+      refCheckData: [
+        {
+          id: 'contact-1',
+          version: '1.0.0',
+          ruleVerification: true,
+          nonExistent: true,
+        },
+      ],
+    };
     mockRefDataUserId = 'other-user';
 
     const formRef = {
@@ -321,5 +358,257 @@ describe('ContactSelectForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
 
     await waitFor(() => expect(mockGetContactDetail).toHaveBeenCalledWith('contact-1', '1.0.0'));
+  });
+
+  it('supports non-nested clear, edit err-ref updates, and mapped short-description rows', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'contact-1');
+    setValueAtPath(['reference', '@version'], '1.0.0');
+    mockFormListFields = [{ key: 'row-1', name: 0 }];
+
+    const onData = jest.fn();
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    const { rerender } = renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={onData}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetRefData).toHaveBeenCalledWith('contact-1', '1.0.0', 'contacts', ''),
+    );
+    expect(screen.getByDisplayValue('English')).toBeInTheDocument();
+    expect(screen.getByText('edit contact-1:1.0.0')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /update err ref/i }));
+    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /close edit view/i }));
+
+    mockRefCheckContextValue = { refCheckData: [{ id: 'different-ref', version: '2.0.0' }] };
+    rerender(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={onData}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('err-ref')).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /clear/i }));
+
+    expect(formState.reference).toEqual({});
+    expect(mockValidateRefObjectId).toHaveBeenCalledWith(formRef, ['reference'], undefined);
+    expect(onData).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs the required validator for the reference identifier field', async () => {
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+        rules={[{ required: true, message: 'Contact is required' }]}
+      />,
+    );
+
+    const rules = mockCapturedRules.get(JSON.stringify(['reference', '@refObjectId'])) ?? [];
+    const validatorRule = rules.find((rule) => typeof rule?.validator === 'function');
+
+    await act(async () => {
+      await expect(validatorRule.validator({}, undefined)).rejects.toBeInstanceOf(Error);
+    });
+    await act(async () => {
+      await expect(validatorRule.validator({}, 'contact-1')).resolves.toBeUndefined();
+    });
+    expect(consoleSpy).toHaveBeenCalledWith('form rules check error');
+
+    consoleSpy.mockRestore();
+  });
+
+  it('renders the required title when showRequiredLabel is enabled without required rules', () => {
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+        showRequiredLabel
+      />,
+    );
+
+    expect(screen.getByTestId('required-title')).toHaveTextContent('Contact');
+  });
+
+  it('uses version and contact-detail fallbacks for non-nested references', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'contact-1');
+    mockGetContactDetail.mockResolvedValueOnce({
+      data: {
+        id: 'contact-1',
+        version: undefined,
+        userId: mockRefDataUserId,
+        stateCode: 10,
+        ruleVerification: false,
+        json: {},
+      },
+    });
+    mockJsonToList.mockReturnValueOnce(undefined);
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    expect(await screen.findByText('view contact-1:')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /update reference/i }));
+
+    await waitFor(() => expect(mockGetContactDetail).toHaveBeenCalledWith('contact-1', ''));
+    expect(await screen.findByText('edit contact-1:')).toBeInTheDocument();
+    expect(formState.reference['common:shortDescription']).toEqual([]);
+  });
+
+  it('handles null ref-data responses without cloning errors', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'contact-1');
+    setValueAtPath(['reference', '@version'], '1.0.0');
+    mockGetRefData.mockResolvedValueOnce({ data: null });
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetRefData).toHaveBeenCalledWith('contact-1', '1.0.0', 'contacts', ''),
+    );
+    expect(screen.getByText('view contact-1:1.0.0')).toBeInTheDocument();
+    expect(screen.queryByText('edit contact-1:1.0.0')).not.toBeInTheDocument();
+    expect(screen.queryByText('err-ref')).not.toBeInTheDocument();
+  });
+
+  it('matches ref-check entries against refData and renders zh/raw short-description language labels', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'contact-1');
+    setValueAtPath(['reference', '@version'], '1.0.0');
+    mockRefCheckContextValue = {
+      refCheckData: [{ id: 'contact-1', version: '2.0.0', ruleVerification: false }],
+    };
+    mockFormListFields = [{ key: 'row-1', name: 0 }];
+    mockFormListLangValue = 'zh';
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    const { rerender } = renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetRefData).toHaveBeenCalled());
+    expect(screen.getByDisplayValue('简体中文')).toBeInTheDocument();
+
+    mockFormListLangValue = 'es';
+    rerender(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByDisplayValue('es')).toBeInTheDocument();
+  });
+
+  it('uses nested short-description fallbacks when jsonToList returns null', async () => {
+    mockJsonToList.mockReturnValueOnce(null);
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <ContactSelectForm
+        parentName={['review', 0]}
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /open drawer/i }));
+
+    await waitFor(() => {
+      expect(formState.review[0].reference['common:shortDescription']).toEqual([]);
+    });
   });
 });

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import ContactsPage from '@/pages/Contacts';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -122,25 +122,42 @@ jest.mock('@/pages/Utils', () => ({
 
 jest.mock('@/pages/Contacts/Components/create', () => ({
   __esModule: true,
-  default: ({ actionType = 'create', importData, newVersion }: any) => (
+  default: ({ actionType = 'create', importData, newVersion, onClose }: any) => (
     <div data-testid='contact-create'>
       {JSON.stringify({
         actionType,
         importCount: importData?.length ?? 0,
         newVersion,
       })}
+      <button type='button' onClick={() => onClose?.()}>
+        close-contact-create
+      </button>
     </div>
   ),
 }));
 
 jest.mock('@/pages/Contacts/Components/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='contact-delete'>{`delete:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <div data-testid='contact-delete'>
+      {`delete:${id}`}
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close-contact-delete
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Contacts/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='contact-edit'>{`edit:${id}`}</div>,
+  default: ({ id, setViewDrawerVisible }: any) => (
+    <div data-testid='contact-edit'>
+      {`edit:${id}`}
+      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+        close-contact-edit
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Contacts/Components/view', () => ({
@@ -232,7 +249,14 @@ jest.mock('@ant-design/pro-components', () => {
     </div>
   );
 
-  const ProTable = ({ actionRef, request, columns = [], toolBarRender, headerTitle }: any) => {
+  const ProTable = ({
+    actionRef,
+    request,
+    columns = [],
+    toolBarRender,
+    headerTitle,
+    rowKey,
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
 
@@ -262,7 +286,7 @@ jest.mock('@ant-design/pro-components', () => {
         <div>{toText(headerTitle)}</div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row: any, rowIndex: number) => (
-          <div key={`${row.id}-${rowIndex}`}>
+          <div key={rowKey?.(row) ?? `${row.id}-${rowIndex}`}>
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
                 {column.render ? column.render(undefined, row) : row[column.dataIndex]}
@@ -322,6 +346,9 @@ describe('ContactsPage', () => {
     expect(screen.getByTestId('contact-edit')).toHaveTextContent('edit:contact-1');
     expect(screen.getByTestId('contact-delete')).toHaveTextContent('delete:contact-1');
     expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"actionType":"create"');
+
+    await userEvent.click(screen.getByRole('button', { name: /close-contact-edit/i }));
+    await userEvent.click(screen.getByRole('button', { name: /close-contact-delete/i }));
   });
 
   it('supports pgroonga search, AI search, and contribute flows', async () => {
@@ -395,5 +422,67 @@ describe('ContactsPage', () => {
         '20',
       ),
     );
+
+    await userEvent.click(
+      within(screen.getAllByTestId('contact-create')[0]).getByRole('button', {
+        name: /close-contact-create/i,
+      }),
+    );
+    expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"importCount":0');
+  });
+
+  it('renders the non-my toolbar variant without edit, delete, or contribute actions', async () => {
+    mockLocation = {
+      pathname: '/tgdata/contacts',
+      search: '',
+    };
+    mockGetDataSource.mockReturnValue('tg');
+    mockGetTeamById.mockResolvedValue({ data: [] });
+
+    renderWithProviders(<ContactsPage />);
+
+    await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalled());
+    expect(await screen.findByTestId('contact-view')).toHaveTextContent('view:contact-1');
+    expect(screen.queryByTestId('contact-edit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('contact-delete')).not.toBeInTheDocument();
+    expect(
+      screen
+        .getAllByTestId('contact-create')
+        .find((node) => node.textContent?.includes('"actionType":"copy"')),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+  });
+
+  it('logs contribute failures without showing success for my data rows', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    mockContributeSource.mockResolvedValue({ error: { message: 'contribute failed' } });
+
+    renderWithProviders(<ContactsPage />);
+
+    await screen.findByTestId('contact-view');
+    await act(async () => {
+      await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockContributeSource).toHaveBeenCalledWith('contacts', 'contact-1', '1.0.0'),
+    );
+    const { message } = jest.requireMock('antd');
+    expect(message.success).not.toHaveBeenCalled();
+    expect(consoleLogSpy).toHaveBeenCalledWith({ message: 'contribute failed' });
+    consoleLogSpy.mockRestore();
+  });
+
+  it('renders a dash when classification is missing or invalid', async () => {
+    mockGetContactTableAll.mockResolvedValue({
+      data: [{ ...baseContactRow, classification: 'undefined' }],
+      success: true,
+    });
+
+    renderWithProviders(<ContactsPage />);
+
+    expect(await screen.findByText('-')).toBeInTheDocument();
   });
 });

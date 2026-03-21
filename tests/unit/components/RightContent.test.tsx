@@ -18,6 +18,7 @@ type IconProps = {
 };
 
 const configProviderThemes: string[] = [];
+let mockLocale: string | undefined = 'zh-CN';
 
 jest.mock('@ant-design/icons', () => ({
   MoonOutlined: ({ onClick }: IconProps) => (
@@ -44,7 +45,7 @@ jest.mock('@umijs/max', () => ({
     </div>
   ),
   useIntl: () => ({
-    locale: 'zh-CN',
+    locale: mockLocale,
   }),
 }));
 
@@ -59,6 +60,7 @@ afterEach(() => {
   mockWindowOpen.mockClear();
   mockHandleClick.mockClear();
   configProviderThemes.length = 0;
+  mockLocale = 'zh-CN';
 });
 
 jest.mock('antd', () => {
@@ -116,14 +118,23 @@ describe('RightContent Components', () => {
   });
 
   it('opens the English documentation link when locale starts with en', () => {
-    const umiMax = jest.requireMock('@umijs/max');
-    umiMax.useIntl = () => ({ locale: 'en-US' });
+    mockLocale = 'en-US';
 
     render(<Question />);
 
     fireEvent.click(screen.getByRole('button', { name: 'question-icon' }));
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
+  });
+
+  it('falls back to the default docs URL when the locale is missing', () => {
+    mockLocale = undefined;
+
+    render(<Question />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'question-icon' }));
+
+    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
   });
 
   it('renders the language selector with padding style', () => {

@@ -24,7 +24,9 @@ npm start
 npm run lint
 npm test
 npm run test:coverage
+npm run test:coverage:assert-full
 npm run test:coverage:report
+npm run prepush:gate
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
@@ -34,7 +36,9 @@ npm run build
 - `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
 - 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已内置 `NODE_OPTIONS=--max-old-space-size=8192`，全量覆盖率直接用脚本即可。
-- `npm run test:coverage:report` 是默认的覆盖率 review 产物。它会输出全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个未完成文件。
+- `npm run test:coverage:assert-full` 会读取最新 coverage 产物，只要全仓不是 `100%` statements / branches / functions / lines，或者队列不为空，就直接失败。
+- `npm run prepush:gate` 是本地 push 门禁：`lint + 全量 coverage + 严格 100% 断言`。
+- `npm run test:coverage:report` 是默认的覆盖率 review 产物。它会输出全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个未完成文件，并使用完整的项目相对路径（文件/批次标签不再用 `...` 截断）。
 - `node scripts/test-coverage-report.js --full` 会输出完整的有序未完成文件队列。它用于查看完整逐文件状态或刷新队列快照，而不是主观按“收益”重新排序。
 - 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
 
@@ -72,9 +76,12 @@ npm run build
 - 先调研（`rg`、最近似功能、现有测试）。
 - 业务逻辑放在 services/utilities，React 组件主要做编排。
 - 变更必须配套测试。
+- 任何代码修改都必须作为硬约束维持全仓 Statements / Branches / Functions / Lines 全部 `100%`。
 - `npm run lint` 必须通过。
 - 运行与变更相关的聚焦 Jest 套件。
-- 如果目标是把覆盖率推向 100%，按 `docs/agents/test_todo_list.md` / `npm run test:coverage:report` 的有序清零队列逐文件推进。
+- 需要只校验硬门禁时，运行 `npm run test:coverage:assert-full`。
+- push 前必须通过 `npm run prepush:gate`；除非人工明确要求，否则不要绕过本地全仓 100% 覆盖率门禁。
+- 如果 `npm run test:coverage:report` 重新出现缺口，就按 `docs/agents/test_todo_list.md` 的有序清零队列逐文件推进；如果没有缺口，就保持维护态，继续维持全仓满覆盖。
 - 允许的队列例外只有两类：相邻文件共享同一套 mock/fixture/test harness 时可成批处理；当前文件或紧邻文件被测试基础设施问题卡住时，可先修 blocker。
 - 如果当前队列文件里存在可证明不可达或业务上无效的分支，优先在不改变行为的前提下删除死分支，而不是为了抬覆盖率去编造测试，然后再继续队列顺序。
 - 如果测试工程发生变化（命令、覆盖率基线、backlog 状态、工作流），必须同步 `docs/agents/ai-testing-guide.md`、`docs/agents/test_todo_list.md`；若长期策略也变化，还要同步 `docs/agents/test_improvement_plan.md` 及全部 `_CN` 镜像。

@@ -1,3 +1,4 @@
+import { darkLogoPreviewStyle } from '@/components/AllTeams/logoPreviewStyle';
 import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
@@ -112,7 +113,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
             >
               {initData?.json?.darkLogoPreviewUrl ? (
                 <Image
-                  style={{ background: '#141414', display: 'inline-block', borderRadius: '8px' }}
+                  style={darkLogoPreviewStyle}
                   width={100}
                   src={initData?.json?.darkLogoPreviewUrl}
                   alt='Dark Logo'

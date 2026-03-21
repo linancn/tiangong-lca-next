@@ -143,7 +143,7 @@ const LifeCycleModelView: FC<Props> = ({
                   }}
                   gridOptions={{
                     type: 'dot',
-                    color: '#595959',
+                    color: undefined,
                     thickness: 1,
                     visible: true,
                   }}

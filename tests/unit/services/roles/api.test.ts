@@ -239,6 +239,30 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
 
       expect(mockOrder).toHaveBeenCalledWith('created_at', { ascending: false });
     });
+
+    it('should use default pagination values when params are missing', async () => {
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockNeq = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockRange = jest.fn().mockResolvedValue({ data: [] });
+
+      supabase.from.mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEq.mockReturnValue({
+            neq: mockNeq.mockReturnValue({
+              order: mockOrder.mockReturnValue({
+                range: mockRange,
+              }),
+            }),
+          }),
+        }),
+      });
+
+      await getTeamRoles({} as any, {}, mockTeamId);
+
+      expect(mockRange).toHaveBeenCalledWith(0, 9);
+    });
   });
 
   describe('addRoleApi', () => {
@@ -638,6 +662,39 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
         total: 0,
       });
     });
+
+    it('should fall back to empty invitation data when query returns null data and count', async () => {
+      getUserId.mockResolvedValue(mockUserId);
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockIn = jest.fn().mockReturnThis();
+      const mockNeq = jest.fn().mockReturnThis();
+      const mockOrder = jest.fn().mockReturnThis();
+      const mockGte = jest.fn().mockResolvedValue({ data: null, error: null, count: null });
+
+      supabase.from.mockReturnValue({
+        select: mockSelect.mockReturnValue({
+          eq: mockEq.mockReturnValue({
+            in: mockIn.mockReturnValue({
+              neq: mockNeq.mockReturnValue({
+                order: mockOrder.mockReturnValue({
+                  gte: mockGte,
+                }),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await getTeamInvitationCountApi();
+
+      expect(result).toEqual({
+        success: true,
+        data: [],
+        total: 0,
+      });
+    });
   });
 
   describe('createTeamMessage', () => {
@@ -713,6 +770,38 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
 
       expect(error).toEqual(mockError);
     });
+
+    it('should fall back to an empty owner user id when the session user is missing', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: {},
+            access_token: 'test-token',
+          },
+        },
+      });
+      addTeam.mockResolvedValue(null);
+
+      const deleteChain = {
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        neq: jest.fn().mockResolvedValue({ error: null }),
+      };
+      const mockInsert = jest.fn().mockResolvedValue({ error: null });
+
+      supabase.from.mockReturnValueOnce(deleteChain).mockReturnValueOnce({
+        insert: mockInsert,
+      });
+
+      await createTeamMessage(mockTeamId, {}, 1, false);
+
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user_id: '',
+          role: 'owner',
+        }),
+      );
+    });
   });
 
   describe('updateRoleApi', () => {
@@ -778,6 +867,26 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
       expect(supabase.functions.invoke).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
+
+    it('should fall back to an empty bearer token when the session token is missing', async () => {
+      supabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: mockUserId },
+          },
+        },
+      });
+      supabase.functions.invoke.mockResolvedValue({ data: { success: true }, error: null });
+
+      await updateRoleApi(mockTeamId, mockUserId, 'admin');
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith(
+        'update_role',
+        expect.objectContaining({
+          headers: { Authorization: 'Bearer ' },
+        }),
+      );
+    });
   });
 
   describe('delRoleApi', () => {
@@ -820,6 +929,34 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
         );
         expect(error).toBeNull();
       });
+
+      it('should log invite errors and use an empty bearer token when access_token is missing', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        supabase.auth.getSession.mockResolvedValue({
+          data: {
+            session: {
+              user: { id: mockUserId },
+            },
+          },
+        });
+        const mockError = { message: 'invite failed' };
+        supabase.functions.invoke.mockResolvedValue({
+          data: { error: mockError },
+          error: mockError,
+        });
+
+        const result = await reInvitedApi(mockUserId, mockTeamId);
+
+        expect(supabase.functions.invoke).toHaveBeenCalledWith(
+          'update_role',
+          expect.objectContaining({
+            headers: { Authorization: 'Bearer ' },
+          }),
+        );
+        expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
+        expect(result).toEqual(mockError);
+        consoleLogSpy.mockRestore();
+      });
     });
 
     describe('rejectTeamInvitationApi', () => {
@@ -854,6 +991,34 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           error: mockError,
         });
       });
+
+      it('should log invoke errors and use an empty bearer token fallback', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        supabase.auth.getSession.mockResolvedValue({
+          data: {
+            session: {
+              user: { id: mockUserId },
+            },
+          },
+        });
+        const mockError = { message: 'invoke failed' };
+        supabase.functions.invoke.mockResolvedValue({ data: { error: null }, error: mockError });
+
+        const result = await rejectTeamInvitationApi(mockTeamId, mockUserId);
+
+        expect(supabase.functions.invoke).toHaveBeenCalledWith(
+          'update_role',
+          expect.objectContaining({
+            headers: { Authorization: 'Bearer ' },
+          }),
+        );
+        expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
+        expect(result).toEqual({
+          success: false,
+          error: null,
+        });
+        consoleLogSpy.mockRestore();
+      });
     });
 
     describe('acceptTeamInvitationApi', () => {
@@ -875,6 +1040,33 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           success: true,
           message: 'Accepted',
         });
+      });
+
+      it('should log invoke errors and fall back to an empty bearer token', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        supabase.auth.getSession.mockResolvedValue({
+          data: {
+            session: {
+              user: { id: mockUserId },
+            },
+          },
+        });
+        const mockError = { message: 'accept failed' };
+        supabase.functions.invoke.mockResolvedValue({ data: { success: false }, error: mockError });
+
+        const result = await acceptTeamInvitationApi(mockTeamId, mockUserId);
+
+        expect(supabase.functions.invoke).toHaveBeenCalledWith(
+          'update_role',
+          expect.objectContaining({
+            headers: { Authorization: 'Bearer ' },
+          }),
+        );
+        expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
+        expect(result).toEqual({
+          success: false,
+        });
+        consoleLogSpy.mockRestore();
       });
     });
   });
@@ -1011,6 +1203,67 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           total: 0,
           success: true,
         });
+        consoleLogSpy.mockRestore();
+      });
+
+      it('should return empty data when the user list is empty and count is null', async () => {
+        const mockSelect = jest.fn().mockReturnThis();
+        const mockEq = jest.fn().mockReturnThis();
+        const mockIn = jest.fn().mockReturnThis();
+        const mockOrder = jest.fn().mockReturnThis();
+        const mockRange = jest.fn().mockResolvedValue({ data: [], error: null, count: null });
+
+        supabase.from.mockReturnValue({
+          select: mockSelect.mockReturnValue({
+            eq: mockEq.mockReturnValue({
+              in: mockIn.mockReturnValue({
+                order: mockOrder.mockReturnValue({
+                  range: mockRange,
+                }),
+              }),
+            }),
+          }),
+        });
+        getUsersByIds.mockResolvedValue([]);
+
+        const result = await getSystemMembersApi({}, {});
+
+        expect(result).toEqual({
+          data: [],
+          success: true,
+          total: 0,
+        });
+      });
+
+      it('should catch thrown query errors', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        const thrownError = new Error('query exploded');
+        const mockSelect = jest.fn().mockReturnThis();
+        const mockEq = jest.fn().mockReturnThis();
+        const mockIn = jest.fn().mockReturnThis();
+        const mockOrder = jest.fn().mockReturnThis();
+        const mockRange = jest.fn().mockRejectedValue(thrownError);
+
+        supabase.from.mockReturnValue({
+          select: mockSelect.mockReturnValue({
+            eq: mockEq.mockReturnValue({
+              in: mockIn.mockReturnValue({
+                order: mockOrder.mockReturnValue({
+                  range: mockRange,
+                }),
+              }),
+            }),
+          }),
+        });
+
+        const result = await getSystemMembersApi({}, {});
+
+        expect(result).toEqual({
+          data: [],
+          success: true,
+          total: 0,
+        });
+        expect(consoleLogSpy).toHaveBeenCalledWith(thrownError);
         consoleLogSpy.mockRestore();
       });
     });
@@ -1224,6 +1477,28 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           success: true,
         });
       });
+
+      it('should return empty data when count is null and no users match', async () => {
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockResolvedValue({ data: [], error: null, count: null }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+        getUsersByIds.mockResolvedValue([]);
+        getUserManageComments.mockResolvedValue({ data: [] });
+
+        const result = await getUserManageTableData({}, {});
+
+        expect(result).toEqual({
+          data: [],
+          total: 0,
+          success: true,
+        });
+      });
     });
 
     describe('getReviewMembersApi', () => {
@@ -1294,6 +1569,31 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
           success: true,
         });
       });
+
+      it('should filter by role and fall back to total 0 when count is null', async () => {
+        const mockEqForRole = jest.fn().mockResolvedValue({ data: [], error: null, count: null });
+        const queryChain = {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          in: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          range: jest.fn().mockReturnValue({
+            eq: mockEqForRole,
+          }),
+        };
+
+        supabase.from.mockReturnValue(queryChain);
+        getUsersByIds.mockResolvedValue([]);
+
+        const result = await getReviewMembersApi({}, {}, 'review-member');
+
+        expect(mockEqForRole).toHaveBeenCalledWith('role', 'review-member');
+        expect(result).toEqual({
+          data: [],
+          total: 0,
+          success: true,
+        });
+      });
     });
 
     describe('addReviewMemberApi', () => {
@@ -1329,6 +1629,21 @@ describe('Roles API Service (src/services/roles/api.ts)', () => {
         const result = await addReviewMemberApi('user-id');
 
         expect(result).toEqual({ success: false, error: mockError });
+        consoleLogSpy.mockRestore();
+      });
+
+      it('should return failure when the insert throws', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        const thrownError = new Error('insert exploded');
+
+        supabase.from.mockReturnValue({
+          insert: jest.fn().mockRejectedValue(thrownError),
+        });
+
+        const result = await addReviewMemberApi('user-id');
+
+        expect(result).toEqual({ success: false });
+        expect(consoleLogSpy).toHaveBeenCalledWith(thrownError);
         consoleLogSpy.mockRestore();
       });
     });

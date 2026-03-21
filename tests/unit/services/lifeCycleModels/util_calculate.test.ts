@@ -1051,6 +1051,146 @@ const createUpstreamCycleSupabaseProcesses = () => [
   },
 ];
 
+const createInputReferenceModelData = () => ({
+  lifeCycleModelDataSet: {
+    lifeCycleModelInformation: {
+      quantitativeReference: {
+        referenceToReferenceProcess: 'nodeA',
+      },
+      dataSetInformation: {
+        name: {
+          baseName: [{ '@xml:lang': 'en', '#text': 'Input Reference Model' }],
+        },
+      },
+      geography: {
+        locationOfOperationSupplyOrProduction: {
+          '@location': 'NULL',
+        },
+        subLocationOfOperationSupplyOrProduction: {
+          '@subLocation': 'NULL',
+        },
+      },
+      technology: {
+        processes: {
+          processInstance: [
+            {
+              '@dataSetInternalID': 'nodeA',
+              referenceToProcess: {
+                '@refObjectId': 'procA',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-A-final',
+                  downstreamProcess: [],
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeB',
+              referenceToProcess: {
+                '@refObjectId': 'procB',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-B-to-A',
+                  downstreamProcess: { '@id': 'nodeA' },
+                },
+              },
+            },
+            {
+              '@dataSetInternalID': 'nodeC',
+              referenceToProcess: {
+                '@refObjectId': 'procC',
+                '@version': '1',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process C' }],
+              },
+              connections: {
+                outputExchange: {
+                  '@flowUUID': 'flow-C-to-A',
+                  downstreamProcess: { '@id': 'nodeA' },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+const createInputReferenceSupabaseProcesses = () => [
+  {
+    id: 'procA',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exA_in_B',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+      {
+        '@dataSetInternalID': 'exA_in_C',
+        exchangeDirection: 'INPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-A' },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+      {
+        '@dataSetInternalID': 'exA_out_final',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-A-final',
+          'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'A final' }],
+        },
+        meanAmount: '5',
+        resultingAmount: '5',
+        allocations: { allocation: { '@allocatedFraction': '100%' } },
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exA_in_C',
+    },
+  },
+  {
+    id: 'procB',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exB_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+        meanAmount: '2',
+        resultingAmount: '2',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exB_out_A',
+    },
+  },
+  {
+    id: 'procC',
+    version: '1',
+    exchange: [
+      {
+        '@dataSetInternalID': 'exC_out_A',
+        exchangeDirection: 'OUTPUT',
+        referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-A' },
+        meanAmount: '3',
+        resultingAmount: '3',
+      },
+    ],
+    quantitativeReference: {
+      referenceToReferenceFlow: 'exC_out_A',
+    },
+  },
+];
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockSelect.mockImplementation(() => ({ or: mockOr }));
@@ -1077,6 +1217,17 @@ describe('genLifeCycleModelProcesses', () => {
     expect(mockSelect).toHaveBeenCalledWith(
       expect.stringContaining('json->processDataSet->processInformation->quantitativeReference'),
     );
+  });
+
+  it('treats a missing Supabase data payload as an empty process list', async () => {
+    const data = createLifeCycleModelData();
+    mockOr.mockResolvedValue({});
+
+    await expect(
+      genLifeCycleModelProcesses('model-no-data-payload', null, data, []),
+    ).rejects.toThrow('Reference process not found in database');
+
+    expect(mockFrom).toHaveBeenCalledWith('processes');
   });
 
   it('generates primary and secondary process payloads and reuses existing secondary id', async () => {
@@ -1338,6 +1489,162 @@ describe('genLifeCycleModelProcesses', () => {
     expect(secondary?.modelInfo?.id).toBe('generated-secondary-id');
   });
 
+  it('treats output allocations without allocatedFraction as non-allocated exchanges', async () => {
+    const data = createLifeCycleModelData();
+    const dbProcesses = clone(createSupabaseProcesses()) as any[];
+    const procB = dbProcesses.find((process) => process.id === 'procB');
+    procB.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exB_out_toC',
+    ).allocations = {
+      allocation: {},
+    };
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation
+      .mockResolvedValueOnce([{ '@id': 'LCIA_PRIMARY' }])
+      .mockResolvedValueOnce([{ '@id': 'LCIA_SECONDARY' }]);
+
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-empty-allocation-fraction',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 10 },
+        },
+        { id: 'graph-node-b', data: { index: 'nodeB' } },
+        { id: 'graph-node-c', data: { index: 'nodeC' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    expect(
+      lifeCycleModelProcesses.find((process) => process?.modelInfo?.type === 'primary'),
+    ).toBeDefined();
+    expect(
+      lifeCycleModelProcesses.find(
+        (process) =>
+          process?.modelInfo?.type === 'secondary' &&
+          process?.modelInfo?.finalId?.allocatedExchangeFlowId === 'flow-C-final',
+      ),
+    ).toBeDefined();
+  });
+
+  it('skips model processes whose connected database process is missing', async () => {
+    const data = createLifeCycleModelData();
+    const dbProcesses = clone(createSupabaseProcesses()).filter(
+      (process: any) => process.id !== 'procB',
+    );
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const result = await genLifeCycleModelProcesses(
+      'model-missing-adjacent-db-process',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 },
+        },
+        { id: 'graph-node-b', data: { index: 'nodeB' } },
+        { id: 'graph-node-c', data: { index: 'nodeC' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    expect(result.lifeCycleModelProcesses).toHaveLength(1);
+    expect(
+      result.lifeCycleModelProcesses.find((process) => process?.modelInfo?.type === 'primary'),
+    ).toBeDefined();
+  });
+
+  it('treats zero current exchange amounts as zero scaling for connected child processes', async () => {
+    const data = createLifeCycleModelData();
+    const dbProcesses = clone(createSupabaseProcesses()) as any[];
+    const procA = dbProcesses.find((process) => process.id === 'procA');
+    procA.exchange.find((exchange: any) => exchange['@dataSetInternalID'] === 'exA_in').meanAmount =
+      '0';
+    procA.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exA_in',
+    ).resultingAmount = '0';
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const result = await genLifeCycleModelProcesses(
+      'model-zero-current-amount',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 },
+        },
+        { id: 'graph-node-b', data: { index: 'nodeB' } },
+        { id: 'graph-node-c', data: { index: 'nodeC' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    expect(result.lifeCycleModelProcesses).toHaveLength(1);
+    expect(
+      result.lifeCycleModelProcesses.find((process) => process?.modelInfo?.type === 'secondary'),
+    ).toBeUndefined();
+  });
+
+  it('uses INPUT quantitative references to choose the main input flow and strips NULL geography placeholders', async () => {
+    mockOr.mockResolvedValue({ data: clone(createInputReferenceSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      {
+        id: 'graph-node-a',
+        data: {
+          index: 'nodeA',
+          quantitativeReference: '1',
+          targetAmount: 5,
+        },
+      },
+      {
+        id: 'graph-node-b',
+        data: {
+          index: 'nodeB',
+        },
+      },
+      {
+        id: 'graph-node-c',
+        data: {
+          index: 'nodeC',
+        },
+      },
+    ];
+
+    const { up2DownEdges, lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-input-reference',
+      modelNodes as any,
+      createInputReferenceModelData(),
+      [],
+    );
+
+    const edgeBToA = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeA:flow-B-to-A');
+    const edgeCToA = up2DownEdges.find((edge) => edge.id === 'nodeC->nodeA:flow-C-to-A');
+    const primary = lifeCycleModelProcesses.find(
+      (process) => process?.modelInfo?.type === 'primary',
+    );
+
+    expect(edgeBToA?.mainInputFlowUUID).toBe('flow-C-to-A');
+    expect(edgeCToA?.mainInputFlowUUID).toBe('flow-C-to-A');
+    expect(edgeBToA?.dependence).toBe('downstream');
+    expect(edgeCToA?.dependence).toBe('downstream');
+    expect(
+      primary?.data?.processDataSet?.processInformation?.geography
+        ?.locationOfOperationSupplyOrProduction?.['@location'],
+    ).toBeUndefined();
+    expect(
+      primary?.data?.processDataSet?.processInformation?.geography
+        ?.subLocationOfOperationSupplyOrProduction?.['@subLocation'],
+    ).toBeUndefined();
+  });
+
   it('selects reference input flows and max allocated output flows when reference outputs do not match model edges', async () => {
     mockOr.mockResolvedValue({ data: clone(createSelectionFallbackSupabaseProcesses()) });
     mockLCIAResultCalculation.mockResolvedValue([]);
@@ -1383,6 +1690,41 @@ describe('genLifeCycleModelProcesses', () => {
     );
     expect(fromDToA).toEqual(
       expect.objectContaining({
+        mainInputFlowUUID: 'flow-B-to-A',
+      }),
+    );
+  });
+
+  it('ignores malformed model output exchanges without flow ids when choosing the main output flow', async () => {
+    const data = createSelectionFallbackModelData();
+    const nodeB: any =
+      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.find(
+        (process: any) => process['@dataSetInternalID'] === 'nodeB',
+      );
+    (nodeB.connections.outputExchange as any[]).unshift({
+      downstreamProcess: [],
+    });
+
+    mockOr.mockResolvedValue({ data: clone(createSelectionFallbackSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-selection-fallback-missing-flow-id',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 },
+        },
+        { id: 'graph-node-b', data: { index: 'nodeB' } },
+        { id: 'graph-node-d', data: { index: 'nodeD' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    expect(up2DownEdges.find((edge) => edge.id === 'nodeB->nodeA:flow-B-to-A')).toEqual(
+      expect.objectContaining({
+        mainOutputFlowUUID: 'flow-B-extra',
         mainInputFlowUUID: 'flow-B-to-A',
       }),
     );
@@ -1517,6 +1859,82 @@ describe('genLifeCycleModelProcesses', () => {
     );
   });
 
+  it('keeps a non-main downstream edge when the reverse local-loop edge is the one cut as a cycle', async () => {
+    const data = clone(createDownstreamPruneModelData());
+    const dbProcesses = clone(createDownstreamPruneSupabaseProcesses()) as any[];
+
+    const nodeC: any =
+      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.find(
+        (process: any) => process['@dataSetInternalID'] === 'nodeC',
+      );
+    nodeC.connections.outputExchange = [
+      {
+        '@flowUUID': 'flow-C-to-A',
+        downstreamProcess: { '@id': 'nodeA' },
+      },
+      {
+        '@flowUUID': 'flow-C-to-B',
+        downstreamProcess: { '@id': 'nodeB' },
+      },
+    ];
+
+    const procB = dbProcesses.find((process) => process.id === 'procB');
+    procB.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exB_out_A',
+    ).allocations.allocation['@allocatedFraction'] = '60%';
+    procB.exchange.find(
+      (exchange: any) => exchange['@dataSetInternalID'] === 'exB_out_C',
+    ).allocations.allocation['@allocatedFraction'] = '40%';
+
+    const procC = dbProcesses.find((process) => process.id === 'procC');
+    procC.exchange.unshift({
+      '@dataSetInternalID': 'exC_in_B',
+      exchangeDirection: 'INPUT',
+      referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-C' },
+      meanAmount: '1',
+      resultingAmount: '1',
+    });
+    procC.exchange.push({
+      '@dataSetInternalID': 'exC_out_B',
+      exchangeDirection: 'OUTPUT',
+      referenceToFlowDataSet: { '@refObjectId': 'flow-C-to-B' },
+      meanAmount: '1',
+      resultingAmount: '1',
+    });
+    procC.quantitativeReference.referenceToReferenceFlow = 'exC_in_B';
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const modelNodes = [
+      { id: 'graph-node-a', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 } },
+      { id: 'graph-node-b', data: { index: 'nodeB' } },
+      { id: 'graph-node-c', data: { index: 'nodeC' } },
+    ];
+
+    const { up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-downstream-reverse-edge-guard',
+      modelNodes as any,
+      data,
+      [],
+    );
+
+    const edgeBToC = up2DownEdges.find((edge) => edge.id === 'nodeB->nodeC:flow-B-to-C');
+    const reverseEdge = up2DownEdges.find((edge) => edge.id === 'nodeC->nodeB:flow-C-to-B');
+
+    expect(reverseEdge).toEqual(
+      expect.objectContaining({
+        dependence: 'none',
+        isCycle: true,
+      }),
+    );
+    expect(edgeBToC).toEqual(
+      expect.objectContaining({
+        dependence: 'downstream',
+      }),
+    );
+  });
+
   it('prunes non-main upstream edges and carries unallocated child processes through recursion', async () => {
     mockOr.mockResolvedValue({ data: clone(createUpstreamPruneSupabaseProcesses()) });
     mockLCIAResultCalculation.mockResolvedValue([]);
@@ -1637,6 +2055,68 @@ describe('genLifeCycleModelProcesses', () => {
     expect(['upstream', 'none']).toContain(edgeBToD?.dependence);
   });
 
+  it('carries upstream non-final child processes into subproduct groups for allocated upstream branches', async () => {
+    const data = clone(createUpstreamPruneModelData());
+    const nodeD: any =
+      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance.find(
+        (process: any) => process['@dataSetInternalID'] === 'nodeD',
+      );
+    nodeD.connections.outputExchange = [
+      {
+        '@flowUUID': 'flow-D-to-B',
+        downstreamProcess: { '@id': 'nodeB' },
+      },
+      {
+        '@flowUUID': 'flow-D-final',
+        downstreamProcess: [],
+      },
+    ];
+
+    const dbProcesses = clone(createUpstreamPruneSupabaseProcesses()) as any[];
+    const procB = dbProcesses.find((process) => process.id === 'procB');
+    const procD = dbProcesses.find((process) => process.id === 'procD');
+
+    procB.quantitativeReference.referenceToReferenceFlow = 'exB_out_D';
+    procB.exchange.unshift({
+      '@dataSetInternalID': 'exB_in_D',
+      exchangeDirection: 'INPUT',
+      referenceToFlowDataSet: { '@refObjectId': 'flow-D-to-B' },
+      meanAmount: '1',
+      resultingAmount: '1',
+    });
+    procD.exchange.push({
+      '@dataSetInternalID': 'exD_out_B',
+      exchangeDirection: 'OUTPUT',
+      referenceToFlowDataSet: { '@refObjectId': 'flow-D-to-B' },
+      meanAmount: '1',
+      resultingAmount: '1',
+    });
+
+    mockOr.mockResolvedValue({ data: dbProcesses });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-upstream-subproduct-group',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 },
+        },
+        { id: 'graph-node-b', data: { index: 'nodeB' } },
+        { id: 'graph-node-c', data: { index: 'nodeC' } },
+        { id: 'graph-node-d', data: { index: 'nodeD' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    expect(
+      lifeCycleModelProcesses.find(
+        (process) => process?.modelInfo?.type === 'primary' && process?.refProcesses?.length === 3,
+      ),
+    ).toBeDefined();
+  });
+
   it('merges duplicate process exchange entries when one downstream node is reached twice via the same flow', async () => {
     const data = clone(createUpstreamPruneModelData());
     const dbProcesses = clone(createUpstreamPruneSupabaseProcesses()) as any[];
@@ -1690,5 +2170,395 @@ describe('genLifeCycleModelProcesses', () => {
     );
     expect(up2DownEdges.filter((edge) => edge?.flowUUID === 'flow-shared-to-D')).toHaveLength(2);
     expect(primary?.refProcesses).toHaveLength(3);
+  });
+
+  it('throws without querying Supabase when the model contains no process instances', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: {
+            referenceToReferenceProcess: 'nodeA',
+          },
+          technology: {
+            processes: {
+              processInstance: [],
+            },
+          },
+        },
+      },
+    };
+
+    await expect(genLifeCycleModelProcesses('model-empty-processes', [], data, [])).rejects.toThrow(
+      'Reference process not found in database',
+    );
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockOr).not.toHaveBeenCalled();
+  });
+
+  it('returns no submodels when the reference process has no output exchanges', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: {
+            referenceToReferenceProcess: 'nodeA',
+          },
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'No Output Model' }],
+            },
+          },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: {
+                    '@refObjectId': 'procA',
+                    '@version': '1',
+                    'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+                  },
+                  connections: {
+                    outputExchange: [],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    mockOr.mockResolvedValue({
+      data: [
+        {
+          id: 'procA',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exA_in_raw',
+              exchangeDirection: 'INPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-raw' },
+              meanAmount: '5',
+              resultingAmount: '5',
+            },
+          ],
+          quantitativeReference: {
+            referenceToReferenceFlow: 'exA_in_raw',
+          },
+        },
+      ],
+    });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const result = await genLifeCycleModelProcesses('model-no-output', [], data, []);
+
+    expect(result.up2DownEdges).toEqual([]);
+    expect(result.lifeCycleModelProcesses).toEqual([]);
+  });
+
+  it('marks disconnected component edges as none and keeps their single input flow as mainInputFlowUUID', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: {
+            referenceToReferenceProcess: 'nodeA',
+          },
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Disconnected Component Model' }],
+            },
+          },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: {
+                    '@refObjectId': 'procA',
+                    '@version': '1',
+                    'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+                  },
+                  connections: {
+                    outputExchange: {
+                      '@flowUUID': 'flow-A-final',
+                      downstreamProcess: [],
+                    },
+                  },
+                },
+                {
+                  '@dataSetInternalID': 'nodeC',
+                  referenceToProcess: {
+                    '@refObjectId': 'procC',
+                    '@version': '1',
+                    'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process C' }],
+                  },
+                  connections: {
+                    outputExchange: {
+                      '@flowUUID': 'flow-C-final',
+                      downstreamProcess: [],
+                    },
+                  },
+                },
+                {
+                  '@dataSetInternalID': 'nodeD',
+                  referenceToProcess: {
+                    '@refObjectId': 'procD',
+                    '@version': '1',
+                    'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process D' }],
+                  },
+                  connections: {
+                    outputExchange: {
+                      '@flowUUID': 'flow-D-to-C',
+                      downstreamProcess: { '@id': 'nodeC' },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    mockOr.mockResolvedValue({
+      data: [
+        {
+          id: 'procA',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exA_out_final',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-A-final' },
+              meanAmount: '5',
+              resultingAmount: '5',
+            },
+          ],
+          quantitativeReference: {
+            referenceToReferenceFlow: 'exA_out_final',
+          },
+        },
+        {
+          id: 'procC',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exC_in_D',
+              exchangeDirection: 'INPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-D-to-C' },
+              meanAmount: '2',
+              resultingAmount: '2',
+            },
+            {
+              '@dataSetInternalID': 'exC_out_final',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-C-final' },
+              meanAmount: '2',
+              resultingAmount: '2',
+            },
+          ],
+          quantitativeReference: {
+            referenceToReferenceFlow: 'exC_out_final',
+          },
+        },
+        {
+          id: 'procD',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exD_out_C',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-D-to-C' },
+              meanAmount: '2',
+              resultingAmount: '2',
+            },
+          ],
+          quantitativeReference: {
+            referenceToReferenceFlow: 'exD_out_C',
+          },
+        },
+      ],
+    });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const result = await genLifeCycleModelProcesses(
+      'model-disconnected-component',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 },
+        },
+        { id: 'graph-node-c', data: { index: 'nodeC' } },
+        { id: 'graph-node-d', data: { index: 'nodeD' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    const disconnectedEdge = result.up2DownEdges.find(
+      (edge) => edge.id === 'nodeD->nodeC:flow-D-to-C',
+    );
+
+    expect(disconnectedEdge).toEqual(
+      expect.objectContaining({
+        dependence: 'none',
+        mainInputFlowUUID: 'flow-D-to-C',
+      }),
+    );
+    expect(result.lifeCycleModelProcesses).toHaveLength(1);
+  });
+
+  it('skips dangling downstream nodes, malformed exchanges, and zero-base scaling paths', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: {
+            referenceToReferenceProcess: 'nodeA',
+          },
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Sparse Graph Model' }],
+            },
+          },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: {
+                    '@refObjectId': 'procA',
+                    '@version': '1',
+                    'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process A' }],
+                  },
+                  connections: {
+                    outputExchange: [
+                      {
+                        '@flowUUID': 'flow-A-final',
+                        downstreamProcess: [],
+                      },
+                      {
+                        '@flowUUID': 'flow-A-to-missing',
+                        downstreamProcess: { '@id': 'nodeMissing' },
+                      },
+                    ],
+                  },
+                },
+                {
+                  '@dataSetInternalID': 'nodeB',
+                  referenceToProcess: {
+                    '@refObjectId': 'procB',
+                    '@version': '1',
+                    'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Process B' }],
+                  },
+                  connections: {
+                    outputExchange: {
+                      '@flowUUID': 'flow-B-to-A',
+                      downstreamProcess: { '@id': 'nodeA' },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    mockOr.mockResolvedValue({
+      data: [
+        {
+          id: 'procA',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exA_in_B',
+              exchangeDirection: 'INPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+              meanAmount: '2',
+              resultingAmount: '2',
+            },
+            {
+              '@dataSetInternalID': 'exA_out_final',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-A-final',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'A final' }],
+              },
+              meanAmount: '5',
+              resultingAmount: '5',
+            },
+            {
+              '@dataSetInternalID': 'exA_out_missing',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-A-to-missing' },
+              meanAmount: '1',
+              resultingAmount: '1',
+            },
+            {
+              '@dataSetInternalID': 'exA_no_flow',
+              exchangeDirection: 'OUTPUT',
+              meanAmount: '1',
+              resultingAmount: '1',
+            },
+            {
+              '@dataSetInternalID': 'exA_no_direction',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-no-direction' },
+              meanAmount: '1',
+              resultingAmount: '1',
+            },
+          ],
+          quantitativeReference: {
+            referenceToReferenceFlow: 'exA_out_final',
+          },
+        },
+        {
+          id: 'procB',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exB_out_A',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-B-to-A' },
+              meanAmount: '0',
+              resultingAmount: '0',
+            },
+          ],
+          quantitativeReference: {
+            referenceToReferenceFlow: 'exB_out_A',
+          },
+        },
+      ],
+    });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
+      'model-sparse-graph',
+      [
+        {
+          id: 'graph-node-a',
+          data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 5 },
+        },
+        { id: 'graph-node-b', data: { index: 'nodeB' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find(
+      (process) => process?.modelInfo?.type === 'primary',
+    );
+
+    expect(primary).toBeDefined();
+    expect(lifeCycleModelProcesses).toHaveLength(1);
+    expect(
+      up2DownEdges.find((edge) => edge.id === 'nodeA->nodeMissing:flow-A-to-missing'),
+    ).toBeDefined();
+    expect(primary?.refProcesses).toEqual([
+      expect.objectContaining({
+        id: 'procA',
+        version: '1',
+      }),
+    ]);
   });
 });

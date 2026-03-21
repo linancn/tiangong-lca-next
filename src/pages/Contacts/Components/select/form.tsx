@@ -157,7 +157,7 @@ const ContactSelectForm: FC<Props> = ({
 
   const requiredRules = rules.filter(isRequiredRule);
   const isRequired = requiredRules.length > 0;
-  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule)) ?? [];
+  const notRequiredRules = rules.filter((rule) => !isRequiredRule(rule));
 
   return (
     <Card

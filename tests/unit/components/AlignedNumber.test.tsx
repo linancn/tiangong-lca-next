@@ -5,6 +5,7 @@
 
 import AlignedNumber, { toSuperscript } from '@/components/AlignedNumber/index';
 import { render, screen } from '@testing-library/react';
+import BigNumber from 'bignumber.js';
 
 describe('AlignedNumber Component', () => {
   describe('toSuperscript function', () => {
@@ -123,6 +124,24 @@ describe('AlignedNumber Component', () => {
       const text = screen.getByText(/×10/);
       expect(text).toHaveTextContent('1×10⁶');
       expect(text).not.toHaveTextContent('+');
+    });
+
+    it('should keep integer scientific notation strings when precision is zero', () => {
+      render(<AlignedNumber value={1000000} precision={0} />);
+      expect(screen.getByText('1×10⁶')).toBeInTheDocument();
+    });
+
+    it('should fall back to the exponential string when parsing the exponent format fails', () => {
+      const toExponentialSpy = jest
+        .spyOn(BigNumber.prototype, 'toExponential')
+        .mockReturnValueOnce('invalid-exponential');
+
+      try {
+        render(<AlignedNumber value={1000000} precision={2} />);
+        expect(screen.getByText('invalid-exponential')).toBeInTheDocument();
+      } finally {
+        toExponentialSpy.mockRestore();
+      }
     });
 
     it('should show placeholder for non-finite values', () => {

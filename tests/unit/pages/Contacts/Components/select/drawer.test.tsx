@@ -104,9 +104,13 @@ jest.mock('antd', () => {
     return <>{children}</>;
   };
 
-  const Drawer = ({ open, title, extra, footer, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-has-container={String(Boolean(getContainer?.()))}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -333,6 +337,12 @@ describe('ContactSelectDrawer', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Team Data/i })).toHaveAttribute(
+        'data-active',
+        'true',
+      ),
+    );
     await userEvent.type(screen.getByLabelText('te'), 'delta');
     await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
 
@@ -346,7 +356,24 @@ describe('ContactSelectDrawer', () => {
       ),
     );
 
-    await userEvent.click(screen.getByRole('button', { name: 'te:delta' }));
+    await userEvent.click(screen.getByRole('button', { name: /TianGong Data/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /TianGong Data/i })).toHaveAttribute(
+        'data-active',
+        'true',
+      ),
+    );
+    await waitFor(() =>
+      expect(mockGetContactTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'tg:beta' }));
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
     expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
 
@@ -356,5 +383,51 @@ describe('ContactSelectDrawer', () => {
 
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+  });
+
+  it('searches business data and closes through the extra close icon and footer cancel', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<ContactSelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await screen.findByRole('dialog', { name: 'Selete Contact' });
+
+    expect(screen.getByRole('dialog', { name: 'Selete Contact' })).toHaveAttribute(
+      'data-has-container',
+      'true',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
+    await userEvent.type(screen.getByLabelText('co'), 'gamma');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+
+    await waitFor(() =>
+      expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'co',
+        'gamma',
+        {},
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await screen.findByRole('dialog', { name: 'Selete Contact' });
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+    expect(onData).not.toHaveBeenCalled();
+  });
+
+  it('opens from the icon trigger when buttonText is omitted', async () => {
+    renderWithProviders(<ContactSelectDrawer buttonType='icon' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
+
+    expect(screen.getByRole('dialog', { name: 'Selete Contact' })).toBeInTheDocument();
   });
 });

@@ -1,6 +1,9 @@
 import { render } from '@testing-library/react';
 
 import X6GraphComponent from '@/components/X6Graph';
+import { resetAntdToken, setAntdToken } from '../../mocks/antd';
+
+jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
 const mockSetGraph = jest.fn();
 
@@ -78,6 +81,12 @@ jest.mock('@antv/x6', () => {
 describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    resetAntdToken();
+    setAntdToken({
+      colorTextTertiary: '#595959',
+      colorBgContainer: '#ffffff',
+      colorSuccess: '#52c41a',
+    });
     const { __graphInstances } = jest.requireMock('@antv/x6');
     __graphInstances.length = 0;
     mockSetGraph.mockReset();

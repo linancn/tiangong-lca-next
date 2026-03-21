@@ -42,6 +42,7 @@ jest.mock('@/services/comments/api', () => ({
 }));
 
 const mockGetProcessDetailByIdAndVersion = jest.fn();
+const mockGenProcessName = jest.fn();
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
@@ -49,22 +50,22 @@ jest.mock('@/services/processes/api', () => ({
     mockGetProcessDetailByIdAndVersion.apply(null, args),
 }));
 
+jest.mock('@/services/processes/util', () => ({
+  __esModule: true,
+  genProcessName: (...args: any[]) => mockGenProcessName.apply(null, args),
+}));
+
 const mockGetLangText = jest.fn();
-const mockGenProcessName = jest.fn();
 
 jest.mock('@/services/general/util', () => {
-  const actual: any = jest.requireActual('@/services/general/util');
   return {
     __esModule: true,
-    ...actual,
     getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
-    genProcessName: (...args: any[]) => mockGenProcessName.apply(null, args),
   };
 });
 
-let realGenProcessName: (...args: any[]) => any;
-
 const mockGetUserId = jest.fn();
+let realGenProcessName: (...args: any[]) => any;
 
 jest.mock('@/services/users/api', () => ({
   __esModule: true,
@@ -91,7 +92,7 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
 };
 
 beforeAll(() => {
-  realGenProcessName = jest.requireActual('@/services/general/util').genProcessName;
+  realGenProcessName = jest.requireActual('@/services/processes/util').genProcessName;
 });
 
 beforeEach(() => {
@@ -108,6 +109,8 @@ beforeEach(() => {
   mockGetRejectedComment.mockResolvedValue({ data: [] });
   mockGetProcessDetailByIdAndVersion.mockReset();
   mockGetProcessDetailByIdAndVersion.mockResolvedValue({ success: true, data: [] });
+  mockGenProcessName.mockReset();
+  mockGenProcessName.mockImplementation((...args: any[]) => realGenProcessName(...args));
   mockGetLangText.mockReset();
   mockGetLangText.mockImplementation((value: any, lang: string) => {
     if (!value) return '-';
@@ -122,8 +125,6 @@ beforeEach(() => {
     }
     return '-';
   });
-  mockGenProcessName.mockReset();
-  mockGenProcessName.mockImplementation((...args: any[]) => realGenProcessName(...args));
   mockGetUserId.mockReset();
   mockGetUserId.mockResolvedValue('user-default');
 });
@@ -230,6 +231,23 @@ describe('updateReviewApi', () => {
     const response = await reviewsApi.updateReviewApi(['review-3'], { reviewer_id: ['user-9'] });
 
     expect(response).toEqual({ error: invokeResult.error });
+  });
+
+  it('falls back to an empty bearer token when the session access token is missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {},
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { ok: true } });
+
+    await reviewsApi.updateReviewApi(['review-4'], { reviewer_id: ['user-1'] });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_review', {
+      headers: { Authorization: 'Bearer ' },
+      body: { reviewIds: ['review-4'], data: { reviewer_id: ['user-1'] } },
+      region: FunctionRegion.UsEast1,
+    });
   });
 });
 
@@ -354,6 +372,25 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { pageSize: 10, current: 1 },
       {},
       'reviewer-1',
+    );
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it('resolves pending comments with getUserId when userData is omitted', async () => {
+    mockGetUserId.mockResolvedValueOnce('pending-reviewer');
+    mockGetPendingComment.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending',
+      'en',
+    );
+
+    expect(mockGetPendingComment).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending-reviewer',
     );
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
@@ -515,6 +552,134 @@ describe('getReviewsTableDataOfReviewMember', () => {
       success: true,
       total: 0,
     });
+  });
+
+  it('uses lifecycle fallbacks and missing-user placeholders for reviewer-rejected rows', async () => {
+    mockGetUserId.mockResolvedValueOnce('reviewer-fallback');
+    mockGetRejectedComment.mockResolvedValueOnce({
+      data: [
+        {
+          reviews: {
+            id: 'review-rejected-fallback',
+            created_at: '2024-07-01T00:00:00.000Z',
+            modified_at: '2024-07-02T00:00:00.000Z',
+            json: {
+              data: {
+                id: 'process-model-fallback',
+                version: '01.00.000',
+              },
+              user: {},
+            },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'process-model-fallback',
+          version: '01.00.000',
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+          json_tg: { version: 'tg-fallback' },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'reviewer-rejected',
+      'en',
+    );
+
+    expect(mockGetRejectedComment).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'reviewer-fallback',
+    );
+    expect(result.data[0]).toMatchObject({
+      isFromLifeCycle: true,
+      name: '-',
+      userName: '-',
+    });
+  });
+
+  it('falls back to "-" when a matched lifecycle model name resolves to an empty process name', async () => {
+    mockGetReviewedComment.mockResolvedValueOnce({
+      data: [
+        {
+          reviews: {
+            id: 'review-member-empty-model-name',
+            created_at: '2024-07-01T00:00:00.000Z',
+            modified_at: '2024-07-02T00:00:00.000Z',
+            json: { data: { id: 'model-process', version: '01.00.000' }, user: { email: 'x@y.z' } },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'model-process',
+          version: '01.00.000',
+          json: {
+            lifeCycleModelDataSet: { lifeCycleModelInformation: { dataSetInformation: {} } },
+          },
+        },
+      ],
+    });
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'reviewed',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(result.data[0].name).toBe('-');
+  });
+
+  it('falls back to "-" when a non-lifecycle review row has no process name payload', async () => {
+    mockGetReviewedComment.mockResolvedValueOnce({
+      data: [
+        {
+          reviews: {
+            id: 'review-member-empty-review-name',
+            created_at: '2024-07-01T00:00:00.000Z',
+            modified_at: '2024-07-02T00:00:00.000Z',
+            json: { data: { id: 'plain-process', version: '01.00.000' }, user: { email: 'x@y.z' } },
+          },
+        },
+      ],
+      count: 1,
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'reviewed',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(result.data[0].name).toBe('-');
   });
 });
 
@@ -710,6 +875,85 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       total: 0,
     });
   });
+
+  it('uses lifecycle and user fallbacks for admin rows when names are missing', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'review-admin-fallback',
+          created_at: '2024-08-01T00:00:00.000Z',
+          modified_at: '2024-08-02T00:00:00.000Z',
+          json: {
+            data: {
+              id: 'model-admin-fallback',
+              version: '09.00.000',
+            },
+            user: {},
+          },
+          comments: [],
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'model-admin-fallback',
+          version: '09.00.000',
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      'admin-rejected',
+      'en',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      isFromLifeCycle: true,
+      name: '-',
+      userName: '-',
+    });
+  });
+
+  it('falls back to "-" when a non-lifecycle admin row has no process name payload', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'review-admin-empty-review-name',
+          created_at: '2024-08-01T00:00:00.000Z',
+          modified_at: '2024-08-02T00:00:00.000Z',
+          json: {
+            data: { id: 'plain-admin-process', version: '01.00.000' },
+            user: { email: 'x@y.z' },
+          },
+          comments: [],
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      'admin-rejected',
+      'en',
+    );
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(result.data[0].name).toBe('-');
+  });
 });
 
 describe('getNotifyReviews', () => {
@@ -887,6 +1131,68 @@ describe('getNotifyReviews', () => {
       success: true,
       total: 0,
     });
+  });
+
+  it('uses review payload fallbacks and missing-user placeholders when no model matches', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'review-notify-fallback',
+          json: {
+            data: {
+              id: 'process-notify-fallback',
+              version: '05.00.000',
+            },
+            user: {},
+          },
+          modified_at: '2024-06-06T12:00:00.000Z',
+          state_code: 1,
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
+
+    expect(result.data[0]).toMatchObject({
+      isFromLifeCycle: false,
+      name: '-',
+      userName: '-',
+    });
+  });
+
+  it('falls back to "-" when a matched notification lifecycle model name resolves empty', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    const builder = createQueryBuilder({
+      data: [
+        {
+          id: 'review-notify-empty-model-name',
+          json: { data: { id: 'notify-model', version: '01.00.000' }, user: { email: 'x@y.z' } },
+          modified_at: '2024-06-06T12:00:00.000Z',
+          state_code: 1,
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'notify-model',
+          version: '01.00.000',
+          json: {
+            lifeCycleModelDataSet: { lifeCycleModelInformation: { dataSetInformation: {} } },
+          },
+        },
+      ],
+    });
+    mockGenProcessName.mockReturnValueOnce('');
+
+    const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
+
+    expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
+    expect(result.data[0].name).toBe('-');
   });
 });
 
@@ -1255,5 +1561,66 @@ describe('getLifeCycleModelSubTableDataBatch', () => {
       },
       success: true,
     });
+  });
+
+  it('ignores returned process rows that do not belong to any requested review key', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'unexpected-process',
+          version: '77.00.000',
+          state_code: 20,
+          json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: { en: 'Unexpected Base' },
+                    treatmentStandardsRoutes: { en: 'Unexpected Route' },
+                    mixAndLocationTypes: { en: 'Unexpected Mix' },
+                    functionalUnitFlowProperties: { en: 'Unexpected Unit' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const result = await reviewsApi.getLifeCycleModelSubTableDataBatch(
+      [
+        {
+          reviewId: 'review-1',
+          modelData: {
+            id: 'model-1',
+            version: '01.00.000',
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  technology: {
+                    processes: {
+                      processInstance: [
+                        {
+                          referenceToProcess: {
+                            '@refObjectId': 'process-1',
+                            '@version': '01.00.000',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            json_tg: {},
+          },
+        },
+      ],
+      'en',
+    );
+
+    expect(result).toEqual({ data: {}, success: true });
   });
 });

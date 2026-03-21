@@ -53,9 +53,13 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={String(getContainer?.() === global.document?.body)}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -215,5 +219,36 @@ describe('ReviewLifeCycleModelEdgeExchangeView', () => {
     );
 
     expect(mockGetProcessDetail).not.toHaveBeenCalled();
+  });
+
+  it('falls back to empty exchange payloads when process details are missing', async () => {
+    mockGetProcessDetail.mockReset();
+    mockGenProcessFromData.mockReset();
+    mockGetProcessDetail.mockResolvedValue({ data: { json: {} } });
+    mockGenProcessFromData.mockReturnValue({});
+
+    render(
+      <EdgeExchangeView
+        lang='en'
+        sourceProcessId='process-source'
+        sourceProcessVersion='1.0.0'
+        targetProcessId='process-target'
+        targetProcessVersion='2.0.0'
+        sourceOutputFlowID='flow-output'
+        targetInputFlowID='flow-input'
+        drawerVisible
+        onDrawerClose={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'true');
+    expect(mockGenProcessFromData).toHaveBeenNthCalledWith(1, {});
+    expect(mockGenProcessFromData).toHaveBeenNthCalledWith(2, {});
+    expect(screen.getAllByText('-')).not.toHaveLength(0);
+    expect(screen.getAllByTestId('flow-description')[0]).toHaveTextContent('en:none:Flow');
+    expect(screen.getAllByTestId('flow-description')[1]).toHaveTextContent('en:none:Flow');
+    expect(screen.getAllByText('quantitative-no')).toHaveLength(2);
   });
 });

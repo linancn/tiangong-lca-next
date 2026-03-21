@@ -72,10 +72,15 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, extra, footer, onClose, children }: any) => {
+  const Drawer = ({ open, title, extra, footer, onClose, children, getContainer }: any) => {
     if (!open) return null;
+    getContainer?.();
     return (
-      <div role='dialog' aria-label={toText(title) || 'drawer'}>
+      <div
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-has-container={String(Boolean(getContainer?.()))}
+      >
         <div>{extra}</div>
         <div>{children}</div>
         <div>{footer}</div>
@@ -128,7 +133,14 @@ jest.mock('@ant-design/pro-components', () => {
     return next;
   };
 
-  const ProForm = ({ formRef, initialValues = {}, onFinish, children }: any) => {
+  const ProForm = ({
+    formRef,
+    initialValues = {},
+    onFinish,
+    children,
+    submitter,
+    onValuesChange,
+  }: any) => {
     const [values, setValues] = React.useState<any>(initialValues ?? {});
 
     const setFieldValue = React.useCallback((path: any[], value: any) => {
@@ -142,7 +154,11 @@ jest.mock('@ant-design/pro-components', () => {
           await onFinish?.();
         },
         setFieldsValue: (next: any) => {
-          setValues((prev: any) => ({ ...prev, ...next }));
+          setValues((prev: any) => {
+            const merged = { ...prev, ...next };
+            onValuesChange?.({}, merged);
+            return merged;
+          });
         },
         resetFields: () => {
           setValues(initialValues ?? {});
@@ -150,7 +166,7 @@ jest.mock('@ant-design/pro-components', () => {
         getFieldsValue: () => ({ ...values }),
         setFieldValue,
       };
-    }, [formRef, onFinish, initialValues, setFieldValue, values]);
+    }, [formRef, onFinish, initialValues, onValuesChange, setFieldValue, values]);
 
     return (
       <form
@@ -159,6 +175,7 @@ jest.mock('@ant-design/pro-components', () => {
           void onFinish?.();
         }}
       >
+        {submitter?.render?.()}
         {typeof children === 'function' ? children(values) : children}
       </form>
     );
@@ -183,7 +200,7 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
   const React = require('react');
   return {
     __esModule: true,
-    FlowpropertyForm: ({ formRef }: any) => {
+    FlowpropertyForm: ({ formRef, onTabChange, onData }: any) => {
       const [name, setName] = React.useState('');
       React.useEffect(() => {
         formRef.current?.setFieldsValue({
@@ -202,6 +219,15 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
+          <button type='button' onClick={() => formRef.current?.setFieldsValue({})}>
+            merge-empty
+          </button>
+          <button type='button' onClick={() => onTabChange?.('administrativeInformation')}>
+            switch-tab
+          </button>
+          <button type='button' onClick={() => onData?.()}>
+            sync-tab
+          </button>
         </div>
       );
     },
@@ -392,5 +418,89 @@ describe('FlowpropertiesCreate', () => {
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('create failed'));
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: /create flow property/i })).toBeInTheDocument();
+  });
+
+  it('supports the copy path, sparse detail payloads, and close handlers', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+    mockGetFlowpropertyDetail.mockResolvedValueOnce({
+      data: {},
+      version: '1.0.0',
+    });
+    mockGenFlowpropertyFromData.mockImplementationOnce(() => ({
+      flowPropertiesInformation: {
+        dataSetInformation: {
+          'common:name': [{ '#text': 'Copied property', '@lang': 'en' }],
+        },
+      },
+    }));
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate
+          actionRef={actionRef}
+          lang='en'
+          actionType='copy'
+          id='fp-copy'
+          version='1.0.0'
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-copy', '1.0.0'));
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-has-container', 'true');
+    expect(mockGenFlowpropertyFromData).toHaveBeenCalledWith({});
+    await userEvent.click(screen.getByRole('button', { name: /sync-tab/i }));
+    await userEvent.click(screen.getByRole('button', { name: /switch-tab/i }));
+    await act(async () => {
+      const form = screen.getByLabelText(/flow property name/i);
+      expect(form).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByRole('button', { name: /merge-empty/i }));
+    await userEvent.click(screen.getByRole('button', { name: /sync-tab/i }));
+
+    const headerCloseButton = screen
+      .getAllByRole('button')
+      .find((button) => button.textContent === 'close');
+    expect(headerCloseButton).toBeTruthy();
+    await userEvent.click(headerCloseButton!);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await screen.findByRole('dialog');
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await screen.findByRole('dialog');
+    const drawerCloseButton = screen
+      .getAllByRole('button')
+      .find((button) => button.textContent === 'Close');
+    expect(drawerCloseButton).toBeTruthy();
+    await userEvent.click(drawerCloseButton!);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('falls back to empty tab state during manual sync and to a generic error message', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+    mockCreateFlowproperties.mockResolvedValueOnce({
+      data: null,
+      error: {},
+    });
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate actionRef={actionRef} lang='en' onClose={jest.fn()} />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await screen.findByRole('dialog');
+    await userEvent.click(screen.getByRole('button', { name: /merge-empty/i }));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    const { message } = jest.requireMock('antd');
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Error'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
 });

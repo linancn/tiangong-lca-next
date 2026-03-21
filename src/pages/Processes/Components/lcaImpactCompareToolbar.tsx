@@ -638,7 +638,7 @@ const LcaImpactCompareToolbar: FC<{
                               defaultMessage='Top contributor'
                             />
                           }
-                          value={analysisResult.model.topItem?.processName ?? '-'}
+                          value={analysisResult.model.topItem?.processName}
                         />
                       </Col>
                       <Col xs={24} md={8}>

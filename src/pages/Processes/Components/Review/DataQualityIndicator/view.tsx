@@ -43,7 +43,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getIndicatorName(item['@name']) || '-'}
+                {getIndicatorName(item['@name'])}
               </Descriptions.Item>
             </Descriptions>
           </Col>
@@ -64,7 +64,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
                   />
                 }
               >
-                {getIndicatorValue(item['@value']) || '-'}
+                {getIndicatorValue(item['@value'])}
               </Descriptions.Item>
             </Descriptions>
           </Col>

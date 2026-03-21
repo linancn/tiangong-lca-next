@@ -384,6 +384,22 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
 
       expect(result).toEqual({ error: true, data: [] });
     });
+
+    it('falls back to default sort and paging when params or sort contain nullish values', async () => {
+      const supabaseResult = { data: [{ review_id: 'review-nullish' }], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getReviewedComment(
+        { current: null as any, pageSize: null as any },
+        null as any,
+        'specific-user-id',
+      );
+
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual(supabaseResult);
+    });
   });
 
   describe('getPendingComment', () => {
@@ -429,6 +445,18 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       expect(builder.range).toHaveBeenCalledWith(4, 5);
       expect(result).toEqual(supabaseResult);
     });
+
+    it('falls back to default sort when the pending-comments sort input is null', async () => {
+      const supabaseResult = { data: [{ review_id: 'review-pending-defaults' }], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getPendingComment({ current: 1, pageSize: 1 }, null as any, 'user-1');
+
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 0);
+      expect(result).toEqual(supabaseResult);
+    });
   });
 
   describe('getRejectedComment', () => {
@@ -457,6 +485,22 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       const result = await getRejectedComment();
 
       expect(result).toEqual({ error: true, data: [] });
+    });
+
+    it('falls back to default sort and paging for rejected comments when inputs are nullish', async () => {
+      const supabaseResult = { data: [{ review_id: 'review-rejected-defaults' }], error: null };
+      const builder = createPagedCommentsQueryBuilder(supabaseResult);
+      (mockFrom as jest.Mock).mockReturnValue(builder);
+
+      const result = await getRejectedComment(
+        { current: null as any, pageSize: null as any },
+        null as any,
+        'specific-user-id',
+      );
+
+      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual(supabaseResult);
     });
   });
 

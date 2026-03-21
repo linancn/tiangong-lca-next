@@ -1,6 +1,6 @@
 # Test Todo List
 
-> Source of truth for **actionable** testing backlog. Use this file for execution planning; keep long-term context in `docs/agents/test_improvement_plan.md`. Mirror requirement: update `docs/agents/test_todo_list_CN.md` in the same change.
+> Source of truth for current testing execution status. While the repo stays at full closure, this file operates in maintenance mode rather than as an active backlog. Keep long-term context in `docs/agents/test_improvement_plan.md`. Mirror requirement: update `docs/agents/test_todo_list_CN.md` in the same change.
 
 ## Scope (from AGENTS test requirements)
 
@@ -12,175 +12,177 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 - keep docs in sync when workflow expectations change.
 - when testing workflow/baseline/backlog changes, sync `docs/agents/ai-testing-guide.md` and this file; if strategic context changes too, sync `docs/agents/test_improvement_plan.md` and `_CN` mirrors in the same diff.
 
-## Snapshot Baseline (March 18, 2026)
+## Snapshot Baseline (March 20, 2026)
 
-Latest verified full run (`npm run test:coverage`):
+Latest verified full run (`npm run test:coverage:report`, which reruns `npm run test:coverage` first):
 
-- Test suites: 286 passed
-- Tests: 2842 passed
+- Test suites: 288 passed
+- Tests: 3476 passed
 - Coverage:
-  - Statements: 94.97% (19080/20090)
-  - Branches: 87.97% (10285/11691)
-  - Functions: 94.01% (4116/4378)
-  - Lines: 95.15% (18278/19208)
+  - Statements: 100.00% (20013/20013)
+  - Branches: 100.00% (11419/11419)
+  - Functions: 100.00% (4379/4379)
+  - Lines: 100.00% (19143/19143)
 - Delta vs previous documented baseline:
-  - Test suites: +7
-  - Tests: +101
-  - Statements: -1.07
-  - Branches: -1.38
-  - Functions: +0.15
-  - Lines: -1.17
+  - Test suites: +2
+  - Tests: +634
+  - Statements: +5.03
+  - Branches: +12.03
+  - Functions: +5.99
+  - Lines: +4.85
 - Enforced global branch threshold: 50%
-- Gate status: **PASS** (+37.97% buffer above threshold)
+- Gate status: **PASS** (+50.00% buffer above threshold)
 
-## Recent Closure Delta
+## Current State
 
-- Source files tracked: `303 -> 312` (`+9`)
-- Fully covered files: `177 -> 197` (`+20`)
-- Files with remaining gaps: `126 -> 115` (`-11`)
-- `<50% branch` bucket: `0 -> 1`
-- `50%-70% branch` bucket: `0 -> 8`
-- `70%-90% branch` bucket: `91 -> 68`
-- `90%-<100% branch` bucket: `24 -> 27`
-- `line=100 but branch<100` bucket: `30 -> 27`
-- Recent queue files closed to `100/100/100/100` include `services/contacts/api`, `services/lca/taskCenter`, `services/lifeCycleModels/util_allocate_supply_demand`, and `Sources/Components/{select/drawer,select/form,view}`.
-- The reopened low-branch bucket is dominated by the lifecycle-model persistence bundle sync, led by `src/services/lifeCycleModels/api.ts` and the new `src/services/lifeCycleModels/persistencePlan.ts`.
+- The ordered closure queue is empty.
+- The repo is in maintenance mode.
+- Any code change is a hard requirement to preserve repo-wide `100%` statements / branches / functions / lines.
+- Local push is blocked unless the repo passes `.husky/pre-push`, which now runs `npm run prepush:gate`.
+
+## Integration Expansion Program (Separate from Coverage Queue)
+
+- This program exists to deepen workflow confidence after coverage closure. It does not replace the coverage-maintenance rules above.
+- Measure progress with the 100-point integration scorecard in `docs/agents/ai-testing-guide.md`, not by trying to make `tests/integration` alone reach `100%` code coverage.
+- Target state:
+  - New or materially refactored high-risk workflows should reach `>=85/100` before being called integration-complete.
+  - Existing legacy workflows can be raised phase by phase instead of being rewritten all at once.
+
+## Ordered Integration Rollout
+
+1. Phase 1 – Route/data-source matrix
+   - [x] Expand `tests/integration/lifeCycleModels/LifeCycleModelsWorkflow.integration.test.tsx` and `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` so each suite now covers `/mydata` plus `/tgdata`.
+   - [x] Expand `tests/integration/flows/FlowsWorkflow.integration.test.tsx` and `tests/integration/flowproperties/FlowpropertiesWorkflow.integration.test.tsx` so each suite now covers `/mydata` plus `/tgdata`.
+   - [x] Expand `tests/integration/unitgroups/UnitgroupsWorkflow.integration.test.tsx`, `tests/integration/sources/SourcesWorkflow.integration.test.tsx`, and `tests/integration/contacts/ContactsWorkflow.integration.test.tsx` so each suite now covers `/mydata` plus `/tgdata`.
+   - [ ] When UI or service behavior genuinely differs by source type, promote that feature to the full `/mydata` + `/tgdata` + `/codata` + `/tedata` matrix instead of stopping at one secondary prefix.
+2. Phase 2 – Permission and role matrix
+   - [x] Expand `tests/integration/teams/TeamsWorkflow.integration.test.tsx`, `tests/integration/manageSystem/ManageSystemWorkflow.integration.test.tsx`, and `tests/integration/reviews/ReviewWorkflow.integration.test.tsx` so each suite now covers allow, restricted, and failure states.
+   - [x] Assert both user-visible controls and the allowed/prevented `@/services/**` calls.
+3. Phase 3 – URL/query and navigation flows
+   - [x] Keep `tests/integration/user/LoginWorkflow.integration.test.tsx` responsible for `redirect` query handling.
+   - [x] Keep `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` responsible for `id/version` deep-link auto-open behavior.
+   - [x] Expand entry/navigation assertions in `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`, `tests/integration/account/AccountProfileWorkflow.integration.test.tsx`, and the `/mydata/processes/analysis` jump from the Processes page.
+4. Phase 4 – Failure and fallback behavior
+   - [x] `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx` already keeps the Data Ecosystem modal responsive when `getTeams()` returns no teams.
+   - [x] `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx` now also keeps team cards visible when thumbnail lookups fail.
+   - [x] `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` now covers an empty initial table result and visible recovery after the user hits reload.
+   - [x] `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` now covers thrown list-request failures with a visible toast plus reload recovery.
+   - [x] `tests/integration/user/LoginWorkflow.integration.test.tsx` now covers duplicate-registration fallback plus inline feedback when validation-email delivery fails.
+   - [x] `tests/integration/account/AccountProfileWorkflow.integration.test.tsx` now covers invalid current password and invalid-credential fallback during API key generation.
+   - [x] `tests/integration/account/AccountProfileWorkflow.integration.test.tsx` now covers initial profile-load failure and change-email failure messaging.
+   - [ ] For each workflow anchor above, cover list-load failure, create/update failure, delete failure or cancel, and empty-state rendering where meaningful.
+   - [ ] Prefer user-visible recovery assertions over console-only assertions.
+5. Phase 5 – Optional browser-real smoke
+   - [ ] Only if a human explicitly chooses to add E2E later, promote a very small smoke set: login redirect, welcome entry jump, one representative CRUD path, and one upload/preview flow.
 
 ## All-File Inventory
 
 Current repo-wide status from the same run:
 
-- Source files tracked: 312
-- Fully covered files (`100/100/100/100`): 197
-- Files with remaining gaps: 115
+- Source files tracked: 313
+- Fully covered files (`100/100/100/100`): 313
+- Files with remaining gaps: 0
 - Branch buckets:
-  - `<50`: 1 file
-  - `50-70`: 8 files
-  - `70-90`: 68 files
-  - `90-<100`: 27 files
-- `line=100` but `branch<100`: 27 files
+  - `<50`: 0 files
+  - `50-70`: 0 files
+  - `70-90`: 0 files
+  - `90-<100`: 0 files
+- `line=100` but `branch<100`: 0 files
 - Category averages:
-  - components: `97.92%` lines / `94.56%` branches / `96.00%` functions
-  - services: `95.36%` lines / `91.65%` branches / `96.80%` functions
-  - pages: `97.41%` lines / `93.35%` branches / `94.31%` functions
-  - others: `99.89%` lines / `99.64%` branches / `99.83%` functions
+  - components: `100.00%` lines / `100.00%` branches / `100.00%` functions
+  - services: `100.00%` lines / `100.00%` branches / `100.00%` functions
+  - pages: `100.00%` lines / `100.00%` branches / `100.00%` functions
+  - others: `100.00%` lines / `100.00%` branches / `100.00%` functions
 
 ## Reporting Workflow
 
 - The shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker `SIGSEGV` crashes seen during full local and pre-push runs on macOS.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use those scripts directly for full coverage work.
+- `npm run test:coverage:assert-full` fails unless the latest coverage artifact still reports full closure for every tracked source file.
+- `npm run prepush:gate` is the exact local push gate: `lint + full coverage + strict full-coverage assertion`.
 - `npm run test:coverage:report` is the default review artifact. It prints:
   - global summary,
   - category summary,
   - closure-queue summary,
   - shared-fixture batches,
   - next 25 ordered incomplete files.
+- The queue and batch sections print full project-relative paths; file and cluster labels are not shortened with `...`.
 - `node scripts/test-coverage-report.js --full` prints the full ordered incomplete-file queue for all remaining files.
+- When the queue is empty, both report commands explicitly print `No files with remaining coverage gaps.`; keep using them to confirm the repo stays in maintenance mode after future test-engineering changes.
 - Queue order is deterministic: `branches asc -> lines asc -> statements asc -> functions asc -> path`.
 
 ## Execution Strategy
 
 1. Do not re-rank work by ad hoc “highest ROI” judgments.
-2. Take the first file from the ordered closure queue and push it toward `100/100/100/100` before moving on.
-3. The full queue in `node scripts/test-coverage-report.js --full` is the source of truth for all remaining files; the list below is only the current head snapshot.
+2. While the queue is empty, stay in maintenance mode: every touched or newly added `src/**` file should remain at `100/100/100/100`.
+3. If a future regression reopens the queue, resume strict execution from the first file in the ordered closure queue.
 4. Allowed batch exception: if the current file and its immediate neighbors share the same mock/fixture/test harness, close them in one batch anchored to the earliest queued file.
 5. Allowed infrastructure exception: if a shared test blocker prevents coverage on the current file or its immediate neighbors, fix the blocker first and then resume queue order.
 6. If the remaining branch is provably unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests.
 7. Keep wrapper/page-level orchestration tests in scope; do not rely only on child-component coverage.
+8. When a human explicitly asks for broader integration confidence work, execute the phased integration rollout above in order instead of adding ad hoc one-off scenarios.
 
 ## Current Ordered Closure Queue (Head Snapshot)
 
-- [ ] `src/services/lifeCycleModels/api.ts` — stmt `36.39%`, line `35.73%`, branch `23.07%`, func `48.48%`
-- [ ] `src/pages/Processes/Components/lcaGroupedResults.ts` — stmt `81.81%`, line `81.13%`, branch `51.21%`, func `100.00%`
-- [ ] `src/services/lifeCycleModels/persistencePlan.ts` — stmt `73.71%`, line `73.20%`, branch `51.85%`, func `96.66%`
-- [ ] `src/pages/Processes/Components/lcaImpactCompareToolbar.tsx` — stmt `77.93%`, line `77.37%`, branch `52.38%`, func `80.95%`
-- [ ] `src/pages/Processes/Analysis/index.tsx` — stmt `72.78%`, line `72.64%`, branch `58.00%`, func `78.49%`
-- [ ] `src/pages/Processes/Components/lcaAnalysisShared.ts` — stmt `83.33%`, line `84.88%`, branch `58.02%`, func `83.33%`
-- [ ] `src/pages/Processes/Components/lcaImpactHotspotToolbar.tsx` — stmt `88.81%`, line `88.46%`, branch `61.36%`, func `95.23%`
-- [ ] `src/pages/Processes/Components/lcaContributionPath.ts` — stmt `90.62%`, line `91.08%`, branch `62.50%`, func `94.87%`
-- [ ] `src/pages/Processes/Components/lcaProcessSelectionTable.tsx` — stmt `92.30%`, line `94.28%`, branch `69.23%`, func `87.50%`
-- [ ] `src/services/lca/api.ts` — stmt `84.04%`, line `83.87%`, branch `70.31%`, func `88.23%`
-- [ ] `src/services/processes/api.ts` — stmt `86.60%`, line `86.37%`, branch `73.21%`, func `95.45%`
-- [ ] `src/pages/Flows/Components/create.tsx` — stmt `91.59%`, line `93.10%`, branch `77.35%`, func `70.83%`
-- [ ] `src/app.tsx` — stmt `92.64%`, line `94.02%`, branch `77.77%`, func `88.88%`
-- [ ] `src/pages/Processes/Components/Review/DataQualityIndicator/view.tsx` — stmt `100.00%`, line `100.00%`, branch `77.77%`, func `100.00%`
-- [ ] `src/pages/Contacts/Components/select/form.tsx` — stmt `87.20%`, line `86.90%`, branch `78.26%`, func `75.00%`
-- [ ] `src/pages/Unitgroups/Components/select/form.tsx` — stmt `87.91%`, line `87.64%`, branch `78.26%`, func `75.00%`
-- [ ] `src/pages/Unitgroups/Components/form.tsx` — stmt `97.22%`, line `97.14%`, branch `78.37%`, func `72.72%`
-- [ ] `src/pages/LifeCycleModels/Components/edit.tsx` — stmt `96.42%`, line `96.00%`, branch `78.57%`, func `85.71%`
-- [ ] `src/services/flows/api.ts` — stmt `90.93%`, line `90.65%`, branch `78.90%`, func `100.00%`
-- [ ] `src/pages/LifeCycleModels/Components/toolbar/addThroughFlow.tsx` — stmt `90.00%`, line `89.70%`, branch `80.00%`, func `75.00%`
-- [ ] `src/components/AllTeams/select.tsx` — stmt `96.00%`, line `95.83%`, branch `80.00%`, func `90.00%`
-- [ ] `src/services/unitgroups/api.ts` — stmt `98.01%`, line `98.96%`, branch `80.00%`, func `93.75%`
-- [ ] `src/components/Notification/index.tsx` — stmt `100.00%`, line `100.00%`, branch `80.00%`, func `100.00%`
-- [ ] `src/components/RequiredMark/index.tsx` — stmt `100.00%`, line `100.00%`, branch `80.00%`, func `100.00%`
-- [ ] `src/pages/Processes/Components/Review/Scope/view.tsx` — stmt `100.00%`, line `100.00%`, branch `80.00%`, func `100.00%`
-
-Use `node scripts/test-coverage-report.js --full` for the full ordered queue of all 115 incomplete files.
+- No files with remaining coverage gaps.
+- Maintenance rule: if a future change reopens coverage debt, regenerate the queue with `npm run test:coverage:report` and resume from the first reported file.
+- `node scripts/test-coverage-report.js --full` remains the source of truth for the full ordered queue whenever the repo leaves maintenance mode.
 
 ## Shared-Fixture Batch Candidates
 
-These clusters are the only standing justification for batched queue execution:
-
-- `src/pages/Processes/Components` — 14 incomplete files, min branch `51.21%`, avg branch `74.09%`
-- `src/pages/Review/Components` — 13 incomplete files, min branch `81.57%`, avg branch `89.32%`
-- `src/pages/Flows/Components` — 8 incomplete files, min branch `77.35%`, avg branch `86.12%`
-- `src/pages/LifeCycleModels/Components` — 8 incomplete files, min branch `78.57%`, avg branch `90.36%`
-- `src/pages/Unitgroups/Components` — 7 incomplete files, min branch `78.26%`, avg branch `87.89%`
-- `src/pages/Contacts/Components` — 6 incomplete files, min branch `78.26%`, avg branch `84.71%`
-- `src/pages/Flowproperties/Components` — 6 incomplete files, min branch `83.33%`, avg branch `87.90%`
-- `src/services/lifeCycleModels` — 3 incomplete files, min branch `23.07%`, avg branch `53.03%`
-- `src/services/flows` — 3 incomplete files, min branch `78.90%`, avg branch `90.58%`
-- `src/components/AllTeams` — 3 incomplete files, min branch `80.00%`, avg branch `85.52%`
-- `src/services/processes` — 2 incomplete files, min branch `73.21%`, avg branch `84.14%`
-- `src/components/Notification` — 2 incomplete files, min branch `80.00%`, avg branch `83.75%`
+No batching candidates are currently active because the queue is empty.
 
 ## Test Engineering Quality Rules
 
-- Standardize new tests on shared helpers (`tests/helpers/mockBuilders.ts`, `testUtils.tsx`, `testData.ts`) whenever they fit the active queue file or batch.
+- Standardize new tests on shared helpers (`tests/helpers/mockBuilders.ts`, `testUtils.tsx`, `testData.ts`) whenever they fit the active file or future reopened queue batch.
 - Remove or refactor console-only assertions into behavior assertions where possible.
 - When a page wrapper exists above a tested component, add at least one wrapper-level test so coverage reflects real orchestration rather than child-only behavior.
 - When a queue file still misses only dead or business-invalid branches, prefer behavior-preserving branch removal over synthetic test scaffolding.
 - Keep the default report concise; only add more default detail if it changes execution order. Deep per-file detail stays behind `--full`.
+- In maintenance mode, treat any newly uncovered branch as a regression to eliminate immediately rather than as backlog to postpone.
+- For integration-expansion work, prefer matrix-driven suites (`describe.each(...)`) over one-file-per-variant duplication.
+- Keep future E2E scope intentionally thin and browser-real only.
 
 ## Execution Protocol (per task)
 
-1. Implement tests for one queue file at a time, following the ordered closure queue above.
-2. Run focused command:
+1. Start with `npm run test:coverage:report`.
+2. If the report shows no gaps, stay in maintenance mode and keep every touched or newly added `src/**` file at `100/100/100/100`.
+3. If the report shows gaps, take the first file from the ordered closure queue and close it before moving on.
+4. Run focused command:
 
 ```bash
 npm run test:ci -- <pattern> --runInBand --testTimeout=20000 --no-coverage
 ```
 
-3. Run lint gate:
+5. Run lint gate:
 
 ```bash
 npm run lint
 ```
 
-4. After each high-priority batch, run full coverage:
+6. After each meaningful batch or before syncing the docs, run full coverage:
 
 ```bash
 npm run test:coverage
 ```
 
-5. Review the default closure report:
+7. Review the default closure report:
 
 ```bash
 npm run test:coverage:report
 ```
 
-6. Only when you need the full remaining-file state or need to refresh the queue snapshot, expand to full detail:
+8. Only when you need the full remaining-file state or need to refresh the queue snapshot, expand to full detail:
 
 ```bash
 node scripts/test-coverage-report.js --full
 ```
 
-7. Update status checkboxes and note measurable deltas.
-8. If workflow/baseline/backlog expectations changed, sync `docs/agents/ai-testing-guide.md`; if strategic context changed, sync `docs/agents/test_improvement_plan.md` too.
+9. Update status notes and measurable deltas when the baseline or maintenance status changed.
+10. If workflow/baseline/backlog expectations changed, sync `docs/agents/ai-testing-guide.md`; if strategic context changed, sync `docs/agents/test_improvement_plan.md` too.
 
 ## Notes
 
-- Do not raise coverage thresholds yet; first keep shrinking the ordered closure queue.
+- Do not raise coverage thresholds yet; first keep the repo at full closure and prevent future regressions from reopening the queue.
 - Prefer deterministic tests over broad snapshot expansion.
-- Keep backlog actionable; avoid generic "add more tests" tasks.
+- Keep backlog actionable; when the queue is empty, keep this file in maintenance mode rather than inventing filler backlog.

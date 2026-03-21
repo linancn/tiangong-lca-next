@@ -217,7 +217,13 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
 
   return {
     __esModule: true,
-    FlowpropertyForm: ({ formRef, onData, onTabChange, showRules }: any) => {
+    FlowpropertyForm: ({
+      formRef,
+      onData,
+      onTabChange,
+      showRules,
+      activeTabKey: mockActiveTabKey,
+    }: any) => {
       const [name, setName] = React.useState('');
 
       React.useEffect(() => {
@@ -243,6 +249,12 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
           </button>
           <button type='button' onClick={() => onData?.()}>
             sync-flowproperty-data
+          </button>
+          <button
+            type='button'
+            onClick={() => formRef.current?.setFieldValue([mockActiveTabKey], undefined)}
+          >
+            clear-active-flowproperty-tab
           </button>
           {showRules ? <span>rules-visible</span> : null}
         </div>
@@ -697,6 +709,77 @@ describe('FlowpropertiesEdit', () => {
     expect(mockGetErrRefTab).toHaveBeenCalled();
   });
 
+  it('handles missing detail payloads and undefined problem nodes during data checks', async () => {
+    mockGetFlowpropertyDetail.mockResolvedValueOnce({
+      data: {
+        json: {},
+        version: '1.0.0',
+      },
+    });
+    mockFindProblemNodes.mockReturnValueOnce(undefined);
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+  });
+
+  it('adds unique error tab names for unverified references', async () => {
+    mockCheckData.mockImplementation(async (_ref: any, unRule: any[]) => {
+      unRule.push({
+        '@refObjectId': 'flow-1',
+        '@version': '1.0.0',
+      });
+    });
+    mockGetErrRefTab.mockReturnValue('administrativeInformation');
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'administrativeInformation：Data check failed!',
+      ),
+    );
+  });
+
+  it('adds unique error tab names for problem nodes', async () => {
+    mockFindProblemNodes.mockReturnValueOnce([
+      {
+        '@refObjectId': 'process-1',
+        '@version': '3.0.0',
+        ruleVerification: false,
+        nonExistent: false,
+      },
+    ]);
+    mockGetErrRefTab.mockReturnValue('modellingAndValidation');
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByLabelText(/flow property name/i);
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'modellingAndValidation：Data check failed!',
+      ),
+    );
+  });
+
   it('shows the generic data-check error when issues have no tab mapping', async () => {
     mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
@@ -809,5 +892,19 @@ describe('FlowpropertiesEdit', () => {
     await screen.findByLabelText(/flow property name/i);
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('renders the icon trigger and falls back to the default edit message when buttonType is empty', async () => {
+    const { rerender } = renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='icon' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    rerender(<FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='' lang='en' />);
+    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
   });
 });

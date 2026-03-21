@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { renderWithProviders, screen } from '../../../../../helpers/testUtils';
 
+let mockLocale = 'en-US';
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -15,7 +17,7 @@ const toText = (node: any): string => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => 'en-US',
+  getLocale: () => mockLocale,
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -61,6 +63,10 @@ jest.mock('antd', () => {
 describe('FlowsSelectDescription', () => {
   const FlowsSelectDescription = require('@/pages/Flows/Components/select/description').default;
 
+  beforeEach(() => {
+    mockLocale = 'en-US';
+  });
+
   it('renders fallback values when no flow reference is provided', () => {
     renderWithProviders(<FlowsSelectDescription title='Flow' data={null} lang='en' />);
 
@@ -84,5 +90,14 @@ describe('FlowsSelectDescription', () => {
     expect(screen.getByTestId('flow-view')).toHaveTextContent('flow-1:1.0');
     expect(screen.getByText('Flow short desc')).toBeInTheDocument();
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-1:1.0:flow');
+  });
+
+  it('supports the zh-CN locale width branch', () => {
+    mockLocale = 'zh-CN';
+
+    renderWithProviders(<FlowsSelectDescription title='Flow' data={null} lang='zh' />);
+
+    expect(screen.getByText('Flow')).toBeInTheDocument();
+    expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('::flow');
   });
 });

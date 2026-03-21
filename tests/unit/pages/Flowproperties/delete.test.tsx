@@ -150,6 +150,35 @@ describe('FlowpropertiesDelete', () => {
     expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
 
+  it('falls back to a generic error message when delete fails without a backend message', async () => {
+    mockDeleteFlowproperties.mockResolvedValueOnce({
+      status: 400,
+      error: {},
+    });
+
+    const actionRef = { current: { reload: jest.fn() } };
+    const setViewDrawerVisible = jest.fn();
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesDelete
+          id='fp-1'
+          version='1.0.0'
+          buttonType='text'
+          actionRef={actionRef as any}
+          setViewDrawerVisible={setViewDrawerVisible}
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+    await userEvent.click(screen.getByRole('button', { name: /confirm/i }));
+
+    const { message } = jest.requireMock('antd');
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Error'));
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
   it('closes the modal without deleting when cancel is clicked', async () => {
     const actionRef = { current: { reload: jest.fn() } };
     const setViewDrawerVisible = jest.fn();

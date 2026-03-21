@@ -252,4 +252,44 @@ describe('UnitConvert Component', () => {
       expect(onOk).toHaveBeenCalledWith(0);
     });
   });
+
+  it('clears the result when the input becomes empty after a successful conversion', async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      expect(getUnitSelect().value).toBe('kilogram');
+    });
+
+    fireEvent.change(getValueInput(), { target: { value: '2' } });
+    fireEvent.change(getUnitSelect(), { target: { value: 'gram' } });
+    fireEvent.change(getValueInput(), { target: { value: '2' } });
+
+    await waitFor(() => {
+      expect(getResultInput().value).toBe('0.002');
+    });
+
+    fireEvent.change(getValueInput(), { target: { value: '' } });
+
+    await waitFor(() => {
+      expect(getResultInput().value).toBe('');
+    });
+  });
+
+  it('clears the result when the selected unit cannot be converted to a number', async () => {
+    renderComponent({
+      units: [{ name: 'broken-unit', meanValue: Number.NaN }] as any,
+      targetUnit: 'broken-unit',
+      value: 1,
+    });
+
+    await waitFor(() => {
+      expect(getUnitSelect().value).toBe('broken-unit');
+    });
+
+    fireEvent.change(getValueInput(), { target: { value: '3' } });
+
+    await waitFor(() => {
+      expect(getResultInput().value).toBe('');
+    });
+  });
 });

@@ -18,6 +18,9 @@ let mockLocation = {
   pathname: '/mydata/unitgroups',
   search: '?tid=team-1',
 };
+let mockUnitGroupCreateCalls: any[] = [];
+let mockUnitGroupEditCalls: any[] = [];
+let mockUnitGroupDeleteCalls: any[] = [];
 
 const mockContributeSource = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
@@ -129,26 +132,36 @@ jest.mock('@/pages/Utils', () => ({
 
 jest.mock('@/pages/Unitgroups/Components/create', () => ({
   __esModule: true,
-  default: ({ actionType = 'create', importData, newVersion, disabled }: any) => (
-    <div data-testid='unitgroup-create'>
-      {JSON.stringify({
-        actionType,
-        importCount: importData?.length ?? 0,
-        newVersion,
-        disabled: !!disabled,
-      })}
-    </div>
-  ),
+  default: (props: any) => {
+    mockUnitGroupCreateCalls.push(props);
+    const { actionType = 'create', importData, newVersion, disabled } = props;
+    return (
+      <div data-testid='unitgroup-create'>
+        {JSON.stringify({
+          actionType,
+          importCount: importData?.length ?? 0,
+          newVersion,
+          disabled: !!disabled,
+        })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Unitgroups/Components/delete', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='unitgroup-delete'>{`delete:${id}`}</div>,
+  default: (props: any) => {
+    mockUnitGroupDeleteCalls.push(props);
+    return <div data-testid='unitgroup-delete'>{`delete:${props.id}`}</div>;
+  },
 }));
 
 jest.mock('@/pages/Unitgroups/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <div data-testid='unitgroup-edit'>{`edit:${id}`}</div>,
+  default: (props: any) => {
+    mockUnitGroupEditCalls.push(props);
+    return <div data-testid='unitgroup-edit'>{`edit:${props.id}`}</div>;
+  },
 }));
 
 jest.mock('@/pages/Unitgroups/Components/view', () => ({
@@ -245,7 +258,14 @@ jest.mock('@ant-design/pro-components', () => {
     </div>
   );
 
-  const ProTable = ({ actionRef, request, columns = [], toolBarRender, headerTitle }: any) => {
+  const ProTable = ({
+    actionRef,
+    request,
+    columns = [],
+    toolBarRender,
+    headerTitle,
+    rowKey,
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
 
@@ -275,7 +295,10 @@ jest.mock('@ant-design/pro-components', () => {
         <div>{toText(headerTitle)}</div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row, rowIndex) => (
-          <div key={`${row.id}-${rowIndex}`}>
+          <div
+            key={String(rowKey ? rowKey(row) : `${row.id}-${rowIndex}`)}
+            data-row-key={String(rowKey ? rowKey(row) : `${row.id}-${rowIndex}`)}
+          >
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
                 {column.render ? column.render(undefined, row) : row[column.dataIndex]}
@@ -299,6 +322,9 @@ describe('UnitgroupsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     latestReloadMock = null;
+    mockUnitGroupCreateCalls = [];
+    mockUnitGroupEditCalls = [];
+    mockUnitGroupDeleteCalls = [];
     mockLocation = {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
@@ -455,6 +481,32 @@ describe('UnitgroupsPage', () => {
     expect(latestReloadMock).toHaveBeenCalled();
   });
 
+  it('logs contribute errors without showing success when the contribute action fails', async () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+    mockContributeSource.mockResolvedValue({ error: 'contribute failed' });
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /contribute-action/i })).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+    });
+
+    const { message } = jest.requireMock('antd');
+    expect(consoleSpy).toHaveBeenCalledWith('contribute failed');
+    expect(message.success).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
   it('persists imported json into create and reloads when the state filter changes', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
@@ -472,6 +524,18 @@ describe('UnitgroupsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"importCount":1');
 
+    const toolbarCreate = [...mockUnitGroupCreateCalls]
+      .reverse()
+      .find((call) => (call.actionType ?? 'create') === 'create');
+    act(() => {
+      toolbarCreate?.onClose?.();
+      mockUnitGroupEditCalls[0]?.setViewDrawerVisible?.(true);
+      mockUnitGroupDeleteCalls[0]?.setViewDrawerVisible?.(false);
+    });
+    await waitFor(() =>
+      expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"importCount":0'),
+    );
+
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetUnitGroupTableAll).toHaveBeenLastCalledWith(
@@ -482,6 +546,64 @@ describe('UnitgroupsPage', () => {
         'team-1',
         '20',
       ),
+    );
+  });
+
+  it('renders the non-my toolbar branch, fallback classification text, and empty tid requests', async () => {
+    mockLocation = {
+      pathname: '/tgdata/unitgroups',
+      search: '',
+    };
+    mockGetDataSource.mockReturnValue('tg');
+    mockGetUnitGroupTableAll.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-2',
+          version: '2.0.0',
+          name: 'Fallback units',
+          refUnitName: 'm3',
+          refUnitGeneralComment: 'Volume unit',
+          classification: 'undefined',
+          modifiedAt: '2024-01-02',
+          teamId: '',
+        },
+      ],
+      success: true,
+    });
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+        '',
+        'all',
+      ),
+    );
+
+    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
+    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByText(/export:ug-2:2.0.0/i)).toBeInTheDocument();
+    expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('view:ug-2');
+    expect(
+      screen
+        .getAllByTestId('unitgroup-create')
+        .find((node) => node.textContent?.includes('"actionType":"copy"')),
+    ).toHaveTextContent('"actionType":"copy"');
+    expect(screen.getByText('versions-disabled:false')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table')).toHaveTextContent('My Data / Unit Groups');
+    expect(screen.getByText('super(m3)')).toBeInTheDocument();
+    expect(screen.getByText('2.0.0')).toBeInTheDocument();
+    expect(screen.getByText('2024-01-02')).toBeInTheDocument();
+    expect(screen.getByText('Fallback units').closest('[data-row-key]')).toHaveAttribute(
+      'data-row-key',
+      'ug-2-2.0.0',
     );
   });
 });

@@ -16,7 +16,10 @@ const toText = (node: any): string => {
 let mockSelectProps: any[] = [];
 let mockPropertyCreateProps: any = null;
 let mockPropertyEditProps: any = null;
+let mockPropertyDeleteProps: any = null;
 let mockLevelFormCalls: any[] = [];
+let mockLangFormCalls: any[] = [];
+let mockSourceSelectCalls: any[] = [];
 
 const mockGenFlowPropertyTabTableData = jest.fn((data: any[]) => data);
 const mockGetUnitData = jest.fn();
@@ -152,12 +155,18 @@ jest.mock('@/pages/Flows/Components/Property/edit', () => ({
 }));
 jest.mock('@/pages/Flows/Components/Property/delete', () => ({
   __esModule: true,
-  default: () => <div data-testid='property-delete' />,
+  default: (props: any) => {
+    mockPropertyDeleteProps = props;
+    return <div data-testid='property-delete' />;
+  },
 }));
 
 jest.mock('@/components/LangTextItem/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='lang-form'>lang-form</div>,
+  default: (props: any) => {
+    mockLangFormCalls.push(props);
+    return <div data-testid='lang-form'>lang-form</div>;
+  },
 }));
 jest.mock('@/components/LevelTextItem/form', () => ({
   __esModule: true,
@@ -176,7 +185,10 @@ jest.mock('@/pages/Contacts/Components/select/form', () => ({
 }));
 jest.mock('@/pages/Sources/Components/select/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='source-select' />,
+  default: (props: any) => {
+    mockSourceSelectCalls.push(props);
+    return <div data-testid='source-select' />;
+  },
 }));
 
 describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
@@ -204,7 +216,10 @@ describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
     mockSelectProps = [];
     mockPropertyCreateProps = null;
     mockPropertyEditProps = null;
+    mockPropertyDeleteProps = null;
     mockLevelFormCalls = [];
+    mockLangFormCalls = [];
+    mockSourceSelectCalls = [];
     mockRefCheckContextValue = { refCheckData: [] };
     mockGetUnitData.mockResolvedValue([
       {
@@ -285,5 +300,83 @@ describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
       expect(screen.getByTestId('aligned-number')).toBeInTheDocument();
       expect(screen.getByTestId('quantitative-icon')).toBeInTheDocument();
     });
+
+    act(() => {
+      mockPropertyEditProps?.setViewDrawerVisible?.(true);
+      mockPropertyDeleteProps?.setViewDrawerVisible?.(false);
+    });
+  });
+
+  it('clears property rows when unit data resolves to nothing and skips flow-type syncing while closed', async () => {
+    const props = {
+      ...baseProps(),
+      drawerVisible: false,
+      flowType: 'Product flow',
+    };
+    mockGetUnitData.mockResolvedValue(undefined);
+
+    await act(async () => {
+      render(<FlowForm {...props} />);
+    });
+
+    await waitFor(() => {
+      expect(mockGetUnitData).toHaveBeenCalled();
+    });
+
+    expect(screen.getByTestId('pro-table').getAttribute('data-row-class')).toBe('');
+    expect(mockLevelFormCalls.some((call) => call.flowType === 'Product flow')).toBe(true);
+  });
+
+  it('resets classification fields when switching back to elementary flow from another flow type', async () => {
+    const props = {
+      ...baseProps(),
+      flowType: 'Product flow',
+    };
+
+    await act(async () => {
+      render(<FlowForm {...props} />);
+    });
+
+    const typeSelect = mockSelectProps.find((p) => (p.options || []).length === 2);
+    act(() => {
+      typeSelect.onChange('Elementary flow');
+    });
+
+    expect(props.formRef.current.setFieldValue).toHaveBeenCalledWith(
+      expect.arrayContaining(['common:elementaryFlowCategorization']),
+      null,
+    );
+    expect(props.formRef.current.setFieldValue).toHaveBeenCalledWith(
+      expect.arrayContaining(['common:classification']),
+      null,
+    );
+  });
+
+  it('does not inject create-only default sources when the form type is not create', async () => {
+    const props = {
+      ...baseProps(),
+      formType: 'edit',
+    };
+
+    await act(async () => {
+      render(<FlowForm {...props} />);
+    });
+
+    await waitFor(() => {
+      expect(mockSourceSelectCalls.length).toBeGreaterThan(0);
+      expect(mockLangFormCalls.length).toBeGreaterThan(0);
+    });
+
+    expect(
+      mockSourceSelectCalls.find(
+        (call) =>
+          Array.isArray(call.name) && call.name.includes('common:referenceToComplianceSystem'),
+      )?.defaultSourceName,
+    ).toBeUndefined();
+    expect(
+      mockSourceSelectCalls.find(
+        (call) => Array.isArray(call.name) && call.name.includes('common:referenceToDataSetFormat'),
+      )?.defaultSourceName,
+    ).toBeUndefined();
   });
 });

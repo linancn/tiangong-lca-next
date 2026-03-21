@@ -296,6 +296,21 @@ describe('Notification Component', () => {
     expect(screen.getByTestId('team-notification')).toHaveTextContent('Team Notification 3');
   });
 
+  it('falls back to zero view timestamps when fresh metadata is missing', async () => {
+    mockGetFreshUserMetadata.mockResolvedValueOnce(undefined);
+
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(mockGetNotifyReviewsCount).toHaveBeenCalledWith(3, 0);
+      expect(mockGetTeamInvitationCountApi).toHaveBeenCalledWith(3, 0);
+    });
+  });
+
   it('should show badge dot on team tab when team notification exists', async () => {
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 1 });
     mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });

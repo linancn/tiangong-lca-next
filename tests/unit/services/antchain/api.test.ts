@@ -10,9 +10,14 @@
 
 import {
   createCalculation,
+  handleAntchainCliError,
+  isMainModule,
   queryCalculationResults,
   queryCalculationStatus,
+  runAntchainCliEntry,
   runCalculationWorkflow,
+  runCompleteCalculationWorkflow,
+  sleep,
 } from '@/services/antchain/api';
 import { supabase } from '@/services/supabase';
 
@@ -946,6 +951,243 @@ describe('Antchain API service', () => {
         const result = await createCalculation(validParams1, validParams2);
         expect(result.instanceId).toBe('instance-retry123');
       });
+    });
+  });
+
+  describe('CLI helpers', () => {
+    it('resolves sleep without side effects', async () => {
+      await expect(sleep(0)).resolves.toBeUndefined();
+    });
+
+    it('uses the environment override when runtime is omitted', async () => {
+      const previousValue = process.env.ANTCHAIN_CLI_FORCE_RUN;
+      process.env.ANTCHAIN_CLI_FORCE_RUN = 'true';
+
+      await expect(isMainModule()).resolves.toBe(true);
+
+      process.env.ANTCHAIN_CLI_FORCE_RUN = previousValue;
+    });
+
+    it('treats FORCE_RUN=true as main module', async () => {
+      await expect(isMainModule({ override: 'true' })).resolves.toBe(true);
+    });
+
+    it('treats FORCE_RUN=false as non-main module', async () => {
+      await expect(isMainModule({ override: 'false' })).resolves.toBe(false);
+    });
+
+    it('matches argv[1] against the current file path when no override is set', async () => {
+      await expect(
+        isMainModule({
+          argv1: '/tmp/antchain-api.ts',
+          resolveCurrentFilePath: async () => '/tmp/antchain-api.ts',
+        }),
+      ).resolves.toBe(true);
+    });
+
+    it('falls back to require.main when current file resolution fails', async () => {
+      await expect(
+        isMainModule({
+          resolveCurrentFilePath: async () => {
+            throw new Error('url import failed');
+          },
+          fallbackRequireMain: () => true,
+        }),
+      ).resolves.toBe(true);
+    });
+
+    it('uses the default require.main fallback when no custom fallback is provided', async () => {
+      await expect(
+        isMainModule({
+          resolveCurrentFilePath: async () => {
+            throw new Error('url import failed');
+          },
+        }),
+      ).resolves.toBe(false);
+    });
+
+    it('runs the complete workflow through retry, polling and result retrieval', async () => {
+      const logger = {
+        log: jest.fn(),
+        error: jest.fn(),
+      };
+      const createCalculationFn = jest.fn().mockResolvedValue({
+        success: true,
+        instanceId: 'instance-123',
+      });
+      const statusError = new Error('temporary status failure');
+      const queryCalculationStatusFn = jest
+        .fn()
+        .mockRejectedValueOnce(statusError)
+        .mockResolvedValueOnce({ status: 'RUNNING' })
+        .mockResolvedValueOnce({
+          status: 'INSTANCE_COMPLETED',
+          coDatasetId: 'co-dataset-123',
+        });
+      const queryCalculationResultsFn = jest.fn().mockResolvedValue({
+        success: true,
+        data: [{ valueList: [1, 2, 3] }],
+      });
+      const sleepFn = jest.fn().mockResolvedValue(undefined);
+      let currentTime = 0;
+      const now = jest.fn(() => {
+        currentTime += 1000;
+        return currentTime;
+      });
+
+      await runCompleteCalculationWorkflow({
+        createCalculationFn,
+        queryCalculationStatusFn,
+        queryCalculationResultsFn,
+        sleepFn,
+        logger,
+        now,
+      });
+
+      expect(createCalculationFn).toHaveBeenCalled();
+      expect(queryCalculationStatusFn).toHaveBeenCalledTimes(3);
+      expect(queryCalculationResultsFn).toHaveBeenCalledWith('co-dataset-123');
+      expect(sleepFn).toHaveBeenCalledWith(10000);
+      expect(logger.error).toHaveBeenCalledWith('⚠️ Status Query Failed:', statusError);
+      expect(logger.log).toHaveBeenCalledWith('📦 Dataset ID:', 'co-dataset-123');
+      expect(logger.log).toHaveBeenCalledWith(JSON.stringify([1, 2, 3], null, 2));
+    });
+
+    it('logs an error when task creation reports unsuccessful result', async () => {
+      const logger = {
+        log: jest.fn(),
+        error: jest.fn(),
+      };
+
+      await runCompleteCalculationWorkflow({
+        createCalculationFn: jest.fn().mockResolvedValue({ success: false }),
+        logger,
+      });
+
+      expect(logger.error).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it('logs an error when the calculation status becomes FAILED', async () => {
+      const logger = {
+        log: jest.fn(),
+        error: jest.fn(),
+      };
+
+      await runCompleteCalculationWorkflow({
+        createCalculationFn: jest.fn().mockResolvedValue({
+          success: true,
+          instanceId: 'instance-123',
+        }),
+        queryCalculationStatusFn: jest.fn().mockResolvedValue({ status: 'FAILED' }),
+        logger,
+      });
+
+      expect(logger.error).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it('logs an error when completion returns no coDatasetId', async () => {
+      const logger = {
+        log: jest.fn(),
+        error: jest.fn(),
+      };
+
+      await runCompleteCalculationWorkflow({
+        createCalculationFn: jest.fn().mockResolvedValue({
+          success: true,
+          instanceId: 'instance-123',
+        }),
+        queryCalculationStatusFn: jest.fn().mockResolvedValue({
+          status: 'INSTANCE_COMPLETED',
+        }),
+        logger,
+      });
+
+      expect(logger.error).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it('uses default logger and workflow dependencies when options are omitted', async () => {
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const dateNowSpy = jest
+        .spyOn(Date, 'now')
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(61000)
+        .mockReturnValueOnce(122000)
+        .mockReturnValueOnce(183000)
+        .mockReturnValueOnce(244000);
+
+      invokeMock
+        .mockResolvedValueOnce({
+          data: { success: true, instanceId: 'instance-default' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { status: 'INSTANCE_COMPLETED', coDatasetId: 'co-dataset-default' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { success: true, data: [{ valueList: [9, 8, 7] }] },
+          error: null,
+        });
+
+      await runCompleteCalculationWorkflow();
+
+      expect(invokeMock).toHaveBeenNthCalledWith(1, 'create_calculation', expect.any(Object));
+      expect(invokeMock).toHaveBeenNthCalledWith(2, 'query_calculation_status', expect.any(Object));
+      expect(invokeMock).toHaveBeenNthCalledWith(
+        3,
+        'query_calculation_results',
+        expect.any(Object),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(JSON.stringify([9, 8, 7], null, 2));
+
+      dateNowSpy.mockRestore();
+      consoleLogSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('runs the CLI entry only when the module is considered main', async () => {
+      const logger = {
+        log: jest.fn(),
+        error: jest.fn(),
+      };
+      const runWorkflowFn = jest.fn().mockResolvedValue(undefined);
+
+      await runAntchainCliEntry({ override: 'false' }, { logger, runWorkflowFn });
+      expect(runWorkflowFn).not.toHaveBeenCalled();
+
+      await runAntchainCliEntry({ override: 'true' }, { logger, runWorkflowFn });
+      expect(logger.log).toHaveBeenCalledWith('Running in Node.js environment');
+      expect(runWorkflowFn).toHaveBeenCalled();
+    });
+
+    it('logs and exits from CLI error handler', () => {
+      const logger = {
+        error: jest.fn(),
+      };
+      const exitFn = jest.fn();
+      const error = new Error('cli failure');
+
+      handleAntchainCliError(error, logger, exitFn);
+
+      expect(logger.error).toHaveBeenCalledWith('执行错误:', error);
+      expect(exitFn).toHaveBeenCalledWith(1);
+    });
+
+    it('uses default logger and exit function in the CLI error handler', () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const processExitSpy = jest
+        .spyOn(process, 'exit')
+        .mockImplementation((() => undefined) as any);
+      const error = new Error('default cli failure');
+
+      handleAntchainCliError(error);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('执行错误:', error);
+      expect(processExitSpy).toHaveBeenCalledWith(1);
+
+      processExitSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
     });
   });
 });

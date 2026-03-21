@@ -1300,6 +1300,30 @@ describe('Flow Utility Functions', () => {
       expect(result).toHaveLength(1);
       expect(result[0].dataSetInternalID).toBe('-');
     });
+
+    it('should tolerate undefined flow-property items when generating ordered JSON', () => {
+      const result = genFlowJsonOrdered('test-id', {
+        flowProperties: {
+          flowProperty: [undefined],
+        },
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: 'Product flow',
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          },
+        },
+      });
+
+      expect(result.flowDataSet.flowProperties.flowProperty).toEqual(
+        expect.objectContaining({
+          '@dataSetInternalID': undefined,
+        }),
+      );
+    });
   });
 
   /**
@@ -1453,6 +1477,77 @@ describe('Flow Utility Functions', () => {
       expect(result.flowDataSet.flowProperties.flowProperty).toBeDefined();
       // Should convert single object to proper structure
       expect(result.flowDataSet.flowProperties.flowProperty['@dataSetInternalID']).toBe('0');
+    });
+
+    it('should preserve plain generalComment arrays in genFlowFromData', () => {
+      const data = {
+        flowInformation: {
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Steel' }],
+            },
+          },
+          quantitativeReference: {
+            referenceToReferenceFlowProperty: '0',
+          },
+        },
+        flowProperties: {
+          flowProperty: [
+            {
+              '@dataSetInternalID': '0',
+              referenceToFlowPropertyDataSet: {
+                '@refObjectId': 'prop-id-1',
+              },
+              generalComment: [{ '@xml:lang': 'en', '#text': 'Plain flow-property comment' }],
+            },
+          ],
+        },
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: 'Elementary flow',
+          },
+        },
+      };
+
+      const result = genFlowFromData(data);
+      const flowProps = result.flowProperties.flowProperty as unknown as any[];
+
+      expect(flowProps[0].generalComment).toEqual([
+        { '@xml:lang': 'en', '#text': 'Plain flow-property comment' },
+      ]);
+    });
+
+    it('should tolerate undefined flow-property items in genFlowFromData', () => {
+      const result = genFlowFromData({
+        flowProperties: {
+          flowProperty: [undefined],
+        },
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: 'Product flow',
+          },
+        },
+      });
+
+      const flowProps = result.flowProperties.flowProperty as unknown as any[];
+      expect(flowProps[0].generalComment).toEqual([]);
+      expect(flowProps[0].referenceToFlowPropertyDataSet).toEqual({
+        '@refObjectId': undefined,
+        '@type': undefined,
+        '@uri': undefined,
+        '@version': undefined,
+        'common:shortDescription': [],
+      });
+    });
+
+    it('should tolerate undefined property rows when building tabular flow-property data', () => {
+      const result = genFlowPropertyTabTableData([undefined], 'en');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].dataSetInternalID).toBe('-');
+      expect(result[0].referenceToFlowPropertyDataSet).toBe('-');
+      expect(result[0].generalComment).toBeUndefined();
+      expect(result[0]['common:generalComment']).toBeUndefined();
     });
 
     it('should expose general comments as arrays in genFlowFromData for form compatibility', () => {

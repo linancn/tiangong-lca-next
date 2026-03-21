@@ -35,7 +35,9 @@ npm test
 
 # 全量覆盖率
 npm run test:coverage
+npm run test:coverage:assert-full
 npm run test:coverage:report
+npm run prepush:gate
 
 # 共享 runner 实际使用的全量 unit/src 阶段命令
 npx jest tests/unit src --maxWorkers=50% --testTimeout=20000
@@ -60,33 +62,66 @@ npm run lint
 ## 覆盖率预期
 
 - 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
+- 硬约束：任何代码修改都必须让全仓 Statements / Branches / Functions / Lines 保持 `100%`。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
-- 截至 2026年3月18日，最新已验证全量运行（`npm run test:coverage`）是 `286 suites / 2842 tests`，全局覆盖率为：
-  - Statements: `94.97%` (19080/20090)
-  - Branches: `87.97%` (10285/11691)
-  - Functions: `94.01%` (4116/4378)
-  - Lines: `95.15%` (18278/19208)
+- 截至 2026年3月20日，最新已验证全量运行（`npm run test:coverage:report`，它会先重新执行 `npm run test:coverage`）是 `288 suites / 3476 tests`，全局覆盖率为：
+  - Statements: `100.00%` (20013/20013)
+  - Branches: `100.00%` (11419/11419)
+  - Functions: `100.00%` (4379/4379)
+  - Lines: `100.00%` (19143/19143)
 - 同一轮运行得到的逐文件库存摘要：
-  - 追踪的源码文件：`312`
-  - 已全满文件（`100/100/100/100`）：`197`
-  - 仍有缺口的文件：`115`
-  - Branch 分桶：`<50 = 1`、`50-70 = 8`、`70-90 = 68`、`90-<100 = 27`
-  - `line=100` 但 `branch<100` 的文件：`27`
-- 当前 branch 门禁依然安全，但 lifecycle-model persistence bundle 同步重新打开了 1 个 `<50` 热点和 8 个 `50-70` 热点；当前执行重心重新回到这些低 branch 文件，收完后再继续处理更大的 `70-90` 桶和 branch-only 缺口。
+  - 追踪的源码文件：`313`
+  - 已全满文件（`100/100/100/100`）：`313`
+  - 仍有缺口的文件：`0`
+  - Branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 0`、`90-<100 = 0`
+  - `line=100` 但 `branch<100` 的文件：`0`
+- 当前有序清零队列已经清空。仓库现在处于维护态：所有触达或新增的 `src/**` 文件都要保持 `100/100/100/100`，只有覆盖率报告重新出现缺口时，才恢复队列执行。
+- Push 门禁：`.husky/pre-push` 现在执行 `npm run prepush:gate`，也就是 `lint + npm run test:coverage + npm run test:coverage:assert-full`。只要覆盖率不是全仓 100%，本地 push 就会被直接拦下。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
 - 报告粒度规则：
-  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件。
+  - `npm run test:coverage:report`：默认 review 输出。看全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个有序未完成文件；文件和批次标签使用完整的项目相对路径，不再用 `...` 截断。
+  - `npm run test:coverage:assert-full`：对最新 coverage 产物做严格断言。只要任一 tracked source file 不是 `100/100/100/100`，就直接失败。
   - `node scripts/test-coverage-report.js --full`：看完整的有序未完成文件队列，用于查看全量逐文件状态或刷新 backlog 快照。
+  - 当仓库已经全满覆盖时，这两个命令都会明确输出 `No files with remaining coverage gaps.`；后续有意义的测试工程变更后，仍要用它们确认仓库是否继续保持维护态。
   - 队列排序是确定性的：`branches 升序 -> lines 升序 -> statements 升序 -> functions 升序 -> path`。
-  - 当前队头已变为 `src/services/lifeCycleModels/api.ts`、`src/pages/Processes/Components/lcaGroupedResults.ts`、`src/services/lifeCycleModels/persistencePlan.ts`、`src/pages/Processes/Analysis/index.tsx`。
 - 队列执行规则：
   - 不再按主观“哪个收益更高”重新排优先级。
-  - 直接拿有序队列的第一个文件，尽量把该文件推进到 `100/100/100/100` 后再移动。
+  - 当队列为空时，所有触达或新增的 `src/**` 文件都要继续保持 `100/100/100/100`。
+  - 如果未来队列重新出现，就直接拿有序队列的第一个文件，尽量把该文件推进到 `100/100/100/100` 后再移动。
   - 允许的例外很少：相邻文件共享同一套 mock/fixture/test harness 时可成批推进；当前文件或紧邻文件被共享测试基础设施问题卡住时，可先修 blocker。
   - 如果当前队列分支被证明不可达或业务上无效，优先删除死分支且不改变行为，而不是为了抬覆盖率去硬造测试。
-- 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自持续缩小热点列表，而不是把门槛抬上去。
+- 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自把全仓满覆盖稳定保持住，而不是把门槛继续抬高。
+- 需要在正式 push 前本地预演时，直接运行 `npm run prepush:gate`。
+
+## 集成测试完成度标准
+
+- 不要把集成测试当成“代码覆盖率竞赛”。全仓 `100/100/100/100` 仍然是硬门禁，但集成测试深度应按“工作流置信度”衡量，而不是强行要求 `tests/integration` 自己打到 `100%` 代码覆盖率。
+- 大规模推进集成测试时，统一使用这套 100 分量表：
+  - 功能工作流覆盖：`40` 分。
+    - 页面能加载、主用户动作能完成、可见 UI 有刷新，且相关 `@/services/**` 边界被断言。
+  - 变体矩阵覆盖：`25` 分。
+    - 覆盖路由/数据源前缀、角色/权限状态、URL/query 初始化状态。
+  - 异常与回退覆盖：`15` 分。
+    - 覆盖列表加载失败、create/update 失败、delete 失败或取消、空状态，以及用户可见的恢复行为。
+  - 导航与副作用覆盖：`10` 分。
+    - 覆盖 `history.push`、`history.replace`、`window.location.href`、`window.location.reload` 等浏览器拥有的跳转与副作用。
+  - 工程质量：`10` 分。
+    - 保持 mock 可确定、断言语义化、单文件范围可维护，且所有 skipped tests 都有明确理由。
+- 建议完成度阈值：
+  - `85-100`：该工作流达到可发布的集成测试完备度。
+  - `70-84`：基础较扎实，但矩阵或回退路径仍有缺口。
+  - `50-69`：以 happy path 为主，重构风险偏高。
+  - `<50`：只有冒烟级信心。
+- 这个仓库新增集成测试的默认优先级：
+  1. 先做 pathname 驱动页面的路由/数据源矩阵（`LifeCycleModels`、`Processes`、`Flows`、`Flowproperties`、`Unitgroups`、`Sources`、`Contacts`）。
+  2. 再做权限和角色矩阵（`Teams`、`ManageSystem`、`Review`）。
+  3. 再做 URL/query 驱动与跨页流程（`Login`、`Welcome`、`Processes/Analysis`、深链抽屉）。
+  4. 再补同一批工作流的失败/回退路径。
+  5. 只有当集成测试确实无法可信模拟时，才补一层很薄的浏览器真实冒烟。
+- 当前检查点（2026 年 3 月 21 日）：默认推进顺序的 Phase 1-3 已在这个仓库落地完成，Phase 4 也已经启动。当前仓库已经覆盖欢迎页 modal 空结果与缩略图失败降级、登录注册回退状态、Processes 空结果与请求异常后的恢复，以及 Account 凭证/加载/邮箱变更失败路径；默认下一步是继续补齐同一批工作流上剩余的 create/update/delete 与 cancel 锚点。
+- E2E 规则：默认先做 integration。只有遇到重定向链、文件上传/预览、reload、窗口级导航这类浏览器真实行为时，才把极少数场景升级为未来的 E2E 冒烟层。
 
 ## 相关文档
 

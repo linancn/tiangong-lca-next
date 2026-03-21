@@ -86,9 +86,13 @@ jest.mock('antd', () => {
     </button>
   );
   const Tooltip = ({ children }: any) => <>{children}</>;
-  const Drawer = ({ open, title, extra, children, onClose }: any) =>
+  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) =>
     open ? (
-      <section role='dialog' aria-label={toText(title) || 'drawer'}>
+      <section
+        role='dialog'
+        aria-label={toText(title) || 'drawer'}
+        data-container={String(getContainer?.() === globalThis.document?.body)}
+      >
         <header>
           <div>{extra}</div>
           <button type='button' onClick={onClose}>
@@ -207,5 +211,53 @@ describe('FlowpropertyView', () => {
     await userEvent.click(screen.getByRole('button', { name: /Administrative information/i }));
     expect(screen.getByTestId('contact-desc')).toBeInTheDocument();
     expect(screen.getByText('1.0')).toBeInTheDocument();
+  });
+
+  it('opens from the text trigger and closes through both close actions', async () => {
+    renderWithProviders(<FlowpropertyView id='fp-2' version='2.0' lang='en' buttonType='text' />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'View' }));
+
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-2', '2.0'));
+    expect(screen.getByRole('dialog', { name: /View Flow property/i })).toHaveAttribute(
+      'data-container',
+      'true',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+    expect(screen.queryByRole('dialog', { name: /View Flow property/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'View' }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: /View Flow property/i })).toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog', { name: /View Flow property/i })).not.toBeInTheDocument();
+  });
+
+  it('falls back to empty classification data and sparse detail payloads without crashing', async () => {
+    mockGetFlowpropertyDetail.mockResolvedValueOnce({ data: {} });
+    mockGetClassificationValues.mockReturnValue(undefined);
+    mockGenFlowpropertyFromData.mockReturnValueOnce({
+      flowPropertiesInformation: {
+        dataSetInformation: {},
+        quantitativeReference: {},
+      },
+      modellingAndValidation: {},
+      administrativeInformation: {},
+    });
+
+    renderWithProviders(<FlowpropertyView id='fp-3' version='3.0' lang='en' buttonType='text' />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'View' }));
+
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-3', '3.0'));
+    expect(mockGenFlowpropertyFromData).toHaveBeenCalledWith({});
+    expect(mockGetClassificationValues).toHaveBeenLastCalledWith(undefined);
+    expect(screen.getByRole('dialog', { name: /View Flow property/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Flow property information/i }));
+    expect(screen.getByText('-')).toBeInTheDocument();
   });
 });

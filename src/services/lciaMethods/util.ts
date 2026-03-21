@@ -102,7 +102,7 @@ export const getDecompressedMethod = async (filename: string): Promise<any | nul
   try {
     const db = await initDB();
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const transaction = db.transaction([CACHE_STORE_NAME], 'readonly');
       const store = transaction.objectStore(CACHE_STORE_NAME);
       const request = store.get(filename);
@@ -263,12 +263,8 @@ export const forceRefreshCache = async (): Promise<void> => {
  * Check if a method is available in decompressed cache
  */
 export const isMethodCached = async (filename: string): Promise<boolean> => {
-  try {
-    const data = await getDecompressedMethod(filename);
-    return data !== null;
-  } catch {
-    return false;
-  }
+  const data = await getDecompressedMethod(filename);
+  return data !== null;
 };
 
 /**
@@ -278,7 +274,7 @@ export const getCachedMethodList = async (): Promise<string[]> => {
   try {
     const db = await initDB();
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const transaction = db.transaction([CACHE_STORE_NAME], 'readonly');
       const store = transaction.objectStore(CACHE_STORE_NAME);
       const request = store.getAllKeys();

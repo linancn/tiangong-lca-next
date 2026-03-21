@@ -24,7 +24,9 @@ npm start
 npm run lint
 npm test
 npm run test:coverage
+npm run test:coverage:assert-full
 npm run test:coverage:report
+npm run prepush:gate
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build
 ```
@@ -34,7 +36,9 @@ Notes:
 - `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
 - The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
 - `npm run test:coverage` and `npm run test:coverage:report` already include `NODE_OPTIONS=--max-old-space-size=8192`; use the scripts directly for full coverage work.
-- `npm run test:coverage:report` is the default coverage review artifact. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files.
+- `npm run test:coverage:assert-full` reads the latest coverage artifact and fails unless the repo is still at `100%` statements / branches / functions / lines with zero remaining queue files.
+- `npm run prepush:gate` is the local push gate: `lint + full coverage + strict 100% assertion`.
+- `npm run test:coverage:report` is the default coverage review artifact. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files using full project-relative paths (no `...` truncation for file/cluster labels).
 - `node scripts/test-coverage-report.js --full` prints the full ordered incomplete-file queue. Use it to inspect the full file-by-file state or refresh the queue snapshot, not to subjectively re-rank by ROI.
 - For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
 
@@ -72,9 +76,12 @@ Read only what matches the current task:
 - Investigate first (`rg`, nearest feature, existing tests).
 - Keep business logic in services/utilities; React layers stay orchestration-focused.
 - Add/adjust tests matching scope.
+- Any code change is a hard requirement to keep repo-wide coverage at `100%` for statements, branches, functions, and lines.
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to the change.
-- For coverage-to-100 work, follow the ordered closure queue in `docs/agents/test_todo_list.md` / `npm run test:coverage:report` one file at a time.
+- Run `npm run test:coverage:assert-full` whenever you need to verify the hard gate without rerunning coverage.
+- Before push, the repo must pass `npm run prepush:gate`; do not bypass the local full-coverage gate unless a human explicitly instructs you to.
+- If `npm run test:coverage:report` shows gaps, follow the ordered closure queue in `docs/agents/test_todo_list.md` one file at a time. If it shows no gaps, stay in maintenance mode and keep the repo at full closure.
 - Allowed queue exceptions: batch adjacent files that share the same mock/fixture/test harness, and fix blocking test-infrastructure issues first when they block the current file or its immediate neighbors.
 - If a queued file contains a provably unreachable or business-invalid branch, remove the dead branch without changing behavior instead of inventing synthetic tests, then continue queue order.
 - If test engineering changed (commands, coverage baseline, backlog status, workflow), sync `docs/agents/ai-testing-guide.md`, `docs/agents/test_todo_list.md`, and when strategic context changed also `docs/agents/test_improvement_plan.md`, plus all `_CN` mirrors.

@@ -110,10 +110,6 @@ const AssignmentReview = ({
       return;
     }
 
-    if (subTableData[rowKey]) {
-      return;
-    }
-
     setSubTableLoading((prev) => ({ ...prev, [rowKey]: true }));
   };
 
@@ -552,7 +548,7 @@ const AssignmentReview = ({
                 </div>
               );
             }
-            const data = subTableData[record.id] || [];
+            const data = subTableData[record.id];
             return (
               <Table
                 columns={subColumns}

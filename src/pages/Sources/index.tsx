@@ -37,8 +37,6 @@ import SourceView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [stateCode, setStateCode] = useState<string | number>('all');
-  const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -279,16 +277,12 @@ const TableList: FC = () => {
     },
   ];
   useEffect(() => {
-    if (team) {
-      return;
-    }
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) setTeam(res.data[0]);
     });
   }, []);
   const onSearch: SearchProps['onSearch'] = (value) => {
     keyWordRef.current = value;
-    setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
@@ -349,7 +343,6 @@ const TableList: FC = () => {
                 key={2}
                 onChange={(val) => {
                   stateCodeRef.current = val;
-                  setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
@@ -372,8 +365,8 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current ?? stateCode;
+          const currentKeyWord = keyWordRef.current;
+          const currentStateCode = stateCodeRef.current;
           if (currentKeyWord.length > 0) {
             if (openAI) {
               return attachReviewState(

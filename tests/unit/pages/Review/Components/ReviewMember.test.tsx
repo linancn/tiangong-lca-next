@@ -70,11 +70,17 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Drawer = ({ open, title, children, extra }: any) =>
+  const Drawer = ({ open, title, children, extra, onClose, getContainer }: any) =>
     open ? (
-      <section data-testid='drawer'>
+      <section
+        data-testid='drawer'
+        data-container={getContainer?.() === globalThis.document?.body ? 'body' : 'unknown'}
+      >
         <header>{toText(title)}</header>
         <div>{extra}</div>
+        <button type='button' onClick={() => onClose?.()}>
+          drawer-on-close
+        </button>
         <div>{children}</div>
       </section>
     ) : null;
@@ -323,5 +329,109 @@ describe('ReviewMember', () => {
     expect(screen.getByRole('button', { name: 'delete' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'crown' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'user' })).toBeDisabled();
+  });
+
+  it('logs thrown update and delete failures without crashing', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockUpdateRoleApi.mockRejectedValueOnce(new Error('update crashed'));
+    mockDelRoleApi.mockRejectedValueOnce(new Error('delete crashed'));
+
+    try {
+      render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+      await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+      await userEvent.click(screen.getByRole('button', { name: 'crown' }));
+      await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalledTimes(1));
+
+      await userEvent.click(screen.getByRole('button', { name: 'delete' }));
+      await act(async () => {
+        await Modal.confirm.mock.calls[0][0].onOk();
+      });
+
+      await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalledTimes(2));
+      expect(message.success).not.toHaveBeenCalled();
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
+
+  it('returns an empty member table when the current user has no role', async () => {
+    render(<ReviewMember userData={{ user_id: 'no-role', role: '' as any }} />);
+
+    await waitFor(() => expect(screen.getByTestId('protable')).toBeInTheDocument());
+
+    expect(mockGetUserManageTableData).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('row-member@example.com')).not.toBeInTheDocument();
+  });
+
+  it('falls back to an empty table when the request throws and closes the drawer via onClose', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetUserManageTableData.mockRejectedValueOnce(new Error('members crashed'));
+
+    try {
+      render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+      await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
+      expect(screen.queryByTestId('row-member@example.com')).not.toBeInTheDocument();
+
+      mockGetUserManageTableData.mockResolvedValueOnce({
+        success: true,
+        data: [
+          {
+            email: 'member@example.com',
+            pendingCount: 2,
+            reviewedCount: 5,
+            display_name: 'Member One',
+            role: 'review-member',
+            user_id: 'user-2',
+            team_id: 'team-1',
+          },
+        ],
+        total: 1,
+      });
+
+      await act(async () => {
+        await screen.getByTestId('protable');
+      });
+
+      await userEvent.click(screen.getByRole('button', { name: 'plus' }));
+      await userEvent.click(screen.getByRole('button', { name: 'modal-success' }));
+      await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalledTimes(2));
+
+      await userEvent.click(screen.getByText('2'));
+      expect(screen.getByTestId('drawer')).toHaveAttribute('data-container', 'body');
+
+      await userEvent.click(screen.getByRole('button', { name: 'drawer-on-close' }));
+      expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
+
+  it('renders an empty role label for unexpected member roles', async () => {
+    mockGetUserManageTableData.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          email: 'unknown@example.com',
+          pendingCount: 0,
+          reviewedCount: 0,
+          display_name: 'Unknown Role User',
+          role: 'unknown-role',
+          user_id: 'user-unknown',
+          team_id: 'team-3',
+        },
+      ],
+      total: 1,
+    });
+
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    expect(screen.getByTestId('row-unknown@example.com')).toHaveTextContent('unknown@example.com');
+    expect(screen.getByTestId('row-unknown@example.com')).not.toHaveTextContent('Admin');
+    expect(screen.getByTestId('row-unknown@example.com')).not.toHaveTextContent('Member');
   });
 });

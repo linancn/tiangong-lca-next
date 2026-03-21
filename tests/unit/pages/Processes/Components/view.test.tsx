@@ -314,7 +314,12 @@ jest.mock('antd', () => {
     </table>
   );
   const Typography = {
-    Text: ({ children }: any) => <span>{children}</span>,
+    Text: ({ children }: any) => <span data-testid='typography-text'>{children}</span>,
+    Link: ({ children, onClick }: any) => (
+      <button type='button' data-testid='typography-link' onClick={onClick}>
+        {children}
+      </button>
+    ),
     Paragraph: ({ children }: any) => <p>{children}</p>,
   };
   return {
@@ -461,6 +466,44 @@ describe('ProcessView component', () => {
     render(<ProcessView {...defaultProps} buttonType='toolIcon' disabled />);
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
+  });
+
+  it('renders secondary text instead of a clickable link when link mode is disabled', () => {
+    render(
+      <ProcessView {...defaultProps} buttonType='link' disabled triggerLabel='Open process' />,
+    );
+
+    expect(screen.getByTestId('typography-text')).toHaveTextContent('Open process');
+    expect(screen.queryByTestId('typography-link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the default View label when link mode is disabled and no trigger label is provided', () => {
+    render(<ProcessView {...defaultProps} buttonType='link' disabled />);
+
+    expect(screen.getByTestId('typography-text')).toHaveTextContent('View');
+    expect(screen.queryByTestId('typography-link')).not.toBeInTheDocument();
+  });
+
+  it('renders a clickable Typography.Link trigger when link mode is enabled', async () => {
+    render(<ProcessView {...defaultProps} buttonType='link' triggerLabel='Open process' />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('typography-link'));
+    });
+
+    expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument();
+  });
+
+  it('falls back to the default View label for clickable link mode when no trigger label is provided', async () => {
+    render(<ProcessView {...defaultProps} buttonType='link' />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('typography-link'));
+    });
+
+    expect(screen.getByTestId('typography-link')).toHaveTextContent('View');
+    expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument();
   });
 
   it('disables the result icon button when no process id is available', () => {

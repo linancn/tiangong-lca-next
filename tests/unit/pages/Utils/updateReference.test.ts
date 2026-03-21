@@ -175,6 +175,41 @@ describe('updateReference helpers', () => {
     expect(mockGetLangList).toHaveBeenCalledWith([]);
   });
 
+  it('returns empty short-description arrays when supported dataset payloads are missing names', () => {
+    expect(getNewVersionShortDescription({ flowDataSet: {} }, 'flow data set')).toEqual([]);
+    expect(getNewVersionShortDescription({ processDataSet: {} }, 'process data set')).toEqual([]);
+    expect(getNewVersionShortDescription({ contactDataSet: {} }, 'contact data set')).toEqual([]);
+    expect(getNewVersionShortDescription({ sourceDataSet: {} }, 'source data set')).toEqual([]);
+    expect(
+      getNewVersionShortDescription({ flowPropertyDataSet: {} }, 'flow property data set'),
+    ).toEqual([]);
+    expect(getNewVersionShortDescription({ unitGroupDataSet: {} }, 'unit group data set')).toEqual(
+      [],
+    );
+    expect(
+      getNewVersionShortDescription({ lciaMethodDataSet: {} }, 'LCIA method data set'),
+    ).toEqual([]);
+  });
+
+  it('falls back to an empty flow short description when the flow-name helper returns nothing', () => {
+    mockGenFlowNameJson.mockReturnValueOnce(undefined);
+
+    expect(
+      getNewVersionShortDescription(
+        {
+          flowDataSet: {
+            flowInformation: {
+              dataSetInformation: {
+                name: { baseName: [{ '#text': 'Flow Name' }] },
+              },
+            },
+          },
+        },
+        'flow data set',
+      ),
+    ).toEqual([]);
+  });
+
   it('collects current and newer reference versions while de-duplicating repeated refs', async () => {
     mockGetAllRefObj.mockReturnValue([
       {
@@ -272,6 +307,36 @@ describe('updateReference helpers', () => {
     await expect(getRefsOfNewVersion(undefined)).resolves.toEqual({ newRefs: [], oldRefs: [] });
   });
 
+  it('returns empty refs when getAllRefObj yields nothing and keeps placeholder current refs for empty detail payloads', async () => {
+    mockGetAllRefObj.mockReturnValueOnce(undefined).mockReturnValueOnce([
+      {
+        '@refObjectId': 'flow-1',
+        '@version': '01.00.000',
+        '@type': 'flow data set',
+      },
+    ]);
+    mockGetRefTableName.mockReturnValue('flows');
+    mockGetDataDetailById.mockResolvedValueOnce(undefined);
+
+    await expect(getRefsOfNewVersion({ any: 'value' })).resolves.toEqual({
+      newRefs: [],
+      oldRefs: [],
+    });
+    await expect(getRefsOfNewVersion({ any: 'value' })).resolves.toEqual({
+      newRefs: [],
+      oldRefs: [
+        expect.objectContaining({
+          id: 'flow-1',
+          type: 'flow data set',
+          currentVersion: '01.00.000',
+          newVersion: '01.00.000',
+          description: [],
+          newDescription: [],
+        }),
+      ],
+    });
+  });
+
   it('collects current-version reference details and ignores missing rows or lookup failures', async () => {
     mockGetAllRefObj.mockReturnValue([
       {
@@ -290,6 +355,11 @@ describe('updateReference helpers', () => {
         '@refObjectId': 'missing-1',
         '@version': '01.00.000',
         '@type': 'source data set',
+      },
+      {
+        '@refObjectId': 'skip-1',
+        '@version': '01.00.000',
+        '@type': 'unknown data set',
       },
     ]);
     mockGetRefTableName.mockImplementation((type) => {
@@ -333,6 +403,12 @@ describe('updateReference helpers', () => {
 
   it('returns an empty current-version payload when initial data is missing', async () => {
     await expect(getRefsOfCurrentVersion(undefined)).resolves.toEqual({ oldRefs: [] });
+  });
+
+  it('returns an empty current-version payload when getAllRefObj yields nothing', async () => {
+    mockGetAllRefObj.mockReturnValue(undefined);
+
+    await expect(getRefsOfCurrentVersion({ any: 'value' })).resolves.toEqual({ oldRefs: [] });
   });
 
   it('updates matching references recursively and safely handles cycles', () => {

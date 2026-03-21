@@ -77,11 +77,14 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Modal = ({ open, title, children }: any) =>
+  const Modal = ({ open, title, children, onCancel }: any) =>
     open ? (
       <div role='dialog'>
         <h1>{title}</h1>
         {children}
+        <button type='button' onClick={onCancel}>
+          Close
+        </button>
       </div>
     ) : null;
 
@@ -98,6 +101,16 @@ jest.mock('antd', () => {
   const Typography = {
     Text: ({ children }: any) => <span>{children}</span>,
   };
+  const theme = {
+    useToken: () => ({
+      token: {
+        colorFillSecondary: '#fafafa',
+        colorTextTertiary: '#595959',
+        colorPrimary: '#1677ff',
+        colorSuccess: '#52c41a',
+      },
+    }),
+  };
 
   return {
     __esModule: true,
@@ -111,6 +124,7 @@ jest.mock('antd', () => {
     Tag,
     Tooltip,
     Typography,
+    theme,
   };
 });
 
@@ -128,7 +142,7 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('LCA Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Task Center')).toBeInTheDocument();
     expect(screen.getByTestId('empty')).toHaveTextContent('No tasks');
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
@@ -334,5 +348,85 @@ describe('LcaTaskCenter', () => {
     expect(
       screen.getByText((_, element) => element?.textContent === 'Elapsed 0 ms'),
     ).toBeInTheDocument();
+  });
+
+  it('covers modal close and task-summary fallbacks for sparse or inconsistent task metadata', () => {
+    mockTasks = [
+      {
+        id: 'task-running-completed',
+        sequence: 7,
+        mode: 'single',
+        scope: 'team',
+        state: 'running',
+        phase: 'completed',
+        message: 'running with completed phase',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+        phaseTimeline: [],
+      },
+      {
+        id: 'task-build-no-id',
+        sequence: 8,
+        mode: 'single',
+        scope: 'team',
+        state: 'running',
+        phase: 'building_snapshot',
+        message: 'build without id',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+        phaseTimeline: [{ phase: 'building_snapshot', startedAt: '2026-03-12T12:00:00.000Z' }],
+      },
+      {
+        id: 'task-running-failed-phase',
+        sequence: 8.5,
+        mode: 'single',
+        scope: 'team',
+        state: 'running',
+        phase: 'failed',
+        message: 'failed phase while still running',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+        phaseTimeline: [],
+      },
+      {
+        id: 'task-solve-no-id',
+        sequence: 9,
+        mode: 'single',
+        scope: 'team',
+        state: 'running',
+        phase: 'solving',
+        message: 'solve without id',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+        phaseTimeline: [{ phase: 'solving', startedAt: '2026-03-12T12:00:00.000Z' }],
+      },
+      {
+        id: 'task-completed-result',
+        sequence: 10,
+        mode: 'single',
+        scope: 'team',
+        state: 'completed',
+        phase: 'completed',
+        message: 'completed normally',
+        resultId: 'result-10',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: 'invalid-updated-at',
+        phaseTimeline: [{ phase: 'solving', startedAt: 'invalid-start' }],
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getByText('Building snapshot (-)')).toBeInTheDocument();
+    expect(screen.getByText('Solving (-)')).toBeInTheDocument();
+    expect(screen.getByText('Completed (result result-10)')).toBeInTheDocument();
+    expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((_, element) => element?.textContent === 'Elapsed 0 ms').length,
+    ).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

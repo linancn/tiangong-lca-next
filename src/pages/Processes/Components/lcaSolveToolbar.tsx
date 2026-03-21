@@ -3,7 +3,7 @@ import type { LcaSolveRequest } from '@/services/lca';
 import { submitLcaTask } from '@/services/lca/taskCenter';
 import { listMyProcessesForLca } from '@/services/processes/api';
 import { CalculatorOutlined } from '@ant-design/icons';
-import { Form, Modal, Radio, Select, Typography, message } from 'antd';
+import { Form, Modal, Radio, Select, Typography, message, theme } from 'antd';
 import { useState } from 'react';
 import { useIntl } from 'umi';
 
@@ -55,6 +55,7 @@ const LcaSolveToolbar = () => {
   const [myProcessOptions, setMyProcessOptions] = useState<MyProcessOption[]>([]);
   const [form] = Form.useForm<FormValues>();
   const intl = useIntl();
+  const { token } = theme.useToken();
   const demandMode = Form.useWatch('demand_mode', form) ?? DEFAULT_VALUES.demand_mode;
 
   const loadMyProcesses = async () => {
@@ -246,8 +247,8 @@ const LcaSolveToolbar = () => {
               marginBottom: 16,
               padding: '10px 12px',
               borderRadius: 8,
-              border: '1px solid #f0f0f0',
-              backgroundColor: '#fafafa',
+              border: `1px solid ${token.colorBorderSecondary}`,
+              backgroundColor: token.colorFillAlter,
             }}
           >
             <Typography.Text strong style={{ display: 'block' }}>

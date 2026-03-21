@@ -57,7 +57,7 @@ jest.mock('antd', () => {
 
   Form.useFormInstance = () => React.useContext(FormContext).form;
 
-  const FormItem = ({ name, children, style }: any) => {
+  const FormItem = ({ name, children, style, rules = [] }: any) => {
     const { form, prefix } = React.useContext(FormContext);
     const path = [...prefix, ...normalizePath(name)];
 
@@ -70,6 +70,11 @@ jest.mock('antd', () => {
     const handleChange = (next: any) => {
       const resolvedValue = next && next.target !== undefined ? next.target.value : next;
       form.setFieldValue(path, resolvedValue);
+      rules.forEach((rule: any) => {
+        if (typeof rule?.validator === 'function') {
+          Promise.resolve(rule.validator(null, resolvedValue)).catch(() => {});
+        }
+      });
     };
 
     const content = React.isValidElement(children)
@@ -494,6 +499,20 @@ describe('LangTextItemForm', () => {
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('English is a required language!');
     });
+  });
+
+  it('falls back to the surrounding form context and empty language selections when formRef is omitted', async () => {
+    const wrapperFormRef = createFormRef({});
+
+    render(
+      <Form {...({ formRef: wrapperFormRef } as any)}>
+        <LangTextItemForm name={['translations']} label='Translation' rules={[]} />
+      </Form>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /add translation item/i }));
+
+    expect(wrapperFormRef.store).toEqual({ translations: [{}] });
   });
 
   it('reads initial values when using listName for nested lists', async () => {

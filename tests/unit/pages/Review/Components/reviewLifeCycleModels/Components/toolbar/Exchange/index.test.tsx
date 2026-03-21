@@ -28,6 +28,9 @@ jest.mock(
           props.sourceOutputFlowID,
           props.targetInputFlowID,
         ].join('|')}
+        <button type='button' onClick={props.onDrawerClose}>
+          close-view
+        </button>
       </div>
     ),
   }),
@@ -91,6 +94,16 @@ describe('ReviewLifeCycleModelEdgeExchangeButton', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'arrow-right' }));
 
+    expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent('false|process-source');
+  });
+
+  it('closes the nested drawer through the child close callback', async () => {
+    render(<EdgeExchange lang='en' disabled={false} edge={edge as any} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'arrow-right' }));
+    expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent('true|process-source');
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-view' }));
     expect(screen.getByTestId('edge-exchange-view')).toHaveTextContent('false|process-source');
   });
 });

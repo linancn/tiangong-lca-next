@@ -141,8 +141,6 @@ const Control = (props: ControlIProps) => {
         }
         break;
       }
-      default:
-        break;
     }
     setZoom(graph.zoom());
   };

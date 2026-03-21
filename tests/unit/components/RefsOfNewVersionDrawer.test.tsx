@@ -38,9 +38,9 @@ jest.mock('antd', () => ({
       {children ?? icon}
     </button>
   ),
-  Drawer: ({ open, title, extra, children, footer, onClose }: any) =>
+  Drawer: ({ open, title, extra, children, footer, onClose, getContainer }: any) =>
     open ? (
-      <div role='dialog'>
+      <div role='dialog' data-container={String(getContainer?.() === global.document?.body)}>
         <h1>{title}</h1>
         <div>{extra}</div>
         <div>{children}</div>
@@ -142,6 +142,7 @@ describe('RefsOfNewVersionDrawer', () => {
     );
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'true');
     expect(screen.getByText('References Newer Versions')).toBeInTheDocument();
     expect(screen.getByText('Contact v1')).toBeInTheDocument();
 

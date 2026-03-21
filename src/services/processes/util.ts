@@ -51,63 +51,62 @@ const normalizeReferenceYearValue = (value: string | number | null | undefined) 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
-  const exchange =
-    exchangeList?.map((item: any) => {
-      if (item?.quantitativeReference) {
-        quantitativeReference = {
-          '@type': 'Reference flow(s)',
-          referenceToReferenceFlow: item?.['@dataSetInternalID'],
-          functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
-        };
-      }
-      const resultingAmount =
-        toAmountNumber(item.resultingAmount) === 0 ? item.meanAmount : item.resultingAmount;
-      return {
-        '@dataSetInternalID': item?.['@dataSetInternalID'],
-        referenceToFlowDataSet: {
-          '@type': item?.referenceToFlowDataSet?.['@type'],
-          '@refObjectId': item?.referenceToFlowDataSet?.['@refObjectId'],
-          '@uri': item?.referenceToFlowDataSet?.['@uri'],
-          '@version': item?.referenceToFlowDataSet?.['@version'],
-          'common:shortDescription': getLangJson(
-            item?.referenceToFlowDataSet?.['common:shortDescription'],
-          ),
+  const exchange = exchangeList.map((item: any) => {
+    if (item?.quantitativeReference) {
+      quantitativeReference = {
+        '@type': 'Reference flow(s)',
+        referenceToReferenceFlow: item?.['@dataSetInternalID'],
+        functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
+      };
+    }
+    const resultingAmount =
+      toAmountNumber(item.resultingAmount) === 0 ? item.meanAmount : item.resultingAmount;
+    return {
+      '@dataSetInternalID': item?.['@dataSetInternalID'],
+      referenceToFlowDataSet: {
+        '@type': item?.referenceToFlowDataSet?.['@type'],
+        '@refObjectId': item?.referenceToFlowDataSet?.['@refObjectId'],
+        '@uri': item?.referenceToFlowDataSet?.['@uri'],
+        '@version': item?.referenceToFlowDataSet?.['@version'],
+        'common:shortDescription': getLangJson(
+          item?.referenceToFlowDataSet?.['common:shortDescription'],
+        ),
+      },
+      location: item.location,
+      functionType: item.functionType,
+      exchangeDirection: item.exchangeDirection,
+      referenceToVariable: item.referenceToVariable,
+      meanAmount: toExchangeAmountString(item.meanAmount),
+      resultingAmount: toExchangeAmountString(resultingAmount),
+      minimumAmount: item.minimumAmount,
+      maximumAmount: item.maximumAmount,
+      uncertaintyDistributionType: item.uncertaintyDistributionType,
+      allocations: {
+        allocation: {
+          '@internalReferenceToCoProduct':
+            item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
+          '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
+            ? item?.allocations?.allocation?.['@allocatedFraction']?.toString()?.replace('%', '')
+            : undefined,
         },
-        location: item.location,
-        functionType: item.functionType,
-        exchangeDirection: item.exchangeDirection,
-        referenceToVariable: item.referenceToVariable,
-        meanAmount: toExchangeAmountString(item.meanAmount),
-        resultingAmount: toExchangeAmountString(resultingAmount),
-        minimumAmount: item.minimumAmount,
-        maximumAmount: item.maximumAmount,
-        uncertaintyDistributionType: item.uncertaintyDistributionType,
-        allocations: {
-          allocation: {
-            '@internalReferenceToCoProduct':
-              item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
-            '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
-              ? item?.allocations?.allocation?.['@allocatedFraction']?.toString()?.replace('%', '')
-              : undefined,
-          },
-        },
-        relativeStandardDeviation95In: item.relativeStandardDeviation95In,
-        dataSourceType: item.dataSourceType,
-        dataDerivationTypeStatus: item.dataDerivationTypeStatus,
-        referencesToDataSource: {
-          referenceToDataSource: jsonToList(
-            item?.referencesToDataSource?.referenceToDataSource,
-          )?.map((source: any) => ({
+      },
+      relativeStandardDeviation95In: item.relativeStandardDeviation95In,
+      dataSourceType: item.dataSourceType,
+      dataDerivationTypeStatus: item.dataDerivationTypeStatus,
+      referencesToDataSource: {
+        referenceToDataSource: jsonToList(item?.referencesToDataSource?.referenceToDataSource)?.map(
+          (source: any) => ({
             '@type': source?.['@type'],
             '@refObjectId': source?.['@refObjectId'],
             '@uri': source?.['@uri'],
             '@version': source?.['@version'],
             'common:shortDescription': getLangJson(source?.['common:shortDescription']),
-          })),
-        },
-        generalComment: getLangJson(item.generalComment),
-      };
-    }) ?? [];
+          }),
+        ),
+      },
+      generalComment: getLangJson(item.generalComment),
+    };
+  });
 
   return removeEmptyObjects({
     processDataSet: {
@@ -1673,13 +1672,10 @@ export function genProcessName(name: any, lang: string): string {
     functionalUnitFlowProperties +
     '; '
   ).replace(/-; /g, '');
-  if (nameStr.endsWith('; ')) {
-    return nameStr.slice(0, -2);
-  }
   if (nameStr.length === 0) {
     return '-';
   }
-  return nameStr;
+  return nameStr.slice(0, -2);
 }
 
 export function genProcessNameJson(name: any) {

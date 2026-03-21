@@ -499,10 +499,6 @@ const ContactEdit: FC<Props> = ({
   };
 
   const handleSyncToOpenData = async () => {
-    if (currentStateCode === 100) {
-      return;
-    }
-
     setSpinning(true);
     const updateResult = await handleSubmit(false);
     if (!updateResult || updateResult.error || !updateResult?.data?.[0]) {

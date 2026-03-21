@@ -33,13 +33,15 @@ jest.mock('@ant-design/icons', () => ({
 }));
 
 let mockLastRequest: ((params?: any) => Promise<any>) | null = null;
+let mockLastColumns: any[] = [];
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ request }: any) => {
+  const ProTable = ({ request, columns = [] }: any) => {
     React.useEffect(() => {
       mockLastRequest = request;
+      mockLastColumns = columns;
     }, [request]);
     return <div data-testid='pro-table'>table</div>;
   };
@@ -62,12 +64,15 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  const Drawer = ({ open, title, extra, children }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose }: any) => {
     if (!open) return null;
     const label = toText(title) || 'drawer';
     return (
       <section role='dialog' aria-label={label}>
         <header>{extra}</header>
+        <button type='button' onClick={() => onClose?.()}>
+          drawer-on-close
+        </button>
         <div>{children}</div>
       </section>
     );
@@ -90,6 +95,7 @@ describe('ReviewDetail component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLastRequest = null;
+    mockLastColumns = [];
   });
 
   it('opens drawer and loads review logs sorted by time', async () => {
@@ -204,6 +210,48 @@ describe('ReviewDetail component', () => {
     );
   });
 
+  it('treats review records without json logs as empty log collections', async () => {
+    mockGetReviewsByProcess.mockResolvedValue({
+      data: [
+        { id: 'review-no-json' },
+        { id: 'review-null-json', json: null },
+        { id: 'review-no-logs', json: {} },
+      ],
+      error: null,
+    });
+
+    render(<ReviewDetail {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    let result;
+    await act(async () => {
+      result = await mockLastRequest?.({});
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: true,
+        data: [],
+      }),
+    );
+  });
+
+  it('renders action labels through the action column formatter', async () => {
+    mockGetReviewsByProcess.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+
+    render(<ReviewDetail {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await act(async () => {
+      await mockLastRequest?.({});
+    });
+
+    expect(mockLastColumns[2].render(undefined, { action: 'custom-action' })).toBe('custom-action');
+  });
+
   it('closes the drawer when the close button is clicked', () => {
     render(<ReviewDetail {...defaultProps} />);
 
@@ -211,6 +259,16 @@ describe('ReviewDetail component', () => {
     expect(screen.getByRole('dialog', { name: 'Review Logs' })).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button')[1]);
+    expect(screen.queryByRole('dialog', { name: 'Review Logs' })).not.toBeInTheDocument();
+  });
+
+  it('closes the drawer through the drawer onClose handler', () => {
+    render(<ReviewDetail {...defaultProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByRole('dialog', { name: 'Review Logs' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-on-close' }));
     expect(screen.queryByRole('dialog', { name: 'Review Logs' })).not.toBeInTheDocument();
   });
 });
