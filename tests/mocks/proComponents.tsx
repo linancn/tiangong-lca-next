@@ -234,6 +234,8 @@ export const createProComponentsMock = () => {
     actionRef,
     columns = [],
     rowKey = 'id',
+    options,
+    optionsRender,
     pagination,
     toolBarRender,
     headerTitle,
@@ -295,6 +297,29 @@ export const createProComponentsMock = () => {
 
     const resolvedHeader = typeof headerTitle === 'function' ? headerTitle() : toText(headerTitle);
     const toolbar = toolBarRender?.() ?? [];
+    const defaultOptions =
+      options === false
+        ? []
+        : [
+            options?.reload === false ? null : (
+              <button
+                key='reload'
+                type='button'
+                data-testid='pro-table-option-reload'
+                onClick={() => {
+                  void scheduleRun();
+                }}
+              >
+                Reload
+              </button>
+            ),
+            options?.fullScreen ? (
+              <button key='fullScreen' type='button' data-testid='pro-table-option-fullscreen'>
+                Full Screen
+              </button>
+            ) : null,
+          ].filter(Boolean);
+    const renderedOptions = optionsRender?.(null, defaultOptions) ?? defaultOptions;
 
     const renderContent = (content: any, keyPrefix: string) => {
       if (Array.isArray(content)) {
@@ -315,6 +340,7 @@ export const createProComponentsMock = () => {
     return (
       <div data-testid='pro-table'>
         <div data-testid='pro-table-header'>{resolvedHeader}</div>
+        <div data-testid='pro-table-options'>{renderToolbar(renderedOptions)}</div>
         <div data-testid='pro-table-toolbar'>{renderToolbar(toolbar)}</div>
         <table>
           <tbody>

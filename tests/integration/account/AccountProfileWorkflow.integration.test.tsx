@@ -7,6 +7,7 @@
  * Journeys validated:
  * 1. User loads the account page and sees their current profile information populated.
  * 2. User updates the nickname, submits the form, and receives success feedback.
+ * 3. User navigates account tabs and generated API keys are cleared after leaving the tab.
  *
  * Services mocked:
  * - getCurrentUser
@@ -507,6 +508,56 @@ describe('Account profile integration workflow', () => {
     const updatedState = updater({ currentUser: { name: 'Old Name', locale: 'en-US' } });
     expect(updatedState.currentUser.name).toBe('Alice Cooper');
     expect(updatedState.currentUser.locale).toBe('en-US');
+  });
+
+  it('switches tabs and clears generated API keys after leaving the API key tab', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    expect(screen.getByLabelText('Nickname')).toBeInTheDocument();
+    expect(screen.queryByLabelText('New Password')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+    expect(screen.getByLabelText('New Password')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+    expect(screen.getByLabelText('New Email')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+
+    const passwordField = screen.getByLabelText('Current Password') as HTMLInputElement;
+    await user.type(passwordField, 'P@ssword123');
+    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
+
+    const expectedApiKey = Buffer.from(
+      JSON.stringify({
+        email: 'user@example.com',
+        password: 'P@ssword123',
+      }),
+    ).toString('base64');
+
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: 'P@ssword123',
+      }),
+    );
+    expect(mockCognitoSignUp).toHaveBeenCalledWith('P@ssword123');
+    expect(message.success).toHaveBeenCalledWith('API Key generated successfully!');
+    expect(screen.getByDisplayValue(expectedApiKey)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Basic Information' }));
+    expect(screen.getByLabelText('Nickname')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+    expect(screen.queryByDisplayValue(expectedApiKey)).not.toBeInTheDocument();
   });
 
   it('surfaces validation feedback when profile update fails', async () => {

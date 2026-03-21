@@ -120,6 +120,7 @@ npm run lint
   3. URL/query-driven and cross-page flows (`Login`, `Welcome`, `Processes/Analysis`, deep-link drawers).
   4. Failure/fallback behavior on the same workflows.
   5. Thin browser-real smoke only when integration tests cannot credibly model the behavior.
+- Current checkpoint (March 21, 2026): phases 1-3 of the default rollout are complete in this repo, so the default next increment is Phase 4 failure/fallback coverage on the same workflow anchors.
 - E2E rule: prefer integration tests first. Escalate only a very thin smoke layer to future E2E for browser-real behaviors such as redirect chains, file upload/preview, reloads, or window-level navigation.
 
 ## Related Docs

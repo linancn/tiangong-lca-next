@@ -59,9 +59,9 @@ Latest verified full run (`npm run test:coverage:report`, which reruns `npm run 
    - [x] Expand `tests/integration/teams/TeamsWorkflow.integration.test.tsx`, `tests/integration/manageSystem/ManageSystemWorkflow.integration.test.tsx`, and `tests/integration/reviews/ReviewWorkflow.integration.test.tsx` so each suite now covers allow, restricted, and failure states.
    - [x] Assert both user-visible controls and the allowed/prevented `@/services/**` calls.
 3. Phase 3 – URL/query and navigation flows
-   - [ ] Keep `tests/integration/user/LoginWorkflow.integration.test.tsx` responsible for `redirect` query handling.
-   - [ ] Keep `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` responsible for `id/version` deep-link auto-open behavior.
-   - [ ] Expand entry/navigation assertions in `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`, `tests/integration/account/AccountProfileWorkflow.integration.test.tsx`, and the `/mydata/processes/analysis` jump from the Processes page.
+   - [x] Keep `tests/integration/user/LoginWorkflow.integration.test.tsx` responsible for `redirect` query handling.
+   - [x] Keep `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` responsible for `id/version` deep-link auto-open behavior.
+   - [x] Expand entry/navigation assertions in `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`, `tests/integration/account/AccountProfileWorkflow.integration.test.tsx`, and the `/mydata/processes/analysis` jump from the Processes page.
 4. Phase 4 – Failure and fallback behavior
    - [ ] For each workflow anchor above, cover list-load failure, create/update failure, delete failure or cancel, and empty-state rendering where meaningful.
    - [ ] Prefer user-visible recovery assertions over console-only assertions.

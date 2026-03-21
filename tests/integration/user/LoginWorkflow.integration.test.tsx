@@ -5,6 +5,7 @@
  *
  * User journeys covered:
  * - Successful login updates global state and redirects the user.
+ * - Successful login honors the `redirect` query when present.
  * - Successful registration surfaces the success toast and prevents duplicate submissions.
  * - Failed login attempts surface inline validation messaging.
  * - Network errors during login fall back to the global error toast.
@@ -81,6 +82,7 @@ describe('Login workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    window.history.replaceState({}, '', '/');
     mockHistoryPush.mockClear();
     mockFetchUserInfo.mockReset();
     mockSetInitialState.mockReset();
@@ -132,6 +134,29 @@ describe('Login workflow integration', () => {
     await waitFor(() => expect(mockFetchUserInfo).toHaveBeenCalledTimes(1));
     expect(mockSetInitialState).toHaveBeenCalledTimes(1);
     expect(mockHistoryPush).toHaveBeenCalledWith('/');
+    expect(mockMessageApi.success).toHaveBeenCalledWith('Login successful!');
+  });
+
+  it('uses the redirect query after a successful login', async () => {
+    mockLogin.mockResolvedValue({ status: 'ok' });
+    mockFetchUserInfo.mockResolvedValue({ id: 'user-1' });
+    window.history.replaceState({}, '', '/user/login?redirect=/mydata/processes');
+
+    renderWithProviders(<Login />);
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'user@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'P@ssword123' },
+    });
+
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => expect(mockLogin).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockFetchUserInfo).toHaveBeenCalledTimes(1));
+
+    expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
     expect(mockMessageApi.success).toHaveBeenCalledWith('Login successful!');
   });
 

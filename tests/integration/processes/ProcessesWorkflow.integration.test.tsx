@@ -11,8 +11,9 @@
  * 2. Owner imports JSON to seed create drawer, triggers create flow, and ProTable reloads.
  * 3. Owner opens inline edit drawer, saves changes, and observes another table reload.
  * 4. Owner expands review detail from the actions dropdown.
- * 5. Query parameters with id/version auto-open the edit drawer for deep links.
- * 6. Open-data users land on /tgdata processes list and only see the read-only matrix for that source.
+ * 5. Owner can jump from the table toolbar to the analysis page.
+ * 6. Query parameters with id/version auto-open the edit drawer for deep links.
+ * 7. Open-data users land on /tgdata processes list and only see the read-only matrix for that source.
  *
  * Services mocked:
  * - getProcessTableAll
@@ -103,6 +104,24 @@ jest.mock('@/components/TableFilter', () => ({
   ),
 }));
 
+jest.mock('@/components/ToolBarButton', () => ({
+  __esModule: true,
+  default: ({ onClick, tooltip }: any) => {
+    const toText = (node: any): string => {
+      if (node === null || node === undefined) return '';
+      if (typeof node === 'string' || typeof node === 'number') return String(node);
+      if (Array.isArray(node)) return node.map(toText).join('');
+      return toText(node?.props?.children ?? node?.props?.defaultMessage ?? node?.props?.id);
+    };
+    const label = toText(tooltip) || 'Toolbar Action';
+    return (
+      <button type='button' onClick={onClick}>
+        {label}
+      </button>
+    );
+  },
+}));
+
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
   default: ({ id, version }: any) => (
@@ -139,6 +158,15 @@ jest.mock('@/pages/Processes/Components/ReviewDetail', () => {
     default: ReviewDetailMock,
   };
 });
+
+jest.mock('@/pages/Processes/Components/lcaSolveToolbar', () => ({
+  __esModule: true,
+  default: () => (
+    <button type='button' data-testid='lca-solve-toolbar'>
+      Run LCA
+    </button>
+  ),
+}));
 
 jest.mock('@/pages/Processes/Components/create', () => {
   const React = require('react');
@@ -262,6 +290,7 @@ const { getProcessTableAll, getProcessTablePgroongaSearch, process_hybrid_search
   jest.requireMock('@/services/processes/api');
 const { getTeamById } = jest.requireMock('@/services/teams/api');
 const { message } = jest.requireMock('antd');
+const { umiMocks } = require('@/tests/mocks/umi');
 
 const setLocation = (pathWithSearch: string) => {
   const [path, search = ''] = pathWithSearch.split('?');
@@ -378,6 +407,19 @@ describe('Processes workflow integration', () => {
     );
 
     secondRender.unmount();
+  });
+
+  it('navigates to the analysis page from the mydata toolbar', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'LCA Analysis' }));
+
+    expect(umiMocks.historyPush).toHaveBeenCalledWith('/mydata/processes/analysis');
   });
 
   it('uses the open-data route matrix for tgdata processes', async () => {

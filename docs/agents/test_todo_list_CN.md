@@ -59,9 +59,9 @@
    - [x] 已扩展 `tests/integration/teams/TeamsWorkflow.integration.test.tsx`、`tests/integration/manageSystem/ManageSystemWorkflow.integration.test.tsx`、`tests/integration/reviews/ReviewWorkflow.integration.test.tsx`，这三个 suite 现在都覆盖 allow、restricted、failure 三类状态。
    - [x] 同时断言用户可见控件，以及 `@/services/**` 调用是被允许还是被阻止。
 3. Phase 3 – URL/query 与导航流程
-   - [ ] 让 `tests/integration/user/LoginWorkflow.integration.test.tsx` 负责 `redirect` query 的跳转处理。
-   - [ ] 让 `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` 负责 `id/version` 深链自动打开行为。
-   - [ ] 扩展 `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`、`tests/integration/account/AccountProfileWorkflow.integration.test.tsx`，以及从 Processes 页跳转到 `/mydata/processes/analysis` 的导航断言。
+   - [x] 让 `tests/integration/user/LoginWorkflow.integration.test.tsx` 负责 `redirect` query 的跳转处理。
+   - [x] 让 `tests/integration/processes/ProcessesWorkflow.integration.test.tsx` 负责 `id/version` 深链自动打开行为。
+   - [x] 扩展 `tests/integration/welcome/WelcomeWorkflow.integration.test.tsx`、`tests/integration/account/AccountProfileWorkflow.integration.test.tsx`，以及从 Processes 页跳转到 `/mydata/processes/analysis` 的导航断言。
 4. Phase 4 – 失败与回退行为
    - [ ] 对上述每个工作流锚点，补齐列表加载失败、create/update 失败、delete 失败或取消、以及有意义时的空状态渲染。
    - [ ] 优先断言用户可见恢复行为，不要停留在 console-only 断言。
