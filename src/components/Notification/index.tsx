@@ -1,3 +1,4 @@
+import HeaderActionIcon from '@/components/HeaderActionIcon';
 import {
   getFreshUserMetadata,
   updateDataNotificationTime,
@@ -181,18 +182,16 @@ const Notification: React.FC = () => {
 
   return (
     <>
-      <Badge
-        count={unreadCounts.total}
-        offset={[-5, 6]}
-        size='small'
-        showZero={false}
-        style={badgeStyles}
-      >
-        <MessageOutlined
-          style={{ fontSize: 16, opacity: 0.5, cursor: 'pointer' }}
-          onClick={handleIconClick}
-        />
-      </Badge>
+      <HeaderActionIcon
+        title={intl.formatMessage({
+          id: 'notification.title',
+          defaultMessage: 'Notifications',
+        })}
+        icon={<MessageOutlined />}
+        badgeCount={unreadCounts.total}
+        badgeStyle={badgeStyles}
+        onClick={handleIconClick}
+      />
 
       <Modal
         title={

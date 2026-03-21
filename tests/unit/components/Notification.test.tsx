@@ -160,6 +160,21 @@ describe('Notification Component', () => {
     expect(screen.getByText('Notifications')).toBeInTheDocument();
   });
 
+  it('should expose notification tooltip text on hover', async () => {
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    const icon = await screen.findByRole('img', { hidden: true });
+    fireEvent.mouseEnter(icon);
+
+    await waitFor(() => {
+      expect(screen.getByText('Notifications')).toBeInTheDocument();
+    });
+  });
+
   it('should close modal when cancel button is clicked', async () => {
     render(
       <ConfigProvider>

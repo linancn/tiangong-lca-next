@@ -26,9 +26,13 @@ const PICK_FILE_TEST_ID = 'import-pick-file';
 const PICK_BAD_FILE_TEST_ID = 'import-pick-bad-file';
 
 jest.mock('@ant-design/icons', () => ({
-  CloudUploadOutlined: ({ onClick }: { onClick?: () => void }) => (
-    <button type='button' data-testid={OPEN_BUTTON_TEST_ID} onClick={onClick} />
-  ),
+  CloudUploadOutlined: ({
+    onClick,
+    style,
+  }: {
+    onClick?: () => void;
+    style?: React.CSSProperties;
+  }) => <button type='button' data-testid={OPEN_BUTTON_TEST_ID} onClick={onClick} style={style} />,
   InboxOutlined: () => <span data-testid='inbox-icon' />,
 }));
 
@@ -138,6 +142,9 @@ describe('ImportTidasPackage Component', () => {
 
   it('warns when import is triggered without selecting a file', async () => {
     render(<ImportTidasPackage />);
+
+    expect(screen.getByTestId(OPEN_BUTTON_TEST_ID).style.opacity).toBe('0.5');
+    expect(screen.getByTestId(OPEN_BUTTON_TEST_ID).style.fontSize).toBe('16px');
 
     fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
     fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));

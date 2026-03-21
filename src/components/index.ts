@@ -5,7 +5,9 @@
 /**
  * 布局组件
  */
+import ExportTidasPackage from './ExportTidasPackage';
 import Footer from './Footer';
+import ImportTidasPackage from './ImportTidasPackage';
 import LcaTaskCenter from './LcaTaskCenter';
 import Notification from './Notification';
 import QuantitativeReferenceIcon from './QuantitativeReferenceIcon';
@@ -16,7 +18,9 @@ export {
   AvatarDropdown,
   AvatarName,
   DarkMode,
+  ExportTidasPackage,
   Footer,
+  ImportTidasPackage,
   LcaTaskCenter,
   Notification,
   QuantitativeReferenceIcon,

@@ -2,14 +2,15 @@ import {
   AvatarDropdown,
   AvatarName,
   DarkMode,
+  ExportTidasPackage,
   Footer,
+  ImportTidasPackage,
   LcaTaskCenter,
   Notification,
   Question,
   SelectLang,
 } from '@/components';
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
-import TidasPackageActions from '@/components/TidasPackageActions';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
@@ -100,7 +101,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   return {
     actionsRender: () => [
       <LCIACacheMonitor key='LCIACacheMonitor' />,
-      <TidasPackageActions key='TidasPackageActions' />,
+      <ImportTidasPackage key='ImportTidasPackage' />,
+      <ExportTidasPackage key='ExportTidasPackage' />,
+      <LcaTaskCenter key='LcaTaskCenter' />,
+      <Notification key='Notification' />,
       <DarkMode
         key='DarkMode'
         handleClick={handleClickFunction}
@@ -108,8 +112,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       />,
       <SelectLang key='SelectLang' />,
       <Question key='doc' />,
-      <LcaTaskCenter key='LcaTaskCenter' />,
-      <Notification key='Notification'></Notification>,
     ],
     avatarProps: {
       title: <AvatarName />,

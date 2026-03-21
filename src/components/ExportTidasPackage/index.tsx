@@ -1,17 +1,12 @@
+import HeaderActionIcon from '@/components/HeaderActionIcon';
 import { TidasPackageScope } from '@/services/general/api';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { submitTidasPackageExportTask } from '@/services/tidasPackage/taskCenter';
 import { CloudDownloadOutlined } from '@ant-design/icons';
-import { message, Modal, Radio, Spin, Tooltip } from 'antd';
-import type { CSSProperties, FC } from 'react';
+import { message, Modal, Radio, Spin } from 'antd';
+import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-
-const headerActionStyle: CSSProperties = {
-  fontSize: 16,
-  opacity: 0.5,
-  cursor: 'pointer',
-};
 
 const ExportTidasPackage: FC = () => {
   const [loading, setLoading] = useState(false);
@@ -74,16 +69,16 @@ const ExportTidasPackage: FC = () => {
 
   return (
     <>
-      <Tooltip
+      <HeaderActionIcon
         title={
           <FormattedMessage
             id='component.tidasPackage.export.tooltip'
             defaultMessage='Export TIDAS ZIP Package'
           />
         }
-      >
-        <CloudDownloadOutlined style={headerActionStyle} onClick={() => setOpen(true)} />
-      </Tooltip>
+        icon={<CloudDownloadOutlined />}
+        onClick={() => setOpen(true)}
+      />
       <Modal
         title={intl.formatMessage({
           id: 'component.tidasPackage.export.title',
