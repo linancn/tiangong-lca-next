@@ -6,7 +6,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { history, useIntl, useModel } from '@umijs/max';
+import { history, useIntl, useLocation, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { logout } from '@/services/auth';
@@ -46,6 +46,7 @@ export const AvatarName = () => {
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
   const intl = useIntl();
+  const location = useLocation();
   const { token } = theme.useToken();
   const [isLoadingHovered, setIsLoadingHovered] = useState(false);
   // const [isUserInTeam, setIsUserInTeam] = useState(false);
@@ -76,14 +77,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   /**
    * Logout and save the current URL
    */
-  const loginOut = async () => {
+  const loginOut = useCallback(async () => {
     await logout();
-    const { search, pathname } = window.location;
-    const urlParams = new URL(window.location.href).searchParams;
+    const { pathname, search } = location;
+    const urlParams = new URLSearchParams(search);
     /** This method will redirect to the location specified by the redirect parameter */
     const redirect = urlParams.get('redirect');
     // Note: There may be security issues, please note
-    if (window.location.pathname !== '/user/login' && !redirect) {
+    if (pathname !== '/user/login' && !redirect) {
       const params = new URLSearchParams();
       params.set('redirect', pathname + search);
       history.replace({
@@ -91,7 +92,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         search: params.toString(),
       });
     }
-  };
+  }, [location]);
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const onMenuClick = useCallback(
@@ -182,7 +183,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       }
       history.push(`/account`);
     },
-    [setInitialState],
+    [intl, location.pathname, location.search, loginOut, setInitialState, token.colorPrimary],
   );
 
   const loadingContainerStyle = useMemo(

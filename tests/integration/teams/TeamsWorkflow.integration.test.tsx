@@ -6,6 +6,8 @@
  * - Role-based permissions keep owner actions enabled and prevent destructive controls against owners
  */
 
+let mockUmiLocation = { pathname: '/', search: '' };
+
 jest.mock('@ant-design/icons', () => {
   const React = require('react');
   return {
@@ -31,6 +33,7 @@ jest.mock('@umijs/max', () => {
       locale: 'en-US',
       formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
     }),
+    useLocation: () => mockUmiLocation,
     history: mockHistory,
   };
 });
@@ -648,7 +651,9 @@ const mockRemoveLogoApi = removeLogoApi as jest.MockedFunction<any>;
 const mockGetThumbFileUrls = getThumbFileUrls as jest.MockedFunction<any>;
 
 const setWindowLocation = (search: string) => {
-  const path = `/team${search.startsWith('?') ? search : `?${search}`}`;
+  const normalizedSearch = search.startsWith('?') ? search : `?${search}`;
+  const path = `/team${normalizedSearch}`;
+  mockUmiLocation = { pathname: '/team', search: normalizedSearch };
   window.history.pushState({}, '', path);
 };
 
@@ -691,6 +696,7 @@ const buildEditableTeamMessage = () =>
 describe('Teams management workflows', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUmiLocation = { pathname: '/', search: '' };
     resetMessages();
     mockGetBase64.mockResolvedValue('data:image/mock;base64');
     mockUploadLogoApi.mockResolvedValue({ data: { path: 'uploaded-logo.png' } } as any);

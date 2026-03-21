@@ -35,6 +35,7 @@ import userEvent from '@testing-library/user-event';
 import { mockTeam } from '../../helpers/testData';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 import { resetAntdToken, setAntdToken } from '../../mocks/antd';
+import { setUmiLocation, umiMocks } from '../../mocks/umi';
 
 type TeamLangText = { '@xml:lang': string; '#text': string };
 type TeamJson = {
@@ -122,6 +123,7 @@ describe('WelcomeWorkflow integration', () => {
     jest.clearAllMocks();
     resetAntdToken();
     localStorage.clear();
+    setUmiLocation({ pathname: '/welcome', search: '' });
     window.location.href = 'http://localhost/';
   });
 
@@ -161,7 +163,7 @@ describe('WelcomeWorkflow integration', () => {
     expect(clickableCard).not.toBeNull();
     await user.click(clickableCard as Element);
 
-    expect(window.location.href).toContain('/tgdata/models?tid=team-123');
+    expect(umiMocks.historyPush).toHaveBeenCalledWith('/tgdata/models?tid=team-123');
 
     const cancelButton = within(modal).getByRole('button', { name: /Cancel/i });
     await user.click(cancelButton);
