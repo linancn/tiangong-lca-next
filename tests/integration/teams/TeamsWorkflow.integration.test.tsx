@@ -669,6 +669,25 @@ const buildMemberRecord = (overrides: Record<string, any> = {}) => ({
   ...overrides,
 });
 
+const buildEditableTeamMessage = () =>
+  ({
+    data: [
+      {
+        ...mockTeam,
+        id: 'team-123',
+        rank: 0,
+        is_public: true,
+        json: {
+          title: mockTeam.json.title,
+          description: mockTeam.json.description,
+          lightLogo: '../sys-files/light.png',
+          darkLogo: '../sys-files/dark.png',
+        },
+      },
+    ],
+    error: null,
+  }) as any;
+
 describe('Teams management workflows', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -759,6 +778,224 @@ describe('Teams management workflows', () => {
     }
   });
 
+  it('keeps owner-only member controls disabled for team admins while leaving allowed actions available', async () => {
+    setWindowLocation('?action=edit');
+
+    const members = [
+      buildMemberRecord({
+        email: 'member@example.com',
+        display_name: 'Member Example',
+        role: 'member',
+        user_id: 'member-1',
+      }),
+      buildMemberRecord({
+        email: 'admin@example.com',
+        display_name: 'Admin Example',
+        role: 'admin',
+        user_id: 'admin-1',
+      }),
+      buildMemberRecord({
+        email: 'rejected@example.com',
+        display_name: 'Rejected Example',
+        role: 'rejected',
+        user_id: 'rejected-1',
+      }),
+      buildMemberRecord({
+        email: 'owner@example.com',
+        display_name: 'Owner Example',
+        role: 'owner',
+        user_id: 'owner-1',
+      }),
+    ];
+
+    mockGetUserRoles.mockResolvedValue({
+      data: [{ team_id: 'team-123', role: 'admin' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValue(buildEditableTeamMessage());
+    mockGetTeamMembersApi.mockResolvedValue({
+      data: members,
+      success: true,
+      total: members.length,
+    } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetUserRoles).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByTestId('pro-form-submit')).not.toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).toHaveBeenCalled();
+    });
+
+    expect(screen.getByRole('button', { name: 'Add' })).not.toBeDisabled();
+
+    const memberRow = screen.getByTestId('pro-table-row-member@example.com');
+    const adminRow = screen.getByTestId('pro-table-row-admin@example.com');
+    const rejectedRow = screen.getByTestId('pro-table-row-rejected@example.com');
+    const ownerRow = screen.getByTestId('pro-table-row-owner@example.com');
+
+    expect(within(memberRow).getByRole('button', { name: 'Delete' })).not.toBeDisabled();
+    expect(within(memberRow).getByRole('button', { name: 'Set Admin' })).toBeDisabled();
+    expect(within(adminRow).getByRole('button', { name: 'Set Member' })).toBeDisabled();
+    expect(within(rejectedRow).getByRole('button', { name: 're-invite' })).not.toBeDisabled();
+    expect(within(ownerRow).getByRole('button', { name: 'Delete' })).toBeDisabled();
+
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set Member' }));
+
+    expect(mockUpdateRoleApi).not.toHaveBeenCalled();
+  });
+
+  it('surfaces member-management mutation failures without false success toasts', async () => {
+    setWindowLocation('?action=edit');
+
+    const members = [
+      buildMemberRecord({
+        email: 'member@example.com',
+        display_name: 'Member Example',
+        role: 'member',
+        user_id: 'member-1',
+      }),
+      buildMemberRecord({
+        email: 'rejected@example.com',
+        display_name: 'Rejected Example',
+        role: 'rejected',
+        user_id: 'rejected-1',
+      }),
+    ];
+
+    mockGetUserRoles.mockResolvedValue({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValue(buildEditableTeamMessage());
+    mockGetTeamMembersApi.mockResolvedValue({
+      data: members,
+      success: true,
+      total: members.length,
+    } as any);
+    mockUpdateRoleApi.mockResolvedValue({ error: 'failure' } as any);
+    mockDelRoleApi.mockResolvedValue({ error: 'failure' } as any);
+    mockReInvitedApi.mockResolvedValue('failure' as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetUserRoles).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).toHaveBeenCalled();
+    });
+
+    const loadCountAfterOpen = mockGetTeamMembersApi.mock.calls.length;
+    const memberRow = screen.getByTestId('pro-table-row-member@example.com');
+    const rejectedRow = screen.getByTestId('pro-table-row-rejected@example.com');
+
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+
+    await waitFor(() => {
+      expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'admin');
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(message.success).not.toHaveBeenCalledWith('Action success!');
+    expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen);
+
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
+    const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
+    await act(async () => {
+      await confirmConfig.onOk?.();
+    });
+
+    await waitFor(() => {
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1');
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    await waitFor(() => {
+      expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen + 1);
+    });
+
+    fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+
+    await waitFor(() => {
+      expect(mockReInvitedApi).toHaveBeenCalledWith('rejected-1', 'team-123');
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen + 1);
+  });
+
+  it.each([
+    ['exists', 'User already exists in the team!'],
+    ['notRegistered', 'User is not registered!'],
+    ['unexpected', 'Failed to add member!'],
+  ])(
+    'keeps the add-member modal open when the API returns %s',
+    async (errorCode, expectedMessage) => {
+      setWindowLocation('?action=edit');
+
+      mockGetUserRoles.mockResolvedValue({
+        data: [{ team_id: 'team-123', role: 'owner' }],
+        success: true,
+      } as any);
+      mockGetTeamMessageApi.mockResolvedValue(buildEditableTeamMessage());
+      mockGetTeamMembersApi.mockResolvedValue({
+        data: [],
+        success: true,
+        total: 0,
+      } as any);
+      mockAddTeamMemberApi.mockResolvedValue({ error: { message: errorCode } } as any);
+
+      renderWithProviders(<Team />);
+
+      await waitFor(() => {
+        expect(mockGetUserRoles).toHaveBeenCalledTimes(1);
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
+
+      await waitFor(() => {
+        expect(mockGetTeamMembersApi).toHaveBeenCalled();
+      });
+
+      const initialLoadCount = mockGetTeamMembersApi.mock.calls.length;
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('modal')).toBeInTheDocument();
+      });
+
+      const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
+      fireEvent.change(emailInput, {
+        target: { value: 'new.member@example.com' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'ok' }));
+
+      await waitFor(() => {
+        expect(mockAddTeamMemberApi).toHaveBeenCalledWith('team-123', 'new.member@example.com');
+      });
+
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith(expectedMessage);
+      });
+
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+      expect(message.success).not.toHaveBeenCalledWith('Member added successfully!');
+      expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(initialLoadCount);
+    },
+  );
+
   it('allows owner to manage members, assign permissions, and respect role protections', async () => {
     setWindowLocation('?action=edit');
 
@@ -794,23 +1031,7 @@ describe('Teams management workflows', () => {
       success: true,
     } as any);
 
-    mockGetTeamMessageApi.mockResolvedValue({
-      data: [
-        {
-          ...mockTeam,
-          id: 'team-123',
-          rank: 0,
-          is_public: true,
-          json: {
-            title: mockTeam.json.title,
-            description: mockTeam.json.description,
-            lightLogo: '../sys-files/light.png',
-            darkLogo: '../sys-files/dark.png',
-          },
-        },
-      ],
-      error: null,
-    } as any);
+    mockGetTeamMessageApi.mockResolvedValue(buildEditableTeamMessage());
 
     mockGetTeamMembersApi.mockResolvedValue({
       data: members,

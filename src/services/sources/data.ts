@@ -10,6 +10,7 @@ export type SourceTable = {
   sourceCitation: string;
   publicationType: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
 };
 

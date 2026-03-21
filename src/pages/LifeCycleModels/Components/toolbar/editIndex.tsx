@@ -89,6 +89,7 @@ type Props = {
   version: string;
   lang: string;
   drawerVisible: boolean;
+  autoCheckRequired?: boolean;
   isSave: boolean;
   action: string;
   setIsSave: (isSave: boolean) => void;
@@ -98,6 +99,7 @@ type Props = {
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
   newVersion?: string;
+  onSubmitReviewSuccess?: () => void;
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
@@ -107,6 +109,7 @@ const ToolbarEdit: FC<Props> = ({
   version,
   lang,
   drawerVisible,
+  autoCheckRequired = false,
   isSave,
   action,
   setIsSave,
@@ -116,6 +119,7 @@ const ToolbarEdit: FC<Props> = ({
   hideReviewButton = false,
   updateNodeCb = async () => {},
   newVersion,
+  onSubmitReviewSuccess = () => {},
 }) => {
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
@@ -132,6 +136,7 @@ const ToolbarEdit: FC<Props> = ({
   const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
   const [connectableProcessesPortId, setConnectableProcessesPortId] = useState('');
   const [connectableProcessesFlowVersion, setConnectableProcessesFlowVersion] = useState('');
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
 
   const modelData = useGraphStore((state) => state.initData);
   const addNodes = useGraphStore((state) => state.addNodes);
@@ -758,7 +763,8 @@ const ToolbarEdit: FC<Props> = ({
     refreshEdgeLabels();
   }, [edges, graph, nodes, refreshEdgeLabels, removeEdges, removeNodes]);
 
-  const saveData = async (setLoadingData: boolean) => {
+  const saveData = async (setLoadingData: boolean, options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
     if (setLoadingData) setSpinning(true);
     try {
       await editInfoRef.current?.updateReferenceDescription(infoData);
@@ -796,6 +802,26 @@ const ToolbarEdit: FC<Props> = ({
           return;
         }
 
+        if (result.code === 'OPEN_DATA') {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.openData',
+              defaultMessage: 'This data is open data, save failed',
+            }),
+          );
+          return;
+        }
+
+        if (result.code === 'UNDER_REVIEW') {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.underReview',
+              defaultMessage: 'Data is under review, save failed',
+            }),
+          );
+          return;
+        }
+
         message.error(result.message ?? 'Error');
       };
 
@@ -804,12 +830,14 @@ const ToolbarEdit: FC<Props> = ({
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           setInfoData({ ...newData, id: thisId, version: thisVersion });
-          message.success(
-            intl.formatMessage({
-              id: 'pages.flows.savesuccess',
-              defaultMessage: 'Save successfully',
-            }),
-          );
+          if (!silent) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.flows.savesuccess',
+                defaultMessage: 'Save successfully',
+              }),
+            );
+          }
           setThisId(savedLifeCycleModel?.id ?? result.modelId);
           setThisVersion(savedLifeCycleModel?.version ?? result.version);
           setJsonTg(savedLifeCycleModel?.json_tg ?? {});
@@ -828,19 +856,23 @@ const ToolbarEdit: FC<Props> = ({
 
           saveCallback();
         } else {
-          showMutationError(result);
+          if (!silent) {
+            showMutationError(result);
+          }
         }
       } else if (thisAction === 'create') {
         const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
         const result = await createLifeCycleModel({ ...newData, id: newId });
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
-          message.success(
-            intl.formatMessage({
-              id: 'pages.button.create.success',
-              defaultMessage: 'Created successfully!',
-            }),
-          );
+          if (!silent) {
+            message.success(
+              intl.formatMessage({
+                id: 'pages.button.create.success',
+                defaultMessage: 'Created successfully!',
+              }),
+            );
+          }
           setThisAction('edit');
           setThisId(savedLifeCycleModel?.id ?? result.modelId);
           setThisVersion(savedLifeCycleModel?.version ?? result.version);
@@ -860,7 +892,9 @@ const ToolbarEdit: FC<Props> = ({
 
           saveCallback();
         } else {
-          showMutationError(result);
+          if (!silent) {
+            showMutationError(result);
+          }
         }
       }
       return true;
@@ -1133,6 +1167,7 @@ const ToolbarEdit: FC<Props> = ({
     if (!drawerVisible) {
       onClose();
       setInfoData({});
+      setAutoCheckTriggered(false);
       setNodeCount(0);
       setProblemNodes([]);
       setJsonTg({});
@@ -1346,17 +1381,32 @@ const ToolbarEdit: FC<Props> = ({
     setSpinning(false);
   };
 
-  const handleCheckData = async () => {
+  const handleCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
     setSpinning(true);
-    await saveData(false);
+    await saveData(false, { silent });
     const checkDataResult = await editInfoRef.current?.handleCheckData(
       'checkData',
       nodes as LifeCycleModelGraphNode[],
       edges as LifeCycleModelGraphEdge[],
+      { silent },
     );
     setProblemNodes(checkDataResult?.problemNodes ?? []);
     setSpinning(false);
   };
+
+  useEffect(() => {
+    if (
+      !autoCheckRequired ||
+      autoCheckTriggered ||
+      !drawerVisible ||
+      Object.keys(infoData ?? {}).length === 0
+    ) {
+      return;
+    }
+    setAutoCheckTriggered(true);
+    void handleCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, handleCheckData, infoData]);
 
   const handelSubmitReview = async () => {
     setSpinning(true);
@@ -1372,6 +1422,7 @@ const ToolbarEdit: FC<Props> = ({
 
     if (checkResult) {
       await editInfoRef.current?.submitReview(unReview);
+      onSubmitReviewSuccess();
     }
     setSpinning(false);
   };
@@ -1568,7 +1619,7 @@ const ToolbarEdit: FC<Props> = ({
           size='small'
           icon={<CheckCircleOutlined />}
           style={{ boxShadow: 'none' }}
-          onClick={handleCheckData}
+          onClick={() => void handleCheckData()}
         />
       </Tooltip>
       {!hideReviewButton ? (

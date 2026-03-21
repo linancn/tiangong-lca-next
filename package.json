@@ -68,7 +68,7 @@
     "@antv/x6": "^3.1.7",
     "@antv/x6-react-shape": "^3.0.1",
     "@dagrejs/dagre": "^2.0.4",
-    "@supabase/supabase-js": "^2.99.2",
+    "@supabase/supabase-js": "^2.99.3",
     "@tiangong-lca/tidas-sdk": "^0.1.30",
     "antd": "^5.29.1",
     "bignumber.js": "^10.0.2",

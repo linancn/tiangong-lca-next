@@ -1,0 +1,635 @@
+import {
+  buildValidationIssues,
+  dealModel,
+  dealProcress,
+  getDatasetDetailPath,
+  getDatasetDetailUrl,
+  getDatasetPath,
+  mapValidationIssuesToRefCheckData,
+  validateDatasetRuleVerification,
+  validateDatasetWithSdk,
+} from '@/pages/Utils/review';
+
+const mockCreateContact = jest.fn();
+const mockCreateFlow = jest.fn();
+const mockCreateFlowProperty = jest.fn();
+const mockCreateLifeCycleModel = jest.fn();
+const mockCreateProcess = jest.fn();
+const mockCreateSource = jest.fn();
+const mockCreateUnitGroup = jest.fn();
+const mockGetRefData = jest.fn();
+const mockGetRefDataByIds = jest.fn();
+const mockGetReviewsOfData = jest.fn();
+const mockUpdateDateToReviewState = jest.fn();
+
+jest.mock('@tiangong-lca/tidas-sdk', () => ({
+  __esModule: true,
+  createContact: (...args: any[]) => mockCreateContact(...args),
+  createFlow: (...args: any[]) => mockCreateFlow(...args),
+  createFlowProperty: (...args: any[]) => mockCreateFlowProperty(...args),
+  createLifeCycleModel: (...args: any[]) => mockCreateLifeCycleModel(...args),
+  createProcess: (...args: any[]) => mockCreateProcess(...args),
+  createSource: (...args: any[]) => mockCreateSource(...args),
+  createUnitGroup: (...args: any[]) => mockCreateUnitGroup(...args),
+}));
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  getRefData: (...args: any[]) => mockGetRefData(...args),
+  getRefDataByIds: (...args: any[]) => mockGetRefDataByIds(...args),
+  getReviewsOfData: (...args: any[]) => mockGetReviewsOfData(...args),
+  updateDateToReviewState: (...args: any[]) => mockUpdateDateToReviewState(...args),
+}));
+
+jest.mock('@/services/lifeCycleModels/api', () => ({
+  __esModule: true,
+  getLifeCycleModelDetail: jest.fn(),
+}));
+
+jest.mock('@/services/reviews/api', () => ({
+  __esModule: true,
+  addReviewsApi: jest.fn(),
+  getRejectReviewsByProcess: jest.fn(),
+}));
+
+jest.mock('@/services/comments/api', () => ({
+  __esModule: true,
+  getRejectedCommentsByReviewIds: jest.fn(),
+}));
+
+jest.mock('@/services/sources/api', () => ({
+  __esModule: true,
+  getSourcesByIdsAndVersions: jest.fn(),
+}));
+
+jest.mock('@/services/teams/api', () => ({
+  __esModule: true,
+  getTeamMessageApi: jest.fn(),
+}));
+
+jest.mock('@/services/users/api', () => ({
+  __esModule: true,
+  getUserId: jest.fn(),
+  getUsersByIds: jest.fn(),
+}));
+
+const makeSdkFactory = (result: any) =>
+  jest.fn(() => ({ validateEnhanced: jest.fn(() => result) }));
+
+describe('review helper coverage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetRefData.mockReset();
+    mockGetRefDataByIds.mockReset();
+    mockGetReviewsOfData.mockReset();
+    mockUpdateDateToReviewState.mockReset();
+
+    mockCreateContact.mockImplementation(makeSdkFactory({ success: true }));
+    mockCreateSource.mockImplementation(makeSdkFactory({ success: true }));
+    mockCreateUnitGroup.mockImplementation(makeSdkFactory({ success: true }));
+    mockCreateFlowProperty.mockImplementation(makeSdkFactory({ success: true }));
+    mockCreateFlow.mockImplementation(makeSdkFactory({ success: true }));
+    mockCreateProcess.mockImplementation(makeSdkFactory({ success: true }));
+    mockCreateLifeCycleModel.mockImplementation(makeSdkFactory({ success: true }));
+  });
+
+  it('builds dataset paths, detail paths, and detail urls for known and unknown dataset types', () => {
+    const ref = {
+      '@type': 'process data set',
+      '@refObjectId': 'process-1',
+      '@version': '01.00.000',
+    } as const;
+
+    expect(getDatasetDetailPath(ref)).toBe(
+      '/mydata/processes?id=process-1&version=01.00.000&required=1',
+    );
+    expect(getDatasetPath(ref)).toBe('/mydata/processes?id=process-1&version=01.00.000');
+    expect(getDatasetPath(ref, { required: true })).toBe(
+      '/mydata/processes?id=process-1&version=01.00.000&required=1',
+    );
+    expect(getDatasetDetailUrl(ref, 'https://demo.example')).toBe(
+      'https://demo.example/mydata/processes?id=process-1&version=01.00.000&required=1',
+    );
+    expect(getDatasetDetailUrl(ref)).toBe(
+      'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000&required=1',
+    );
+
+    const originalWindow = (global as any).window;
+    Object.defineProperty(global, 'window', {
+      configurable: true,
+      value: undefined,
+    });
+    try {
+      expect(getDatasetDetailUrl(ref)).toBe(
+        'https://lca.tiangong.earth/mydata/processes?id=process-1&version=01.00.000&required=1',
+      );
+    } finally {
+      Object.defineProperty(global, 'window', {
+        configurable: true,
+        value: originalWindow,
+      });
+    }
+
+    const unknownRef = {
+      '@type': 'unknown data set',
+      '@refObjectId': 'missing',
+      '@version': '00.00.000',
+    } as any;
+
+    expect(getDatasetDetailPath(unknownRef)).toBeNull();
+    expect(getDatasetPath(unknownRef)).toBeNull();
+    expect(getDatasetDetailUrl(unknownRef)).toBe('');
+  });
+
+  it('maps combined validation issues into ref-check data flags', () => {
+    const mapped = mapValidationIssuesToRefCheckData([
+      {
+        code: 'ruleVerificationFailed',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+        link: '/a',
+      },
+      {
+        code: 'nonExistentRef',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+        link: '/a',
+      },
+      {
+        code: 'underReview',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+        link: '/a',
+      },
+      {
+        code: 'versionUnderReview',
+        ref: {
+          '@type': 'flow data set',
+          '@refObjectId': 'flow-1',
+          '@version': '01.00.000',
+        },
+        link: '/b',
+        underReviewVersion: '02.00.000',
+      },
+      {
+        code: 'versionIsInTg',
+        ref: {
+          '@type': 'flow data set',
+          '@refObjectId': 'flow-1',
+          '@version': '01.00.000',
+        },
+        link: '/b',
+      },
+    ]);
+
+    expect(mapped).toEqual([
+      {
+        id: 'process-1',
+        version: '01.00.000',
+        ruleVerification: false,
+        nonExistent: true,
+        stateCode: 20,
+        versionUnderReview: true,
+        underReviewVersion: '01.00.000',
+      },
+      {
+        id: 'flow-1',
+        version: '01.00.000',
+        ruleVerification: true,
+        nonExistent: false,
+        versionUnderReview: true,
+        underReviewVersion: '02.00.000',
+        versionIsInTg: true,
+      },
+    ]);
+  });
+
+  it('builds deduplicated validation issues for sdk, rule, missing, review, and tg-version problems', () => {
+    const rootRef = {
+      '@type': 'lifeCycleModel data set',
+      '@refObjectId': 'model-1',
+      '@version': '01.00.000',
+    } as const;
+
+    const issues = buildValidationIssues({
+      actionFrom: 'review',
+      datasetSdkValid: false,
+      sdkInvalidTabNames: ['validation', 'validation', 'compliance'],
+      nonExistentRef: [
+        {
+          '@type': 'source data set',
+          '@refObjectId': 'source-1',
+          '@version': '01.00.000',
+        },
+      ],
+      problemNodes: [
+        {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+          ruleVerification: true,
+          nonExistent: false,
+          versionUnderReview: true,
+          underReviewVersion: '01.00.000',
+        },
+        {
+          '@type': 'process data set',
+          '@refObjectId': 'process-2',
+          '@version': '01.00.000',
+          ruleVerification: true,
+          nonExistent: false,
+          versionUnderReview: true,
+          underReviewVersion: '02.00.000',
+        },
+        {
+          '@type': 'flow data set',
+          '@refObjectId': 'flow-1',
+          '@version': '01.00.000',
+          ruleVerification: true,
+          nonExistent: false,
+          versionIsInTg: true,
+        },
+      ],
+      rootRef,
+      unRuleVerification: [
+        {
+          '@type': 'process data set',
+          '@refObjectId': 'process-3',
+          '@version': '01.00.000',
+        },
+        {
+          '@type': 'process data set',
+          '@refObjectId': 'process-3',
+          '@version': '01.00.000',
+        },
+      ],
+    });
+
+    expect(issues).toEqual([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/mydata/models?id=model-1&version=01.00.000&required=1',
+        ref: rootRef,
+        tabNames: ['validation', 'compliance'],
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: 'http://localhost:8000/mydata/processes?id=process-3&version=01.00.000&required=1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-3',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'nonExistentRef',
+        link: 'http://localhost:8000/mydata/sources?id=source-1&version=01.00.000&required=1',
+        ref: {
+          '@type': 'source data set',
+          '@refObjectId': 'source-1',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'underReview',
+        link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000&required=1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+        underReviewVersion: '01.00.000',
+      },
+      {
+        code: 'versionUnderReview',
+        link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000&required=1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-2',
+          '@version': '01.00.000',
+        },
+        underReviewVersion: '02.00.000',
+      },
+      {
+        code: 'versionIsInTg',
+        link: 'http://localhost:8000/mydata/flows?id=flow-1&version=01.00.000&required=1',
+        ref: {
+          '@type': 'flow data set',
+          '@refObjectId': 'flow-1',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+  });
+
+  it('builds validation issues with default optional arrays when only sdk validity is provided', () => {
+    expect(
+      buildValidationIssues({
+        datasetSdkValid: true,
+        rootRef: {
+          '@type': 'contact data set',
+          '@refObjectId': 'contact-1',
+          '@version': '01.00.000',
+        },
+      }),
+    ).toEqual([]);
+  });
+
+  it('validates each dataset type through the sdk and filters process/model review issues', () => {
+    const sdkIssue = (path: PropertyKey[]) => ({ path });
+
+    mockCreateContact.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: { issues: [sdkIssue(['contact'])] },
+      }),
+    );
+    mockCreateSource.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: { issues: [sdkIssue(['source'])] },
+      }),
+    );
+    mockCreateUnitGroup.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: { issues: [sdkIssue(['unitgroup'])] },
+      }),
+    );
+    mockCreateFlowProperty.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: { issues: [sdkIssue(['flowProperty'])] },
+      }),
+    );
+    mockCreateFlow.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: { issues: [sdkIssue(['flow'])] },
+      }),
+    );
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [
+            sdkIssue(['validation']),
+            sdkIssue(['compliance']),
+            sdkIssue(['processInformation']),
+          ],
+        },
+      }),
+    );
+    mockCreateLifeCycleModel.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [sdkIssue(['validation']), sdkIssue(['lifeCycleModelInformation'])],
+        },
+      }),
+    );
+
+    expect(validateDatasetWithSdk('contact data set', { id: 'contact' })).toEqual({
+      success: false,
+      issues: [{ path: ['contact'] }],
+    });
+    expect(validateDatasetWithSdk('source data set', { id: 'source' })).toEqual({
+      success: false,
+      issues: [{ path: ['source'] }],
+    });
+    expect(validateDatasetWithSdk('unit group data set', { id: 'unitgroup' })).toEqual({
+      success: false,
+      issues: [{ path: ['unitgroup'] }],
+    });
+    expect(validateDatasetWithSdk('flow property data set', { id: 'flowproperty' })).toEqual({
+      success: false,
+      issues: [{ path: ['flowProperty'] }],
+    });
+    expect(validateDatasetWithSdk('flow data set', { id: 'flow' })).toEqual({
+      success: false,
+      issues: [{ path: ['flow'] }],
+    });
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [{ path: ['processInformation'] }],
+    });
+    expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
+      success: false,
+      issues: [{ path: ['lifeCycleModelInformation'] }],
+    });
+    expect(validateDatasetWithSdk('unknown data set' as any, { id: 'unknown' })).toEqual({
+      success: true,
+      issues: [],
+    });
+    expect(validateDatasetWithSdk('contact data set', null)).toEqual({
+      success: false,
+      issues: [],
+    });
+  });
+
+  it('treats process/model sdk issues as successful when only review tabs fail', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+        },
+      }),
+    );
+    mockCreateLifeCycleModel.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+        },
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: true,
+      issues: [],
+    });
+    expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
+      success: true,
+      issues: [],
+    });
+  });
+
+  it('returns successful sdk results for process and lifecycle-model datasets', () => {
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: true,
+      issues: [],
+    });
+    expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
+      success: true,
+      issues: [],
+    });
+  });
+
+  it('falls back to an empty sdk issue list when validation fails without structured issues', () => {
+    mockCreateContact.mockImplementation(
+      makeSdkFactory({
+        success: false,
+      }),
+    );
+
+    expect(validateDatasetWithSdk('contact data set', { id: 'contact' })).toEqual({
+      success: false,
+      issues: [],
+    });
+  });
+
+  it('handles unknown dataset types and datasets without a resolvable root ref during rule verification', async () => {
+    await expect(
+      validateDatasetRuleVerification('unknown data set' as any, { foo: 'bar' }),
+    ).resolves.toEqual({
+      datasetSdkValid: true,
+      datasetSdkIssues: [],
+      nonExistentRef: [],
+      ruleVerification: true,
+      unRuleVerification: [],
+    });
+
+    await expect(
+      validateDatasetRuleVerification('contact data set', {
+        contactDataSet: {
+          contactInformation: {
+            dataSetInformation: {},
+          },
+          administrativeInformation: {
+            publicationAndOwnership: {},
+          },
+        },
+      }),
+    ).resolves.toEqual({
+      datasetSdkValid: true,
+      datasetSdkIssues: [],
+      nonExistentRef: [],
+      ruleVerification: true,
+      unRuleVerification: [],
+    });
+  });
+
+  it('filters out root self references while preserving other refs during rule verification', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-2',
+        stateCode: 100,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+
+    const orderedJson = {
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:UUID': 'contact-1',
+            ownership: {
+              '@type': 'contact data set',
+              '@refObjectId': 'contact-1',
+              '@version': '01.00.000',
+            },
+            reviewer: {
+              '@type': 'contact data set',
+              '@refObjectId': 'contact-2',
+              '@version': '01.00.000',
+            },
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          },
+        },
+      },
+    };
+
+    await expect(validateDatasetRuleVerification('contact data set', orderedJson)).resolves.toEqual(
+      {
+        datasetSdkValid: true,
+        datasetSdkIssues: [],
+        nonExistentRef: [],
+        ruleVerification: true,
+        unRuleVerification: [],
+      },
+    );
+
+    expect(mockGetRefData).toHaveBeenCalledTimes(1);
+    expect(mockGetRefData).toHaveBeenCalledWith('contact-2', '01.00.000', 'contacts', '', {
+      fallbackToLatest: false,
+    });
+  });
+
+  it('categorises missing process/model details and can skip rule-verification flags', () => {
+    const unReview: any[] = [];
+    const underReview: any[] = [];
+    const unRuleVerification: any[] = [];
+    const nonExistentRef: any[] = [];
+
+    dealProcress(undefined, unReview, underReview, unRuleVerification, nonExistentRef);
+    dealProcress(
+      {
+        id: 'process-1',
+        version: '01.00.000',
+        stateCode: 10,
+        ruleVerification: false,
+      },
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+      {
+        includeRuleVerification: false,
+      },
+    );
+
+    dealModel(
+      {
+        id: 'model-1',
+        version: '01.00.000',
+        stateCode: 10,
+        ruleVerification: false,
+      },
+      unReview,
+      underReview,
+      unRuleVerification,
+      nonExistentRef,
+      {
+        includeRuleVerification: false,
+      },
+    );
+
+    expect(nonExistentRef).toEqual([
+      {
+        '@type': 'process data set',
+        '@refObjectId': '',
+        '@version': '',
+      },
+    ]);
+    expect(unReview).toEqual([
+      {
+        '@type': 'process data set',
+        '@refObjectId': 'process-1',
+        '@version': '01.00.000',
+      },
+      {
+        '@type': 'lifeCycleModel data set',
+        '@refObjectId': 'model-1',
+        '@version': '01.00.000',
+      },
+    ]);
+    expect(underReview).toEqual([]);
+    expect(unRuleVerification).toEqual([]);
+  });
+});

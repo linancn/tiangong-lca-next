@@ -95,6 +95,34 @@ npm run lint
 - Do not raise coverage thresholds yet; the next quality gain should come from keeping full closure intact, not from moving the gate.
 - Use `npm run prepush:gate` when you want to emulate the exact local push gate before an actual push.
 
+## Integration Completion Standard
+
+- Do not treat integration testing as a code-coverage race. Keep the repo-wide `100/100/100/100` gate, but measure integration depth by workflow confidence rather than by forcing `tests/integration` alone to hit `100%` code coverage.
+- Use this 100-point scorecard for large integration programs:
+  - Functional workflow coverage: `40` points.
+    - The page loads, the primary user action completes, the visible UI refreshes, and the relevant `@/services/**` boundary is asserted.
+  - Variant matrix coverage: `25` points.
+    - Cover route/data-source prefixes, role/permission states, and URL/query initialization states.
+  - Error and fallback coverage: `15` points.
+    - Cover list-load failure, create/update failure, delete failure or cancel, empty state, and user-visible recovery.
+  - Navigation and side-effect coverage: `10` points.
+    - Cover `history.push`, `history.replace`, `window.location.href`, `window.location.reload`, and similar browser-owned transitions.
+  - Engineering quality: `10` points.
+    - Keep mocks deterministic, assertions semantic, file scope maintainable, and skipped tests explicitly justified.
+- Suggested readiness thresholds:
+  - `85-100`: release-ready integration coverage for that workflow.
+  - `70-84`: solid base, but matrix or fallback gaps still exist.
+  - `50-69`: mostly happy-path coverage; risky for refactors.
+  - `<50`: smoke-only confidence.
+- Repository-specific default priority order for new integration work:
+  1. Route/data-source matrix on pathname-driven pages (`LifeCycleModels`, `Processes`, `Flows`, `Flowproperties`, `Unitgroups`, `Sources`, `Contacts`).
+  2. Permission and role matrices (`Teams`, `ManageSystem`, `Review`).
+  3. URL/query-driven and cross-page flows (`Login`, `Welcome`, `Processes/Analysis`, deep-link drawers).
+  4. Failure/fallback behavior on the same workflows.
+  5. Thin browser-real smoke only when integration tests cannot credibly model the behavior.
+- Current checkpoint (March 21, 2026): phases 1-3 are complete and Phase 4 is now in progress. The repo already covers welcome-modal empty responses plus thumbnail-failure fallback, login registration fallback states, processes empty-result and thrown-request recovery, and account credential/load/email failure flows; the default next increment is the remaining create/update/delete and cancel anchors on the same workflows.
+- E2E rule: prefer integration tests first. Escalate only a very thin smoke layer to future E2E for browser-real behaviors such as redirect chains, file upload/preview, reloads, or window-level navigation.
+
 ## Related Docs
 
 - `docs/agents/testing-patterns.md`: templates and reusable patterns.

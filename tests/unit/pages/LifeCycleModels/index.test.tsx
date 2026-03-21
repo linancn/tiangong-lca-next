@@ -1,7 +1,7 @@
 // @ts-nocheck
 import LifeCycleModelsPage from '@/pages/LifeCycleModels';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -65,6 +65,12 @@ jest.mock('@/services/general/util', () => ({
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
+  isDataUnderReview: () => false,
+}));
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
 }));
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
@@ -164,7 +170,14 @@ jest.mock('@/pages/LifeCycleModels/Components/delete', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
   __esModule: true,
-  default: ({ id }: any) => <button type='button'>{`lifecycle-edit-${id}`}</button>,
+  default: ({ id, version, autoOpen, onDrawerClose }: any) => (
+    <div data-testid='lifecycle-edit'>
+      {JSON.stringify({ id, version, autoOpen })}
+      <button type='button' onClick={() => onDrawerClose?.()}>
+        lifecycle-edit-close
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
@@ -622,5 +635,41 @@ describe('LifeCycleModelsPage', () => {
     expect(
       screen.getByRole('button', { name: /export-lifecyclemodels-model-1-1.0.0/i }),
     ).toBeInTheDocument();
+  });
+
+  it('opens and closes the route-driven edit drawer for my-data links', async () => {
+    mockLocation = {
+      pathname: '/mydata/lifecyclemodels',
+      search: '?tid=team-1&id=model-route&version=9.9.9',
+    };
+
+    renderWithProviders(<LifeCycleModelsPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('lifecycle-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(true),
+    );
+
+    const autoOpenEdit = screen
+      .getAllByTestId('lifecycle-edit')
+      .find((node) => node.textContent?.includes('"autoOpen":true'));
+
+    expect(autoOpenEdit).toHaveTextContent('"id":"model-route"');
+    expect(autoOpenEdit).toHaveTextContent('"version":"9.9.9"');
+
+    await userEvent.click(
+      within(autoOpenEdit!).getByRole('button', { name: /lifecycle-edit-close/i }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('lifecycle-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(false),
+    );
   });
 });

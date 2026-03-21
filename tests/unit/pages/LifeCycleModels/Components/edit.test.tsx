@@ -104,6 +104,9 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/editIndex', () => ({
         <button type='button' onClick={() => props.setIsSave(true)}>
           mark-save
         </button>
+        <button type='button' onClick={() => props.onSubmitReviewSuccess?.()}>
+          review-submit-success
+        </button>
       </div>
     );
   },
@@ -267,5 +270,42 @@ describe('LifeCycleModelEdit', () => {
         action: 'edit',
       }),
     );
+  });
+
+  it('auto-opens when autoOpen is enabled and identifiers are present', async () => {
+    renderWithProviders(
+      <LifeCycleModelEdit id='model-auto' version='8.8.8' buttonType='icon' lang='en' autoOpen />,
+    );
+
+    expect(screen.getByRole('dialog', { name: /edit model/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(latestToolbarProps).toMatchObject({
+        id: 'model-auto',
+        version: '8.8.8',
+      }),
+    );
+  });
+
+  it('closes the drawer and reloads immediately after review submit success', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    const onDrawerClose = jest.fn();
+
+    renderWithProviders(
+      <LifeCycleModelEdit
+        id='model-review'
+        version='3.3.3'
+        buttonType='icon'
+        lang='en'
+        actionRef={actionRef as any}
+        onDrawerClose={onDrawerClose}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await userEvent.click(screen.getByRole('button', { name: /review-submit-success/i }));
+
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(onDrawerClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

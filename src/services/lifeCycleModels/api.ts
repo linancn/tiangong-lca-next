@@ -1,4 +1,8 @@
-import { getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import {
+  getAllRefObj,
+  getRefTableName,
+  validateDatasetRuleVerification,
+} from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
@@ -14,7 +18,11 @@ import {
 import { getILCDClassification } from '../ilcd/api';
 import { getProcessDetailByIdsAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
-import type { LifeCycleModelJsonTg, LifeCycleModelMutationResult } from './data';
+import type {
+  LifeCycleModelJsonTg,
+  LifeCycleModelMutationResult,
+  LifeCycleModelPersistencePlan,
+} from './data';
 import {
   buildDeleteLifeCycleModelBundlePayload,
   buildReviewUpdateLifeCycleModelPersistencePlan,
@@ -153,6 +161,45 @@ async function invokeLifecycleModelBundleFunction(
   }
 }
 
+async function applyReferenceAwareRuleVerification(
+  plan: LifeCycleModelPersistencePlan,
+  userTeamId: string,
+): Promise<LifeCycleModelPersistencePlan> {
+  const parentValidation = await validateDatasetRuleVerification(
+    'lifeCycleModel data set',
+    plan.parent.jsonOrdered,
+    userTeamId,
+  );
+
+  const processMutations = await Promise.all(
+    plan.processMutations.map(async (mutation) => {
+      if (mutation.op === 'delete') {
+        return mutation;
+      }
+
+      const processValidation = await validateDatasetRuleVerification(
+        'process data set',
+        mutation.jsonOrdered,
+        userTeamId,
+      );
+
+      return {
+        ...mutation,
+        ruleVerification: processValidation.ruleVerification,
+      };
+    }),
+  );
+
+  return {
+    ...plan,
+    parent: {
+      ...plan.parent,
+      ruleVerification: parentValidation.ruleVerification,
+    },
+    processMutations,
+  };
+}
+
 export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedCreateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
@@ -183,8 +230,9 @@ export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMut
   if (!planResult.ok) {
     return buildMutationError(planResult.code, planResult.message, planResult.details);
   }
-
-  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', planResult.plan);
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
+  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
 }
 
 export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
@@ -245,8 +293,9 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   if (!planResult.ok) {
     return buildMutationError(planResult.code, planResult.message, planResult.details);
   }
-
-  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', planResult.plan);
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
+  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
 }
 
 export async function updateLifeCycleModelJsonApi(
@@ -855,10 +904,10 @@ export async function contributeLifeCycleModel(id: string, version: string) {
         ) {
           if (!needContributeMap.has(refKey)) {
             needContributeMap.set(refKey, {
-              id: item.ref['@refObjectId'],
-              version: item.ref['@version'],
               type: item.ref['@type'],
               ...item.refData,
+              id: item.ref['@refObjectId'],
+              version: item.ref['@version'],
             });
           }
         }

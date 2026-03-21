@@ -77,6 +77,7 @@ jest.mock('@/services/ilcd/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -319,7 +320,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const result = await updateSource(mockId, mockVersion, mockData);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toBeNull();
+      expect(result).toEqual({ error: mockError });
 
       consoleLogSpy.mockRestore();
     });

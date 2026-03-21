@@ -1,12 +1,15 @@
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
+  buildValidationIssues,
   checkData,
   getAllRefObj,
   getErrRefTab,
   getRefTableName,
+  validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
@@ -26,7 +29,6 @@ import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -39,8 +41,11 @@ type Props = {
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
+  disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   updateErrRef?: (data: RefCheckType | null) => void;
+  autoOpen?: boolean;
+  autoCheckRequired?: boolean;
   showSyncOpenDataButton?: boolean;
 };
 
@@ -58,8 +63,11 @@ const ContactEdit: FC<Props> = ({
   buttonType,
   actionRef,
   lang,
+  disabled = false,
   setViewDrawerVisible,
   updateErrRef = () => {},
+  autoOpen = false,
+  autoCheckRequired = false,
   showSyncOpenDataButton = false,
 }) => {
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
@@ -76,6 +84,7 @@ const ContactEdit: FC<Props> = ({
   const [isReviewAdmin, setIsReviewAdmin] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
@@ -90,6 +99,12 @@ const ContactEdit: FC<Props> = ({
     });
   }, [refCheckData, parentRefCheckContext]);
 
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      setDrawerVisible(true);
+    }
+  }, [autoOpen, id, version]);
+
   // useEffect(() => {
   //   if (showRules) {
   //     setTimeout(() => {
@@ -100,6 +115,11 @@ const ContactEdit: FC<Props> = ({
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerVisible(false);
+    setViewDrawerVisible(false);
   }, [setViewDrawerVisible]);
 
   const handletFromData = () => {
@@ -165,7 +185,9 @@ const ContactEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setCurrentStateCode(undefined);
       setShowRules(false);
+      setAutoCheckTriggered(false);
       setRefCheckContextValue({ refCheckData: [] });
       return;
     }
@@ -191,7 +213,11 @@ const ContactEdit: FC<Props> = ({
     };
   }, [drawerVisible, showSyncOpenDataButton]);
 
-  const handleSubmit = async (autoClose: boolean): Promise<UpdateContactResult | undefined> => {
+  const handleSubmit = async (
+    autoClose: boolean,
+    options?: { silent?: boolean },
+  ): Promise<UpdateContactResult | undefined> => {
+    const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
@@ -210,19 +236,20 @@ const ContactEdit: FC<Props> = ({
           nonExistent: false,
         });
       }
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.save.success',
-          defaultMessage: 'Save successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.save.success',
+            defaultMessage: 'Save successfully!',
+          }),
+        );
+      }
       if (autoClose) {
-        setDrawerVisible(false);
-        setViewDrawerVisible(false);
+        closeDrawer();
         actionRef?.current?.reload();
         return undefined;
       }
-    } else {
+    } else if (!silent) {
       if (updateResult?.error?.state_code === 100) {
         message.error(
           intl.formatMessage({
@@ -322,6 +349,155 @@ const ContactEdit: FC<Props> = ({
     return true;
   };
 
+  const handleCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (typeof currentStateCode === 'number' && currentStateCode >= 20 && currentStateCode < 100) {
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.checkData.inReview',
+            defaultMessage: 'This data set is under review and cannot be validated',
+          }),
+        );
+      }
+      return;
+    }
+
+    setSpinning(true);
+    const updateResult = await handleSubmit(false, { silent });
+    if (!updateResult || updateResult.error) {
+      setSpinning(false);
+      return;
+    }
+    setShowRules(true);
+    const unRuleVerification: refDataType[] = [];
+    const nonExistentRef: refDataType[] = [];
+    const pathRef = new ReffPath(
+      {
+        '@type': 'contact data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      updateResult?.data?.[0]?.rule_verification ?? false,
+      false,
+    );
+    await checkData(
+      {
+        '@type': 'contact data set',
+        '@refObjectId': id,
+        '@version': version,
+      },
+      unRuleVerification,
+      nonExistentRef,
+      pathRef,
+    );
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
+    const rootRef = {
+      '@type': 'contact data set',
+      '@refObjectId': id,
+      '@version': version,
+    } satisfies refDataType;
+    if (problemNodes && problemNodes.length > 0) {
+      const result = problemNodes.map((item) => {
+        return {
+          id: item['@refObjectId'],
+          version: item['@version'],
+          ruleVerification: item.ruleVerification,
+          nonExistent: item.nonExistent,
+        };
+      });
+      setRefCheckData(result);
+    } else {
+      setRefCheckData([]);
+    }
+    const errTabNames: string[] = [];
+    nonExistentRef.forEach((item: refDataType) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    unRuleVerification.forEach((item: refDataType) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+    problemNodes.forEach((item) => {
+      const tabName = getErrRefTab(item, initData);
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    });
+
+    const sdkValidation = validateDatasetWithSdk(
+      'contact data set',
+      genContactJsonOrdered(id, fromData),
+    );
+    const sdkIssues = sdkValidation.issues;
+    const sdkInvalidTabNames: string[] = [];
+    if (sdkIssues.length) {
+      sdkIssues.forEach((err) => {
+        const tabName = err.path[1];
+        if (tabName && !errTabNames.includes(tabName as string))
+          errTabNames.push(tabName as string);
+        if (tabName && !sdkInvalidTabNames.includes(tabName as string))
+          sdkInvalidTabNames.push(tabName as string);
+      });
+      formRefEdit.current?.validateFields();
+    }
+    const validationIssues = buildValidationIssues({
+      datasetSdkValid: sdkValidation.success,
+      nonExistentRef,
+      rootRef,
+      sdkInvalidTabNames,
+      unRuleVerification,
+    });
+    if (
+      unRuleVerification.length === 0 &&
+      nonExistentRef.length === 0 &&
+      errTabNames.length === 0 &&
+      problemNodes.length === 0 &&
+      sdkIssues.length === 0
+    ) {
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.check.success',
+            defaultMessage: 'Data check successfully!',
+          }),
+        );
+      }
+    } else {
+      const validationHint =
+        errTabNames && errTabNames.length > 0
+          ? errTabNames
+              .map((tab) =>
+                intl.formatMessage({
+                  id: `pages.contact.${tab}`,
+                  defaultMessage: tab,
+                }),
+              )
+              .join('，') +
+            '：' +
+            intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            })
+          : intl.formatMessage({
+              id: 'pages.button.check.error',
+              defaultMessage: 'Data check failed!',
+            });
+      if (!silent && validationIssues.length > 0) {
+        showValidationIssueModal({
+          intl,
+          issues: validationIssues,
+          title: intl.formatMessage({
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
+          }),
+        });
+      } else if (!silent) {
+        message.error(validationHint);
+      }
+    }
+    setSpinning(false);
+  };
+
   const handleSyncToOpenData = async () => {
     setSpinning(true);
     const updateResult = await handleSubmit(false);
@@ -380,146 +556,35 @@ const ContactEdit: FC<Props> = ({
     setSpinning(false);
   };
 
-  const handleCheckData = async () => {
-    setSpinning(true);
-    const updateResult = await handleSubmit(false);
-    if (!updateResult || updateResult.error) {
-      setSpinning(false);
+  useEffect(() => {
+    if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
       return;
     }
-    setShowRules(true);
-    const unRuleVerification: refDataType[] = [];
-    const nonExistentRef: refDataType[] = [];
-    const pathRef = new ReffPath(
-      {
-        '@type': 'contact data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      updateResult?.data?.[0]?.rule_verification ?? false,
-      false,
-    );
-    await checkData(
-      {
-        '@type': 'contact data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-    );
-    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
-    if (problemNodes && problemNodes.length > 0) {
-      const result = problemNodes.map((item) => {
-        return {
-          id: item['@refObjectId'],
-          version: item['@version'],
-          ruleVerification: item.ruleVerification,
-          nonExistent: item.nonExistent,
-        };
-      });
-      setRefCheckData(result);
-    } else {
-      setRefCheckData([]);
-    }
-    const unRuleVerificationData = unRuleVerification.map((item: refDataType) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: false,
-        nonExistent: false,
-      };
-    });
-    const nonExistentRefData = nonExistentRef.map((item: refDataType) => {
-      return {
-        id: item['@refObjectId'],
-        version: item['@version'],
-        ruleVerification: true,
-        nonExistent: true,
-      };
-    });
-    const errTabNames: string[] = [];
-    nonExistentRef.forEach((item: refDataType) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-    unRuleVerification.forEach((item: refDataType) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-    problemNodes.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-
-    const tidasContact = createTidasContact(genContactJsonOrdered(id, fromData));
-    const validateResult = tidasContact.validateEnhanced();
-    const issues = validateResult.success ? [] : validateResult.error.issues;
-    if (issues.length) {
-      issues.forEach((err) => {
-        const tabName = err.path[1];
-        if (tabName && !errTabNames.includes(tabName as string))
-          errTabNames.push(tabName as string);
-      });
-      formRefEdit.current?.validateFields();
-    }
-    if (
-      unRuleVerificationData.length === 0 &&
-      nonExistentRefData.length === 0 &&
-      errTabNames.length === 0 &&
-      problemNodes.length === 0 &&
-      issues.length === 0
-    ) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.check.success',
-          defaultMessage: 'Data check successfully!',
-        }),
-      );
-    } else {
-      if (errTabNames && errTabNames.length > 0) {
-        message.error(
-          errTabNames
-            .map((tab) =>
-              intl.formatMessage({
-                id: `pages.contact.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
-            .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            }),
-        );
-      } else {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
-          }),
-        );
-      }
-    }
-    setSpinning(false);
-  };
+    setAutoCheckTriggered(true);
+    void handleCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, handleCheckData, spinning]);
 
   return (
     <>
-      {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
-          <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
-        </Tooltip>
-      ) : (
-        <Button onClick={onEdit}>
-          <FormattedMessage
-            id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'}
-            defaultMessage='Edit'
-          />
-        </Button>
-      )}
+      {!autoOpen &&
+        (buttonType === 'icon' ? (
+          <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
+            <Button
+              disabled={disabled}
+              shape='circle'
+              icon={<FormOutlined />}
+              size='small'
+              onClick={onEdit}
+            />
+          </Tooltip>
+        ) : (
+          <Button disabled={disabled} onClick={onEdit}>
+            <FormattedMessage
+              id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'}
+              defaultMessage='Edit'
+            />
+          </Button>
+        ))}
 
       <Drawer
         destroyOnHidden
@@ -529,19 +594,13 @@ const ContactEdit: FC<Props> = ({
         }
         width='90%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         maskClosable={false}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={closeDrawer}
         footer={
           <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={handleCheckData}>
+            <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
             {showSyncOpenDataButton && isReviewAdmin && (
@@ -565,7 +624,7 @@ const ContactEdit: FC<Props> = ({
                 defaultMessage='Update Reference'
               />
             </Button>
-            <Button onClick={() => setDrawerVisible(false)}>
+            <Button onClick={closeDrawer}>
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             {/* <Button onClick={onReset}>

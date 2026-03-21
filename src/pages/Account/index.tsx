@@ -679,24 +679,50 @@ const Profile: FC = () => {
   };
 
   useEffect(() => {
-    setSpinning(true);
-    getCurrentUser().then((res) => {
-      setInitData(res);
-      setRoleValue(
-        intl.formatMessage({
-          id: `pages.account.profile.role.${res?.role}`,
-          defaultMessage: res?.role,
-        }),
-      );
-      formRefEdit.current?.setFieldsValue({
-        ...res,
-        role: intl.formatMessage({
-          id: `pages.account.profile.role.${res?.role}`,
-          defaultMessage: res?.role,
-        }),
-      });
-      setSpinning(false);
-    });
+    let active = true;
+
+    const loadCurrentUser = async () => {
+      setSpinning(true);
+      try {
+        const res = await getCurrentUser();
+        if (!active) {
+          return;
+        }
+        setInitData(res);
+        setRoleValue(
+          intl.formatMessage({
+            id: `pages.account.profile.role.${res?.role}`,
+            defaultMessage: res?.role,
+          }),
+        );
+        formRefEdit.current?.setFieldsValue({
+          ...res,
+          role: intl.formatMessage({
+            id: `pages.account.profile.role.${res?.role}`,
+            defaultMessage: res?.role,
+          }),
+        });
+      } catch (error) {
+        if (active) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.account.loadError',
+              defaultMessage: 'An error occurred while loading the account profile.',
+            }),
+          );
+        }
+      } finally {
+        if (active) {
+          setSpinning(false);
+        }
+      }
+    };
+
+    void loadCurrentUser();
+
+    return () => {
+      active = false;
+    };
   }, [intl]);
 
   return (

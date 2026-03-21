@@ -7,6 +7,9 @@
  * Journeys validated:
  * 1. User loads the account page and sees their current profile information populated.
  * 2. User updates the nickname, submits the form, and receives success feedback.
+ * 3. User navigates account tabs and generated API keys are cleared after leaving the tab.
+ * 4. Failure states surface visible recovery messaging for password changes and API key generation.
+ * 5. Profile load and email-change failures stay visible instead of deadlocking the page.
  *
  * Services mocked:
  * - getCurrentUser
@@ -507,6 +510,177 @@ describe('Account profile integration workflow', () => {
     const updatedState = updater({ currentUser: { name: 'Old Name', locale: 'en-US' } });
     expect(updatedState.currentUser.name).toBe('Alice Cooper');
     expect(updatedState.currentUser.locale).toBe('en-US');
+  });
+
+  it('switches tabs and clears generated API keys after leaving the API key tab', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    expect(screen.getByLabelText('Nickname')).toBeInTheDocument();
+    expect(screen.queryByLabelText('New Password')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+    expect(screen.getByLabelText('New Password')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+    expect(screen.getByLabelText('New Email')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+
+    const passwordField = screen.getByLabelText('Current Password') as HTMLInputElement;
+    await user.type(passwordField, 'P@ssword123');
+    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
+
+    const expectedApiKey = Buffer.from(
+      JSON.stringify({
+        email: 'user@example.com',
+        password: 'P@ssword123',
+      }),
+    ).toString('base64');
+
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: 'P@ssword123',
+      }),
+    );
+    expect(mockCognitoSignUp).toHaveBeenCalledWith('P@ssword123');
+    expect(message.success).toHaveBeenCalledWith('API Key generated successfully!');
+    expect(screen.getByDisplayValue(expectedApiKey)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Basic Information' }));
+    expect(screen.getByLabelText('Nickname')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+    expect(screen.queryByDisplayValue(expectedApiKey)).not.toBeInTheDocument();
+  });
+
+  it('surfaces an invalid-current-password error on the change-password tab', async () => {
+    mockChangePassword.mockResolvedValueOnce({
+      status: 'error',
+      message: 'Password incorrect',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    await user.type(screen.getByLabelText('Current Password'), 'OldP@ssword1');
+    await user.type(screen.getByLabelText('New Password'), 'NewP@ssword1');
+    await user.type(screen.getByLabelText('Confirm New Password'), 'NewP@ssword1');
+    await user.click(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => expect(mockCognitoChangePassword).toHaveBeenCalledWith('NewP@ssword1'));
+    await waitFor(() =>
+      expect(mockChangePassword).toHaveBeenCalledWith(
+        expect.objectContaining({
+          currentPassword: 'OldP@ssword1',
+          newPassword: 'NewP@ssword1',
+          confirmNewPassword: 'NewP@ssword1',
+        }),
+      ),
+    );
+
+    expect(message.error).toHaveBeenCalledWith('Invalid current password');
+    expect(message.success).not.toHaveBeenCalledWith('Password changed successfully!');
+  });
+
+  it('prevents API key generation when credential validation fails', async () => {
+    mockLogin.mockResolvedValueOnce({ status: 'error' } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
+    await user.type(screen.getByLabelText('Current Password'), 'WrongP@ssword1');
+    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
+
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: 'WrongP@ssword1',
+      }),
+    );
+
+    expect(mockCognitoSignUp).not.toHaveBeenCalled();
+    expect(message.error).toHaveBeenCalledWith('Invalid credentials. Please check your password.');
+    expect(
+      screen.queryByText(
+        'Make sure to copy it to a secure location. This key will not be shown again.',
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows the backend error message when email change fails', async () => {
+    mockChangeEmail.mockResolvedValueOnce({
+      status: 'error',
+      message: 'Email update failed',
+    } as any);
+
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+    await user.type(screen.getByLabelText('New Email'), 'next@example.com');
+    await user.type(screen.getByLabelText('Confirm New Email'), 'next@example.com');
+    await user.click(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => expect(mockCognitoChangeEmail).toHaveBeenCalledWith('next@example.com'));
+    await waitFor(() =>
+      expect(mockChangeEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          newEmail: 'next@example.com',
+          confirmNewEmail: 'next@example.com',
+        }),
+      ),
+    );
+
+    expect(message.error).toHaveBeenCalledWith('Email update failed');
+    expect(message.success).not.toHaveBeenCalledWith(
+      'Verification email sent successfully! Please update your email via the email link.',
+    );
+  });
+
+  it('stops spinning and shows an error when the initial profile load fails', async () => {
+    mockGetCurrentUser.mockRejectedValueOnce(new Error('profile load failed'));
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    expect(message.error).toHaveBeenCalledWith(
+      'An error occurred while loading the account profile.',
+    );
+    expect(screen.getByLabelText('Nickname')).toBeInTheDocument();
   });
 
   it('surfaces validation feedback when profile update fails', async () => {

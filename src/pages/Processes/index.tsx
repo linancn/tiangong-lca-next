@@ -20,8 +20,9 @@ import ToolBarButton from '@/components/ToolBarButton';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
+import { attachStateCodesToRows } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
@@ -70,12 +71,28 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
+  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
+  const attachReviewState = async (result: {
+    data?: ProcessTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
+    if (dataSource !== 'my' || !Array.isArray(result.data)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      data: await attachStateCodesToRows('processes', result.data),
+    };
+  };
   const keyWordRef = useRef('');
   const stateCodeRef = useRef<string | number>('all');
   const typeOfDataSetRef = useRef<string>('all');
@@ -212,6 +229,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
             <Space size={'small'} key={0}>
@@ -234,6 +252,7 @@ const TableList: FC = () => {
               />
               {row.modelId ? (
                 <LifeCycleModelEdit
+                  disabled={actionDisabled}
                   id={row.modelId}
                   version={row.version}
                   lang={lang}
@@ -242,6 +261,7 @@ const TableList: FC = () => {
                 />
               ) : (
                 <ProcessEdit
+                  disabled={actionDisabled}
                   id={row.id}
                   version={row.version}
                   lang={lang}
@@ -252,6 +272,7 @@ const TableList: FC = () => {
               )}
 
               <ProcessDelete
+                disabled={actionDisabled}
                 id={row.id}
                 version={row.version}
                 buttonType={'icon'}
@@ -451,12 +472,13 @@ const TableList: FC = () => {
     setImportData(jsonData);
   };
 
-  const applyProcessTableResult = (result?: {
+  const applyProcessTableResult = async (result?: {
     data?: ProcessTable[];
     success?: boolean;
     total?: number;
   }) => {
-    return result ?? { data: [], success: false, total: 0 };
+    const resolvedResult = result ?? { data: [], success: false, total: 0 };
+    return attachReviewState(resolvedResult);
   };
 
   return (
@@ -567,29 +589,42 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          const currentTypeOfDataSet = typeOfDataSetRef.current;
-          if (currentKeyWord.length > 0) {
-            let orderBy:
-              | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
-              | undefined;
-            if (sort && Object.keys(sort).length > 0) {
-              const field = Object.keys(sort)[0];
-              const order = sort[field];
-              if (field === 'name') {
-                orderBy = {
-                  key: 'baseName',
-                  lang: lang,
-                  order: order === 'ascend' ? 'asc' : 'desc',
-                };
-              } else if (field === 'classification') {
-                orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+          try {
+            const currentKeyWord = keyWordRef.current || keyWord;
+            const currentStateCode = stateCodeRef.current;
+            const currentTypeOfDataSet = typeOfDataSetRef.current;
+            if (currentKeyWord.length > 0) {
+              let orderBy:
+                | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
+                | undefined;
+              if (sort && Object.keys(sort).length > 0) {
+                const field = Object.keys(sort)[0];
+                const order = sort[field];
+                if (field === 'name') {
+                  orderBy = {
+                    key: 'baseName',
+                    lang: lang,
+                    order: order === 'ascend' ? 'asc' : 'desc',
+                  };
+                } else if (field === 'classification') {
+                  orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+                }
               }
-            }
-            if (openAI) {
+              if (openAI) {
+                return applyProcessTableResult(
+                  await process_hybrid_search(
+                    params,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    {},
+                    currentStateCode,
+                    currentTypeOfDataSet,
+                  ),
+                );
+              }
               return applyProcessTableResult(
-                await process_hybrid_search(
+                await getProcessTablePgroongaSearch(
                   params,
                   lang,
                   dataSource,
@@ -597,50 +632,47 @@ const TableList: FC = () => {
                   {},
                   currentStateCode,
                   currentTypeOfDataSet,
+                  orderBy,
                 ),
               );
             }
+
+            const sortFields: Record<string, string> = {
+              name: 'json->processDataSet->processInformation->dataSetInformation->name',
+              classification:
+                'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
+            };
+
+            const convertedSort: Record<string, SortOrder> = {};
+            if (sort && Object.keys(sort).length > 0) {
+              const field = Object.keys(sort)[0];
+              if (sortFields[field]) {
+                convertedSort[sortFields[field]] = sort[field];
+              } else {
+                convertedSort[field] = sort[field];
+              }
+            }
+
             return applyProcessTableResult(
-              await getProcessTablePgroongaSearch(
+              await getProcessTableAll(
                 params,
+                convertedSort,
                 lang,
                 dataSource,
-                currentKeyWord,
-                {},
+                tid ?? '',
                 currentStateCode,
                 currentTypeOfDataSet,
-                orderBy,
               ),
             );
+          } catch (error) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.process.list.loadError',
+                defaultMessage: 'Failed to load process list.',
+              }),
+            );
+            return applyProcessTableResult();
           }
-
-          const sortFields: Record<string, string> = {
-            name: 'json->processDataSet->processInformation->dataSetInformation->name',
-            classification:
-              'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
-          };
-
-          const convertedSort: Record<string, SortOrder> = {};
-          if (sort && Object.keys(sort).length > 0) {
-            const field = Object.keys(sort)[0];
-            if (sortFields[field]) {
-              convertedSort[sortFields[field]] = sort[field];
-            } else {
-              convertedSort[field] = sort[field];
-            }
-          }
-
-          return applyProcessTableResult(
-            await getProcessTableAll(
-              params,
-              convertedSort,
-              lang,
-              dataSource,
-              tid ?? '',
-              currentStateCode,
-              currentTypeOfDataSet,
-            ),
-          );
         }}
         columns={processColumns}
       />
@@ -654,6 +686,7 @@ const TableList: FC = () => {
           actionRef={actionRef}
           setViewDrawerVisible={handleEditClose}
           autoOpen={true}
+          autoCheckRequired={required}
         />
       )}
     </PageContainer>

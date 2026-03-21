@@ -11,6 +11,7 @@
  * 1. Owner loads /mydata lifecycle models, opens the create drawer, selects a process node, saves, and observes success toast + table reload.
  * 2. Owner opens the edit drawer for an existing model, adds another node, saves updates, and observes success feedback.
  * 3. Owner inspects calculation results via the model result button, triggering process lookups for main and sub products.
+ * 4. Open-data users land on /tgdata lifecycle models and only see the read-only source matrix.
  *
  * Services mocked:
  * - mockGetLifeCycleModelTableAll, mockGetLifeCycleModelDetail, mockCreateLifeCycleModel, mockUpdateLifeCycleModel
@@ -21,6 +22,11 @@
 import LifeCycleModelsPage from '@/pages/LifeCycleModels';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+
+const setLifeCycleModelsLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
+};
 
 jest.mock('umi', () => {
   const umi = require('@/tests/mocks/umi');
@@ -507,7 +513,13 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect', ()
   default: () => <div>io-port-select</div>,
 }));
 
-const mockGetDataSource = jest.fn(() => 'my') as jest.Mock<any, any[]>;
+const mockGetDataSource = jest.fn((pathname = '') => {
+  if (pathname.includes('/mydata')) return 'my';
+  if (pathname.includes('/tgdata')) return 'tg';
+  if (pathname.includes('/codata')) return 'co';
+  if (pathname.includes('/tedata')) return 'te';
+  return '';
+}) as jest.Mock<any, any[]>;
 const mockGetLang = jest.fn(() => 'en') as jest.Mock<any, any[]>;
 const mockGetLangText = jest.fn((value: any) => {
   if (!value) return '';
@@ -523,6 +535,7 @@ jest.mock('@/services/general/util', () => ({
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
   getImportedId: jest.fn(() => undefined),
+  isDataUnderReview: jest.fn(() => false),
   isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
@@ -535,6 +548,7 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: jest.fn(),
   getRefData: jest.fn(async () => ({ data: {} })),
 }));
@@ -754,6 +768,7 @@ describe('LifeCycleModels workflows', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetGraphStore();
+    setLifeCycleModelsLocation('/mydata/lifecyclemodels', '');
     const message = getMockAntdMessage();
     Object.values(message).forEach((fn) => fn.mockClear());
     mockGetLifeCycleModelTableAll.mockResolvedValue({
@@ -950,5 +965,42 @@ describe('LifeCycleModels workflows', () => {
     await waitFor(() => expect(mockGetProcessesByIdAndVersion).toHaveBeenCalled());
 
     expect(rowWithin.getByText('Process One')).toBeInTheDocument();
+  });
+
+  it('uses the open-data route matrix for tgdata lifecycle models', async () => {
+    setLifeCycleModelsLocation('/tgdata/lifecyclemodels', 'tid=team-open');
+
+    mockGetLifeCycleModelTableAll.mockResolvedValueOnce({
+      data: [
+        {
+          key: 'model-open:1.0.0.001',
+          id: 'model-open',
+          name: 'Open Model',
+          version: '1.0.0.001',
+          modifiedAt: '2023-01-03T00:00:00Z',
+          generalComment: 'open data',
+          classification: 'Energy',
+          teamId: null,
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+
+    await renderLifeCycleModels();
+
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(1));
+
+    const firstCall = mockGetLifeCycleModelTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-open');
+
+    expect(await screen.findByText('Open Model')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Product Models');
+
+    expect(screen.queryByText('import')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByText('delete-model')).not.toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
   });
 });

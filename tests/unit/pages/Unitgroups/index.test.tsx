@@ -44,6 +44,7 @@ jest.mock('umi', () => ({
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: (...args: any[]) => mockContributeSource(...args),
 }));
 
@@ -52,6 +53,7 @@ jest.mock('@/services/general/util', () => ({
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
+  isDataUnderReview: () => false,
 }));
 
 jest.mock('@/services/roles/api', () => ({

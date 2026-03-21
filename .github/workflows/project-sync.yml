@@ -1,0 +1,42 @@
+name: Project Sync
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - closed
+
+permissions:
+  contents: read
+
+jobs:
+  sync-project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync GitHub Project item
+        env:
+          PROJECT_AUTOMATION_TOKEN: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          PROJECT_OWNER: Neo9281
+          PROJECT_NUMBER: "1"
+          DEFAULT_REPO_TAG: next
+          DEFAULT_WORKSPACE_INTEGRATION: Pending
+        run: node .github/scripts/project-sync.mjs
+
+      - name: Secret setup note
+        if: ${{ secrets.PROJECT_AUTOMATION_TOKEN == '' }}
+        run: |
+          echo "PROJECT_AUTOMATION_TOKEN is not configured."
+          echo "Set a repository secret with project write access before relying on this workflow."
+          echo "Recommended scopes: project, repo, read:org."

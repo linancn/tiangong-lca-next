@@ -7,6 +7,7 @@
  * Journeys:
  * 1. Owner loads /mydata flows table (ProTable request invoked with getFlowTableAll).
  * 2. Owner opens create drawer, selects flow type + classification, adds a flow property, saves, observes success toast and table reload.
+ * 3. Open-data users land on /tgdata flows and only see the read-only source matrix.
  *
  * Services mocked:
  * - getFlowTableAll, createFlows
@@ -15,6 +16,11 @@
 import FlowsPage from '@/pages/Flows';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+
+const setFlowsLocation = (pathname: string, search = '') => {
+  const umi = require('@/tests/mocks/umi');
+  umi.setUmiLocation({ pathname, search: search ? `?${search}` : '' });
+};
 
 jest.mock('umi', () => {
   const umi = require('@/tests/mocks/umi');
@@ -240,7 +246,13 @@ jest.mock('@/services/flows/api', () => ({
   deleteFlows: jest.fn(),
 }));
 
-const mockGetDataSource = jest.fn(() => 'my') as jest.Mock<any, any[]>;
+const mockGetDataSource = jest.fn((pathname = '') => {
+  if (pathname.includes('/mydata')) return 'my';
+  if (pathname.includes('/tgdata')) return 'tg';
+  if (pathname.includes('/codata')) return 'co';
+  if (pathname.includes('/tedata')) return 'te';
+  return '';
+}) as jest.Mock<any, any[]>;
 const mockGetLang = jest.fn(() => 'en') as jest.Mock<any, any[]>;
 const mockGetLangText = jest.fn((value: any) => {
   if (typeof value === 'string') return value;
@@ -258,11 +270,13 @@ jest.mock('@/services/general/util', () => ({
   getDataTitle: (...args: any[]) => mockGetDataTitle(...args),
   formatDateTime: (...args: any[]) => mockFormatDateTime(...args),
   getImportedId: jest.fn(() => undefined),
+  isDataUnderReview: jest.fn(() => false),
   isSupabaseDuplicateKeyError: jest.fn(() => false),
 }));
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
   contributeSource: jest.fn(),
   getRefData: jest.fn(async () => ({ data: {} })),
 }));
@@ -281,6 +295,7 @@ describe('Flows workflow', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    setFlowsLocation('/mydata/flows');
     mockGetFlowTableAll.mockResolvedValue({
       data: [],
       success: true,
@@ -340,5 +355,49 @@ describe('Flows workflow', () => {
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Created successfully!');
 
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalledTimes(2));
+  });
+
+  it('uses the open-data route matrix for tgdata flows', async () => {
+    setFlowsLocation('/tgdata/flows', 'tid=team-open');
+
+    mockGetFlowTableAll.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'flow-open-1',
+          name: 'Open flow dataset',
+          synonyms: 'Public synonyms',
+          flowType: 'Product flow',
+          classification: 'Energy',
+          CASNumber: '64-17-5',
+          locationOfSupply: 'CN',
+          version: '1.0.0',
+          modifiedAt: '2024-01-03T00:00:00Z',
+          teamId: null,
+        },
+      ],
+      success: true,
+      total: 1,
+    });
+
+    await renderFlows();
+
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalledTimes(1));
+
+    const firstCall = mockGetFlowTableAll.mock.calls[0];
+    expect(firstCall[3]).toBe('tg');
+    expect(firstCall[4]).toBe('team-open');
+
+    expect(await screen.findByText('Open flow dataset')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Flows');
+
+    expect(
+      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: 'Create' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'edit-flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'delete-flow' })).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'view-flow' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
   });
 });

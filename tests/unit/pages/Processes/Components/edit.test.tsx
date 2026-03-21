@@ -127,21 +127,33 @@ const mockCheckVersions = jest.fn();
 const mockDealProcress = jest.fn();
 const mockGetAllRefObj = jest.fn();
 const mockGetErrRefTab = jest.fn();
+const mockBuildValidationIssues = jest.fn(() => []);
+const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
 const mockUpdateReviewsAfterCheckData = jest.fn();
 const mockUpdateUnReviewToUnderReview = jest.fn();
+const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   ReffPath: function () {
     return {};
   },
+  buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
   checkVersions: (...args: any[]) => mockCheckVersions(...args),
   dealProcress: (...args: any[]) => mockDealProcress(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
+  mapValidationIssuesToRefCheckData: (...args: any[]) =>
+    mockMapValidationIssuesToRefCheckData(...args),
   updateReviewsAfterCheckData: (...args: any[]) => mockUpdateReviewsAfterCheckData(...args),
   updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
+  validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
+}));
+
+jest.mock('@/components/ValidationIssueModal', () => ({
+  __esModule: true,
+  showValidationIssueModal: jest.fn(),
 }));
 
 const mockGetRefsOfCurrentVersion = jest.fn();
@@ -249,6 +261,10 @@ jest.mock('antd', () => {
 });
 
 const { message: mockAntdMessage } = jest.requireMock('antd');
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
+const { showValidationIssueModal } = jest.requireMock('@/components/ValidationIssueModal');
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
@@ -360,8 +376,24 @@ describe('ProcessEdit component', () => {
     },
   };
 
+  const createProcessDetailResponse = () => ({
+    data: {
+      json: { processDataSet: processDataset },
+      teamId: 'team-1',
+      stateCode: 10,
+      ruleVerification: false,
+      state_code: 10,
+      rule_verification: false,
+    },
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockBuildValidationIssues.mockReturnValue([]);
     actionRef.current.reload.mockClear();
     mockGetFlowDetail.mockResolvedValue({
       data: { json: { flowDataSet: {} }, version: '1.0.1' },
@@ -401,11 +433,13 @@ describe('ProcessEdit component', () => {
     mockDealProcress.mockImplementation(() => undefined);
     mockGetAllRefObj.mockReturnValue([]);
     mockGetErrRefTab.mockReturnValue('');
+    mockMapValidationIssuesToRefCheckData.mockReturnValue([]);
     mockUpdateReviewsAfterCheckData.mockResolvedValue({});
     mockUpdateUnReviewToUnderReview.mockResolvedValue([]);
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
     mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
     mockUpdateRefsData.mockImplementation((data: any) => data);
+    mockValidateDatasetWithSdk.mockReturnValue({ success: true, issues: [] });
     mockValidateEnhanced.mockReturnValue({ success: true });
   });
 
@@ -679,7 +713,7 @@ describe('ProcessEdit component', () => {
           allocations: {
             allocation: {
               '@allocatedFraction': {
-                toString: () => undefined,
+                toString: null,
               },
             },
           },
@@ -699,6 +733,16 @@ describe('ProcessEdit component', () => {
 
     expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
     expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+  });
+
+  it('runs a silent automatic data check once after loading when autoCheckRequired is enabled', async () => {
+    render(<ProcessEdit {...baseProps} autoOpen autoCheckRequired />);
+
+    expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
+
+    await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalledTimes(1));
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.error).not.toHaveBeenCalledWith('Data check failed!');
   });
 
   it('auto-fills a 100% allocation for the quantitative reference output when none is provided', async () => {
@@ -1098,6 +1142,78 @@ describe('ProcessEdit component', () => {
     expect(mockAntdMessage.error).toHaveBeenCalledWith('unexpected save error');
   });
 
+  it('returns early from save and reference actions until the initial process detail has loaded', async () => {
+    let resolveProcessDetail: (value: any) => void = () => undefined;
+    mockGetProcessDetail.mockReturnValue(
+      new Promise((resolve) => {
+        resolveProcessDetail = resolve;
+      }),
+    );
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await latestRefsDrawerProps.onUpdate([{ id: 'flow-1', version: '2.0.0' }]);
+      await latestRefsDrawerProps.onKeep();
+    });
+
+    expect(mockGetRefsOfNewVersion).not.toHaveBeenCalled();
+    expect(mockGetRefsOfCurrentVersion).not.toHaveBeenCalled();
+    expect(mockUpdateRefsData).not.toHaveBeenCalled();
+    expect(mockUpdateProcess).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveProcessDetail(createProcessDetailResponse());
+    });
+  });
+
+  it('falls back to an empty form payload when the form api returns undefined', async () => {
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    const originalGetFieldsValue = proFormApi.getFieldsValue;
+    proFormApi.getFieldsValue = jest.fn(() => undefined);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
+    proFormApi.getFieldsValue = originalGetFieldsValue;
+  });
+
+  it('falls back to an empty exchange list when save-time reference updates return no exchanges', async () => {
+    mockUpdateRefsData.mockReturnValue(undefined);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    await waitFor(() =>
+      expect(mockUpdateProcess).toHaveBeenCalledWith(
+        'process-1',
+        '1.0.0',
+        expect.objectContaining({
+          exchanges: {
+            exchange: [],
+          },
+        }),
+      ),
+    );
+  });
+
   it('blocks data check when the updated process is already under review', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
@@ -1297,7 +1413,7 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
-    mockGenProcessFromData.mockImplementationOnce(() => ({
+    mockGenProcessFromData.mockImplementation(() => ({
       processInformation: { name: 'Existing process' },
       exchanges: {},
     }));
@@ -1335,7 +1451,7 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
-    mockGenProcessFromData.mockImplementationOnce(() => ({
+    mockGenProcessFromData.mockImplementation(() => ({
       processInformation: { name: 'Existing process' },
       exchanges: {
         exchange: [
@@ -1359,6 +1475,7 @@ describe('ProcessEdit component', () => {
   });
 
   it('surfaces current-process under-review version conflicts during data check', async () => {
+    const validationIssues = [{ type: 'current-process-under-review' }];
     mockCheckReferences.mockResolvedValue({
       findProblemNodes: () => [
         {
@@ -1368,6 +1485,15 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [{ path: ['processDataSet', 'processInformation', 'quantitativeReference'] }],
+    });
+    mockBuildValidationIssues.mockImplementationOnce(({ sdkInvalidTabNames }: any) => {
+      expect(sdkInvalidTabNames).toContain('exchanges');
+      return validationIssues;
+    });
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ id: 'ref-check-1' }]);
 
     render(<ProcessEdit {...baseProps} />);
 
@@ -1376,13 +1502,17 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'The current dataset already has version ${underReviewVersion} under review. Your version ${version} cannot be submitted.',
+      expect(showValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: validationIssues,
+          title: 'Data validation issues',
+        }),
       ),
     );
   });
 
-  it('surfaces current-process published-version conflicts during data check', async () => {
+  it('surfaces current-process published-version conflicts in the validation modal during data check', async () => {
+    const validationIssues = [{ code: 'versionIsInTg' }];
     mockCheckReferences.mockResolvedValue({
       findProblemNodes: () => [
         {
@@ -1392,6 +1522,17 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
+    mockBuildValidationIssues.mockImplementationOnce(({ problemNodes }: any) => {
+      expect(problemNodes).toEqual([
+        expect.objectContaining({
+          '@refObjectId': 'process-1',
+          '@version': '1.0.0',
+          versionIsInTg: true,
+        }),
+      ]);
+      return validationIssues;
+    });
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ id: 'ref-check-version-tg' }]);
 
     render(<ProcessEdit {...baseProps} />);
 
@@ -1400,90 +1541,79 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
+      expect(showValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: validationIssues,
+          title: 'Data validation issues',
+        }),
       ),
     );
   });
 
-  it('blocks review when referenced data is already under review', async () => {
-    mockDealProcress.mockImplementation(
-      (_processDetail: any, _unReview: any[], underReview: any[]) => {
-        underReview.push({
-          '@refObjectId': 'flow-1',
-          '@version': '1.0.0',
-          '@type': 'flow data set',
-        });
-      },
-    );
+  it('falls back to empty exchanges when reference updates return no exchange payload', async () => {
+    mockUpdateRefsData.mockReturnValue(undefined);
+    mockGetRefsOfNewVersion
+      .mockResolvedValueOnce({
+        newRefs: [{ id: 'flow-1', version: '2.0.0' }],
+        oldRefs: [{ id: 'flow-1', version: '1.0.0' }],
+      })
+      .mockResolvedValueOnce({
+        newRefs: [{ id: 'flow-1', version: '2.0.0' }],
+        oldRefs: [{ id: 'flow-1', version: '1.0.0' }],
+      })
+      .mockResolvedValueOnce({
+        newRefs: [],
+        oldRefs: [{ id: 'flow-1', version: '1.0.0' }],
+      });
 
     render(<ProcessEdit {...baseProps} />);
 
     fireEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Edit process' });
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
 
-    await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Referenced data is under review, cannot initiate another review',
-      ),
-    );
-  });
+    fireEvent.click(screen.getByRole('button', { name: 'update-latest' }));
+    await waitFor(() => expect(mockUpdateRefsData).toHaveBeenCalledTimes(1));
 
-  it('fails review submission when the saved process state is already under review', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 30,
-          rule_verification: true,
-        },
-      ],
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+    expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
 
-    render(<ProcessEdit {...baseProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'keep-current' }));
+    await waitFor(() => expect(mockUpdateRefsData).toHaveBeenCalledTimes(2));
 
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed'));
+    fireEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+    await waitFor(() => expect(mockUpdateRefsData).toHaveBeenCalledTimes(3));
+    expect(mockGetFlowDetail).not.toHaveBeenCalled();
   });
 
   it('surfaces tab-level check errors and triggers field validation after switching tabs', async () => {
-    jest.useFakeTimers();
-    mockValidateEnhanced.mockReturnValueOnce({
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
       success: false,
-      error: { issues: [{ path: ['processDataSet', 'processInformation'] }] },
+      issues: [{ path: ['processDataSet', 'processInformation'] }],
     });
 
     render(<ProcessEdit {...baseProps} />);
 
     fireEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Edit process' });
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
-      jest.runOnlyPendingTimers();
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
-    await waitFor(() => expect(latestProcessFormProps.showRules).toBe(true));
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('processInformation：Data check failed!');
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('processInformation：Data check failed!'),
+    );
 
     await act(async () => {
       latestProcessFormProps.onTabChange('validation');
-      jest.runOnlyPendingTimers();
     });
 
-    expect(mockValidateFields).toHaveBeenCalled();
-    jest.useRealTimers();
+    await waitFor(() => expect(mockValidateFields).toHaveBeenCalled());
   });
 
   it('falls back to a generic data-check error when issues do not map to a tab', async () => {
-    mockValidateEnhanced.mockReturnValueOnce({
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
       success: false,
-      error: { issues: [{ path: ['processDataSet', undefined] }] },
+      issues: [{ path: ['processDataSet', undefined] }],
     });
 
     render(<ProcessEdit {...baseProps} />);
@@ -1645,6 +1775,72 @@ describe('ProcessEdit component', () => {
     );
   });
 
+  it('ignores reference updates and saves until the process payload has loaded', async () => {
+    mockGetProcessDetail.mockImplementation(
+      () =>
+        new Promise(() => {
+          // keep the initial payload unresolved so guard paths execute
+        }),
+    );
+
+    render(<ProcessEdit {...baseProps} />);
+
+    await act(async () => {
+      await latestRefsDrawerProps.onUpdate([{ id: 'flow-1', version: '2.0.0' }]);
+      await latestRefsDrawerProps.onKeep();
+    });
+
+    fireEvent.click(screen.getByRole('button'));
+    expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await act(async () => {});
+
+    expect(mockGetRefsOfNewVersion).not.toHaveBeenCalled();
+    expect(mockGetRefsOfCurrentVersion).not.toHaveBeenCalled();
+    expect(mockUpdateRefsData).not.toHaveBeenCalled();
+    expect(mockUpdateProcess).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation issue modal and blocks review for quantitative-reference sdk issues', async () => {
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [{ path: ['processDataSet', 'processInformation', 'quantitativeReference'] }],
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([{ id: 'sdk-issue' }]);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ key: 'sdk-issue' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: [{ id: 'sdk-issue' }],
+          title: 'Review submission blocked',
+        }),
+      ),
+    );
+    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('runs the initial data check automatically once when autoCheckRequired is enabled', async () => {
+    render(<ProcessEdit {...baseProps} autoOpen autoCheckRequired />);
+
+    expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
+
+    await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalledTimes(1));
+    expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+  });
+
   it('submits through the footer save button', async () => {
     render(<ProcessEdit {...baseProps} />);
 
@@ -1715,5 +1911,7 @@ describe('ProcessEdit component', () => {
     );
     expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalledWith([], 'review-uuid');
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
+    expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
   });
 });

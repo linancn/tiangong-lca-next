@@ -22,6 +22,7 @@ export type FlowpropertyTable = {
   refUnitGroupVersion?: string;
   refUnitGroup: string;
   modifiedAt: Date;
+  stateCode?: number;
   teamId: string;
   refUnitRes: FlowpropertyRefUnit;
 };

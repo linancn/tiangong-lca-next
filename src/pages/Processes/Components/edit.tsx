@@ -1,15 +1,19 @@
 import AISuggestion from '@/components/AISuggestion';
+import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
+  buildValidationIssues,
   checkReferences,
   checkVersions,
   dealProcress,
   getAllRefObj,
   getErrRefTab,
+  mapValidationIssuesToRefCheckData,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
+  validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
@@ -36,7 +40,6 @@ import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -65,6 +68,34 @@ type RefProblemNode = ProblemNode & {
 const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
   return Array.isArray(reference) ? reference[0] : reference;
 };
+
+type SdkValidationIssueLike = {
+  path: PropertyKey[];
+};
+
+const getProcessSdkIssueTabName = (issue: SdkValidationIssueLike) => {
+  const section = typeof issue.path?.[1] === 'string' ? issue.path[1] : undefined;
+
+  if (section === 'processInformation' && issue.path?.[2] === 'quantitativeReference') {
+    return 'exchanges';
+  }
+
+  return section;
+};
+
+const cloneProcessData = (data?: FormProcessWithDatas) => {
+  if (!data) {
+    return undefined;
+  }
+
+  return JSON.parse(JSON.stringify(data)) as FormProcessWithDatas;
+};
+
+const toProcessExchanges = (exchangeData: ProcessExchangeData[]) =>
+  ({
+    exchange: exchangeData as FormProcessWithDatas['exchanges']['exchange'],
+  }) as FormProcessWithDatas['exchanges'];
+
 type Props = {
   id: string;
   version: string;
@@ -76,6 +107,7 @@ type Props = {
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
   autoOpen?: boolean;
+  autoCheckRequired?: boolean;
   actionFrom?: 'modelResult';
 };
 const ProcessEdit: FC<Props> = ({
@@ -89,6 +121,7 @@ const ProcessEdit: FC<Props> = ({
   hideReviewButton = false,
   updateNodeCb = () => {},
   autoOpen = false,
+  autoCheckRequired = false,
   actionFrom,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -101,6 +134,7 @@ const ProcessEdit: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const [refCheckContextValue, setRefCheckContextValue] = useState<{
@@ -125,19 +159,71 @@ const ProcessEdit: FC<Props> = ({
     }
   }, [autoOpen, id, version]);
 
+  const applyProcessData = useCallback(
+    (nextData: FormProcessWithDatas, options?: { resetFields?: boolean }) => {
+      const normalizedData = { ...nextData, id } as FormProcessWithDatas;
+      setFromData(normalizedData);
+      setExchangeDataSource(
+        ((normalizedData?.exchanges?.exchange ?? []) as ProcessExchangeData[]).map((item) => ({
+          ...item,
+        })),
+      );
+      if (options?.resetFields) {
+        formRefEdit.current?.resetFields();
+      }
+      formRefEdit.current?.setFieldsValue(normalizedData);
+    },
+    [id],
+  );
+
+  const getCurrentProcessData = useCallback(() => {
+    const baseData = {
+      ...(initData ?? {}),
+      ...(fromData ?? {}),
+    } as FormProcessWithDatas;
+
+    if (Object.keys(baseData).length === 0) {
+      return undefined;
+    }
+
+    const fieldsValue = formRefEdit.current?.getFieldsValue() ?? {};
+    const currentData = {
+      ...baseData,
+      ...fieldsValue,
+      exchanges: {
+        exchange: [...exchangeDataSource],
+      },
+      id,
+    } as FormProcessWithDatas;
+
+    if (activeTabKey === 'validation') {
+      currentData.modellingAndValidation = {
+        ...baseData?.modellingAndValidation,
+        validation: {
+          ...fieldsValue?.modellingAndValidation?.validation,
+        },
+      };
+    } else if (activeTabKey === 'complianceDeclarations') {
+      currentData.modellingAndValidation = {
+        ...baseData?.modellingAndValidation,
+        complianceDeclarations: {
+          ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
+        },
+      };
+    } else {
+      currentData[activeTabKey] = fieldsValue?.[activeTabKey] ?? baseData?.[activeTabKey];
+    }
+
+    return currentData;
+  }, [activeTabKey, exchangeDataSource, fromData, id, initData]);
+
   const handleLatestJsonChange = (latestJson: ProcessDetailData['json']) => {
     aiSuggestionDataRef.current = latestJson;
   };
 
   const handleAISuggestionClose = () => {
     const dataSet = genProcessFromData(aiSuggestionDataRef.current?.processDataSet ?? {});
-    setFromData({ ...dataSet, id: id });
-    setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
-    formRefEdit.current?.resetFields();
-    formRefEdit.current?.setFieldsValue({
-      ...dataSet,
-      id: id,
-    });
+    applyProcessData({ ...dataSet, id }, { resetFields: true });
   };
   const handletFromData = async () => {
     if (fromData?.id) {
@@ -171,20 +257,36 @@ const ProcessEdit: FC<Props> = ({
 
   const handletExchangeDataCreate = (data: ProcessExchangeData) => {
     if (fromData?.id) {
-      setExchangeDataSource([
+      const nextExchangeDataSource = [
         ...exchangeDataSource,
         { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
-      ]);
+      ];
+      setExchangeDataSource(nextExchangeDataSource);
+      setFromData({
+        ...fromData,
+        exchanges: {
+          exchange: nextExchangeDataSource,
+        },
+      } as FormProcessWithDatas);
     }
   };
 
   const handletExchangeData = (data: ProcessExchangeData[]) => {
-    if (fromData?.id) setExchangeDataSource([...data]);
+    if (fromData?.id) {
+      const nextExchangeDataSource = [...data];
+      setExchangeDataSource(nextExchangeDataSource);
+      setFromData({
+        ...fromData,
+        exchanges: {
+          exchange: nextExchangeDataSource,
+        },
+      } as FormProcessWithDatas);
+    }
   };
 
-  const updateExchangeDataSource = async () => {
+  const updateExchangeDataSource = async (exchangeData: ProcessExchangeData[]) => {
     const newExchangeDataSource = await Promise.all(
-      exchangeDataSource.map(async (item) => {
+      exchangeData.map(async (item) => {
         const reference = toReferenceValue(item?.referenceToFlowDataSet);
         const refObjectId = reference?.['@refObjectId'] ?? '';
         const version = reference?.['@version'] ?? '';
@@ -218,61 +320,100 @@ const ProcessEdit: FC<Props> = ({
         };
       }),
     );
-
-    setExchangeDataSource(newExchangeDataSource);
+    return newExchangeDataSource;
   };
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
-    const res = updateRefsData(fromData, newRefs, true);
-    setFromData(res);
-    await updateExchangeDataSource();
-    formRefEdit.current?.setFieldsValue({ ...res, id });
+    const currentData = cloneProcessData(getCurrentProcessData());
+    if (!currentData) {
+      return;
+    }
+    const res = updateRefsData(currentData, newRefs, true) as FormProcessWithDatas;
+    const nextExchangeDataSource = await updateExchangeDataSource(
+      (res?.exchanges?.exchange ?? []) as ProcessExchangeData[],
+    );
+    applyProcessData({
+      ...res,
+      exchanges: toProcessExchanges(nextExchangeDataSource),
+    });
     setRefsDrawerVisible(false);
   };
 
   const handleKeepVersion = async () => {
-    const res = updateRefsData(fromData, refsOldList, false);
-    setFromData(res);
-    await updateExchangeDataSource();
-    formRefEdit.current?.setFieldsValue({ ...res, id });
+    const currentData = cloneProcessData(getCurrentProcessData());
+    if (!currentData) {
+      return;
+    }
+    const res = updateRefsData(currentData, refsOldList, false) as FormProcessWithDatas;
+    const nextExchangeDataSource = await updateExchangeDataSource(
+      (res?.exchanges?.exchange ?? []) as ProcessExchangeData[],
+    );
+    applyProcessData({
+      ...res,
+      exchanges: toProcessExchanges(nextExchangeDataSource),
+    });
     setRefsDrawerVisible(false);
   };
 
   const handleUpdateReference = async () => {
     setRefsLoading(true);
-    const { newRefs, oldRefs } = await getRefsOfNewVersion(fromData);
+    const currentData = cloneProcessData(getCurrentProcessData());
+    if (!currentData) {
+      setRefsLoading(false);
+      return;
+    }
+    const { newRefs, oldRefs } = await getRefsOfNewVersion(currentData);
     setRefsNewList(newRefs);
     setRefsOldList(oldRefs);
     setRefsLoading(false);
     if (newRefs && newRefs.length) {
       setRefsDrawerVisible(true);
     } else {
-      const res = updateRefsData(fromData, oldRefs, false);
-      setFromData(res);
-      await updateExchangeDataSource();
-      formRefEdit.current?.setFieldsValue({ ...res, id });
+      const res = updateRefsData(currentData, oldRefs, false) as FormProcessWithDatas;
+      const nextExchangeDataSource = await updateExchangeDataSource(
+        (res?.exchanges?.exchange ?? []) as ProcessExchangeData[],
+      );
+      applyProcessData({
+        ...res,
+        exchanges: toProcessExchanges(nextExchangeDataSource),
+      });
     }
   };
 
-  const updateReferenceDescription = async () => {
-    const { oldRefs } = await getRefsOfCurrentVersion(fromData);
-    const res = updateRefsData(fromData, oldRefs, false);
-    setFromData(res);
-    await updateExchangeDataSource();
-    formRefEdit.current?.setFieldsValue({ ...res, id });
+  const updateReferenceDescription = async (processData: FormProcessWithDatas) => {
+    const currentData = cloneProcessData(processData) as FormProcessWithDatas;
+    const { oldRefs } = await getRefsOfCurrentVersion(currentData);
+    const res = updateRefsData(currentData, oldRefs, false) as FormProcessWithDatas;
+    const nextExchangeDataSource = await updateExchangeDataSource(
+      (res?.exchanges?.exchange ?? []) as ProcessExchangeData[],
+    );
+    const nextData = {
+      ...res,
+      exchanges: toProcessExchanges(nextExchangeDataSource),
+    } as FormProcessWithDatas;
+    applyProcessData(nextData);
+    return nextData;
   };
 
-  const handleSubmit = async (closeDrawer: boolean) => {
+  const handleSubmit = async (closeDrawer: boolean, options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
     if (closeDrawer) setSpinning(true);
-    await updateReferenceDescription();
-    const output = exchangeDataSource.filter(
+    const currentData = getCurrentProcessData();
+    if (!currentData) {
+      if (closeDrawer) {
+        setSpinning(false);
+      }
+      return;
+    }
+    const processData = await updateReferenceDescription(currentData);
+    const output = (processData.exchanges.exchange as ProcessExchangeData[]).filter(
       (e) => e.exchangeDirection?.toUpperCase() === 'OUTPUT',
     );
     let allocatedFractionTotal = toBigNumberOrZero(0);
     output.forEach((e) => {
       if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
-        const fraction =
-          e?.allocations?.allocation['@allocatedFraction']?.toString()?.replace('%', '') ?? 0;
+        const fractionText = e.allocations.allocation['@allocatedFraction']?.toString?.();
+        const fraction = typeof fractionText === 'string' ? fractionText.replace('%', '') : '';
         allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
       }
     });
@@ -289,50 +430,49 @@ const ProcessEdit: FC<Props> = ({
       }
     }
     if (allocatedFractionTotal.isGreaterThan(100)) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.validator.allocatedFraction',
-          defaultMessage: 'Allocated fraction total of output is greater than 100%. It is',
-        }) +
-          ' ' +
-          allocatedFractionTotal.toString() +
-          '%.',
-      );
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.validator.allocatedFraction',
+            defaultMessage: 'Allocated fraction total of output is greater than 100%. It is',
+          }) +
+            ' ' +
+            allocatedFractionTotal.toString() +
+            '%.',
+        );
+      }
       setSpinning(false);
       return;
     }
 
     const updateResult = await updateProcess(id, version, {
-      ...fromData,
+      ...processData,
     });
     if (updateResult?.data) {
       if (!closeDrawer) {
         const dataSet = genProcessFromData(updateResult.data[0]?.json?.processDataSet ?? {});
-        setInitData({
+        const nextData = {
           ...dataSet,
-          id: id,
+          id,
           stateCode: updateResult.data[0]?.state_code,
           ruleVerification: updateResult.data[0]?.rule_verification,
-        });
-        setFromData({ ...dataSet, id: id });
-        setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
-        // formRefEdit.current?.resetFields();
-        formRefEdit.current?.setFieldsValue({
-          ...dataSet,
-          id: id,
-        });
+        } as FormProcessWithDatas;
+        setInitData(nextData);
+        applyProcessData(nextData);
       }
       updateNodeCb({
         '@refObjectId': id,
         '@version': version,
         '@type': 'process data set',
       });
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.save.success',
-          defaultMessage: 'Save successfully!',
-        }),
-      );
+      if (!silent) {
+        message.success(
+          intl.formatMessage({
+            id: 'pages.button.save.success',
+            defaultMessage: 'Save successfully!',
+          }),
+        );
+      }
       if (closeDrawer) {
         setSpinning(false);
         setDrawerVisible(false);
@@ -340,22 +480,24 @@ const ProcessEdit: FC<Props> = ({
       }
       actionRef?.current?.reload();
     } else {
-      if (updateResult?.error?.state_code === 100) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.openData',
-            defaultMessage: 'This data is open data, save failed',
-          }),
-        );
-      } else if (updateResult?.error?.state_code === 20) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.review.underReview',
-            defaultMessage: 'Data is under review, save failed',
-          }),
-        );
-      } else {
-        message.error(updateResult?.error?.message);
+      if (!silent) {
+        if (updateResult?.error?.state_code === 100) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.openData',
+              defaultMessage: 'This data is open data, save failed',
+            }),
+          );
+        } else if (updateResult?.error?.state_code === 20) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.review.underReview',
+              defaultMessage: 'Data is under review, save failed',
+            }),
+          );
+        } else {
+          message.error(updateResult?.error?.message);
+        }
       }
       if (closeDrawer) setSpinning(false);
     }
@@ -368,60 +510,76 @@ const ProcessEdit: FC<Props> = ({
   const handleCheckData = async (
     from: 'review' | 'checkData',
     processDetail: ProcessCheckTarget,
+    options?: { silent?: boolean },
   ) => {
+    const silent = options?.silent ?? false;
     setSpinning(true);
     setShowRules(true);
     if (processDetail.stateCode >= 20 && processDetail.stateCode < 100 && from === 'checkData') {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.checkData.inReview',
-          defaultMessage: 'This data set is under review and cannot be validated',
-        }),
-      );
+      if (!silent) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.process.checkData.inReview',
+            defaultMessage: 'This data set is under review and cannot be validated',
+          }),
+        );
+      }
       setSpinning(false);
       return { checkResult: false, unReview: [] };
     }
-    const tidasProcess = createTidasProcess(genProcessJsonOrdered(id, processDetail));
-    const validateResult = tidasProcess.validateEnhanced();
-    const issues = validateResult.success
-      ? []
-      : validateResult.error.issues.filter(
-          (item) =>
-            !item.path.includes('validation') &&
-            !item.path.includes('complianceDeclarations') &&
-            !item.path.includes('quantitativeReference'),
-        );
+    const rootRef = {
+      '@refObjectId': id,
+      '@version': version,
+      '@type': 'process data set',
+    } satisfies refDataType;
+    const orderedJson = genProcessJsonOrdered(id, processDetail);
+    const sdkValidation = validateDatasetWithSdk('process data set', orderedJson);
+    const sdkIssues = sdkValidation.issues;
+    let currentDatasetValid = sdkValidation.success;
+    const errTabNames: string[] = [];
+    const currentDatasetTabNames: string[] = [];
+    let datasetValidationMessage: string | null = null;
 
-    let valid = issues.length === 0;
-    if (!valid) {
+    sdkIssues.forEach((item) => {
+      const tabName = getProcessSdkIssueTabName(item as SdkValidationIssueLike);
+      if (tabName && !errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+      if (tabName && !currentDatasetTabNames.includes(tabName)) {
+        currentDatasetTabNames.push(tabName);
+      }
+    });
+    if (!currentDatasetValid) {
       setTimeout(() => {
         formRefEdit.current?.validateFields();
       }, 200);
-    } else {
-      const exchanges = fromData?.exchanges;
-      const exchangeList = exchanges?.exchange as ProcessExchangeData[] | undefined;
-      if (!exchangeList || exchangeList.length === 0) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.validator.exchanges.required',
-            defaultMessage: 'Please select exchanges',
-          }),
-        );
-        valid = false;
-        await setActiveTabKey('exchanges');
-        setSpinning(false);
-        return { checkResult: false, unReview: [] };
-      } else if (exchangeList.filter((item) => item?.quantitativeReference).length !== 1) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.validator.exchanges.quantitativeReference.required',
-            defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
-          }),
-        );
-        valid = false;
-        await setActiveTabKey('exchanges');
-        setSpinning(false);
-        return { checkResult: false, unReview: [] };
+    }
+
+    const exchanges = processDetail?.exchanges;
+    const exchangeList = (exchanges?.exchange ?? []) as ProcessExchangeData[];
+    if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+      currentDatasetValid = false;
+      datasetValidationMessage = intl.formatMessage({
+        id: 'pages.process.validator.exchanges.required',
+        defaultMessage: 'Please select exchanges',
+      });
+      if (!errTabNames.includes('exchanges')) {
+        errTabNames.push('exchanges');
+      }
+      if (!currentDatasetTabNames.includes('exchanges')) {
+        currentDatasetTabNames.push('exchanges');
+      }
+    } else if (exchangeList.filter((item) => item?.quantitativeReference).length !== 1) {
+      currentDatasetValid = false;
+      datasetValidationMessage = intl.formatMessage({
+        id: 'pages.process.validator.exchanges.quantitativeReference.required',
+        defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
+      });
+      if (!errTabNames.includes('exchanges')) {
+        errTabNames.push('exchanges');
+      }
+      if (!currentDatasetTabNames.includes('exchanges')) {
+        currentDatasetTabNames.push('exchanges');
       }
     }
 
@@ -444,171 +602,126 @@ const ProcessEdit: FC<Props> = ({
       underReview,
       unRuleVerification,
       nonExistentRef,
-      new ReffPath(
-        {
-          '@refObjectId': id,
-          '@version': version,
-          '@type': 'process data set',
-        },
-        processDetail?.ruleVerification,
-        false,
-      ),
+      new ReffPath(rootRef, processDetail?.ruleVerification, false),
       allRefs,
     );
     allRefs.add(`${id}:${version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
-    if (problemNodes && problemNodes.length > 0) {
-      let currentProcessUnderReviewVersion = undefined;
-      let currentProcessVersionIsInTg = false;
-      const result = problemNodes.map((item) => {
-        if (item['@refObjectId'] === id && item['@version'] === version) {
-          if (item.underReviewVersion && item.underReviewVersion !== version) {
-            currentProcessUnderReviewVersion = item.underReviewVersion;
-          }
-          if (item.versionIsInTg) {
-            currentProcessVersionIsInTg = true;
-          }
-        }
-        return {
-          id: item['@refObjectId'],
-          version: item['@version'],
-          ruleVerification: item.ruleVerification,
-          nonExistent: item.nonExistent,
-          versionUnderReview: item.versionUnderReview,
-          underReviewVersion: item.underReviewVersion,
-          versionIsInTg: item.versionIsInTg,
-        };
-      });
-      setRefCheckData(result);
-      if (currentProcessUnderReviewVersion) {
-        message.error(
-          intl.formatMessage(
-            {
-              id: 'pages.select.versionUnderReview',
-              defaultMessage:
-                'The current dataset already has version ${underReviewVersion} under review. Your version ${version} cannot be submitted.',
-            },
-            {
-              underReviewVersion: currentProcessUnderReviewVersion,
-              currentVersion: version,
-            },
-          ),
-        );
-        setSpinning(false);
-        return { checkResult: false, unReview };
-      }
-      if (currentProcessVersionIsInTg) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.select.versionIsInTg',
-            defaultMessage:
-              'The current dataset version is lower than the published version. Please create a new version based on the latest published version for corrections and updates, then submit for review.',
-          }),
-        );
-        setSpinning(false);
-        return { checkResult: false, unReview };
-      }
+    const validationIssues = buildValidationIssues({
+      actionFrom: from,
+      datasetSdkValid: currentDatasetValid,
+      nonExistentRef,
+      problemNodes,
+      rootRef,
+      sdkInvalidTabNames: currentDatasetTabNames,
+      unRuleVerification,
+    });
+    if (validationIssues.length > 0) {
+      setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
     } else {
       setRefCheckData([]);
     }
-    // setNonExistentRefData(nonExistentRef);
-    // setUnRuleVerificationData(unRuleVerification);
     if (
-      (nonExistentRef && nonExistentRef.length > 0) ||
-      (unRuleVerification && unRuleVerification.length > 0) ||
-      (from === 'review' && underReview && underReview.length > 0)
-    ) {
-      valid = false;
-      setSpinning(false);
-      if (from === 'review' && underReview && underReview.length > 0) {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.error',
-            defaultMessage: 'Referenced data is under review, cannot initiate another review',
-          }),
-        );
-        return { checkResult: valid, unReview };
-      }
-    }
-
-    if (processDetail.stateCode >= 20) {
-      if (from === 'review') {
-        message.error(
-          intl.formatMessage({
-            id: 'pages.process.review.submitError',
-            defaultMessage: 'Submit review failed',
-          }),
-        );
-      }
-      setSpinning(false);
-      valid = false;
-      // return { checkResult, unReview };
-    }
-    if (
-      valid &&
+      currentDatasetValid &&
       nonExistentRef?.length === 0 &&
       unRuleVerification.length === 0 &&
       problemNodes.length === 0
     ) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.button.check.success',
-          defaultMessage: 'Data check successfully!',
-        }),
-      );
-      setSpinning(false);
-    } else {
-      const errTabNames: string[] = [];
-      issues.forEach((err) => {
-        const tabName = err.path[1];
-        if (tabName && !errTabNames.includes(tabName as string))
-          errTabNames.push(tabName as string);
-      });
-      nonExistentRef.forEach((item) => {
-        const tabName = getErrRefTab(item, processDetail);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      unRuleVerification.forEach((item) => {
-        const tabName = getErrRefTab(item, processDetail);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      problemNodes.forEach((item) => {
-        const tabName = getErrRefTab(item, processDetail);
-        if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-      });
-      if (errTabNames && errTabNames.length > 0) {
-        message.error(
-          errTabNames
-            .map((tab: string) =>
-              intl.formatMessage({
-                id: `pages.process.view.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
-            .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            }),
-        );
-        setSpinning(false);
-        return { checkResult: false, unReview };
-      } else {
-        message.error(
+      if (!silent) {
+        message.success(
           intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
+            id: 'pages.button.check.success',
+            defaultMessage: 'Data check successfully!',
           }),
         );
       }
-
       setSpinning(false);
-      return { checkResult: valid, unReview };
+      return { checkResult: true, unReview };
     }
+
+    nonExistentRef.forEach((item) => {
+      const tabName = getErrRefTab(item, processDetail);
+      if (tabName && !errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+    });
+    unRuleVerification.forEach((item) => {
+      const tabName = getErrRefTab(item, processDetail);
+      if (tabName && !errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+    });
+    problemNodes.forEach((item) => {
+      const tabName = getErrRefTab(item, processDetail);
+      if (tabName && !errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+    });
+
+    let validationHint = intl.formatMessage({
+      id: 'pages.button.check.error',
+      defaultMessage: 'Data check failed!',
+    });
+    if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'exchanges') {
+      validationHint = datasetValidationMessage;
+    } else if (errTabNames.length > 0) {
+      validationHint =
+        errTabNames
+          .map((tab: string) =>
+            intl.formatMessage({
+              id: `pages.process.view.${tab}`,
+              defaultMessage: tab,
+            }),
+          )
+          .join('，') +
+        '：' +
+        intl.formatMessage({
+          id: 'pages.button.check.error',
+          defaultMessage: 'Data check failed!',
+        });
+    }
+
+    if (!silent && validationIssues.length > 0) {
+      showValidationIssueModal({
+        intl,
+        issues: validationIssues,
+        title: intl.formatMessage({
+          id:
+            from === 'review'
+              ? 'pages.validationIssues.modal.reviewTitle'
+              : 'pages.validationIssues.modal.checkDataTitle',
+          defaultMessage:
+            from === 'review' ? 'Review submission blocked' : 'Data validation issues',
+        }),
+      });
+    } else if (!silent) {
+      message.error(validationHint);
+    }
+
     setSpinning(false);
-    return { checkResult: valid, unReview };
+    return { checkResult: false, unReview };
+  };
+
+  const runCheckData = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    setSpinning(true);
+    const updateResult = await handleSubmit(false, { silent });
+    if (!updateResult || updateResult?.error) {
+      setSpinning(false);
+      return { checkResult: false, unReview: [] as refDataType[] };
+    }
+    return handleCheckData(
+      'checkData',
+      {
+        id: updateResult.data[0]?.id,
+        version: updateResult.data[0]?.version,
+        ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
+        ruleVerification: updateResult.data[0]?.rule_verification,
+        stateCode: updateResult.data[0]?.state_code,
+      },
+      { silent },
+    );
   };
 
   const submitReview = async () => {
@@ -658,7 +771,9 @@ const ProcessEdit: FC<Props> = ({
           defaultMessage: 'Review submitted successfully',
         }),
       );
+      actionRef?.current?.reload();
       setDrawerVisible(false);
+      setViewDrawerVisible(false);
       setSpinning(false);
     } else {
       setSpinning(false);
@@ -684,19 +799,14 @@ const ProcessEdit: FC<Props> = ({
     getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
       setOriginJson(result.data?.json ?? {});
       const dataSet = genProcessFromData(result.data?.json?.processDataSet ?? {});
-      setInitData({
+      const nextData = {
         ...dataSet,
-        id: id,
+        id,
         stateCode: result.data?.stateCode,
         ruleVerification: result.data?.ruleVerification,
-      });
-      setFromData({ ...dataSet, id: id });
-      setExchangeDataSource(dataSet?.exchanges?.exchange ?? []);
-      formRefEdit.current?.resetFields();
-      formRefEdit.current?.setFieldsValue({
-        ...dataSet,
-        id: id,
-      });
+      } as FormProcessWithDatas;
+      setInitData(nextData);
+      applyProcessData(nextData, { resetFields: true });
       setSpinning(false);
     });
   };
@@ -705,6 +815,7 @@ const ProcessEdit: FC<Props> = ({
     if (!drawerVisible) {
       setShowRules(false);
       setRefCheckData([]);
+      setAutoCheckTriggered(false);
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
       return;
@@ -713,13 +824,12 @@ const ProcessEdit: FC<Props> = ({
   }, [drawerVisible]);
 
   useEffect(() => {
-    setFromData({
-      ...fromData,
-      exchanges: {
-        exchange: [...exchangeDataSource],
-      },
-    } as FormProcessWithDatas);
-  }, [exchangeDataSource]);
+    if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
+      return;
+    }
+    setAutoCheckTriggered(true);
+    void runCheckData({ silent: true });
+  }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, runCheckData, spinning]);
 
   const handleLciaResults = (result: LCIAResultTable[]) => {
     const updatedLciaResults = result.map((item) => ({
@@ -739,64 +849,75 @@ const ProcessEdit: FC<Props> = ({
 
   return (
     <>
-      {buttonType === 'toolIcon' ? (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id='pages.button.model.process'
-              defaultMessage='Process infomation'
-            ></FormattedMessage>
-          }
-          placement='left'
-        >
-          <Button
-            type='primary'
-            size='small'
-            style={{ boxShadow: 'none' }}
-            icon={<FormOutlined />}
-            onClick={onEdit}
-            disabled={disabled}
-          />
-        </Tooltip>
-      ) : buttonType === 'toolResultIcon' ? (
-        <Tooltip
-          title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
-          placement='left'
-        >
-          <Button
-            disabled={id === ''}
-            type='primary'
-            icon={<ProductOutlined />}
-            size='small'
-            style={{ boxShadow: 'none' }}
-            onClick={onEdit}
-          />
-        </Tooltip>
-      ) : buttonType === 'tool' ? (
-        <Tooltip
-          title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
-          placement='left'
-        >
-          <Button
-            disabled={id === ''}
-            type='primary'
-            icon={<ProductOutlined />}
-            size='small'
-            style={{ boxShadow: 'none' }}
-            onClick={onEdit}
-          />
-        </Tooltip>
-      ) : (
-        <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
-          {buttonType === 'icon' ? (
-            <Button shape='circle' icon={<FormOutlined />} size='small' onClick={onEdit} />
-          ) : (
-            <Button onClick={onEdit}>
-              <FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />
-            </Button>
-          )}
-        </Tooltip>
-      )}
+      {!autoOpen &&
+        (buttonType === 'toolIcon' ? (
+          <Tooltip
+            title={
+              <FormattedMessage
+                id='pages.button.model.process'
+                defaultMessage='Process infomation'
+              ></FormattedMessage>
+            }
+            placement='left'
+          >
+            <Button
+              type='primary'
+              size='small'
+              style={{ boxShadow: 'none' }}
+              icon={<FormOutlined />}
+              onClick={onEdit}
+              disabled={disabled}
+            />
+          </Tooltip>
+        ) : buttonType === 'toolResultIcon' ? (
+          <Tooltip
+            title={
+              <FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />
+            }
+            placement='left'
+          >
+            <Button
+              disabled={id === ''}
+              type='primary'
+              icon={<ProductOutlined />}
+              size='small'
+              style={{ boxShadow: 'none' }}
+              onClick={onEdit}
+            />
+          </Tooltip>
+        ) : buttonType === 'tool' ? (
+          <Tooltip
+            title={
+              <FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />
+            }
+            placement='left'
+          >
+            <Button
+              disabled={id === ''}
+              type='primary'
+              icon={<ProductOutlined />}
+              size='small'
+              style={{ boxShadow: 'none' }}
+              onClick={onEdit}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}>
+            {buttonType === 'icon' ? (
+              <Button
+                disabled={disabled}
+                shape='circle'
+                icon={<FormOutlined />}
+                size='small'
+                onClick={onEdit}
+              />
+            ) : (
+              <Button disabled={disabled} onClick={onEdit}>
+                <FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />
+              </Button>
+            )}
+          </Tooltip>
+        ))}
       <Drawer
         getContainer={() => document.body}
         destroyOnHidden
@@ -828,20 +949,7 @@ const ProcessEdit: FC<Props> = ({
             />
             <Button
               onClick={async () => {
-                setSpinning(true);
-                const updateResult = await handleSubmit(false);
-                if (updateResult.error) {
-                  setSpinning(false);
-                  return;
-                }
-
-                await handleCheckData('checkData', {
-                  id: updateResult.data[0]?.id,
-                  version: updateResult.data[0]?.version,
-                  ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
-                  ruleVerification: updateResult.data[0]?.rule_verification,
-                  stateCode: updateResult.data[0]?.state_code,
-                });
+                await runCheckData();
               }}
             >
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
