@@ -173,6 +173,9 @@ jest.mock('antd', () => {
 });
 
 const getMockAntdMessage = () => jest.requireMock('antd').message as Record<string, jest.Mock>;
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
@@ -1239,5 +1242,88 @@ describe('SourceEdit component', () => {
 
     await waitFor(() => expect(mockUpdateSource).toHaveBeenCalled());
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved Successfully!');
+  });
+
+  it('opens automatically and triggers silent auto-check when requested', async () => {
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        autoOpen
+        autoCheckRequired
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: 'Edit Source' });
+    await waitFor(() => expect(mockUpdateSource).toHaveBeenCalled());
+    expect(mockCheckData).toHaveBeenCalled();
+  });
+
+  it('blocks source data checks when the current dataset is under review', async () => {
+    const user = userEvent.setup();
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: { sourceDataSet: {} },
+      },
+    });
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'This data set is under review and cannot be validated',
+      ),
+    );
+    expect(mockCheckData).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation-issue modal when structured source validation issues exist', async () => {
+    const user = userEvent.setup();
+    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'contact-1', '@version': '1.0.0' });
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/mydata/sources?id=source-123&version=01.00.000',
+        ref: {
+          '@type': 'source data set',
+          '@refObjectId': 'source-123',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

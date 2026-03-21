@@ -160,11 +160,7 @@ const ProcessEdit: FC<Props> = ({
   }, [autoOpen, id, version]);
 
   const applyProcessData = useCallback(
-    (nextData?: FormProcessWithDatas, options?: { resetFields?: boolean }) => {
-      if (!nextData) {
-        return;
-      }
-
+    (nextData: FormProcessWithDatas, options?: { resetFields?: boolean }) => {
       const normalizedData = { ...nextData, id } as FormProcessWithDatas;
       setFromData(normalizedData);
       setExchangeDataSource(
@@ -266,16 +262,12 @@ const ProcessEdit: FC<Props> = ({
         { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
       ];
       setExchangeDataSource(nextExchangeDataSource);
-      setFromData((prev) =>
-        prev
-          ? ({
-              ...prev,
-              exchanges: {
-                exchange: nextExchangeDataSource,
-              },
-            } as FormProcessWithDatas)
-          : prev,
-      );
+      setFromData({
+        ...fromData,
+        exchanges: {
+          exchange: nextExchangeDataSource,
+        },
+      } as FormProcessWithDatas);
     }
   };
 
@@ -283,20 +275,16 @@ const ProcessEdit: FC<Props> = ({
     if (fromData?.id) {
       const nextExchangeDataSource = [...data];
       setExchangeDataSource(nextExchangeDataSource);
-      setFromData((prev) =>
-        prev
-          ? ({
-              ...prev,
-              exchanges: {
-                exchange: nextExchangeDataSource,
-              },
-            } as FormProcessWithDatas)
-          : prev,
-      );
+      setFromData({
+        ...fromData,
+        exchanges: {
+          exchange: nextExchangeDataSource,
+        },
+      } as FormProcessWithDatas);
     }
   };
 
-  const updateExchangeDataSource = async (exchangeData: ProcessExchangeData[] = []) => {
+  const updateExchangeDataSource = async (exchangeData: ProcessExchangeData[]) => {
     const newExchangeDataSource = await Promise.all(
       exchangeData.map(async (item) => {
         const reference = toReferenceValue(item?.referenceToFlowDataSet);
@@ -392,11 +380,8 @@ const ProcessEdit: FC<Props> = ({
     }
   };
 
-  const updateReferenceDescription = async (processData?: FormProcessWithDatas) => {
-    const currentData = cloneProcessData(processData ?? getCurrentProcessData());
-    if (!currentData) {
-      return undefined;
-    }
+  const updateReferenceDescription = async (processData: FormProcessWithDatas) => {
+    const currentData = cloneProcessData(processData) as FormProcessWithDatas;
     const { oldRefs } = await getRefsOfCurrentVersion(currentData);
     const res = updateRefsData(currentData, oldRefs, false) as FormProcessWithDatas;
     const nextExchangeDataSource = await updateExchangeDataSource(
@@ -421,20 +406,14 @@ const ProcessEdit: FC<Props> = ({
       return;
     }
     const processData = await updateReferenceDescription(currentData);
-    if (!processData) {
-      if (closeDrawer) {
-        setSpinning(false);
-      }
-      return;
-    }
-    const output = ((processData?.exchanges?.exchange ?? []) as ProcessExchangeData[]).filter(
+    const output = (processData.exchanges.exchange as ProcessExchangeData[]).filter(
       (e) => e.exchangeDirection?.toUpperCase() === 'OUTPUT',
     );
     let allocatedFractionTotal = toBigNumberOrZero(0);
     output.forEach((e) => {
       if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
-        const fraction =
-          e?.allocations?.allocation['@allocatedFraction']?.toString()?.replace('%', '') ?? 0;
+        const fractionText = e.allocations.allocation['@allocatedFraction']?.toString?.();
+        const fraction = typeof fractionText === 'string' ? fractionText.replace('%', '') : '';
         allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
       }
     });

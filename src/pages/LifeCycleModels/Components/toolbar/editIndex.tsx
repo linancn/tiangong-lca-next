@@ -763,7 +763,7 @@ const ToolbarEdit: FC<Props> = ({
     refreshEdgeLabels();
   }, [edges, graph, nodes, refreshEdgeLabels, removeEdges, removeNodes]);
 
-  const saveData = async (setLoadingData = true, options?: { silent?: boolean }) => {
+  const saveData = async (setLoadingData: boolean, options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     if (setLoadingData) setSpinning(true);
     try {
@@ -1405,10 +1405,7 @@ const ToolbarEdit: FC<Props> = ({
       return;
     }
     setAutoCheckTriggered(true);
-    const timer = window.setTimeout(() => {
-      void handleCheckData({ silent: true });
-    }, 0);
-    return () => window.clearTimeout(timer);
+    void handleCheckData({ silent: true });
   }, [autoCheckRequired, autoCheckTriggered, drawerVisible, handleCheckData, infoData]);
 
   const handelSubmitReview = async () => {

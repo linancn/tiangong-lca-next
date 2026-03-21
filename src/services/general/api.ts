@@ -55,10 +55,6 @@ export async function attachStateCodesToRows<
     new Set(missingStateRows.map((row) => row.id).filter(Boolean)),
   ) as string[];
 
-  if (ids.length === 0) {
-    return rows;
-  }
-
   const { data, error } = await supabase.from(table).select('id,version,state_code').in('id', ids);
 
   if (error || !data) {
@@ -416,16 +412,8 @@ async function downloadArtifactBySignedUrl(signedUrl: string, filename: string) 
   }
 }
 
-function resolveExportArtifactFilename(
-  job: TidasPackageJobResponse,
-  fallbackFilename = 'tidas-package.zip',
-) {
-  const exportArtifact = job.artifacts_by_kind.export_zip;
-  if (!exportArtifact) {
-    return fallbackFilename;
-  }
-
-  const metadataFilename = exportArtifact.metadata?.filename;
+function resolveExportArtifactFilename(job: TidasPackageJobResponse, fallbackFilename: string) {
+  const metadataFilename = job.artifacts_by_kind.export_zip?.metadata?.filename;
   if (typeof metadataFilename === 'string' && metadataFilename.trim()) {
     return metadataFilename.trim();
   }

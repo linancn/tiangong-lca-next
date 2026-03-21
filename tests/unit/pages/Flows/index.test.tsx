@@ -1,7 +1,7 @@
 // @ts-nocheck
 import FlowsPage from '@/pages/Flows';
 import userEvent from '@testing-library/user-event';
-import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -179,7 +179,15 @@ jest.mock('@/pages/Flows/Components/delete', () => ({
 
 jest.mock('@/pages/Flows/Components/edit', () => ({
   __esModule: true,
-  default: () => <button type='button'>flow-edit</button>,
+  default: ({ id, version, autoOpen, onDrawerClose }: any) => (
+    <div data-testid='flow-edit'>
+      {JSON.stringify({ id, version, autoOpen })}
+      <button type='button'>flow-edit</button>
+      <button type='button' onClick={() => onDrawerClose?.()}>
+        flow-edit-close
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Flows/Components/view', () => ({
@@ -705,5 +713,39 @@ describe('FlowsPage', () => {
     expect(
       screen.getByRole('button', { name: /export-flows-flow-1-01.00.000/i }),
     ).toBeInTheDocument();
+  });
+
+  it('opens and closes the route-driven edit drawer for my-data links', async () => {
+    mockLocation = {
+      pathname: '/mydata/flows',
+      search: '?tid=team-1&id=flow-route&version=9.9.9',
+    };
+
+    renderWithProviders(<FlowsPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('flow-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(true),
+    );
+
+    const autoOpenEdit = screen
+      .getAllByTestId('flow-edit')
+      .find((node) => node.textContent?.includes('"autoOpen":true'));
+
+    expect(autoOpenEdit).toHaveTextContent('"id":"flow-route"');
+    expect(autoOpenEdit).toHaveTextContent('"version":"9.9.9"');
+
+    await userEvent.click(within(autoOpenEdit!).getByRole('button', { name: /flow-edit-close/i }));
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('flow-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(false),
+    );
   });
 });

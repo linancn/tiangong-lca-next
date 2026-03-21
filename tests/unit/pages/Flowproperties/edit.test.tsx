@@ -126,6 +126,9 @@ jest.mock('antd', () => {
 });
 
 const { message: mockAntdMessage } = jest.requireMock('antd');
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
@@ -906,5 +909,73 @@ describe('FlowpropertiesEdit', () => {
 
     rerender(<FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='' lang='en' />);
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('opens automatically and triggers silent auto-check when requested', async () => {
+    renderWithProviders(
+      <FlowpropertiesEdit
+        id='fp-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        autoOpen
+        autoCheckRequired
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await waitFor(() => expect(mockUpdateFlowproperties).toHaveBeenCalled());
+    expect(mockCheckData).toHaveBeenCalled();
+  });
+
+  it('blocks data check when the current dataset is under review', async () => {
+    mockGetFlowpropertyDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: { flowPropertyDataSet: {} },
+      },
+    });
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'This data set is under review and cannot be validated',
+      ),
+    );
+    expect(mockCheckData).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation-issue modal when structured validation issues are returned', async () => {
+    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'flow-1', '@version': '1.0.0' });
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/mydata/flowproperties?id=fp-1&version=1.0.0',
+        ref: {
+          '@type': 'flow property data set',
+          '@refObjectId': 'fp-1',
+          '@version': '1.0.0',
+        },
+      },
+    ]);
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

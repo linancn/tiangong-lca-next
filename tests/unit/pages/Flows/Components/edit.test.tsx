@@ -111,6 +111,9 @@ jest.mock('antd', () => {
 });
 
 const mockAntdMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
@@ -1206,5 +1209,88 @@ describe('FlowsEdit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^edit$/i }));
     expect(await screen.findByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('opens automatically and triggers silent auto-check when requested', async () => {
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        autoOpen
+        autoCheckRequired
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit/i });
+    await waitFor(() => expect(mockUpdateFlows).toHaveBeenCalled());
+    expect(mockCheckData).toHaveBeenCalled();
+  });
+
+  it('blocks flow data checks when the current dataset is under review', async () => {
+    mockGetFlowDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: {
+          flowDataSet: loadedFlowData,
+        },
+      },
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'This data set is under review and cannot be validated',
+      ),
+    );
+    expect(mockCheckData).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation-issue modal when structured flow validation issues exist', async () => {
+    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'source-1', '@version': '1.0.0' });
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/mydata/flows?id=flow-1&version=1.0.0',
+        ref: {
+          '@type': 'flow data set',
+          '@refObjectId': 'flow-1',
+          '@version': '1.0.0',
+        },
+      },
+    ]);
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

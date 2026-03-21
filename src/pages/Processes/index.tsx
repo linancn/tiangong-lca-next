@@ -78,23 +78,12 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
 
   const actionRef = useRef<ActionType>();
-  const attachReviewState = async (
-    result?:
-      | {
-          data?: ProcessTable[];
-          page?: number;
-          success?: boolean;
-          total?: number;
-        }
-      | undefined,
-  ) => {
-    if (!result) {
-      return {
-        data: [] as ProcessTable[],
-        success: false,
-      };
-    }
-
+  const attachReviewState = async (result: {
+    data?: ProcessTable[];
+    page?: number;
+    success?: boolean;
+    total?: number;
+  }) => {
     if (dataSource !== 'my' || !Array.isArray(result.data)) {
       return result;
     }

@@ -1212,6 +1212,43 @@ describe('ToolbarEditInfo', () => {
     expect(result.checkResult).toBe(false);
   });
 
+  it.each([
+    ['checkData', 'Data validation issues'],
+    ['review', 'Review submission blocked'],
+  ])('shows the validation issue modal for %s checks', async (from, expectedTitle) => {
+    const ref = React.createRef<any>();
+    const validationIssues = [{ issueCode: 'MISSING_REQUIRED_FIELD', datasetType: 'model' }];
+    const mappedRefCheckData = [{ key: 'validation-issue' }];
+
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [{ path: ['lifeCycleModelDataSet', 'lifeCycleModelInformation'] }],
+    });
+    mockBuildValidationIssues.mockReturnValueOnce(validationIssues);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce(mappedRefCheckData);
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let result;
+    await act(async () => {
+      result = await ref.current?.handleCheckData(from, nodes, [{}]);
+    });
+
+    expect(mockMapValidationIssuesToRefCheckData).toHaveBeenCalledWith(validationIssues);
+    expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        issues: validationIssues,
+        title: expectedTitle,
+      }),
+    );
+    expect(mockAntdMessage.error).not.toHaveBeenCalled();
+    expect(result.checkResult).toBe(false);
+  });
+
   it('shows a main-product error when rule verification fails on the model process', async () => {
     const ref = React.createRef<any>();
     mockGetLifeCycleModelDetail.mockResolvedValue({

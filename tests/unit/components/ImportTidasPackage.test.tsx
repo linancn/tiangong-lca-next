@@ -23,6 +23,7 @@ type UploadDraggerProps = {
 const OPEN_BUTTON_TEST_ID = 'import-open-button';
 const MODAL_OK_TEST_ID = 'import-modal-ok';
 const PICK_FILE_TEST_ID = 'import-pick-file';
+const PICK_BAD_FILE_TEST_ID = 'import-pick-bad-file';
 
 jest.mock('@ant-design/icons', () => ({
   CloudUploadOutlined: ({ onClick }: { onClick?: () => void }) => (
@@ -81,6 +82,7 @@ jest.mock('antd', () => {
     ) : null;
 
   const uploadFile = new File(['zip'], 'package.zip', { type: 'application/zip' });
+  const badFile = new File(['txt'], 'package.txt', { type: 'text/plain' });
   const Dragger = ({ beforeUpload, onRemove, children }: UploadDraggerProps) => (
     <div>
       <button
@@ -88,6 +90,13 @@ jest.mock('antd', () => {
         data-testid={PICK_FILE_TEST_ID}
         onClick={() => {
           beforeUpload?.(uploadFile);
+        }}
+      />
+      <button
+        type='button'
+        data-testid={PICK_BAD_FILE_TEST_ID}
+        onClick={() => {
+          beforeUpload?.(badFile);
         }}
       />
       <button
@@ -180,6 +189,42 @@ describe('ImportTidasPackage Component', () => {
     dispatchEventSpy.mockRestore();
   });
 
+  it('shows info modal when open-data rows are filtered during successful import', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: true,
+        code: 'IMPORTED',
+        message: 'ok',
+        summary: {
+          total_entries: 20,
+          filtered_open_data_count: 12,
+          user_conflict_count: 0,
+          importable_count: 8,
+          imported_count: undefined,
+        },
+        filtered_open_data: Array.from({ length: 12 }).map((_, index) => ({
+          table: 'flows',
+          id: `flow-${index + 1}`,
+          version: '01.00.000',
+          state_code: 10,
+        })),
+        user_conflicts: [],
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(modalApi.info).toHaveBeenCalledTimes(1);
+    });
+    expect(mockMessage.success).toHaveBeenCalledTimes(1);
+  });
+
   it('shows conflict details when the import is rejected by user data conflicts', async () => {
     mockedImportTidasPackageApi.mockResolvedValue({
       data: {
@@ -218,5 +263,87 @@ describe('ImportTidasPackage Component', () => {
 
     expect(mockMessage.success).not.toHaveBeenCalled();
     expect(mockedImportTidasPackageApi).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects non-zip file selections before uploading', async () => {
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_BAD_FILE_TEST_ID));
+
+    expect(mockMessage.error).toHaveBeenCalledWith('Only ZIP packages are supported');
+
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+    await waitFor(() => {
+      expect(mockMessage.warning).toHaveBeenCalledTimes(1);
+    });
+    expect(mockedImportTidasPackageApi).not.toHaveBeenCalled();
+  });
+
+  it('clears selected file on remove and cancel action', async () => {
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId('remove-file'));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(mockMessage.warning).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(screen.getByTestId('import-modal-cancel'));
+    expect(screen.queryByTestId('import-modal')).not.toBeInTheDocument();
+  });
+
+  it('shows generic error when api throws without payload', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: null,
+      error: new Error('upload failed'),
+    } as any);
+
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(mockMessage.error).toHaveBeenCalledWith('Failed to import TIDAS package');
+    });
+  });
+
+  it('handles payloads without summary by surfacing generic import failure', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+        message: 'payload failed',
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(mockMessage.error).toHaveBeenCalledWith('Failed to import TIDAS package');
+    });
+  });
+
+  it('falls back to the default import-failure message when payloads omit summary and message', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(mockMessage.error).toHaveBeenCalledWith('Failed to import TIDAS package');
+    });
   });
 });

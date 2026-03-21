@@ -90,6 +90,9 @@ jest.mock('antd', () => {
 });
 
 const mockAntdMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
@@ -978,5 +981,86 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('save exploded'));
     expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('opens automatically and triggers silent auto-check when requested', async () => {
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        autoOpen
+        autoCheckRequired
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit/i });
+    await waitFor(() => expect(mockUpdateUnitGroup).toHaveBeenCalled());
+    expect(mockCheckData).toHaveBeenCalled();
+  });
+
+  it('blocks unit-group data checks when the current dataset is under review', async () => {
+    mockGetUnitGroupDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: { unitGroupDataSet: {} },
+      },
+    });
+
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /edit/i });
+    await userEvent.click(within(drawer).getByRole('button', { name: /data check/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'This data set is under review and cannot be validated',
+      ),
+    );
+    expect(mockCheckData).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation-issue modal when structured unit-group validation issues exist', async () => {
+    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'flow-1', '@version': '1.0.0' });
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/mydata/unitgroups?id=unitgroup-1&version=1.0.0',
+        ref: {
+          '@type': 'unit group data set',
+          '@refObjectId': 'unitgroup-1',
+          '@version': '1.0.0',
+        },
+      },
+    ]);
+
+    renderWithProviders(
+      <UnitGroupEdit
+        id='unitgroup-1'
+        version='1.0.0'
+        buttonType=''
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const drawer = await screen.findByRole('dialog', { name: /edit/i });
+    await userEvent.click(within(drawer).getByRole('button', { name: /data check/i }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

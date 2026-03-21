@@ -414,6 +414,9 @@ const { getContactDetail: mockGetContactDetail, updateContact: mockUpdateContact
   jest.requireMock('@/services/contacts/api');
 const { getRefData: mockGetRefData, updateStateCodeApi: mockUpdateStateCodeApi } =
   jest.requireMock('@/services/general/api');
+const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
+  '@/components/ValidationIssueModal',
+);
 const { getReviewUserRoleApi: mockGetReviewUserRoleApi, getUserTeamId: mockGetUserTeamId } =
   jest.requireMock('@/services/roles/api');
 const { getAllRefObj: mockGetAllRefObj, getRefTableName: mockGetRefTableName } =
@@ -1491,5 +1494,88 @@ describe('ContactEdit component', () => {
     await user.click(syncButton);
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Action failed'));
+  });
+
+  it('opens automatically and triggers silent auto-check when requested', async () => {
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        autoOpen
+        autoCheckRequired
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await waitFor(() => expect(mockUpdateContact).toHaveBeenCalled());
+    expect(mockCheckData).toHaveBeenCalled();
+  });
+
+  it('blocks contact data checks when the current dataset is under review', async () => {
+    const user = userEvent.setup();
+    mockGetContactDetail.mockResolvedValueOnce({
+      data: {
+        stateCode: 20,
+        json: { contactDataSet: {} },
+      },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'This data set is under review and cannot be validated',
+      ),
+    );
+    expect(mockCheckData).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation-issue modal when structured contact validation issues exist', async () => {
+    const user = userEvent.setup();
+    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
+      unRule.push({ '@refObjectId': 'source-1', '@version': '1.0.0' });
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/mydata/contacts?id=contact-123&version=01.00.000',
+        ref: {
+          '@type': 'contact data set',
+          '@refObjectId': 'contact-123',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

@@ -1086,6 +1086,41 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('runs a silent auto-check once after lifecycle model info loads when requested', async () => {
+    const { unmount } = render(
+      <ToolbarEdit {...baseProps} drawerVisible={true} autoCheckRequired onClose={jest.fn()} />,
+    );
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'checkData',
+        expect.any(Array),
+        expect.any(Array),
+        expect.objectContaining({ silent: true }),
+      ),
+    );
+
+    unmount();
+  });
+
+  it('skips the silent auto-check when imported lifecycle model info resolves to undefined', async () => {
+    mockGenLifeCycleModelInfoFromData.mockReturnValueOnce(undefined);
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        action='create'
+        drawerVisible={true}
+        autoCheckRequired
+        importData={[{ lifeCycleModelDataSet: {}, json_tg: {} }]}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText('toolbar-edit-info:create:-')).toBeInTheDocument());
+
+    expect(mockToolbarHandleCheckData).not.toHaveBeenCalled();
+  });
+
   it('submits a review when review validation passes', async () => {
     mockToolbarHandleCheckData.mockResolvedValue({
       checkResult: true,

@@ -111,7 +111,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
           id: 'component.tidasPackage.import.conflict.title',
           defaultMessage: 'Import rejected because of conflicts',
         }),
-        content: payload ? formatConflicts(payload) : null,
+        content: formatConflicts(payload),
       });
     } catch (_error) {
       message.error(

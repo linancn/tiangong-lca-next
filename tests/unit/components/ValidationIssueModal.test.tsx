@@ -1,6 +1,10 @@
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 
+let mockZIndexPopupBase: number | undefined = 1000;
+let mockZIndexPopupBaseSequence: Array<number | undefined> | null = null;
+let latestTableDataSource: any[] = [];
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) => (
@@ -76,6 +80,7 @@ jest.mock('antd', () => {
   const Table = ({
     columns,
     dataSource,
+    rowKey,
     scroll,
     sticky,
   }: {
@@ -86,32 +91,44 @@ jest.mock('antd', () => {
       render?: (value: unknown, record: any, index: number) => React.ReactNode;
     }>;
     dataSource: any[];
+    rowKey?: ((record: any) => string) | string;
     scroll?: {
       y?: number;
     };
     sticky?: boolean;
-  }) => (
-    <table data-scroll-y={scroll?.y} data-sticky={sticky ? 'true' : 'false'}>
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th key={column.key ?? String(column.dataIndex)}>{column.title}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {dataSource.map((record, rowIndex) => (
-          <tr key={rowIndex}>
-            {columns.map((column) => {
-              const value = column.dataIndex ? record[column.dataIndex] : undefined;
-              const content = column.render?.(value, record, rowIndex) ?? value ?? null;
-              return <td key={column.key ?? String(column.dataIndex)}>{content}</td>;
-            })}
+  }) => {
+    latestTableDataSource = dataSource;
+    return (
+      <table data-scroll-y={scroll?.y} data-sticky={sticky ? 'true' : 'false'}>
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th key={column.key ?? String(column.dataIndex)}>{column.title}</th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+        </thead>
+        <tbody>
+          {dataSource.map((record, rowIndex) => (
+            <tr
+              key={
+                typeof rowKey === 'function'
+                  ? rowKey(record)
+                  : typeof rowKey === 'string'
+                    ? String(record[rowKey] ?? rowIndex)
+                    : rowIndex
+              }
+            >
+              {columns.map((column) => {
+                const value = column.dataIndex ? record[column.dataIndex] : undefined;
+                const content = column.render?.(value, record, rowIndex) ?? value ?? null;
+                return <td key={column.key ?? String(column.dataIndex)}>{content}</td>;
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
 
   return {
     __esModule: true,
@@ -130,7 +147,12 @@ jest.mock('antd', () => {
           colorTextDisabled: '#bfbfbf',
           colorTextHeading: '#141414',
           colorTextSecondary: '#8c8c8c',
-          zIndexPopupBase: 1000,
+          get zIndexPopupBase() {
+            if (mockZIndexPopupBaseSequence && mockZIndexPopupBaseSequence.length > 0) {
+              return mockZIndexPopupBaseSequence.shift();
+            }
+            return mockZIndexPopupBase;
+          },
           fontSizeHeading4: 20,
           fontSizeLG: 16,
           fontWeightStrong: 600,
@@ -174,6 +196,9 @@ describe('ValidationIssueModal', () => {
   beforeEach(() => {
     cleanup();
     document.body.innerHTML = '';
+    mockZIndexPopupBase = 1000;
+    mockZIndexPopupBaseSequence = null;
+    latestTableDataSource = [];
     localStorage.setItem('isDarkMode', 'false');
     if (!URL.revokeObjectURL) {
       Object.defineProperty(URL, 'revokeObjectURL', {
@@ -461,5 +486,413 @@ describe('ValidationIssueModal', () => {
     });
     createObjectURLSpy.mockRestore();
     revokeObjectURLSpy.mockRestore();
+  });
+
+  it('returns null when issues are empty and closes via confirm/cancel with default title', async () => {
+    expect(showValidationIssueModal({ intl, issues: [] })).toBeNull();
+
+    let modalHandle: { destroy: () => void } | null = null;
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-9&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-9',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByText('Validation issues')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '知道了' }));
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+      modalHandle?.destroy();
+    });
+
+    await act(async () => {
+      showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-10&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-10',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '关闭校验框',
+      });
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('covers all issue codes, type fallbacks, duplicate filtering and html escaping', async () => {
+    const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    const createObjectURLSpy = jest
+      .spyOn(URL, 'createObjectURL')
+      .mockImplementation(() => 'blob:validation-issues-2');
+    const revokeObjectURLSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'underReview',
+            link: '',
+            ref: {
+              '@refObjectId': 'contact-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'versionUnderReview',
+            underReviewVersion: undefined,
+            link: '',
+            ref: {
+              '@refObjectId': 'source-1',
+              '@type': 'source data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'versionIsInTg',
+            link: '',
+            ref: {
+              '@refObjectId': 'unit-1',
+              '@type': 'unit group data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: [''],
+            ref: {
+              '@refObjectId': 'contact-sdk-empty-tab',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            // cover tabNames ?? [] fallback branch
+            tabNames: ['basicInformation'],
+            ref: {
+              '@refObjectId': 'contact-sdk-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: undefined,
+            ref: {
+              '@refObjectId': 'contact-sdk-without-tab-names',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['basicInformation'],
+            ref: {
+              '@refObjectId': 'source-sdk-1',
+              '@type': 'source data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['basicInformation'],
+            ref: {
+              '@refObjectId': 'unit-sdk-1',
+              '@type': 'unit group data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['baseData', 'baseData'],
+            ref: {
+              '@refObjectId': 'flowProperty-1',
+              '@type': 'flow property data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['baseData'],
+            ref: {
+              '@refObjectId': 'flow-1',
+              '@type': 'flow data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['processInformation', 'unknownTab'],
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['generalInformation'],
+            ref: {
+              '@refObjectId': 'model-1',
+              '@type': 'lifeCycleModel data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'mysteryCode' as any,
+            link: '',
+            ref: {
+              '@refObjectId': 'unknown-1',
+              '@type': 'mystery data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            link: '',
+            tabNames: ['mysteryTab'],
+            ref: {
+              '@refObjectId': 'unknown-sdk-1',
+              '@type': 'mystery data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: '',
+            ref: {
+              '@refObjectId': 'dup-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=dup-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'dup-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=escape-1&version=01.00.000&name=<x>',
+            ref: {
+              '@refObjectId': '<id&"',
+              '@type': 'process data set',
+              '@version': "01.00.000'",
+            },
+          },
+        ],
+        title: '覆盖所有分支',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByText('Dataset is under review')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Another version {underReviewVersion} of this dataset is already under review',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Current version is lower than the published version'),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('当前数据集校验失败(baseData)').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('当前数据集校验失败(basicInformation)').length).toBeGreaterThan(2);
+    expect(screen.getAllByText('当前数据集校验失败').length).toBeGreaterThan(1);
+    expect(screen.getByText('当前数据集校验失败(过程信息，unknownTab)')).toBeInTheDocument();
+    expect(screen.getByText('当前数据集校验失败(generalInformation)')).toBeInTheDocument();
+    expect(screen.getByText('当前数据集校验失败(mysteryTab)')).toBeInTheDocument();
+    expect(screen.getByText('mysteryCode')).toBeInTheDocument();
+    expect(screen.getAllByText('mystery data set').length).toBeGreaterThan(1);
+    expect(screen.getByText('<id&"')).toBeInTheDocument();
+    expect(screen.getByText("01.00.000'")).toBeInTheDocument();
+    expect(screen.getAllByText('数据校验不通过').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getAllByRole('button', { name: '查看详情' })[0]);
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      'http://localhost:8000/mydata/processes?id=dup-1&version=01.00.000',
+      '_blank',
+      'noopener,noreferrer',
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '下载 HTML' }));
+    });
+
+    const blob = createObjectURLSpy.mock.calls[0][0] as Blob;
+    const html = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob);
+    });
+
+    expect(html).toContain('&lt;id&amp;&quot;');
+    expect(html).toContain('01.00.000&#39;');
+    expect(html).toContain('name=&lt;x&gt;');
+    expect(html).toContain('class="action-link"');
+    expect(html).toContain('>mystery data set<');
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+    windowOpenSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+
+  it('falls back to default modal z-index when token base z-index is missing', async () => {
+    mockZIndexPopupBase = undefined;
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: '',
+            ref: {
+              '@refObjectId': 'z-index-fallback',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: 'z-index fallback',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-z-index', '2000');
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('falls back to 1000 when zIndexPopupBase changes to undefined between reads', async () => {
+    mockZIndexPopupBaseSequence = [2, undefined];
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: '',
+            ref: {
+              '@refObjectId': 'z-index-dynamic-fallback',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: 'z-index dynamic fallback',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-z-index', '2000');
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('renders dash when issue description is undefined', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: undefined as any,
+            link: '',
+            ref: {
+              '@refObjectId': 'issue-code-undefined',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: 'issue fallback',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getAllByText('-').length).toBeGreaterThan(1);
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('opens empty link when grouped issue link becomes undefined before click', async () => {
+    const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-dynamic&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-dynamic',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: 'dynamic link',
+      }) as { destroy: () => void };
+    });
+
+    latestTableDataSource[0].link = undefined;
+    fireEvent.click(screen.getByRole('button', { name: '查看详情' }));
+    expect(windowOpenSpy).toHaveBeenCalledWith('', '_blank', 'noopener,noreferrer');
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+    windowOpenSpy.mockRestore();
   });
 });

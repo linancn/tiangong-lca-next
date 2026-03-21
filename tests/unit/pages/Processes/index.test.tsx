@@ -897,4 +897,14 @@ describe('ProcessesPage', () => {
     expect(screen.getByRole('heading', { name: 'Process Team' })).toBeInTheDocument();
     expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
   });
+
+  it('falls back to an empty table and shows a toast when loading the process list throws', async () => {
+    mockGetProcessTableAll.mockRejectedValue(new Error('network down'));
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to load process list.'));
+    expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
+  });
 });

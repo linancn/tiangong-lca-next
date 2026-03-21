@@ -30,6 +30,7 @@ import {
   getLangText,
   getLangValidationErrorMessage,
   getUnitData,
+  isDataUnderReview,
   isSupabaseDuplicateKeyError,
   isValidURL,
   jsonToList,
@@ -555,6 +556,44 @@ describe('General Utility Functions', () => {
         result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
           .processInstance[0].connections.outputExchange.downstreamProcess,
       ).toEqual({});
+    });
+
+    it('should preserve empty downstreamProcess entries inside arrays that describe model connections', () => {
+      const input = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  {
+                    connections: {
+                      outputExchange: {
+                        downstreamProcess: [{}, { '@refObjectId': 'proc-2' }],
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(
+        result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+          .processInstance[0].connections.outputExchange.downstreamProcess,
+      ).toEqual([{}, { '@refObjectId': 'proc-2' }]);
+    });
+  });
+
+  describe('isDataUnderReview', () => {
+    it('should only treat numeric review states between 20 and 99 as under review', () => {
+      expect(isDataUnderReview(null)).toBe(false);
+      expect(isDataUnderReview(10)).toBe(false);
+      expect(isDataUnderReview(20)).toBe(true);
+      expect(isDataUnderReview(100)).toBe(false);
     });
   });
 

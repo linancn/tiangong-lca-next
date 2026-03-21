@@ -353,10 +353,6 @@ const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
 };
 
 const cloneSdkValidationInput = <T,>(orderedJson: T): T => {
-  if (orderedJson === undefined || orderedJson === null) {
-    return orderedJson;
-  }
-
   return JSON.parse(JSON.stringify(orderedJson)) as T;
 };
 

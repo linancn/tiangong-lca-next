@@ -954,6 +954,7 @@ describe('createLifeCycleModel', () => {
     const edgePayload = buildSaveResult();
     mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
     mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
     mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
       lifeCycleModelProcesses: [],
       up2DownEdges: [],
@@ -966,6 +967,8 @@ describe('createLifeCycleModel', () => {
 
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(sampleModelId, [], rawJson, []);
     expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], sampleVersion, rawJson);
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[0]).toBe('lifeCycleModel data set');
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[2]).toBe('');
     expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
       mode: 'create',
       modelId: sampleModelId,
@@ -1250,6 +1253,7 @@ describe('updateLifeCycleModel', () => {
     );
     mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
     mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
     mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
       lifeCycleModelProcesses: [],
       up2DownEdges: [],
@@ -1264,6 +1268,8 @@ describe('updateLifeCycleModel', () => {
 
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(sampleModelId, [], rawJson, []);
     expect(mockGetProcessDetailByIdsAndVersion).toHaveBeenCalledWith([], sampleVersion);
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[0]).toBe('lifeCycleModel data set');
+    expect(mockValidateDatasetRuleVerification.mock.calls[0]?.[2]).toBe('');
     expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
       mode: 'update',
       modelId: sampleModelId,

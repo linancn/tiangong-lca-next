@@ -52,7 +52,6 @@ let taskSequence = 0;
 let tasks: TidasPackageBackgroundTask[] = [];
 const listeners = new Set<() => void>();
 const activePollers = new Set<string>();
-let hydratedFromStorage = false;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -478,11 +477,6 @@ async function runExportTask(taskId: string, request: ExportTidasPackageRequest)
 }
 
 function hydrateTasksFromStorage(): void {
-  if (hydratedFromStorage) {
-    return;
-  }
-  hydratedFromStorage = true;
-
   const restored = readTasksFromStorage();
   if (restored.length === 0) {
     return;

@@ -670,6 +670,23 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
     });
 
+    it('should drop invalid reference year strings instead of serializing NaN', () => {
+      const dataWithInvalidReferenceYear = {
+        ...mockProcessData,
+        processInformation: {
+          ...mockProcessData.processInformation,
+          time: {
+            ...mockProcessData.processInformation.time,
+            'common:referenceYear': 'not-a-number',
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithInvalidReferenceYear);
+
+      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
+    });
+
     it('should not stringify missing exchange amounts to undefined', () => {
       const dataWithMissingAmounts = {
         ...mockProcessData,
