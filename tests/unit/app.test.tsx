@@ -267,7 +267,7 @@ describe('app runtime config', () => {
       initialState: {
         currentUser: { name: 'Alice' },
         isDarkMode: false,
-        settings: { navTheme: 'light' },
+        settings: { navTheme: 'light', colorPrimary: '#0C246A' },
       },
       setInitialState,
     });
@@ -302,6 +302,7 @@ describe('app runtime config', () => {
     );
     expect(runtimeLayout.avatarProps?.render?.().props.children.type).toBe('div');
     expect(runtimeLayout.footerRender?.().type()).toEqual(<div data-testid='footer'>Footer</div>);
+    expect(runtimeLayout.bgLayoutImgList).toBeUndefined();
 
     const children = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
     expect(children.props.children[0].props['data-testid']).toBe('child');
