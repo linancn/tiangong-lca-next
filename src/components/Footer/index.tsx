@@ -1,3 +1,4 @@
+import styles from '@/style/custom.less';
 import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 import React from 'react';
@@ -5,6 +6,7 @@ import React from 'react';
 const Footer: React.FC = () => {
   return (
     <DefaultFooter
+      className={styles.app_footer}
       style={{
         background: 'none',
       }}

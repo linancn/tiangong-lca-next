@@ -27,6 +27,17 @@
   margin-right: 8px;
 }
 
+.app_footer {
+  :global(.ant-pro-global-footer-list-link) {
+    transition: color 0.2s ease;
+  }
+
+  :global(.ant-pro-global-footer-list-link:hover),
+  :global(.ant-pro-global-footer-list-link:focus-visible) {
+    color: var(--ant-color-primary);
+  }
+}
+
 @welcome-radius: 8px;
 
 .team_logo_container {

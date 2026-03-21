@@ -14,17 +14,25 @@ type FooterLink = {
 };
 
 type DefaultFooterProps = {
+  className?: string;
   links?: FooterLink[];
   style?: React.CSSProperties;
 };
 
 const mockFooterProps: DefaultFooterProps[] = [];
 
+jest.mock('@/style/custom.less', () => ({
+  __esModule: true,
+  default: {
+    app_footer: 'app-footer',
+  },
+}));
+
 jest.mock('@ant-design/pro-components', () => ({
-  DefaultFooter: ({ links, style }: DefaultFooterProps) => {
-    mockFooterProps.push({ links, style });
+  DefaultFooter: ({ className, links, style }: DefaultFooterProps) => {
+    mockFooterProps.push({ className, links, style });
     return (
-      <footer data-testid='default-footer'>
+      <footer data-testid='default-footer' className={className}>
         {(links ?? []).map((link) => (
           <a
             key={link.key}
@@ -46,6 +54,7 @@ describe('Footer Component', () => {
 
     const props = mockFooterProps.pop();
     expect(props).toBeDefined();
+    expect(props?.className).toBe('app-footer');
     expect(props?.style).toMatchObject({ background: 'none' });
     expect(props?.links).toHaveLength(2);
 
