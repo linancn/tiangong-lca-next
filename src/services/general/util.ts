@@ -62,18 +62,86 @@ export function isDataUnderReview(stateCode?: number | null): boolean {
   return typeof stateCode === 'number' && stateCode >= 20 && stateCode < 100;
 }
 
-export function removeEmptyObjects(obj: any) {
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === 'object') {
-      removeEmptyObjects(obj[key]);
-      if (Object.keys(obj[key]).length === 0) {
-        delete obj[key];
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return Object.prototype.toString.call(value) === '[object Object]';
+};
+
+const isRemovableEmptyValue = (value: unknown): boolean => {
+  if (value === undefined || value === null) {
+    return true;
+  }
+
+  if (typeof value === 'string') {
+    return value.trim() === '' || value === 'undefined';
+  }
+
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (isPlainObject(value)) {
+    return Object.keys(value).length === 0;
+  }
+
+  return false;
+};
+
+const shouldPreserveEmptyObjectAtPath = (path: Array<string | number>): boolean => {
+  const stringSegments = path.filter((segment): segment is string => typeof segment === 'string');
+
+  if (!stringSegments.includes('connections') || !stringSegments.includes('outputExchange')) {
+    return false;
+  }
+
+  return stringSegments.includes('downstreamProcess');
+};
+
+const removeEmptyObjectsInternal = (value: any, path: Array<string | number>): any => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item, index) => removeEmptyObjectsInternal(item, [...path, index]))
+      .filter((item, index) => {
+        if (
+          isPlainObject(item) &&
+          Object.keys(item).length === 0 &&
+          shouldPreserveEmptyObjectAtPath([...path, index])
+        ) {
+          return true;
+        }
+
+        return !isRemovableEmptyValue(item);
+      });
+  }
+
+  if (!isPlainObject(value)) {
+    return value;
+  }
+
+  return Object.entries(value).reduce(
+    (acc, [key, nestedValue]) => {
+      const cleanedValue = removeEmptyObjectsInternal(nestedValue, [...path, key]);
+
+      if (
+        isPlainObject(cleanedValue) &&
+        Object.keys(cleanedValue).length === 0 &&
+        shouldPreserveEmptyObjectAtPath([...path, key])
+      ) {
+        acc[key] = cleanedValue;
+        return acc;
       }
-    } else if (obj[key] === undefined || obj[key] === null) {
-      delete obj[key];
-    }
-  });
-  return obj;
+
+      if (!isRemovableEmptyValue(cleanedValue)) {
+        acc[key] = cleanedValue;
+      }
+
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
+};
+
+export function removeEmptyObjects(obj: any): any {
+  return removeEmptyObjectsInternal(obj, []);
 }
 
 // export function percentStringToNumber(str: string): number | null {

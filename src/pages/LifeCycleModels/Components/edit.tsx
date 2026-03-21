@@ -67,6 +67,13 @@ const LifeCycleModelEdit: FC<Props> = ({
     actionRef?.current?.reload();
   }, [actionRef]);
 
+  const handleSubmitReviewSuccess = useCallback(() => {
+    setIsSave(true);
+    reload();
+    setDrawerVisible(false);
+    onDrawerClose?.();
+  }, [onDrawerClose, reload]);
+
   useEffect(() => {
     if (autoOpen && id && version) {
       setDrawerVisible(true);
@@ -184,6 +191,7 @@ const LifeCycleModelEdit: FC<Props> = ({
                 action={'edit'}
                 hideReviewButton={hideReviewButton}
                 updateNodeCb={updateNodeCb}
+                onSubmitReviewSuccess={handleSubmitReviewSuccess}
               />
             </Sider>
           </Layout>

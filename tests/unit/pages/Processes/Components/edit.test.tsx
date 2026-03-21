@@ -81,6 +81,8 @@ jest.mock('@/services/lciaMethods/data', () => ({
 const mockUpdateProcess = jest.fn();
 const mockGetProcessDetail = jest.fn();
 const updateNodeCbMock = jest.fn();
+const mockUpdateReviewsAfterCheckData = jest.fn();
+const mockUpdateUnReviewToUnderReview = jest.fn();
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
@@ -116,8 +118,8 @@ jest.mock('@/pages/Utils/review', () => ({
   getAllRefObj: jest.fn(() => []),
   getErrRefTab: jest.fn(() => ''),
   mapValidationIssuesToRefCheckData: jest.fn(() => []),
-  updateReviewsAfterCheckData: jest.fn(),
-  updateUnReviewToUnderReview: jest.fn(() => Promise.resolve()),
+  updateReviewsAfterCheckData: (...args: any[]) => mockUpdateReviewsAfterCheckData(...args),
+  updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
@@ -282,6 +284,8 @@ describe('ProcessEdit component', () => {
     actionRef.current.reload.mockClear();
     mockBuildValidationIssues.mockReset().mockReturnValue([]);
     mockValidateDatasetWithSdk.mockReset().mockReturnValue({ success: true, issues: [] });
+    mockUpdateReviewsAfterCheckData.mockReset().mockResolvedValue({});
+    mockUpdateUnReviewToUnderReview.mockReset().mockResolvedValue(undefined);
     mockUpdateProcess.mockResolvedValue({
       data: [
         {
@@ -335,6 +339,29 @@ describe('ProcessEdit component', () => {
       '@version': '1.0.0',
       '@type': 'process data set',
     });
+  });
+
+  it('reloads the list again after review submission succeeds', async () => {
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalled();
+    });
+
+    expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalled();
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
+    expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
   });
 
   it('auto opens without rendering the trigger icon', async () => {

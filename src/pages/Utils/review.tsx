@@ -352,6 +352,14 @@ const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
   };
 };
 
+const cloneSdkValidationInput = <T,>(orderedJson: T): T => {
+  if (orderedJson === undefined || orderedJson === null) {
+    return orderedJson;
+  }
+
+  return JSON.parse(JSON.stringify(orderedJson)) as T;
+};
+
 export const validateDatasetWithSdk = (
   datasetType: refDataType['@type'],
   orderedJson: any,
@@ -363,20 +371,28 @@ export const validateDatasetWithSdk = (
     };
   }
 
+  const sdkValidationInput = cloneSdkValidationInput(orderedJson);
+
   switch (datasetType) {
     case 'contact data set':
-      return normalizeSdkValidationResult(createTidasContact(orderedJson).validateEnhanced());
+      return normalizeSdkValidationResult(
+        createTidasContact(sdkValidationInput).validateEnhanced(),
+      );
     case 'source data set':
-      return normalizeSdkValidationResult(createTidasSource(orderedJson).validateEnhanced());
+      return normalizeSdkValidationResult(createTidasSource(sdkValidationInput).validateEnhanced());
     case 'unit group data set':
-      return normalizeSdkValidationResult(createTidasUnitGroup(orderedJson).validateEnhanced());
+      return normalizeSdkValidationResult(
+        createTidasUnitGroup(sdkValidationInput).validateEnhanced(),
+      );
     case 'flow property data set':
-      return normalizeSdkValidationResult(createTidasFlowProperty(orderedJson).validateEnhanced());
+      return normalizeSdkValidationResult(
+        createTidasFlowProperty(sdkValidationInput).validateEnhanced(),
+      );
     case 'flow data set':
-      return normalizeSdkValidationResult(createTidasFlow(orderedJson).validateEnhanced());
+      return normalizeSdkValidationResult(createTidasFlow(sdkValidationInput).validateEnhanced());
     case 'process data set': {
       const result = normalizeSdkValidationResult(
-        createTidasProcess(orderedJson).validateEnhanced(),
+        createTidasProcess(sdkValidationInput).validateEnhanced(),
       );
       if (result.success) {
         return result;
@@ -391,7 +407,7 @@ export const validateDatasetWithSdk = (
     }
     case 'lifeCycleModel data set': {
       const result = normalizeSdkValidationResult(
-        createTidasLifeCycleModel(orderedJson).validateEnhanced(),
+        createTidasLifeCycleModel(sdkValidationInput).validateEnhanced(),
       );
       if (result.success) {
         return result;
@@ -594,17 +610,11 @@ export class ReffPath {
       if (visited.has(node)) return;
       visited.add(node);
 
-      let isProblemNode =
-        node.ruleVerification === false ||
-        node.nonExistent === true ||
-        node?.versionIsInTg === true;
+      let isProblemNode = node.ruleVerification === false || node.nonExistent === true;
 
-      if (actionFrom === 'checkData') {
+      if (actionFrom === 'review') {
         isProblemNode =
-          isProblemNode ||
-          (node?.versionUnderReview === true && node['@version'] !== node.underReviewVersion);
-      } else if (actionFrom === 'review') {
-        isProblemNode = isProblemNode || node?.versionUnderReview === true;
+          isProblemNode || node?.versionIsInTg === true || node?.versionUnderReview === true;
       }
 
       if (isProblemNode) {

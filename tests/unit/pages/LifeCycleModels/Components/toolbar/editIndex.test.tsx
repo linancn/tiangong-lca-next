@@ -11,6 +11,9 @@ const mockUpdateEdge = jest.fn();
 const mockInitData = jest.fn();
 
 let mockGraphStoreState: any = { nodes: [], edges: [] };
+const mockToolbarHandleCheckData = jest.fn();
+const mockToolbarSubmitReview = jest.fn();
+const mockToolbarUpdateReferenceDescription = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -118,8 +121,10 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/eidtInfo', () => {
     __esModule: true,
     default: React.forwardRef((props: any, ref: any) => {
       React.useImperativeHandle(ref, () => ({
-        handleCheckData: jest.fn(),
-        submitReview: jest.fn(),
+        updateReferenceDescription: (...args: any[]) =>
+          mockToolbarUpdateReferenceDescription(...args),
+        handleCheckData: (...args: any[]) => mockToolbarHandleCheckData(...args),
+        submitReview: (...args: any[]) => mockToolbarSubmitReview(...args),
       }));
       return <div>toolbar-edit-info</div>;
     }),
@@ -258,6 +263,16 @@ beforeEach(() => {
   mockUpdateEdge.mockReset();
   mockInitData.mockReset();
   mockUseGraphEvent.mockClear();
+  mockCreateLifeCycleModel.mockReset().mockResolvedValue({});
+  mockGetLifeCycleModelDetail.mockReset().mockResolvedValue({ data: {} });
+  mockUpdateLifeCycleModel.mockReset().mockResolvedValue({});
+  mockToolbarUpdateReferenceDescription.mockReset().mockResolvedValue(undefined);
+  mockToolbarHandleCheckData.mockReset().mockResolvedValue({
+    checkResult: true,
+    unReview: [],
+    problemNodes: [],
+  });
+  mockToolbarSubmitReview.mockReset().mockResolvedValue(undefined);
   mockGetProcessDetail.mockReset();
   mockGenProcessFromData.mockReset().mockReturnValue({ exchanges: { exchange: [] } });
   mockGraphStoreState = {
@@ -440,5 +455,53 @@ describe('ToolbarEdit', () => {
 
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
     expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: false });
+  });
+
+  it('notifies outer editor after review submission succeeds', async () => {
+    mockUpdateLifeCycleModel.mockResolvedValue({
+      data: [
+        {
+          id: 'model-1',
+          version: '1.0',
+          json_tg: {
+            xflow: {
+              edges: [],
+            },
+          },
+        },
+      ],
+    });
+    mockGetProcessDetail.mockResolvedValue({
+      data: {
+        version: '1.0',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: {},
+              },
+            },
+          },
+        },
+      },
+    });
+    const onSubmitReviewSuccess = jest.fn();
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={true}
+        onSubmitReviewSuccess={onSubmitReviewSuccess}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() => {
+      expect(mockToolbarHandleCheckData).toHaveBeenCalled();
+    });
+
+    expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]);
+    expect(onSubmitReviewSuccess).toHaveBeenCalled();
   });
 });

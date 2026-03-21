@@ -366,6 +366,92 @@ describe('General Utility Functions', () => {
         },
       });
     });
+
+    it('should remove empty arrays and array items that collapse to empty values', () => {
+      const input = {
+        a: [],
+        b: [{}, null, undefined, '', { c: 'value' }],
+        c: ['kept'],
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(result).toEqual({
+        b: [{ c: 'value' }],
+        c: ['kept'],
+      });
+    });
+
+    it('should remove empty strings and whitespace-only strings from nested objects', () => {
+      const input = {
+        a: '',
+        b: '   ',
+        c: {
+          d: '',
+          e: 'value',
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(result).toEqual({
+        c: {
+          e: 'value',
+        },
+      });
+    });
+
+    it('should preserve boolean false and numeric zero values', () => {
+      const input = {
+        a: false,
+        b: 0,
+        c: {
+          d: false,
+          e: 0,
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(result).toEqual({
+        a: false,
+        b: 0,
+        c: {
+          d: false,
+          e: 0,
+        },
+      });
+    });
+
+    it('should preserve empty downstreamProcess placeholders in model connections', () => {
+      const input = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            technology: {
+              processes: {
+                processInstance: [
+                  {
+                    connections: {
+                      outputExchange: {
+                        '@flowUUID': 'flow-1',
+                        downstreamProcess: {},
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const result = removeEmptyObjects(input);
+
+      expect(
+        result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+          .processInstance[0].connections.outputExchange.downstreamProcess,
+      ).toEqual({});
+    });
   });
 
   describe('genClassStr', () => {
