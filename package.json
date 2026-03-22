@@ -67,7 +67,7 @@
     "@ant-design/pro-components": "^2.8.10",
     "@antv/x6": "^3.1.7",
     "@antv/x6-react-shape": "^3.0.1",
-    "@dagrejs/dagre": "^2.0.4",
+    "@dagrejs/dagre": "^3.0.0",
     "@supabase/supabase-js": "^2.99.3",
     "@tiangong-lca/tidas-sdk": "^0.1.30",
     "antd": "^5.29.1",
