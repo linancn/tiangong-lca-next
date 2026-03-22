@@ -12,6 +12,7 @@ import { addReviewsApi, getRejectReviewsByProcess } from '@/services/reviews/api
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
+import { buildAppAbsoluteUrl } from '@/utils/appUrl';
 import {
   createContact as createTidasContact,
   createFlow as createTidasFlow,
@@ -274,17 +275,12 @@ export const getDatasetPath = (
   return `${route}?${searchParams.toString()}`;
 };
 
-export const getDatasetDetailUrl = (
-  ref: refDataType,
-  origin: string = typeof window !== 'undefined'
-    ? window.location.origin
-    : 'https://lca.tiangong.earth',
-) => {
+export const getDatasetDetailUrl = (ref: refDataType, origin?: string) => {
   const path = getDatasetPath(ref, { required: true });
   if (!path) {
     return '';
   }
-  return `${origin}${path}`;
+  return buildAppAbsoluteUrl(path, origin);
 };
 
 const getIssueKey = (code: ValidationIssueCode, ref: refDataType) =>

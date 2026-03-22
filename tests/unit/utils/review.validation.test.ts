@@ -108,10 +108,10 @@ describe('review helper coverage', () => {
       '/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
     expect(getDatasetDetailUrl(ref, 'https://demo.example')).toBe(
-      'https://demo.example/mydata/processes?id=process-1&version=01.00.000&required=1',
+      'https://demo.example/#/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
     expect(getDatasetDetailUrl(ref)).toBe(
-      'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000&required=1',
+      'http://localhost:8000/#/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
 
     const originalWindow = (global as any).window;
@@ -121,7 +121,7 @@ describe('review helper coverage', () => {
     });
     try {
       expect(getDatasetDetailUrl(ref)).toBe(
-        'https://lca.tiangong.earth/mydata/processes?id=process-1&version=01.00.000&required=1',
+        'https://lca.tiangong.earth/#/mydata/processes?id=process-1&version=01.00.000&required=1',
       );
     } finally {
       Object.defineProperty(global, 'window', {
@@ -277,13 +277,13 @@ describe('review helper coverage', () => {
     expect(issues).toEqual([
       {
         code: 'sdkInvalid',
-        link: 'http://localhost:8000/mydata/models?id=model-1&version=01.00.000&required=1',
+        link: 'http://localhost:8000/#/mydata/models?id=model-1&version=01.00.000&required=1',
         ref: rootRef,
         tabNames: ['validation', 'compliance'],
       },
       {
         code: 'ruleVerificationFailed',
-        link: 'http://localhost:8000/mydata/processes?id=process-3&version=01.00.000&required=1',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-3&version=01.00.000&required=1',
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-3',
@@ -292,7 +292,7 @@ describe('review helper coverage', () => {
       },
       {
         code: 'nonExistentRef',
-        link: 'http://localhost:8000/mydata/sources?id=source-1&version=01.00.000&required=1',
+        link: 'http://localhost:8000/#/mydata/sources?id=source-1&version=01.00.000&required=1',
         ref: {
           '@type': 'source data set',
           '@refObjectId': 'source-1',
@@ -301,7 +301,7 @@ describe('review helper coverage', () => {
       },
       {
         code: 'underReview',
-        link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000&required=1',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-1&version=01.00.000&required=1',
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-1',
@@ -311,7 +311,7 @@ describe('review helper coverage', () => {
       },
       {
         code: 'versionUnderReview',
-        link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000&required=1',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-2&version=01.00.000&required=1',
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-2',
@@ -321,7 +321,7 @@ describe('review helper coverage', () => {
       },
       {
         code: 'versionIsInTg',
-        link: 'http://localhost:8000/mydata/flows?id=flow-1&version=01.00.000&required=1',
+        link: 'http://localhost:8000/#/mydata/flows?id=flow-1&version=01.00.000&required=1',
         ref: {
           '@type': 'flow data set',
           '@refObjectId': 'flow-1',

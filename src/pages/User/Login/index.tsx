@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 
 import { Footer } from '@/components';
+import { buildAppHashPath } from '@/utils/appUrl';
 import { FormattedMessage } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
@@ -335,7 +336,7 @@ const Login: React.FC = () => {
                         style={{
                           float: 'right',
                         }}
-                        href='/user/login/password_forgot'
+                        href={buildAppHashPath('/user/login/password_forgot')}
                       >
                         <FormattedMessage
                           id='pages.login.forgotPassword'

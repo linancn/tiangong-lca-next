@@ -366,7 +366,10 @@ describe('DataNotification Component', () => {
       fireEvent.click(viewButton);
     });
 
-    expect(mockOpen).toHaveBeenCalledWith('/mydata/processes?id=process-1&version=1.0.0', '_blank');
+    expect(mockOpen).toHaveBeenCalledWith(
+      'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0',
+      '_blank',
+    );
   });
 
   it('should handle pagination correctly', async () => {

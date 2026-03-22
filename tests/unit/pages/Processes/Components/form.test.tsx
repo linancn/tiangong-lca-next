@@ -388,6 +388,14 @@ const defaultProps = {
 };
 
 describe('ProcessForm component', () => {
+  const getLatestExchangeTables = async () => {
+    await waitFor(() => {
+      expect(proTableInstances.length).toBeGreaterThanOrEqual(2);
+    });
+
+    return proTableInstances.slice(-2);
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     proTableInstances.length = 0;
@@ -422,11 +430,8 @@ describe('ProcessForm component', () => {
       <ProcessForm {...defaultProps} activeTabKey='exchanges' showRules exchangeDataSource={[]} />,
     );
 
-    await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
-    });
-
-    const rowClassName = proTableInstances[0].rowClassName;
+    const [inputTable] = await getLatestExchangeTables();
+    const rowClassName = inputTable.rowClassName;
     const errorRow = rowClassName({
       referenceToFlowDataSetId: 'flow-1',
       referenceToFlowDataSetVersion: '1.0',
@@ -449,11 +454,8 @@ describe('ProcessForm component', () => {
   it('does not mark rows when rules are disabled even if the exchange is incomplete', async () => {
     render(<ProcessForm {...defaultProps} activeTabKey='exchanges' showRules={false} />);
 
-    await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
-    });
-
-    const outputRowClassName = proTableInstances[1].rowClassName;
+    const [, outputTable] = await getLatestExchangeTables();
+    const outputRowClassName = outputTable.rowClassName;
     expect(
       outputRowClassName({
         referenceToFlowDataSetId: 'flow-1',
@@ -597,11 +599,8 @@ describe('ProcessForm component', () => {
 
     render(<ProcessForm {...defaultProps} activeTabKey='exchanges' />);
 
-    await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
-    });
-
-    const result = await proTableInstances[0].request({ pageSize: 10, current: 1 });
+    const [inputTable] = await getLatestExchangeTables();
+    const result = await inputTable.request({ pageSize: 10, current: 1 });
 
     expect(mockGetProcessExchange).toHaveBeenCalledWith(
       expect.any(Array),
@@ -669,11 +668,8 @@ describe('ProcessForm component', () => {
 
     render(<ProcessForm {...defaultProps} activeTabKey='exchanges' />);
 
-    await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
-    });
-
-    const result = await proTableInstances[1].request({ pageSize: 10, current: 1 });
+    const [, outputTable] = await getLatestExchangeTables();
+    const result = await outputTable.request({ pageSize: 10, current: 1 });
 
     expect(mockGetProcessExchange).toHaveBeenCalledWith(
       expect.any(Array),
@@ -743,12 +739,8 @@ describe('ProcessForm component', () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(proTableInstances.length).toBeGreaterThanOrEqual(2);
-    });
-
-    const firstTables = proTableInstances.slice(-2);
-    const result = await firstTables[0].request({ pageSize: 10, current: 1 });
+    const [inputTable] = await getLatestExchangeTables();
+    const result = await inputTable.request({ pageSize: 10, current: 1 });
 
     expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
       [{ id: 'flow-1', version: '1.0' }],
@@ -771,12 +763,8 @@ describe('ProcessForm component', () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(proTableInstances.length).toBeGreaterThanOrEqual(2);
-    });
-
-    const latestTables = proTableInstances.slice(-2);
-    await latestTables[0].request({ pageSize: 10, current: 1 });
+    const [nextInputTable] = await getLatestExchangeTables();
+    await nextInputTable.request({ pageSize: 10, current: 1 });
 
     expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenLastCalledWith(
       [{ id: '', version: '' }],
@@ -973,11 +961,8 @@ describe('ProcessForm component', () => {
 
     render(<ProcessForm {...defaultProps} activeTabKey='exchanges' showRules />);
 
-    await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
-    });
-
-    const outputRowClassName = proTableInstances[1].rowClassName;
+    const [, outputTable] = await getLatestExchangeTables();
+    const outputRowClassName = outputTable.rowClassName;
     expect(
       outputRowClassName({
         referenceToFlowDataSetId: 'flow-1',
@@ -1006,7 +991,7 @@ describe('ProcessForm component', () => {
       }),
     ).toBe('error-row');
 
-    const result = await proTableInstances[1].request({ pageSize: 10, current: 1 });
+    const result = await outputTable.request({ pageSize: 10, current: 1 });
 
     expect(mockGetProcessExchange).toHaveBeenCalledWith(
       expect.any(Array),
@@ -1040,11 +1025,8 @@ describe('ProcessForm component', () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
-    });
-
-    const result = await proTableInstances[1].request({ pageSize: 10, current: 1 });
+    const [, outputTable] = await getLatestExchangeTables();
+    const result = await outputTable.request({ pageSize: 10, current: 1 });
 
     expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
       [{ id: '', version: '' }],
