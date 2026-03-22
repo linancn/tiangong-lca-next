@@ -222,7 +222,7 @@ export async function getILCDClassification(
     if (lang === 'zh') {
       const getIds = getValues.includes('all')
         ? ['all']
-        : (result.data ?? []).map((item: ILCDCategoryNode) => item['@id']);
+        : result.data.map((item: ILCDCategoryNode) => item['@id']);
       const specialSourceZH = getSpecialClassificationSource(categoryType, 'zh');
       const resultZH = {
         data: filterClassificationNodes(
