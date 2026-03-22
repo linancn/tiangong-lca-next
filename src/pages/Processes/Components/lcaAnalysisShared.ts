@@ -23,7 +23,9 @@ export type ImpactOption = {
 };
 
 export type LcaProcessOption = {
+  selectionKey: string;
   value: string;
+  processId: string;
   name: string;
   version: string;
   label: string;
@@ -75,27 +77,41 @@ export function normalizeNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function buildLcaProcessOptions(processes: ProcessTable[]): LcaProcessOption[] {
+export function buildLcaProcessSelectionKey(processId: string, version: unknown): string {
+  const normalizedProcessId = String(processId ?? '').trim();
+  const normalizedVersion = String(version ?? '').trim();
+  return normalizedVersion ? `${normalizedProcessId}:${normalizedVersion}` : normalizedProcessId;
+}
+
+export function buildLcaProcessOptions(
+  processes: ProcessTable[],
+  config: { dedupeByProcessId?: boolean } = {},
+): LcaProcessOption[] {
+  const dedupeByProcessId = config.dedupeByProcessId ?? true;
   const seen = new Set<string>();
-  const options: LcaProcessOption[] = [];
+  const result: LcaProcessOption[] = [];
 
   processes.forEach((process) => {
     const processId = String(process.id ?? '').trim();
-    if (!processId || seen.has(processId)) {
+    const version = String(process.version ?? '').trim() || '-';
+    const selectionKey = buildLcaProcessSelectionKey(processId, process.version);
+    const dedupeKey = dedupeByProcessId ? processId : selectionKey;
+    if (!processId || seen.has(dedupeKey)) {
       return;
     }
-    seen.add(processId);
+    seen.add(dedupeKey);
     const processName = String(process.name ?? '').trim() || processId;
-    const version = String(process.version ?? '').trim() || '-';
-    options.push({
+    result.push({
+      selectionKey,
       value: processId,
+      processId,
       name: processName,
       version,
       label: `${processName} (${version})`,
     });
   });
 
-  return options;
+  return result;
 }
 
 export function formatPercent(value: number): string {

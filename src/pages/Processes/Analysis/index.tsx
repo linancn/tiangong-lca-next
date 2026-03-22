@@ -70,6 +70,7 @@ import { FormattedMessage, history, useIntl } from 'umi';
 import {
   LCA_SCOPE,
   buildLcaProcessOptions,
+  buildLcaProcessSelectionKey,
   buildMergedLcaRows,
   formatPercent,
   formatSourceLabel,
@@ -92,9 +93,7 @@ const G2_TOOLTIP_NAME_SELECTOR = '.g2-tooltip-list-item-name-label';
 const G2_TOOLTIP_VALUE_SELECTOR = '.g2-tooltip-list-item-value';
 
 function buildProcessRowKey(processRow: ProcessTable): string {
-  const processId = String(processRow.id ?? '').trim();
-  const processVersion = String(processRow.version ?? '').trim();
-  return processVersion ? `${processId}:${processVersion}` : processId;
+  return buildLcaProcessSelectionKey(processRow.id, processRow.version);
 }
 
 function mergeProcessRows(existingRows: ProcessTable[], nextRows: ProcessTable[]): ProcessTable[] {
@@ -111,18 +110,31 @@ function mergeProcessRows(existingRows: ProcessTable[], nextRows: ProcessTable[]
   return Array.from(merged.values());
 }
 
+function getProcessOptionSelectionKey(option: LcaProcessOption): string {
+  return option.selectionKey;
+}
+
 function prependCurrentProcessOption(
   currentOptions: LcaProcessOption[],
   optionMap: Map<string, LcaProcessOption>,
-  processId: string,
+  processSelectionKey: string,
 ): LcaProcessOption[] {
-  const normalizedProcessId = processId.trim();
-  if (!normalizedProcessId || currentOptions.some((item) => item.value === normalizedProcessId)) {
+  const normalizedProcessSelectionKey = processSelectionKey.trim();
+  if (
+    !normalizedProcessSelectionKey ||
+    currentOptions.some(
+      (item) => getProcessOptionSelectionKey(item) === normalizedProcessSelectionKey,
+    )
+  ) {
     return currentOptions;
   }
 
-  const selectedOption = optionMap.get(normalizedProcessId);
+  const selectedOption = optionMap.get(normalizedProcessSelectionKey);
   return selectedOption ? [selectedOption, ...currentOptions] : currentOptions;
+}
+
+function buildUniqueProcessIdList(processes: LcaProcessOption[]): string[] {
+  return Array.from(new Set(processes.map((item) => item.processId)));
 }
 
 type AntdThemeToken = ReturnType<typeof theme.useToken>['token'];
@@ -469,9 +481,12 @@ const LcaAnalysisPage = () => {
   const processOptionsRequestIdRef = useRef(0);
   const initializedProcessQueryKeyRef = useRef('');
   const processQueryKey = `${lang}:${selectedDataScope}:${appliedProcessSearchKeyword}`;
-  const processOptions = useMemo(() => buildLcaProcessOptions(processRows), [processRows]);
+  const processOptions = useMemo(
+    () => buildLcaProcessOptions(processRows, { dedupeByProcessId: false }),
+    [processRows],
+  );
   const knownProcessOptions = useMemo(
-    () => buildLcaProcessOptions(knownProcessRows),
+    () => buildLcaProcessOptions(knownProcessRows, { dedupeByProcessId: false }),
     [knownProcessRows],
   );
   const processPageCount = useMemo(
@@ -486,11 +501,15 @@ const LcaAnalysisPage = () => {
       : Math.min(processTotalCount, processCurrentPage * DEFAULT_ANALYSIS_PAGE_SIZE);
 
   const processOptionMap = useMemo(
-    () => new Map(knownProcessOptions.map((item) => [item.value, item])),
+    () => new Map(knownProcessOptions.map((item) => [getProcessOptionSelectionKey(item), item])),
+    [knownProcessOptions],
+  );
+  const processOptionByIdMap = useMemo(
+    () => new Map(knownProcessOptions.map((item) => [item.processId, item])),
     [knownProcessOptions],
   );
   const processRowMap = useMemo(
-    () => new Map(knownProcessRows.map((item) => [item.id, item])),
+    () => new Map(knownProcessRows.map((item) => [buildProcessRowKey(item), item])),
     [knownProcessRows],
   );
   const profileProcessOptions = useMemo(
@@ -628,7 +647,9 @@ const LcaAnalysisPage = () => {
     }
 
     setSelectedProfileProcessId((current) =>
-      current && processOptionMap.has(current) ? current : processOptions[0].value,
+      current && processOptionMap.has(current)
+        ? current
+        : getProcessOptionSelectionKey(processOptions[0]),
     );
 
     setSelectedCompareProcessIds((current) => {
@@ -638,7 +659,7 @@ const LcaAnalysisPage = () => {
       }
       return processOptions
         .slice(0, Math.max(1, Math.min(DEFAULT_COMPARE_SELECTION_LIMIT, processOptions.length)))
-        .map((item) => item.value);
+        .map(getProcessOptionSelectionKey);
     });
 
     setSelectedHotspotProcessIds((current) => {
@@ -648,7 +669,7 @@ const LcaAnalysisPage = () => {
       }
       return processOptions
         .slice(0, Math.max(1, Math.min(DEFAULT_COMPARE_SELECTION_LIMIT, processOptions.length)))
-        .map((item) => item.value);
+        .map(getProcessOptionSelectionKey);
     });
 
     setSelectedGroupedProcessIds((current) => {
@@ -658,10 +679,10 @@ const LcaAnalysisPage = () => {
       }
       return processOptions
         .slice(0, Math.max(1, Math.min(DEFAULT_COMPARE_SELECTION_LIMIT, processOptions.length)))
-        .map((item) => item.value);
+        .map(getProcessOptionSelectionKey);
     });
 
-    setSelectedPathProcessId(processOptions[0].value);
+    setSelectedPathProcessId(getProcessOptionSelectionKey(processOptions[0]));
   }, [processOptions, processOptionsLoading, processQueryKey]);
 
   useEffect(() => {
@@ -871,13 +892,14 @@ const LcaAnalysisPage = () => {
 
     const seededMeta = new Map<string, LcaContributionPathProcessMeta>();
     knownProcessOptions.forEach((item) => {
-      seededMeta.set(item.value, {
+      seededMeta.set(item.processId, {
         label: item.name,
         version: item.version,
       });
     });
-    if (pathResult.process.value) {
-      seededMeta.set(pathResult.process.value, {
+    const selectedPathProcessId = pathResult.process.processId;
+    if (selectedPathProcessId) {
+      seededMeta.set(selectedPathProcessId, {
         label: pathResult.process.name,
         version: pathResult.process.version,
       });
@@ -970,7 +992,7 @@ const LcaAnalysisPage = () => {
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
         mode: 'process_all_impacts',
-        process_id: selectedProcess.value,
+        process_id: selectedProcess.processId,
         process_version: selectedProcess.version,
         allow_fallback: false,
       });
@@ -1038,7 +1060,7 @@ const LcaAnalysisPage = () => {
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
         mode: 'processes_one_impact',
-        process_ids: selectedCompareProcesses.map((item) => item.value),
+        process_ids: buildUniqueProcessIdList(selectedCompareProcesses),
         impact_id: selectedCompareImpactId,
         allow_fallback: false,
       });
@@ -1086,7 +1108,7 @@ const LcaAnalysisPage = () => {
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
         mode: 'processes_one_impact',
-        process_ids: selectedHotspotProcesses.map((item) => item.value),
+        process_ids: buildUniqueProcessIdList(selectedHotspotProcesses),
         impact_id: selectedHotspotImpactId,
         allow_fallback: false,
       });
@@ -1206,7 +1228,7 @@ const LcaAnalysisPage = () => {
       const submitted = await submitLcaContributionPath({
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
-        process_id: pathProcess.value,
+        process_id: pathProcess.processId,
         process_version: pathProcess.version === '-' ? undefined : pathProcess.version,
         impact_id: selectedPathImpactId,
         amount: pathAmount,
@@ -1446,14 +1468,18 @@ const LcaAnalysisPage = () => {
   );
 
   const resolvePathProcessVersion = (processId: string) => {
-    if (pathResult?.process.value === processId && pathResult.process.version !== '-') {
+    if (
+      pathResult &&
+      pathResult.process.processId === processId &&
+      pathResult.process.version !== '-'
+    ) {
       return pathResult.process.version;
     }
     const resolvedVersion = String(pathProcessMetaMap.get(processId)?.version ?? '').trim();
     if (resolvedVersion && resolvedVersion !== '-') {
       return resolvedVersion;
     }
-    const optionVersion = String(processOptionMap.get(processId)?.version ?? '').trim();
+    const optionVersion = String(processOptionByIdMap.get(processId)?.version ?? '').trim();
     return optionVersion && optionVersion !== '-' ? optionVersion : '';
   };
 
@@ -2041,7 +2067,10 @@ const LcaAnalysisPage = () => {
                             defaultMessage: 'Process',
                           })}
                           value={selectedProfileProcessId || undefined}
-                          options={profileProcessOptions}
+                          options={profileProcessOptions.map((item) => ({
+                            ...item,
+                            value: getProcessOptionSelectionKey(item),
+                          }))}
                           disabled={processOptionsLoading || profileProcessOptions.length === 0}
                           optionFilterProp='label'
                           onChange={(value) => {

@@ -69,19 +69,25 @@ jest.mock('antd', () => {
 
 const processOptions = [
   {
+    selectionKey: 'process-1:01.00.000',
     value: 'process-1',
+    processId: 'process-1',
     name: 'Solar panel manufacturing',
     version: '01.00.000',
     label: 'Solar panel manufacturing (01.00.000)',
   },
   {
+    selectionKey: 'process-2:01.00.000',
     value: 'process-2',
+    processId: 'process-2',
     name: 'Battery pack assembly',
     version: '01.00.000',
     label: 'Battery pack assembly (01.00.000)',
   },
   {
+    selectionKey: 'process-3:02.00.000',
     value: 'process-3',
+    processId: 'process-3',
     name: 'Wind turbine maintenance',
     version: '02.00.000',
     label: 'Wind turbine maintenance (02.00.000)',
@@ -97,7 +103,7 @@ describe('LcaProcessSelectionTable', () => {
     render(
       <LcaProcessSelectionTable
         processOptions={[processOptions[0], processOptions[2]]}
-        selectedProcessIds={['process-2']}
+        selectedProcessIds={['process-2:01.00.000']}
         selectedProcessOptions={[processOptions[1]]}
         totalProcessCount={12}
         titleMessage={{
@@ -150,7 +156,7 @@ describe('LcaProcessSelectionTable', () => {
     render(
       <LcaProcessSelectionTable
         processOptions={processOptions}
-        selectedProcessIds={['process-2']}
+        selectedProcessIds={['process-2:01.00.000']}
         selectedProcessOptions={processOptions}
         titleMessage={{
           id: 'title',
@@ -176,15 +182,15 @@ describe('LcaProcessSelectionTable', () => {
     expect(screen.queryByText('Battery pack assembly')).not.toBeInTheDocument();
     expect(screen.getByText('Wind turbine maintenance')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'select-process-1' }));
-    expect(onSelectionChange).toHaveBeenCalledWith(['process-1']);
+    fireEvent.click(screen.getByRole('button', { name: 'select-process-1:01.00.000' }));
+    expect(onSelectionChange).toHaveBeenCalledWith(['process-1:01.00.000']);
   });
 
   it('defaults selectedProcessOptions to an empty array when the prop is omitted', () => {
     render(
       <LcaProcessSelectionTable
         processOptions={processOptions}
-        selectedProcessIds={['process-2']}
+        selectedProcessIds={['process-2:01.00.000']}
         titleMessage={{
           id: 'title',
           defaultMessage: 'Process selection',

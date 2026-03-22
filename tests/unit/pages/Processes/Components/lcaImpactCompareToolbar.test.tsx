@@ -135,9 +135,30 @@ describe('lcaImpactCompareToolbar', () => {
   it('builds a sorted compare model with absolute shares, neutral directions, and name tie-breaks', () => {
     const model = buildLcaImpactCompareModel(
       [
-        { value: 'p-1', name: 'Process B', version: '1.0', label: 'Process B (1.0)' },
-        { value: 'p-2', name: 'Process A', version: '1.0', label: 'Process A (1.0)' },
-        { value: 'p-3', name: 'Process C', version: '1.0', label: 'Process C (1.0)' },
+        {
+          selectionKey: 'p-1:1.0',
+          value: 'p-1',
+          processId: 'p-1',
+          name: 'Process B',
+          version: '1.0',
+          label: 'Process B (1.0)',
+        },
+        {
+          selectionKey: 'p-2:1.0',
+          value: 'p-2',
+          processId: 'p-2',
+          name: 'Process A',
+          version: '1.0',
+          label: 'Process A (1.0)',
+        },
+        {
+          selectionKey: 'p-3:1.0',
+          value: 'p-3',
+          processId: 'p-3',
+          name: 'Process C',
+          version: '1.0',
+          label: 'Process C (1.0)',
+        },
       ],
       {
         'p-1': 5,
@@ -159,8 +180,22 @@ describe('lcaImpactCompareToolbar', () => {
   it('builds a zeroed compare model when no process has meaningful impact values', () => {
     const model = buildLcaImpactCompareModel(
       [
-        { value: 'p-1', name: 'Process A', version: '1.0', label: 'Process A (1.0)' },
-        { value: 'p-2', name: 'Process B', version: '1.0', label: 'Process B (1.0)' },
+        {
+          selectionKey: 'p-1:1.0',
+          value: 'p-1',
+          processId: 'p-1',
+          name: 'Process A',
+          version: '1.0',
+          label: 'Process A (1.0)',
+        },
+        {
+          selectionKey: 'p-2:1.0',
+          value: 'p-2',
+          processId: 'p-2',
+          name: 'Process B',
+          version: '1.0',
+          label: 'Process B (1.0)',
+        },
       ],
       {
         'p-1': 0,

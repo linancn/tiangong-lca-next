@@ -222,19 +222,25 @@ describe('lcaImpactHotspotToolbar', () => {
     const model = buildSelectedProcessHotspotModel(
       [
         {
+          selectionKey: 'p-1:01.00.000',
           value: 'p-1',
+          processId: 'p-1',
           name: 'Process A',
           version: '01.00.000',
           label: 'Process A (01.00.000)',
         },
         {
+          selectionKey: 'p-2:02.00.000',
           value: 'p-2',
+          processId: 'p-2',
           name: 'Process B',
           version: '02.00.000',
           label: 'Process B (02.00.000)',
         },
         {
+          selectionKey: 'p-3:01.00.000',
           value: 'p-3',
+          processId: 'p-3',
           name: 'Process C',
           version: '01.00.000',
           label: 'Process C (01.00.000)',
@@ -268,8 +274,22 @@ describe('lcaImpactHotspotToolbar', () => {
     });
     const selectedModel = buildSelectedProcessHotspotModel(
       [
-        { value: 'p-2', name: 'Process B', version: '02.00.000', label: 'Process B (02.00.000)' },
-        { value: 'p-1', name: 'Process A', version: '01.00.000', label: 'Process A (01.00.000)' },
+        {
+          selectionKey: 'p-2:02.00.000',
+          value: 'p-2',
+          processId: 'p-2',
+          name: 'Process B',
+          version: '02.00.000',
+          label: 'Process B (02.00.000)',
+        },
+        {
+          selectionKey: 'p-1:01.00.000',
+          value: 'p-1',
+          processId: 'p-1',
+          name: 'Process A',
+          version: '01.00.000',
+          label: 'Process A (01.00.000)',
+        },
       ],
       {
         'p-1': 0,
