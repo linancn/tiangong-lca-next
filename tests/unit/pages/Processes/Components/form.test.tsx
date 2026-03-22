@@ -404,6 +404,16 @@ describe('ProcessForm component', () => {
     mockSourceSelectForm.mockClear();
     mockGetLangText.mockReset();
     mockGetLangText.mockReturnValue('text');
+    mockGetProcessExchange.mockReset();
+    mockGetProcessExchange.mockResolvedValue({ error: null, data: [] });
+    mockGetUnitData.mockReset();
+    mockGetUnitData.mockResolvedValue([]);
+    mockGetFlowStateCodeByIdsAndVersions.mockReset();
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValue({ error: null, data: [] });
+    mockLCIAResultCalculation.mockReset();
+    mockLCIAResultCalculation.mockResolvedValue([{ key: '1', meanAmount: 12 }]);
+    mockGetReferenceQuantityFromMethod.mockReset();
+    mockGetReferenceQuantityFromMethod.mockResolvedValue();
   });
 
   it('marks rows with issues when rules are enabled', async () => {
@@ -721,7 +731,7 @@ describe('ProcessForm component', () => {
       },
     ];
 
-    render(
+    const firstRender = render(
       <ProcessForm
         {...defaultProps}
         activeTabKey='exchanges'
@@ -738,11 +748,13 @@ describe('ProcessForm component', () => {
     );
     expect(result.data[0].classification).toBe('');
 
+    firstRender.unmount();
+    proTableInstances.length = 0;
+
     mockGetProcessExchange.mockResolvedValueOnce({ data: [], total: 0 });
     mockGetUnitData.mockResolvedValueOnce(undefined);
     mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({ error: null, data: [] });
 
-    const previousTableCount = proTableInstances.length;
     const { unmount } = render(
       <ProcessForm
         {...defaultProps}
@@ -750,10 +762,6 @@ describe('ProcessForm component', () => {
         exchangeDataSource={[{ ...sampleExchange, referenceToFlowDataSet: undefined }]}
       />,
     );
-
-    await waitFor(() => {
-      expect(proTableInstances.length).toBeGreaterThan(previousTableCount);
-    });
 
     const [nextInputTable] = await getLatestExchangeTables();
     await nextInputTable.request({ pageSize: 10, current: 1 });

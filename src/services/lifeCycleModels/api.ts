@@ -8,6 +8,7 @@ import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/ser
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getILCDClassification } from '../classifications/api';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
@@ -15,7 +16,6 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getILCDClassification } from '../ilcd/api';
 import { getProcessDetailByIdsAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import type {

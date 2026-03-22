@@ -3,6 +3,7 @@ import { FunctionRegion } from '@supabase/supabase-js';
 import { message } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getLocale } from 'umi';
+import { getILCDClassification, getILCDFlowCategorizationAll } from '../classifications/api';
 import { genFlowName } from '../flows/util';
 import {
   classificationToString,
@@ -12,11 +13,7 @@ import {
   jsonToList,
   normalizeLangPayloadBeforeSave,
 } from '../general/util';
-import {
-  getILCDClassification,
-  getILCDFlowCategorizationAll,
-  getILCDLocationByValues,
-} from '../ilcd/api';
+import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
 
 type InvokeErrorBody = {

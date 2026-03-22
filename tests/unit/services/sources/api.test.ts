@@ -65,7 +65,7 @@ jest.mock('@/services/general/util', () => ({
   jsonToList: jest.fn(),
 }));
 
-jest.mock('@/services/ilcd/cache', () => ({
+jest.mock('@/services/classifications/cache', () => ({
   getCachedClassificationData: jest.fn(),
   ilcdCache: {
     get: jest.fn(),
@@ -88,7 +88,7 @@ jest.mock('@/services/sources/util', () => ({
 const { supabase } = jest.requireMock('@/services/supabase');
 const { classificationToString, genClassificationZH, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
-const { getCachedClassificationData } = jest.requireMock('@/services/ilcd/cache');
+const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
 const { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } =
   jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');

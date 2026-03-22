@@ -308,8 +308,8 @@ describe('SelectReviewer component', () => {
 
     await waitFor(() => expect(mockGetReviewerIdsByReviewId).toHaveBeenCalledWith('review-1'));
     await waitFor(() => expect(mockGetReviewsDetail).toHaveBeenCalledWith('review-1'));
-    await waitFor(() => expect(screen.queryByText('user1@example.com')).not.toBeInTheDocument());
-    expect(screen.getByText('user2@example.com')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('user2@example.com')).toBeInTheDocument());
+    expect(screen.queryByText('user1@example.com')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Temporary Save' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText('select-row'));

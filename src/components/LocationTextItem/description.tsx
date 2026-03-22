@@ -1,4 +1,4 @@
-import { getILCDLocationByValue } from '@/services/ilcd/api';
+import { getILCDLocationByValue } from '@/services/locations/api';
 import { Descriptions, Spin } from 'antd';
 import { CSSProperties, FC, ReactNode, useEffect, useState } from 'react';
 type Props = {

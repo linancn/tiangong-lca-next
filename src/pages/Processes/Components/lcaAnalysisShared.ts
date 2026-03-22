@@ -1,5 +1,5 @@
 import { getLangJson } from '@/services/general/util';
-import type { LCIAResultTable } from '@/services/lciaMethods/data';
+import type { LCIAResultTable, LciaMethodListData } from '@/services/lciaMethods/data';
 import { cacheAndDecompressMethod, getDecompressedMethod } from '@/services/lciaMethods/util';
 import type { ProcessTable } from '@/services/processes/data';
 
@@ -128,7 +128,7 @@ function readTrimmedString(value: unknown): string {
 }
 
 async function getLciaMethodListEntries(): Promise<LciaMethodListEntry[]> {
-  let listData = await getDecompressedMethod('list.json');
+  let listData = await getDecompressedMethod<LciaMethodListData>('list.json');
   const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
 
   if (!listData || needsUpdate) {
@@ -136,7 +136,7 @@ async function getLciaMethodListEntries(): Promise<LciaMethodListEntry[]> {
     if (!cached) {
       throw new Error('load_lcia_method_list_failed');
     }
-    listData = await getDecompressedMethod('list.json');
+    listData = await getDecompressedMethod<LciaMethodListData>('list.json');
   }
 
   return Array.isArray(listData?.files)

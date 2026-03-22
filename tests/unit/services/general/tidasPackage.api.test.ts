@@ -47,10 +47,14 @@ jest.mock('umi', () => ({
   getLocale: () => mockGetLocale(),
 }));
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/classifications/api', () => ({
   __esModule: true,
   getILCDClassification: jest.fn(),
   getILCDFlowCategorizationAll: jest.fn(),
+}));
+
+jest.mock('@/services/locations/api', () => ({
+  __esModule: true,
   getILCDLocationByValues: jest.fn(),
 }));
 

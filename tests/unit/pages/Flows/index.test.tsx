@@ -74,7 +74,7 @@ jest.mock('@/services/flows/api', () => ({
   getFlowTablePgroongaSearch: (...args: any[]) => mockGetFlowTablePgroongaSearch(...args),
 }));
 
-jest.mock('@/services/ilcd/cache', () => ({
+jest.mock('@/services/classifications/cache', () => ({
   __esModule: true,
   getCachedFlowCategorizationAll: (...args: any[]) => mockGetCachedFlowCategorizationAll(...args),
 }));
