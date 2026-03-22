@@ -37,7 +37,7 @@ const processSelectionColumns: ColumnsType<LcaProcessOption> = [
 ];
 
 function getProcessSelectionKey(item: LcaProcessOption): string {
-  return String(item.selectionKey ?? item.value);
+  return item.selectionKey;
 }
 
 const LcaProcessSelectionTable = ({

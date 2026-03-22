@@ -23,9 +23,9 @@ export type ImpactOption = {
 };
 
 export type LcaProcessOption = {
-  selectionKey?: string;
+  selectionKey: string;
   value: string;
-  processId?: string;
+  processId: string;
   name: string;
   version: string;
   label: string;

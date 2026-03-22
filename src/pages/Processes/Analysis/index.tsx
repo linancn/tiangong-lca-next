@@ -111,10 +111,7 @@ function mergeProcessRows(existingRows: ProcessTable[], nextRows: ProcessTable[]
 }
 
 function getProcessOptionSelectionKey(option: LcaProcessOption): string {
-  if (option.selectionKey) {
-    return option.selectionKey;
-  }
-  return buildLcaProcessSelectionKey(option.processId ?? option.value, option.version);
+  return option.selectionKey;
 }
 
 function prependCurrentProcessOption(
@@ -137,9 +134,7 @@ function prependCurrentProcessOption(
 }
 
 function buildUniqueProcessIdList(processes: LcaProcessOption[]): string[] {
-  return Array.from(
-    new Set(processes.map((item) => String(item.processId ?? item.value).trim()).filter(Boolean)),
-  );
+  return Array.from(new Set(processes.map((item) => item.processId)));
 }
 
 type AntdThemeToken = ReturnType<typeof theme.useToken>['token'];
@@ -510,10 +505,7 @@ const LcaAnalysisPage = () => {
     [knownProcessOptions],
   );
   const processOptionByIdMap = useMemo(
-    () =>
-      new Map(
-        knownProcessOptions.map((item) => [String(item.processId ?? item.value).trim(), item]),
-      ),
+    () => new Map(knownProcessOptions.map((item) => [item.processId, item])),
     [knownProcessOptions],
   );
   const processRowMap = useMemo(
@@ -900,14 +892,12 @@ const LcaAnalysisPage = () => {
 
     const seededMeta = new Map<string, LcaContributionPathProcessMeta>();
     knownProcessOptions.forEach((item) => {
-      seededMeta.set(String(item.processId ?? item.value).trim(), {
+      seededMeta.set(item.processId, {
         label: item.name,
         version: item.version,
       });
     });
-    const selectedPathProcessId = String(
-      pathResult.process.processId ?? pathResult.process.value,
-    ).trim();
+    const selectedPathProcessId = pathResult.process.processId;
     if (selectedPathProcessId) {
       seededMeta.set(selectedPathProcessId, {
         label: pathResult.process.name,
@@ -1002,7 +992,7 @@ const LcaAnalysisPage = () => {
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
         mode: 'process_all_impacts',
-        process_id: selectedProcess.processId ?? selectedProcess.value,
+        process_id: selectedProcess.processId,
         process_version: selectedProcess.version,
         allow_fallback: false,
       });
@@ -1238,7 +1228,7 @@ const LcaAnalysisPage = () => {
       const submitted = await submitLcaContributionPath({
         scope: LCA_SCOPE,
         data_scope: selectedDataScope,
-        process_id: pathProcess.processId ?? pathProcess.value,
+        process_id: pathProcess.processId,
         process_version: pathProcess.version === '-' ? undefined : pathProcess.version,
         impact_id: selectedPathImpactId,
         amount: pathAmount,
@@ -1480,7 +1470,7 @@ const LcaAnalysisPage = () => {
   const resolvePathProcessVersion = (processId: string) => {
     if (
       pathResult &&
-      String(pathResult.process.processId ?? pathResult.process.value).trim() === processId &&
+      pathResult.process.processId === processId &&
       pathResult.process.version !== '-'
     ) {
       return pathResult.process.version;
