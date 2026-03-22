@@ -343,4 +343,25 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
       pointerEvents: 'auto',
     });
   });
+
+  it('respects explicit selection-box overrides when transform handles are enabled', () => {
+    const { Selection, __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(
+      <X6GraphComponent
+        transformOptions={{ resizing: true }}
+        selectOptions={{ showNodeSelectionBox: true, pointerEvents: 'none' }}
+      />,
+    );
+
+    const instance = __graphInstances[0];
+    const selectionPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Selection,
+    )?.[0];
+
+    expect(selectionPlugin.options).toMatchObject({
+      showNodeSelectionBox: true,
+      pointerEvents: 'none',
+    });
+  });
 });
