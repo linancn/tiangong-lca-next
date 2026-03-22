@@ -31,10 +31,12 @@ describe('ClassificationCacheMonitor', () => {
 
     expect(container.firstChild).toBeNull();
     expect(mockUseResourceCacheMonitor).toHaveBeenCalledWith({
-      version: '1.2.0',
+      version: '1.3.0',
       files: [
         'CPCClassification.min.json.gz',
         'CPCClassification_zh.min.json.gz',
+        'ISICClassification.min.json.gz',
+        'ISICClassification_zh.min.json.gz',
         'ILCDClassification.min.json.gz',
         'ILCDClassification_zh.min.json.gz',
         'ILCDFlowCategorization.min.json.gz',

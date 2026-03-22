@@ -3,14 +3,7 @@
  * Path: src/services/classifications/api.ts
  */
 
-const mockGetISICClassification = jest.fn();
-const mockGetISICClassificationZH = jest.fn();
 const mockGetCachedOrFetchClassificationFileData = jest.fn();
-
-jest.mock('@/services/processes/classification/api', () => ({
-  getISICClassification: (...args: any[]) => mockGetISICClassification(...args),
-  getISICClassificationZH: (...args: any[]) => mockGetISICClassificationZH(...args),
-}));
 
 jest.mock('@/services/classifications/util', () => {
   const actual = jest.requireActual('@/services/classifications/util');
@@ -33,32 +26,62 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
     jest.clearAllMocks();
   });
 
-  it('uses ISIC classifications for Process in English', async () => {
-    mockGetISICClassification.mockReturnValue({
-      data: [{ '@id': 'proc-1', '@name': 'Process Root' }],
+  it('uses ISIC gzip classifications for Process in English', async () => {
+    mockGetCachedOrFetchClassificationFileData.mockResolvedValueOnce({
+      CategorySystem: {
+        categories: [
+          {
+            '@dataType': 'Process',
+            category: [{ '@id': 'proc-1', '@name': 'Process Root' }],
+          },
+        ],
+      },
     });
 
     const result = await getILCDClassification('Process', 'en', ['all']);
 
-    expect(mockGetISICClassification).toHaveBeenCalledWith(['all']);
+    expect(mockGetCachedOrFetchClassificationFileData).toHaveBeenCalledWith(
+      'ISICClassification.min.json.gz',
+    );
     expect(result).toEqual({
       data: [{ id: 'proc-1', value: 'Process Root', label: 'Process Root', children: [] }],
       success: true,
     });
   });
 
-  it('uses ISIC classifications for Process-family zh requests and maps zh labels by id', async () => {
-    mockGetISICClassification.mockReturnValue({
-      data: [{ '@id': 'proc-1', '@name': 'Process Root' }],
-    });
-    mockGetISICClassificationZH.mockReturnValue({
-      data: [{ '@id': 'proc-1', '@name': '过程根' }],
-    });
+  it('uses ISIC gzip classifications for Process-family zh requests and maps zh labels by id', async () => {
+    mockGetCachedOrFetchClassificationFileData
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Process',
+              category: [{ '@id': 'proc-1', '@name': 'Process Root' }],
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Process',
+              category: [{ '@id': 'proc-1', '@name': '过程根' }],
+            },
+          ],
+        },
+      });
 
     const result = await getILCDClassification('LifeCycleModel', 'zh', ['proc-1']);
 
-    expect(mockGetISICClassification).toHaveBeenCalledWith(['proc-1']);
-    expect(mockGetISICClassificationZH).toHaveBeenCalledWith(['proc-1']);
+    expect(mockGetCachedOrFetchClassificationFileData).toHaveBeenNthCalledWith(
+      1,
+      'ISICClassification.min.json.gz',
+    );
+    expect(mockGetCachedOrFetchClassificationFileData).toHaveBeenNthCalledWith(
+      2,
+      'ISICClassification_zh.min.json.gz',
+    );
     expect(result).toEqual({
       data: [{ id: 'proc-1', value: 'Process Root', label: '过程根', children: [] }],
       success: true,
@@ -291,15 +314,15 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
     });
   });
 
-  it('uses an empty id list for zh Process requests when the English classification payload is missing', async () => {
-    mockGetISICClassification.mockReturnValue(undefined);
-    mockGetISICClassificationZH.mockReturnValue({ data: [] });
+  it('returns an empty failure payload when ISIC classification file data cannot be loaded', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetCachedOrFetchClassificationFileData.mockResolvedValueOnce(null);
 
     const result = await getILCDClassification('Process', 'zh', ['proc-1']);
 
-    expect(mockGetISICClassification).toHaveBeenCalledWith(['proc-1']);
-    expect(mockGetISICClassificationZH).toHaveBeenCalledWith([]);
-    expect(result).toEqual({ data: [], success: true });
+    expect(result).toEqual({ data: [], success: false });
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('returns an empty failure payload when classification file data cannot be loaded', async () => {

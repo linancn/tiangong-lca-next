@@ -7,10 +7,12 @@ import {
   type ClassificationCacheManifest,
 } from '@/services/classifications/util';
 
-const CLASSIFICATION_CACHE_VERSION = '1.2.0';
+const CLASSIFICATION_CACHE_VERSION = '1.3.0';
 const CLASSIFICATION_GZ_FILES = [
   'CPCClassification.min.json.gz',
   'CPCClassification_zh.min.json.gz',
+  'ISICClassification.min.json.gz',
+  'ISICClassification_zh.min.json.gz',
   'ILCDClassification.min.json.gz',
   'ILCDClassification_zh.min.json.gz',
   'ILCDFlowCategorization.min.json.gz',

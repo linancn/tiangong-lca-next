@@ -1,5 +1,4 @@
 import type { Classification } from '../general/data';
-import { getISICClassification, getISICClassificationZH } from '../processes/classification/api';
 import {
   categoryTypeOptions,
   genClass,
@@ -40,6 +39,11 @@ const ILCD_CLASSIFICATION_FILES = {
 const CPC_CLASSIFICATION_FILES = {
   en: 'CPCClassification.min.json.gz',
   zh: 'CPCClassification_zh.min.json.gz',
+} as const;
+
+const ISIC_CLASSIFICATION_FILES = {
+  en: 'ISICClassification.min.json.gz',
+  zh: 'ISICClassification_zh.min.json.gz',
 } as const;
 
 function normalizeFlowCategorizationNodes(
@@ -170,15 +174,32 @@ async function getClassificationNodesByType(
   return normalizeFlowCategorizationNodes(group?.category);
 }
 
+function getSpecialClassificationSource(
+  categoryType: string,
+  lang: 'en' | 'zh',
+): { fileName: string; dataType: string } | null {
+  if (categoryType === 'Flow') {
+    return {
+      fileName: CPC_CLASSIFICATION_FILES[lang],
+      dataType: 'Flow',
+    };
+  }
+
+  if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
+    return {
+      fileName: ISIC_CLASSIFICATION_FILES[lang],
+      dataType: 'Process',
+    };
+  }
+
+  return null;
+}
+
 async function getILCDClassificationNodesByType(
   categoryType: string,
   lang: 'en' | 'zh',
 ): Promise<ILCDCategoryNode[]> {
   return getClassificationNodesByType(ILCD_CLASSIFICATION_FILES[lang], categoryType);
-}
-
-async function getCPCClassificationNodes(lang: 'en' | 'zh'): Promise<ILCDCategoryNode[]> {
-  return getClassificationNodesByType(CPC_CLASSIFICATION_FILES[lang], 'Flow');
 }
 
 export async function getILCDClassification(
@@ -187,50 +208,36 @@ export async function getILCDClassification(
   getValues: string[],
 ): Promise<{ data: Classification[]; success: boolean }> {
   try {
-    let result = null;
-
-    if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
-      result = getISICClassification(getValues);
-    } else if (categoryType === 'Flow') {
-      result = {
-        data: filterClassificationNodes(await getCPCClassificationNodes('en'), getValues),
-      };
-    } else {
-      result = {
-        data: filterClassificationNodes(
-          await getILCDClassificationNodesByType(categoryType, 'en'),
-          getValues,
-        ),
-      };
-    }
+    const specialSource = getSpecialClassificationSource(categoryType, 'en');
+    const result = {
+      data: filterClassificationNodes(
+        specialSource
+          ? await getClassificationNodesByType(specialSource.fileName, specialSource.dataType)
+          : await getILCDClassificationNodesByType(categoryType, 'en'),
+        getValues,
+      ),
+    };
 
     let newDatas: Classification[] = [];
-    let resultZH = null;
     if (lang === 'zh') {
-      let getIds: string[] = [];
-      if (getValues.includes('all')) {
-        getIds = ['all'];
-      } else {
-        getIds = (result?.data ?? []).map((item: ILCDCategoryNode) => item['@id']);
-      }
-      if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
-        resultZH = getISICClassificationZH(getIds);
-      } else if (categoryType === 'Flow') {
-        resultZH = {
-          data: filterClassificationNodes(await getCPCClassificationNodes('zh'), getIds),
-        };
-      } else {
-        const categoryTypeZH = categoryTypeOptions.find((item) => item.en === categoryType)?.zh;
-        resultZH = {
-          data: filterClassificationNodes(
-            await getILCDClassificationNodesByType(categoryTypeZH ?? categoryType, 'zh'),
-            getIds,
-          ),
-        };
-      }
-      newDatas = genClassZH(result?.data, resultZH?.data);
+      const getIds = getValues.includes('all')
+        ? ['all']
+        : (result.data ?? []).map((item: ILCDCategoryNode) => item['@id']);
+      const specialSourceZH = getSpecialClassificationSource(categoryType, 'zh');
+      const resultZH = {
+        data: filterClassificationNodes(
+          specialSourceZH
+            ? await getClassificationNodesByType(specialSourceZH.fileName, specialSourceZH.dataType)
+            : await getILCDClassificationNodesByType(
+                categoryTypeOptions.find((item) => item.en === categoryType)?.zh ?? categoryType,
+                'zh',
+              ),
+          getIds,
+        ),
+      };
+      newDatas = genClassZH(result.data, resultZH.data);
     } else {
-      newDatas = genClass(result?.data);
+      newDatas = genClass(result.data);
     }
 
     return Promise.resolve({
