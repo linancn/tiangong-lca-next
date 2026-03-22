@@ -36,6 +36,10 @@ const processSelectionColumns: ColumnsType<LcaProcessOption> = [
   },
 ];
 
+function getProcessSelectionKey(item: LcaProcessOption): string {
+  return String(item.selectionKey ?? item.value);
+}
+
 const LcaProcessSelectionTable = ({
   processOptions,
   selectedProcessIds,
@@ -50,12 +54,13 @@ const LcaProcessSelectionTable = ({
   const intl = useIntl();
   const [selectionViewMode, setSelectionViewMode] = useState<ProcessSelectionViewMode>('all');
   const [filterKeyword, setFilterKeyword] = useState('');
-  const selectedProcessIdSet = useMemo(
+  const selectedProcessKeySet = useMemo(
     () => new Set(selectedProcessIds.map((item) => String(item))),
     [selectedProcessIds],
   );
   const selectedProcessOptionMap = useMemo(
-    () => new Map(selectedProcessOptions.map((item) => [String(item.value), item] as const)),
+    () =>
+      new Map(selectedProcessOptions.map((item) => [getProcessSelectionKey(item), item] as const)),
     [selectedProcessOptions],
   );
   const normalizedFilterKeyword = filterKeyword.trim().toLowerCase();
@@ -71,7 +76,7 @@ const LcaProcessSelectionTable = ({
   const visibleProcessOptions = useMemo(
     () =>
       baseProcessOptions.filter((item) => {
-        const isSelected = selectedProcessIdSet.has(item.value);
+        const isSelected = selectedProcessKeySet.has(getProcessSelectionKey(item));
         const matchesSelectionView =
           selectionViewMode === 'all' ||
           (selectionViewMode === 'selected' ? isSelected : !isSelected);
@@ -86,7 +91,7 @@ const LcaProcessSelectionTable = ({
         const haystack = `${item.name} ${item.version} ${item.label}`.toLowerCase();
         return haystack.includes(normalizedFilterKeyword);
       }),
-    [baseProcessOptions, normalizedFilterKeyword, selectedProcessIdSet, selectionViewMode],
+    [baseProcessOptions, normalizedFilterKeyword, selectedProcessKeySet, selectionViewMode],
   );
 
   return (
@@ -161,7 +166,7 @@ const LcaProcessSelectionTable = ({
         />
       </Typography.Text>
       <Table<LcaProcessOption>
-        rowKey='value'
+        rowKey={getProcessSelectionKey}
         size='small'
         columns={processSelectionColumns}
         dataSource={visibleProcessOptions}

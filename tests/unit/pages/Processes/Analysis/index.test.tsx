@@ -140,13 +140,15 @@ jest.mock('@/pages/Processes/Components/lcaProcessSelectionTable', () => ({
     onSelectionChange,
     titleMessage,
   }: {
-    processOptions?: Array<{ value?: string }>;
+    processOptions?: Array<{ value?: string; selectionKey?: string }>;
     selectedProcessIds?: string[];
     selectionType?: 'checkbox' | 'radio';
     onSelectionChange?: (selectedProcessIds: string[]) => void;
     titleMessage?: { defaultMessage?: string };
   }) => {
-    const allIds = processOptions.map((item) => String(item?.value ?? '')).filter(Boolean);
+    const allIds = processOptions
+      .map((item) => String(item?.selectionKey ?? item?.value ?? ''))
+      .filter(Boolean);
     const primarySelection = selectionType === 'radio' ? allIds.slice(0, 1) : allIds;
     const alternateSelection =
       selectionType === 'radio'
@@ -1189,6 +1191,72 @@ describe('LcaAnalysisPage', () => {
     expect(await screen.findByText('Showing 1-50 on page 1 of 3.')).toBeInTheDocument();
   });
 
+  it('preserves the original process version selection after paging to a different version of the same id', async () => {
+    listProcessesForLcaAnalysis.mockImplementation(async (params: { current?: number }) => ({
+      data:
+        params.current === 2
+          ? [
+              buildProcess('process-shared', 'Paged process v2', '02.00.000'),
+              buildProcess('process-3', 'Battery pack assembly', '01.00.000'),
+            ]
+          : [
+              buildProcess('process-shared', 'Paged process v1', '01.00.000'),
+              buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+            ],
+      success: true,
+      total: 120,
+    }));
+
+    render(<LcaAnalysisPage />);
+
+    expect(
+      await screen.findByText('120 process rows are currently available for analysis.'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        {
+          current: 2,
+          pageSize: 50,
+        },
+        'en',
+        'current_user',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+
+    fireEvent.click(screen.getByTestId('tab-path'));
+    const pathPanel = screen.getByTestId('tab-panel-path');
+    expect(within(pathPanel).getByTestId('mock-selected-process-ids')).toHaveTextContent(
+      'process-shared:01.00.000',
+    );
+
+    fireEvent.click(within(pathPanel).getByRole('button', { name: 'Run contribution path' }));
+
+    await waitFor(() =>
+      expect(submitLcaContributionPath).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        data_scope: 'current_user',
+        process_id: 'process-shared',
+        process_version: '01.00.000',
+        impact_id: 'impact-1',
+        amount: 1,
+        options: {
+          max_depth: 4,
+          top_k_children: 5,
+          cutoff_share: 0.01,
+          max_nodes: 200,
+        },
+      }),
+    );
+  });
+
   it('switches data scope and uses the selected scope for option loading and hotspot queries', async () => {
     render(<LcaAnalysisPage />);
 
@@ -1732,7 +1800,7 @@ describe('LcaAnalysisPage', () => {
 
     const pathPanel = screen.getByTestId('tab-panel-path');
     expect(within(pathPanel).getByTestId('mock-selected-process-ids')).toHaveTextContent(
-      'process-1',
+      'process-1:01.00.000',
     );
 
     fireEvent.click(
@@ -2659,7 +2727,7 @@ describe('LcaAnalysisPage', () => {
 
     const profilePanel = screen.getByTestId('tab-panel-profile');
     fireEvent.change(within(profilePanel).getByLabelText('Process'), {
-      target: { value: 'process-2' },
+      target: { value: 'process-2:02.00.000' },
     });
     expect(screen.queryByText('snapshot-profile')).not.toBeInTheDocument();
   });

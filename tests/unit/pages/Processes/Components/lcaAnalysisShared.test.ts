@@ -15,6 +15,7 @@ jest.mock('@/services/lciaMethods/util', () => ({
 
 import {
   buildLcaProcessOptions,
+  buildLcaProcessSelectionKey,
   buildMergedLcaRows,
   formatPercent,
   formatSourceLabel,
@@ -93,6 +94,9 @@ describe('lcaAnalysisShared', () => {
   });
 
   it('builds process options with duplicate filtering and name/version fallbacks', () => {
+    expect(buildLcaProcessSelectionKey('process-1', '02.00.000')).toBe('process-1:02.00.000');
+    expect(buildLcaProcessSelectionKey('process-1', '')).toBe('process-1');
+
     expect(
       buildLcaProcessOptions([
         { id: 'process-1', name: undefined, version: undefined, key: 'p1' } as any,
@@ -103,16 +107,47 @@ describe('lcaAnalysisShared', () => {
       ]),
     ).toEqual([
       {
+        selectionKey: 'process-1',
         value: 'process-1',
+        processId: 'process-1',
         name: 'process-1',
         version: '-',
         label: 'process-1 (-)',
       },
       {
+        selectionKey: 'process-2:03.00.000',
         value: 'process-2',
+        processId: 'process-2',
         name: 'Named',
         version: '03.00.000',
         label: 'Named (03.00.000)',
+      },
+    ]);
+
+    expect(
+      buildLcaProcessOptions(
+        [
+          { id: 'process-1', name: 'first', version: '01.00.000', key: 'p1' } as any,
+          { id: 'process-1', name: 'second', version: '02.00.000', key: 'p1-dup' } as any,
+        ],
+        { dedupeByProcessId: false },
+      ),
+    ).toEqual([
+      {
+        selectionKey: 'process-1:01.00.000',
+        value: 'process-1',
+        processId: 'process-1',
+        name: 'first',
+        version: '01.00.000',
+        label: 'first (01.00.000)',
+      },
+      {
+        selectionKey: 'process-1:02.00.000',
+        value: 'process-1',
+        processId: 'process-1',
+        name: 'second',
+        version: '02.00.000',
+        label: 'second (02.00.000)',
       },
     ]);
   });
