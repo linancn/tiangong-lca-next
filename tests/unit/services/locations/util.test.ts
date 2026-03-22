@@ -97,7 +97,7 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
     mockInitIndexedDbStore.mockResolvedValue('db');
 
     await expect(cacheAndDecompressLocationFile('file.json.gz')).resolves.toBe(true);
-    expect(global.fetch).toHaveBeenCalledWith('/location/file.json.gz');
+    expect(global.fetch).toHaveBeenCalledWith('/locations/file.json.gz');
     expect(mockPutCachedJsonEntry).toHaveBeenCalledWith('db', 'location_files', 'file.json.gz', {
       ok: true,
     });
