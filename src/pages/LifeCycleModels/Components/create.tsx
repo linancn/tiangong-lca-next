@@ -166,6 +166,8 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
                 <X6GraphComponent
                   selectOptions={{
                     enabled: true,
+                    showNodeSelectionBox: true,
+                    pointerEvents: 'none',
                   }}
                   zoomable
                   pannable
