@@ -348,7 +348,7 @@ describe('ContactSelectForm', () => {
     await waitFor(() =>
       expect(mockGetRefData).toHaveBeenCalledWith('contact-1', '1.0.0', 'contacts', ''),
     );
-    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /update reference/i })).toBeInTheDocument();
     expect(screen.getByText('view contact-1:1.0.0')).toBeInTheDocument();
     expect(screen.queryByText('edit contact-1:1.0.0')).not.toBeInTheDocument();

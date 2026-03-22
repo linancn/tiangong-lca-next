@@ -1,4 +1,4 @@
-import { getILCDLocationAll } from '@/services/ilcd/api';
+import { getILCDLocationAll } from '@/services/locations/api';
 import { Form, Select, Space } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import RequiredMark from '../RequiredMark';

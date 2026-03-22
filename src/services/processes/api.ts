@@ -14,6 +14,7 @@ import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
+import { getCachedClassificationData } from '../classifications/cache';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
@@ -21,7 +22,7 @@ import {
   getLangText,
   jsonToList,
 } from '../general/util';
-import { getCachedClassificationData, getCachedLocationData } from '../ilcd/cache';
+import { getCachedLocationData } from '../locations/cache';
 import type { ProcessDetailByVersionResponse, ProcessTable } from './data';
 import { genProcessJsonOrdered, genProcessName } from './util';
 
@@ -65,10 +66,10 @@ async function mapProcessTableRows(rawRows: any[], lang: string): Promise<Proces
   const locations = Array.from(new Set(rawRows.map((item: any) => item['@location'])));
   const [locationRes, classificationRes] = await Promise.all([
     getCachedLocationData(lang, locations),
-    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve([]),
   ]);
   const locationMap = new Map(locationRes.map((item: any) => [item['@value'], item['#text']]));
-  const classificationData = classificationRes;
+  const classificationData = classificationRes ?? [];
 
   return rawRows.map((item: any) => {
     try {
@@ -501,11 +502,11 @@ export async function getConnectableProcessesTable(
   const processIdsAndVersions = result.data.map((i: any) => ({ id: i.id, version: i.version }));
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
     getCachedLocationData(lang, locations),
-    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve(null),
+    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve([]),
     getLifeCyclesByIdAndVersion(processIdsAndVersions),
   ]);
   const locationMap = new Map(locationRes.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes;
+  const classificationData = classificationRes ?? [];
 
   let data: any[] = result.data.map((i: any) => {
     try {

@@ -18,16 +18,20 @@ import {
 } from '@/services/flows/api';
 
 // Mock the cache module
-jest.mock('@/services/ilcd/cache', () => ({
+jest.mock('@/services/locations/cache', () => ({
   getCachedLocationData: jest.fn(),
-  getCachedFlowCategorizationAll: jest.fn(),
-  clearILCDCache: jest.fn(),
 }));
 
-const {
-  getCachedLocationData: mockGetCachedLocationData,
-  getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll,
-} = jest.requireMock('@/services/ilcd/cache');
+jest.mock('@/services/classifications/cache', () => ({
+  getCachedFlowCategorizationAll: jest.fn(),
+}));
+
+const { getCachedLocationData: mockGetCachedLocationData } = jest.requireMock(
+  '@/services/locations/cache',
+);
+const { getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll } = jest.requireMock(
+  '@/services/classifications/cache',
+);
 
 // Mock other dependencies
 jest.mock('@/services/flows/util', () => ({

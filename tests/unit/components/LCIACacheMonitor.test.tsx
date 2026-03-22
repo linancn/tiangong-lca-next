@@ -9,12 +9,23 @@ import { act, render } from '@testing-library/react';
 const mockCacheAndDecompressMethod = jest.fn();
 const mockGetCacheManifest = jest.fn();
 const mockGetCachedMethodList = jest.fn();
+const mockSetCacheManifest = jest.fn();
 
 jest.mock('@/services/lciaMethods/util', () => ({
   cacheAndDecompressMethod: (...args: any[]) => mockCacheAndDecompressMethod(...args),
   getCacheManifest: (...args: any[]) => mockGetCacheManifest(...args),
   getCachedMethodList: (...args: any[]) => mockGetCachedMethodList(...args),
+  setCacheManifest: (...args: any[]) => mockSetCacheManifest(...args),
 }));
+
+const flushCacheMonitor = async () => {
+  await act(async () => {
+    jest.advanceTimersByTime(3000);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+};
 
 describe('LCIACacheMonitor', () => {
   const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -42,13 +53,16 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
-    expect(localStorage.getItem('lcia_methods_cache_manifest')).not.toBeNull();
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
+    expect(mockSetCacheManifest).toHaveBeenCalledWith({
+      version: '1.2.4',
+      files: ['flow_factors.json.gz', 'list.json'],
+      cachedAt: expect.any(Number),
+      decompressed: true,
+    });
   });
 
   it('skips caching when manifest is current and files are already cached', async () => {
@@ -66,13 +80,11 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockGetCachedMethodList).toHaveBeenCalled();
     expect(mockCacheAndDecompressMethod).not.toHaveBeenCalled();
+    expect(mockSetCacheManifest).not.toHaveBeenCalled();
   });
 
   it('recaches when the stored manifest version is outdated', async () => {
@@ -87,13 +99,11 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockGetCachedMethodList).not.toHaveBeenCalled();
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
   });
 
   it('recaches when the manifest is stale for more than 24 hours', async () => {
@@ -108,13 +118,11 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockGetCachedMethodList).not.toHaveBeenCalled();
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
   });
 
   it('recaches when manifest is current but IndexedDB is missing files', async () => {
@@ -130,13 +138,11 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockGetCachedMethodList).toHaveBeenCalledTimes(1);
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
   });
 
   it('recaches when stored manifest is not marked as decompressed', async () => {
@@ -151,13 +157,11 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockGetCachedMethodList).not.toHaveBeenCalled();
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
   });
 
   it('recaches when the manifest file list changes', async () => {
@@ -172,13 +176,11 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(mockGetCachedMethodList).not.toHaveBeenCalled();
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledTimes(2);
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
   });
 
   it('logs partial cache failures when some files fail to cache', async () => {
@@ -190,15 +192,13 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to cache list.json:', expect.any(Error));
     expect(consoleLogSpy).toHaveBeenCalledWith(
       '⚠️  LCIA methods caching completed with issues: 1/2 successful, 1 errors.',
     );
+    expect(mockSetCacheManifest).toHaveBeenCalledTimes(1);
   });
 
   it('handles caching errors without crashing the app', async () => {
@@ -209,14 +209,12 @@ describe('LCIACacheMonitor', () => {
 
     render(<LCIACacheMonitor />);
 
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await flushCacheMonitor();
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       '❌ Failed to cache LCIA methods:',
       expect.any(Error),
     );
+    expect(mockSetCacheManifest).not.toHaveBeenCalled();
   });
 });

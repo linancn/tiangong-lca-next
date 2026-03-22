@@ -21,6 +21,8 @@ import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
+import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
+import LocationCacheMonitor from './components/LocationCacheMonitor';
 import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -101,6 +103,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   return {
     actionsRender: () => [
       <LCIACacheMonitor key='LCIACacheMonitor' />,
+      <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
+      <LocationCacheMonitor key='LocaltionCacheMonitor' />,
       <ImportTidasPackage key='ImportTidasPackage' />,
       <ExportTidasPackage key='ExportTidasPackage' />,
       <LcaTaskCenter key='LcaTaskCenter' />,

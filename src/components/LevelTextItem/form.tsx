@@ -1,5 +1,5 @@
 import RequiredMark from '@/components/RequiredMark';
-import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
+import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
 import { Cascader, Form, Input, TreeSelect } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';

@@ -1,5 +1,5 @@
+import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
 import { genClassStr } from '@/services/general/util';
-import { getILCDClassification, getILCDFlowCategorization } from '@/services/ilcd/api';
 import { Descriptions, Spin } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';

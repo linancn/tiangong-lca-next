@@ -380,7 +380,7 @@ describe('FlowsSelectForm', () => {
     expect(screen.getByRole('button', { name: /update reference/i })).toBeInTheDocument();
     expect(screen.getByText('view flow-1:1.0.0')).toBeInTheDocument();
     expect(screen.queryByText('edit flow-1:1.0.0')).not.toBeInTheDocument();
-    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
   });
 
   it('clears stale err refs when the current ref data no longer matches ref-check results', async () => {

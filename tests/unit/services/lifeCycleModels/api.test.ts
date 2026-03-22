@@ -66,7 +66,7 @@ jest.mock('@/services/general/util', () => ({
 
 const mockGetILCDClassification = jest.fn();
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/classifications/api', () => ({
   __esModule: true,
   getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
 }));

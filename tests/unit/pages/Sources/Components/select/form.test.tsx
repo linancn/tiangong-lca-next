@@ -354,7 +354,7 @@ describe('SourceSelectForm', () => {
     await waitFor(() =>
       expect(mockGetRefData).toHaveBeenCalledWith('source-1', '1.0.0', 'sources', ''),
     );
-    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
     expect(screen.getByText('view source-1:1.0.0')).toBeInTheDocument();
     expect(screen.queryByText('edit source-1:1.0.0')).not.toBeInTheDocument();
 

@@ -128,7 +128,7 @@ describe('LCIA Methods Data Types (src/services/lciaMethods/data.ts)', () => {
       ];
 
       expect(results).toHaveLength(2);
-      expect(results[0].meanAmount).toBeGreaterThan(results[1].meanAmount);
+      expect(Number(results[0].meanAmount)).toBeGreaterThan(Number(results[1].meanAmount));
     });
 
     it('should allow LCIA results without optional quantity descriptions', () => {

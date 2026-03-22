@@ -2003,15 +2003,19 @@ describe('ReviewProgress component', () => {
 
     expect(await screen.findByTestId('select-reviewer-stub')).toBeInTheDocument();
     expect(screen.getByTestId('reject-review-stub')).toBeInTheDocument();
+    await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'assigned'));
+    await screen.findByTestId('protable');
 
     fireEvent.click(screen.getByTestId('icon-close').closest('button')!);
-    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
 
     const [reopenButton] = screen.getAllByRole('button');
     fireEvent.click(reopenButton);
     await screen.findByTestId('drawer');
+    await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalled());
+    await screen.findByTestId('protable');
 
     fireEvent.click(screen.getByTestId('drawer-close'));
-    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
   });
 });
