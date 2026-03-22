@@ -202,7 +202,7 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
       });
 
       expect(authMock.resetPasswordForEmail).toHaveBeenCalledWith('user@example.com', {
-        redirectTo: 'https://lca.tiangong.earth/user/login/password_reset',
+        redirectTo: 'http://localhost:8000/#/user/login/password_reset',
       });
       expect(result).toEqual({ status: 'ok', type: 'forgot', currentAuthority: 'guest' });
     });
@@ -234,7 +234,7 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
       });
 
       expect(authMock.resetPasswordForEmail).toHaveBeenCalledWith('', {
-        redirectTo: 'https://lca.tiangong.earth/user/login/password_reset',
+        redirectTo: 'http://localhost:8000/#/user/login/password_reset',
       });
       expect(result).toEqual({ status: 'ok', type: 'forgot', currentAuthority: 'guest' });
     });

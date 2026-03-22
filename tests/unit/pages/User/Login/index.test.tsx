@@ -332,6 +332,15 @@ describe('Login page', () => {
     expect(mockHistory.push).not.toHaveBeenCalled();
   });
 
+  it('renders the forgot-password link with a hash-compatible app route', () => {
+    render(<LoginPage />);
+
+    expect(screen.getByText('Forgot password').closest('a')).toHaveAttribute(
+      'href',
+      '/#/user/login/password_forgot',
+    );
+  });
+
   it('submits the register flow and shows a success toast', async () => {
     render(<LoginPage />);
 

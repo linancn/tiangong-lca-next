@@ -1,5 +1,6 @@
 import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
+import { buildAppAbsoluteUrl } from '@/utils/appUrl';
 import { Button, Space, Table, Tag, Tooltip, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
@@ -185,7 +186,9 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
             style={{ color: token.colorPrimary }}
             onClick={() => {
               window.open(
-                `/mydata/processes?id=${record?.json?.data?.id}&version=${record?.json?.data?.version}`,
+                buildAppAbsoluteUrl(
+                  `/mydata/processes?id=${record?.json?.data?.id}&version=${record?.json?.data?.version}`,
+                ),
                 '_blank',
               );
             }}
