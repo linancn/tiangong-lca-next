@@ -1,5 +1,7 @@
 # `public/classifications` 下 `.gz` 数据使用说明
 
+English mirror: `docs/public-classifications-gz-usage.md`
+
 ## 结论先看
 
 `public/classifications` 下面一共有 8 个 `.gz` 文件，它们在应用里分成两层使用：
