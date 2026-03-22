@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 const mockGetILCDLocationByValue = jest.fn();
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/locations/api', () => ({
   getILCDLocationByValue: (...args: any[]) => mockGetILCDLocationByValue(...args),
 }));
 

@@ -9,7 +9,7 @@ const mockGetILCDClassification = jest.fn();
 const mockGetILCDFlowCategorization = jest.fn();
 let latestTreeSelectProps: any = null;
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/classifications/api', () => ({
   getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
   getILCDFlowCategorization: (...args: any[]) => mockGetILCDFlowCategorization(...args),
 }));

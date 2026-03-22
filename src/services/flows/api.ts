@@ -9,14 +9,15 @@ import {
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
+import { getCachedFlowCategorizationAll } from '../classifications/cache';
 import {
   getDataDetail,
   getTeamIdByUserId,
   normalizeLangPayloadForSave,
   resolveFunctionInvokeError,
 } from '../general/api';
-import { getILCDLocationByValues } from '../ilcd/api';
-import { getCachedFlowCategorizationAll, getCachedLocationData } from '../ilcd/cache';
+import { getILCDLocationByValues } from '../locations/api';
+import { getCachedLocationData } from '../locations/cache';
 import { genFlowJsonOrdered, genFlowName } from './util';
 function normalizeLocationData(response: any): any[] {
   if (Array.isArray(response)) {

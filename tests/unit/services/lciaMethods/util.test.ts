@@ -34,6 +34,7 @@ import LCIAResultCalculation, {
   getDecompressedMethod,
   getReferenceQuantityFromMethod,
   isMethodCached,
+  setCacheManifest,
 } from '@/services/lciaMethods/util';
 
 // Mock IndexedDB
@@ -548,6 +549,20 @@ describe('LCIA Methods Utility Functions', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should persist cache manifests through localStorage helpers', () => {
+      const manifest = {
+        version: '1.2.4',
+        files: ['flow_factors.json.gz', 'list.json'],
+        cachedAt: Date.now(),
+        decompressed: true,
+      };
+
+      setCacheManifest(manifest);
+
+      expect(localStorage.getItem('lcia_methods_cache_manifest')).toBe(JSON.stringify(manifest));
+      expect(getCacheManifest()).toEqual(manifest);
+    });
   });
 
   describe('getCacheStatus', () => {
@@ -986,6 +1001,41 @@ describe('LCIA Methods Utility Functions', () => {
       expect(result?.[0].meanAmount).toBe('10.5');
     });
 
+    it('should support array-based flow references when aggregating LCIA results', async () => {
+      setCachedMethod('list.json', {
+        files: [
+          {
+            id: 'method-1',
+            version: '01.00.000',
+            description: [{ '@xml:lang': 'en', '#text': 'Method 1' }],
+            referenceQuantity: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg CO2-eq' }],
+            },
+          },
+        ],
+      });
+      setCachedMethod('flow_factors.json.gz', {
+        'flow-1:INPUT': {
+          factor: [{ key: 'method-1', value: '0.5' }],
+        },
+      });
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: [{ '@refObjectId': 'flow-1' }, { '@refObjectId': 'flow-unused' }],
+          exchangeDirection: 'input',
+          meanAmount: '8',
+        },
+      ]);
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          key: 'method-1',
+          meanAmount: '4',
+        }),
+      ]);
+    });
+
     it('should return empty array when flow factors are empty', async () => {
       setCachedMethod('list.json', {
         files: [
@@ -1148,9 +1198,7 @@ describe('LCIA Methods Utility Functions', () => {
       }
     });
 
-    it('returns undefined when LCIA aggregation hits an unexpected processing error', async () => {
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
+    it('returns an empty array when aggregated factors do not map to a known LCIA method', async () => {
       setCachedMethod('list.json', {
         files: [
           {
@@ -1166,6 +1214,38 @@ describe('LCIA Methods Utility Functions', () => {
       setCachedMethod('flow_factors.json.gz', {
         'flow-1:OUTPUT': {
           factor: [{ key: 'method-unknown', value: '2' }],
+        },
+      });
+
+      const result = await LCIAResultCalculation([
+        {
+          referenceToFlowDataSet: { '@refObjectId': 'flow-1' },
+          exchangeDirection: 'OUTPUT',
+          meanAmount: '4',
+        },
+      ]);
+
+      expect(result).toEqual([]);
+    });
+
+    it('returns undefined when LCIA aggregation hits an unexpected processing error', async () => {
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      setCachedMethod('list.json', {
+        files: {
+          0: {
+            referenceQuantity: {
+              'common:shortDescription': [],
+            },
+          },
+          find: () => {
+            throw new Error('list lookup failed');
+          },
+        },
+      });
+      setCachedMethod('flow_factors.json.gz', {
+        'flow-1:OUTPUT': {
+          factor: [{ key: 'method-1', value: '2' }],
         },
       });
 

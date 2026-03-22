@@ -487,12 +487,14 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Edit process' });
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
+    await waitFor(() => expect(latestProcessFormProps).toBeTruthy());
 
     await act(async () => {
       await proFormApi?.submit();
     });
 
-    expect(mockUpdateProcess).toHaveBeenCalled();
+    await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Save successfully!');
   });
 
@@ -1177,6 +1179,8 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Edit process' });
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
+    await waitFor(() => expect(latestProcessFormProps).toBeTruthy());
 
     const originalGetFieldsValue = proFormApi.getFieldsValue;
     proFormApi.getFieldsValue = jest.fn(() => undefined);

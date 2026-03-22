@@ -52,11 +52,15 @@ jest.mock('umi', () => ({
   getLocale: (...args: any[]) => mockGetLocale.apply(null, args),
 }));
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/classifications/api', () => ({
   __esModule: true,
   getILCDClassification: (...args: any[]) => mockGetILCDClassification.apply(null, args),
   getILCDFlowCategorizationAll: (...args: any[]) =>
     mockGetILCDFlowCategorizationAll.apply(null, args),
+}));
+
+jest.mock('@/services/locations/api', () => ({
+  __esModule: true,
   getILCDLocationByValues: (...args: any[]) => mockGetILCDLocationByValues.apply(null, args),
 }));
 

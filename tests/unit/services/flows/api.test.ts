@@ -46,25 +46,28 @@ const {
   jsonToList: mockJsonToList,
 } = jest.requireMock('@/services/general/util');
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/locations/api', () => ({
   getILCDLocationByValues: jest.fn(),
-  getILCDFlowCategorizationAll: jest.fn(),
 }));
 
-const {
-  getILCDLocationByValues: mockGetILCDLocationByValues,
-  getILCDFlowCategorizationAll: mockGetILCDFlowCategorizationAll,
-} = jest.requireMock('@/services/ilcd/api');
+const { getILCDLocationByValues: mockGetILCDLocationByValues } = jest.requireMock(
+  '@/services/locations/api',
+);
 
-jest.mock('@/services/ilcd/cache', () => ({
+jest.mock('@/services/locations/cache', () => ({
   getCachedLocationData: jest.fn(),
+}));
+
+jest.mock('@/services/classifications/cache', () => ({
   getCachedFlowCategorizationAll: jest.fn(),
 }));
 
-const {
-  getCachedLocationData: mockGetCachedLocationData,
-  getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll,
-} = jest.requireMock('@/services/ilcd/cache');
+const { getCachedLocationData: mockGetCachedLocationData } = jest.requireMock(
+  '@/services/locations/cache',
+);
+const { getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll } = jest.requireMock(
+  '@/services/classifications/cache',
+);
 
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
@@ -229,7 +232,6 @@ beforeEach(() => {
   mockGetCachedLocationData.mockResolvedValue(defaultLocationResponse);
   mockGetCachedFlowCategorizationAll.mockResolvedValue(defaultClassificationResponse);
   mockGetILCDLocationByValues.mockResolvedValue(defaultLocationResponse);
-  mockGetILCDFlowCategorizationAll.mockResolvedValue(defaultClassificationResponse);
 
   mockGetDataDetail.mockResolvedValue({ data: null });
   mockGetTeamIdByUserId.mockResolvedValue(null);

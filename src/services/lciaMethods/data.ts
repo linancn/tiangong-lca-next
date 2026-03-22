@@ -1,3 +1,5 @@
+import type { LangTextValue } from '../general/data';
+
 export type LCIAResultTable = {
   key: string;
   referenceToLCIAMethodDataSet: {
@@ -12,6 +14,30 @@ export type LCIAResultTable = {
       },
     ];
   };
-  meanAmount: number;
+  meanAmount: string | number;
   referenceQuantityDesc?: string;
 };
+
+export type LciaMethodListItem = {
+  id: string;
+  version: string;
+  description: LCIAResultTable['referenceToLCIAMethodDataSet']['common:shortDescription'];
+  referenceQuantity?: {
+    'common:shortDescription'?: LangTextValue;
+  };
+};
+
+export type LciaMethodListData = {
+  files: LciaMethodListItem[];
+};
+
+export type LciaFlowFactorEntry = {
+  key: string;
+  value: string | number;
+};
+
+export type LciaFlowFactorGroup = {
+  factor?: LciaFlowFactorEntry[];
+};
+
+export type LciaFlowFactorMap = Record<string, LciaFlowFactorGroup>;

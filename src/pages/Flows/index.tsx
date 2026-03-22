@@ -12,11 +12,11 @@ import ContributeData from '@/components/ContributeData';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
+import { getCachedFlowCategorizationAll } from '@/services/classifications/cache';
 import { FlowImportData, FlowTable } from '@/services/flows/data';
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
-import { getCachedFlowCategorizationAll } from '@/services/ilcd/cache';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import {

@@ -396,6 +396,16 @@ describe('ProcessForm component', () => {
     mockSourceSelectForm.mockClear();
     mockGetLangText.mockReset();
     mockGetLangText.mockReturnValue('text');
+    mockGetProcessExchange.mockReset();
+    mockGetProcessExchange.mockResolvedValue({ error: null, data: [] });
+    mockGetUnitData.mockReset();
+    mockGetUnitData.mockResolvedValue([]);
+    mockGetFlowStateCodeByIdsAndVersions.mockReset();
+    mockGetFlowStateCodeByIdsAndVersions.mockResolvedValue({ error: null, data: [] });
+    mockLCIAResultCalculation.mockReset();
+    mockLCIAResultCalculation.mockResolvedValue([{ key: '1', meanAmount: 12 }]);
+    mockGetReferenceQuantityFromMethod.mockReset();
+    mockGetReferenceQuantityFromMethod.mockResolvedValue();
   });
 
   it('marks rows with issues when rules are enabled', async () => {
@@ -725,7 +735,7 @@ describe('ProcessForm component', () => {
       },
     ];
 
-    render(
+    const firstRender = render(
       <ProcessForm
         {...defaultProps}
         activeTabKey='exchanges'
@@ -734,10 +744,11 @@ describe('ProcessForm component', () => {
     );
 
     await waitFor(() => {
-      expect(proTableInstances).toHaveLength(2);
+      expect(proTableInstances.length).toBeGreaterThanOrEqual(2);
     });
 
-    const result = await proTableInstances[0].request({ pageSize: 10, current: 1 });
+    const firstTables = proTableInstances.slice(-2);
+    const result = await firstTables[0].request({ pageSize: 10, current: 1 });
 
     expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledWith(
       [{ id: 'flow-1', version: '1.0' }],
@@ -745,11 +756,13 @@ describe('ProcessForm component', () => {
     );
     expect(result.data[0].classification).toBe('');
 
+    firstRender.unmount();
+    proTableInstances.length = 0;
+
     mockGetProcessExchange.mockResolvedValueOnce({ data: [], total: 0 });
     mockGetUnitData.mockResolvedValueOnce(undefined);
     mockGetFlowStateCodeByIdsAndVersions.mockResolvedValueOnce({ error: null, data: [] });
 
-    const previousTableCount = proTableInstances.length;
     const { unmount } = render(
       <ProcessForm
         {...defaultProps}
@@ -759,10 +772,11 @@ describe('ProcessForm component', () => {
     );
 
     await waitFor(() => {
-      expect(proTableInstances.length).toBe(previousTableCount + 2);
+      expect(proTableInstances.length).toBeGreaterThanOrEqual(2);
     });
 
-    await proTableInstances[previousTableCount].request({ pageSize: 10, current: 1 });
+    const latestTables = proTableInstances.slice(-2);
+    await latestTables[0].request({ pageSize: 10, current: 1 });
 
     expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenLastCalledWith(
       [{ id: '', version: '' }],

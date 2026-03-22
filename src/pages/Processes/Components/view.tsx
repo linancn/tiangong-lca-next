@@ -9,7 +9,7 @@ import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangJson, getLangText, getUnitData, jsonToList } from '@/services/general/util';
 import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
-import { LCIAResultTable } from '@/services/lciaMethods/data';
+import type { LciaMethodListData, LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import {
   FormProcess,
@@ -128,14 +128,14 @@ const getLciaMethodMetaMap = async (impactIds: string[]): Promise<Map<string, Lc
     return new Map<string, LciaMethodMeta>();
   }
 
-  let listData = await getDecompressedMethod('list.json');
+  let listData = await getDecompressedMethod<LciaMethodListData>('list.json');
   const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
   if (!listData || needsUpdate) {
     const cached = await cacheAndDecompressMethod('list.json');
     if (!cached) {
       return new Map<string, LciaMethodMeta>();
     }
-    listData = await getDecompressedMethod('list.json');
+    listData = await getDecompressedMethod<LciaMethodListData>('list.json');
   }
 
   const files = Array.isArray(listData?.files) ? (listData.files as LciaMethodListEntry[]) : [];

@@ -14,7 +14,7 @@ jest.mock('@/services/general/util', () => ({
   genClassStr: (...args: any[]) => mockGenClassStr(...args),
 }));
 
-jest.mock('@/services/ilcd/api', () => ({
+jest.mock('@/services/classifications/api', () => ({
   getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
   getILCDFlowCategorization: (...args: any[]) => mockGetILCDFlowCategorization(...args),
 }));
