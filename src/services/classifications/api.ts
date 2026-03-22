@@ -1,4 +1,3 @@
-import { getCPCClassification, getCPCClassificationZH } from '../flows/classification/api';
 import type { Classification } from '../general/data';
 import { getISICClassification, getISICClassificationZH } from '../processes/classification/api';
 import {
@@ -36,6 +35,11 @@ const ILCD_FLOW_CATEGORIZATION_FILES = {
 const ILCD_CLASSIFICATION_FILES = {
   en: 'ILCDClassification.min.json.gz',
   zh: 'ILCDClassification_zh.min.json.gz',
+} as const;
+
+const CPC_CLASSIFICATION_FILES = {
+  en: 'CPCClassification.min.json.gz',
+  zh: 'CPCClassification_zh.min.json.gz',
 } as const;
 
 function normalizeFlowCategorizationNodes(
@@ -149,10 +153,9 @@ async function getFlowCategorizationNodes(lang: 'en' | 'zh'): Promise<ILCDCatego
 }
 
 async function getClassificationNodesByType(
+  fileName: string,
   categoryType: string,
-  lang: 'en' | 'zh',
 ): Promise<ILCDCategoryNode[]> {
-  const fileName = ILCD_CLASSIFICATION_FILES[lang];
   const document =
     await getCachedOrFetchClassificationFileData<ILCDClassificationDocument>(fileName);
 
@@ -167,6 +170,17 @@ async function getClassificationNodesByType(
   return normalizeFlowCategorizationNodes(group?.category);
 }
 
+async function getILCDClassificationNodesByType(
+  categoryType: string,
+  lang: 'en' | 'zh',
+): Promise<ILCDCategoryNode[]> {
+  return getClassificationNodesByType(ILCD_CLASSIFICATION_FILES[lang], categoryType);
+}
+
+async function getCPCClassificationNodes(lang: 'en' | 'zh'): Promise<ILCDCategoryNode[]> {
+  return getClassificationNodesByType(CPC_CLASSIFICATION_FILES[lang], 'Flow');
+}
+
 export async function getILCDClassification(
   categoryType: string,
   lang: string,
@@ -178,11 +192,13 @@ export async function getILCDClassification(
     if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
       result = getISICClassification(getValues);
     } else if (categoryType === 'Flow') {
-      result = getCPCClassification(getValues);
+      result = {
+        data: filterClassificationNodes(await getCPCClassificationNodes('en'), getValues),
+      };
     } else {
       result = {
         data: filterClassificationNodes(
-          await getClassificationNodesByType(categoryType, 'en'),
+          await getILCDClassificationNodesByType(categoryType, 'en'),
           getValues,
         ),
       };
@@ -200,12 +216,14 @@ export async function getILCDClassification(
       if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
         resultZH = getISICClassificationZH(getIds);
       } else if (categoryType === 'Flow') {
-        resultZH = getCPCClassificationZH(getIds);
+        resultZH = {
+          data: filterClassificationNodes(await getCPCClassificationNodes('zh'), getIds),
+        };
       } else {
         const categoryTypeZH = categoryTypeOptions.find((item) => item.en === categoryType)?.zh;
         resultZH = {
           data: filterClassificationNodes(
-            await getClassificationNodesByType(categoryTypeZH ?? categoryType, 'zh'),
+            await getILCDClassificationNodesByType(categoryTypeZH ?? categoryType, 'zh'),
             getIds,
           ),
         };

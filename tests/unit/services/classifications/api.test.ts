@@ -3,16 +3,9 @@
  * Path: src/services/classifications/api.ts
  */
 
-const mockGetCPCClassification = jest.fn();
-const mockGetCPCClassificationZH = jest.fn();
 const mockGetISICClassification = jest.fn();
 const mockGetISICClassificationZH = jest.fn();
 const mockGetCachedOrFetchClassificationFileData = jest.fn();
-
-jest.mock('@/services/flows/classification/api', () => ({
-  getCPCClassification: (...args: any[]) => mockGetCPCClassification(...args),
-  getCPCClassificationZH: (...args: any[]) => mockGetCPCClassificationZH(...args),
-}));
 
 jest.mock('@/services/processes/classification/api', () => ({
   getISICClassification: (...args: any[]) => mockGetISICClassification(...args),
@@ -72,18 +65,39 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
     });
   });
 
-  it('uses CPC classifications for Flow in Chinese and maps labels from zh data', async () => {
-    mockGetCPCClassification.mockReturnValue({
-      data: [{ '@id': 'flow-1', '@name': 'Flow Root' }],
-    });
-    mockGetCPCClassificationZH.mockReturnValue({
-      data: [{ '@id': 'flow-1', '@name': '流根' }],
-    });
+  it('uses CPC gzip classifications for Flow in Chinese and maps labels from zh data', async () => {
+    mockGetCachedOrFetchClassificationFileData
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [{ '@id': 'flow-1', '@name': 'Flow Root' }],
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [{ '@id': 'flow-1', '@name': '流根' }],
+            },
+          ],
+        },
+      });
 
     const result = await getILCDClassification('Flow', 'zh', ['flow-1']);
 
-    expect(mockGetCPCClassification).toHaveBeenCalledWith(['flow-1']);
-    expect(mockGetCPCClassificationZH).toHaveBeenCalledWith(['flow-1']);
+    expect(mockGetCachedOrFetchClassificationFileData).toHaveBeenNthCalledWith(
+      1,
+      'CPCClassification.min.json.gz',
+    );
+    expect(mockGetCachedOrFetchClassificationFileData).toHaveBeenNthCalledWith(
+      2,
+      'CPCClassification_zh.min.json.gz',
+    );
     expect(result).toEqual({
       data: [{ id: 'flow-1', value: 'Flow Root', label: '流根', children: [] }],
       success: true,
@@ -413,13 +427,27 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
   });
 
   it('combines flow classification and elementary-flow categorization in getILCDFlowCategorizationAll', async () => {
-    mockGetCPCClassification.mockReturnValue({
-      data: [{ '@id': 'flow-root', '@name': 'Flow Root' }],
-    });
-    mockGetCPCClassificationZH.mockReturnValue({
-      data: [{ '@id': 'flow-root', '@name': '流根' }],
-    });
     mockGetCachedOrFetchClassificationFileData
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [{ '@id': 'flow-root', '@name': 'Flow Root' }],
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [{ '@id': 'flow-root', '@name': '流根' }],
+            },
+          ],
+        },
+      })
       .mockResolvedValueOnce({
         CategorySystem: {
           categories: {
