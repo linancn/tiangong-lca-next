@@ -71,6 +71,24 @@ npm run build
 - `docker/volumes/functions/**`：自托管 edge-functions 的同步镜像，禁止在 `tiangong-lca-next` 中直接编辑。
 - `docker/pull-edge-functions.sh`：本仓库刷新 `docker/volumes/functions/**` 的唯一正确方式。
 
+## UI 一致性 / Ant Design 优先
+
+对 `tiangong-lca-next` 而言，UI 风格一致性是硬性的产品要求。
+
+在本仓库中实现或修改前端 UI 时，必须遵循以下规则：
+
+1. 优先复用现有共享组件和已经建立的项目模式。
+2. 如果没有合适的共享抽象，优先使用 Ant Design 原生组件、文档化 props、内置变体以及标准交互模式。
+3. 只要是会影响产品视觉一致性的设计决策，优先使用 Ant Design theme tokens、component tokens 或项目既有的 token 抽象，而不是临时写死的颜色值、尺寸值等硬编码。
+4. 避免不必要的自定义视觉样式。当 Ant Design 或既有共享抽象已经能满足需求时，自定义 CSS、内联样式和局部 CSS modules 都不应成为默认实现路径。
+5. 只有在 Ant Design props、tokens 或既有共享抽象无法合理满足需求时，才允许使用自定义样式。此时必须保持 override 尽可能小，继续遵守既有产品视觉语言，并在理由不明显时于 PR 描述或代码注释中说明原因。
+6. 如果某种自定义视觉模式开始重复出现，应将其提炼为共享组件或可复用抽象，而不是在局部重复复制。
+
+说明：
+
+- 本规则约束的是面向产品的视觉样式和交互一致性，并不是彻底禁止编写布局代码。
+- 在合适场景下可以编写局部布局样式；但在只是做简单组合时，应优先使用既有项目模式和 Ant Design 的布局原语，而不是额外引入一次性视觉处理。
+
 ## 交付约束
 
 - 先调研（`rg`、最近似功能、现有测试）。
