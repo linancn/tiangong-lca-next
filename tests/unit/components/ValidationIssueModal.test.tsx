@@ -392,6 +392,86 @@ describe('ValidationIssueModal', () => {
     });
   });
 
+  it('hydrates grouped owner metadata from later issues when the first row is sparse', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ownerName: '   ',
+            ownerUserId: '   ',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ownerName: ' 后续拥有者 ',
+            ownerUserId: ' user-2 ',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            tabNames: ['processInformation'],
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/contacts?id=contact-1&version=01.00.000',
+            ownerName: ' 联系人拥有者 ',
+            ref: {
+              '@refObjectId': 'contact-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            isOwnedByCurrentUser: true,
+            link: 'http://localhost:8000/mydata/contacts?id=contact-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'contact-1',
+              '@type': 'contact data set',
+              '@version': '01.00.000',
+            },
+            tabNames: ['contactInformation'],
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    const processRow = latestTableDataSource.find((row) => row.ref['@refObjectId'] === 'process-1');
+    const contactRow = latestTableDataSource.find((row) => row.ref['@refObjectId'] === 'contact-1');
+
+    expect(processRow).toMatchObject({
+      isOwnedByCurrentUser: false,
+      ownerName: '后续拥有者',
+      ownerUserId: 'user-2',
+    });
+    expect(contactRow).toMatchObject({
+      isOwnedByCurrentUser: true,
+      ownerName: '联系人拥有者',
+    });
+
+    expect(screen.getByText('后续拥有者')).toBeInTheDocument();
+    expect(screen.getByText('联系人拥有者')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '通知数据拥有者' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '修复问题' })).toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
   it('keeps the table header fixed and sorts rows by the required dataset type order', async () => {
     let modalHandle: { destroy: () => void } | null = null;
 

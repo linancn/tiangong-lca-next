@@ -529,6 +529,120 @@ describe('review helper coverage', () => {
     expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-1', 'user-2']);
   });
 
+  it('keeps provided owner names when the current user id is blank and no owner ids need resolving', async () => {
+    mockGetUserId.mockResolvedValue('   ');
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/provided',
+        ownerName: ' Provided owner ',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-provided-only',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/provided',
+        ownerName: 'Provided owner',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-provided-only',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(mockGetUsersByIds).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a dash when resolved owner profiles have no usable display fields', async () => {
+    mockGetRefData.mockResolvedValue({
+      data: { userId: 'user-blank' },
+      success: true,
+    });
+    mockGetUsersByIds.mockResolvedValue([
+      {
+        id: 'user-blank',
+        display_name: '   ',
+        email: '   ',
+        raw_user_meta_data: {
+          display_name: '',
+          email: '   ',
+        },
+      },
+    ]);
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/blank-owner',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-blank-owner',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        isOwnedByCurrentUser: false,
+        link: '/blank-owner',
+        ownerName: '-',
+        ownerUserId: 'user-blank',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-blank-owner',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-blank']);
+  });
+
+  it('falls back to a dash when owner ids resolve but the user lookup returns no profiles', async () => {
+    mockGetRefData.mockResolvedValue({
+      data: { userId: 'user-missing' },
+      success: true,
+    });
+    mockGetUsersByIds.mockResolvedValue(undefined);
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/missing-owner-profile',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-missing-owner-profile',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        isOwnedByCurrentUser: false,
+        link: '/missing-owner-profile',
+        ownerName: '-',
+        ownerUserId: 'user-missing',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-missing-owner-profile',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-missing']);
+  });
+
   it('validates each dataset type through the sdk and filters process/model review issues', () => {
     const sdkIssue = (path: PropertyKey[]) => ({ path });
 

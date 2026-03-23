@@ -65,14 +65,14 @@ npm run lint
 - Hard requirement: any code change must leave repo-wide statements, branches, functions, and lines at `100%`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
-- Latest verified full run on March 20, 2026 (`npm run test:coverage:report`, which reruns `npm run test:coverage`) is `288 suites / 3476 tests` with:
-  - Statements: `100.00%` (20013/20013)
-  - Branches: `100.00%` (11419/11419)
-  - Functions: `100.00%` (4379/4379)
-  - Lines: `100.00%` (19143/19143)
+- Latest verified full run on March 23, 2026 (`npm run test:coverage`, followed by `npm run test:coverage:assert-full`) is `305 suites / 3620 tests` with:
+  - Statements: `100.00%` (21472/21472)
+  - Branches: `100.00%` (12374/12374)
+  - Functions: `100.00%` (4669/4669)
+  - Lines: `100.00%` (20584/20584)
 - Current all-file inventory from the same run:
-  - Source files tracked: `313`
-  - Fully covered files (`100/100/100/100`): `313`
+  - Source files tracked: `328`
+  - Fully covered files (`100/100/100/100`): `328`
   - Files with remaining gaps: `0`
   - Branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 0`, `90-<100 = 0`
   - `line=100` but `branch<100`: `0`

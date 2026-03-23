@@ -432,7 +432,7 @@ export const enrichValidationIssuesWithOwner = async (issues: ValidationIssue[])
     const refKey = getValidationIssueRefKey(issue.ref);
     const ownerUserId = issue.ownerUserId?.trim() || ownerUserIdByRefKey.get(refKey);
     const ownerName =
-      ownerNameByRefKey.get(refKey) ?? (ownerUserId ? userNameById.get(ownerUserId) : '-') ?? '-';
+      ownerNameByRefKey.get(refKey) ?? userNameById.get(ownerUserId as string) ?? '-';
     const isOwnedByCurrentUser =
       ownerUserId && normalizedCurrentUserId
         ? ownerUserId === normalizedCurrentUserId
