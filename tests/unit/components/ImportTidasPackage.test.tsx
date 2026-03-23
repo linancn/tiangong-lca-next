@@ -58,7 +58,19 @@ jest.mock('umi', () => ({
   },
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage }: { defaultMessage: string }) => defaultMessage,
+    formatMessage: (
+      { defaultMessage }: { defaultMessage: string },
+      values?: Record<string, any>,
+    ) => {
+      if (!values) {
+        return defaultMessage;
+      }
+
+      return Object.entries(values).reduce(
+        (output, [key, value]) => output.replace(`{${key}}`, String(value)),
+        defaultMessage,
+      );
+    },
   }),
 }));
 
@@ -314,6 +326,18 @@ describe('ImportTidasPackage Component', () => {
       expect(modalApi.error).toHaveBeenCalledTimes(1);
     });
 
+    const config = modalApi.error.mock.calls[0][0];
+    render(<>{config.content}</>);
+
+    expect(
+      screen.getByText('Total: 2, filtered open data: 0, user conflicts: 1, imported: 0'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Download the full details to review skipped open-data records and conflicting user records.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Download full details' })).toBeInTheDocument();
     expect(mockMessage.success).not.toHaveBeenCalled();
     expect(mockedImportTidasPackageApi).toHaveBeenCalledTimes(1);
   });
@@ -374,12 +398,17 @@ describe('ImportTidasPackage Component', () => {
     render(<>{config.content}</>);
 
     expect(config.title).toBe('Import blocked by validation issues');
-    expect(screen.getByText('Schema mismatch')).toBeInTheDocument();
-    expect(screen.getByText('Localized text language mismatch')).toBeInTheDocument();
-    expect(screen.getByText('Schema Error at <root>: missing required field')).toBeInTheDocument();
     expect(
       screen.getByText('Validation blocked import. Errors: 1, warnings: 1, total issues: 2.'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Download the full details to inspect file paths, issue locations, and validation context.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Schema Error at <root>: missing required field'),
+    ).not.toBeInTheDocument();
   });
 
   it('handles validation failures without issue details by showing zero-count summary', async () => {
@@ -417,10 +446,14 @@ describe('ImportTidasPackage Component', () => {
     expect(
       screen.getByText('Validation blocked import. Errors: 0, warnings: 0, total issues: 0.'),
     ).toBeInTheDocument();
-    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    expect(
+      screen.getByText(
+        'Download the full details to inspect file paths, issue locations, and validation context.',
+      ),
+    ).toBeInTheDocument();
   });
 
-  it('truncates long validation issue lists and falls back for unknown issue codes', async () => {
+  it('keeps the validation modal compact and points users to the downloadable report', async () => {
     mockedImportTidasPackageApi.mockResolvedValue({
       data: {
         ok: false,
@@ -461,17 +494,131 @@ describe('ImportTidasPackage Component', () => {
     const config = modalApi.error.mock.calls[0][0];
     render(<>{config.content}</>);
 
-    expect(screen.getByText('Data validation issue')).toBeInTheDocument();
     expect(
       screen.getByText('Validation blocked import. Errors: 0, warnings: 0, total issues: 11.'),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Showing the first 10 issues. Download or inspect the import report for the full list.',
+        'Download the full details to inspect file paths, issue locations, and validation context.',
       ),
     ).toBeInTheDocument();
-    expect(screen.queryAllByRole('listitem')).toHaveLength(10);
-    expect(screen.queryByText('Issue 11')).not.toBeInTheDocument();
+    expect(screen.queryByText('Issue 1')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+  });
+
+  it('downloads the full validation report from the modal preview', async () => {
+    const originalCreateElement = document.createElement.bind(document);
+    const clickSpy = jest.fn();
+    const originalRevokeObjectUrl = URL.revokeObjectURL;
+    const OriginalBlob = Blob;
+    let capturedBlobParts: BlobPart[] = [];
+
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: jest.fn(),
+    });
+
+    Object.defineProperty(globalThis, 'Blob', {
+      configurable: true,
+      value: class TestBlob extends OriginalBlob {
+        constructor(parts: BlobPart[], options?: BlobPropertyBag) {
+          capturedBlobParts = parts;
+          super(parts, options);
+        }
+      },
+    });
+
+    const createObjectUrlSpy = jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:report');
+    const revokeObjectUrlSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const createElementSpy = jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      const element = originalCreateElement(tagName);
+
+      if (tagName.toLowerCase() === 'a') {
+        Object.defineProperty(element, 'click', {
+          value: clickSpy,
+        });
+      }
+
+      return element;
+    });
+
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+        code: 'VALIDATION_FAILED',
+        message: 'validation failed',
+        summary: {
+          total_entries: 1,
+          filtered_open_data_count: 0,
+          user_conflict_count: 0,
+          importable_count: 0,
+          imported_count: 0,
+          validation_issue_count: 1,
+          error_count: 1,
+          warning_count: 0,
+        },
+        filtered_open_data: [],
+        user_conflicts: [],
+        validation_issues: [
+          {
+            issue_code: 'schema_error',
+            severity: 'error',
+            category: 'sources',
+            file_path: 'sources/a.json',
+            location: '<root>',
+            message: 'Schema Error at <root>: missing required field',
+            context: { validator: 'required' },
+          },
+        ],
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(modalApi.error).toHaveBeenCalledTimes(1);
+    });
+
+    const config = modalApi.error.mock.calls[0][0];
+    render(<>{config.content}</>);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download full details' }));
+
+    expect(createObjectUrlSpy).toHaveBeenCalledTimes(1);
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrlSpy).toHaveBeenCalledTimes(1);
+
+    const downloadedText = String(capturedBlobParts[0] ?? '');
+
+    expect(downloadedText).toContain('"report_format": "tidas-import-report-with-guide"');
+    expect(downloadedText).toContain('"readme_markdown"');
+    expect(downloadedText).toContain('# How to read this import report');
+    expect(downloadedText).toContain('# 如何查看这个导入报告');
+    expect(downloadedText).toContain('"report"');
+    expect(downloadedText).toContain('"validation_issues"');
+
+    createElementSpy.mockRestore();
+    createObjectUrlSpy.mockRestore();
+    revokeObjectUrlSpy.mockRestore();
+    Object.defineProperty(globalThis, 'Blob', {
+      configurable: true,
+      value: OriginalBlob,
+    });
+
+    if (originalRevokeObjectUrl) {
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        value: originalRevokeObjectUrl,
+      });
+    } else {
+      // @ts-expect-error test cleanup for shimmed browser API
+      delete URL.revokeObjectURL;
+    }
   });
 
   it('rejects non-zip file selections before uploading', async () => {
