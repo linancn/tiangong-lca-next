@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 
 const GRAPHQL_URL = 'https://api.github.com/graphql';
-const PROJECT_OWNER = process.env.PROJECT_OWNER || 'Neo9281';
+const PROJECT_OWNER = process.env.PROJECT_OWNER || 'tiangong-lca';
 const PROJECT_NUMBER = Number(process.env.PROJECT_NUMBER || '1');
 const DEFAULT_REPO_TAG = process.env.DEFAULT_REPO_TAG;
 const DEFAULT_WORKSPACE_INTEGRATION = process.env.DEFAULT_WORKSPACE_INTEGRATION;
@@ -230,6 +230,24 @@ async function loadProject() {
   const data = await graphql(
     `
       query ($owner: String!, $number: Int!) {
+        organization(login: $owner) {
+          projectV2(number: $number) {
+            id
+            fields(first: 50) {
+              nodes {
+                __typename
+                ... on ProjectV2SingleSelectField {
+                  id
+                  name
+                  options {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
         user(login: $owner) {
           projectV2(number: $number) {
             id
@@ -256,7 +274,7 @@ async function loadProject() {
     },
   );
 
-  const project = data.user?.projectV2;
+  const project = data.organization?.projectV2 || data.user?.projectV2;
   if (!project) {
     throw new Error(`Unable to load ${PROJECT_OWNER} / Project #${PROJECT_NUMBER}.`);
   }

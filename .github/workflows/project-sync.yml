@@ -28,7 +28,7 @@ jobs:
       - name: Sync GitHub Project item
         env:
           PROJECT_AUTOMATION_TOKEN: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
-          PROJECT_OWNER: Neo9281
+          PROJECT_OWNER: tiangong-lca
           PROJECT_NUMBER: "1"
           DEFAULT_REPO_TAG: next
           DEFAULT_WORKSPACE_INTEGRATION: Pending
