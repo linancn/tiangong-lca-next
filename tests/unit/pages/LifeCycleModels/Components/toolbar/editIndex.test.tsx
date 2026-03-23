@@ -1280,6 +1280,70 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('falls back to empty ids when selecting node tools with sparse selections', async () => {
+    mockGraphStoreState.nodes = [
+      {
+        ...mockGraphStoreState.nodes[0],
+        id: undefined,
+        selected: true,
+      },
+      {
+        ...mockGraphStoreState.nodes[0],
+        id: 'node-1',
+        selected: false,
+      },
+    ];
+    mockGraphStoreState.edges = [{ selected: true }];
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    expect(inputTool).toBeTruthy();
+
+    mockUpdateNode.mockClear();
+    mockUpdateEdge.mockClear();
+
+    await act(async () => {
+      await inputTool.args.onClick({
+        cell: {
+          store: {
+            data: {
+              id: 'node-1',
+            },
+          },
+        },
+      });
+    });
+
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+  });
+
+  it('does not change selection when a node tool click has no node id', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const inputTool = getNodeTool('node-1', 'inputFlow');
+    expect(inputTool).toBeTruthy();
+
+    mockUpdateNode.mockClear();
+    mockUpdateEdge.mockClear();
+
+    await act(async () => {
+      await inputTool.args.onClick({
+        cell: {
+          store: {
+            data: {},
+          },
+        },
+      });
+    });
+
+    expect(mockUpdateNode).not.toHaveBeenCalled();
+    expect(mockUpdateEdge).not.toHaveBeenCalled();
+    expect(screen.getByText('io-port:Input:undefined')).toBeInTheDocument();
+  });
+
   it('batches flow port and node size updates into a single graph history mutation', async () => {
     render(<ToolbarEdit {...baseProps} />);
 

@@ -358,6 +358,19 @@ describe('ToolbarView', () => {
   });
 
   it('opens input/output port selectors and the target amount drawer from generated node tools', async () => {
+    mockGraphStoreState.nodes.push({
+      selected: true,
+      size: { width: 300 },
+      data: {
+        id: 'proc-3',
+        version: '1.0',
+        label: 'Process Three',
+        quantitativeReference: '0',
+      },
+      ports: { items: [] },
+    });
+    mockGraphStoreState.edges.unshift({ selected: true });
+
     render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
 
     await waitFor(() => expect(mockInitData).toHaveBeenCalled());
@@ -377,7 +390,9 @@ describe('ToolbarView', () => {
         },
       });
     });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
     expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
     expect(mockUpdateNode).toHaveBeenCalledWith('node-a', { selected: true });
     expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:node-a:en');
@@ -412,6 +427,32 @@ describe('ToolbarView', () => {
     expect(mockUpdateNode).toHaveBeenCalledWith('node-ref', { selected: true });
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
     fireEvent.click(screen.getByTestId('target-amount-on-data'));
+  });
+
+  it('does not change selection when a view tool click has no node id', async () => {
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockInitData).toHaveBeenCalled());
+
+    const initGraph = mockInitData.mock.calls[0][0];
+    const inputTool = initGraph.nodes[0].tools.find((tool: any) => tool.id === 'inputFlow');
+
+    mockUpdateNode.mockClear();
+    mockUpdateEdge.mockClear();
+
+    await act(async () => {
+      await inputTool.args.onClick({
+        cell: {
+          store: {
+            data: {},
+          },
+        },
+      });
+    });
+
+    expect(mockUpdateNode).not.toHaveBeenCalled();
+    expect(mockUpdateEdge).not.toHaveBeenCalled();
+    expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:none:en');
   });
 
   it('renders life cycle model view when the selected process instance belongs to a submodel', async () => {
