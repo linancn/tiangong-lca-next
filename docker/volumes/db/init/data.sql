@@ -3394,26 +3394,6 @@ CREATE TABLE public.reviews (
 ALTER TABLE public.reviews OWNER TO postgres;
 
 --
--- Name: notifications; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.notifications (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    modified_at timestamp with time zone DEFAULT now(),
-    type character varying(255) NOT NULL,
-    dataset_type character varying(255) NOT NULL,
-    dataset_id uuid NOT NULL,
-    dataset_version character(9) NOT NULL,
-    sender_user_id uuid NOT NULL,
-    recipient_user_id uuid NOT NULL,
-    "json" jsonb
-);
-
-
-ALTER TABLE public.notifications OWNER TO postgres;
-
---
 -- Name: roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -3709,22 +3689,6 @@ ALTER TABLE ONLY public.processes
 
 ALTER TABLE ONLY public.reviews
     ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
-
-
---
--- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.notifications
-    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
-
-
---
--- Name: notifications notifications_recipient_sender_type_dataset_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.notifications
-    ADD CONSTRAINT notifications_recipient_sender_type_dataset_key UNIQUE (recipient_user_id, sender_user_id, type, dataset_type, dataset_id, dataset_version);
 
 
 --
@@ -4426,13 +4390,6 @@ CREATE INDEX reviews_data_id_data_version_idx ON public.reviews USING btree (dat
 
 
 --
--- Name: notifications_recipient_user_id_modified_at_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX notifications_recipient_user_id_modified_at_idx ON public.notifications USING btree (recipient_user_id, modified_at DESC);
-
-
---
 -- Name: roles_role_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -4797,13 +4754,6 @@ CREATE TRIGGER roles_set_modified_at_trigger BEFORE UPDATE ON public.roles FOR E
 
 
 --
--- Name: notifications notifications_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER notifications_set_modified_at_trigger BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
-
-
---
 -- Name: sources sources_json_sync_trigger; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -4964,22 +4914,6 @@ ALTER TABLE ONLY public.lca_snapshot_artifacts
 
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
-
-
---
--- Name: notifications notifications_recipient_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.notifications
-    ADD CONSTRAINT notifications_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES auth.users(id);
-
-
---
--- Name: notifications notifications_sender_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.notifications
-    ADD CONSTRAINT notifications_sender_user_id_fkey FOREIGN KEY (sender_user_id) REFERENCES auth.users(id);
 
 
 --
@@ -5241,27 +5175,6 @@ CREATE POLICY "Enable read open data access for reviews" ON public.reviews FOR S
 
 
 --
--- Name: notifications insert by sender; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "notifications insert by sender" ON public.notifications FOR INSERT TO authenticated WITH CHECK ((( SELECT auth.uid() AS uid) = sender_user_id));
-
-
---
--- Name: notifications select by recipient or sender; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "notifications select by recipient or sender" ON public.notifications FOR SELECT TO authenticated USING (((( SELECT auth.uid() AS uid) = recipient_user_id) OR (( SELECT auth.uid() AS uid) = sender_user_id)));
-
-
---
--- Name: notifications update by sender; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "notifications update by sender" ON public.notifications FOR UPDATE TO authenticated USING ((( SELECT auth.uid() AS uid) = sender_user_id)) WITH CHECK ((( SELECT auth.uid() AS uid) = sender_user_id));
-
-
---
 -- Name: comments; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
@@ -5395,12 +5308,6 @@ ALTER TABLE public.lifecyclemodels ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.processes ENABLE ROW LEVEL SECURITY;
-
---
--- Name: notifications; Type: ROW SECURITY; Schema: public; Owner: postgres
---
-
-ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: reviews; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -6129,15 +6036,6 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.re
 
 
 --
--- Name: TABLE notifications; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.notifications TO anon;
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.notifications TO authenticated;
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.notifications TO service_role;
-
-
---
 -- Name: TABLE roles; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -6254,4 +6152,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,I
 ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO service_role;
+
 
