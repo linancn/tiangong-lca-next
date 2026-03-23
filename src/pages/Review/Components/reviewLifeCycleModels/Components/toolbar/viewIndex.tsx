@@ -11,7 +11,7 @@ import {
 } from '@/services/lifeCycleModels/util';
 import { genProcessName } from '@/services/processes/util';
 import { Space, Spin, theme } from 'antd';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
 import { Control } from './control';
 import EdgeExhange from './Exchange/index';
@@ -28,6 +28,8 @@ type Props = {
   drawerVisible: boolean;
   actionRef?: any;
 };
+
+const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
 
 const ToolbarView: FC<Props> = ({
   id,
@@ -57,6 +59,7 @@ const ToolbarView: FC<Props> = ({
   const updateEdge = useGraphStore((state) => state.updateEdge);
 
   const [nodeCount, setNodeCount] = useState(0);
+  const resizeToolRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { token } = theme.useToken();
 
@@ -308,6 +311,13 @@ const ToolbarView: FC<Props> = ({
     items: [],
   };
 
+  const buildReadOnlyNodeTools = (nodeWidth: number, nodeLabel: unknown, isReference: boolean) => [
+    isReference ? refTool : '',
+    nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? ''),
+    inputFlowTool,
+    outputFlowTool,
+  ];
+
   useGraphEvent('node:click', (evt) => {
     const node = evt.node;
     const event = evt.e;
@@ -364,6 +374,30 @@ const ToolbarView: FC<Props> = ({
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     removeEdges([edge.id]);
+  });
+
+  useGraphEvent('node:change:size', (evt) => {
+    const node = evt.node;
+    const nodeWidth = node.getSize().width;
+
+    node.setAttrByPath('label/text', '', VISUAL_ONLY_MUTATION_OPTIONS);
+
+    if (resizeToolRefreshTimerRef.current) {
+      clearTimeout(resizeToolRefreshTimerRef.current);
+    }
+
+    resizeToolRefreshTimerRef.current = setTimeout(() => {
+      node.removeTools?.();
+      node.addTools(
+        buildReadOnlyNodeTools(
+          nodeWidth,
+          node?.data?.label,
+          node?.data?.quantitativeReference === '1',
+        ),
+        { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
+      );
+      resizeToolRefreshTimerRef.current = null;
+    }, 0);
   });
 
   useEffect(() => {
@@ -436,7 +470,13 @@ const ToolbarView: FC<Props> = ({
           return {
             ...node,
             selected: false,
-            attrs: nodeAttrs,
+            attrs: {
+              ...nodeAttrs,
+              label: {
+                ...nodeAttrs.label,
+                text: '',
+              },
+            },
             ports: {
               ...node.ports,
               groups: ports.groups,
@@ -464,15 +504,11 @@ const ToolbarView: FC<Props> = ({
                 };
               }),
             },
-            tools: [
-              node?.data?.quantitativeReference === '1' ? refTool : '',
-              nodeTitleTool(
-                node?.size?.width ?? node?.width ?? 350,
-                genProcessName(node?.data?.label, lang) ?? '',
-              ),
-              inputFlowTool,
-              outputFlowTool,
-            ],
+            tools: buildReadOnlyNodeTools(
+              node?.size?.width ?? node?.width ?? 350,
+              node?.data?.label,
+              node?.data?.quantitativeReference === '1',
+            ),
           };
         });
 
@@ -526,18 +562,23 @@ const ToolbarView: FC<Props> = ({
   useEffect(() => {
     nodes.forEach((node) => {
       updateNode(node.id ?? '', {
-        tools: [
-          node?.data?.quantitativeReference === '1' ? refTool : '',
-          nodeTitleTool(
-            node?.size?.width ?? node?.width ?? 350,
-            genProcessName(node?.data?.label, lang) ?? '',
-          ),
-          inputFlowTool,
-          outputFlowTool,
-        ],
+        tools: buildReadOnlyNodeTools(
+          node?.size?.width ?? node?.width ?? 350,
+          node?.data?.label,
+          node?.data?.quantitativeReference === '1',
+        ),
       });
     });
   }, [nodeCount]);
+
+  useEffect(
+    () => () => {
+      if (resizeToolRefreshTimerRef.current) {
+        clearTimeout(resizeToolRefreshTimerRef.current);
+      }
+    },
+    [],
+  );
 
   return (
     <Space direction='vertical' size={'middle'}>

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex';
+import { act } from '@testing-library/react';
 import { fireEvent, render, screen, waitFor } from '../../../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
@@ -403,6 +404,74 @@ describe('ReviewLifeCycleModelToolbarView', () => {
 
     edgeAdded({ edge: { id: 'edge-new' } });
     expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-new']);
+  });
+
+  it('rebuilds read-only review node tools after resize and clears pending refresh timers on unmount', () => {
+    jest.useFakeTimers();
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const { unmount } = render(
+      <ToolbarView
+        type='view'
+        id='model-1'
+        version='1.0.0'
+        lang='en'
+        reviewId='review-1'
+        tabType='assigned'
+        drawerVisible
+      />,
+    );
+
+    const nodeResize = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:change:size',
+    )?.[1];
+    const resizeNode = {
+      data: {
+        label: 'Review Resize Node',
+        quantitativeReference: '1',
+      },
+      getSize: () => ({ width: 420 }),
+      setAttrByPath: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+    };
+
+    nodeResize({ node: resizeNode });
+    nodeResize({ node: resizeNode });
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(resizeNode.setAttrByPath).toHaveBeenCalledWith('label/text', '', {
+      ignoreHistory: true,
+    });
+    expect(resizeNode.removeTools).toHaveBeenCalled();
+    expect(resizeNode.addTools).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'nodeTitle',
+          args: expect.objectContaining({
+            markup: expect.arrayContaining([
+              expect.objectContaining({
+                tagName: 'rect',
+                attrs: expect.objectContaining({
+                  width: 420,
+                }),
+              }),
+            ]),
+          }),
+        }),
+      ]),
+      { ignoreHistory: true, reset: true },
+    );
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1);
+
+    nodeResize({ node: resizeNode });
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
+
+    clearTimeoutSpy.mockRestore();
+    jest.useRealTimers();
   });
 
   it('keeps read-only flow and reference tools non-interactive', async () => {
