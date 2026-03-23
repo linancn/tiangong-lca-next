@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { message } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
@@ -486,7 +487,10 @@ function extractPackageJobError(job: TidasPackageJobResponse) {
         ? job.diagnostics.message
         : null;
 
-  return requestCacheMessage || diagnosticsMessage || 'TIDAS package job failed';
+  return normalizeTidasPackageExportErrorMessage(
+    requestCacheMessage || diagnosticsMessage,
+    'TIDAS package job failed',
+  );
 }
 
 export async function exportTidasPackageApi(request: ExportTidasPackageRequest = {}) {

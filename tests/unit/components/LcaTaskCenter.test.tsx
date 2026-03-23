@@ -590,6 +590,19 @@ describe('LcaTaskCenter', () => {
         error: 'package failed',
         rootCount: 0,
       },
+      {
+        id: 'pkg-failed-too-large',
+        sequence: 6.1,
+        kind: 'tidas_package_export',
+        state: 'failed',
+        phase: 'failed',
+        message: 'backend failed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.100Z',
+        error:
+          'object upload failed status=413 Payload Too Large body=<?xml version="1.0"?><Error><Code>EntityTooLarge</Code><Message>The object exceeded the maximum allowed size</Message></Error>',
+        rootCount: 0,
+      },
     ];
     mockDownloadTidasPackageExportTask
       .mockResolvedValueOnce({ filename: 'downloaded.zip' })
@@ -608,10 +621,18 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Failed').length).toBeGreaterThan(0);
     expect(screen.getByText('Export package failed')).toBeInTheDocument();
+    expect(
+      screen.getByText('Export package exceeded the storage upload limit'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Export package ready (custom.zip)')).toBeInTheDocument();
     expect(screen.getByText('Export package ready (tidas-package.zip)')).toBeInTheDocument();
     expect(screen.getByText('queueing')).toBeInTheDocument();
     expect(screen.getByText('package failed')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Export package is too large for the current storage upload limit. Try exporting a smaller scope, or ask an administrator to enable large-file upload support.',
+      ),
+    ).toBeInTheDocument();
 
     const detailsButtons = screen.getAllByRole('button', { name: 'Details' });
     fireEvent.click(detailsButtons[0]);
