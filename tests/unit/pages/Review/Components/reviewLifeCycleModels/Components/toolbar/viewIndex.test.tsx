@@ -294,6 +294,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'review'));
     await waitFor(() => expect(mockInitData).toHaveBeenCalled());
 
+    const initModel = mockInitData.mock.calls.at(-1)?.[0];
     expect(screen.getByTestId('toolbar-view-info')).toHaveTextContent(
       'edit:review-1:review:en:1:1',
     );
@@ -302,6 +303,16 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     );
     expect(screen.getAllByTestId('process-view')[1]).toHaveTextContent(
       'model-1:1.0.0:toolResultIcon:false:en',
+    );
+    expect(initModel.edges[0]).toEqual(
+      expect.objectContaining({
+        selected: false,
+        attrs: {
+          line: expect.objectContaining({
+            strokeWidth: 1,
+          }),
+        },
+      }),
     );
     expect(screen.getByTestId('edge-exchange')).toHaveTextContent('false:edge-1:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
@@ -514,7 +525,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(initModel.nodes[0].ports.items[1].attrs.text.fill).toBe('#1677ff');
     expect(initModel.nodes[0].ports.items[1].attrs.text['font-weight']).toBe('normal');
     expect(initModel.nodes[0].ports.items[2].attrs.text.fill).toBe('#8c8c8c');
-    expect(initModel.edges).toEqual([{ id: 'edge-no-target' }]);
+    expect(initModel.edges).toEqual([{ id: 'edge-no-target', selected: false }]);
   });
 
   it('merges single-object review data for admin-rejected tabs and falls back when nothing is selected', async () => {

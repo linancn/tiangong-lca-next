@@ -352,8 +352,18 @@ describe('ToolbarView', () => {
     const initGraph = mockInitData.mock.calls[0][0];
     expect(initGraph.nodes[0].ports.items[0].attrs.text.title).toBe('Flow label');
     expect(initGraph.nodes[0].ports.items[1].attrs.text.title).toBe('Flow label');
+    expect(initGraph.edges.find((edge: any) => edge.id === 'graph-edge-1')).toEqual(
+      expect.objectContaining({
+        selected: false,
+        attrs: {
+          line: expect.objectContaining({
+            strokeWidth: 1,
+          }),
+        },
+      }),
+    );
     expect(initGraph.edges.find((edge: any) => edge.id === 'graph-edge-2')).toEqual(
-      expect.objectContaining({ id: 'graph-edge-2' }),
+      expect.objectContaining({ id: 'graph-edge-2', selected: false }),
     );
   });
 

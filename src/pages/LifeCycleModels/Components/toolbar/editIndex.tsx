@@ -495,6 +495,7 @@ const ToolbarEdit: FC<Props> = ({
     attrs: {
       line: {
         stroke: token.colorPrimary,
+        strokeWidth: 1,
       },
     },
     // tools: ['edge-editor'],

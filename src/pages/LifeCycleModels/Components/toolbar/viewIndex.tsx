@@ -398,6 +398,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
           return {
             ...node,
+            selected: false,
             attrs: nodeAttrs,
             ports: {
               ...node.ports,
@@ -461,16 +462,21 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
               );
               return {
                 ...edge,
+                selected: false,
                 attrs: {
                   line: {
                     stroke: token.colorPrimary,
+                    strokeWidth: 1,
                   },
                 },
                 labels: [label],
                 target: targetRest,
               };
             }
-            return edge;
+            return {
+              ...edge,
+              selected: false,
+            };
           }) ?? [];
         await modelData({
           nodes: initNodes,

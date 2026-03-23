@@ -2406,11 +2406,18 @@ describe('ToolbarEdit', () => {
           edges: expect.arrayContaining([
             expect.objectContaining({
               id: 'loaded-edge',
+              selected: false,
+              attrs: {
+                line: expect.objectContaining({
+                  strokeWidth: 1,
+                }),
+              },
               target: { cell: 'loaded-node' },
               labels: [expect.anything()],
             }),
             expect.objectContaining({
               id: 'loaded-edge-without-target',
+              selected: false,
             }),
           ]),
         }),
@@ -2673,7 +2680,13 @@ describe('ToolbarEdit', () => {
     });
     expect(mockUpdateEdge).toHaveBeenCalledWith(
       'edge-new',
-      expect.objectContaining({ attrs: expect.any(Object) }),
+      expect.objectContaining({
+        attrs: expect.objectContaining({
+          line: expect.objectContaining({
+            strokeWidth: 1,
+          }),
+        }),
+      }),
       { ignoreHistory: true },
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(

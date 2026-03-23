@@ -435,6 +435,7 @@ const ToolbarView: FC<Props> = ({
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,
+            selected: false,
             attrs: nodeAttrs,
             ports: {
               ...node.ports,
@@ -482,15 +483,20 @@ const ToolbarView: FC<Props> = ({
               const { x, y, ...targetRest } = edge.target as any;
               return {
                 ...edge,
+                selected: false,
                 attrs: {
                   line: {
                     stroke: token.colorPrimary,
+                    strokeWidth: 1,
                   },
                 },
                 target: targetRest,
               };
             }
-            return edge;
+            return {
+              ...edge,
+              selected: false,
+            };
           }) ?? [];
         await modelData({
           nodes: initNodes,

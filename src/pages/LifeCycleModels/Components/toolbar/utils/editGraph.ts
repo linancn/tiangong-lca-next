@@ -488,18 +488,24 @@ export const buildSavePayload = (
   currentEdges: LifeCycleModelGraphEdge[],
 ) => {
   const edges = currentEdges.map((edge) => {
+    const { selected, ...persistedEdge } = edge;
+    void selected;
     if (edge.target) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
-      return { ...edge, target: targetRest };
+      return { ...persistedEdge, target: targetRest };
     }
-    return edge;
+    return persistedEdge;
   });
 
-  const nodes = currentNodes.map((node, index) => ({
-    ...node,
-    data: { ...node.data, index: index.toString() },
-  }));
+  const nodes = currentNodes.map((node, index) => {
+    const { selected, ...persistedNode } = node;
+    void selected;
+    return {
+      ...persistedNode,
+      data: { ...persistedNode.data, index: index.toString() },
+    };
+  });
 
   return {
     ...(infoData ?? {}),
@@ -529,6 +535,7 @@ export const hydrateEditorNodes = ({
 
     return {
       ...node,
+      selected: false,
       attrs: nodeAttrs,
       ports: {
         ...node.ports,
@@ -570,17 +577,22 @@ export const hydrateEditorEdges = (
 
       return {
         ...edge,
+        selected: false,
         labels: [label],
         attrs: {
           line: {
             stroke: token.colorPrimary,
+            strokeWidth: 1,
           },
         },
         target: targetRest,
       };
     }
 
-    return edge;
+    return {
+      ...edge,
+      selected: false,
+    };
   });
 
 export const buildEmptyCreateInfoData = ({
