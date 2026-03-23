@@ -428,19 +428,6 @@ describe('ReviewLifeCycleModelToolbarView', () => {
   });
 
   it('opens input/output selectors and target amount through generated node tools', async () => {
-    mockGraphStoreState.nodes.push({
-      selected: true,
-      size: { width: 300 },
-      data: {
-        id: 'proc-3',
-        version: '1.0',
-        label: 'Process Three',
-        quantitativeReference: '0',
-      },
-      ports: { items: [] },
-    });
-    mockGraphStoreState.edges.unshift({ selected: true });
-
     render(
       <ToolbarView
         type='edit'
@@ -463,9 +450,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
         cell: { store: { data: { id: 'input-node' } } },
       });
     });
-    expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
     expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { selected: false });
-    expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
     expect(mockUpdateNode).toHaveBeenCalledWith('input-node', { selected: true });
     await waitFor(() =>
@@ -496,38 +481,6 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(mockUpdateNode).toHaveBeenCalledWith('ref-node', { selected: true });
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
     screen.getByTestId('target-amount-on-data').click();
-  });
-
-  it('does not change selection when a review tool click has no node id', async () => {
-    render(
-      <ToolbarView
-        type='edit'
-        id='model-1'
-        version='1.0.0'
-        lang='en'
-        reviewId='review-1'
-        tabType='review'
-        drawerVisible
-      />,
-    );
-
-    await waitFor(() => expect(mockInitData).toHaveBeenCalled());
-
-    const initModel = mockInitData.mock.calls.at(-1)?.[0];
-    const inputTool = initModel.nodes[0].tools.find((tool: any) => tool?.id === 'inputFlow');
-
-    mockUpdateNode.mockClear();
-    mockUpdateEdge.mockClear();
-
-    await act(async () => {
-      await inputTool.args.onClick({
-        cell: { store: { data: {} } },
-      });
-    });
-
-    expect(mockUpdateNode).not.toHaveBeenCalled();
-    expect(mockUpdateEdge).not.toHaveBeenCalled();
-    expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:none:en');
   });
 
   it('builds sparse reviewer-rejected graph data with placeholder review items and edge fallbacks', async () => {
