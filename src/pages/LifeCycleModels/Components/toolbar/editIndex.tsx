@@ -27,7 +27,6 @@ import type {
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
-  genNodeLabel,
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
 import {
@@ -174,6 +173,7 @@ const ToolbarEdit: FC<Props> = ({
   const importedId = getImportedId(importData?.[0]);
 
   const editInfoRef = useRef<ToolbarEditInfoHandle>(null);
+  const resizeToolRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setThisAction(action);
   }, [action]);
@@ -1017,14 +1017,15 @@ const ToolbarEdit: FC<Props> = ({
       };
     });
 
-    node.setAttrByPath(
-      'label/text',
-      genNodeLabel(label ?? '', lang, nodeWidth),
-      VISUAL_ONLY_MUTATION_OPTIONS,
-    );
+    node.setAttrByPath('label/text', '', VISUAL_ONLY_MUTATION_OPTIONS);
     node.prop('ports/items', newItems, VISUAL_ONLY_MUTATION_OPTIONS);
 
-    setTimeout(() => {
+    if (resizeToolRefreshTimerRef.current) {
+      clearTimeout(resizeToolRefreshTimerRef.current);
+    }
+
+    resizeToolRefreshTimerRef.current = setTimeout(() => {
+      node.removeTools?.();
       node.addTools(
         [
           node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
@@ -1034,6 +1035,7 @@ const ToolbarEdit: FC<Props> = ({
         ],
         { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
       );
+      resizeToolRefreshTimerRef.current = null;
     }, 0);
   });
 
@@ -1138,6 +1140,15 @@ const ToolbarEdit: FC<Props> = ({
       });
     };
   }, [copySelection, deleteCell, duplicateSelection, graph, pasteSelection, redoGraph, undoGraph]);
+
+  useEffect(
+    () => () => {
+      if (resizeToolRefreshTimerRef.current) {
+        clearTimeout(resizeToolRefreshTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
     const userId = await getUserId();

@@ -2740,9 +2740,30 @@ describe('ToolbarEdit', () => {
     act(() => {
       jest.runAllTimers();
     });
-    expect(resizeNode.setAttrByPath).toHaveBeenCalled();
+    expect(resizeNode.setAttrByPath).toHaveBeenCalledWith('label/text', '', {
+      ignoreHistory: true,
+    });
     expect(resizeNode.prop).toHaveBeenCalled();
+    expect(resizeNode.removeTools).toHaveBeenCalled();
     expect(resizeNode.addTools).toHaveBeenCalled();
+    expect(resizeNode.addTools).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'nodeTitle',
+          args: expect.objectContaining({
+            markup: expect.arrayContaining([
+              expect.objectContaining({
+                tagName: 'rect',
+                attrs: expect.objectContaining({
+                  width: 420,
+                }),
+              }),
+            ]),
+          }),
+        }),
+      ]),
+      { ignoreHistory: true, reset: true },
+    );
 
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('port', 'OUTPUT:flow-a');
@@ -2823,6 +2844,32 @@ describe('ToolbarEdit', () => {
     });
 
     expect(screen.getByText('connectable:OUTPUT:flow-a:3.0')).toBeInTheDocument();
+  });
+
+  it('clears pending resize tool refresh timers before rescheduling and on unmount', () => {
+    jest.useFakeTimers();
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const { unmount } = render(<ToolbarEdit {...baseProps} />);
+
+    const nodeResizeHandler = getGraphHandler('node:change:size');
+    const resizeNode = {
+      data: { label: [{ '@xml:lang': 'en', '#text': 'Resize Timer' }], quantitativeReference: '0' },
+      getSize: () => ({ width: 360 }),
+      getPorts: () => [],
+      setAttrByPath: jest.fn(),
+      prop: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+    };
+
+    nodeResizeHandler({ node: resizeNode });
+    nodeResizeHandler({ node: resizeNode });
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1);
+
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
+
+    clearTimeoutSpy.mockRestore();
   });
 
   it('handles sparse event payloads and default fallbacks in graph handlers', async () => {
@@ -2909,7 +2956,6 @@ describe('ToolbarEdit', () => {
       addTools: jest.fn(),
     };
     mockGenProcessName.mockReturnValueOnce(undefined);
-    mockGenNodeLabel.mockReturnValueOnce('');
     mockGetLangText.mockReturnValueOnce(undefined);
     mockGenPortLabel.mockReturnValueOnce('');
     nodeResizeHandler({ node: resizeNode });

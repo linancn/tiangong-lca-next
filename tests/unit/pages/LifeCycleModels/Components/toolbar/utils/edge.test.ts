@@ -17,6 +17,7 @@ describe('toolbar/utils/edge', () => {
 
     expect(result.attrs.labelText.text).toBe('Sur');
     expect(result.attrs.labelBody.title).toBe('(Output: 13) - (Input: 10) = 3');
+    expect(result.attrs.labelBody.strokeWidth).toBe(1);
   });
 
   it('builds input and balanced labels for negative and zero imbalances', () => {

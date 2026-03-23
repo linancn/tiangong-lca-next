@@ -152,6 +152,10 @@ class MockEdge {
     return this.attrs;
   }
 
+  getLabels() {
+    return this.labels;
+  }
+
   setData(data: any, options?: any) {
     this.data = { ...this.data, ...data };
     this.lastDataOptions = options;
@@ -584,7 +588,21 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
       result.current.setGraph(graph as any);
       result.current.initData({
         nodes: [{ id: 'node-selection', attrs: { body: { stroke: '#1677ff', strokeWidth: 1 } } }],
-        edges: [{ id: 'edge-selection', attrs: { line: { stroke: '#1677ff', strokeWidth: 1 } } }],
+        edges: [
+          {
+            id: 'edge-selection',
+            attrs: { line: { stroke: '#1677ff', strokeWidth: 1 } },
+            labels: [
+              {
+                attrs: {
+                  labelBody: {
+                    strokeWidth: 1,
+                  },
+                },
+              },
+            ],
+          },
+        ],
       });
     });
 
@@ -596,6 +614,13 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     expect((graph.getCellById('node-selection') as MockNode).attrs.body.strokeWidth).toBe(2);
     expect((graph.getCellById('edge-selection') as MockEdge).attrs.line.strokeWidth).toBe(2);
     expect(
+      (
+        (graph.getCellById('edge-selection') as MockEdge).labels?.[0]?.attrs?.labelBody as {
+          strokeWidth?: number;
+        }
+      )?.strokeWidth,
+    ).toBe(2);
+    expect(
       result.current.nodes.find(
         (item: { id?: string; attrs?: { body?: { strokeWidth?: number } } }) =>
           item.id === 'node-selection',
@@ -606,6 +631,11 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
         (item: { id?: string; attrs?: { line?: { strokeWidth?: number } } }) =>
           item.id === 'edge-selection',
       )?.attrs?.line?.strokeWidth,
+    ).toBe(2);
+    expect(
+      result.current.edges.find(
+        (item: { id?: string; labels?: any[] }) => item.id === 'edge-selection',
+      )?.labels?.[0]?.attrs?.labelBody?.strokeWidth,
     ).toBe(2);
 
     act(() => {
@@ -632,6 +662,13 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
         strokeWidth: 1,
       }),
     );
+    expect(
+      (
+        (graph.getCellById('edge-selection') as MockEdge).labels?.[0]?.attrs?.labelBody as {
+          strokeWidth?: number;
+        }
+      )?.strokeWidth,
+    ).toBe(1);
   });
 
   it('falls back to raw attrs and selection api availability when syncing selection attrs', () => {
@@ -644,7 +681,21 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
       result.current.setGraph(graph as any);
       result.current.initData({
         nodes: [{ id: 'node-raw-attrs', attrs: { body: { stroke: '#1677ff', strokeWidth: 1 } } }],
-        edges: [{ id: 'edge-raw-attrs', attrs: { line: { stroke: '#1677ff', strokeWidth: 1 } } }],
+        edges: [
+          {
+            id: 'edge-raw-attrs',
+            attrs: { line: { stroke: '#1677ff', strokeWidth: 1 } },
+            labels: [
+              {
+                attrs: {
+                  labelBody: {
+                    strokeWidth: 1,
+                  },
+                },
+              },
+            ],
+          },
+        ],
       });
     });
 
@@ -652,6 +703,7 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     const edge = graph.getCellById('edge-raw-attrs') as any;
     node.getAttrs = undefined;
     edge.getAttrs = undefined;
+    edge.getLabels = undefined;
 
     act(() => {
       graph.select(node);
@@ -662,6 +714,7 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
 
     expect(node.attrs.body.strokeWidth).toBe(2);
     expect(edge.attrs.line.strokeWidth).toBe(2);
+    expect(edge.labels?.[0]?.attrs?.labelBody?.strokeWidth).toBe(2);
     expect(
       result.current.nodes.find((item: { id?: string }) => item.id === 'node-raw-attrs')?.attrs
         ?.body?.strokeWidth,
@@ -680,6 +733,7 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
 
     expect(node.attrs.body.strokeWidth).toBe(1);
     expect(edge.attrs.line.strokeWidth).toBe(1);
+    expect(edge.labels?.[0]?.attrs?.labelBody?.strokeWidth).toBe(1);
     expect(
       result.current.nodes.find((item: { id?: string }) => item.id === 'node-raw-attrs')?.attrs
         ?.body?.strokeWidth,
@@ -708,8 +762,10 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     const edge = graph.getCellById('edge-no-attrs') as any;
     node.getAttrs = undefined;
     edge.getAttrs = undefined;
+    edge.getLabels = undefined;
     node.attrs = undefined;
     edge.attrs = undefined;
+    edge.labels = undefined;
 
     act(() => {
       result.current.updateNode('node-no-attrs', { data: { label: 'node-without-attrs' } });
