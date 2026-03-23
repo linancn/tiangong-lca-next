@@ -1,5 +1,10 @@
 import HeaderActionIcon from '@/components/HeaderActionIcon';
-import { ImportTidasPackageResponse, importTidasPackageApi } from '@/services/general/api';
+import {
+  ImportTidasPackageResponse,
+  TidasPackageValidationIssue,
+  importTidasPackageApi,
+} from '@/services/general/api';
+import { supabaseUrl } from '@/services/supabase/key';
 import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
 import { Modal, Upload, message } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
@@ -9,6 +14,33 @@ import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   onImported?: () => void;
+};
+
+const MAX_VALIDATION_ISSUES = 10;
+const DOCS_BASE_URL = 'https://docs.tiangong.earth';
+const TIDAS_PACKAGE_IMPORT_DOCS_PATH = '/docs/openapi/tidas-package-import';
+
+const VALIDATION_ISSUE_MESSAGE_MAP: Record<string, { id: string; defaultMessage: string }> = {
+  schema_error: {
+    id: 'component.tidasPackage.import.validation.issue.schemaError',
+    defaultMessage: 'Schema mismatch',
+  },
+  validation_error: {
+    id: 'component.tidasPackage.import.validation.issue.validationError',
+    defaultMessage: 'Validation runtime error',
+  },
+  localized_text_language_error: {
+    id: 'component.tidasPackage.import.validation.issue.localizedTextLanguageError',
+    defaultMessage: 'Localized text language mismatch',
+  },
+  classification_hierarchy_error: {
+    id: 'component.tidasPackage.import.validation.issue.classificationHierarchyError',
+    defaultMessage: 'Classification hierarchy is invalid',
+  },
+  invalid_json: {
+    id: 'component.tidasPackage.import.validation.issue.invalidJson',
+    defaultMessage: 'Invalid JSON file',
+  },
 };
 
 const formatConflicts = (response: ImportTidasPackageResponse) => {
@@ -45,11 +77,100 @@ const formatConflicts = (response: ImportTidasPackageResponse) => {
   );
 };
 
+const getValidationIssues = (response: ImportTidasPackageResponse) =>
+  response.validation_issues ?? [];
+
+const getApiBaseUrl = () => {
+  if (!supabaseUrl) {
+    return 'https://<project-ref>.supabase.co/functions/v1';
+  }
+
+  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1`;
+};
+
+const getDocsUrl = (locale: string) =>
+  `${DOCS_BASE_URL}${locale.toLowerCase().startsWith('en') ? '/en' : ''}${TIDAS_PACKAGE_IMPORT_DOCS_PATH}`;
+
+const formatValidationIssueMessage = (
+  intl: ReturnType<typeof useIntl>,
+  issue: TidasPackageValidationIssue,
+) => {
+  const descriptor = VALIDATION_ISSUE_MESSAGE_MAP[issue.issue_code] ?? {
+    id: 'component.tidasPackage.import.validation.issue.unknown',
+    defaultMessage: 'Data validation issue',
+  };
+
+  return intl.formatMessage({
+    id: descriptor.id,
+    defaultMessage: descriptor.defaultMessage,
+  });
+};
+
+const formatValidationIssues = (
+  intl: ReturnType<typeof useIntl>,
+  response: ImportTidasPackageResponse,
+) => {
+  const validationIssues = getValidationIssues(response);
+  const visibleIssues = validationIssues.slice(0, MAX_VALIDATION_ISSUES);
+
+  return (
+    <div>
+      <p>
+        <FormattedMessage
+          id='component.tidasPackage.import.validation.summary'
+          defaultMessage='Validation blocked import. Errors: {errors}, warnings: {warnings}, total issues: {issues}.'
+          values={{
+            errors: response.summary.error_count ?? 0,
+            warnings: response.summary.warning_count ?? 0,
+            issues: response.summary.validation_issue_count ?? validationIssues.length,
+          }}
+        />
+      </p>
+      <ul style={{ paddingLeft: 18, marginBottom: visibleIssues.length ? 12 : 0 }}>
+        {visibleIssues.map((issue, index) => (
+          <li
+            key={`${issue.issue_code}-${issue.file_path}-${issue.location}-${index}`}
+            style={{ marginBottom: 12 }}
+          >
+            <div>
+              <strong>{formatValidationIssueMessage(intl, issue)}</strong>
+            </div>
+            <div>{issue.message}</div>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>
+              <FormattedMessage
+                id='component.tidasPackage.import.validation.meta'
+                defaultMessage='Severity: {severity} | Category: {category} | File: {filePath} | Location: {location}'
+                values={{
+                  severity: issue.severity,
+                  category: issue.category,
+                  filePath: issue.file_path,
+                  location: issue.location,
+                }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+      {validationIssues.length > visibleIssues.length ? (
+        <p style={{ marginBottom: 0 }}>
+          <FormattedMessage
+            id='component.tidasPackage.import.validation.more'
+            defaultMessage='Showing the first {count} issues. Download or inspect the import report for the full list.'
+            values={{ count: visibleIssues.length }}
+          />
+        </p>
+      ) : null}
+    </div>
+  );
+};
+
 const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const intl = useIntl();
+  const apiBaseUrl = getApiBaseUrl();
+  const docsUrl = getDocsUrl(intl.locale || 'zh-CN');
 
   const handleImport = async () => {
     if (fileList.length === 0) {
@@ -99,6 +220,17 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
 
       if (!hasSummary) {
         throw error ?? new Error(payload?.message ?? 'Import failed');
+      }
+
+      if (payload.code === 'VALIDATION_FAILED') {
+        Modal.error({
+          title: intl.formatMessage({
+            id: 'component.tidasPackage.import.validation.title',
+            defaultMessage: 'Import blocked by validation issues',
+          }),
+          content: formatValidationIssues(intl, payload),
+        });
+        return;
       }
 
       Modal.error({
@@ -196,6 +328,74 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
             />
           </p>
         </Upload.Dragger>
+        <div
+          style={{
+            marginTop: 16,
+            padding: 12,
+            border: '1px solid rgba(5, 5, 5, 0.1)',
+            borderRadius: 8,
+            background: 'rgba(0, 0, 0, 0.02)',
+          }}
+        >
+          <p style={{ marginBottom: 8, fontWeight: 600 }}>
+            <FormattedMessage
+              id='component.tidasPackage.import.apiGuide.title'
+              defaultMessage='API import'
+            />
+          </p>
+          <p style={{ marginBottom: 8 }}>
+            <FormattedMessage
+              id='component.tidasPackage.import.apiGuide.summary'
+              defaultMessage='Use the same async flow for API clients: prepare upload, upload ZIP bytes, enqueue import, then poll the package job.'
+            />
+          </p>
+          <ol style={{ paddingLeft: 18, marginBottom: 8 }}>
+            <li>
+              <FormattedMessage
+                id='component.tidasPackage.import.apiGuide.step.prepare'
+                defaultMessage='POST /import_tidas_package with action=prepare_upload'
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id='component.tidasPackage.import.apiGuide.step.upload'
+                defaultMessage='Upload the ZIP bytes to the returned signed-upload target'
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id='component.tidasPackage.import.apiGuide.step.enqueue'
+                defaultMessage='POST /import_tidas_package with action=enqueue'
+              />
+            </li>
+            <li>
+              <FormattedMessage
+                id='component.tidasPackage.import.apiGuide.step.poll'
+                defaultMessage='GET /tidas_package_jobs/{job_id} until the import finishes'
+              />
+            </li>
+          </ol>
+          <p style={{ marginBottom: 4 }}>
+            <FormattedMessage
+              id='component.tidasPackage.import.apiGuide.baseUrl'
+              defaultMessage='Edge base URL:'
+            />{' '}
+            <code>{apiBaseUrl}</code>
+          </p>
+          <p style={{ marginBottom: 4 }}>
+            <FormattedMessage
+              id='component.tidasPackage.import.apiGuide.auth'
+              defaultMessage='Auth header:'
+            />{' '}
+            <code>Authorization: Bearer &lt;USER_API_KEY&gt;</code>
+          </p>
+          <a href={docsUrl} target='_blank' rel='noreferrer'>
+            <FormattedMessage
+              id='component.tidasPackage.import.apiGuide.docs'
+              defaultMessage='Open API import docs'
+            />
+          </a>
+        </div>
       </Modal>
     </>
   );

@@ -156,6 +156,22 @@ describe('ImportTidasPackage Component', () => {
     expect(mockedImportTidasPackageApi).not.toHaveBeenCalled();
   });
 
+  it('shows API import guidance inside the modal', () => {
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+
+    expect(screen.getByText('API import')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Use the same async flow for API clients: prepare upload, upload ZIP bytes, enqueue import, then poll the package job.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Authorization: Bearer <USER_API_KEY>')).toBeInTheDocument();
+    expect(screen.getByText('Open API import docs')).toBeInTheDocument();
+    expect(screen.getByText(/\/functions\/v1$/)).toBeInTheDocument();
+  });
+
   it('imports a ZIP package successfully and refreshes listeners', async () => {
     const onImported = jest.fn();
     const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent');
@@ -270,6 +286,70 @@ describe('ImportTidasPackage Component', () => {
 
     expect(mockMessage.success).not.toHaveBeenCalled();
     expect(mockedImportTidasPackageApi).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows localized validation issues when the import is blocked by validation', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+        code: 'VALIDATION_FAILED',
+        message: 'validation failed',
+        summary: {
+          total_entries: 0,
+          filtered_open_data_count: 0,
+          user_conflict_count: 0,
+          importable_count: 0,
+          imported_count: 0,
+          validation_issue_count: 2,
+          error_count: 1,
+          warning_count: 1,
+        },
+        filtered_open_data: [],
+        user_conflicts: [],
+        validation_issues: [
+          {
+            issue_code: 'schema_error',
+            severity: 'error',
+            category: 'sources',
+            file_path: 'sources/a.json',
+            location: '<root>',
+            message: 'Schema Error at <root>: missing required field',
+            context: { validator: 'required' },
+          },
+          {
+            issue_code: 'localized_text_language_error',
+            severity: 'warning',
+            category: 'processes',
+            file_path: 'processes/b.json',
+            location: 'processDataSet/name/baseName/0',
+            message: 'Localized text error at processDataSet/name/baseName/0: invalid lang',
+            context: {},
+          },
+        ],
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(modalApi.error).toHaveBeenCalledTimes(1);
+    });
+
+    const config = modalApi.error.mock.calls[0][0];
+    render(<>{config.content}</>);
+
+    expect(config.title).toBe('Import blocked by validation issues');
+    expect(screen.getByText('Schema mismatch')).toBeInTheDocument();
+    expect(screen.getByText('Localized text language mismatch')).toBeInTheDocument();
+    expect(screen.getByText('Schema Error at <root>: missing required field')).toBeInTheDocument();
+    expect(
+      screen.getByText('Validation blocked import. Errors: 1, warnings: 1, total issues: 2.'),
+    ).toBeInTheDocument();
   });
 
   it('rejects non-zip file selections before uploading', async () => {

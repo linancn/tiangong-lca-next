@@ -128,6 +128,9 @@ export type TidasPackageSummary = {
   user_conflict_count: number;
   importable_count: number;
   imported_count?: number;
+  validation_issue_count?: number;
+  error_count?: number;
+  warning_count?: number;
 };
 
 export type TidasPackageConflict = {
@@ -136,6 +139,16 @@ export type TidasPackageConflict = {
   version: string;
   state_code: number | null;
   user_id?: string | null;
+};
+
+export type TidasPackageValidationIssue = {
+  issue_code: string;
+  severity: string;
+  category: string;
+  file_path: string;
+  location: string;
+  message: string;
+  context?: Record<string, any>;
 };
 
 export type TidasPackageJobMode = 'queued' | 'in_progress' | 'cache_hit' | 'completed';
@@ -171,6 +184,7 @@ export type ImportTidasPackageResponse = {
   summary: TidasPackageSummary;
   filtered_open_data: TidasPackageConflict[];
   user_conflicts: TidasPackageConflict[];
+  validation_issues?: TidasPackageValidationIssue[];
 };
 
 export type PrepareImportTidasPackageResponse = {
