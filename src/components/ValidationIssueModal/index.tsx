@@ -1,6 +1,6 @@
 import { ValidationIssue } from '@/pages/Utils/review';
 import { CloseOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, Modal, Space, Table, theme } from 'antd';
+import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -227,8 +227,18 @@ const isValidationIssueLinkDisabled = (groupedIssue: GroupedValidationIssue) =>
 const getValidationIssueActionLabel = (
   intl: IntlShapeLike,
   groupedIssue: GroupedValidationIssue,
+  options?: {
+    notified?: boolean;
+  },
 ) => {
   const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
+
+  if (shouldNotifyDataOwner && options?.notified) {
+    return intl.formatMessage({
+      id: 'pages.validationIssues.dataOwnerNotified',
+      defaultMessage: 'Notified',
+    });
+  }
 
   return intl.formatMessage({
     id: shouldNotifyDataOwner
@@ -237,6 +247,23 @@ const getValidationIssueActionLabel = (
     defaultMessage: shouldNotifyDataOwner ? 'Notify data owner' : 'Fix issue',
   });
 };
+
+const validationIssueNotificationStatusCache = new Map<string, true>();
+
+export const __resetValidationIssueNotificationStatusCacheForTest = () => {
+  validationIssueNotificationStatusCache.clear();
+};
+
+const getCachedNotifiedIssueKeys = (groupedIssues: GroupedValidationIssue[]) =>
+  groupedIssues.reduce<Record<string, boolean>>((accumulator, groupedIssue) => {
+    const issueKey = getValidationIssueGroupKey(groupedIssue);
+
+    if (validationIssueNotificationStatusCache.has(issueKey)) {
+      accumulator[issueKey] = true;
+    }
+
+    return accumulator;
+  }, {});
 
 const getDatasetTypeLabel = (intl: IntlShapeLike, type: string) => {
   switch (type) {
@@ -481,7 +508,134 @@ type ValidationIssueModalContentProps = {
 
 const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalContentProps) => {
   const { token } = theme.useToken();
-  const groupedIssues = groupValidationIssues(issues);
+  const groupedIssues = useMemo(() => groupValidationIssues(issues), [issues]);
+  const [loadingIssueKey, setLoadingIssueKey] = useState<string | null>(null);
+  const [notifiedIssueKeys, setNotifiedIssueKeys] = useState<Record<string, boolean>>(() =>
+    getCachedNotifiedIssueKeys(groupedIssues),
+  );
+  const [checkingIssueKeys, setCheckingIssueKeys] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const cachedNotifiedIssueKeys = getCachedNotifiedIssueKeys(groupedIssues);
+    const groupedIssuesToCheck = groupedIssues.filter(
+      (groupedIssue) => groupedIssue.isOwnedByCurrentUser === false && groupedIssue.ownerUserId,
+    );
+    const issueKeysToCheck = groupedIssuesToCheck
+      .map((groupedIssue) => getValidationIssueGroupKey(groupedIssue))
+      .filter((issueKey) => !cachedNotifiedIssueKeys[issueKey]);
+
+    setNotifiedIssueKeys(cachedNotifiedIssueKeys);
+
+    if (!groupedIssuesToCheck.length) {
+      setCheckingIssueKeys({});
+      return;
+    }
+
+    setCheckingIssueKeys(
+      issueKeysToCheck.reduce<Record<string, boolean>>((accumulator, issueKey) => {
+        accumulator[issueKey] = true;
+        return accumulator;
+      }, {}),
+    );
+
+    if (!issueKeysToCheck.length) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadValidationIssueNotificationStatus = async () => {
+      const { getValidationIssueNotificationStatus } =
+        require('@/services/notifications/api') as typeof import('@/services/notifications/api');
+      const result = await getValidationIssueNotificationStatus(
+        groupedIssuesToCheck.map((groupedIssue) => ({
+          key: getValidationIssueGroupKey(groupedIssue),
+          recipientUserId: groupedIssue.ownerUserId,
+          ref: groupedIssue.ref,
+        })),
+      );
+
+      if (isMounted && result.success) {
+        Object.entries(result.data).forEach(([issueKey, notified]) => {
+          if (notified) {
+            validationIssueNotificationStatusCache.set(issueKey, true);
+          }
+        });
+
+        setNotifiedIssueKeys((prev) => ({
+          ...cachedNotifiedIssueKeys,
+          ...prev,
+          ...result.data,
+        }));
+      }
+
+      if (isMounted) {
+        setCheckingIssueKeys({});
+      }
+    };
+
+    void loadValidationIssueNotificationStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [groupedIssues]);
+
+  const handleNotifyDataOwner = async (groupedIssue: GroupedValidationIssue) => {
+    const issueKey = getValidationIssueGroupKey(groupedIssue);
+
+    if (!groupedIssue.ownerUserId) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.validationIssues.notifyDataOwner.ownerMissing',
+          defaultMessage: 'Unable to identify the data owner.',
+        }),
+      );
+      return;
+    }
+
+    setLoadingIssueKey(issueKey);
+    try {
+      const { upsertValidationIssueNotification } =
+        require('@/services/notifications/api') as typeof import('@/services/notifications/api');
+      const result = await upsertValidationIssueNotification({
+        recipientUserId: groupedIssue.ownerUserId,
+        ref: groupedIssue.ref,
+        link: groupedIssue.link,
+        issues: groupedIssue.issues.map((issue) => ({
+          code: issue.code,
+          tabName: issue.tabName,
+          tabNames: issue.tabNames,
+          underReviewVersion: issue.underReviewVersion,
+        })),
+      });
+
+      if (!result.success) {
+        throw result.error ?? new Error('notify_data_owner_failed');
+      }
+
+      setNotifiedIssueKeys((prev) => ({
+        ...prev,
+        [issueKey]: true,
+      }));
+      message.success(
+        intl.formatMessage({
+          id: 'pages.validationIssues.notifyDataOwner.success',
+          defaultMessage: 'Notification sent to the data owner.',
+        }),
+      );
+    } catch (error) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.validationIssues.notifyDataOwner.error',
+          defaultMessage: 'Failed to notify the data owner.',
+        }),
+      );
+    } finally {
+      setLoadingIssueKey(null);
+    }
+  };
+
   const columns: ColumnsType<GroupedValidationIssue> = [
     {
       title: intl.formatMessage({
@@ -553,22 +707,39 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
       key: 'action',
       width: 128,
       render: (_, groupedIssue) => {
-        const actionLabel = getValidationIssueActionLabel(intl, groupedIssue);
+        const issueKey = getValidationIssueGroupKey(groupedIssue);
+        const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
+        const isCheckingNotificationStatus = checkingIssueKeys[issueKey];
+        const actionLabel = getValidationIssueActionLabel(intl, groupedIssue, {
+          notified: notifiedIssueKeys[issueKey],
+        });
+        const isNotifyActionDisabled =
+          notifiedIssueKeys[issueKey] ||
+          loadingIssueKey === issueKey ||
+          isCheckingNotificationStatus;
+        const isOpenActionDisabled = isValidationIssueLinkDisabled(groupedIssue);
+        const isDisabled = shouldNotifyDataOwner ? isNotifyActionDisabled : isOpenActionDisabled;
 
         return groupedIssue.link ? (
           <Button
             type='link'
-            disabled={isValidationIssueLinkDisabled(groupedIssue)}
+            disabled={isDisabled}
+            loading={loadingIssueKey === issueKey || isCheckingNotificationStatus}
             style={{
-              color: isValidationIssueLinkDisabled(groupedIssue)
-                ? token.colorTextDisabled
-                : token.colorPrimary,
+              color: isDisabled ? token.colorTextDisabled : token.colorPrimary,
               fontWeight: token.fontWeightStrong,
               paddingInline: 0,
             }}
-            onClick={() => openValidationIssueLink(groupedIssue.link ?? '')}
+            onClick={() => {
+              if (shouldNotifyDataOwner) {
+                void handleNotifyDataOwner(groupedIssue);
+                return;
+              }
+
+              openValidationIssueLink(groupedIssue.link ?? '');
+            }}
           >
-            {actionLabel}
+            {isCheckingNotificationStatus ? null : actionLabel}
           </Button>
         ) : (
           '-'

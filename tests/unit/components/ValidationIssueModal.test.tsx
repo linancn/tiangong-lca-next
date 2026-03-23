@@ -1,9 +1,23 @@
-import { showValidationIssueModal } from '@/components/ValidationIssueModal';
-import { act, cleanup, fireEvent, screen } from '@testing-library/react';
+import {
+  __resetValidationIssueNotificationStatusCacheForTest,
+  showValidationIssueModal,
+} from '@/components/ValidationIssueModal';
+import {
+  getValidationIssueNotificationStatus,
+  upsertValidationIssueNotification,
+} from '@/services/notifications/api';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 
 let mockZIndexPopupBase: number | undefined = 1000;
 let mockZIndexPopupBaseSequence: Array<number | undefined> | null = null;
 let latestTableDataSource: any[] = [];
+const mockMessageSuccess = jest.fn();
+const mockMessageError = jest.fn();
+
+jest.mock('@/services/notifications/api', () => ({
+  getValidationIssueNotificationStatus: jest.fn(),
+  upsertValidationIssueNotification: jest.fn(),
+}));
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -18,19 +32,22 @@ jest.mock('antd', () => {
   const Button = ({
     children,
     disabled,
+    loading,
     onClick,
     type,
   }: {
     children?: React.ReactNode;
     disabled?: boolean;
+    loading?: boolean;
     onClick?: () => void;
     type?: string;
   }) => (
     <button
       type='button'
       data-button-type={type}
-      disabled={disabled}
-      onClick={disabled ? undefined : onClick}
+      data-loading={loading ? 'true' : 'false'}
+      disabled={disabled || loading}
+      onClick={disabled || loading ? undefined : onClick}
     >
       {children}
     </button>
@@ -137,6 +154,10 @@ jest.mock('antd', () => {
     Modal,
     Space,
     Table,
+    message: {
+      success: (...args: any[]) => mockMessageSuccess(...args),
+      error: (...args: any[]) => mockMessageError(...args),
+    },
     theme: {
       useToken: () => ({
         token: {
@@ -165,6 +186,10 @@ jest.mock('antd', () => {
 });
 
 describe('ValidationIssueModal', () => {
+  const mockGetValidationIssueNotificationStatus =
+    getValidationIssueNotificationStatus as jest.MockedFunction<any>;
+  const mockUpsertValidationIssueNotification =
+    upsertValidationIssueNotification as jest.MockedFunction<any>;
   const intl = {
     formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => {
       const messages: Record<string, string> = {
@@ -189,6 +214,10 @@ describe('ValidationIssueModal', () => {
         'pages.process.view.exchanges': '输入/输出',
         'pages.validationIssues.fixIssue': '修复问题',
         'pages.validationIssues.notifyDataOwner': '通知数据拥有者',
+        'pages.validationIssues.dataOwnerNotified': '已通知',
+        'pages.validationIssues.notifyDataOwner.ownerMissing': '无法识别数据拥有者。',
+        'pages.validationIssues.notifyDataOwner.success': '已通知数据拥有者。',
+        'pages.validationIssues.notifyDataOwner.error': '通知数据拥有者失败。',
       };
 
       return messages[id] ?? defaultMessage ?? id;
@@ -196,11 +225,18 @@ describe('ValidationIssueModal', () => {
   };
 
   beforeEach(() => {
+    __resetValidationIssueNotificationStatusCacheForTest();
     cleanup();
     document.body.innerHTML = '';
     mockZIndexPopupBase = 1000;
     mockZIndexPopupBaseSequence = null;
     latestTableDataSource = [];
+    mockMessageSuccess.mockReset();
+    mockMessageError.mockReset();
+    mockGetValidationIssueNotificationStatus.mockReset();
+    mockUpsertValidationIssueNotification.mockReset();
+    mockGetValidationIssueNotificationStatus.mockResolvedValue({ success: true, data: {} });
+    mockUpsertValidationIssueNotification.mockResolvedValue({ success: true, error: null });
     localStorage.setItem('isDarkMode', 'false');
     if (!URL.revokeObjectURL) {
       Object.defineProperty(URL, 'revokeObjectURL', {
@@ -212,6 +248,7 @@ describe('ValidationIssueModal', () => {
   });
 
   afterEach(() => {
+    __resetValidationIssueNotificationStatusCacheForTest();
     cleanup();
     document.body.innerHTML = '';
   });
@@ -248,6 +285,7 @@ describe('ValidationIssueModal', () => {
     expect(screen.getByText('操作')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '知道了' })).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveAttribute('data-z-index', '2000');
+    expect(mockGetValidationIssueNotificationStatus).not.toHaveBeenCalled();
 
     const fixIssueButton = screen.getByRole('button', { name: '修复问题' });
     expect(fixIssueButton).toBeInTheDocument();
@@ -266,6 +304,189 @@ describe('ValidationIssueModal', () => {
     windowOpenSpy.mockRestore();
   });
 
+  it('renders already-notified status when the current user has already notified the data owner', async () => {
+    mockGetValidationIssueNotificationStatus.mockResolvedValueOnce({
+      success: true,
+      data: {
+        'process data set:process-5:01.00.000': true,
+      },
+    });
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-5&version=01.00.000',
+            ownerName: '其他拥有者',
+            ownerUserId: 'owner-user-5',
+            ref: {
+              '@refObjectId': 'process-5',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    await waitFor(() => {
+      expect(mockGetValidationIssueNotificationStatus).toHaveBeenCalledWith([
+        {
+          key: 'process data set:process-5:01.00.000',
+          recipientUserId: 'owner-user-5',
+          ref: {
+            '@refObjectId': 'process-5',
+            '@type': 'process data set',
+            '@version': '01.00.000',
+          },
+        },
+      ]);
+    });
+    expect(await screen.findByRole('button', { name: '已通知' })).toBeDisabled();
+    expect(mockUpsertValidationIssueNotification).not.toHaveBeenCalled();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('does not flash the notify label while the initial notification status is still loading', async () => {
+    let resolveNotificationStatus:
+      | ((value: { success: boolean; data: Record<string, boolean> }) => void)
+      | null = null;
+    mockGetValidationIssueNotificationStatus.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveNotificationStatus = resolve;
+        }),
+    );
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-6&version=01.00.000',
+            ownerName: '其他拥有者',
+            ownerUserId: 'owner-user-6',
+            ref: {
+              '@refObjectId': 'process-6',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    await waitFor(() => {
+      expect(mockGetValidationIssueNotificationStatus).toHaveBeenCalledWith([
+        {
+          key: 'process data set:process-6:01.00.000',
+          recipientUserId: 'owner-user-6',
+          ref: {
+            '@refObjectId': 'process-6',
+            '@type': 'process data set',
+            '@version': '01.00.000',
+          },
+        },
+      ]);
+    });
+    expect(screen.queryByRole('button', { name: '通知数据拥有者' })).not.toBeInTheDocument();
+
+    await act(async () => {
+      resolveNotificationStatus?.({
+        success: true,
+        data: {
+          'process data set:process-6:01.00.000': true,
+        },
+      });
+    });
+
+    expect(await screen.findByRole('button', { name: '已通知' })).toBeDisabled();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('reuses the notified cache on reopen and skips a duplicate status lookup', async () => {
+    mockGetValidationIssueNotificationStatus.mockResolvedValueOnce({
+      success: true,
+      data: {
+        'process data set:process-7:01.00.000': true,
+      },
+    });
+    let firstModalHandle: { destroy: () => void } | null = null;
+    let secondModalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      firstModalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-7&version=01.00.000',
+            ownerName: '其他拥有者',
+            ownerUserId: 'owner-user-7',
+            ref: {
+              '@refObjectId': 'process-7',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(await screen.findByRole('button', { name: '已通知' })).toBeDisabled();
+
+    await act(async () => {
+      firstModalHandle?.destroy();
+    });
+
+    mockGetValidationIssueNotificationStatus.mockClear();
+
+    await act(async () => {
+      secondModalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-7&version=01.00.000',
+            ownerName: '其他拥有者',
+            ownerUserId: 'owner-user-7',
+            ref: {
+              '@refObjectId': 'process-7',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByRole('button', { name: '已通知' })).toBeDisabled();
+    expect(mockGetValidationIssueNotificationStatus).not.toHaveBeenCalled();
+
+    await act(async () => {
+      secondModalHandle?.destroy();
+    });
+  });
+
   it('renders notify data owner when the issue belongs to another account', async () => {
     const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
     let modalHandle: { destroy: () => void } | null = null;
@@ -279,6 +500,7 @@ describe('ValidationIssueModal', () => {
             isOwnedByCurrentUser: false,
             link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000',
             ownerName: '其他拥有者',
+            ownerUserId: 'owner-user-2',
             ref: {
               '@refObjectId': 'process-2',
               '@type': 'process data set',
@@ -296,16 +518,146 @@ describe('ValidationIssueModal', () => {
 
     fireEvent.click(notifyButton);
 
-    expect(windowOpenSpy).toHaveBeenCalledWith(
-      'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000',
-      '_blank',
-      'noopener,noreferrer',
-    );
+    await waitFor(() => {
+      expect(mockUpsertValidationIssueNotification).toHaveBeenCalledWith({
+        recipientUserId: 'owner-user-2',
+        ref: {
+          '@refObjectId': 'process-2',
+          '@type': 'process data set',
+          '@version': '01.00.000',
+        },
+        link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000',
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            tabName: undefined,
+            tabNames: undefined,
+            underReviewVersion: undefined,
+          },
+        ],
+      });
+    });
+    expect(mockMessageSuccess).toHaveBeenCalledWith('已通知数据拥有者。');
+    expect(windowOpenSpy).not.toHaveBeenCalled();
+    expect(await screen.findByRole('button', { name: '已通知' })).toBeDisabled();
 
     await act(async () => {
       modalHandle?.destroy();
     });
     windowOpenSpy.mockRestore();
+  });
+
+  it('shows an error when notifying data owner without a resolved owner id', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-3&version=01.00.000',
+            ownerName: '未知拥有者',
+            ref: {
+              '@refObjectId': 'process-3',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
+
+    expect(mockMessageError).toHaveBeenCalledWith('无法识别数据拥有者。');
+    expect(mockUpsertValidationIssueNotification).not.toHaveBeenCalled();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('shows an error when notifying data owner fails', async () => {
+    mockUpsertValidationIssueNotification.mockResolvedValueOnce({
+      success: false,
+      error: new Error('notify failed'),
+    });
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-4&version=01.00.000',
+            ownerName: '失败拥有者',
+            ownerUserId: 'owner-user-4',
+            ref: {
+              '@refObjectId': 'process-4',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
+
+    await waitFor(() => {
+      expect(mockMessageError).toHaveBeenCalledWith('通知数据拥有者失败。');
+    });
+    expect(screen.getByRole('button', { name: '通知数据拥有者' })).toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('falls back to a generic error when notifying data owner fails without an error payload', async () => {
+    mockUpsertValidationIssueNotification.mockResolvedValueOnce({
+      success: false,
+      error: undefined,
+    });
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-4b&version=01.00.000',
+            ownerName: '失败拥有者',
+            ownerUserId: 'owner-user-4b',
+            ref: {
+              '@refObjectId': 'process-4b',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
+
+    await waitFor(() => {
+      expect(mockMessageError).toHaveBeenCalledWith('通知数据拥有者失败。');
+    });
+    expect(screen.getByRole('button', { name: '通知数据拥有者' })).toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
   });
 
   it('renders non existent issues as dataset does not exist and disables the fix issue button', async () => {
