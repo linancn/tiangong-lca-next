@@ -1885,7 +1885,7 @@ describe('ProcessEdit component', () => {
     expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
   });
 
-  it('submits a review successfully after validation passes', async () => {
+  it('submits a review successfully when rule_verification is null', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
         {
@@ -1893,7 +1893,7 @@ describe('ProcessEdit component', () => {
           version: '1.0.0',
           json: { processDataSet: processDataset },
           state_code: 10,
-          rule_verification: true,
+          rule_verification: null,
         },
       ],
     });

@@ -22,6 +22,7 @@ import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
@@ -232,13 +233,14 @@ const SourceEdit: FC<Props> = ({
     });
 
     if (result?.data) {
-      if (result?.data[0]?.rule_verification === true) {
+      const isRuleVerified = isRuleVerificationPassed(result?.data?.[0]?.rule_verification);
+      if (isRuleVerified) {
         updateErrRef(null);
       } else {
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: Boolean(result?.data[0]?.rule_verification),
+          ruleVerification: isRuleVerified,
           nonExistent: false,
         });
       }
@@ -325,11 +327,10 @@ const SourceEdit: FC<Props> = ({
     } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const pathRef = new ReffPath(
-      rootRef,
-      updateResult?.data?.[0]?.rule_verification ?? false,
-      false,
+    const rootRuleVerification = isRuleVerificationPassed(
+      updateResult?.data?.[0]?.rule_verification,
     );
+    const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {

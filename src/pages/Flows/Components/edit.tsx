@@ -29,6 +29,7 @@ import { genFlowFromData, genFlowJsonOrdered } from '@/services/flows/util';
 import { jsonToList } from '@/services/general/util';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
@@ -289,13 +290,14 @@ const FlowsEdit: FC<Props> = ({
       flowProperties,
     })) as UpdateFlowResult;
     if (updateResult?.data) {
-      if (updateResult?.data?.[0]?.rule_verification === true) {
+      const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
+      if (isRuleVerified) {
         updateErrRef(null);
       } else {
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: Boolean(updateResult?.data?.[0]?.rule_verification),
+          ruleVerification: isRuleVerified,
           nonExistent: false,
         });
       }
@@ -366,11 +368,10 @@ const FlowsEdit: FC<Props> = ({
     } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const pathRef = new ReffPath(
-      rootRef,
-      Boolean(updateResult?.data?.[0]?.rule_verification),
-      false,
+    const rootRuleVerification = isRuleVerificationPassed(
+      updateResult?.data?.[0]?.rule_verification,
     );
+    const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
     if (problemNodes && problemNodes.length > 0) {

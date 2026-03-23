@@ -25,6 +25,7 @@ import {
 } from '@/services/unitgroups/data';
 import { genUnitGroupFromData, genUnitGroupJsonOrdered } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
@@ -232,13 +233,14 @@ const UnitGroupEdit: FC<Props> = ({
       formFieldsValue,
     )) as UpdateUnitGroupResult;
     if (updateResult?.data) {
-      if (updateResult?.data[0]?.rule_verification === true) {
+      const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
+      if (isRuleVerified) {
         updateErrRef(null);
       } else {
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: Boolean(updateResult?.data[0]?.rule_verification),
+          ruleVerification: isRuleVerified,
           nonExistent: false,
         });
       }
@@ -309,11 +311,11 @@ const UnitGroupEdit: FC<Props> = ({
     } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const pathRef = new ReffPath(
-      rootRef,
-      typeof updateResult !== 'boolean' && Boolean(updateResult?.data?.[0]?.rule_verification),
-      false,
-    );
+    const rootRuleVerification =
+      typeof updateResult !== 'boolean'
+        ? isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification)
+        : false;
+    const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {

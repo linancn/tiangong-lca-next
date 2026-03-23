@@ -1090,10 +1090,10 @@ describe('ContactEdit component', () => {
     );
   });
 
-  it('falls back to false rule verification and an empty problem-node list during data check', async () => {
+  it('treats a null rule verification as passed during data check', async () => {
     const user = userEvent.setup();
     mockUpdateContact.mockResolvedValueOnce({
-      data: [{}],
+      data: [{ rule_verification: null }],
     });
     mockReffPath.mockImplementationOnce(() => ({ findProblemNodes: () => undefined }));
 
@@ -1112,6 +1112,15 @@ describe('ContactEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockReffPath).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        '@type': 'contact data set',
+        '@refObjectId': 'contact-123',
+        '@version': '01.00.000',
+      }),
+      true,
+      false,
+    );
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
   });
 

@@ -6,6 +6,7 @@ import {
 import { getCurrentUser } from '@/services/auth';
 import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getILCDClassification } from '../classifications/api';
@@ -364,7 +365,7 @@ export async function updateLifeCycleModelJsonApi(
     version,
     lifeCycleModelJsonOrdered: normalizedData,
     currentJsonTg,
-    currentRuleVerification: Boolean(currentModel.rule_verification),
+    currentRuleVerification: isRuleVerificationPassed(currentModel.rule_verification),
     submodels,
     currentProcesses,
     commentReview: options.commentReview,
