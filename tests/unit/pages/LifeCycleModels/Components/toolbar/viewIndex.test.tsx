@@ -377,8 +377,13 @@ describe('ToolbarView', () => {
         },
       });
     });
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-a', { selected: true });
     expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:node-a:en');
 
+    mockUpdateNode.mockClear();
+    mockUpdateEdge.mockClear();
     await act(async () => {
       await outputTool.args.onClick({
         cell: {
@@ -388,11 +393,23 @@ describe('ToolbarView', () => {
         },
       });
     });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-b', { selected: true });
     expect(screen.getByTestId('io-port-view')).toHaveTextContent('Output:true:node-b:en');
 
+    mockUpdateNode.mockClear();
+    mockUpdateEdge.mockClear();
     await act(async () => {
-      referenceTool.args.onClick();
+      referenceTool.args.onClick({
+        cell: {
+          store: {
+            data: { id: 'node-ref' },
+          },
+        },
+      });
     });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-ref', { selected: true });
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
     fireEvent.click(screen.getByTestId('target-amount-on-data'));
   });

@@ -181,6 +181,24 @@ const ToolbarEdit: FC<Props> = ({
   const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
   const edges: GraphEdge[] = useGraphStore((state) => state.edges);
 
+  const selectNodeFromTool = (node: LifeCycleModelGraphNode | undefined) => {
+    const nodeId = node?.id ?? '';
+    if (!nodeId) {
+      return;
+    }
+    edges.forEach((edge) => {
+      if (edge.selected) {
+        updateEdge(edge.id ?? '', { selected: false });
+      }
+    });
+    nodes.forEach((currentNode) => {
+      if (currentNode.id !== nodeId && currentNode.selected) {
+        updateNode(currentNode.id ?? '', { selected: false });
+      }
+    });
+    updateNode(nodeId, { selected: true });
+  };
+
   const [nodeCount, setNodeCount] = useState(0);
 
   const { token } = theme.useToken();
@@ -224,6 +242,7 @@ const ToolbarEdit: FC<Props> = ({
       ],
       offset: { x: 10, y: 30 },
       async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
+        selectNodeFromTool(view.cell.store.data);
         await setIoPortSelectorDirection('Input');
         await setIoPortSelectorNode(view.cell.store.data);
         await setIoPortSelectorDrawerVisible(true);
@@ -272,6 +291,7 @@ const ToolbarEdit: FC<Props> = ({
       y: 0,
       offset: { x: -60, y: 30 },
       async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
+        selectNodeFromTool(view.cell.store.data);
         await setIoPortSelectorDirection('Output');
         await setIoPortSelectorNode(view.cell.store.data);
         await setIoPortSelectorDrawerVisible(true);
@@ -315,7 +335,8 @@ const ToolbarEdit: FC<Props> = ({
         },
       ],
       offset: { x: 10, y: -12 },
-      onClick() {
+      onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
+        selectNodeFromTool(view.cell.store.data);
         setTargetAmountDrawerVisible(true);
       },
     },
@@ -358,6 +379,7 @@ const ToolbarEdit: FC<Props> = ({
       ],
       offset: { x: 10, y: -12 },
       onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
+        selectNodeFromTool(view.cell.store.data);
         const thisData = view.cell.store.data;
         nodes.forEach(async (node) => {
           if (node.id === thisData?.id) {
