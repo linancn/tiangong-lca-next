@@ -3353,6 +3353,50 @@ describe('getConnectableProcessesTable', () => {
     expect(result).toEqual({ data: [], success: true });
   });
 
+  it('falls back to modified_at ordering when connectable sort uses a derived column', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      { classification: 'descend' },
+      'en',
+      'tg',
+      [],
+      'input:flow-derived-sort',
+      '',
+    );
+
+    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+    expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('maps supported connectable sort aliases to database columns', async () => {
+    const builder = createQueryBuilder({
+      data: [],
+      error: null,
+      count: 0,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await processesApi.getConnectableProcessesTable(
+      { current: 1, pageSize: 10 },
+      { modifiedAt: 'ascend' },
+      'en',
+      'tg',
+      [],
+      'input:flow-modified-at',
+      '',
+    );
+
+    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: true });
+    expect(result).toEqual({ data: [], success: true });
+  });
+
   it('applies the resolved team id for team-scope connectable queries', async () => {
     const builder = createQueryBuilder({
       data: [],

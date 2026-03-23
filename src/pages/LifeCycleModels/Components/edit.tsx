@@ -172,8 +172,10 @@ const LifeCycleModelEdit: FC<Props> = ({
                     visible: true,
                   }}
                   transformOptions={{
-                    resizing: true,
-                    rotating: true,
+                    resizing: {
+                      enabled: true,
+                      orthogonal: false,
+                    },
                   }}
                   historyOptions={{
                     enabled: true,

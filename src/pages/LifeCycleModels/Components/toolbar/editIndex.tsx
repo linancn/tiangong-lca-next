@@ -416,9 +416,22 @@ const ToolbarEdit: FC<Props> = ({
     },
   };
 
+  const squarePortMarkup = [{ tagName: 'rect', selector: 'portBody' }];
+  const squarePortAttrs = {
+    stroke: token.colorPrimary,
+    fill: token.colorBgBase,
+    strokeWidth: 1,
+    width: 8,
+    height: 8,
+    x: -4,
+    y: -4,
+    magnet: true,
+  };
+
   const ports = {
     groups: {
       groupInput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -428,12 +441,8 @@ const ToolbarEdit: FC<Props> = ({
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
@@ -442,6 +451,7 @@ const ToolbarEdit: FC<Props> = ({
         },
       },
       groupOutput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -451,12 +461,8 @@ const ToolbarEdit: FC<Props> = ({
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
@@ -1040,37 +1046,26 @@ const ToolbarEdit: FC<Props> = ({
 
       let clickedPortId: string | null = null;
       if (isClickingPort) {
-        const target = event.target as HTMLElement;
-        const textContent = target.textContent;
+        const targetElement = event.target as Element;
+        const portContainer = targetElement.closest?.('.x6-port');
+        const portElement =
+          targetElement.closest?.('[port]') ?? portContainer?.querySelector?.('[port]');
+        const portAttr = portElement?.getAttribute('port');
 
-        if (textContent) {
-          const targetElement = event.target as HTMLElement;
-          const parentElement = targetElement.parentElement;
-          const grandParentElement = parentElement?.parentElement;
+        if (portAttr) {
+          clickedPortId = portAttr;
+        }
 
-          if (grandParentElement) {
-            const firstChild = grandParentElement.firstElementChild;
+        let matchedPort = null;
+        if (clickedPortId) {
+          const ports: { id: string; data?: { flowVersion?: string } }[] = node.getPorts();
+          matchedPort = ports.find((port) => port.id === clickedPortId);
 
-            if (firstChild && firstChild.tagName === 'circle') {
-              const portAttr = firstChild.getAttribute('port');
-
-              if (portAttr) {
-                clickedPortId = portAttr;
-              }
-            }
-          }
-
-          let matchedPort = null;
-          if (clickedPortId) {
-            const ports: { id: string; data?: { flowVersion?: string } }[] = node.getPorts();
-            matchedPort = ports.find((port) => port.id === clickedPortId);
-
-            if (matchedPort) {
-              setConnectableProcessesDrawerVisible(true);
-              setConnectableProcessesPortId(clickedPortId);
-              setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion ?? '');
-              return;
-            }
+          if (matchedPort) {
+            setConnectableProcessesDrawerVisible(true);
+            setConnectableProcessesPortId(clickedPortId);
+            setConnectableProcessesFlowVersion(matchedPort?.data?.flowVersion ?? '');
+            return;
           }
         }
       }

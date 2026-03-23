@@ -258,9 +258,22 @@ const ToolbarView: FC<Props> = ({
     },
   };
 
+  const squarePortMarkup = [{ tagName: 'rect', selector: 'portBody' }];
+  const squarePortAttrs = {
+    stroke: token.colorPrimary,
+    fill: token.colorBgBase,
+    strokeWidth: 1,
+    width: 8,
+    height: 8,
+    x: -4,
+    y: -4,
+    magnet: true,
+  };
+
   const ports = {
     groups: {
       groupInput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -270,12 +283,8 @@ const ToolbarView: FC<Props> = ({
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
@@ -284,6 +293,7 @@ const ToolbarView: FC<Props> = ({
         },
       },
       groupOutput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -293,12 +303,8 @@ const ToolbarView: FC<Props> = ({
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,

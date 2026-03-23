@@ -40,8 +40,26 @@ interface X6GraphProps {
     visible?: boolean;
   };
   transformOptions?: {
-    resizing?: boolean;
-    rotating?: boolean;
+    resizing?:
+      | boolean
+      | {
+          enabled?: boolean;
+          minWidth?: number;
+          maxWidth?: number;
+          minHeight?: number;
+          maxHeight?: number;
+          orthogonal?: boolean;
+          restrict?: boolean | number;
+          autoScroll?: boolean;
+          preserveAspectRatio?: boolean;
+          allowReverse?: boolean;
+        };
+    rotating?:
+      | boolean
+      | {
+          enabled?: boolean;
+          grid?: number;
+        };
   };
   historyOptions?: {
     enabled?: boolean;
@@ -75,7 +93,11 @@ const X6GraphComponent = ({
   const setGraph = useGraphStore((state) => state.setGraph);
   const { token } = theme.useToken();
   const defaultGridColor = token.colorTextTertiary;
-  const hasTransformHandles = !!(transformOptions?.resizing || transformOptions?.rotating);
+  const isTransformOptionEnabled = (option?: boolean | { enabled?: boolean }) =>
+    typeof option === 'boolean' ? option : option?.enabled === true;
+  const hasTransformHandles =
+    isTransformOptionEnabled(transformOptions?.resizing) ||
+    isTransformOptionEnabled(transformOptions?.rotating);
 
   useEffect(() => {
     const graph = new Graph({
@@ -201,11 +223,11 @@ const X6GraphComponent = ({
     }
 
     // 如果需要 transform 功能
-    if (transformOptions?.resizing || transformOptions?.rotating) {
+    if (hasTransformHandles) {
       graph.use(
         new Transform({
-          resizing: transformOptions.resizing ?? false,
-          rotating: transformOptions.rotating ?? false,
+          resizing: transformOptions?.resizing ?? false,
+          rotating: transformOptions?.rotating ?? false,
         }),
       );
     }
