@@ -24,7 +24,7 @@ const OPEN_BUTTON_TEST_ID = 'import-open-button';
 const MODAL_OK_TEST_ID = 'import-modal-ok';
 const PICK_FILE_TEST_ID = 'import-pick-file';
 const PICK_BAD_FILE_TEST_ID = 'import-pick-bad-file';
-let mockLocale = 'zh-CN';
+let mockLocale: string | undefined = 'zh-CN';
 
 jest.mock('@ant-design/icons', () => ({
   CloudUploadOutlined: ({
@@ -186,6 +186,19 @@ describe('ImportTidasPackage Component', () => {
     expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
       'href',
       'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
+    );
+  });
+
+  it('falls back to the default docs link when locale is missing', () => {
+    mockLocale = undefined;
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+
+    expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
+      'href',
+      'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
     );
   });
 
