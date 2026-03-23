@@ -8,7 +8,14 @@ interface X6GraphProps {
   zoomable?: boolean;
   pannable?: boolean;
   minScale?: number;
-  selectOptions?: any;
+  selectOptions?: {
+    enabled?: boolean;
+    multiple?: boolean;
+    movable?: boolean;
+    showNodeSelectionBox?: boolean;
+    showEdgeSelectionBox?: boolean;
+    pointerEvents?: 'none' | 'auto';
+  };
   connectionOptions?: {
     snap?: boolean;
     allowBlank?: boolean;
@@ -68,6 +75,7 @@ const X6GraphComponent = ({
   const setGraph = useGraphStore((state) => state.setGraph);
   const { token } = theme.useToken();
   const defaultGridColor = token.colorTextTertiary;
+  const hasTransformHandles = !!(transformOptions?.resizing || transformOptions?.rotating);
 
   useEffect(() => {
     const graph = new Graph({
@@ -182,11 +190,12 @@ const X6GraphComponent = ({
       graph.use(
         new Selection({
           enabled: true,
-          multiple: true,
+          multiple: selectOptions?.multiple ?? true,
           rubberband: false,
-          movable: true,
-          showNodeSelectionBox: false,
-          showEdgeSelectionBox: false,
+          movable: selectOptions?.movable ?? true,
+          showNodeSelectionBox: selectOptions?.showNodeSelectionBox ?? !hasTransformHandles,
+          showEdgeSelectionBox: selectOptions?.showEdgeSelectionBox ?? false,
+          pointerEvents: selectOptions?.pointerEvents ?? (hasTransformHandles ? 'auto' : 'none'),
         }),
       );
     }

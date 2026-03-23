@@ -123,6 +123,16 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     expect(instance.use).toHaveBeenCalledTimes(2);
     expect(instance.use).toHaveBeenCalledWith(expect.any(Snapline));
     expect(instance.use).toHaveBeenCalledWith(expect.any(Selection));
+    const selectionPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Selection,
+    )?.[0];
+    expect(selectionPlugin.options).toMatchObject({
+      multiple: true,
+      movable: true,
+      showNodeSelectionBox: true,
+      showEdgeSelectionBox: false,
+      pointerEvents: 'none',
+    });
     expect(mockSetGraph).toHaveBeenCalledWith(instance);
   });
 
@@ -316,5 +326,42 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     )?.[0];
 
     expect(transformPlugin.options).toEqual({ resizing: true, rotating: false });
+  });
+
+  it('hides the node selection box when transform handles are enabled', () => {
+    const { Selection, __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(<X6GraphComponent transformOptions={{ resizing: true }} />);
+
+    const instance = __graphInstances[0];
+    const selectionPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Selection,
+    )?.[0];
+
+    expect(selectionPlugin.options).toMatchObject({
+      showNodeSelectionBox: false,
+      pointerEvents: 'auto',
+    });
+  });
+
+  it('respects explicit selection-box overrides when transform handles are enabled', () => {
+    const { Selection, __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(
+      <X6GraphComponent
+        transformOptions={{ resizing: true }}
+        selectOptions={{ showNodeSelectionBox: true, pointerEvents: 'none' }}
+      />,
+    );
+
+    const instance = __graphInstances[0];
+    const selectionPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Selection,
+    )?.[0];
+
+    expect(selectionPlugin.options).toMatchObject({
+      showNodeSelectionBox: true,
+      pointerEvents: 'none',
+    });
   });
 });

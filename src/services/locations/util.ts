@@ -55,7 +55,7 @@ export const getCachedLocationFileData = async <T>(filename: string): Promise<T 
 
 export const cacheAndDecompressLocationFile = async (filename: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/location/${filename}`);
+    const response = await fetch(`/locations/${filename}`);
     if (!response.ok) {
       console.warn(`Location source file not found: ${filename}`);
       return false;
