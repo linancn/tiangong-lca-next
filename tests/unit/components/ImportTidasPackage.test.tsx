@@ -24,6 +24,7 @@ const OPEN_BUTTON_TEST_ID = 'import-open-button';
 const MODAL_OK_TEST_ID = 'import-modal-ok';
 const PICK_FILE_TEST_ID = 'import-pick-file';
 const PICK_BAD_FILE_TEST_ID = 'import-pick-bad-file';
+let mockLocale = 'zh-CN';
 
 jest.mock('@ant-design/icons', () => ({
   CloudUploadOutlined: ({
@@ -56,6 +57,7 @@ jest.mock('umi', () => ({
     return <span>{rendered}</span>;
   },
   useIntl: () => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage }: { defaultMessage: string }) => defaultMessage,
   }),
 }));
@@ -138,6 +140,7 @@ const modalApi = Modal as any;
 describe('ImportTidasPackage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'zh-CN';
   });
 
   it('warns when import is triggered without selecting a file', async () => {
@@ -170,6 +173,19 @@ describe('ImportTidasPackage Component', () => {
     expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
       'href',
       'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
+    );
+  });
+
+  it('uses the english API import docs link for english locale', () => {
+    mockLocale = 'en-US';
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+
+    expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
+      'href',
+      'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
     );
   });
 
@@ -351,6 +367,98 @@ describe('ImportTidasPackage Component', () => {
     expect(
       screen.getByText('Validation blocked import. Errors: 1, warnings: 1, total issues: 2.'),
     ).toBeInTheDocument();
+  });
+
+  it('handles validation failures without issue details by showing zero-count summary', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+        code: 'VALIDATION_FAILED',
+        message: 'validation failed',
+        summary: {
+          total_entries: 0,
+          filtered_open_data_count: 0,
+          user_conflict_count: 0,
+          importable_count: 0,
+          imported_count: 0,
+        },
+        filtered_open_data: [],
+        user_conflicts: [],
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(modalApi.error).toHaveBeenCalledTimes(1);
+    });
+
+    const config = modalApi.error.mock.calls[0][0];
+    render(<>{config.content}</>);
+
+    expect(
+      screen.getByText('Validation blocked import. Errors: 0, warnings: 0, total issues: 0.'),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+  });
+
+  it('truncates long validation issue lists and falls back for unknown issue codes', async () => {
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+        code: 'VALIDATION_FAILED',
+        message: 'validation failed',
+        summary: {
+          total_entries: 11,
+          filtered_open_data_count: 0,
+          user_conflict_count: 0,
+          importable_count: 0,
+          imported_count: 0,
+        },
+        filtered_open_data: [],
+        user_conflicts: [],
+        validation_issues: Array.from({ length: 11 }).map((_, index) => ({
+          issue_code: index === 0 ? 'unknown_issue_code' : 'validation_error',
+          severity: index % 2 === 0 ? 'error' : 'warning',
+          category: 'sources',
+          file_path: `sources/${index + 1}.json`,
+          location: `<root>.${index + 1}`,
+          message: `Issue ${index + 1}`,
+          context: {},
+        })),
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(modalApi.error).toHaveBeenCalledTimes(1);
+    });
+
+    const config = modalApi.error.mock.calls[0][0];
+    render(<>{config.content}</>);
+
+    expect(screen.getByText('Data validation issue')).toBeInTheDocument();
+    expect(
+      screen.getByText('Validation blocked import. Errors: 0, warnings: 0, total issues: 11.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Showing the first 10 issues. Download or inspect the import report for the full list.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(10);
+    expect(screen.queryByText('Issue 11')).not.toBeInTheDocument();
   });
 
   it('rejects non-zip file selections before uploading', async () => {
