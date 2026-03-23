@@ -122,6 +122,12 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
                     thickness: 1,
                     visible: true,
                   }}
+                  transformOptions={{
+                    resizing: {
+                      enabled: true,
+                      orthogonal: false,
+                    },
+                  }}
                 />
               </Content>
             </Layout>

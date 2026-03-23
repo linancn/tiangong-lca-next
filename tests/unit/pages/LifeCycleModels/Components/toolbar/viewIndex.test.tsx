@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/LifeCycleModels/Components/toolbar/viewIndex';
-import { act, fireEvent, render, screen, waitFor } from '../../../../../helpers/testUtils';
+import { render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
 const mockUpdateEdge = jest.fn();
@@ -357,44 +357,41 @@ describe('ToolbarView', () => {
     );
   });
 
-  it('opens input/output port selectors and the target amount drawer from generated node tools', async () => {
+  it('keeps read-only flow and reference tools non-interactive', async () => {
     render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
 
     await waitFor(() => expect(mockInitData).toHaveBeenCalled());
+    expect(mockNodeTitleTool).toHaveBeenCalledWith(
+      300,
+      'Process One',
+      expect.any(Object),
+      'en',
+      'move',
+    );
 
     const initGraph = mockInitData.mock.calls[0][0];
     const tools = initGraph.nodes[0].tools.filter(Boolean);
+    const nodeTitleTool = tools.find((tool: any) => tool.id === 'nodeTitle');
     const inputTool = tools.find((tool: any) => tool.id === 'inputFlow');
     const outputTool = tools.find((tool: any) => tool.id === 'outputFlow');
     const referenceTool = tools.find((tool: any) => tool.id === 'ref');
 
-    await act(async () => {
-      await inputTool.args.onClick({
-        cell: {
-          store: {
-            data: { id: 'node-a' },
-          },
-        },
-      });
-    });
-    expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:node-a:en');
-
-    await act(async () => {
-      await outputTool.args.onClick({
-        cell: {
-          store: {
-            data: { id: 'node-b' },
-          },
-        },
-      });
-    });
-    expect(screen.getByTestId('io-port-view')).toHaveTextContent('Output:true:node-b:en');
-
-    await act(async () => {
-      referenceTool.args.onClick();
-    });
-    expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
-    fireEvent.click(screen.getByTestId('target-amount-on-data'));
+    expect(nodeTitleTool).toEqual(expect.objectContaining({ id: 'nodeTitle' }));
+    expect(initGraph.nodes[0].ports.groups.groupInput.attrs.portBody).toEqual(
+      expect.objectContaining({
+        magnet: 'passive',
+        cursor: 'move',
+      }),
+    );
+    expect(initGraph.nodes[0].ports.items[0].attrs.text.cursor).toBe('move');
+    expect(inputTool.args.onClick).toBeUndefined();
+    expect(inputTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(outputTool.args.onClick).toBeUndefined();
+    expect(outputTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(referenceTool.args.onClick).toBeUndefined();
+    expect(referenceTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(screen.getByTestId('io-port-view')).toHaveTextContent(':false:none:en');
+    expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
   });
 
   it('renders life cycle model view when the selected process instance belongs to a submodel', async () => {

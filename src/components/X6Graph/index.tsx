@@ -240,7 +240,7 @@ const X6GraphComponent = ({
     };
   }, []);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+  return <div ref={containerRef} className='x6-graph' style={{ width: '100%', height: '100%' }} />;
 };
 
 export default X6GraphComponent;

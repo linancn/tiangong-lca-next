@@ -18,9 +18,14 @@ jest.mock('umi', () => ({
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
 }));
 
+let latestGraphProps: any = null;
+
 jest.mock('@/components/X6Graph', () => ({
   __esModule: true,
-  default: () => <div data-testid='x6-graph'>graph</div>,
+  default: (props: any) => {
+    latestGraphProps = props;
+    return <div data-testid='x6-graph'>graph</div>;
+  },
 }));
 
 jest.mock('@/contexts/graphContext', () => ({
@@ -101,6 +106,10 @@ describe('ReviewLifeCycleModelsDetail', () => {
     tabType: 'review' as const,
   };
 
+  beforeEach(() => {
+    latestGraphProps = null;
+  });
+
   it('opens the review drawer in edit mode and passes graph toolbar props through', async () => {
     render(<ReviewLifeCycleModelsDetail {...baseProps} type='edit' />);
 
@@ -110,6 +119,12 @@ describe('ReviewLifeCycleModelsDetail', () => {
     expect(screen.getByText('Review model')).toBeInTheDocument();
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
+    expect(latestGraphProps?.transformOptions).toEqual({
+      resizing: {
+        enabled: true,
+        orthogonal: false,
+      },
+    });
     expect(screen.getByTestId('toolbar-view')).toHaveTextContent('"type":"edit"');
     expect(screen.getByTestId('toolbar-view')).toHaveTextContent('"drawerVisible":true');
   });

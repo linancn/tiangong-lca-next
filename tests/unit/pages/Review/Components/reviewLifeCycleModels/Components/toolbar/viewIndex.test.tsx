@@ -1,6 +1,5 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex';
-import { act } from '@testing-library/react';
 import { render, screen, waitFor } from '../../../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
@@ -395,7 +394,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-new']);
   });
 
-  it('opens input/output selectors and target amount through generated node tools', async () => {
+  it('keeps read-only flow and reference tools non-interactive', async () => {
     render(
       <ToolbarView
         type='edit'
@@ -411,31 +410,24 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     await waitFor(() => expect(mockInitData).toHaveBeenCalled());
 
     const initModel = mockInitData.mock.calls.at(-1)?.[0];
-    const [refTool, , inputTool, outputTool] = initModel.nodes[0].tools;
+    const [refTool, nodeTitleTool, inputTool, outputTool] = initModel.nodes[0].tools;
 
-    await act(async () => {
-      await inputTool.args.onClick({
-        cell: { store: { data: { id: 'input-node' } } },
-      });
-    });
-    await waitFor(() =>
-      expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:input-node:en'),
+    expect(nodeTitleTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(initModel.nodes[0].ports.groups.groupInput.attrs.portBody).toEqual(
+      expect.objectContaining({
+        magnet: 'passive',
+        cursor: 'move',
+      }),
     );
-
-    await act(async () => {
-      await outputTool.args.onClick({
-        cell: { store: { data: { id: 'output-node' } } },
-      });
-    });
-    await waitFor(() =>
-      expect(screen.getByTestId('io-port-view')).toHaveTextContent('Output:true:output-node:en'),
-    );
-
-    await act(async () => {
-      refTool.args.onClick();
-    });
-    expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
-    screen.getByTestId('target-amount-on-data').click();
+    expect(initModel.nodes[0].ports.groups.groupInput.attrs.text.cursor).toBe('move');
+    expect(inputTool.args.onClick).toBeUndefined();
+    expect(inputTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(outputTool.args.onClick).toBeUndefined();
+    expect(outputTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(refTool.args.onClick).toBeUndefined();
+    expect(refTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(screen.getByTestId('io-port-view')).toHaveTextContent(':false:none:en');
+    expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
   });
 
   it('builds sparse reviewer-rejected graph data with placeholder review items and edge fallbacks', async () => {

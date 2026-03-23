@@ -63,6 +63,12 @@ describe('toolbar/utils/node', () => {
         args: expect.objectContaining({
           markup: expect.arrayContaining([
             expect.objectContaining({
+              tagName: 'rect',
+              attrs: expect.objectContaining({
+                cursor: 'pointer',
+              }),
+            }),
+            expect.objectContaining({
               tagName: 'text',
               textContent: 'Process A:en:180',
             }),
@@ -71,6 +77,18 @@ describe('toolbar/utils/node', () => {
               textContent: 'Process A',
             }),
           ]),
+        }),
+      }),
+    );
+  });
+
+  it('allows read-only callers to override the title cursor', () => {
+    const result = nodeTitleTool(180, 'Process A', token, 'en', 'move');
+
+    expect(result.args.markup?.[0]).toEqual(
+      expect.objectContaining({
+        attrs: expect.objectContaining({
+          cursor: 'move',
         }),
       }),
     );
