@@ -698,6 +698,28 @@ describe('ToolbarView', () => {
     expect(mockUpdateEdge).not.toHaveBeenCalled();
   });
 
+  it('keeps the clicked node selected on repeated plain clicks', () => {
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible={false} />);
+
+    const nodeClick = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:click',
+    )?.[1];
+
+    mockUpdateNode.mockClear();
+    mockGraphStoreState.nodes[0].selected = true;
+
+    nodeClick({
+      node: {
+        id: 'node-1',
+        isNode: () => true,
+      },
+      e: {},
+    });
+
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+    expect(mockUpdateNode).not.toHaveBeenCalledWith('node-1', { selected: false });
+  });
+
   it('falls back to empty ids when deselecting nodes and edges without ids', () => {
     mockGraphStoreState.nodes = [
       {

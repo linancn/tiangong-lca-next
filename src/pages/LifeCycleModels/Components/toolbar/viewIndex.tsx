@@ -319,7 +319,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           }
         });
         updateNode(node.id, {
-          selected: !currentNode?.selected,
+          selected: true,
         });
       }
     }

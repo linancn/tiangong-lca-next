@@ -1094,7 +1094,7 @@ const ToolbarEdit: FC<Props> = ({
           }
         });
         updateNode(node.id, {
-          selected: !currentNode?.selected,
+          selected: true,
         });
       }
     }

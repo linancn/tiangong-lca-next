@@ -395,6 +395,38 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-new']);
   });
 
+  it('keeps the clicked node selected on repeated plain clicks', () => {
+    render(
+      <ToolbarView
+        type='view'
+        id='model-1'
+        version='1.0.0'
+        lang='en'
+        reviewId='review-1'
+        tabType='assigned'
+        drawerVisible={false}
+      />,
+    );
+
+    const nodeClick = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:click',
+    )?.[1];
+
+    mockUpdateNode.mockClear();
+    mockGraphStoreState.nodes[0].selected = true;
+
+    nodeClick({
+      node: {
+        id: 'node-1',
+        isNode: () => true,
+      },
+      e: {},
+    });
+
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+    expect(mockUpdateNode).not.toHaveBeenCalledWith('node-1', { selected: false });
+  });
+
   it('opens input/output selectors and target amount through generated node tools', async () => {
     render(
       <ToolbarView
