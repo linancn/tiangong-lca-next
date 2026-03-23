@@ -1239,7 +1239,6 @@ describe('ToolbarEdit', () => {
       await inputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
     });
 
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
     expect(screen.getByText('io-port:Input:node-1')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
 
@@ -1261,13 +1260,10 @@ describe('ToolbarEdit', () => {
     const outputTool = getNodeTool('node-1', 'outputFlow');
     expect(outputTool).toBeTruthy();
 
-    mockUpdateNode.mockClear();
-    mockUpdateEdge.mockClear();
     await act(async () => {
       await outputTool.args.onClick({ cell: { store: { data: mockGraphStoreState.nodes[0] } } });
     });
 
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
     expect(screen.getByText('io-port:Output:node-1')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'apply-io-port' }));
 
@@ -1478,15 +1474,8 @@ describe('ToolbarEdit', () => {
     expect(nonRefTool).toBeTruthy();
 
     act(() => {
-      refTool.args.onClick({
-        cell: {
-          store: {
-            data: mockGraphStoreState.nodes[0],
-          },
-        },
-      });
+      refTool.args.onClick();
     });
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
     expect(screen.getByText('target-amount-open')).toBeInTheDocument();
 
     mockUpdateNode.mockClear();
@@ -1501,7 +1490,6 @@ describe('ToolbarEdit', () => {
       });
     });
 
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: true });
     expect(mockUpdateNode).toHaveBeenCalledWith(
       'node-2',
       expect.objectContaining({

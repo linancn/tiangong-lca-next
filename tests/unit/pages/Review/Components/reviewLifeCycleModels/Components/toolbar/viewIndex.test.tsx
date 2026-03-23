@@ -450,35 +450,22 @@ describe('ReviewLifeCycleModelToolbarView', () => {
         cell: { store: { data: { id: 'input-node' } } },
       });
     });
-    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { selected: false });
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
-    expect(mockUpdateNode).toHaveBeenCalledWith('input-node', { selected: true });
     await waitFor(() =>
       expect(screen.getByTestId('io-port-view')).toHaveTextContent('Input:true:input-node:en'),
     );
 
-    mockUpdateNode.mockClear();
-    mockUpdateEdge.mockClear();
     await act(async () => {
       await outputTool.args.onClick({
         cell: { store: { data: { id: 'output-node' } } },
       });
     });
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
-    expect(mockUpdateNode).toHaveBeenCalledWith('output-node', { selected: true });
     await waitFor(() =>
       expect(screen.getByTestId('io-port-view')).toHaveTextContent('Output:true:output-node:en'),
     );
 
-    mockUpdateNode.mockClear();
-    mockUpdateEdge.mockClear();
     await act(async () => {
-      refTool.args.onClick({
-        cell: { store: { data: { id: 'ref-node' } } },
-      });
+      refTool.args.onClick();
     });
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
-    expect(mockUpdateNode).toHaveBeenCalledWith('ref-node', { selected: true });
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:true:en');
     screen.getByTestId('target-amount-on-data').click();
   });

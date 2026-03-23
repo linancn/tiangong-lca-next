@@ -63,12 +63,6 @@ describe('toolbar/utils/node', () => {
         args: expect.objectContaining({
           markup: expect.arrayContaining([
             expect.objectContaining({
-              tagName: 'rect',
-              attrs: expect.objectContaining({
-                'pointer-events': 'none',
-              }),
-            }),
-            expect.objectContaining({
               tagName: 'text',
               textContent: 'Process A:en:180',
             }),

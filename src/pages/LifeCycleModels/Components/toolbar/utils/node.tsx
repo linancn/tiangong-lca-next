@@ -62,7 +62,7 @@ export const nodeTitleTool = (
             fill: token.colorPrimary,
             stroke: token.colorPrimary,
             'stroke-width': 1,
-            'pointer-events': 'none',
+            cursor: 'pointer',
           },
         },
         {
