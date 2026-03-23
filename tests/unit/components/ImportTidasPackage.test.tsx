@@ -342,6 +342,118 @@ describe('ImportTidasPackage Component', () => {
     expect(mockedImportTidasPackageApi).toHaveBeenCalledTimes(1);
   });
 
+  it('downloads the full conflict report and preserves fallback summary fields', async () => {
+    const originalCreateElement = document.createElement.bind(document);
+    const clickSpy = jest.fn();
+    const originalRevokeObjectUrl = URL.revokeObjectURL;
+    const OriginalBlob = Blob;
+    let capturedBlobParts: BlobPart[] = [];
+
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: jest.fn(),
+    });
+
+    Object.defineProperty(globalThis, 'Blob', {
+      configurable: true,
+      value: class TestBlob extends OriginalBlob {
+        constructor(parts: BlobPart[], options?: BlobPropertyBag) {
+          capturedBlobParts = parts;
+          super(parts, options);
+        }
+      },
+    });
+
+    const createObjectUrlSpy = jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:report');
+    const revokeObjectUrlSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const createElementSpy = jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      const element = originalCreateElement(tagName);
+
+      if (tagName.toLowerCase() === 'a') {
+        Object.defineProperty(element, 'click', {
+          value: clickSpy,
+        });
+      }
+
+      return element;
+    });
+
+    mockedImportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: false,
+        code: 'USER_DATA_CONFLICT',
+        message: 'conflict',
+        summary: {
+          total_entries: 20,
+          filtered_open_data_count: 12,
+          user_conflict_count: 1,
+          importable_count: 8,
+        },
+        filtered_open_data: [
+          {
+            table: 'contacts',
+            id: 'contact-1',
+            version: '01.00.000',
+            state_code: 100,
+            user_id: 'user-1',
+          },
+        ],
+        user_conflicts: [
+          {
+            table: 'flows',
+            id: 'flow-1',
+            version: '01.00.000',
+            state_code: 10,
+          },
+        ],
+      },
+      error: null,
+    } as any);
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+
+    await waitFor(() => {
+      expect(modalApi.error).toHaveBeenCalledTimes(1);
+    });
+
+    const config = modalApi.error.mock.calls[0][0];
+    render(<>{config.content}</>);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download full details' }));
+
+    expect(createObjectUrlSpy).toHaveBeenCalledTimes(1);
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrlSpy).toHaveBeenCalledTimes(1);
+
+    const downloadedText = String(capturedBlobParts[0] ?? '');
+
+    expect(downloadedText).toContain('imported: 8');
+    expect(downloadedText).toContain('validation issues: 0');
+    expect(downloadedText).toContain('"code": "USER_DATA_CONFLICT"');
+
+    createElementSpy.mockRestore();
+    createObjectUrlSpy.mockRestore();
+    revokeObjectUrlSpy.mockRestore();
+    Object.defineProperty(globalThis, 'Blob', {
+      configurable: true,
+      value: OriginalBlob,
+    });
+
+    if (originalRevokeObjectUrl) {
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        value: originalRevokeObjectUrl,
+      });
+    } else {
+      // @ts-expect-error test cleanup for shimmed browser API
+      delete URL.revokeObjectURL;
+    }
+  });
+
   it('shows localized validation issues when the import is blocked by validation', async () => {
     mockedImportTidasPackageApi.mockResolvedValue({
       data: {
