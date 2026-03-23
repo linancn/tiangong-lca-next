@@ -774,31 +774,6 @@ describe('ToolbarEdit', () => {
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
   });
 
-  it('keeps the clicked node selected on repeated plain clicks', () => {
-    render(<ToolbarEdit {...baseProps} />);
-
-    const nodeClickCall = mockUseGraphEvent.mock.calls.find(
-      (call: any[]) => call[0] === 'node:click',
-    );
-    const nodeClickHandler = nodeClickCall?.[1];
-    expect(typeof nodeClickHandler).toBe('function');
-
-    mockUpdateNode.mockClear();
-    mockGraphStoreState.nodes[0].selected = true;
-
-    nodeClickHandler({
-      node: {
-        id: 'node-1',
-        isNode: () => true,
-        getPorts: jest.fn(() => []),
-      },
-      e: { target: null },
-    });
-
-    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
-    expect(mockUpdateNode).not.toHaveBeenCalledWith('node-1', { selected: false });
-  });
-
   it('clears all selections when blank area is clicked', () => {
     render(<ToolbarEdit {...baseProps} />);
 

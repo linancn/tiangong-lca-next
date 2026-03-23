@@ -330,7 +330,7 @@ const ToolbarView: FC<Props> = ({
           }
         });
         updateNode(node.id, {
-          selected: true,
+          selected: !currentNode?.selected,
         });
       }
     }
