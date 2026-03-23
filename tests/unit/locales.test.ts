@@ -58,6 +58,8 @@ describe('locale bundles', () => {
       'pages.team.info.title',
       'pages.team.info.description',
       'component.allTeams.form.title',
+      'pages.process.lca.message.taskSubmitted',
+      'pages.process.lca.taskCenter.hint',
     ];
 
     sharedKeys.forEach((key) => {

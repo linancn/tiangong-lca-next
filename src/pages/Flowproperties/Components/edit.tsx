@@ -2,7 +2,12 @@ import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVe
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import type { ProblemNode, refDataType } from '@/pages/Utils/review';
-import { buildValidationIssues, checkData, validateDatasetWithSdk } from '@/pages/Utils/review';
+import {
+  buildValidationIssues,
+  checkData,
+  enrichValidationIssuesWithOwner,
+  validateDatasetWithSdk,
+} from '@/pages/Utils/review';
 import {
   getRefsOfCurrentVersion,
   getRefsOfNewVersion,
@@ -394,9 +399,10 @@ const FlowpropertiesEdit: FC<Props> = ({
               defaultMessage: 'Data check failed!',
             });
       if (!silent && validationIssues.length > 0) {
+        const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
         showValidationIssueModal({
           intl,
-          issues: validationIssues,
+          issues: validationIssuesWithOwner,
           title: intl.formatMessage({
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',

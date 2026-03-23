@@ -28,6 +28,7 @@ const mockCheckData = jest.fn(async () => {});
 const mockGetErrRefTab = jest.fn(() => 'sourceInformation');
 const mockFindProblemNodes = jest.fn(() => []);
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGenSourceJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
@@ -400,6 +401,7 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest.fn().mockImplementation(() => ({
     findProblemNodes: () => mockFindProblemNodes(),
   })),
@@ -483,6 +485,7 @@ describe('SourceEdit component', () => {
     latestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGetSourceDetail.mockResolvedValue({
       data: {
         json: {

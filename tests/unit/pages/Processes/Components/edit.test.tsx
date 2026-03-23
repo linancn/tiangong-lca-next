@@ -128,6 +128,7 @@ const mockDealProcress = jest.fn();
 const mockGetAllRefObj = jest.fn();
 const mockGetErrRefTab = jest.fn();
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
 const mockUpdateReviewsAfterCheckData = jest.fn();
 const mockUpdateUnReviewToUnderReview = jest.fn();
@@ -142,6 +143,7 @@ jest.mock('@/pages/Utils/review', () => ({
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
   checkVersions: (...args: any[]) => mockCheckVersions(...args),
   dealProcress: (...args: any[]) => mockDealProcress(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   mapValidationIssuesToRefCheckData: (...args: any[]) =>
@@ -394,6 +396,7 @@ describe('ProcessEdit component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     actionRef.current.reload.mockClear();
     mockGetFlowDetail.mockResolvedValue({
       data: { json: { flowDataSet: {} }, version: '1.0.1' },

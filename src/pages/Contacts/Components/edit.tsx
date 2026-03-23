@@ -6,6 +6,7 @@ import {
   ReffPath,
   buildValidationIssues,
   checkData,
+  enrichValidationIssuesWithOwner,
   getAllRefObj,
   getErrRefTab,
   getRefTableName,
@@ -483,9 +484,10 @@ const ContactEdit: FC<Props> = ({
               defaultMessage: 'Data check failed!',
             });
       if (!silent && validationIssues.length > 0) {
+        const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
         showValidationIssueModal({
           intl,
-          issues: validationIssues,
+          issues: validationIssuesWithOwner,
           title: intl.formatMessage({
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',

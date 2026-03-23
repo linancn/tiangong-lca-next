@@ -131,9 +131,33 @@ export type ValidationIssue = {
   code: ValidationIssueCode;
   ref: refDataType;
   link: string;
+  ownerName?: string;
+  ownerUserId?: string;
+  isOwnedByCurrentUser?: boolean;
   tabName?: string | null;
   tabNames?: string[];
   underReviewVersion?: string;
+};
+
+const getValidationIssueRefKey = (ref: refDataType) =>
+  `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
+
+const getValidationIssueOwnerName = (user?: {
+  display_name?: string | null;
+  email?: string | null;
+  raw_user_meta_data?: {
+    display_name?: string | null;
+    email?: string | null;
+  } | null;
+}) => {
+  const candidates = [
+    user?.display_name,
+    user?.raw_user_meta_data?.display_name,
+    user?.email,
+    user?.raw_user_meta_data?.email,
+  ];
+
+  return candidates.find((value) => typeof value === 'string' && value.trim()) ?? '-';
 };
 
 const tableDict = {
@@ -303,7 +327,7 @@ export const mapValidationIssuesToRefCheckData = (issues: ValidationIssue[]): Re
   const issueMap = new Map<string, RefCheckType>();
 
   issues.forEach((issue) => {
-    const key = `${issue.ref['@type']}:${issue.ref['@refObjectId']}:${issue.ref['@version']}`;
+    const key = getValidationIssueRefKey(issue.ref);
     const current =
       issueMap.get(key) ??
       ({
@@ -332,6 +356,111 @@ export const mapValidationIssuesToRefCheckData = (issues: ValidationIssue[]): Re
   });
 
   return Array.from(issueMap.values());
+};
+
+export const enrichValidationIssuesWithOwner = async (issues: ValidationIssue[]) => {
+  if (issues.length === 0) {
+    return issues;
+  }
+
+  const currentUserId = await getUserId();
+  const normalizedCurrentUserId =
+    typeof currentUserId === 'string' && currentUserId.trim() ? currentUserId.trim() : undefined;
+
+  const ownerNameByRefKey = new Map<string, string>();
+  const ownerUserIdByRefKey = new Map<string, string>();
+
+  issues.forEach((issue) => {
+    const refKey = getValidationIssueRefKey(issue.ref);
+    const normalizedOwnerName = issue.ownerName?.trim();
+
+    if (normalizedOwnerName) {
+      ownerNameByRefKey.set(refKey, normalizedOwnerName);
+    }
+  });
+
+  const uniqueRefs = issues.reduce<Map<string, refDataType>>((accumulator, issue) => {
+    const refKey = getValidationIssueRefKey(issue.ref);
+
+    if (!accumulator.has(refKey) && !ownerNameByRefKey.has(refKey)) {
+      accumulator.set(refKey, issue.ref);
+    }
+
+    return accumulator;
+  }, new Map<string, refDataType>());
+
+  if (uniqueRefs.size > 0) {
+    const controller = new ConcurrencyController(5);
+
+    uniqueRefs.forEach((ref, refKey) => {
+      controller.add(async () => {
+        const tableName = getRefTableName(ref['@type']);
+
+        if (!tableName) {
+          ownerNameByRefKey.set(refKey, '-');
+          return;
+        }
+
+        const result = await getRefData(ref['@refObjectId'], ref['@version'], tableName, '', {
+          fallbackToLatest: false,
+        });
+        const ownerUserId = result?.data?.userId;
+
+        if (typeof ownerUserId === 'string' && ownerUserId.trim()) {
+          ownerUserIdByRefKey.set(refKey, ownerUserId);
+          return;
+        }
+
+        ownerNameByRefKey.set(refKey, '-');
+      });
+    });
+
+    await controller.waitForAll();
+  }
+
+  const ownerUserIds = Array.from(new Set(ownerUserIdByRefKey.values()));
+  const users = ownerUserIds.length > 0 ? await getUsersByIds(ownerUserIds) : [];
+  const userNameById = new Map<string, string>();
+
+  (users ?? []).forEach((user: any) => {
+    if (typeof user?.id === 'string' && user.id.trim()) {
+      userNameById.set(user.id, getValidationIssueOwnerName(user));
+    }
+  });
+
+  return issues.map((issue) => {
+    const refKey = getValidationIssueRefKey(issue.ref);
+    const ownerUserId = issue.ownerUserId?.trim() || ownerUserIdByRefKey.get(refKey);
+    const ownerName =
+      ownerNameByRefKey.get(refKey) ?? (ownerUserId ? userNameById.get(ownerUserId) : '-') ?? '-';
+    const isOwnedByCurrentUser =
+      ownerUserId && normalizedCurrentUserId
+        ? ownerUserId === normalizedCurrentUserId
+        : issue.isOwnedByCurrentUser;
+
+    if (
+      issue.ownerName === ownerName &&
+      issue.ownerUserId === ownerUserId &&
+      issue.isOwnedByCurrentUser === isOwnedByCurrentUser
+    ) {
+      return issue;
+    }
+
+    const enrichedIssue: ValidationIssue = {
+      ...issue,
+      ownerName,
+    };
+
+    if (ownerUserId) {
+      enrichedIssue.ownerUserId = ownerUserId;
+    }
+
+    if (typeof isOwnedByCurrentUser === 'boolean') {
+      enrichedIssue.isOwnedByCurrentUser = isOwnedByCurrentUser;
+    }
+
+    return enrichedIssue;
+  });
 };
 
 const normalizeSdkValidationResult = (result: any): SdkValidationResult => {

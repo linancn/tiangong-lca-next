@@ -36,6 +36,7 @@ const mockCheckData = jest.fn(async () => {});
 const mockGetErrRefTab = jest.fn(() => 'contactInformation');
 const mockFindProblemNodes = jest.fn(() => []);
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGenContactJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
@@ -329,6 +330,7 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest
     .fn()
     .mockImplementation(() => ({ findProblemNodes: () => mockFindProblemNodes() })),
@@ -428,6 +430,7 @@ describe('ContactEdit component', () => {
     mockLatestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGetContactDetail.mockResolvedValue({
       data: {
         stateCode: 0,

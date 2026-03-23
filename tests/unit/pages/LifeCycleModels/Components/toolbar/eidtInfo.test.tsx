@@ -365,6 +365,7 @@ const mockDealModel = jest.fn((modelDetail, unReview) => {
 const mockDealProcress = jest.fn();
 const mockCheckVersions = jest.fn().mockResolvedValue(undefined);
 const mockBuildValidationIssues = jest.fn().mockReturnValue([]);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGetAllRefObj = jest.fn().mockReturnValue([]);
 const mockUpdateReviewsAfterCheckData = jest.fn().mockResolvedValue({});
 const mockUpdateUnReviewToUnderReview = jest.fn().mockResolvedValue({});
@@ -385,6 +386,7 @@ jest.mock('@/pages/Utils/review', () => ({
   checkRequiredFields: (...args: any[]) => mockCheckRequiredFields(...args),
   dealModel: (...args: any[]) => mockDealModel(...args),
   dealProcress: (...args: any[]) => mockDealProcress(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   mapValidationIssuesToRefCheckData: (...args: any[]) =>
@@ -467,6 +469,9 @@ beforeEach(() => {
   mockDealProcress.mockReset();
   mockCheckVersions.mockReset().mockResolvedValue(undefined);
   mockBuildValidationIssues.mockReset().mockReturnValue([]);
+  mockEnrichValidationIssuesWithOwner
+    .mockReset()
+    .mockImplementation(async (issues: any[]) => issues);
   mockGetAllRefObj.mockReset().mockReturnValue([]);
   mockGetErrRefTab.mockReset().mockReturnValue(null);
   mockMapValidationIssuesToRefCheckData.mockReset().mockReturnValue([]);

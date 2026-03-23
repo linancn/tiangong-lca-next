@@ -113,6 +113,9 @@ type GroupedValidationIssue = {
   ref: ValidationIssue['ref'];
   link: string;
   issues: ValidationIssue[];
+  ownerName: string;
+  ownerUserId?: string;
+  isOwnedByCurrentUser?: boolean;
   order: number;
 };
 
@@ -160,10 +163,15 @@ const groupValidationIssues = (issues: ValidationIssue[]): GroupedValidationIssu
     const existingGroup = groupedIssues.get(key);
 
     if (!existingGroup) {
+      const ownerUserId = issue.ownerUserId?.trim();
+
       groupedIssues.set(key, {
         ref: issue.ref,
         link: issue.link,
         issues: [issue],
+        ownerName: issue.ownerName?.trim() || '-',
+        ownerUserId: ownerUserId || undefined,
+        isOwnedByCurrentUser: issue.isOwnedByCurrentUser,
         order: groupedIssues.size,
       });
       return;
@@ -182,6 +190,23 @@ const groupValidationIssues = (issues: ValidationIssue[]): GroupedValidationIssu
     if (!existingGroup.link && issue.link) {
       existingGroup.link = issue.link;
     }
+
+    if (existingGroup.ownerName === '-' && issue.ownerName?.trim()) {
+      existingGroup.ownerName = issue.ownerName.trim();
+    }
+
+    if (!existingGroup.ownerUserId && issue.ownerUserId?.trim()) {
+      existingGroup.ownerUserId = issue.ownerUserId.trim();
+    }
+
+    if (issue.isOwnedByCurrentUser === false) {
+      existingGroup.isOwnedByCurrentUser = false;
+    } else if (
+      existingGroup.isOwnedByCurrentUser === undefined &&
+      typeof issue.isOwnedByCurrentUser === 'boolean'
+    ) {
+      existingGroup.isOwnedByCurrentUser = issue.isOwnedByCurrentUser;
+    }
   });
 
   return sortGroupedValidationIssues(Array.from(groupedIssues.values()));
@@ -198,6 +223,20 @@ const getGroupedIssueDescriptions = (
 
 const isValidationIssueLinkDisabled = (groupedIssue: GroupedValidationIssue) =>
   groupedIssue.issues.some((issue) => issue.code === 'nonExistentRef');
+
+const getValidationIssueActionLabel = (
+  intl: IntlShapeLike,
+  groupedIssue: GroupedValidationIssue,
+) => {
+  const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
+
+  return intl.formatMessage({
+    id: shouldNotifyDataOwner
+      ? 'pages.validationIssues.notifyDataOwner'
+      : 'pages.validationIssues.fixIssue',
+    defaultMessage: shouldNotifyDataOwner ? 'Notify data owner' : 'Fix issue',
+  });
+};
 
 const getDatasetTypeLabel = (intl: IntlShapeLike, type: string) => {
   switch (type) {
@@ -258,22 +297,13 @@ const buildValidationIssueHtml = (
       const typeLabel = getDatasetTypeLabel(intl, groupedIssue.ref['@type']);
       const descriptions = getGroupedIssueDescriptions(intl, groupedIssue);
       const description = descriptions.map((item) => escapeHtml(item)).join('<br />');
+      const actionLabel = getValidationIssueActionLabel(intl, groupedIssue);
       const action = groupedIssue.link
         ? isValidationIssueLinkDisabled(groupedIssue)
-          ? `<span class="action-link-disabled">${escapeHtml(
-              intl.formatMessage({
-                id: 'pages.validationIssues.viewDetails',
-                defaultMessage: 'View details',
-              }),
-            )}</span>`
+          ? `<span class="action-link-disabled">${escapeHtml(actionLabel)}</span>`
           : `<a class="action-link" href="${escapeHtml(
               groupedIssue.link,
-            )}" target="_blank" rel="noreferrer">${escapeHtml(
-              intl.formatMessage({
-                id: 'pages.validationIssues.viewDetails',
-                defaultMessage: 'View details',
-              }),
-            )}</a>`
+            )}" target="_blank" rel="noreferrer">${escapeHtml(actionLabel)}</a>`
         : '-';
 
       return `<tr>
@@ -281,6 +311,7 @@ const buildValidationIssueHtml = (
   <td>${escapeHtml(groupedIssue.ref['@refObjectId'])}</td>
   <td>${escapeHtml(groupedIssue.ref['@version'])}</td>
   <td>${description}</td>
+  <td>${escapeHtml(groupedIssue.ownerName)}</td>
   <td>${action}</td>
 </tr>`;
     })
@@ -335,6 +366,12 @@ const buildValidationIssueHtml = (
             intl.formatMessage({
               id: 'pages.validationIssues.table.issue',
               defaultMessage: 'Issue',
+            }),
+          )}</th>
+          <th>${escapeHtml(
+            intl.formatMessage({
+              id: 'pages.validationIssues.table.user',
+              defaultMessage: 'Data owner',
             }),
           )}</th>
           <th>${escapeHtml(
@@ -501,13 +538,24 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
     },
     {
       title: intl.formatMessage({
+        id: 'pages.validationIssues.table.user',
+        defaultMessage: 'Data owner',
+      }),
+      key: 'ownerName',
+      width: 160,
+      render: (_, groupedIssue) => groupedIssue.ownerName,
+    },
+    {
+      title: intl.formatMessage({
         id: 'pages.validationIssues.table.action',
         defaultMessage: 'Action',
       }),
       key: 'action',
-      width: 112,
-      render: (_, groupedIssue) =>
-        groupedIssue.link ? (
+      width: 128,
+      render: (_, groupedIssue) => {
+        const actionLabel = getValidationIssueActionLabel(intl, groupedIssue);
+
+        return groupedIssue.link ? (
           <Button
             type='link'
             disabled={isValidationIssueLinkDisabled(groupedIssue)}
@@ -520,14 +568,12 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
             }}
             onClick={() => openValidationIssueLink(groupedIssue.link ?? '')}
           >
-            {intl.formatMessage({
-              id: 'pages.validationIssues.viewDetails',
-              defaultMessage: 'View details',
-            })}
+            {actionLabel}
           </Button>
         ) : (
           '-'
-        ),
+        );
+      },
     },
   ];
 
