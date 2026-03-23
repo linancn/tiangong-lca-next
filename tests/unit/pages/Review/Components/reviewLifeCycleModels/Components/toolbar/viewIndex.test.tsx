@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex';
-import { render, screen, waitFor } from '../../../../../../../helpers/testUtils';
+import { fireEvent, render, screen, waitFor } from '../../../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
 const mockUpdateEdge = jest.fn();
@@ -429,6 +429,8 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(refTool.args.markup[0].attrs.cursor).toBe('move');
     expect(screen.getByTestId('io-port-view')).toHaveTextContent(':false:none:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
+
+    fireEvent.click(screen.getByTestId('target-amount-on-data'));
   });
 
   it('builds sparse reviewer-rejected graph data with placeholder review items and edge fallbacks', async () => {

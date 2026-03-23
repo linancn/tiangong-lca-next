@@ -7,6 +7,7 @@ import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { lifeCycleModelConnectionOptions } from './graphConnectionOptions';
 import ToolbarView from './toolbar/viewIndex';
 type Props = {
   id: string;
@@ -133,14 +134,7 @@ const LifeCycleModelView: FC<Props> = ({
                   zoomable
                   pannable
                   minScale={0.5}
-                  connectionOptions={{
-                    router: {
-                      name: 'manhattan',
-                    },
-                    connector: {
-                      name: 'rounded',
-                    },
-                  }}
+                  connectionOptions={lifeCycleModelConnectionOptions}
                   gridOptions={{
                     type: 'dot',
                     color: undefined,

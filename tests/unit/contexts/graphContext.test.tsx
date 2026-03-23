@@ -634,6 +634,104 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     );
   });
 
+  it('falls back to raw attrs and selection api availability when syncing selection attrs', () => {
+    const wrapper = ({ children }: { children: any }) => <GraphProvider>{children}</GraphProvider>;
+    const graph = new MockGraph();
+
+    const { result } = renderHook(() => useGraphStore((state) => state), { wrapper });
+
+    act(() => {
+      result.current.setGraph(graph as any);
+      result.current.initData({
+        nodes: [{ id: 'node-raw-attrs', attrs: { body: { stroke: '#1677ff', strokeWidth: 1 } } }],
+        edges: [{ id: 'edge-raw-attrs', attrs: { line: { stroke: '#1677ff', strokeWidth: 1 } } }],
+      });
+    });
+
+    const node = graph.getCellById('node-raw-attrs') as any;
+    const edge = graph.getCellById('edge-raw-attrs') as any;
+    node.getAttrs = undefined;
+    edge.getAttrs = undefined;
+
+    act(() => {
+      graph.select(node);
+      graph.select(edge);
+      result.current.updateNode('node-raw-attrs', { data: { selectedByGraphApi: true } });
+      result.current.updateEdge('edge-raw-attrs', { data: { selectedByGraphApi: true } });
+    });
+
+    expect(node.attrs.body.strokeWidth).toBe(2);
+    expect(edge.attrs.line.strokeWidth).toBe(2);
+    expect(
+      result.current.nodes.find((item: { id?: string }) => item.id === 'node-raw-attrs')?.attrs
+        ?.body?.strokeWidth,
+    ).toBe(2);
+    expect(
+      result.current.edges.find((item: { id?: string }) => item.id === 'edge-raw-attrs')?.attrs
+        ?.line?.strokeWidth,
+    ).toBe(2);
+
+    (graph as any).getSelectedCells = undefined;
+
+    act(() => {
+      result.current.updateNode('node-raw-attrs', { data: { selectionApiMissing: true } });
+      result.current.updateEdge('edge-raw-attrs', { data: { selectionApiMissing: true } });
+    });
+
+    expect(node.attrs.body.strokeWidth).toBe(1);
+    expect(edge.attrs.line.strokeWidth).toBe(1);
+    expect(
+      result.current.nodes.find((item: { id?: string }) => item.id === 'node-raw-attrs')?.attrs
+        ?.body?.strokeWidth,
+    ).toBe(1);
+    expect(
+      result.current.edges.find((item: { id?: string }) => item.id === 'edge-raw-attrs')?.attrs
+        ?.line?.strokeWidth,
+    ).toBe(1);
+  });
+
+  it('falls back to empty attrs objects when node and edge attrs are unavailable', () => {
+    const wrapper = ({ children }: { children: any }) => <GraphProvider>{children}</GraphProvider>;
+    const graph = new MockGraph();
+
+    const { result } = renderHook(() => useGraphStore((state) => state), { wrapper });
+
+    act(() => {
+      result.current.setGraph(graph as any);
+      result.current.initData({
+        nodes: [{ id: 'node-no-attrs' }],
+        edges: [{ id: 'edge-no-attrs' }],
+      });
+    });
+
+    const node = graph.getCellById('node-no-attrs') as any;
+    const edge = graph.getCellById('edge-no-attrs') as any;
+    node.getAttrs = undefined;
+    edge.getAttrs = undefined;
+    node.attrs = undefined;
+    edge.attrs = undefined;
+
+    act(() => {
+      result.current.updateNode('node-no-attrs', { data: { label: 'node-without-attrs' } });
+      result.current.updateEdge('edge-no-attrs', { data: { label: 'edge-without-attrs' } });
+    });
+
+    expect(node.getData()).toEqual({ label: 'node-without-attrs' });
+    expect(edge.getData()).toEqual({ label: 'edge-without-attrs' });
+    expect(result.current.nodes).toEqual([
+      expect.objectContaining({
+        id: 'node-no-attrs',
+        data: { label: 'node-without-attrs' },
+      }),
+    ]);
+    expect(result.current.edges).toEqual([
+      expect.objectContaining({
+        id: 'edge-no-attrs',
+        data: { label: 'edge-without-attrs' },
+      }),
+    ]);
+  });
+
   it('registers and cleans up graph events', async () => {
     const graph = new MockGraph();
     const handler = jest.fn();

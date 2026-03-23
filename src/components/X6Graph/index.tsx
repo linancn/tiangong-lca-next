@@ -77,6 +77,24 @@ interface X6GraphProps {
   };
 }
 
+const resolveConnectionShapeOption = (
+  option: { name: string; args?: any } | undefined,
+  fallback: string,
+) => {
+  if (!option) {
+    return fallback;
+  }
+
+  if (typeof option.args !== 'undefined') {
+    return {
+      name: option.name,
+      args: option.args,
+    };
+  }
+
+  return option.name;
+};
+
 const X6GraphComponent = ({
   zoomable = true,
   pannable = true,
@@ -122,8 +140,8 @@ const X6GraphComponent = ({
             : !!connectionOptions?.allowMulti,
         allowNode: connectionOptions?.allowNode ?? false,
         allowEdge: connectionOptions?.allowEdge ?? false,
-        router: connectionOptions?.router?.name ?? 'manhattan',
-        connector: connectionOptions?.connector?.name ?? 'rounded',
+        router: resolveConnectionShapeOption(connectionOptions?.router, 'manhattan'),
+        connector: resolveConnectionShapeOption(connectionOptions?.connector, 'rounded'),
       },
       grid:
         gridOptions?.visible !== false
