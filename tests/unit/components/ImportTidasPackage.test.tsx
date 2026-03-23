@@ -164,12 +164,13 @@ describe('ImportTidasPackage Component', () => {
     expect(screen.getByText('API import')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Use the same async flow for API clients: prepare upload, upload ZIP bytes, enqueue import, then poll the package job.',
+        'See the API import documentation for the full request flow and integration details.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Authorization: Bearer <USER_API_KEY>')).toBeInTheDocument();
-    expect(screen.getByText('Open API import docs')).toBeInTheDocument();
-    expect(screen.getByText(/\/functions\/v1$/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
+      'href',
+      'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
+    );
   });
 
   it('imports a ZIP package successfully and refreshes listeners', async () => {

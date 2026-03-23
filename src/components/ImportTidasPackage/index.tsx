@@ -4,7 +4,6 @@ import {
   TidasPackageValidationIssue,
   importTidasPackageApi,
 } from '@/services/general/api';
-import { supabaseUrl } from '@/services/supabase/key';
 import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
 import { Modal, Upload, message } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
@@ -79,14 +78,6 @@ const formatConflicts = (response: ImportTidasPackageResponse) => {
 
 const getValidationIssues = (response: ImportTidasPackageResponse) =>
   response.validation_issues ?? [];
-
-const getApiBaseUrl = () => {
-  if (!supabaseUrl) {
-    return 'https://<project-ref>.supabase.co/functions/v1';
-  }
-
-  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1`;
-};
 
 const getDocsUrl = (locale: string) =>
   `${DOCS_BASE_URL}${locale.toLowerCase().startsWith('en') ? '/en' : ''}${TIDAS_PACKAGE_IMPORT_DOCS_PATH}`;
@@ -169,7 +160,6 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const intl = useIntl();
-  const apiBaseUrl = getApiBaseUrl();
   const docsUrl = getDocsUrl(intl.locale || 'zh-CN');
 
   const handleImport = async () => {
@@ -346,48 +336,8 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
           <p style={{ marginBottom: 8 }}>
             <FormattedMessage
               id='component.tidasPackage.import.apiGuide.summary'
-              defaultMessage='Use the same async flow for API clients: prepare upload, upload ZIP bytes, enqueue import, then poll the package job.'
+              defaultMessage='See the API import documentation for the full request flow and integration details.'
             />
-          </p>
-          <ol style={{ paddingLeft: 18, marginBottom: 8 }}>
-            <li>
-              <FormattedMessage
-                id='component.tidasPackage.import.apiGuide.step.prepare'
-                defaultMessage='POST /import_tidas_package with action=prepare_upload'
-              />
-            </li>
-            <li>
-              <FormattedMessage
-                id='component.tidasPackage.import.apiGuide.step.upload'
-                defaultMessage='Upload the ZIP bytes to the returned signed-upload target'
-              />
-            </li>
-            <li>
-              <FormattedMessage
-                id='component.tidasPackage.import.apiGuide.step.enqueue'
-                defaultMessage='POST /import_tidas_package with action=enqueue'
-              />
-            </li>
-            <li>
-              <FormattedMessage
-                id='component.tidasPackage.import.apiGuide.step.poll'
-                defaultMessage='GET /tidas_package_jobs/{job_id} until the import finishes'
-              />
-            </li>
-          </ol>
-          <p style={{ marginBottom: 4 }}>
-            <FormattedMessage
-              id='component.tidasPackage.import.apiGuide.baseUrl'
-              defaultMessage='Edge base URL:'
-            />{' '}
-            <code>{apiBaseUrl}</code>
-          </p>
-          <p style={{ marginBottom: 4 }}>
-            <FormattedMessage
-              id='component.tidasPackage.import.apiGuide.auth'
-              defaultMessage='Auth header:'
-            />{' '}
-            <code>Authorization: Bearer &lt;USER_API_KEY&gt;</code>
           </p>
           <a href={docsUrl} target='_blank' rel='noreferrer'>
             <FormattedMessage
