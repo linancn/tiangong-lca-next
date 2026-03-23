@@ -49,12 +49,13 @@ type Props = {
 };
 
 const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
+  const readOnlyCursor = 'move';
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<LifeCycleModelFormState>({});
   const [jsonTg, setJsonTg] = useState<LifeCycleModelJsonTg>({});
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
-  const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
-  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<LifeCycleModelGraphNode>();
+  const [ioPortSelectorDirection] = useState('');
+  const [ioPortSelectorNode] = useState<LifeCycleModelGraphNode>();
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
   const [processInstances, setProcessInstances] = useState<LifeCycleModelProcessInstance[]>([]);
   // const [connectableProcessesDrawerVisible, setConnectableProcessesDrawerVisible] = useState(false);
@@ -110,7 +111,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             fill: token.colorBgContainer,
             stroke: token.colorBorder,
             'stroke-width': 1,
-            cursor: 'pointer',
+            cursor: readOnlyCursor,
           },
         },
         {
@@ -132,11 +133,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         },
       ],
       offset: { x: 10, y: 30 },
-      async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
-        await setIoPortSelectorDirection('Input');
-        await setIoPortSelectorNode(view.cell.store.data);
-        await setIoPortSelectorDrawerVisible(true);
-      },
     },
   };
 
@@ -156,7 +152,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             fill: token.colorBgContainer,
             stroke: token.colorBorder,
             'stroke-width': 1,
-            cursor: 'pointer',
+            cursor: readOnlyCursor,
           },
         },
         {
@@ -180,11 +176,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       x: '100%',
       y: 0,
       offset: { x: -60, y: 30 },
-      async onClick(view: { cell: { store: { data: LifeCycleModelGraphNode } } }) {
-        await setIoPortSelectorDirection('Output');
-        await setIoPortSelectorNode(view.cell.store.data);
-        await setIoPortSelectorDrawerVisible(true);
-      },
     },
   };
 
@@ -200,7 +191,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             r: 10,
             'stroke-width': 0,
             fill: token.colorBgBase,
-            cursor: 'pointer',
+            cursor: readOnlyCursor,
           },
         },
         {
@@ -224,9 +215,6 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         },
       ],
       offset: { x: 10, y: -12 },
-      onClick() {
-        setTargetAmountDrawerVisible(true);
-      },
     },
   };
 
@@ -247,9 +235,23 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     },
   };
 
+  const squarePortMarkup = [{ tagName: 'rect', selector: 'portBody' }];
+  const squarePortAttrs = {
+    stroke: token.colorPrimary,
+    fill: token.colorBgBase,
+    strokeWidth: 1,
+    width: 8,
+    height: 8,
+    x: -4,
+    y: -4,
+    magnet: 'passive',
+    cursor: readOnlyCursor,
+  };
+
   const ports = {
     groups: {
       groupInput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -259,20 +261,18 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
             fontSize: 14,
+            cursor: readOnlyCursor,
           },
         },
       },
       groupOutput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -282,16 +282,13 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
             fontSize: 14,
+            cursor: readOnlyCursor,
           },
         },
       },
@@ -430,6 +427,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                         token,
                       ),
                       'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
+                      cursor: readOnlyCursor,
                     },
                   },
                 };
@@ -442,6 +440,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                 genProcessName(node?.data?.label, lang) ?? '',
                 token,
                 lang,
+                readOnlyCursor,
               ),
               inputFlowTool,
               outputFlowTool,
@@ -511,6 +510,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             genProcessName(node?.data?.label, lang) ?? '',
             token,
             lang,
+            readOnlyCursor,
           ),
           inputFlowTool,
           outputFlowTool,

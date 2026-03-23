@@ -45,6 +45,54 @@ export interface GraphEdge {
 
 const GraphContext = createContext<GraphContextValue | null>(null);
 
+const getCellSelectionState = (graph: Graph | null, cellId: string, fallback?: boolean) => {
+  if (typeof fallback === 'boolean') {
+    return fallback;
+  }
+
+  if (!graph || typeof graph.getSelectedCells !== 'function') {
+    return false;
+  }
+
+  return graph.getSelectedCells().some((cell) => cell?.id === cellId);
+};
+
+const syncNodeSelectionAttrs = (node: any, selected: boolean, options: Record<string, any>) => {
+  const currentAttrs = typeof node?.getAttrs === 'function' ? node.getAttrs() : (node?.attrs ?? {});
+  if (!currentAttrs?.body || typeof currentAttrs.body !== 'object') {
+    return undefined;
+  }
+
+  const nextAttrs = {
+    ...currentAttrs,
+    body: {
+      ...currentAttrs.body,
+      strokeWidth: selected ? 2 : 1,
+    },
+  };
+
+  node.setAttrs(nextAttrs, options);
+  return nextAttrs;
+};
+
+const syncEdgeSelectionAttrs = (edge: any, selected: boolean, options: Record<string, any>) => {
+  const currentAttrs = typeof edge?.getAttrs === 'function' ? edge.getAttrs() : (edge?.attrs ?? {});
+  if (!currentAttrs?.line || typeof currentAttrs.line !== 'object') {
+    return undefined;
+  }
+
+  const nextAttrs = {
+    ...currentAttrs,
+    line: {
+      ...currentAttrs.line,
+      strokeWidth: selected ? 2 : 1,
+    },
+  };
+
+  edge.setAttrs(nextAttrs, options);
+  return nextAttrs;
+};
+
 export const GraphProvider = ({ children }: { children: ReactNode }) => {
   const graphRef = useRef<Graph | null>(null);
   const pendingEdgeAnchorRefreshRef = useRef<(() => void) | null>(null);
@@ -79,6 +127,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
       const cell = graphRef.current.getCellById(nodeId);
       if (cell && cell.isNode()) {
         const node = cell;
+        let resolvedAttrs = data.attrs;
         // 更新节点数据
         if (data.data) {
           const currentData = node.getData() || {};
@@ -123,11 +172,21 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
           }
         }
 
+        const isSelected = getCellSelectionState(graphRef.current, nodeId, data.selected);
+        const selectionAttrs = syncNodeSelectionAttrs(node, isSelected, options);
+        if (selectionAttrs) {
+          resolvedAttrs = selectionAttrs;
+        }
+
         // 更新本地状态
         setNodesState((prev) =>
           prev.map((n) => {
             if (n.id === nodeId) {
-              return { ...n, ...data };
+              return {
+                ...n,
+                ...data,
+                ...(resolvedAttrs ? { attrs: resolvedAttrs } : {}),
+              };
             }
             return n;
           }),
@@ -153,6 +212,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
       const edge = graphRef.current.getCellById(edgeId);
       let isConnect = false;
       if (edge && edge.isEdge()) {
+        let resolvedAttrs = data.attrs;
         // 更新边数据
         if (data.data) {
           const currentData = edge.getData() || {};
@@ -191,11 +251,21 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
           }
         }
 
+        const isSelected = getCellSelectionState(graphRef.current, edgeId, data.selected);
+        const selectionAttrs = syncEdgeSelectionAttrs(edge, isSelected, options);
+        if (selectionAttrs) {
+          resolvedAttrs = selectionAttrs;
+        }
+
         // 更新本地状态
         setEdgesState((prev) => {
           const res = prev.map((e) => {
             if (e.id === edgeId) {
-              return { ...e, ...data };
+              return {
+                ...e,
+                ...data,
+                ...(resolvedAttrs ? { attrs: resolvedAttrs } : {}),
+              };
             }
             return e;
           });

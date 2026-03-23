@@ -45,6 +45,7 @@ export const nodeTitleTool = (
   title: string,
   token: LifeCycleModelThemeToken,
   lang: string,
+  cursor = 'move',
 ) => {
   return {
     id: 'nodeTitle',
@@ -62,7 +63,7 @@ export const nodeTitleTool = (
             fill: token.colorPrimary,
             stroke: token.colorPrimary,
             'stroke-width': 1,
-            cursor: 'pointer',
+            cursor,
           },
         },
         {
@@ -84,6 +85,7 @@ export const nodeTitleTool = (
           textContent: title,
         },
       ],
+      events: null,
       x: 0,
       y: 0,
       offset: { x: 0, y: 0 },

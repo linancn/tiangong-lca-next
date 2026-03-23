@@ -39,12 +39,13 @@ const ToolbarView: FC<Props> = ({
   tabType,
   actionRef,
 }) => {
+  const readOnlyCursor = 'move';
   const [spinning, setSpinning] = useState(false);
   const [infoData, setInfoData] = useState<any>({});
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
-  const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
-  const [ioPortSelectorNode, setIoPortSelectorNode] = useState<any>({});
+  const [ioPortSelectorDirection] = useState('');
+  const [ioPortSelectorNode] = useState<any>({});
   const [ioPortSelectorDrawerVisible, setIoPortSelectorDrawerVisible] = useState(false);
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -75,7 +76,7 @@ const ToolbarView: FC<Props> = ({
             fill: token.colorBgContainer,
             stroke: token.colorBorder,
             'stroke-width': 1,
-            cursor: 'pointer',
+            cursor: readOnlyCursor,
           },
         },
         {
@@ -97,11 +98,6 @@ const ToolbarView: FC<Props> = ({
         },
       ],
       offset: { x: 10, y: 30 },
-      async onClick(view: any) {
-        await setIoPortSelectorDirection('Input');
-        await setIoPortSelectorNode(view.cell.store.data);
-        await setIoPortSelectorDrawerVisible(true);
-      },
     },
   };
 
@@ -121,7 +117,7 @@ const ToolbarView: FC<Props> = ({
             fill: token.colorBgContainer,
             stroke: token.colorBorder,
             'stroke-width': 1,
-            cursor: 'pointer',
+            cursor: readOnlyCursor,
           },
         },
         {
@@ -145,11 +141,6 @@ const ToolbarView: FC<Props> = ({
       x: '100%',
       y: 0,
       offset: { x: -60, y: 30 },
-      async onClick(view: any) {
-        await setIoPortSelectorDirection('Output');
-        await setIoPortSelectorNode(view.cell.store.data);
-        await setIoPortSelectorDrawerVisible(true);
-      },
     },
   };
 
@@ -165,7 +156,7 @@ const ToolbarView: FC<Props> = ({
             r: 10,
             'stroke-width': 0,
             fill: token.colorBgBase,
-            cursor: 'pointer',
+            cursor: readOnlyCursor,
           },
         },
         {
@@ -189,9 +180,6 @@ const ToolbarView: FC<Props> = ({
         },
       ],
       offset: { x: 10, y: -12 },
-      onClick() {
-        setTargetAmountDrawerVisible(true);
-      },
     },
   };
 
@@ -212,7 +200,7 @@ const ToolbarView: FC<Props> = ({
               fill: token.colorPrimary,
               stroke: token.colorPrimary,
               'stroke-width': 1,
-              cursor: 'pointer',
+              cursor: readOnlyCursor,
             },
           },
           {
@@ -234,6 +222,7 @@ const ToolbarView: FC<Props> = ({
             textContent: title,
           },
         ],
+        events: null,
         x: 0,
         y: 0,
         offset: { x: 0, y: 0 },
@@ -258,9 +247,23 @@ const ToolbarView: FC<Props> = ({
     },
   };
 
+  const squarePortMarkup = [{ tagName: 'rect', selector: 'portBody' }];
+  const squarePortAttrs = {
+    stroke: token.colorPrimary,
+    fill: token.colorBgBase,
+    strokeWidth: 1,
+    width: 8,
+    height: 8,
+    x: -4,
+    y: -4,
+    magnet: 'passive',
+    cursor: readOnlyCursor,
+  };
+
   const ports = {
     groups: {
       groupInput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -270,20 +273,18 @@ const ToolbarView: FC<Props> = ({
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
             fontSize: 14,
+            cursor: readOnlyCursor,
           },
         },
       },
       groupOutput: {
+        markup: squarePortMarkup,
         position: {
           name: 'absolute',
         },
@@ -293,16 +294,13 @@ const ToolbarView: FC<Props> = ({
           },
         },
         attrs: {
-          circle: {
-            stroke: token.colorPrimary,
-            fill: token.colorBgBase,
-            strokeWidth: 1,
-            r: 4,
-            magnet: true,
+          portBody: {
+            ...squarePortAttrs,
           },
           text: {
             fill: token.colorTextDescription,
             fontSize: 14,
+            cursor: readOnlyCursor,
           },
         },
       },
@@ -459,6 +457,7 @@ const ToolbarView: FC<Props> = ({
                           ? token.colorPrimary
                           : token.colorTextDescription,
                       'font-weight': item?.data?.quantitativeReference ? 'bold' : 'normal',
+                      cursor: readOnlyCursor,
                     },
                   },
                 };

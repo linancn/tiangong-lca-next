@@ -2731,15 +2731,8 @@ describe('ToolbarEdit', () => {
     expect(resizeNode.prop).toHaveBeenCalled();
     expect(resizeNode.addTools).toHaveBeenCalled();
 
-    const target = document.createElement('text');
-    target.textContent = 'Flow Name';
-    const parent = document.createElement('g');
-    const grandParent = document.createElement('g');
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('port', 'OUTPUT:flow-a');
-    grandParent.appendChild(circle);
-    grandParent.appendChild(parent);
-    parent.appendChild(target);
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('port', 'OUTPUT:flow-a');
 
     const clickableNode = {
       id: 'node-1',
@@ -2750,7 +2743,7 @@ describe('ToolbarEdit', () => {
     await act(async () => {
       nodeClickHandler({
         node: clickableNode,
-        e: { target },
+        e: { target: rect },
       });
     });
 
@@ -2768,6 +2761,55 @@ describe('ToolbarEdit', () => {
 
     blankClickHandler();
     expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+  });
+
+  it('does not open connectable processes when clicking node content outside a port', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nodeClickHandler = getGraphHandler('node:click');
+    const contentTarget = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    contentTarget.textContent = '工业空气生产; 7553010026';
+
+    await act(async () => {
+      nodeClickHandler({
+        node: {
+          id: 'node-1',
+          isNode: () => true,
+          getPorts: () => [{ id: 'OUTPUT:flow-a', data: { flowVersion: '3.0' } }],
+        },
+        e: { target: contentTarget },
+      });
+    });
+
+    expect(screen.queryByText('connectable:OUTPUT:flow-a:3.0')).not.toBeInTheDocument();
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+  });
+
+  it('opens connectable processes when clicking text inside a port group', async () => {
+    render(<ToolbarEdit {...baseProps} />);
+
+    const nodeClickHandler = getGraphHandler('node:click');
+    const textTarget = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    textTarget.textContent = 'Flow Name';
+    const portGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    portGroup.setAttribute('class', 'x6-port');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('port', 'OUTPUT:flow-a');
+    portGroup.appendChild(rect);
+    portGroup.appendChild(textTarget);
+
+    await act(async () => {
+      nodeClickHandler({
+        node: {
+          id: 'node-1',
+          isNode: () => true,
+          getPorts: () => [{ id: 'OUTPUT:flow-a', data: { flowVersion: '3.0' } }],
+        },
+        e: { target: textTarget },
+      });
+    });
+
+    expect(screen.getByText('connectable:OUTPUT:flow-a:3.0')).toBeInTheDocument();
   });
 
   it('handles sparse event payloads and default fallbacks in graph handlers', async () => {
@@ -2869,15 +2911,8 @@ describe('ToolbarEdit', () => {
       { ignoreHistory: true, reset: true },
     );
 
-    const textTarget = document.createElement('text');
-    textTarget.textContent = 'Sparse Flow';
-    const portParent = document.createElement('g');
-    const portGrandParent = document.createElement('g');
-    const portCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    portCircle.setAttribute('port', 'OUTPUT:flow-sparse');
-    portGrandParent.appendChild(portCircle);
-    portGrandParent.appendChild(portParent);
-    portParent.appendChild(textTarget);
+    const portRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    portRect.setAttribute('port', 'OUTPUT:flow-sparse');
 
     await act(async () => {
       nodeClickHandler({
@@ -2886,7 +2921,7 @@ describe('ToolbarEdit', () => {
           isNode: () => true,
           getPorts: () => [{ id: 'OUTPUT:flow-sparse' }],
         },
-        e: { target: textTarget },
+        e: { target: portRect },
       });
     });
     expect(screen.getByText('connectable:OUTPUT:flow-sparse:')).toBeInTheDocument();

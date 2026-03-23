@@ -4,68 +4,6 @@
   }
 }
 
-// selection
-.x6-node-selected rect {
-  stroke: var(--ant-color-primary);
-  stroke-width: 2px;
-}
-
-.x6-widget-selection-box {
-  margin-top: -8px;
-  margin-left: -8px;
-  padding-right: 12px;
-  padding-bottom: 12px;
-  border: 3px solid var(--ant-color-primary) !important;
-  border-radius: 12px;
-  outline: 2px solid var(--ant-color-text);
-  outline-offset: 2px;
-  box-shadow:
-    0 0 0 2px var(--ant-color-bg-container),
-    0 0 16px 2px var(--ant-color-primary-hover);
-}
-
-.x6-edge-selected {
-  path:nth-child(2) {
-    stroke: var(--ant-color-primary);
-    stroke-width: 2px;
-  }
-}
-
-// snapline
-.x6-widget-snapline-horizontal,
-.x6-widget-snapline-vertical {
-  stroke: var(--ant-color-primary);
-}
-
-// transform
-.x6-widget-transform {
-  margin: -3px 0 0 -3px;
-  padding: 0px;
-  border: 2px solid var(--ant-color-primary);
-  outline: 2px solid var(--ant-color-text);
-  outline-offset: 1px;
-  box-shadow:
-    0 0 0 1px var(--ant-color-bg-container),
-    0 0 12px 1px var(--ant-color-primary-hover);
-}
-.x6-widget-transform > div {
-  border: 2px solid var(--ant-color-text);
-  background-color: var(--ant-color-bg-container);
-  box-shadow: 0 0 0 2px var(--ant-color-primary);
-}
-.x6-widget-transform > div:hover {
-  background-color: var(--ant-color-primary-hover);
-}
-.x6-widget-transform-active-handle {
-  background-color: var(--ant-color-primary);
-  box-shadow:
-    0 0 0 2px var(--ant-color-text),
-    0 0 0 4px var(--ant-color-bg-container);
-}
-.x6-widget-transform-resize {
-  border-radius: 0;
-}
-
 // control style
 .toolButton {
   display: flex;

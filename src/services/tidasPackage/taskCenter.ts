@@ -7,6 +7,7 @@ import {
   type TidasPackageJobResponse,
   type TidasPackageManifestScope,
 } from '@/services/general/api';
+import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
 
 export type TidasPackageTaskState = 'running' | 'completed' | 'failed';
 export type TidasPackageTaskPhase =
@@ -287,10 +288,7 @@ function upsertTask(taskId: string, patch: Partial<TidasPackageBackgroundTask>):
 }
 
 function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return String(error);
+  return normalizeTidasPackageExportErrorMessage(error);
 }
 
 function phaseFromJob(job: TidasPackageJobResponse): TidasPackageTaskPhase {
@@ -376,11 +374,16 @@ function applyJobToTask(taskId: string, job: TidasPackageJobResponse): void {
     filename: filenameFromJob(job, current?.request),
     error: isFailed
       ? (current?.error ??
-        (typeof job.request_cache?.error_message === 'string'
-          ? job.request_cache.error_message
-          : typeof job.diagnostics?.error === 'string'
-            ? job.diagnostics.error
-            : 'TIDAS package export failed'))
+        normalizeTidasPackageExportErrorMessage(
+          typeof job.request_cache?.error_message === 'string'
+            ? job.request_cache.error_message
+            : typeof job.diagnostics?.error === 'string'
+              ? job.diagnostics.error
+              : typeof job.diagnostics?.message === 'string'
+                ? job.diagnostics.message
+                : null,
+          'TIDAS package export failed',
+        ))
       : undefined,
   });
 }
@@ -408,7 +411,10 @@ async function pollTask(taskId: string, jobId: string): Promise<void> {
             phase: 'failed',
             state: 'failed',
             message: 'Export task failed',
-            error: error?.message ?? 'Failed to load TIDAS package job status',
+            error: normalizeTidasPackageExportErrorMessage(
+              error?.message,
+              'Failed to load TIDAS package job status',
+            ),
           });
           return;
         }

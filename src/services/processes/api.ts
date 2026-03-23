@@ -408,8 +408,15 @@ export async function getConnectableProcessesTable(
   portId: string,
   flowVersion: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const requestedSortField = Object.keys(sort)[0];
+  const connectableSortFieldMap: Record<string, string> = {
+    id: 'id',
+    version: 'version',
+    modifiedAt: 'modified_at',
+    modified_at: 'modified_at',
+  };
+  const sortBy = connectableSortFieldMap[requestedSortField ?? ''] ?? 'modified_at';
+  const orderBy = (requestedSortField ? sort[requestedSortField] : undefined) ?? 'descend';
   const direction = portId.split(':')[0];
   const flowId = portId.split(':').pop();
   if (!flowId) {

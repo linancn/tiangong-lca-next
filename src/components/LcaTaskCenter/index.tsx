@@ -10,6 +10,10 @@ import {
   removeLcaTask,
   subscribeLcaTasks,
 } from '@/services/lca/taskCenter';
+import {
+  TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR,
+  classifyTidasPackageExportError,
+} from '@/services/tidasPackage/exportErrors';
 import type {
   TidasPackageBackgroundTask,
   TidasPackageTaskPhase,
@@ -401,6 +405,25 @@ function lcaTaskSummary(task: LcaBackgroundTask, intl: IntlShapeLike): string {
   });
 }
 
+function packageTaskErrorText(
+  task: TidasPackageBackgroundTask,
+  intl: IntlShapeLike,
+): string | undefined {
+  if (!task.error) {
+    return undefined;
+  }
+
+  if (classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR) {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.export.error.tooLarge',
+      defaultMessage:
+        'Export package is too large for the current storage upload limit. Try exporting a smaller scope, or ask an administrator to enable large-file upload support.',
+    });
+  }
+
+  return task.error;
+}
+
 function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLike): string {
   if (task.state === 'completed') {
     return intl.formatMessage(
@@ -412,6 +435,12 @@ function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLik
     );
   }
   if (task.state === 'failed') {
+    if (classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR) {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.summary.failedTooLarge',
+        defaultMessage: 'Export package exceeded the storage upload limit',
+      });
+    }
     return intl.formatMessage({
       id: 'component.tidasPackage.taskCenter.summary.failed',
       defaultMessage: 'Export package failed',
@@ -757,7 +786,12 @@ const LcaTaskCenter: React.FC = () => {
                         </Typography.Text>
                       </Space>
                       <Typography.Text>{taskSummary(item, intl)}</Typography.Text>
-                      {item.task.error && (
+                      {item.kind === 'package' && packageTaskErrorText(item.task, intl) && (
+                        <Typography.Text type='danger'>
+                          {packageTaskErrorText(item.task, intl)}
+                        </Typography.Text>
+                      )}
+                      {item.kind === 'lca' && item.task.error && (
                         <Typography.Text type='danger'>{item.task.error}</Typography.Text>
                       )}
                       <Space size={12} wrap>

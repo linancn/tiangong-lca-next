@@ -79,6 +79,7 @@ const PasswordForgot: React.FC = () => {
     <App>
       <ConfigProvider
         theme={{
+          cssVar: true,
           token: {
             colorPrimary: brandTheme.colorPrimary,
           },

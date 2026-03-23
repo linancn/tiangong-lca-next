@@ -52,6 +52,10 @@ class MockNode {
     return this.data;
   }
 
+  getAttrs() {
+    return this.attrs;
+  }
+
   setData(data: any, options?: any) {
     this.data = { ...this.data, ...data };
     this.lastDataOptions = options;
@@ -142,6 +146,10 @@ class MockEdge {
 
   getData() {
     return this.data;
+  }
+
+  getAttrs() {
+    return this.attrs;
   }
 
   setData(data: any, options?: any) {
@@ -564,6 +572,66 @@ describe('graphContext (src/contexts/graphContext.tsx)', () => {
     });
 
     expect(cleanupRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('syncs node and edge stroke widths from the current selection state when body/line attrs exist', () => {
+    const wrapper = ({ children }: { children: any }) => <GraphProvider>{children}</GraphProvider>;
+    const graph = new MockGraph();
+
+    const { result } = renderHook(() => useGraphStore((state) => state), { wrapper });
+
+    act(() => {
+      result.current.setGraph(graph as any);
+      result.current.initData({
+        nodes: [{ id: 'node-selection', attrs: { body: { stroke: '#1677ff', strokeWidth: 1 } } }],
+        edges: [{ id: 'edge-selection', attrs: { line: { stroke: '#1677ff', strokeWidth: 1 } } }],
+      });
+    });
+
+    act(() => {
+      result.current.updateNode('node-selection', { selected: true });
+      result.current.updateEdge('edge-selection', { selected: true });
+    });
+
+    expect((graph.getCellById('node-selection') as MockNode).attrs.body.strokeWidth).toBe(2);
+    expect((graph.getCellById('edge-selection') as MockEdge).attrs.line.strokeWidth).toBe(2);
+    expect(
+      result.current.nodes.find(
+        (item: { id?: string; attrs?: { body?: { strokeWidth?: number } } }) =>
+          item.id === 'node-selection',
+      )?.attrs?.body?.strokeWidth,
+    ).toBe(2);
+    expect(
+      result.current.edges.find(
+        (item: { id?: string; attrs?: { line?: { strokeWidth?: number } } }) =>
+          item.id === 'edge-selection',
+      )?.attrs?.line?.strokeWidth,
+    ).toBe(2);
+
+    act(() => {
+      result.current.updateNode('node-selection', {
+        attrs: { body: { stroke: '#ff4d4f', fill: '#fff' } },
+        selected: false,
+      });
+      result.current.updateEdge('edge-selection', {
+        attrs: { line: { stroke: '#ff4d4f' } },
+        selected: false,
+      });
+    });
+
+    expect((graph.getCellById('node-selection') as MockNode).attrs.body).toEqual(
+      expect.objectContaining({
+        stroke: '#ff4d4f',
+        fill: '#fff',
+        strokeWidth: 1,
+      }),
+    );
+    expect((graph.getCellById('edge-selection') as MockEdge).attrs.line).toEqual(
+      expect.objectContaining({
+        stroke: '#ff4d4f',
+        strokeWidth: 1,
+      }),
+    );
   });
 
   it('registers and cleans up graph events', async () => {

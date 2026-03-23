@@ -19,6 +19,7 @@ import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
+import { ConfigProvider, theme as antdTheme } from 'antd';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
 import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
@@ -176,22 +177,34 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       }
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <>
-          {children}
-          {isDev && (
-            <SettingDrawer
-              disableUrlParams
-              enableDarkTheme
-              settings={initialState?.settings}
-              onSettingChange={(settings) => {
-                setInitialState((preInitialState: any) => ({
-                  ...preInitialState,
-                  settings,
-                }));
-              }}
-            />
-          )}
-        </>
+        <ConfigProvider
+          theme={{
+            cssVar: true,
+            token: {
+              colorPrimary: initialState?.settings?.colorPrimary,
+            },
+            algorithm: initialState?.isDarkMode
+              ? antdTheme.darkAlgorithm
+              : antdTheme.defaultAlgorithm,
+          }}
+        >
+          <>
+            {children}
+            {isDev && (
+              <SettingDrawer
+                disableUrlParams
+                enableDarkTheme
+                settings={initialState?.settings}
+                onSettingChange={(settings) => {
+                  setInitialState((preInitialState: any) => ({
+                    ...preInitialState,
+                    settings,
+                  }));
+                }}
+              />
+            )}
+          </>
+        </ConfigProvider>
       );
     },
     menuDataRender: (menuDataProps) => {

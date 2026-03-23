@@ -71,6 +71,24 @@ Read only what matches the current task:
 - `docker/volumes/functions/**`: synced self-hosted edge-functions mirror. Do not edit these files in `tiangong-lca-next`.
 - `docker/pull-edge-functions.sh`: the only supported way to refresh `docker/volumes/functions/**` in this repo.
 
+## UI Consistency / Ant Design First
+
+For `tiangong-lca-next`, UI consistency is a hard product requirement.
+
+When implementing or modifying frontend UI in this repository, follow these rules:
+
+1. Reuse existing shared components and established project patterns first.
+2. If no suitable shared abstraction exists, prefer Ant Design native components, documented props, built-in variants, and standard interaction patterns.
+3. For visual decisions that affect product consistency, prefer Ant Design theme tokens, component tokens, or established project token abstractions over ad-hoc hard-coded values.
+4. Avoid unnecessary custom visual styling. Custom CSS, inline styles, and local CSS modules are not the default path when Ant Design or existing shared abstractions can already satisfy the requirement.
+5. Custom styling is allowed only when Ant Design props, tokens, or existing shared abstractions cannot reasonably satisfy the requirement. In such cases, keep the override minimal, preserve the established visual language, and explain the reason in the PR description or code comments when it is not obvious.
+6. If a custom visual pattern starts repeating, extract it into a shared component or reusable abstraction instead of duplicating it locally.
+
+Clarification:
+
+- This rule targets product-facing visual styling and interaction consistency, not a total ban on layout code.
+- Local layout styling is acceptable when appropriate, but prefer existing project patterns and Ant Design layout primitives for simple composition before introducing one-off visual treatments.
+
 ## Delivery Contract
 
 - Investigate first (`rg`, nearest feature, existing tests).

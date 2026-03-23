@@ -85,6 +85,7 @@ const PasswordSet: FC = () => {
     <App>
       <ConfigProvider
         theme={{
+          cssVar: true,
           token: {
             colorPrimary: brandTheme.colorPrimary,
           },

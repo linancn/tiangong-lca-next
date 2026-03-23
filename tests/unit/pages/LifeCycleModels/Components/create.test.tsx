@@ -14,6 +14,7 @@ const toText = (node: any): string => {
 };
 
 let latestToolbarProps: any = null;
+let latestGraphProps: any = null;
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -100,7 +101,10 @@ jest.mock('@/components/ToolBarButton', () => ({
 
 jest.mock('@/components/X6Graph', () => ({
   __esModule: true,
-  default: () => <div data-testid='x6-graph'>graph</div>,
+  default: (props: any) => {
+    latestGraphProps = props;
+    return <div data-testid='x6-graph'>graph</div>;
+  },
 }));
 
 jest.mock('@/contexts/graphContext', () => ({
@@ -128,6 +132,7 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/editIndex', () => ({
 describe('LifeCycleModelCreate', () => {
   beforeEach(() => {
     latestToolbarProps = null;
+    latestGraphProps = null;
   });
 
   it('does not auto-open when import data is empty', () => {
@@ -166,6 +171,12 @@ describe('LifeCycleModelCreate', () => {
     );
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
+    expect(latestGraphProps?.transformOptions).toEqual({
+      resizing: {
+        enabled: true,
+        orthogonal: false,
+      },
+    });
 
     await waitFor(() =>
       expect(latestToolbarProps).toMatchObject({

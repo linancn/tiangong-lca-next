@@ -156,7 +156,7 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
           connector: { name: 'normal' },
         }}
         gridOptions={{ visible: false }}
-        transformOptions={{ resizing: true, rotating: true }}
+        transformOptions={{ resizing: { enabled: true, orthogonal: false }, rotating: true }}
         historyOptions={{ enabled: true }}
         clipboardOptions={{ enabled: true, useLocalStorage: false }}
         keyboardOptions={{ enabled: true, global: false }}
@@ -184,6 +184,13 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     expect(instance.use).toHaveBeenCalledWith(expect.any(Keyboard));
     expect(instance.use).toHaveBeenCalledWith(expect.any(Snapline));
     expect(instance.use).toHaveBeenCalledWith(expect.any(Transform));
+    const transformPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Transform,
+    )?.[0];
+    expect(transformPlugin.options).toEqual({
+      resizing: { enabled: true, orthogonal: false },
+      rotating: true,
+    });
 
     const historyPlugin = instance.use.mock.calls.find(
       ([plugin]: [unknown]) => plugin instanceof History,
@@ -326,6 +333,31 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     )?.[0];
 
     expect(transformPlugin.options).toEqual({ resizing: true, rotating: false });
+  });
+
+  it('treats object-based resizing options as transform handles when enabled', () => {
+    const { Selection, Transform, __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(
+      <X6GraphComponent transformOptions={{ resizing: { enabled: true, orthogonal: false } }} />,
+    );
+
+    const instance = __graphInstances[0];
+    const selectionPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Selection,
+    )?.[0];
+    const transformPlugin = instance.use.mock.calls.find(
+      ([plugin]: [unknown]) => plugin instanceof Transform,
+    )?.[0];
+
+    expect(selectionPlugin.options).toMatchObject({
+      showNodeSelectionBox: false,
+      pointerEvents: 'auto',
+    });
+    expect(transformPlugin.options).toEqual({
+      resizing: { enabled: true, orthogonal: false },
+      rotating: false,
+    });
   });
 
   it('hides the node selection box when transform handles are enabled', () => {
