@@ -85,6 +85,24 @@ jest.mock('@ant-design/icons', () => ({
   LinkOutlined: () => <span data-testid='link-icon'>link-icon</span>,
 }));
 
+jest.mock('antd', () => ({
+  __esModule: true,
+  ConfigProvider: ({ children, theme }: any) => (
+    <div
+      data-testid='config-provider'
+      data-css-var={String(theme?.cssVar)}
+      data-color-primary={theme?.token?.colorPrimary ?? ''}
+      data-algorithm={theme?.algorithm ?? ''}
+    >
+      {children}
+    </div>
+  ),
+  theme: {
+    darkAlgorithm: 'dark-algorithm',
+    defaultAlgorithm: 'default-algorithm',
+  },
+}));
+
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
   SettingDrawer: ({ settings, onSettingChange }: any) => (
@@ -308,7 +326,14 @@ describe('app runtime config', () => {
     expect(runtimeLayout.bgLayoutImgList).toBeUndefined();
 
     const children = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
-    expect(children.props.children[0].props['data-testid']).toBe('child');
+    render(children);
+    expect(screen.getByTestId('config-provider')).toHaveAttribute('data-css-var', 'true');
+    expect(screen.getByTestId('config-provider')).toHaveAttribute('data-color-primary', '#0C246A');
+    expect(screen.getByTestId('config-provider')).toHaveAttribute(
+      'data-algorithm',
+      'default-algorithm',
+    );
+    expect(screen.getByTestId('child')).toHaveTextContent('child');
 
     mockHistory.location.pathname = '/processes';
     const guardedLayout = layout({
