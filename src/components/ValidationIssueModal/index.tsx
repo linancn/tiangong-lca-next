@@ -248,23 +248,6 @@ const getValidationIssueActionLabel = (
   });
 };
 
-const validationIssueNotificationStatusCache = new Map<string, true>();
-
-export const __resetValidationIssueNotificationStatusCacheForTest = () => {
-  validationIssueNotificationStatusCache.clear();
-};
-
-const getCachedNotifiedIssueKeys = (groupedIssues: GroupedValidationIssue[]) =>
-  groupedIssues.reduce<Record<string, boolean>>((accumulator, groupedIssue) => {
-    const issueKey = getValidationIssueGroupKey(groupedIssue);
-
-    if (validationIssueNotificationStatusCache.has(issueKey)) {
-      accumulator[issueKey] = true;
-    }
-
-    return accumulator;
-  }, {});
-
 const getDatasetTypeLabel = (intl: IntlShapeLike, type: string) => {
   switch (type) {
     case 'contact data set':
@@ -510,76 +493,7 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
   const { token } = theme.useToken();
   const groupedIssues = useMemo(() => groupValidationIssues(issues), [issues]);
   const [loadingIssueKey, setLoadingIssueKey] = useState<string | null>(null);
-  const [notifiedIssueKeys, setNotifiedIssueKeys] = useState<Record<string, boolean>>(() =>
-    getCachedNotifiedIssueKeys(groupedIssues),
-  );
-  const [checkingIssueKeys, setCheckingIssueKeys] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    const cachedNotifiedIssueKeys = getCachedNotifiedIssueKeys(groupedIssues);
-    const groupedIssuesToCheck = groupedIssues.filter(
-      (groupedIssue) => groupedIssue.isOwnedByCurrentUser === false && groupedIssue.ownerUserId,
-    );
-    const issueKeysToCheck = groupedIssuesToCheck
-      .map((groupedIssue) => getValidationIssueGroupKey(groupedIssue))
-      .filter((issueKey) => !cachedNotifiedIssueKeys[issueKey]);
-
-    setNotifiedIssueKeys(cachedNotifiedIssueKeys);
-
-    if (!groupedIssuesToCheck.length) {
-      setCheckingIssueKeys({});
-      return;
-    }
-
-    setCheckingIssueKeys(
-      issueKeysToCheck.reduce<Record<string, boolean>>((accumulator, issueKey) => {
-        accumulator[issueKey] = true;
-        return accumulator;
-      }, {}),
-    );
-
-    if (!issueKeysToCheck.length) {
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadValidationIssueNotificationStatus = async () => {
-      const { getValidationIssueNotificationStatus } =
-        require('@/services/notifications/api') as typeof import('@/services/notifications/api');
-      const result = await getValidationIssueNotificationStatus(
-        groupedIssuesToCheck.map((groupedIssue) => ({
-          key: getValidationIssueGroupKey(groupedIssue),
-          recipientUserId: groupedIssue.ownerUserId,
-          ref: groupedIssue.ref,
-        })),
-      );
-
-      if (isMounted && result.success) {
-        Object.entries(result.data).forEach(([issueKey, notified]) => {
-          if (notified) {
-            validationIssueNotificationStatusCache.set(issueKey, true);
-          }
-        });
-
-        setNotifiedIssueKeys((prev) => ({
-          ...cachedNotifiedIssueKeys,
-          ...prev,
-          ...result.data,
-        }));
-      }
-
-      if (isMounted) {
-        setCheckingIssueKeys({});
-      }
-    };
-
-    void loadValidationIssueNotificationStatus();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [groupedIssues]);
+  const [notifiedIssueKeys, setNotifiedIssueKeys] = useState<Record<string, boolean>>({});
 
   const handleNotifyDataOwner = async (groupedIssue: GroupedValidationIssue) => {
     const issueKey = getValidationIssueGroupKey(groupedIssue);
@@ -709,14 +623,10 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
       render: (_, groupedIssue) => {
         const issueKey = getValidationIssueGroupKey(groupedIssue);
         const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
-        const isCheckingNotificationStatus = checkingIssueKeys[issueKey];
         const actionLabel = getValidationIssueActionLabel(intl, groupedIssue, {
           notified: notifiedIssueKeys[issueKey],
         });
-        const isNotifyActionDisabled =
-          notifiedIssueKeys[issueKey] ||
-          loadingIssueKey === issueKey ||
-          isCheckingNotificationStatus;
+        const isNotifyActionDisabled = notifiedIssueKeys[issueKey] || loadingIssueKey === issueKey;
         const isOpenActionDisabled = isValidationIssueLinkDisabled(groupedIssue);
         const isDisabled = shouldNotifyDataOwner ? isNotifyActionDisabled : isOpenActionDisabled;
 
@@ -724,7 +634,7 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
           <Button
             type='link'
             disabled={isDisabled}
-            loading={loadingIssueKey === issueKey || isCheckingNotificationStatus}
+            loading={loadingIssueKey === issueKey}
             style={{
               color: isDisabled ? token.colorTextDisabled : token.colorPrimary,
               fontWeight: token.fontWeightStrong,
@@ -739,7 +649,7 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
               openValidationIssueLink(groupedIssue.link ?? '');
             }}
           >
-            {isCheckingNotificationStatus ? null : actionLabel}
+            {actionLabel}
           </Button>
         ) : (
           '-'

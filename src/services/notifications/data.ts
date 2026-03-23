@@ -13,12 +13,6 @@ export type ValidationIssueNotificationIssue = {
   underReviewVersion?: string;
 };
 
-export type ValidationIssueNotificationLookupItem = {
-  key: string;
-  recipientUserId?: string;
-  ref: NotificationRef;
-};
-
 export type NotificationJson = {
   issueCodes?: string[];
   issueCount?: number;

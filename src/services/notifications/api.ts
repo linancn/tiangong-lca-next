@@ -6,7 +6,6 @@ import type {
   NotificationRef,
   NotificationTableRow,
   ValidationIssueNotificationIssue,
-  ValidationIssueNotificationLookupItem,
 } from './data';
 
 const VALIDATION_ISSUE_NOTIFICATION_TYPE = 'validation_issue' as const;
@@ -35,46 +34,6 @@ const getNotificationTabNames = (issues: ValidationIssueNotificationIssue[]) =>
       (tabName, index, allTabNames): tabName is string =>
         Boolean(tabName) && allTabNames.indexOf(tabName) === index,
     );
-
-const getValidationIssueNotificationQueryKey = ({
-  datasetId,
-  datasetType,
-  datasetVersion,
-  recipientUserId,
-}: {
-  datasetId: string;
-  datasetType: string;
-  datasetVersion: string;
-  recipientUserId: string;
-}) => `${recipientUserId}:${datasetType}:${datasetId}:${datasetVersion}`;
-
-const normalizeValidationIssueNotificationLookupItem = (
-  lookupItem: ValidationIssueNotificationLookupItem,
-) => {
-  const key = normalizeString(lookupItem.key);
-  const recipientUserId = normalizeString(lookupItem.recipientUserId);
-  const datasetType = normalizeString(lookupItem.ref?.['@type']);
-  const datasetId = normalizeString(lookupItem.ref?.['@refObjectId']);
-  const datasetVersion = normalizeString(lookupItem.ref?.['@version']);
-
-  if (!key || !recipientUserId || !datasetType || !datasetId || !datasetVersion) {
-    return null;
-  }
-
-  return {
-    key,
-    queryKey: getValidationIssueNotificationQueryKey({
-      datasetId,
-      datasetType,
-      datasetVersion,
-      recipientUserId,
-    }),
-    recipientUserId,
-    datasetId,
-    datasetType,
-    datasetVersion,
-  };
-};
 
 export async function upsertValidationIssueNotification({
   recipientUserId,
@@ -134,90 +93,6 @@ export async function upsertValidationIssueNotification({
     success: !error,
     error,
   };
-}
-
-export async function getValidationIssueNotificationStatus(
-  lookupItems: ValidationIssueNotificationLookupItem[],
-) {
-  const senderUserId = normalizeString(await getUserId());
-  const normalizedLookupItems = lookupItems
-    .map((lookupItem) => normalizeValidationIssueNotificationLookupItem(lookupItem))
-    .filter(
-      (
-        lookupItem,
-      ): lookupItem is NonNullable<
-        ReturnType<typeof normalizeValidationIssueNotificationLookupItem>
-      > => Boolean(lookupItem),
-    );
-
-  if (!senderUserId) {
-    return Promise.resolve({
-      data: {},
-      success: false,
-    });
-  }
-
-  if (!normalizedLookupItems.length) {
-    return Promise.resolve({
-      data: {},
-      success: true,
-    });
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('recipient_user_id,dataset_type,dataset_id,dataset_version')
-      .eq('sender_user_id', senderUserId)
-      .eq('type', VALIDATION_ISSUE_NOTIFICATION_TYPE)
-      .in(
-        'recipient_user_id',
-        Array.from(new Set(normalizedLookupItems.map((lookupItem) => lookupItem.recipientUserId))),
-      )
-      .in(
-        'dataset_type',
-        Array.from(new Set(normalizedLookupItems.map((lookupItem) => lookupItem.datasetType))),
-      )
-      .in(
-        'dataset_id',
-        Array.from(new Set(normalizedLookupItems.map((lookupItem) => lookupItem.datasetId))),
-      )
-      .in(
-        'dataset_version',
-        Array.from(new Set(normalizedLookupItems.map((lookupItem) => lookupItem.datasetVersion))),
-      );
-
-    if (error || !Array.isArray(data)) {
-      return Promise.resolve({
-        data: {},
-        success: false,
-      });
-    }
-
-    const notifiedQueryKeys = new Set(
-      data.map((row) =>
-        getValidationIssueNotificationQueryKey({
-          datasetId: row.dataset_id,
-          datasetType: row.dataset_type,
-          datasetVersion: row.dataset_version,
-          recipientUserId: row.recipient_user_id,
-        }),
-      ),
-    );
-
-    return Promise.resolve({
-      data: normalizedLookupItems.reduce<Record<string, boolean>>((accumulator, lookupItem) => {
-        accumulator[lookupItem.key] = notifiedQueryKeys.has(lookupItem.queryKey);
-        return accumulator;
-      }, {}),
-      success: true,
-    });
-  } catch (error) {
-    return Promise.resolve({
-      data: {},
-      success: false,
-    });
-  }
 }
 
 const mapNotificationRow = (row: NotificationTableRow): NotificationListItem => {
