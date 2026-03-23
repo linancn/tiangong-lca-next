@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes';
 import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getConnectableProcessesTable } from '@/services/processes/api';
@@ -39,6 +40,9 @@ const ConnectableProcesses: FC<Props> = ({
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
   const [tableLoading, setTableLoading] = useState<boolean>(false);
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onTabChange = async (key: string) => {
     setActiveTabKey(key as DataTabKey);
@@ -179,6 +183,7 @@ const ConnectableProcesses: FC<Props> = ({
             return data;
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={
             !readOnly && {
               alwaysShowAlert: true,
@@ -221,6 +226,7 @@ const ConnectableProcesses: FC<Props> = ({
             return data;
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={
             !readOnly && {
               alwaysShowAlert: true,
@@ -263,6 +269,7 @@ const ConnectableProcesses: FC<Props> = ({
             return data;
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={
             !readOnly && {
               alwaysShowAlert: true,
@@ -305,6 +312,7 @@ const ConnectableProcesses: FC<Props> = ({
             return data;
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={
             !readOnly && {
               alwaysShowAlert: true,

@@ -1,4 +1,5 @@
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { ListPagination } from '@/services/general/data';
 import { getProcessDetail } from '@/services/processes/api';
 import {
@@ -64,6 +65,9 @@ const ExchangeSelect: FC<Props> = ({
   const [loadingTarget, setLoadingTarget] = useState(false);
   const actionRefSelectSource = useRef<ActionType>();
   const actionRefSelectTarget = useRef<ActionType>();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -303,6 +307,7 @@ const ExchangeSelect: FC<Props> = ({
                 toolBarRender={false}
                 dataSource={exchangeDataSourceTable}
                 columns={[...processExchangeColumns, ...processExchangeColumnsSource]}
+                tableAlertOptionRender={tableAlertOptionRender}
                 rowSelection={{
                   type: 'radio',
                   alwaysShowAlert: true,
@@ -333,6 +338,7 @@ const ExchangeSelect: FC<Props> = ({
                 toolBarRender={false}
                 dataSource={exchangeDataTargetTable}
                 columns={[...processExchangeColumns, ...processExchangeColumnsTarget]}
+                tableAlertOptionRender={tableAlertOptionRender}
                 rowSelection={{
                   type: 'radio',
                   alwaysShowAlert: true,

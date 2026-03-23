@@ -99,6 +99,7 @@ export default {
   'pages.searchTable.title': 'Enquiry Form',
   'pages.searchTable.new': 'New',
   'pages.searchTable.chosen': 'chosen',
+  'pages.searchTable.clearSelection': 'Clear selection',
   'pages.searchTable.item': 'item',
   'pages.searchTable.totalServiceCalls': 'Total Number of Service Calls',
   'pages.searchTable.tenThousand': '0000',

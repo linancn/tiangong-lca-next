@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import { DataTabKey, ListPagination } from '@/services/general/data';
@@ -41,6 +42,9 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   const teamActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -258,6 +262,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             return getContactTableAll(params, sort, lang, 'tg', []);
           }}
           columns={contactColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -300,6 +305,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             return getContactTableAll(params, sort, lang, 'co', []);
           }}
           columns={contactColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -345,6 +351,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
           }}
           columns={contactColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -387,6 +394,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             return getContactTableAll(params, sort, lang, 'te', '');
           }}
           columns={contactColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import FlowsView from '@/pages/Flows/Components/view';
 import {
   flow_hybrid_search,
@@ -36,6 +37,9 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const myActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -241,6 +245,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
             return getFlowTableAll(params, sort, lang, 'my', []);
           }}
           columns={FlowsColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

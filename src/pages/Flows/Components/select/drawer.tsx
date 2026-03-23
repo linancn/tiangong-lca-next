@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import {
   flow_hybrid_search,
   getFlowTableAll,
@@ -45,6 +46,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -294,6 +298,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
             });
           }}
           columns={FlowsColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -368,6 +373,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
             });
           }}
           columns={FlowsColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -421,6 +427,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           toolBarRender={() => {
             return [<FlowsCreate key={0} lang={lang} actionRef={teActionRefSelect} />];
           }}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -474,6 +481,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           toolBarRender={() => {
             return [<FlowsCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
           }}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

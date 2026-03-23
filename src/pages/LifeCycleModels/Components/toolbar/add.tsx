@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes/index';
@@ -41,6 +42,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const coActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -264,6 +268,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             return result || { data: [], success: false };
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             alwaysShowAlert: true,
             preserveSelectedRowKeys: true,
@@ -329,6 +334,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             return result || { data: [], success: false };
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             alwaysShowAlert: true,
             preserveSelectedRowKeys: true,
@@ -393,6 +399,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             return result || { data: [], success: false };
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             alwaysShowAlert: true,
             preserveSelectedRowKeys: true,
@@ -454,6 +461,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             return result || { data: [], success: false };
           }}
           columns={processColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             alwaysShowAlert: true,
             preserveSelectedRowKeys: true,

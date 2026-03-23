@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import AccountView from '@/pages/Account/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
@@ -63,6 +64,9 @@ const AssignmentReview = ({
   const lang = locale === 'zh-CN' ? 'zh' : 'en';
   const [tableLoading, setTableLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
   const intl = useIntl();
 
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
@@ -619,6 +623,7 @@ const AssignmentReview = ({
           }
         }}
         actionRef={actionRef}
+        tableAlertOptionRender={tableAlertOptionRender}
         rowSelection={
           tableType === 'unassigned'
             ? {

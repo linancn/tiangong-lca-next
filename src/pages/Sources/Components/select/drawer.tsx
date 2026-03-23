@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
 import { SourceTable } from '@/services/sources/data';
@@ -38,6 +39,9 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -250,6 +254,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             );
           }}
           columns={sourceColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -292,6 +297,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             return getSourceTableAll(params, sort, lang, 'tg', []);
           }}
           columns={sourceColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -334,6 +340,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             return getSourceTableAll(params, sort, lang, 'co', []);
           }}
           columns={sourceColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -383,6 +390,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             );
           }}
           columns={sourceColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

@@ -100,6 +100,7 @@ export default {
   'pages.searchTable.title': '查询表格',
   'pages.searchTable.new': '新建',
   'pages.searchTable.chosen': '已选择',
+  'pages.searchTable.clearSelection': '取消选择',
   'pages.searchTable.item': '项',
   'pages.searchTable.totalServiceCalls': '服务调用次数总计',
   'pages.searchTable.tenThousand': '万',

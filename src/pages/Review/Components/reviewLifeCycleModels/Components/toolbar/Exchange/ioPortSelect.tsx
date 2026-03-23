@@ -2,6 +2,7 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import AlignedNumber from '@/components/AlignedNumber';
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
@@ -37,6 +38,9 @@ const IoPortSelect: FC<Props> = ({
 
   const [dataLoading, setDataLoading] = useState(false);
   const actionRefSelect = useRef<ActionType>();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
@@ -257,6 +261,7 @@ const IoPortSelect: FC<Props> = ({
             });
           }}
           columns={processExchangeColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             alwaysShowAlert: true,
             preserveSelectedRowKeys: true,

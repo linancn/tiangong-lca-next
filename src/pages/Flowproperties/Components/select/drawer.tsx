@@ -1,4 +1,5 @@
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
@@ -42,6 +43,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -275,6 +279,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             });
           }}
           columns={FlowpropertyColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -335,6 +340,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             });
           }}
           columns={FlowpropertyColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -395,6 +401,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             });
           }}
           columns={FlowpropertyColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -458,6 +465,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             });
           }}
           columns={FlowpropertyColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

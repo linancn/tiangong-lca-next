@@ -11,6 +11,7 @@ import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 // import UnitGroupCreate from '../create';
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -35,6 +36,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   // const myActionRefSelect = useRef<ActionType>();
   // const teActionRefSelect = useRef<ActionType>();
   const intl = useIntl();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -282,6 +286,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             return getUnitGroupTableAll(params, sort, lang, 'tg', []);
           }}
           columns={unitGroupColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,
@@ -324,6 +329,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             return getUnitGroupTableAll(params, sort, lang, 'co', []);
           }}
           columns={unitGroupColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             type: 'radio',
             alwaysShowAlert: true,

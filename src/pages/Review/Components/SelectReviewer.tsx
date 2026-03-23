@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { addCommentApi, getReviewerIdsByReviewId } from '@/services/comments/api';
 import {
   getReviewerIdsApi,
@@ -31,6 +32,9 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
   const [reviewDeadline, setReviewDeadline] = useState<Dayjs | null>(dayjs().add(15, 'day'));
   const { token } = theme.useToken();
   const tableRef = useRef<ActionType>();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
   const handleRowSelectionChange = (keys: React.Key[]) => {
     setSelectedRowKeys(keys);
   };
@@ -354,6 +358,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
                 </Space>
               ),
             }}
+            tableAlertOptionRender={tableAlertOptionRender}
             rowSelection={{
               selectedRowKeys,
               onChange: handleRowSelectionChange,

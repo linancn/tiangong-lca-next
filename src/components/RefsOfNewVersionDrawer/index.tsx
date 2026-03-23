@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getLang, getLangText } from '@/services/general/util';
 import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProTable } from '@ant-design/pro-components';
@@ -37,6 +38,9 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
   const [selectedRows, setSelectedRows] = useState<RefVersionItem[]>([]);
   const intl = useIntl();
   const lang = getLang(intl.locale);
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
   return (
     <Drawer
       getContainer={() => document.body}
@@ -82,6 +86,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
           loading={loading}
           dataSource={dataSource}
           pagination={{ pageSize: 10 }}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             selectedRowKeys,
             onSelect: (record, selected) => {
