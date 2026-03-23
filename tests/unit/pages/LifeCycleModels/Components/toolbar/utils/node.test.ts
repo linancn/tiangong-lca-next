@@ -61,11 +61,12 @@ describe('toolbar/utils/node', () => {
         id: 'nodeTitle',
         name: 'button',
         args: expect.objectContaining({
+          events: null,
           markup: expect.arrayContaining([
             expect.objectContaining({
               tagName: 'rect',
               attrs: expect.objectContaining({
-                cursor: 'pointer',
+                cursor: 'move',
               }),
             }),
             expect.objectContaining({

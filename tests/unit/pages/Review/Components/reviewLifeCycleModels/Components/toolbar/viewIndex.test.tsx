@@ -413,6 +413,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     const [refTool, nodeTitleTool, inputTool, outputTool] = initModel.nodes[0].tools;
 
     expect(nodeTitleTool.args.markup[0].attrs.cursor).toBe('move');
+    expect(nodeTitleTool.args.events).toBeNull();
     expect(initModel.nodes[0].ports.groups.groupInput.attrs.portBody).toEqual(
       expect.objectContaining({
         magnet: 'passive',
