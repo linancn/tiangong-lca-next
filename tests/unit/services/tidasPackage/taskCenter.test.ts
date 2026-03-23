@@ -505,6 +505,82 @@ describe('tidasPackage/taskCenter', () => {
     });
   });
 
+  it('normalizes oversized upload failures reported by the export job', async () => {
+    jest.useFakeTimers();
+    mockQueueExportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'job-too-large',
+        scope: 'open_data',
+        root_count: 0,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        status: 'failed',
+        job_id: 'job-too-large',
+        diagnostics: {
+          error:
+            'object upload failed status=413 Payload Too Large body=<?xml version="1.0"?><Error><Code>EntityTooLarge</Code><Message>The object exceeded the maximum allowed size</Message></Error>',
+        },
+        artifacts_by_kind: {},
+      },
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    const task = taskCenter.submitTidasPackageExportTask({ scope: 'open_data' });
+
+    await waitFor(() => {
+      const failed = taskCenter.listTidasPackageTasks().find((item) => item.id === task.id)!;
+      expect(failed.state).toBe('failed');
+      expect(failed.error).toBe(
+        'Export package is too large for the current storage upload limit. Try exporting a smaller scope, or ask an administrator to enable large-file upload support.',
+      );
+    });
+  });
+
+  it('normalizes oversized upload failures when they are only present in diagnostics.message', async () => {
+    jest.useFakeTimers();
+    mockQueueExportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'job-too-large-message',
+        scope: 'open_data',
+        root_count: 0,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        status: 'failed',
+        job_id: 'job-too-large-message',
+        diagnostics: {
+          message:
+            'object upload failed status=413 Payload Too Large body=<?xml version="1.0"?><Error><Code>EntityTooLarge</Code><Message>The object exceeded the maximum allowed size</Message></Error>',
+        },
+        artifacts_by_kind: {},
+      },
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    const task = taskCenter.submitTidasPackageExportTask({ scope: 'open_data' });
+
+    await waitFor(() => {
+      const failed = taskCenter.listTidasPackageTasks().find((item) => item.id === task.id)!;
+      expect(failed.state).toBe('failed');
+      expect(failed.error).toBe(
+        'Export package is too large for the current storage upload limit. Try exporting a smaller scope, or ask an administrator to enable large-file upload support.',
+      );
+    });
+  });
+
   it('covers additional polling branches for stale/finalize/submitting message paths', async () => {
     jest.useFakeTimers();
     mockQueueExportTidasPackageApi.mockResolvedValue({
