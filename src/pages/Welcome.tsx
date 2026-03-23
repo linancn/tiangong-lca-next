@@ -133,7 +133,7 @@ const Welcome: React.FC = () => {
 
   const info = {
     data1: {
-      value: 12320,
+      value: 16694,
       title: [
         {
           '@xml:lang': 'zh',
@@ -146,7 +146,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data2: {
-      value: 78,
+      value: 834,
       title: [
         {
           '@xml:lang': 'zh',
@@ -159,7 +159,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data3: {
-      value: 2670,
+      value: 5619,
       title: [
         {
           '@xml:lang': 'zh',
@@ -172,7 +172,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data4: {
-      value: 170,
+      value: 311,
       title: [
         {
           '@xml:lang': 'zh',
@@ -185,7 +185,7 @@ const Welcome: React.FC = () => {
       ],
     },
     data5: {
-      value: 9,
+      value: 12,
       title: [
         {
           '@xml:lang': 'zh',
