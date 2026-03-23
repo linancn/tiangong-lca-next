@@ -631,6 +631,39 @@ describe('general/api TIDAS package helpers', () => {
     expect(pollFailure.error).toEqual(new Error('Failed to load TIDAS package job status'));
   });
 
+  it('normalizes oversized export upload failures into a clearer error message', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          job_id: 'job-too-large',
+          mode: 'queued',
+          scope: 'open_data',
+          root_count: 1,
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: makeJobResponse({
+          job_id: 'job-too-large',
+          status: 'failed',
+          diagnostics: {
+            error:
+              'object upload failed status=413 Payload Too Large body=<?xml version="1.0"?><Error><Code>EntityTooLarge</Code><Message>The object exceeded the maximum allowed size</Message></Error>',
+          },
+        }),
+        error: null,
+      });
+
+    const result = await exportTidasPackageApi({ scope: 'open_data' });
+
+    expect(result.error).toEqual(
+      new Error(
+        'Export package is too large for the current storage upload limit. Try exporting a smaller scope, or ask an administrator to enable large-file upload support.',
+      ),
+    );
+  });
+
   it('downloads ready exports and reports status, readiness, and download failures', async () => {
     const { createElementSpy, link } = makeDownloadHooks();
 
@@ -826,9 +859,23 @@ describe('general/api TIDAS package helpers', () => {
             user_conflict_count: 0,
             importable_count: 1,
             imported_count: 1,
+            validation_issue_count: 1,
+            error_count: 0,
+            warning_count: 1,
           },
           filtered_open_data: [],
           user_conflicts: [],
+          validation_issues: [
+            {
+              issue_code: 'localized_text_language_error',
+              severity: 'warning',
+              category: 'processes',
+              file_path: 'processes/a.json',
+              location: 'processDataSet/name/baseName/0',
+              message: 'Localized text error at processDataSet/name/baseName/0: invalid lang',
+              context: {},
+            },
+          ],
         },
       }),
     });
@@ -858,9 +905,23 @@ describe('general/api TIDAS package helpers', () => {
           user_conflict_count: 0,
           importable_count: 1,
           imported_count: 1,
+          validation_issue_count: 1,
+          error_count: 0,
+          warning_count: 1,
         },
         filtered_open_data: [],
         user_conflicts: [],
+        validation_issues: [
+          {
+            issue_code: 'localized_text_language_error',
+            severity: 'warning',
+            category: 'processes',
+            file_path: 'processes/a.json',
+            location: 'processDataSet/name/baseName/0',
+            message: 'Localized text error at processDataSet/name/baseName/0: invalid lang',
+            context: {},
+          },
+        ],
       },
       error: null,
     });
