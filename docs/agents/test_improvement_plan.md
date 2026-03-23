@@ -5,13 +5,13 @@
 ## Current Baseline
 
 - Latest verified full run: `npm run test:coverage`
-- Current full run footprint: 305 suites / 3620 tests
+- Current full run footprint: 308 suites / 3665 tests
 - Current Jest coverage (full run):
-  - Statements: 100.00% (21472/21472)
-  - Branches: 100.00% (12374/12374)
-  - Functions: 100.00% (4669/4669)
-  - Lines: 100.00% (20584/20584)
-- Current file inventory: 328 tracked source files, 328 fully covered, 0 still incomplete.
+  - Statements: 100.00% (21749/21749)
+  - Branches: 100.00% (12506/12506)
+  - Functions: 100.00% (4740/4740)
+  - Lines: 100.00% (20851/20851)
+- Current file inventory: 331 tracked source files, 331 fully covered, 0 still incomplete.
 - Current branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 0`, `90-<100 = 0`.
 - Current enforced threshold in `jest.config.cjs`: 50% global (branches/functions/lines/statements).
 - Immediate issue: **full closure has been achieved. The strategic task is now maintenance: keep every touched or newly added `src/**`file at`100/100/100/100`, and reopen the ordered queue immediately if a future regression appears.\*\*

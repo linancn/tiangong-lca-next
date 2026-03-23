@@ -214,10 +214,15 @@ const UnitGroupEdit: FC<Props> = ({
     } as UnitGroupFormState);
   }, [unitDataSource]);
 
-  const handleSubmit = async (
+  function handleSubmit(autoClose: true, options?: { silent?: boolean }): Promise<true>;
+  function handleSubmit(
+    autoClose: false,
+    options?: { silent?: boolean },
+  ): Promise<UpdateUnitGroupResult>;
+  async function handleSubmit(
     autoClose: boolean,
     options?: { silent?: boolean },
-  ): Promise<UpdateUnitGroupResult | true> => {
+  ): Promise<UpdateUnitGroupResult | true> {
     const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
@@ -282,7 +287,7 @@ const UnitGroupEdit: FC<Props> = ({
       return updateResult;
     }
     return true;
-  };
+  }
 
   const handleCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
@@ -311,10 +316,9 @@ const UnitGroupEdit: FC<Props> = ({
     } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const rootRuleVerification =
-      typeof updateResult !== 'boolean'
-        ? isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification)
-        : false;
+    const rootRuleVerification = isRuleVerificationPassed(
+      updateResult?.data?.[0]?.rule_verification,
+    );
     const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
     const problemNodes = pathRef?.findProblemNodes() ?? [];

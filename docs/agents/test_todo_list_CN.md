@@ -16,20 +16,20 @@
 
 最新已验证全量覆盖率运行（`npm run test:coverage`，随后执行 `npm run test:coverage:assert-full`）：
 
-- Test suites：305 passed
-- Tests：3620 passed
+- Test suites：308 passed
+- Tests：3665 passed
 - 覆盖率：
-  - Statements: 100.00% (21472/21472)
-  - Branches: 100.00% (12374/12374)
-  - Functions: 100.00% (4669/4669)
-  - Lines: 100.00% (20584/20584)
+  - Statements: 100.00% (21749/21749)
+  - Branches: 100.00% (12506/12506)
+  - Functions: 100.00% (4740/4740)
+  - Lines: 100.00% (20851/20851)
 - 相比上一版已记录基线的增量：
-  - Test suites：+17
-  - Tests：+144
-  - Covered statements：+1459
-  - Covered branches：+955
-  - Covered functions：+290
-  - Covered lines：+1441
+  - Test suites：+3
+  - Tests：+45
+  - Covered statements：+277
+  - Covered branches：+132
+  - Covered functions：+71
+  - Covered lines：+267
 - 当前全局 branch 门槛：50%
 - 门禁状态：**已通过**（高于门槛 50.00 个百分点）
 
@@ -79,8 +79,8 @@
 
 同一轮运行得到的全仓逐文件状态：
 
-- 追踪的源码文件：328
-- 已全满文件（`100/100/100/100`）：328
+- 追踪的源码文件：331
+- 已全满文件（`100/100/100/100`）：331
 - 仍有缺口的文件：0
 - Branch 分桶：
   - `<50`：0 个文件

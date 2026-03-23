@@ -16,20 +16,20 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 
 Latest verified full run (`npm run test:coverage`, followed by `npm run test:coverage:assert-full`):
 
-- Test suites: 305 passed
-- Tests: 3620 passed
+- Test suites: 308 passed
+- Tests: 3665 passed
 - Coverage:
-  - Statements: 100.00% (21472/21472)
-  - Branches: 100.00% (12374/12374)
-  - Functions: 100.00% (4669/4669)
-  - Lines: 100.00% (20584/20584)
+  - Statements: 100.00% (21749/21749)
+  - Branches: 100.00% (12506/12506)
+  - Functions: 100.00% (4740/4740)
+  - Lines: 100.00% (20851/20851)
 - Delta vs previous documented baseline:
-  - Test suites: +17
-  - Tests: +144
-  - Covered statements: +1459
-  - Covered branches: +955
-  - Covered functions: +290
-  - Covered lines: +1441
+  - Test suites: +3
+  - Tests: +45
+  - Covered statements: +277
+  - Covered branches: +132
+  - Covered functions: +71
+  - Covered lines: +267
 - Enforced global branch threshold: 50%
 - Gate status: **PASS** (+50.00% buffer above threshold)
 
@@ -79,8 +79,8 @@ Latest verified full run (`npm run test:coverage`, followed by `npm run test:cov
 
 Current repo-wide status from the same run:
 
-- Source files tracked: 328
-- Fully covered files (`100/100/100/100`): 328
+- Source files tracked: 331
+- Fully covered files (`100/100/100/100`): 331
 - Files with remaining gaps: 0
 - Branch buckets:
   - `<50`: 0 files
