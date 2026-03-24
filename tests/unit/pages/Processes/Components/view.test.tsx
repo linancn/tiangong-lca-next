@@ -44,10 +44,12 @@ const mockJsonToList = jest.fn((value: any) =>
 );
 const mockGetRejectedComments = jest.fn();
 const mockMergeCommentsToData = jest.fn();
+const mockUseLocation = jest.fn(() => ({ pathname: '/', search: '' }));
 
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useLocation: () => mockUseLocation(),
 }));
 
 jest.mock('@/services/processes/api', () => ({
@@ -64,6 +66,13 @@ jest.mock('@/services/processes/util', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
+  getDataSource: (pathname: string) => {
+    if (pathname.includes('/mydata')) return 'my';
+    if (pathname.includes('/tgdata')) return 'tg';
+    if (pathname.includes('/codata')) return 'co';
+    if (pathname.includes('/tedata')) return 'te';
+    return '';
+  },
   getLangJson: (...args: any[]) => mockGetLangJson(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
@@ -412,6 +421,7 @@ describe('ProcessView component', () => {
     mockGetDecompressedMethod.mockResolvedValue({ files: [] });
     mockCacheAndDecompressMethod.mockResolvedValue(true);
     mockGetRejectedComments.mockResolvedValue([]);
+    mockUseLocation.mockReturnValue({ pathname: '/', search: '' });
     mockQueryLcaResults.mockResolvedValue({
       snapshot_id: 'snapshot-1',
       result_id: 'result-1',
@@ -545,6 +555,25 @@ describe('ProcessView component', () => {
     expect(
       screen.getByText(/source=all_unit, snapshot=snapshot-1, result=result-1/),
     ).toBeInTheDocument();
+  });
+
+  it('uses open_data scope for solver results on the tgdata route', async () => {
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(mockQueryLcaResults).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        data_scope: 'open_data',
+        mode: 'process_all_impacts',
+        process_id: 'process-1',
+        process_version: '1.0.0',
+        allow_fallback: false,
+      }),
+    );
   });
 
   it('opens with the result-icon trigger and renders fallback labels for unsupported option codes', async () => {

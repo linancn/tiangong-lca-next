@@ -431,6 +431,7 @@ services:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       SOLVER_MODE: worker
       PGMQ_QUEUE: lca_jobs
+      PACKAGE_PGMQ_QUEUE: lca_package_jobs
       WORKER_POLL_MS: ${LCA_WORKER_POLL_MS}
       WORKER_VT_SECONDS: ${LCA_WORKER_VT_SECONDS}
       RUST_LOG: ${LCA_WORKER_RUST_LOG}
