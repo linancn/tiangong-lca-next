@@ -77,20 +77,60 @@ const syncNodeSelectionAttrs = (node: any, selected: boolean, options: Record<st
 
 const syncEdgeSelectionAttrs = (edge: any, selected: boolean, options: Record<string, any>) => {
   const currentAttrs = typeof edge?.getAttrs === 'function' ? edge.getAttrs() : (edge?.attrs ?? {});
-  if (!currentAttrs?.line || typeof currentAttrs.line !== 'object') {
+  const currentLabels =
+    typeof edge?.getLabels === 'function'
+      ? edge.getLabels()
+      : Array.isArray(edge?.labels)
+        ? edge.labels
+        : undefined;
+
+  let nextAttrs;
+  if (currentAttrs?.line && typeof currentAttrs.line === 'object') {
+    nextAttrs = {
+      ...currentAttrs,
+      line: {
+        ...currentAttrs.line,
+        strokeWidth: selected ? 2 : 1,
+      },
+    };
+
+    edge.setAttrs(nextAttrs, options);
+  }
+
+  let nextLabels;
+  if (Array.isArray(currentLabels)) {
+    const updatedLabels = currentLabels.map((label) => {
+      const labelBody = label?.attrs?.labelBody;
+      if (!labelBody || typeof labelBody !== 'object') {
+        return label;
+      }
+
+      return {
+        ...label,
+        attrs: {
+          ...label.attrs,
+          labelBody: {
+            ...labelBody,
+            strokeWidth: selected ? 2 : 1,
+          },
+        },
+      };
+    });
+
+    if (updatedLabels.some((label, index) => label !== currentLabels[index])) {
+      nextLabels = updatedLabels;
+      edge.setLabels(nextLabels, options);
+    }
+  }
+
+  if (!nextAttrs && !nextLabels) {
     return undefined;
   }
 
-  const nextAttrs = {
-    ...currentAttrs,
-    line: {
-      ...currentAttrs.line,
-      strokeWidth: selected ? 2 : 1,
-    },
+  return {
+    attrs: nextAttrs,
+    labels: nextLabels,
   };
-
-  edge.setAttrs(nextAttrs, options);
-  return nextAttrs;
 };
 
 export const GraphProvider = ({ children }: { children: ReactNode }) => {
@@ -252,9 +292,9 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const isSelected = getCellSelectionState(graphRef.current, edgeId, data.selected);
-        const selectionAttrs = syncEdgeSelectionAttrs(edge, isSelected, options);
-        if (selectionAttrs) {
-          resolvedAttrs = selectionAttrs;
+        const selectionPresentation = syncEdgeSelectionAttrs(edge, isSelected, options);
+        if (selectionPresentation?.attrs) {
+          resolvedAttrs = selectionPresentation.attrs;
         }
 
         // 更新本地状态
@@ -265,6 +305,7 @@ export const GraphProvider = ({ children }: { children: ReactNode }) => {
                 ...e,
                 ...data,
                 ...(resolvedAttrs ? { attrs: resolvedAttrs } : {}),
+                ...(selectionPresentation?.labels ? { labels: selectionPresentation.labels } : {}),
               };
             }
             return e;

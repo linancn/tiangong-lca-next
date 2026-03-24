@@ -1,6 +1,7 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex';
-import { render, screen, waitFor } from '../../../../../../../helpers/testUtils';
+import { act } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '../../../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
 const mockUpdateEdge = jest.fn();
@@ -294,6 +295,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'review'));
     await waitFor(() => expect(mockInitData).toHaveBeenCalled());
 
+    const initModel = mockInitData.mock.calls.at(-1)?.[0];
     expect(screen.getByTestId('toolbar-view-info')).toHaveTextContent(
       'edit:review-1:review:en:1:1',
     );
@@ -302,6 +304,16 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     );
     expect(screen.getAllByTestId('process-view')[1]).toHaveTextContent(
       'model-1:1.0.0:toolResultIcon:false:en',
+    );
+    expect(initModel.edges[0]).toEqual(
+      expect.objectContaining({
+        selected: false,
+        attrs: {
+          line: expect.objectContaining({
+            strokeWidth: 1,
+          }),
+        },
+      }),
     );
     expect(screen.getByTestId('edge-exchange')).toHaveTextContent('false:edge-1:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
@@ -394,6 +406,74 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-new']);
   });
 
+  it('rebuilds read-only review node tools after resize and clears pending refresh timers on unmount', () => {
+    jest.useFakeTimers();
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const { unmount } = render(
+      <ToolbarView
+        type='view'
+        id='model-1'
+        version='1.0.0'
+        lang='en'
+        reviewId='review-1'
+        tabType='assigned'
+        drawerVisible
+      />,
+    );
+
+    const nodeResize = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:change:size',
+    )?.[1];
+    const resizeNode = {
+      data: {
+        label: 'Review Resize Node',
+        quantitativeReference: '1',
+      },
+      getSize: () => ({ width: 420 }),
+      setAttrByPath: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+    };
+
+    nodeResize({ node: resizeNode });
+    nodeResize({ node: resizeNode });
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(resizeNode.setAttrByPath).toHaveBeenCalledWith('label/text', '', {
+      ignoreHistory: true,
+    });
+    expect(resizeNode.removeTools).toHaveBeenCalled();
+    expect(resizeNode.addTools).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'nodeTitle',
+          args: expect.objectContaining({
+            markup: expect.arrayContaining([
+              expect.objectContaining({
+                tagName: 'rect',
+                attrs: expect.objectContaining({
+                  width: 420,
+                }),
+              }),
+            ]),
+          }),
+        }),
+      ]),
+      { ignoreHistory: true, reset: true },
+    );
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1);
+
+    nodeResize({ node: resizeNode });
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
+
+    clearTimeoutSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
   it('keeps read-only flow and reference tools non-interactive', async () => {
     render(
       <ToolbarView
@@ -429,6 +509,8 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(refTool.args.markup[0].attrs.cursor).toBe('move');
     expect(screen.getByTestId('io-port-view')).toHaveTextContent(':false:none:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
+
+    fireEvent.click(screen.getByTestId('target-amount-on-data'));
   });
 
   it('builds sparse reviewer-rejected graph data with placeholder review items and edge fallbacks', async () => {
@@ -512,7 +594,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(initModel.nodes[0].ports.items[1].attrs.text.fill).toBe('#1677ff');
     expect(initModel.nodes[0].ports.items[1].attrs.text['font-weight']).toBe('normal');
     expect(initModel.nodes[0].ports.items[2].attrs.text.fill).toBe('#8c8c8c');
-    expect(initModel.edges).toEqual([{ id: 'edge-no-target' }]);
+    expect(initModel.edges).toEqual([{ id: 'edge-no-target', selected: false }]);
   });
 
   it('merges single-object review data for admin-rejected tabs and falls back when nothing is selected', async () => {

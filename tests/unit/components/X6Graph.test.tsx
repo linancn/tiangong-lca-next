@@ -152,8 +152,8 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
           allowLoop: true,
           allowNode: true,
           allowEdge: true,
-          router: { name: 'er' },
-          connector: { name: 'normal' },
+          router: { name: 'er', args: { padding: 32 } },
+          connector: { name: 'normal', args: { radius: 12 } },
         }}
         gridOptions={{ visible: false }}
         transformOptions={{ resizing: { enabled: true, orthogonal: false }, rotating: true }}
@@ -173,8 +173,8 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
       allowLoop: true,
       allowNode: true,
       allowEdge: true,
-      router: 'er',
-      connector: 'normal',
+      router: { name: 'er', args: { padding: 32 } },
+      connector: { name: 'normal', args: { radius: 12 } },
     });
     expect(instance.options.grid).toBe(false);
 
@@ -333,6 +333,26 @@ describe('X6Graph component (src/components/X6Graph/index.tsx)', () => {
     )?.[0];
 
     expect(transformPlugin.options).toEqual({ resizing: true, rotating: false });
+  });
+
+  it('keeps name-only router and connector options compatible with the legacy shape', () => {
+    const { __graphInstances } = jest.requireMock('@antv/x6');
+
+    render(
+      <X6GraphComponent
+        connectionOptions={{
+          router: { name: 'metro' },
+          connector: { name: 'smooth' },
+        }}
+      />,
+    );
+
+    const instance = __graphInstances[0];
+
+    expect(instance.options.connecting).toMatchObject({
+      router: 'metro',
+      connector: 'smooth',
+    });
   });
 
   it('treats object-based resizing options as transform handles when enabled', () => {

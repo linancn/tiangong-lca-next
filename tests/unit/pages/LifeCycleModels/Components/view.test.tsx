@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { lifeCycleModelConnectionOptions } from '@/pages/LifeCycleModels/Components/graphConnectionOptions';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../../../helpers/testUtils';
@@ -175,6 +176,7 @@ describe('LifeCycleModelView', () => {
         orthogonal: false,
       },
     });
+    expect(latestGraphProps?.connectionOptions).toEqual(lifeCycleModelConnectionOptions);
 
     await waitFor(() =>
       expect(latestToolbarProps).toMatchObject({

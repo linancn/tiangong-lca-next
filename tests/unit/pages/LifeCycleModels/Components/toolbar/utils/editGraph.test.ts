@@ -606,10 +606,13 @@ describe('toolbar/utils/editGraph', () => {
     const savePayload = buildSavePayload(
       { foo: 'bar' } as any,
       [
-        { id: 'node-1', data: { label: 'A' } },
+        { id: 'node-1', data: { label: 'A' }, selected: true },
         { id: 'node-2', data: { label: 'B' } },
       ] as any,
-      [{ id: 'edge-1', target: { cell: 'node-1', x: 10, y: 20 } }, { id: 'edge-2' }] as any,
+      [
+        { id: 'edge-1', target: { cell: 'node-1', x: 10, y: 20 }, selected: true },
+        { id: 'edge-2' },
+      ] as any,
     );
 
     expect(savePayload).toEqual({
@@ -654,6 +657,7 @@ describe('toolbar/utils/editGraph', () => {
 
     expect(hydratedNodes).toEqual([
       expect.objectContaining({
+        selected: false,
         attrs: { body: { stroke: '#1677ff' } },
         ports: expect.objectContaining({
           groups: { groupInput: {}, groupOutput: {} },
@@ -689,11 +693,19 @@ describe('toolbar/utils/editGraph', () => {
     ).toEqual([
       expect.objectContaining({
         id: 'edge-1',
+        selected: false,
+        attrs: {
+          line: {
+            stroke: '#1677ff',
+            strokeWidth: 1,
+          },
+        },
         target: { cell: 'node-ref' },
         labels: ['EDGE:1:2'],
       }),
       expect.objectContaining({
         id: 'edge-2',
+        selected: false,
       }),
     ]);
 

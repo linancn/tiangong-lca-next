@@ -23,7 +23,7 @@ import { genProcessName } from '@/services/processes/util';
 import { ActionType } from '@ant-design/pro-components';
 import { message, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
 // import ConnectableProcesses from '../connectableProcesses';
 import { GraphEdge, GraphNode } from '@/contexts/graphContext';
@@ -47,6 +47,8 @@ type Props = {
   drawerVisible: boolean;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
 };
+
+const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
 
 const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const readOnlyCursor = 'move';
@@ -92,6 +94,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const updateEdge = useGraphStore((state) => state.updateEdge);
 
   const [nodeCount, setNodeCount] = useState(0);
+  const resizeToolRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { token } = theme.useToken();
 
@@ -296,6 +299,13 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     items: [],
   };
 
+  const buildReadOnlyNodeTools = (nodeWidth: number, nodeLabel: unknown, isReference: boolean) => [
+    isReference ? refTool : '',
+    nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? '', token, lang, readOnlyCursor),
+    inputFlowTool,
+    outputFlowTool,
+  ];
+
   useGraphEvent('node:click', (evt) => {
     const node = evt.node;
     const event = evt.e;
@@ -354,6 +364,58 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     removeEdges([edge.id]);
   });
 
+  useGraphEvent('node:change:size', (evt) => {
+    const node = evt.node;
+    const nodeWidth = node.getSize().width;
+    const newItems = node?.getPorts?.()?.map((item: LifeCycleModelPortItem) => {
+      const itemText = getLangText(item?.data?.textLang, lang);
+      const itemTextWithAllocation = getPortLabelWithAllocation(
+        itemText ?? '',
+        item?.data?.allocations,
+        item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
+      );
+
+      return {
+        ...item,
+        attrs: {
+          ...item?.attrs,
+          text: {
+            ...item?.attrs?.text,
+            text: `${genPortLabel(itemTextWithAllocation ?? '', lang, nodeWidth)}`,
+            title: itemTextWithAllocation,
+            fill: getPortTextColor(
+              item?.data?.quantitativeReference,
+              item?.data?.allocations,
+              token,
+            ),
+            'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
+            cursor: readOnlyCursor,
+          },
+        },
+      };
+    });
+
+    node.setAttrByPath('label/text', '', VISUAL_ONLY_MUTATION_OPTIONS);
+    node.prop('ports/items', newItems, VISUAL_ONLY_MUTATION_OPTIONS);
+
+    if (resizeToolRefreshTimerRef.current) {
+      clearTimeout(resizeToolRefreshTimerRef.current);
+    }
+
+    resizeToolRefreshTimerRef.current = setTimeout(() => {
+      node.removeTools?.();
+      node.addTools(
+        buildReadOnlyNodeTools(
+          nodeWidth,
+          node?.data?.label,
+          node?.data?.quantitativeReference === '1',
+        ),
+        { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
+      );
+      resizeToolRefreshTimerRef.current = null;
+    }, 0);
+  });
+
   const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
     const params: { id: string; version: string }[] = [];
     jsonTg?.xflow?.nodes?.forEach((node) => {
@@ -398,7 +460,14 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
           return {
             ...node,
-            attrs: nodeAttrs,
+            selected: false,
+            attrs: {
+              ...nodeAttrs,
+              label: {
+                ...nodeAttrs.label,
+                text: '',
+              },
+            },
             ports: {
               ...node.ports,
               groups: ports.groups,
@@ -433,18 +502,11 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
                 };
               }),
             },
-            tools: [
-              node?.data?.quantitativeReference === '1' ? refTool : '',
-              nodeTitleTool(
-                node?.size?.width ?? node?.width ?? 350,
-                genProcessName(node?.data?.label, lang) ?? '',
-                token,
-                lang,
-                readOnlyCursor,
-              ),
-              inputFlowTool,
-              outputFlowTool,
-            ],
+            tools: buildReadOnlyNodeTools(
+              node?.size?.width ?? node?.width ?? 350,
+              node?.data?.label,
+              node?.data?.quantitativeReference === '1',
+            ),
           };
         });
 
@@ -461,16 +523,21 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
               );
               return {
                 ...edge,
+                selected: false,
                 attrs: {
                   line: {
                     stroke: token.colorPrimary,
+                    strokeWidth: 1,
                   },
                 },
                 labels: [label],
                 target: targetRest,
               };
             }
-            return edge;
+            return {
+              ...edge,
+              selected: false,
+            };
           }) ?? [];
         await modelData({
           nodes: initNodes,
@@ -503,21 +570,23 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   useEffect(() => {
     nodes.forEach((node) => {
       updateNode(node.id ?? '', {
-        tools: [
-          node?.data?.quantitativeReference === '1' ? refTool : '',
-          nodeTitleTool(
-            node?.size?.width ?? node?.width ?? 350,
-            genProcessName(node?.data?.label, lang) ?? '',
-            token,
-            lang,
-            readOnlyCursor,
-          ),
-          inputFlowTool,
-          outputFlowTool,
-        ],
+        tools: buildReadOnlyNodeTools(
+          node?.size?.width ?? node?.width ?? 350,
+          node?.data?.label,
+          node?.data?.quantitativeReference === '1',
+        ),
       });
     });
   }, [nodeCount]);
+
+  useEffect(
+    () => () => {
+      if (resizeToolRefreshTimerRef.current) {
+        clearTimeout(resizeToolRefreshTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const getShowResult = () => {
     const selectedNode = nodes.find((node) => node.selected);

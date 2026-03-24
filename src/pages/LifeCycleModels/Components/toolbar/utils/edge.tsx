@@ -69,7 +69,7 @@ export const getEdgeLabel = (
         refHeight2: 10,
         stroke: token.colorPrimary,
         fill: token.colorBgBase,
-        strokeWidth: 2,
+        strokeWidth: 1,
         rx: 5,
         ry: 5,
         title: `(${edgeLabelText.output}: ${output}) - (${edgeLabelText.input}: ${input}) = ${unbalancedAmount}`,

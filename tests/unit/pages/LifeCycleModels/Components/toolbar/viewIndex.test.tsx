@@ -1,6 +1,7 @@
 // @ts-nocheck
 import ToolbarView from '@/pages/LifeCycleModels/Components/toolbar/viewIndex';
-import { render, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 const mockUpdateNode = jest.fn();
 const mockUpdateEdge = jest.fn();
@@ -352,8 +353,18 @@ describe('ToolbarView', () => {
     const initGraph = mockInitData.mock.calls[0][0];
     expect(initGraph.nodes[0].ports.items[0].attrs.text.title).toBe('Flow label');
     expect(initGraph.nodes[0].ports.items[1].attrs.text.title).toBe('Flow label');
+    expect(initGraph.edges.find((edge: any) => edge.id === 'graph-edge-1')).toEqual(
+      expect.objectContaining({
+        selected: false,
+        attrs: {
+          line: expect.objectContaining({
+            strokeWidth: 1,
+          }),
+        },
+      }),
+    );
     expect(initGraph.edges.find((edge: any) => edge.id === 'graph-edge-2')).toEqual(
-      expect.objectContaining({ id: 'graph-edge-2' }),
+      expect.objectContaining({ id: 'graph-edge-2', selected: false }),
     );
   });
 
@@ -392,6 +403,8 @@ describe('ToolbarView', () => {
     expect(referenceTool.args.markup[0].attrs.cursor).toBe('move');
     expect(screen.getByTestId('io-port-view')).toHaveTextContent(':false:none:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
+
+    fireEvent.click(screen.getByTestId('target-amount-on-data'));
   });
 
   it('renders life cycle model view when the selected process instance belongs to a submodel', async () => {
@@ -668,6 +681,128 @@ describe('ToolbarView', () => {
 
     edgeAdded({ edge: { id: 'edge-new' } });
     expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-new']);
+  });
+
+  it('rebuilds read-only node tools after resize and clears pending refresh timers on unmount', () => {
+    jest.useFakeTimers();
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const { unmount } = render(
+      <ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />,
+    );
+
+    const nodeResize = mockUseGraphEvent.mock.calls.find(
+      (call: any[]) => call[0] === 'node:change:size',
+    )?.[1];
+
+    const resizeNode = {
+      data: {
+        label: 'Resized View Node',
+        quantitativeReference: '1',
+      },
+      getSize: () => ({ width: 420 }),
+      getPorts: () => [
+        {
+          id: 'port-output',
+          group: 'groupOutput',
+          data: {
+            textLang: 'Output Flow',
+            allocations: [1],
+            quantitativeReference: '1',
+          },
+          attrs: { text: {} },
+        },
+      ],
+      setAttrByPath: jest.fn(),
+      prop: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+    };
+
+    nodeResize({ node: resizeNode });
+    nodeResize({ node: resizeNode });
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(resizeNode.setAttrByPath).toHaveBeenCalledWith('label/text', '', {
+      ignoreHistory: true,
+    });
+    expect(resizeNode.prop).toHaveBeenCalledWith(
+      'ports/items',
+      [
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            text: expect.objectContaining({
+              text: 'Flow label',
+              title: 'Flow label',
+              cursor: 'move',
+            }),
+          }),
+        }),
+      ],
+      { ignoreHistory: true },
+    );
+    expect(resizeNode.removeTools).toHaveBeenCalled();
+    expect(resizeNode.addTools).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ id: 'nodeTitle', width: 420 })]),
+      { ignoreHistory: true, reset: true },
+    );
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1);
+
+    const fallbackResizeNode = {
+      data: {
+        label: 'Fallback Resize Node',
+        quantitativeReference: '0',
+      },
+      getSize: () => ({ width: 280 }),
+      getPorts: () => [
+        {
+          id: 'port-input',
+          group: 'groupInput',
+          data: {
+            allocations: undefined,
+            quantitativeReference: '0',
+          },
+          attrs: {},
+        },
+      ],
+      setAttrByPath: jest.fn(),
+      prop: jest.fn(),
+      removeTools: jest.fn(),
+      addTools: jest.fn(),
+    };
+
+    mockGetLangText.mockReturnValueOnce(undefined);
+    mockGetPortLabelWithAllocation.mockReturnValueOnce(undefined);
+    nodeResize({ node: fallbackResizeNode });
+
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+
+    expect(fallbackResizeNode.prop).toHaveBeenCalledWith(
+      'ports/items',
+      [
+        expect.objectContaining({
+          attrs: expect.objectContaining({
+            text: expect.objectContaining({
+              text: '',
+              title: undefined,
+              cursor: 'move',
+            }),
+          }),
+        }),
+      ],
+      { ignoreHistory: true },
+    );
+
+    nodeResize({ node: resizeNode });
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
+
+    clearTimeoutSpy.mockRestore();
+    jest.useRealTimers();
   });
 
   it('enforces exclusive node selection on plain clicks and ignores repeated edge clicks', () => {

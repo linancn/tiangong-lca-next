@@ -12,24 +12,24 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 - keep docs in sync when workflow expectations change.
 - when testing workflow/baseline/backlog changes, sync `docs/agents/ai-testing-guide.md` and this file; if strategic context changes too, sync `docs/agents/test_improvement_plan.md` and `_CN` mirrors in the same diff.
 
-## Snapshot Baseline (March 23, 2026)
+## Snapshot Baseline (March 24, 2026)
 
-Latest verified full run (`npm run test:coverage`, followed by `npm run test:coverage:assert-full`):
+Latest verified full run (`npm run test:coverage:report`, followed by `npm run test:coverage:assert-full`):
 
-- Test suites: 308 passed
-- Tests: 3665 passed
+- Test suites: 309 passed
+- Tests: 3687 passed
 - Coverage:
-  - Statements: 100.00% (21749/21749)
-  - Branches: 100.00% (12506/12506)
-  - Functions: 100.00% (4740/4740)
-  - Lines: 100.00% (20851/20851)
+  - Statements: 100.00% (21869/21869)
+  - Branches: 100.00% (12560/12560)
+  - Functions: 100.00% (4748/4748)
+  - Lines: 100.00% (20961/20961)
 - Delta vs previous documented baseline:
-  - Test suites: +3
-  - Tests: +45
-  - Covered statements: +277
-  - Covered branches: +132
-  - Covered functions: +71
-  - Covered lines: +267
+  - Test suites: +1
+  - Tests: +22
+  - Statements: +120
+  - Branches: +54
+  - Functions: +8
+  - Lines: +110
 - Enforced global branch threshold: 50%
 - Gate status: **PASS** (+50.00% buffer above threshold)
 
@@ -79,8 +79,8 @@ Latest verified full run (`npm run test:coverage`, followed by `npm run test:cov
 
 Current repo-wide status from the same run:
 
-- Source files tracked: 331
-- Fully covered files (`100/100/100/100`): 331
+- Source files tracked: 334
+- Fully covered files (`100/100/100/100`): 334
 - Files with remaining gaps: 0
 - Branch buckets:
   - `<50`: 0 files

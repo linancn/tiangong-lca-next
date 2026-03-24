@@ -7,6 +7,7 @@ import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
+import { lifeCycleModelConnectionOptions } from './graphConnectionOptions';
 import ToolbarEdit from './toolbar/editIndex';
 
 type Props = {
@@ -152,20 +153,7 @@ const LifeCycleModelEdit: FC<Props> = ({
                   zoomable
                   pannable
                   minScale={0.5}
-                  connectionOptions={{
-                    snap: true,
-                    allowBlank: false,
-                    allowLoop: false,
-                    allowMulti: 'withPort',
-                    allowNode: false,
-                    allowEdge: false,
-                    router: {
-                      name: 'manhattan',
-                    },
-                    connector: {
-                      name: 'rounded',
-                    },
-                  }}
+                  connectionOptions={lifeCycleModelConnectionOptions}
                   gridOptions={{
                     type: 'dot',
                     thickness: 1,

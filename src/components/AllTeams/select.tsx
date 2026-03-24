@@ -1,3 +1,4 @@
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import ToolBarButton from '@/components/ToolBarButton';
 import { getLang, getLangText } from '@/services/general/util';
 import { getUnrankedTeams, updateSort } from '@/services/teams/api';
@@ -25,6 +26,9 @@ const SelectTeams: FC<SelectTeamsProps> = ({
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
+  const tableAlertOptionRender = renderTableSelectionClearAction(
+    <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
+  );
 
   const showDrawer = () => {
     setVisible(true);
@@ -194,6 +198,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
           actionRef={actionRef}
           search={false}
           options={{ fullScreen: true, reload: true }}
+          tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
             selectedRowKeys,
             onChange: (keys) => setSelectedRowKeys(keys as string[]),

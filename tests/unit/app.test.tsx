@@ -348,6 +348,28 @@ describe('app runtime config', () => {
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
   });
 
+  it('uses the dark theme algorithm when dark mode is enabled', () => {
+    const { layout } = require('@/app');
+    const setInitialState = jest.fn();
+    mockHistory.location.pathname = '/review';
+
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode: true,
+        settings: { navTheme: 'realDark', colorPrimary: '#9e3ffd' },
+      },
+      setInitialState,
+    });
+
+    render(runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>));
+
+    expect(screen.getByTestId('config-provider')).toHaveAttribute(
+      'data-algorithm',
+      'dark-algorithm',
+    );
+  });
+
   it('renders the development setting drawer and applies settings changes', () => {
     const previousEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'development';
