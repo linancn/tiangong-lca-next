@@ -1,4 +1,4 @@
-import { getLangJson } from '@/services/general/util';
+import { getDataSource, getLangJson } from '@/services/general/util';
 import type { LCIAResultTable, LciaMethodListData } from '@/services/lciaMethods/data';
 import { cacheAndDecompressMethod, getDecompressedMethod } from '@/services/lciaMethods/util';
 import type { ProcessTable } from '@/services/processes/data';
@@ -75,6 +75,19 @@ export function resolveLangText(value: unknown, lang: string): string {
 export function normalizeNumber(value: unknown): number {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+export function getDefaultLcaDataScopeForPath(
+  pathname: string,
+): Exclude<LcaAnalysisDataScope, 'all_data'> | undefined {
+  const dataSource = getDataSource(pathname);
+  if (dataSource === 'my') {
+    return 'current_user';
+  }
+  if (dataSource === 'tg') {
+    return 'open_data';
+  }
+  return undefined;
 }
 
 export function buildLcaProcessSelectionKey(processId: string, version: unknown): string {

@@ -22,10 +22,11 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 import {
   formatPercent,
   formatSourceLabel,
+  getDefaultLcaDataScopeForPath,
   ImpactOption,
   LCA_SCOPE,
   LcaProcessOption,
@@ -296,6 +297,8 @@ const LcaImpactHotspotToolbar: FC<{
   lang: string;
 }> = ({ lang }) => {
   const intl = useIntl();
+  const location = useLocation();
+  const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
   const topNOptions = useMemo(
     () =>
       HOTSPOT_LIMIT_OPTIONS.map((value) => ({
@@ -355,6 +358,7 @@ const LcaImpactHotspotToolbar: FC<{
     try {
       const queried = await queryLcaResults({
         scope: LCA_SCOPE,
+        ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
         mode: 'processes_one_impact',
         impact_id: selectedImpactId,
         top_n: selectedTopN,

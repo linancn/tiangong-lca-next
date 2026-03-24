@@ -23,11 +23,12 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { FormattedMessage, useIntl } from 'umi';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 import {
   buildLcaProcessOptions,
   formatPercent,
   formatSourceLabel,
+  getDefaultLcaDataScopeForPath,
   ImpactOption,
   LCA_SCOPE,
   LcaProcessOption,
@@ -149,6 +150,8 @@ const LcaImpactCompareToolbar: FC<{
   processes: ProcessTable[];
 }> = ({ lang, processes }) => {
   const intl = useIntl();
+  const location = useLocation();
+  const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
   const processOptions = useMemo(() => buildLcaProcessOptions(processes), [processes]);
   const processOptionMap = useMemo(
     () => new Map(processOptions.map((item) => [item.value, item])),
@@ -251,6 +254,7 @@ const LcaImpactCompareToolbar: FC<{
     try {
       const queried = await queryLcaResults({
         scope: LCA_SCOPE,
+        ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
         mode: 'processes_one_impact',
         process_ids: selectedProcesses.map((item) => item.value),
         impact_id: selectedImpactId,

@@ -3,7 +3,7 @@ import LcaImpactHotspotToolbar, {
   buildSelectedProcessHotspotModel,
 } from '@/pages/Processes/Components/lcaImpactHotspotToolbar';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { resetUmiMocks, setUmiIntl } from '../../../../mocks/umi';
+import { resetUmiMocks, setUmiIntl, setUmiLocation } from '../../../../mocks/umi';
 
 type ReactNode = import('react').ReactNode;
 
@@ -407,6 +407,30 @@ describe('lcaImpactHotspotToolbar', () => {
     );
 
     expect(await screen.findByText('#11 - #11')).toBeInTheDocument();
+  });
+
+  it('uses open_data scope on the tgdata route', async () => {
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+
+    renderToolbar();
+
+    fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+
+    await waitFor(() =>
+      expect(queryLcaResults).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        data_scope: 'open_data',
+        mode: 'processes_one_impact',
+        impact_id: 'impact-1',
+        top_n: 20,
+        offset: 0,
+        sort_by: 'absolute_value',
+        sort_direction: 'desc',
+        allow_fallback: false,
+      }),
+    );
   });
 
   it('shows a backend upgrade hint when hotspot ranking hits the legacy query function', async () => {
