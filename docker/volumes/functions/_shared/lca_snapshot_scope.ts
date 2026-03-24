@@ -1,4 +1,11 @@
-export const DEFAULT_PUBLISHED_PROCESS_STATES = [100] as const;
+export const DEFAULT_PUBLISHED_PROCESS_STATE_START = 100;
+export const DEFAULT_PUBLISHED_PROCESS_STATE_END = 199;
+export const DEFAULT_PUBLISHED_PROCESS_STATES: readonly number[] = Array.from(
+  {
+    length: DEFAULT_PUBLISHED_PROCESS_STATE_END - DEFAULT_PUBLISHED_PROCESS_STATE_START + 1,
+  },
+  (_, index) => DEFAULT_PUBLISHED_PROCESS_STATE_START + index,
+);
 
 export type LcaDataScope = 'current_user' | 'open_data' | 'all_data';
 
@@ -14,15 +21,11 @@ export type ParsedSnapshotProcessFilter = {
   includeUserId: string | null;
 };
 
-export function normalizeLcaDataScope(raw: unknown): LcaDataScope | null {
-  const value = typeof raw === 'string' ? raw.trim() : '';
-  if (!value || value === 'current_user') {
-    return 'current_user';
+export function parseLcaDataScope(raw: unknown): LcaDataScope {
+  if (raw === 'open_data' || raw === 'all_data' || raw === 'current_user') {
+    return raw;
   }
-  if (value === 'open_data' || value === 'all_data') {
-    return value;
-  }
-  return null;
+  return 'current_user';
 }
 
 export function buildSnapshotProcessFilter(
@@ -31,22 +34,23 @@ export function buildSnapshotProcessFilter(
 ): SnapshotProcessFilter {
   switch (dataScope) {
     case 'open_data':
-      return {
-        all_states: false,
-        process_states: [...DEFAULT_PUBLISHED_PROCESS_STATES],
-      };
     case 'all_data':
-      return {
-        all_states: true,
-      };
     case 'current_user':
     default:
+      // Business semantics: open_data, all_data, and current_user all reuse the same
+      // snapshot family for solving, i.e. published data plus the current user's
+      // private data. Published data currently covers state_code 100..199, while
+      // root-process scope is validated separately per request.
       return {
         all_states: false,
         process_states: [...DEFAULT_PUBLISHED_PROCESS_STATES],
         include_user_id: userId,
       };
   }
+}
+
+export function shouldAutoBuildSnapshot(dataScope: LcaDataScope): boolean {
+  return dataScope === 'current_user' || dataScope === 'all_data' || dataScope === 'open_data';
 }
 
 export function buildSnapshotContainsFilter(
@@ -92,8 +96,7 @@ export function parseSnapshotProcessFilter(raw: unknown): ParsedSnapshotProcessF
     include_user_id?: unknown;
   };
 
-  const allStates = obj.all_states === true;
-  if (allStates) {
+  if (obj.all_states === true) {
     return {
       allStates: true,
       processStates: [],

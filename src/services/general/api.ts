@@ -29,6 +29,8 @@ type GetRefDataOptions = {
   fallbackToLatest?: boolean;
 };
 
+const INTERNAL_SUPABASE_DOWNLOAD_HOSTS = new Set(['kong', 'storage']);
+
 export async function attachStateCodesToRows<
   T extends { id?: string; stateCode?: number; version?: string },
 >(table: string, rows: T[]): Promise<T[]> {
@@ -403,8 +405,40 @@ async function waitForTidasPackageJob(
   throw new Error('Timed out waiting for the TIDAS package job to finish');
 }
 
+function parseUrlOrNull(value: string) {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeBrowserAccessiblePackageUrl(signedUrl: string) {
+  const configuredSupabaseUrl = process.env.SUPABASE_URL?.trim() || '';
+  if (!configuredSupabaseUrl) {
+    return signedUrl;
+  }
+
+  const parsedSignedUrl = parseUrlOrNull(signedUrl);
+  const parsedPublicUrl = parseUrlOrNull(configuredSupabaseUrl);
+  if (!parsedSignedUrl || !parsedPublicUrl) {
+    return signedUrl;
+  }
+
+  const publicOrigin = parsedPublicUrl.origin;
+  if (parsedSignedUrl.origin === publicOrigin) {
+    return signedUrl;
+  }
+
+  if (!INTERNAL_SUPABASE_DOWNLOAD_HOSTS.has(parsedSignedUrl.hostname)) {
+    return signedUrl;
+  }
+
+  return `${publicOrigin}${parsedSignedUrl.pathname}${parsedSignedUrl.search}${parsedSignedUrl.hash}`;
+}
+
 async function downloadArtifactBySignedUrl(signedUrl: string, filename: string) {
-  const response = await fetch(signedUrl);
+  const response = await fetch(normalizeBrowserAccessiblePackageUrl(signedUrl));
   if (!response.ok) {
     throw new Error(`Failed to download artifact (${response.status})`);
   }
@@ -438,7 +472,7 @@ async function fetchPackageReport<T>(artifact: TidasPackageArtifact): Promise<T>
     throw new Error('Package report is not available');
   }
 
-  const response = await fetch(artifact.signed_download_url, {
+  const response = await fetch(normalizeBrowserAccessiblePackageUrl(artifact.signed_download_url), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -1580,7 +1614,7 @@ export async function normalizeLangPayloadForSave(payload: any) {
     translateZhToEn: translateZhTextToEnglish,
   });
 
-  const validationError = getLangValidationErrorMessage(normalized.issues);
+  const validationError = getLangValidationErrorMessage(normalized.issues, 5, getLocale());
   return {
     payload: normalized.payload,
     issues: normalized.issues,

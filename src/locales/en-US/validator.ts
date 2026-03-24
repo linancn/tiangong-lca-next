@@ -19,4 +19,7 @@ export default {
   'validator.lang.select': 'Please select a language',
   'validator.lang.mustBeEnglish': 'English is a required language',
   'validator.lang.mustNotContainSemicolon': 'Must not contain semicolon',
+  'validator.langValidation.missingEnglish': 'The following fields are missing English: {fields}.',
+  'validator.langValidation.missingEnglishMore': 'The following fields are missing English: {fields} and {count} more field(s).',
+  'validator.langValidation.root': '(root)',
 };

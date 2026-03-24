@@ -919,7 +919,19 @@ describe('multilingual save normalization', () => {
       title: [{ '@xml:lang': 'en', '#text': 'Steel钢铁' }],
     });
 
-    expect(result.validationError).toContain('title');
+    expect(result.validationError).toBe('The following fields are missing English: title.');
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0].code).toBe('invalid_en');
+  });
+
+  it('should localize validation error when locale is zh-CN', async () => {
+    mockGetLocale.mockReturnValue('zh-CN');
+
+    const result = await generalApi.normalizeLangPayloadForSave({
+      title: [{ '@xml:lang': 'en', '#text': 'Steel钢铁' }],
+    });
+
+    expect(result.validationError).toBe('以下字段缺少英文：title.');
     expect(result.issues).toHaveLength(1);
     expect(result.issues[0].code).toBe('invalid_en');
   });
