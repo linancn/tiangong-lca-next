@@ -2,6 +2,8 @@ FROM rust:1.93-bookworm
 
 ARG LCA_CALCULATOR_REPO=https://github.com/linancn/tiangong-lca-calculator.git
 ARG LCA_CALCULATOR_REF=refs/heads/main
+ARG TIDAS_TOOLS_REPO=https://github.com/tiangong-lca/tidas-tools.git
+ARG TIDAS_TOOLS_REF=main
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -11,16 +13,70 @@ RUN apt-get update \
         liblapack-dev \
         pkg-config \
         cmake \
+        python3 \
+        python3-venv \
         ca-certificates \
+    && python3 -m venv /opt/tidas-tools-venv \
+    && /opt/tidas-tools-venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/tidas-tools-venv/bin/pip install --no-cache-dir "git+${TIDAS_TOOLS_REPO}@${TIDAS_TOOLS_REF}" \
     && rm -rf /var/lib/apt/lists/*
 
+ENV PATH="/opt/tidas-tools-venv/bin:${PATH}"
+
 WORKDIR /workspace/tiangong-lca-calculator
+
+RUN cat <<'EOF' >/usr/local/bin/calculator-worker-entrypoint
+#!/usr/bin/env bash
+set -euo pipefail
+
+solver_bin="/workspace/tiangong-lca-calculator/target/release/solver-worker"
+package_bin="/workspace/tiangong-lca-calculator/target/release/package_worker"
+
+package_args=()
+if [[ -n "${PACKAGE_PGMQ_QUEUE:-}" ]]; then
+  package_args+=(--pgmq-queue "${PACKAGE_PGMQ_QUEUE}")
+fi
+if [[ -n "${PACKAGE_WORKER_VT_SECONDS:-}" ]]; then
+  package_args+=(--worker-vt-seconds "${PACKAGE_WORKER_VT_SECONDS}")
+fi
+if [[ -n "${PACKAGE_WORKER_POLL_MS:-}" ]]; then
+  package_args+=(--worker-poll-ms "${PACKAGE_WORKER_POLL_MS}")
+fi
+
+terminate_children() {
+  for pid in "${solver_pid:-}" "${package_pid:-}"; do
+    if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+      kill "${pid}" 2>/dev/null || true
+    fi
+  done
+}
+
+cleanup() {
+  local status=$?
+  trap - EXIT INT TERM
+  terminate_children
+  wait || true
+  exit "${status}"
+}
+
+trap 'exit 0' INT TERM
+trap cleanup EXIT
+
+"${solver_bin}" &
+solver_pid=$!
+
+"${package_bin}" "${package_args[@]}" &
+package_pid=$!
+
+wait -n "${solver_pid}" "${package_pid}"
+EOF
+RUN chmod +x /usr/local/bin/calculator-worker-entrypoint
 
 RUN git init . \
     && git remote add origin "${LCA_CALCULATOR_REPO}" \
     && git fetch --depth 1 origin "${LCA_CALCULATOR_REF}" \
     && git checkout --detach FETCH_HEAD
 
-RUN cargo build -p solver-worker --bin solver-worker --bin snapshot_builder --release
+RUN cargo build -p solver-worker --bin solver-worker --bin snapshot_builder --bin package_worker --release
 
-ENTRYPOINT ["/workspace/tiangong-lca-calculator/target/release/solver-worker"]
+ENTRYPOINT ["/usr/local/bin/calculator-worker-entrypoint"]

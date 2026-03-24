@@ -43,7 +43,7 @@ import {
 import type { ButtonType } from 'antd/es/button';
 import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useLocation } from 'umi';
 import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
 import {
@@ -55,6 +55,7 @@ import {
 import ReviewItemView from './Review/view';
 
 import { getExchangeColumns } from './Exchange/column';
+import { getDefaultLcaDataScopeForPath } from './lcaAnalysisShared';
 import LcaProfileSummary from './lcaProfileSummary';
 import {
   copyrightOptions,
@@ -275,6 +276,8 @@ const ProcessView: FC<Props> = ({
   buttonTypeProp = 'default',
   triggerLabel,
 }) => {
+  const location = useLocation();
+  const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -456,6 +459,7 @@ const ProcessView: FC<Props> = ({
       try {
         const queried = await queryLcaResults({
           scope: LCA_SCOPE,
+          ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
           mode: 'process_all_impacts',
           process_id: id,
           process_version: version,
@@ -520,7 +524,14 @@ const ProcessView: FC<Props> = ({
         setSolverLciaLoading(false);
       }
     },
-    [baseLciaResultDataSource, id, solverLciaLoaded, solverLciaLoading, version],
+    [
+      baseLciaResultDataSource,
+      defaultLcaDataScope,
+      id,
+      solverLciaLoaded,
+      solverLciaLoading,
+      version,
+    ],
   );
 
   useEffect(() => {

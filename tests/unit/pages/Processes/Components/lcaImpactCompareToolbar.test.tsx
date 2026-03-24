@@ -2,7 +2,7 @@ import LcaImpactCompareToolbar, {
   buildLcaImpactCompareModel,
 } from '@/pages/Processes/Components/lcaImpactCompareToolbar';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { resetUmiMocks, setUmiIntl } from '../../../../mocks/umi';
+import { resetUmiMocks, setUmiIntl, setUmiLocation } from '../../../../mocks/umi';
 
 type ReactNode = import('react').ReactNode;
 
@@ -265,6 +265,30 @@ describe('lcaImpactCompareToolbar', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText('52.7%').length).toBeGreaterThan(0);
     expect(screen.getAllByText('86.5%').length).toBeGreaterThan(0);
+  });
+
+  it('uses open_data scope on the tgdata route', async () => {
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+
+    renderToolbar([
+      buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
+      buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+    ]);
+
+    fireEvent.click(screen.getByTestId('impact-compare-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
+
+    await waitFor(() =>
+      expect(queryLcaResults).toHaveBeenCalledWith({
+        scope: 'dev-v1',
+        data_scope: 'open_data',
+        mode: 'processes_one_impact',
+        process_ids: ['process-1', 'process-2'],
+        impact_id: 'impact-1',
+        allow_fallback: false,
+      }),
+    );
   });
 
   it('shows an alert when impact categories cannot be loaded', async () => {
