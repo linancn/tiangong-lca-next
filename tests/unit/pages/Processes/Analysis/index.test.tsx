@@ -1444,7 +1444,7 @@ describe('LcaAnalysisPage', () => {
     expect(umiMocks.historyPush).toHaveBeenCalledWith('/mydata/processes');
   });
 
-  it('renders queued snapshot error states for profile and compare analyses', async () => {
+  it('renders queued snapshot error states for profile, compare, and grouped analyses', async () => {
     isLcaFunctionInvokeError.mockImplementation((error: { code?: string } | undefined) =>
       Boolean(error?.code),
     );
@@ -1479,6 +1479,18 @@ describe('LcaAnalysisPage', () => {
     });
     fireEvent.click(within(comparePanel).getByRole('button', { name: 'Run analysis' }));
 
+    expect(
+      await screen.findByText(
+        'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-grouped'));
+    queryLcaResults.mockRejectedValueOnce({
+      code: 'snapshot_build_queued',
+      body: {},
+    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
     expect(
       await screen.findByText(
         'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
