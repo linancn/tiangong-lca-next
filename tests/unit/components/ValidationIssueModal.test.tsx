@@ -770,7 +770,8 @@ describe('ValidationIssueModal', () => {
     expect(html).toContain('>联系人拥有者<');
     expect(html).toContain('>过程拥有者<');
     expect(html).toContain('>修复问题<');
-    expect(html).toContain('>通知数据拥有者<');
+    expect(html).not.toContain('>通知数据拥有者<');
+    expect(html).toContain('<td>-</td>');
     expect(html).toContain('class="action-link"');
     expect(html).toContain('class="action-link-disabled"');
     expect(html.indexOf('contact-1')).toBeLessThan(html.indexOf('process-1'));
@@ -808,7 +809,7 @@ describe('ValidationIssueModal', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: '知道了' }));
     });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     await act(async () => {
       modalHandle?.destroy();
@@ -833,7 +834,7 @@ describe('ValidationIssueModal', () => {
       });
     });
     fireEvent.click(screen.getByRole('button', { name: 'close' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('covers all issue codes, type fallbacks, duplicate filtering and html escaping', async () => {

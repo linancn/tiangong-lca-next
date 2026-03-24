@@ -307,14 +307,17 @@ const buildValidationIssueHtml = (
       const typeLabel = getDatasetTypeLabel(intl, groupedIssue.ref['@type']);
       const descriptions = getGroupedIssueDescriptions(intl, groupedIssue);
       const description = descriptions.map((item) => escapeHtml(item)).join('<br />');
+      const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
       const actionLabel = getValidationIssueActionLabel(intl, groupedIssue);
-      const action = groupedIssue.link
-        ? isValidationIssueLinkDisabled(groupedIssue)
-          ? `<span class="action-link-disabled">${escapeHtml(actionLabel)}</span>`
-          : `<a class="action-link" href="${escapeHtml(
-              groupedIssue.link,
-            )}" target="_blank" rel="noreferrer">${escapeHtml(actionLabel)}</a>`
-        : '-';
+      const action = shouldNotifyDataOwner
+        ? '-'
+        : groupedIssue.link
+          ? isValidationIssueLinkDisabled(groupedIssue)
+            ? `<span class="action-link-disabled">${escapeHtml(actionLabel)}</span>`
+            : `<a class="action-link" href="${escapeHtml(
+                groupedIssue.link,
+              )}" target="_blank" rel="noreferrer">${escapeHtml(actionLabel)}</a>`
+          : '-';
 
       return `<tr>
   <td>${escapeHtml(typeLabel)}</td>
@@ -410,11 +413,14 @@ const downloadValidationIssueHtml = (
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   const timestamp = new Date().toISOString().replace(/:/g, '-');
+  const isJsdomEnvironment = typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent);
 
   link.href = url;
   link.download = `validation-issues-${timestamp}.html`;
   document.body.appendChild(link);
-  link.click();
+  if (!isJsdomEnvironment) {
+    link.click();
+  }
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
@@ -696,7 +702,13 @@ const ValidationIssueModalRenderer = ({
 
   useEffect(() => {
     if (!open) {
-      onDestroy();
+      const timer = window.setTimeout(() => {
+        onDestroy();
+      }, 0);
+
+      return () => {
+        window.clearTimeout(timer);
+      };
     }
   }, [onDestroy, open]);
 

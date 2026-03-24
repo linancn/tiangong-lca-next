@@ -517,7 +517,7 @@ const ContactEdit: FC<Props> = ({
     const currentId = latestData?.id ?? id;
     const currentVersion = latestData?.version ?? version;
 
-    if (latestData?.rule_verification !== true) {
+    if (!isRuleVerificationPassed(latestData?.rule_verification)) {
       message.error(
         intl.formatMessage({
           id: 'pages.contact.syncToOpenData.ruleVerificationRequired',

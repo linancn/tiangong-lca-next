@@ -1318,6 +1318,75 @@ describe('ContactEdit component', () => {
     expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
   });
 
+  it('treats a null rule verification as passed when syncing to open data', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([
+      {
+        '@type': 'source data set',
+        '@refObjectId': 'source-123',
+        '@version': '01.00.000',
+      },
+    ]);
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        stateCode: 100,
+        ruleVerification: true,
+      },
+    });
+    mockUpdateContact.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'contact-123',
+          version: '01.00.000',
+          state_code: 0,
+          rule_verification: null,
+          json: {
+            contactDataSet: {
+              contactInformation: {
+                dataSetInformation: {
+                  'common:shortName': 'Updated contact',
+                  email: 'updated@example.com',
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
+        'contact-123',
+        '01.00.000',
+        'contacts',
+        100,
+      ),
+    );
+    expect(getMockAntdMessage().error).not.toHaveBeenCalledWith(
+      'Current contact data is incomplete. Please fill all required fields before syncing.',
+    );
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
   it('skips unknown reference types during sync validation', async () => {
     const user = userEvent.setup();
     mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
