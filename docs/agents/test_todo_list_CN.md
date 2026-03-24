@@ -17,19 +17,19 @@
 最新已验证全量覆盖率运行（`npm run test:coverage:report`，随后执行 `npm run test:coverage:assert-full`）：
 
 - Test suites：309 passed
-- Tests：3687 passed
+- Tests：3689 passed
 - 覆盖率：
-  - Statements: 100.00% (21869/21869)
-  - Branches: 100.00% (12560/12560)
-  - Functions: 100.00% (4748/4748)
-  - Lines: 100.00% (20961/20961)
+  - Statements: 100.00% (21875/21875)
+  - Branches: 100.00% (12565/12565)
+  - Functions: 100.00% (4750/4750)
+  - Lines: 100.00% (20967/20967)
 - 相比上一版已记录基线的增量：
   - Test suites：+1
-  - Tests：+22
-  - Statements：+120
-  - Branches：+54
-  - Functions：+8
-  - Lines：+110
+  - Tests：+2
+  - Statements：+6
+  - Branches：+5
+  - Functions：+2
+  - Lines：+6
 - 当前全局 branch 门槛：50%
 - 门禁状态：**已通过**（高于门槛 50.00 个百分点）
 
