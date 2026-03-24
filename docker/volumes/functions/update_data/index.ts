@@ -11,8 +11,15 @@ import getDataDetail from '../_shared/get_data.ts';
 import getUserRole from '../_shared/get_user_role.ts';
 import { supabaseClient } from '../_shared/supabase_client.ts';
 import updateData from '../_shared/update_data.ts';
+import { canNonReviewAdminUpdateUnderReviewData } from '../_shared/update_data_review_guard.ts';
 
 Deno.serve(async (req) => {
+  const jsonResponse = (body: Record<string, unknown>, status: number) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -43,6 +50,8 @@ Deno.serve(async (req) => {
     supabaseClient,
   );
   const { data: userRole } = await getUserRole(user.id!, supabaseClient);
+  const isReviewAdmin = Boolean(userRole?.find((item: any) => item.role === 'review-admin'));
+  const isOwner = oldData?.userId === user.id;
 
   if (!oldDataSuccess) {
     return new Response('Data Not Found', { status: 404 });
@@ -54,8 +63,28 @@ Deno.serve(async (req) => {
       return new Response('State Code Not Allowed', { status: 403 });
     }
   }
-  if (!userRole?.find((item: any) => item.role === 'review-admin') && oldData?.userId !== user.id) {
+  if (!isReviewAdmin && !isOwner) {
     return new Response('Forbidden', { status: 403 });
+  }
+  const isAllowedUnderReviewStateTransition = canNonReviewAdminUpdateUnderReviewData(
+    oldData?.stateCode,
+    data,
+  );
+  if (
+    !isReviewAdmin &&
+    oldData?.stateCode >= 20 &&
+    oldData?.stateCode < 100 &&
+    !isAllowedUnderReviewStateTransition
+  ) {
+    return jsonResponse(
+      {
+        code: 'DATA_UNDER_REVIEW',
+        message: 'Data is under review and cannot be modified',
+        review_state_code: oldData?.stateCode,
+        state_code: 20,
+      },
+      403,
+    );
   }
 
   const updateResult = await updateData(id, version, table, data, supabaseClient);

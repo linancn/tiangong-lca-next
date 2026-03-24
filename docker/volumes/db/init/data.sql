@@ -297,6 +297,73 @@ $$;
 ALTER FUNCTION public.contacts_sync_jsonb_version() OWNER TO postgres;
 
 --
+-- Name: delete_lifecycle_model_bundle(uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.delete_lifecycle_model_bundle(p_model_id uuid, p_version text) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
+    AS $_$
+DECLARE
+    v_model_row lifecyclemodels%ROWTYPE;
+    v_submodel jsonb;
+    v_submodel_version text;
+    v_rows_affected integer;
+BEGIN
+    IF p_model_id IS NULL OR nullif(btrim(coalesce(p_version, '')), '') IS NULL THEN
+        RAISE EXCEPTION 'INVALID_PLAN';
+    END IF;
+
+    SELECT *
+      INTO v_model_row
+      FROM lifecyclemodels
+     WHERE id = p_model_id
+       AND version = p_version
+     FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'MODEL_NOT_FOUND';
+    END IF;
+
+    FOR v_submodel IN
+        SELECT value
+          FROM jsonb_array_elements(coalesce(v_model_row.json_tg->'submodels', '[]'::jsonb))
+    LOOP
+        IF nullif(v_submodel->>'id', '') IS NOT NULL THEN
+            v_submodel_version := coalesce(
+                nullif(btrim(coalesce(v_submodel->>'version', '')), ''),
+                p_version
+            );
+
+            EXECUTE 'del' || 'ete from processes where id = $1 and version = $2 and model_id = $3'
+               USING (v_submodel->>'id')::uuid, v_submodel_version, p_model_id;
+
+            GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+            IF v_rows_affected = 0 THEN
+                RAISE EXCEPTION 'PROCESS_NOT_FOUND';
+            END IF;
+        END IF;
+    END LOOP;
+
+    EXECUTE 'del' || 'ete from lifecyclemodels where id = $1 and version = $2'
+       USING p_model_id, p_version;
+
+    GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+    IF v_rows_affected = 0 THEN
+        RAISE EXCEPTION 'MODEL_NOT_FOUND';
+    END IF;
+
+    RETURN jsonb_build_object(
+        'model_id', p_model_id,
+        'version', p_version
+    );
+END;
+$_$;
+
+
+ALTER FUNCTION public.delete_lifecycle_model_bundle(p_model_id uuid, p_version text) OWNER TO postgres;
+
+--
 -- Name: flowproperties_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -776,6 +843,27 @@ $$;
 
 
 ALTER FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) OWNER TO postgres;
+
+--
+-- Name: lca_package_enqueue_job(jsonb); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.lca_package_enqueue_job(p_message jsonb) RETURNS bigint
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pgmq'
+    AS $$
+DECLARE
+    v_msg_id bigint;
+BEGIN
+    SELECT pgmq.send('lca_package_jobs', p_message)
+      INTO v_msg_id;
+
+    RETURN v_msg_id;
+END;
+$$;
+
+
+ALTER FUNCTION public.lca_package_enqueue_job(p_message jsonb) OWNER TO postgres;
 
 --
 -- Name: lciamethods_sync_jsonb_version(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1899,6 +1987,7 @@ ALTER FUNCTION public.pgroonga_search_unitgroups(query_text text, filter_conditi
 
 CREATE FUNCTION public.policy_is_current_user_in_roles(p_team_id uuid, p_roles_to_check text[]) RETURNS boolean
     LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 	-- 增加空数组判断：空数组直接返回 false
     SELECT CASE 
@@ -2242,6 +2331,192 @@ $$;
 
 
 ALTER FUNCTION public.processes_sync_jsonb_version() OWNER TO postgres;
+
+--
+-- Name: save_lifecycle_model_bundle(jsonb); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.save_lifecycle_model_bundle(p_plan jsonb) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
+    AS $_$
+DECLARE
+    v_mode text := coalesce(p_plan->>'mode', '');
+    v_model_id uuid := nullif(p_plan->>'modelId', '')::uuid;
+    v_expected_version text := nullif(btrim(coalesce(p_plan->>'version', '')), '');
+    v_actor_user_id uuid := nullif(p_plan->>'actorUserId', '')::uuid;
+    v_parent jsonb := coalesce(p_plan->'parent', '{}'::jsonb);
+    v_parent_json_ordered json := (v_parent->'jsonOrdered')::json;
+    v_parent_json_tg jsonb := coalesce(v_parent->'jsonTg', '{}'::jsonb);
+    v_parent_rule_verification boolean := coalesce((v_parent->>'ruleVerification')::boolean, true);
+    v_process_mutations jsonb := coalesce(p_plan->'processMutations', '[]'::jsonb);
+    v_mutation jsonb;
+    v_child_id uuid;
+    v_child_version text;
+    v_child_json_ordered json;
+    v_child_rule_verification boolean;
+    v_result_row lifecyclemodels%ROWTYPE;
+    v_rows_affected integer;
+BEGIN
+    IF v_mode NOT IN ('create', 'update') THEN
+        RAISE EXCEPTION 'INVALID_PLAN';
+    END IF;
+
+    IF v_model_id IS NULL OR v_parent_json_ordered IS NULL THEN
+        RAISE EXCEPTION 'INVALID_PLAN';
+    END IF;
+
+    IF v_actor_user_id IS NULL THEN
+        RAISE EXCEPTION 'INVALID_PLAN';
+    END IF;
+
+    IF jsonb_typeof(v_process_mutations) <> 'array' THEN
+        RAISE EXCEPTION 'INVALID_PLAN';
+    END IF;
+
+    IF v_mode = 'update' THEN
+        IF v_expected_version IS NULL THEN
+            RAISE EXCEPTION 'INVALID_PLAN';
+        END IF;
+
+        PERFORM 1
+          FROM lifecyclemodels
+         WHERE id = v_model_id
+           AND version = v_expected_version
+         FOR UPDATE;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'MODEL_NOT_FOUND';
+        END IF;
+    END IF;
+
+    FOR v_mutation IN
+        SELECT value
+          FROM jsonb_array_elements(v_process_mutations)
+    LOOP
+        CASE coalesce(v_mutation->>'op', '')
+            WHEN 'delete' THEN
+                v_child_id := nullif(v_mutation->>'id', '')::uuid;
+                v_child_version := nullif(btrim(coalesce(v_mutation->>'version', '')), '');
+
+                IF v_child_id IS NULL OR v_child_version IS NULL THEN
+                    RAISE EXCEPTION 'INVALID_PLAN';
+                END IF;
+
+                EXECUTE 'del' || 'ete from processes where id = $1 and version = $2 and model_id = $3'
+                   USING v_child_id, v_child_version, v_model_id;
+
+                GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+                IF v_rows_affected = 0 THEN
+                    RAISE EXCEPTION 'PROCESS_NOT_FOUND';
+                END IF;
+            WHEN 'create' THEN
+                v_child_id := nullif(v_mutation->>'id', '')::uuid;
+                v_child_json_ordered := (v_mutation->'jsonOrdered')::json;
+                v_child_rule_verification := coalesce(
+                    (v_mutation->>'ruleVerification')::boolean,
+                    true
+                );
+
+                IF v_child_id IS NULL OR v_child_json_ordered IS NULL THEN
+                    RAISE EXCEPTION 'INVALID_PLAN';
+                END IF;
+
+                BEGIN
+                    INSERT INTO processes (
+                        id,
+                        json_ordered,
+                        model_id,
+                        user_id,
+                        rule_verification
+                    )
+                    VALUES (
+                        v_child_id,
+                        v_child_json_ordered,
+                        v_model_id,
+                        v_actor_user_id,
+                        v_child_rule_verification
+                    );
+                EXCEPTION
+                    WHEN unique_violation THEN
+                        RAISE EXCEPTION 'VERSION_CONFLICT';
+                END;
+            WHEN 'update' THEN
+                v_child_id := nullif(v_mutation->>'id', '')::uuid;
+                v_child_version := nullif(btrim(coalesce(v_mutation->>'version', '')), '');
+                v_child_json_ordered := (v_mutation->'jsonOrdered')::json;
+                v_child_rule_verification := coalesce(
+                    (v_mutation->>'ruleVerification')::boolean,
+                    true
+                );
+
+                IF v_child_id IS NULL OR v_child_version IS NULL OR v_child_json_ordered IS NULL THEN
+                    RAISE EXCEPTION 'INVALID_PLAN';
+                END IF;
+
+                UPDATE processes
+                   SET json_ordered = v_child_json_ordered,
+                       model_id = v_model_id,
+                       rule_verification = v_child_rule_verification
+                 WHERE id = v_child_id
+                   AND version = v_child_version
+                   AND model_id = v_model_id;
+
+                IF NOT FOUND THEN
+                    RAISE EXCEPTION 'PROCESS_NOT_FOUND';
+                END IF;
+            ELSE
+                RAISE EXCEPTION 'INVALID_PLAN';
+        END CASE;
+    END LOOP;
+
+    IF v_mode = 'create' THEN
+        BEGIN
+            INSERT INTO lifecyclemodels (
+                id,
+                json_ordered,
+                json_tg,
+                user_id,
+                rule_verification
+            )
+            VALUES (
+                v_model_id,
+                v_parent_json_ordered,
+                v_parent_json_tg,
+                v_actor_user_id,
+                v_parent_rule_verification
+            )
+            RETURNING *
+                 INTO v_result_row;
+        EXCEPTION
+            WHEN unique_violation THEN
+                RAISE EXCEPTION 'VERSION_CONFLICT';
+        END;
+    ELSE
+        UPDATE lifecyclemodels
+           SET json_ordered = v_parent_json_ordered,
+               json_tg = v_parent_json_tg,
+               rule_verification = v_parent_rule_verification
+         WHERE id = v_model_id
+           AND version = v_expected_version
+        RETURNING *
+             INTO v_result_row;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'MODEL_NOT_FOUND';
+        END IF;
+    END IF;
+
+    RETURN jsonb_build_object(
+        'model_id', v_result_row.id,
+        'version', v_result_row.version,
+        'lifecycle_model', to_jsonb(v_result_row)
+    );
+END;
+$_$;
+
+
+ALTER FUNCTION public.save_lifecycle_model_bundle(p_plan jsonb) OWNER TO postgres;
 
 --
 -- Name: semantic_search(text, double precision, integer); Type: FUNCTION; Schema: public; Owner: postgres
@@ -2589,12 +2864,11 @@ ALTER FUNCTION public.unitgroups_sync_jsonb_version() OWNER TO postgres;
 
 CREATE FUNCTION public.update_modified_at() RETURNS trigger
     LANGUAGE plpgsql
-    SET search_path TO 'public', 'pg_temp'
     AS $$
-BEGIN
-   NEW.modified_at = NOW();
-   RETURN NEW;
-END;
+begin
+  new.modified_at = now();
+  return new;
+end;
 $$;
 
 
@@ -2976,6 +3250,23 @@ CREATE TABLE pgmq.a_lca_jobs (
 ALTER TABLE pgmq.a_lca_jobs OWNER TO postgres;
 
 --
+-- Name: a_lca_package_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.a_lca_package_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    archived_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.a_lca_package_jobs OWNER TO postgres;
+
+--
 -- Name: a_webhook_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
 --
 
@@ -3044,6 +3335,36 @@ ALTER TABLE pgmq.q_lca_jobs OWNER TO postgres;
 
 ALTER TABLE pgmq.q_lca_jobs ALTER COLUMN msg_id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME pgmq.q_lca_jobs_msg_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: q_lca_package_jobs; Type: TABLE; Schema: pgmq; Owner: postgres
+--
+
+CREATE TABLE pgmq.q_lca_package_jobs (
+    msg_id bigint NOT NULL,
+    read_ct integer DEFAULT 0 NOT NULL,
+    enqueued_at timestamp with time zone DEFAULT now() NOT NULL,
+    vt timestamp with time zone NOT NULL,
+    message jsonb,
+    headers jsonb
+);
+
+
+ALTER TABLE pgmq.q_lca_package_jobs OWNER TO postgres;
+
+--
+-- Name: q_lca_package_jobs_msg_id_seq; Type: SEQUENCE; Schema: pgmq; Owner: postgres
+--
+
+ALTER TABLE pgmq.q_lca_package_jobs ALTER COLUMN msg_id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME pgmq.q_lca_package_jobs_msg_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -3225,7 +3546,7 @@ CREATE TABLE public.lca_jobs (
     idempotency_key text,
     CONSTRAINT lca_jobs_attempt_chk CHECK (((attempt >= 0) AND (max_attempt >= 0) AND (attempt <= max_attempt))),
     CONSTRAINT lca_jobs_status_chk CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'ready'::text, 'completed'::text, 'failed'::text, 'stale'::text]))),
-    CONSTRAINT lca_jobs_type_chk CHECK ((job_type = ANY (ARRAY['prepare_factorization'::text, 'solve_one'::text, 'solve_batch'::text, 'solve_all_unit'::text, 'invalidate_factorization'::text, 'rebuild_factorization'::text, 'build_snapshot'::text])))
+    CONSTRAINT lca_jobs_type_chk CHECK ((job_type = ANY (ARRAY['prepare_factorization'::text, 'solve_one'::text, 'solve_batch'::text, 'solve_all_unit'::text, 'invalidate_factorization'::text, 'rebuild_factorization'::text, 'build_snapshot'::text, 'analyze_contribution_path'::text])))
 );
 
 
@@ -3278,6 +3599,117 @@ CREATE TABLE public.lca_network_snapshots (
 
 
 ALTER TABLE public.lca_network_snapshots OWNER TO postgres;
+
+--
+-- Name: lca_package_artifacts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lca_package_artifacts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid NOT NULL,
+    artifact_kind text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    artifact_url text NOT NULL,
+    artifact_sha256 text,
+    artifact_byte_size bigint,
+    artifact_format text NOT NULL,
+    content_type text NOT NULL,
+    metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+    expires_at timestamp with time zone,
+    is_pinned boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_package_artifacts_format_chk CHECK ((artifact_format = ANY (ARRAY['tidas-package-zip:v1'::text, 'tidas-package-export-report:v1'::text, 'tidas-package-import-report:v1'::text]))),
+    CONSTRAINT lca_package_artifacts_kind_chk CHECK ((artifact_kind = ANY (ARRAY['import_source'::text, 'export_zip'::text, 'export_report'::text, 'import_report'::text]))),
+    CONSTRAINT lca_package_artifacts_size_chk CHECK (((artifact_byte_size IS NULL) OR (artifact_byte_size >= 0))),
+    CONSTRAINT lca_package_artifacts_status_chk CHECK ((status = ANY (ARRAY['pending'::text, 'ready'::text, 'failed'::text, 'deleted'::text]))),
+    CONSTRAINT lca_package_artifacts_url_chk CHECK ((length(btrim(artifact_url)) > 0))
+);
+
+
+ALTER TABLE public.lca_package_artifacts OWNER TO postgres;
+
+--
+-- Name: lca_package_export_items; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lca_package_export_items (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid NOT NULL,
+    table_name text NOT NULL,
+    dataset_id uuid NOT NULL,
+    version text NOT NULL,
+    is_seed boolean DEFAULT false NOT NULL,
+    refs_done boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_package_export_items_table_chk CHECK ((table_name = ANY (ARRAY['contacts'::text, 'sources'::text, 'unitgroups'::text, 'flowproperties'::text, 'flows'::text, 'processes'::text, 'lifecyclemodels'::text]))),
+    CONSTRAINT lca_package_export_items_version_chk CHECK ((length(btrim(version)) > 0))
+);
+
+
+ALTER TABLE public.lca_package_export_items OWNER TO postgres;
+
+--
+-- Name: lca_package_jobs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lca_package_jobs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_type text NOT NULL,
+    status text DEFAULT 'queued'::text NOT NULL,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    diagnostics jsonb DEFAULT '{}'::jsonb NOT NULL,
+    attempt integer DEFAULT 0 NOT NULL,
+    max_attempt integer DEFAULT 3 NOT NULL,
+    requested_by uuid NOT NULL,
+    scope text,
+    root_count integer DEFAULT 0 NOT NULL,
+    request_key text,
+    idempotency_key text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    started_at timestamp with time zone,
+    finished_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_package_jobs_attempt_chk CHECK (((attempt >= 0) AND (max_attempt >= 0) AND (attempt <= max_attempt))),
+    CONSTRAINT lca_package_jobs_idempotency_key_chk CHECK (((idempotency_key IS NULL) OR (length(btrim(idempotency_key)) > 0))),
+    CONSTRAINT lca_package_jobs_request_key_chk CHECK (((request_key IS NULL) OR (length(btrim(request_key)) > 0))),
+    CONSTRAINT lca_package_jobs_root_count_chk CHECK ((root_count >= 0)),
+    CONSTRAINT lca_package_jobs_status_chk CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'ready'::text, 'completed'::text, 'failed'::text, 'stale'::text]))),
+    CONSTRAINT lca_package_jobs_type_chk CHECK ((job_type = ANY (ARRAY['export_package'::text, 'import_package'::text])))
+);
+
+
+ALTER TABLE public.lca_package_jobs OWNER TO postgres;
+
+--
+-- Name: lca_package_request_cache; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lca_package_request_cache (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    requested_by uuid NOT NULL,
+    operation text NOT NULL,
+    request_key text NOT NULL,
+    request_payload jsonb NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    job_id uuid,
+    export_artifact_id uuid,
+    report_artifact_id uuid,
+    error_code text,
+    error_message text,
+    hit_count bigint DEFAULT 0 NOT NULL,
+    last_accessed_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lca_package_request_cache_hit_count_chk CHECK ((hit_count >= 0)),
+    CONSTRAINT lca_package_request_cache_operation_chk CHECK ((operation = ANY (ARRAY['export_package'::text, 'import_package'::text]))),
+    CONSTRAINT lca_package_request_cache_request_key_chk CHECK ((length(btrim(request_key)) > 0)),
+    CONSTRAINT lca_package_request_cache_status_chk CHECK ((status = ANY (ARRAY['pending'::text, 'running'::text, 'ready'::text, 'failed'::text, 'stale'::text])))
+);
+
+
+ALTER TABLE public.lca_package_request_cache OWNER TO postgres;
 
 --
 -- Name: lca_result_cache; Type: TABLE; Schema: public; Owner: postgres
@@ -3373,6 +3805,26 @@ CREATE TABLE public.lciamethods (
 
 
 ALTER TABLE public.lciamethods OWNER TO postgres;
+
+--
+-- Name: notifications; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notifications (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    recipient_user_id uuid NOT NULL,
+    sender_user_id uuid NOT NULL,
+    type text NOT NULL,
+    dataset_type text NOT NULL,
+    dataset_id uuid NOT NULL,
+    dataset_version text NOT NULL,
+    "json" jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    modified_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.notifications OWNER TO postgres;
 
 --
 -- Name: reviews; Type: TABLE; Schema: public; Owner: postgres
@@ -3500,6 +3952,14 @@ ALTER TABLE ONLY pgmq.a_lca_jobs
 
 
 --
+-- Name: a_lca_package_jobs a_lca_package_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
+
+ALTER TABLE ONLY pgmq.a_lca_package_jobs
+    ADD CONSTRAINT a_lca_package_jobs_pkey PRIMARY KEY (msg_id);
+
+
+--
 -- Name: a_webhook_jobs a_webhook_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
 --
 
@@ -3521,6 +3981,14 @@ ALTER TABLE ONLY pgmq.q_embedding_jobs
 
 ALTER TABLE ONLY pgmq.q_lca_jobs
     ADD CONSTRAINT q_lca_jobs_pkey PRIMARY KEY (msg_id);
+
+
+--
+-- Name: q_lca_package_jobs q_lca_package_jobs_pkey; Type: CONSTRAINT; Schema: pgmq; Owner: postgres
+--
+
+ALTER TABLE ONLY pgmq.q_lca_package_jobs
+    ADD CONSTRAINT q_lca_package_jobs_pkey PRIMARY KEY (msg_id);
 
 
 --
@@ -3628,6 +4096,46 @@ ALTER TABLE ONLY public.lca_network_snapshots
 
 
 --
+-- Name: lca_package_artifacts lca_package_artifacts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_artifacts
+    ADD CONSTRAINT lca_package_artifacts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lca_package_export_items lca_package_export_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_export_items
+    ADD CONSTRAINT lca_package_export_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lca_package_jobs lca_package_jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_jobs
+    ADD CONSTRAINT lca_package_jobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lca_package_request_cache lca_package_request_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_request_cache
+    ADD CONSTRAINT lca_package_request_cache_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lca_package_request_cache lca_package_request_cache_user_op_request_uk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_request_cache
+    ADD CONSTRAINT lca_package_request_cache_user_op_request_uk UNIQUE (requested_by, operation, request_key);
+
+
+--
 -- Name: lca_result_cache lca_result_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3673,6 +4181,14 @@ ALTER TABLE ONLY public.lciamethods
 
 ALTER TABLE ONLY public.lifecyclemodels
     ADD CONSTRAINT lifecyclemodels_pkey PRIMARY KEY (id, version);
+
+
+--
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
 
 
 --
@@ -3746,6 +4262,13 @@ CREATE INDEX archived_at_idx_lca_jobs ON pgmq.a_lca_jobs USING btree (archived_a
 
 
 --
+-- Name: archived_at_idx_lca_package_jobs; Type: INDEX; Schema: pgmq; Owner: postgres
+--
+
+CREATE INDEX archived_at_idx_lca_package_jobs ON pgmq.a_lca_package_jobs USING btree (archived_at);
+
+
+--
 -- Name: archived_at_idx_webhook_jobs; Type: INDEX; Schema: pgmq; Owner: postgres
 --
 
@@ -3764,6 +4287,13 @@ CREATE INDEX q_embedding_jobs_vt_idx ON pgmq.q_embedding_jobs USING btree (vt);
 --
 
 CREATE INDEX q_lca_jobs_vt_idx ON pgmq.q_lca_jobs USING btree (vt);
+
+
+--
+-- Name: q_lca_package_jobs_vt_idx; Type: INDEX; Schema: pgmq; Owner: postgres
+--
+
+CREATE INDEX q_lca_package_jobs_vt_idx ON pgmq.q_lca_package_jobs USING btree (vt);
 
 
 --
@@ -4103,6 +4633,97 @@ CREATE INDEX lca_network_snapshots_updated_idx ON public.lca_network_snapshots U
 
 
 --
+-- Name: lca_package_artifacts_job_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_artifacts_job_created_idx ON public.lca_package_artifacts USING btree (job_id, created_at DESC);
+
+
+--
+-- Name: lca_package_artifacts_job_kind_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_package_artifacts_job_kind_uidx ON public.lca_package_artifacts USING btree (job_id, artifact_kind);
+
+
+--
+-- Name: lca_package_artifacts_status_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_artifacts_status_created_idx ON public.lca_package_artifacts USING btree (status, created_at DESC);
+
+
+--
+-- Name: lca_package_export_items_job_dataset_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_package_export_items_job_dataset_uidx ON public.lca_package_export_items USING btree (job_id, table_name, dataset_id, version);
+
+
+--
+-- Name: lca_package_export_items_job_refs_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_export_items_job_refs_idx ON public.lca_package_export_items USING btree (job_id, refs_done, created_at, table_name);
+
+
+--
+-- Name: lca_package_export_items_job_seed_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_export_items_job_seed_idx ON public.lca_package_export_items USING btree (job_id, is_seed, created_at);
+
+
+--
+-- Name: lca_package_jobs_idempotency_key_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_package_jobs_idempotency_key_uidx ON public.lca_package_jobs USING btree (idempotency_key) WHERE (idempotency_key IS NOT NULL);
+
+
+--
+-- Name: lca_package_jobs_requested_by_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_jobs_requested_by_created_idx ON public.lca_package_jobs USING btree (requested_by, created_at DESC);
+
+
+--
+-- Name: lca_package_jobs_status_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_jobs_status_created_idx ON public.lca_package_jobs USING btree (status, created_at);
+
+
+--
+-- Name: lca_package_jobs_type_status_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_jobs_type_status_created_idx ON public.lca_package_jobs USING btree (job_type, status, created_at DESC);
+
+
+--
+-- Name: lca_package_request_cache_job_uidx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX lca_package_request_cache_job_uidx ON public.lca_package_request_cache USING btree (job_id) WHERE (job_id IS NOT NULL);
+
+
+--
+-- Name: lca_package_request_cache_last_accessed_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_request_cache_last_accessed_idx ON public.lca_package_request_cache USING btree (last_accessed_at DESC);
+
+
+--
+-- Name: lca_package_request_cache_lookup_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX lca_package_request_cache_lookup_idx ON public.lca_package_request_cache USING btree (requested_by, operation, status, updated_at DESC);
+
+
+--
 -- Name: lca_result_cache_job_uidx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -4275,6 +4896,20 @@ CREATE INDEX lifecyclemodels_text_pgroonga ON public.lifecyclemodels USING pgroo
 --
 
 CREATE INDEX lifecyclemodels_user_id_created_at_idx ON public.lifecyclemodels USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: notifications_recipient_sender_type_dataset_uq; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX notifications_recipient_sender_type_dataset_uq ON public.notifications USING btree (recipient_user_id, sender_user_id, type, dataset_type, dataset_id, dataset_version);
+
+
+--
+-- Name: notifications_recipient_type_modified_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX notifications_recipient_type_modified_idx ON public.notifications USING btree (recipient_user_id, type, modified_at DESC);
 
 
 --
@@ -4691,6 +5326,13 @@ CREATE TRIGGER lifecyclemodels_set_modified_at_trigger BEFORE UPDATE ON public.l
 
 
 --
+-- Name: notifications notifications_set_modified_at_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER notifications_set_modified_at_trigger BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION public.update_modified_at();
+
+
+--
 -- Name: processes process_embedding_ft_on_extract_md_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -4861,6 +5503,46 @@ ALTER TABLE ONLY public.lca_network_snapshots
 
 
 --
+-- Name: lca_package_artifacts lca_package_artifacts_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_artifacts
+    ADD CONSTRAINT lca_package_artifacts_job_fk FOREIGN KEY (job_id) REFERENCES public.lca_package_jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_package_export_items lca_package_export_items_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_export_items
+    ADD CONSTRAINT lca_package_export_items_job_fk FOREIGN KEY (job_id) REFERENCES public.lca_package_jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lca_package_request_cache lca_package_request_cache_export_artifact_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_request_cache
+    ADD CONSTRAINT lca_package_request_cache_export_artifact_fk FOREIGN KEY (export_artifact_id) REFERENCES public.lca_package_artifacts(id) ON DELETE SET NULL;
+
+
+--
+-- Name: lca_package_request_cache lca_package_request_cache_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_request_cache
+    ADD CONSTRAINT lca_package_request_cache_job_fk FOREIGN KEY (job_id) REFERENCES public.lca_package_jobs(id) ON DELETE SET NULL;
+
+
+--
+-- Name: lca_package_request_cache lca_package_request_cache_report_artifact_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lca_package_request_cache
+    ADD CONSTRAINT lca_package_request_cache_report_artifact_fk FOREIGN KEY (report_artifact_id) REFERENCES public.lca_package_artifacts(id) ON DELETE SET NULL;
+
+
+--
 -- Name: lca_result_cache lca_result_cache_job_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4906,6 +5588,22 @@ ALTER TABLE ONLY public.lca_results
 
 ALTER TABLE ONLY public.lca_snapshot_artifacts
     ADD CONSTRAINT lca_snapshot_artifacts_snapshot_fk FOREIGN KEY (snapshot_id) REFERENCES public.lca_network_snapshots(id) ON DELETE CASCADE;
+
+
+--
+-- Name: notifications notifications_recipient_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: notifications notifications_sender_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_sender_user_id_fkey FOREIGN KEY (sender_user_id) REFERENCES auth.users(id);
 
 
 --
@@ -5234,10 +5932,24 @@ CREATE POLICY "insert by authenticated" ON public.teams FOR INSERT TO authentica
 ALTER TABLE public.lca_active_snapshots ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: lca_active_snapshots lca_active_snapshots_service_role_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_active_snapshots_service_role_all ON public.lca_active_snapshots TO service_role USING (true) WITH CHECK (true);
+
+
+--
 -- Name: lca_factorization_registry; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.lca_factorization_registry ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_factorization_registry lca_factorization_registry_service_role_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_factorization_registry_service_role_all ON public.lca_factorization_registry TO service_role USING (true) WITH CHECK (true);
+
 
 --
 -- Name: lca_jobs; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -5249,7 +5961,7 @@ ALTER TABLE public.lca_jobs ENABLE ROW LEVEL SECURITY;
 -- Name: lca_jobs lca_jobs_select_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY lca_jobs_select_own ON public.lca_jobs FOR SELECT TO authenticated USING ((requested_by = auth.uid()));
+CREATE POLICY lca_jobs_select_own ON public.lca_jobs FOR SELECT TO authenticated USING ((requested_by = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -5259,16 +5971,84 @@ CREATE POLICY lca_jobs_select_own ON public.lca_jobs FOR SELECT TO authenticated
 ALTER TABLE public.lca_latest_all_unit_results ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: lca_latest_all_unit_results lca_latest_all_unit_results_service_role_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_latest_all_unit_results_service_role_all ON public.lca_latest_all_unit_results TO service_role USING (true) WITH CHECK (true);
+
+
+--
 -- Name: lca_network_snapshots; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.lca_network_snapshots ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: lca_network_snapshots lca_network_snapshots_service_role_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_network_snapshots_service_role_all ON public.lca_network_snapshots TO service_role USING (true) WITH CHECK (true);
+
+
+--
+-- Name: lca_package_artifacts; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_package_artifacts ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_package_artifacts lca_package_artifacts_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_package_artifacts_select_own ON public.lca_package_artifacts FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.lca_package_jobs j
+  WHERE ((j.id = lca_package_artifacts.job_id) AND (j.requested_by = auth.uid())))));
+
+
+--
+-- Name: lca_package_export_items; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_package_export_items ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_package_jobs; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_package_jobs ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_package_jobs lca_package_jobs_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_package_jobs_select_own ON public.lca_package_jobs FOR SELECT TO authenticated USING ((requested_by = auth.uid()));
+
+
+--
+-- Name: lca_package_request_cache; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.lca_package_request_cache ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_package_request_cache lca_package_request_cache_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_package_request_cache_select_own ON public.lca_package_request_cache FOR SELECT TO authenticated USING ((requested_by = auth.uid()));
+
+
+--
 -- Name: lca_result_cache; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.lca_result_cache ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_result_cache lca_result_cache_service_role_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_result_cache_service_role_all ON public.lca_result_cache TO service_role USING (true) WITH CHECK (true);
+
 
 --
 -- Name: lca_results; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -5282,7 +6062,7 @@ ALTER TABLE public.lca_results ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY lca_results_select_own ON public.lca_results FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.lca_jobs j
-  WHERE ((j.id = lca_results.job_id) AND (j.requested_by = auth.uid())))));
+  WHERE ((j.id = lca_results.job_id) AND (j.requested_by = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5290,6 +6070,13 @@ CREATE POLICY lca_results_select_own ON public.lca_results FOR SELECT TO authent
 --
 
 ALTER TABLE public.lca_snapshot_artifacts ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lca_snapshot_artifacts lca_snapshot_artifacts_service_role_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY lca_snapshot_artifacts_service_role_all ON public.lca_snapshot_artifacts TO service_role USING (true) WITH CHECK (true);
+
 
 --
 -- Name: lciamethods; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -5302,6 +6089,33 @@ ALTER TABLE public.lciamethods ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.lifecyclemodels ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: notifications; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: notifications notifications_insert_sender; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY notifications_insert_sender ON public.notifications FOR INSERT TO authenticated WITH CHECK ((auth.uid() = sender_user_id));
+
+
+--
+-- Name: notifications notifications_select_sender_or_recipient; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY notifications_select_sender_or_recipient ON public.notifications FOR SELECT TO authenticated USING (((auth.uid() = sender_user_id) OR (auth.uid() = recipient_user_id)));
+
+
+--
+-- Name: notifications notifications_update_sender; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY notifications_update_sender ON public.notifications FOR UPDATE TO authenticated USING ((auth.uid() = sender_user_id)) WITH CHECK ((auth.uid() = sender_user_id));
+
 
 --
 -- Name: processes; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -5437,6 +6251,14 @@ GRANT ALL ON FUNCTION public.contacts_sync_jsonb_version() TO service_role;
 
 
 --
+-- Name: FUNCTION delete_lifecycle_model_bundle(p_model_id uuid, p_version text); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.delete_lifecycle_model_bundle(p_model_id uuid, p_version text) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.delete_lifecycle_model_bundle(p_model_id uuid, p_version text) TO service_role;
+
+
+--
 -- Name: FUNCTION flowproperties_sync_jsonb_version(); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -5547,6 +6369,14 @@ GRANT ALL ON FUNCTION public.ilcd_location_get(this_file_name text, get_values t
 
 REVOKE ALL ON FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.lca_enqueue_job(p_queue_name text, p_message jsonb) TO service_role;
+
+
+--
+-- Name: FUNCTION lca_package_enqueue_job(p_message jsonb); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.lca_package_enqueue_job(p_message jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.lca_package_enqueue_job(p_message jsonb) TO service_role;
 
 
 --
@@ -5801,6 +6631,14 @@ GRANT ALL ON FUNCTION public.processes_sync_jsonb_version() TO service_role;
 
 
 --
+-- Name: FUNCTION save_lifecycle_model_bundle(p_plan jsonb); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.save_lifecycle_model_bundle(p_plan jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.save_lifecycle_model_bundle(p_plan jsonb) TO service_role;
+
+
+--
 -- Name: FUNCTION semantic_search(query_embedding text, match_threshold double precision, match_count integer); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -5896,6 +6734,13 @@ GRANT SELECT ON TABLE pgmq.a_lca_jobs TO pg_monitor;
 
 
 --
+-- Name: TABLE a_lca_package_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.a_lca_package_jobs TO pg_monitor;
+
+
+--
 -- Name: TABLE a_webhook_jobs; Type: ACL; Schema: pgmq; Owner: postgres
 --
 
@@ -5914,6 +6759,13 @@ GRANT SELECT ON TABLE pgmq.q_embedding_jobs TO pg_monitor;
 --
 
 GRANT SELECT ON TABLE pgmq.q_lca_jobs TO pg_monitor;
+
+
+--
+-- Name: TABLE q_lca_package_jobs; Type: ACL; Schema: pgmq; Owner: postgres
+--
+
+GRANT SELECT ON TABLE pgmq.q_lca_package_jobs TO pg_monitor;
 
 
 --
@@ -5996,6 +6848,37 @@ GRANT ALL ON TABLE public.lca_network_snapshots TO service_role;
 
 
 --
+-- Name: TABLE lca_package_artifacts; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_package_artifacts TO service_role;
+GRANT SELECT ON TABLE public.lca_package_artifacts TO authenticated;
+
+
+--
+-- Name: TABLE lca_package_export_items; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_package_export_items TO service_role;
+
+
+--
+-- Name: TABLE lca_package_jobs; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_package_jobs TO service_role;
+GRANT SELECT ON TABLE public.lca_package_jobs TO authenticated;
+
+
+--
+-- Name: TABLE lca_package_request_cache; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.lca_package_request_cache TO service_role;
+GRANT SELECT ON TABLE public.lca_package_request_cache TO authenticated;
+
+
+--
 -- Name: TABLE lca_result_cache; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -6024,6 +6907,15 @@ GRANT ALL ON TABLE public.lca_snapshot_artifacts TO service_role;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lciamethods TO anon;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lciamethods TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.lciamethods TO service_role;
+
+
+--
+-- Name: TABLE notifications; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.notifications TO anon;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.notifications TO authenticated;
+GRANT ALL ON TABLE public.notifications TO service_role;
 
 
 --

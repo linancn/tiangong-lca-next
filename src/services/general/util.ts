@@ -1,3 +1,5 @@
+import enValidatorMessages from '@/locales/en-US/validator';
+import zhValidatorMessages from '@/locales/zh-CN/validator';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import { getReferenceUnits } from '@/services/unitgroups/api';
@@ -656,17 +658,72 @@ export async function normalizeLangPayloadBeforeSave(
   };
 }
 
-export function getLangValidationErrorMessage(issues: LangValidationIssue[], maxPathCount = 5) {
+const getLangValidationLocaleMessages = (locale: string) => {
+  const messages = (locale === 'zh-CN' ? zhValidatorMessages : enValidatorMessages) as Record<
+    string,
+    string
+  >;
+
+  return {
+    missingEnglish:
+      messages['validator.langValidation.missingEnglish'] ??
+      'The following fields are missing English: {fields}.',
+    missingEnglishMore:
+      messages['validator.langValidation.missingEnglishMore'] ??
+      'The following fields are missing English: {fields} and {count} more field(s).',
+    root: messages['validator.langValidation.root'] ?? (locale === 'zh-CN' ? '根节点' : '(root)'),
+  };
+};
+
+const formatLangValidationTemplate = (
+  template: string,
+  values: Record<string, string | number>,
+) => {
+  return Object.entries(values).reduce(
+    (result, [key, value]) => result.split(`{${key}}`).join(String(value)),
+    template,
+  );
+};
+
+const getLangValidationFieldName = (path: string, rootLabel: string) => {
+  const normalizedPath = path?.trim();
+  if (!normalizedPath) {
+    return rootLabel;
+  }
+
+  const lastPathSegment = normalizedPath.split('.').pop() ?? normalizedPath;
+  const fieldName = lastPathSegment.replace(/\[\d+\]$/u, '');
+  return fieldName || rootLabel;
+};
+
+export function getLangValidationErrorMessage(
+  issues: LangValidationIssue[],
+  maxPathCount = 5,
+  locale = 'en-US',
+) {
   if (!issues || issues.length === 0) {
     return '';
   }
-  const uniquePaths = Array.from(new Set(issues.map((issue) => issue.path || '(root)')));
-  const visiblePaths = uniquePaths.slice(0, maxPathCount).join(', ');
-  const extraCount = uniquePaths.length - Math.min(uniquePaths.length, maxPathCount);
+
+  const localeMessages = getLangValidationLocaleMessages(locale);
+  const uniqueFields = Array.from(
+    new Set(
+      issues.map((issue) => getLangValidationFieldName(issue.path || '', localeMessages.root)),
+    ),
+  );
+  const visibleFields = uniqueFields.slice(0, maxPathCount).join(',');
+  const extraCount = uniqueFields.length - Math.min(uniqueFields.length, maxPathCount);
+
   if (extraCount > 0) {
-    return `Language validation failed: ${visiblePaths} and ${extraCount} more field(s).`;
+    return formatLangValidationTemplate(localeMessages.missingEnglishMore, {
+      fields: visibleFields,
+      count: extraCount,
+    });
   }
-  return `Language validation failed: ${visiblePaths}.`;
+
+  return formatLangValidationTemplate(localeMessages.missingEnglish, {
+    fields: visibleFields,
+  });
 }
 
 export function mergeLangArrays(...arrays: any[][]): any[] {

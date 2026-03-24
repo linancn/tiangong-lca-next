@@ -1040,13 +1040,44 @@ describe('General Utility Functions', () => {
   });
 
   describe('getLangValidationErrorMessage', () => {
-    it('should return compact message for multiple issue paths', () => {
+    it('should return compact field-only message for multiple issue paths', () => {
       const message = getLangValidationErrorMessage([
-        { path: 'a', code: 'missing_en', message: 'x' },
-        { path: 'b', code: 'invalid_en', message: 'y' },
+        {
+          path: 'processDataSet.processInformation.dataSetInformation.name.treatmentStandardsRoutes',
+          code: 'missing_en',
+          message: 'x',
+        },
+        {
+          path: 'processDataSet.processInformation.dataSetInformation.name.baseName',
+          code: 'invalid_en',
+          message: 'y',
+        },
       ]);
 
-      expect(message).toBe('Language validation failed: a, b.');
+      expect(message).toBe(
+        'The following fields are missing English: treatmentStandardsRoutes,baseName.',
+      );
+    });
+
+    it('should return Chinese localized field-only message when locale is zh-CN', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          {
+            path: 'processDataSet.processInformation.dataSetInformation.name.treatmentStandardsRoutes',
+            code: 'missing_en',
+            message: 'x',
+          },
+          {
+            path: 'processDataSet.processInformation.dataSetInformation.name.baseName',
+            code: 'invalid_en',
+            message: 'y',
+          },
+        ],
+        5,
+        'zh-CN',
+      );
+
+      expect(message).toBe('以下字段缺少英文：treatmentStandardsRoutes,baseName.');
     });
 
     it('should return empty string when there are no issues', () => {
@@ -1065,14 +1096,14 @@ describe('General Utility Functions', () => {
         2,
       );
 
-      expect(message).toBe('Language validation failed: a, b and 2 more field(s).');
+      expect(message).toBe('The following fields are missing English: a,b and 2 more field(s).');
     });
 
     it('should treat empty issue paths as root', () => {
       const message = getLangValidationErrorMessage([
         { path: '', code: 'missing_en', message: 'x' },
       ]);
-      expect(message).toBe('Language validation failed: (root).');
+      expect(message).toBe('The following fields are missing English: (root).');
     });
   });
 

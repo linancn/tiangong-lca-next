@@ -1,5 +1,5 @@
-import { Redis as UpstashRedis } from '@upstash/redis';
-import { connect, type Redis as DenoRedis } from 'redis';
+import { Redis as UpstashRedis } from 'https://esm.sh/@upstash/redis@1.36.3';
+import { connect, type Redis as DenoRedis } from 'jsr:@db/redis@0.40.0';
 
 /**
  * Support Upstash and Standard Redis Client

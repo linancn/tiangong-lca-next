@@ -1,5 +1,10 @@
-import type { User, UserAppMetadata, UserMetadata } from '@supabase/supabase-js@2';
-import { createClient, SupabaseClient } from '@supabase/supabase-js@2';
+import type {
+  SupabaseClient,
+  User,
+  UserAppMetadata,
+  UserMetadata,
+} from 'jsr:@supabase/supabase-js@2.98.0';
+import { createClient } from 'jsr:@supabase/supabase-js@2.98.0';
 // import { Redis } from '@upstash/redis';
 import { authenticateCognitoToken } from './cognito_auth.ts';
 import { corsHeaders } from './cors.ts';
@@ -419,7 +424,7 @@ export function handleCors(req: Request): Response | null {
  * Used for webhook endpoints that need to perform database operations
  */
 export async function createAuthenticatedSupabaseClient(apiKey: string): Promise<SupabaseClient> {
-  const { createClient } = await import('@supabase/supabase-js@2');
+  const { createClient } = await import('jsr:@supabase/supabase-js@2.98.0');
   const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
   return createClient(supabaseUrl, apiKey);
 }

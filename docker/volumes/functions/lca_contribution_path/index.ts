@@ -3,12 +3,7 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import {
-  fetchProcessScopeLookup,
-  matchesProcessDataScope,
-  processScopeLookupKey,
-  validateProcessEntriesInDataScope,
-} from '../_shared/lca_process_scope.ts';
+import { validateProcessEntriesInDataScope } from '../_shared/lca_process_scope.ts';
 import {
   buildSnapshotBuildPayloadFields,
   buildSnapshotContainsFilter,
@@ -24,39 +19,37 @@ import {
 import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseClient } from '../_shared/supabase_client.ts';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ALL_UNIT_QUERY_FORMAT = 'all-unit-query:v1';
-const QUEUE_NAME = 'lca_jobs';
-const SNAPSHOT_BUILD_REQUEST_VERSION = 'lca_snapshot_build_v1';
-const ACTIVE_BUILD_MAX_QUEUED_MS = 10 * 60 * 1000;
-const ACTIVE_BUILD_MAX_RUNNING_MS = 2 * 60 * 60 * 1000;
-const DEFAULT_HOTSPOT_LIMIT = 20;
-const MAX_HOTSPOT_LIMIT = 200;
-
-type QueryMode = 'process_all_impacts' | 'processes_one_impact';
-type HotspotSortBy = 'absolute_value' | 'value' | 'process_index';
-type SortDirection = 'asc' | 'desc';
-
-type QueryRequest = {
+type ContributionPathRequest = {
   scope?: string;
   snapshot_id?: string;
   data_scope?: LcaDataScope;
-  mode?: QueryMode;
   process_id?: string;
   process_version?: string;
-  process_ids?: string[];
   impact_id?: string;
-  allow_fallback?: boolean;
-  top_n?: number;
-  offset?: number;
-  sort_by?: HotspotSortBy;
-  sort_direction?: SortDirection;
+  amount?: number;
+  options?: {
+    max_depth?: number;
+    top_k_children?: number;
+    cutoff_share?: number;
+    max_nodes?: number;
+  };
+  print_level?: number;
+};
+
+type ContributionPathResponse = {
+  mode: 'queued' | 'in_progress' | 'cache_hit';
+  snapshot_id: string;
+  cache_key: string;
+  job_id?: string;
+  result_id?: string;
 };
 
 type SnapshotIndexProcessEntry = {
   process_id: string;
   process_index: number;
-  process_version: string;
+  process_version?: string;
+  process_name?: string | null;
+  location?: string | null;
 };
 
 type SnapshotIndexImpactEntry = {
@@ -74,16 +67,6 @@ type SnapshotIndexDocument = {
   impact_count: number;
   process_map: SnapshotIndexProcessEntry[];
   impact_map: SnapshotIndexImpactEntry[];
-};
-
-type AllUnitQueryEnvelope = {
-  version: number;
-  format: string;
-  snapshot_id: string;
-  job_id: string;
-  process_count: number;
-  impact_count: number;
-  h_matrix: number[][];
 };
 
 type SnapshotArtifactMeta = {
@@ -104,31 +87,36 @@ type BuildQueueResult =
   | { ok: true; job_id: string; snapshot_id: string }
   | { ok: false; error: string; status: number };
 
-type LatestAllUnitRow = {
-  snapshot_id: string;
-  result_id: string;
-  computed_at: string;
-  query_artifact_url: string;
-  query_artifact_format: string;
+type ResultCacheRow = {
+  id: string;
+  status: string;
+  job_id: string | null;
+  result_id: string | null;
+  hit_count: number;
 };
 
-type LatestSingleSolveRow = {
-  result_id: string;
-  computed_at: string;
-  amount: number;
+type CacheJobState = {
+  status: string;
+  result_id: string | null;
 };
 
 type ProcessIndexResolution =
   | { ok: true; process_index: number }
   | { ok: false; status: number; body: Record<string, unknown> };
 
-type RankedProcessValue = {
-  process_id: string;
-  process_version: string;
-  process_index: number;
-  value: number;
-  absolute_value: number;
+type ContributionPathOptions = {
+  max_depth: number;
+  top_k_children: number;
+  cutoff_share: number;
+  max_nodes: number;
 };
+
+const QUEUE_NAME = 'lca_jobs';
+const REQUEST_VERSION = 'lca_contribution_path_v1';
+const SNAPSHOT_BUILD_REQUEST_VERSION = 'lca_snapshot_build_v1';
+const ACTIVE_BUILD_MAX_QUEUED_MS = 10 * 60 * 1000;
+const ACTIVE_BUILD_MAX_RUNNING_MS = 2 * 60 * 60 * 1000;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -155,9 +143,9 @@ Deno.serve(async (req) => {
     return json({ error: 'unauthorized' }, 401);
   }
 
-  let body: QueryRequest;
+  let body: ContributionPathRequest;
   try {
-    body = (await req.json()) as QueryRequest;
+    body = (await req.json()) as ContributionPathRequest;
   } catch (_error) {
     return json({ error: 'invalid_json' }, 400);
   }
@@ -168,12 +156,30 @@ Deno.serve(async (req) => {
 
   const scope = (body.scope ?? 'prod').trim() || 'prod';
   const dataScope = parseLcaDataScope(body.data_scope);
-  const mode = body.mode;
-  const allowFallback = body.allow_fallback ?? true;
+  const processId = body.process_id?.trim() ?? '';
+  const processVersion = body.process_version?.trim() ?? '';
+  const impactId = body.impact_id?.trim() ?? '';
+  const amount = body.amount ?? 1.0;
+  const printLevel = body.print_level ?? 0.0;
 
-  if (mode !== 'process_all_impacts' && mode !== 'processes_one_impact') {
-    return json({ error: 'invalid_mode' }, 400);
+  if (!processId || !UUID_RE.test(processId)) {
+    return json({ error: 'invalid_process_id' }, 400);
   }
+  if (!impactId || !UUID_RE.test(impactId)) {
+    return json({ error: 'invalid_impact_id' }, 400);
+  }
+  if (!Number.isFinite(amount) || amount === 0) {
+    return json({ error: 'invalid_amount' }, 400);
+  }
+  if (!Number.isFinite(printLevel)) {
+    return json({ error: 'invalid_print_level' }, 400);
+  }
+
+  const optionsResult = parseContributionPathOptions(body.options);
+  if (!optionsResult.ok) {
+    return json({ error: optionsResult.error }, 400);
+  }
+  const options = optionsResult.value;
 
   const snapshotMeta = await resolveReadySnapshot(scope, body.snapshot_id, userId, dataScope);
   if (!snapshotMeta.ok) {
@@ -214,281 +220,20 @@ Deno.serve(async (req) => {
     return json({ error: 'snapshot_index_mismatch' }, 500);
   }
 
-  const latestAllUnit = await fetchLatestAllUnit(snapshotId);
-  if (!latestAllUnit.ok) {
-    return json({ error: latestAllUnit.error }, latestAllUnit.status);
+  const processIndexResolution = resolveProcessIndex(snapshotIndex.data, {
+    process_id: processId,
+    process_version: processVersion || undefined,
+  });
+  if (!processIndexResolution.ok) {
+    return json(processIndexResolution.body, processIndexResolution.status);
   }
-  if (!latestAllUnit.row) {
-    if (allowFallback) {
-      return json({ error: 'fallback_not_implemented_yet' }, 501);
-    }
-    return json({ error: 'all_unit_result_not_ready' }, 409);
+  const processIndex = processIndexResolution.process_index;
+  const selectedProcessEntry = processEntryForIndex(snapshotIndex.data, processIndex);
+  if (!selectedProcessEntry) {
+    return json({ error: 'snapshot_index_invalid', process_id: processId }, 500);
   }
-
-  const queryArtifact = await fetchArtifactJson<AllUnitQueryEnvelope>(
-    latestAllUnit.row.query_artifact_url,
-  );
-  if (!queryArtifact.ok) {
-    return json(
-      { error: 'all_unit_query_artifact_fetch_failed', detail: queryArtifact.error },
-      502,
-    );
-  }
-
-  if (queryArtifact.data.format !== ALL_UNIT_QUERY_FORMAT) {
-    return json({ error: 'unsupported_query_artifact_format' }, 500);
-  }
-
-  if (queryArtifact.data.snapshot_id !== snapshotId) {
-    return json({ error: 'query_artifact_snapshot_mismatch' }, 500);
-  }
-
-  if (mode === 'process_all_impacts') {
-    const processId = body.process_id?.trim();
-    if (!processId || !UUID_RE.test(processId)) {
-      return json({ error: 'invalid_process_id' }, 400);
-    }
-
-    const processVersion = body.process_version?.trim();
-    const processIndexResolution = resolveProcessIndex(snapshotIndex.data, {
-      process_id: processId,
-      process_version: processVersion || undefined,
-    });
-    if (!processIndexResolution.ok) {
-      return json(processIndexResolution.body, processIndexResolution.status);
-    }
-    const processIndex = processIndexResolution.process_index;
-    const selectedProcessEntry = processEntryForIndex(snapshotIndex.data, processIndex);
-    if (!selectedProcessEntry) {
-      return json({ error: 'snapshot_index_invalid', process_id: processId }, 500);
-    }
-    const processScopeValidation = await validateProcessEntriesInDataScope(
-      [selectedProcessEntry],
-      dataScope,
-      userId,
-    );
-    if (!processScopeValidation.ok) {
-      return json(processScopeValidation.body, processScopeValidation.status);
-    }
-
-    const hRow = queryArtifact.data.h_matrix[processIndex];
-    if (!Array.isArray(hRow)) {
-      return json({ error: 'query_artifact_shape_invalid' }, 500);
-    }
-
-    const impacts = [...snapshotIndex.data.impact_map].sort(
-      (a, b) => a.impact_index - b.impact_index,
-    );
-
-    let source: 'all_unit' | 'fallback_solve_one' = 'all_unit';
-    let resultId = latestAllUnit.row.result_id;
-    let computedAt = latestAllUnit.row.computed_at;
-    let scale = 1;
-    const latestSingle = await fetchLatestSingleSolveForProcess(snapshotId, userId, processIndex);
-    if (latestSingle.ok && latestSingle.row) {
-      const allUnitTs = Date.parse(latestAllUnit.row.computed_at);
-      const singleTs = Date.parse(latestSingle.row.computed_at);
-      const preferSingle =
-        Number.isFinite(singleTs) && (!Number.isFinite(allUnitTs) || singleTs >= allUnitTs);
-      if (preferSingle) {
-        source = 'fallback_solve_one';
-        resultId = latestSingle.row.result_id;
-        computedAt = latestSingle.row.computed_at;
-        scale = latestSingle.row.amount;
-      }
-    }
-
-    const values = impacts.map((impact) => ({
-      impact_id: impact.impact_id,
-      impact_index: impact.impact_index,
-      impact_key: impact.impact_key,
-      impact_name: impact.impact_name,
-      unit: impact.unit,
-      value: Number(hRow[impact.impact_index] ?? 0) * scale,
-    }));
-
-    return json(
-      {
-        snapshot_id: snapshotId,
-        result_id: resultId,
-        source,
-        mode,
-        data: {
-          process_id: processId,
-          values,
-        },
-        meta: {
-          cache_hit: false,
-          computed_at: computedAt,
-          query_artifact_format: latestAllUnit.row.query_artifact_format,
-          ...(source === 'fallback_solve_one'
-            ? {
-                scaled_from_all_unit_result_id: latestAllUnit.row.result_id,
-                scaled_amount: scale,
-              }
-            : {}),
-        },
-      },
-      200,
-    );
-  }
-
-  const impactId = body.impact_id?.trim();
-  if (!impactId || !UUID_RE.test(impactId)) {
-    return json({ error: 'invalid_impact_id' }, 400);
-  }
-
-  const impactIndex = impactIndexOf(snapshotIndex.data, impactId);
-  if (impactIndex === null) {
-    return json({ error: 'impact_not_in_snapshot', impact_id: impactId }, 404);
-  }
-
-  const processIds = (body.process_ids ?? []).map((id) => id.trim()).filter(Boolean);
-  const rankingRequested =
-    body.top_n !== undefined ||
-    body.offset !== undefined ||
-    body.sort_by !== undefined ||
-    body.sort_direction !== undefined;
-
-  if (processIds.length === 0 && !rankingRequested) {
-    return json({ error: 'process_ids_required' }, 400);
-  }
-
-  const invalidProcessIds = processIds.filter((id) => !UUID_RE.test(id));
-  if (invalidProcessIds.length > 0) {
-    return json({ error: 'invalid_process_ids', process_ids: invalidProcessIds }, 400);
-  }
-
-  if (processIds.length === 0) {
-    const scopeMeta = await fetchProcessScopeLookup(snapshotIndex.data.process_map);
-    if (!scopeMeta.ok) {
-      return json({ error: scopeMeta.error }, 500);
-    }
-    const processScopeLookup = scopeMeta.data;
-
-    const topN = parseHotspotLimit(body.top_n);
-    if (!topN.ok) {
-      return json({ error: 'invalid_top_n' }, 400);
-    }
-
-    const offset = parseHotspotOffset(body.offset);
-    if (!offset.ok) {
-      return json({ error: 'invalid_offset' }, 400);
-    }
-
-    const sortBy = parseHotspotSortBy(body.sort_by);
-    if (!sortBy.ok) {
-      return json({ error: 'invalid_sort_by' }, 400);
-    }
-
-    const sortDirection = parseSortDirection(body.sort_direction);
-    if (!sortDirection.ok) {
-      return json({ error: 'invalid_sort_direction' }, 400);
-    }
-
-    const rankedValues: RankedProcessValue[] = [];
-    let totalAbsoluteValue = 0;
-
-    for (const entry of snapshotIndex.data.process_map) {
-      if (
-        !matchesProcessDataScope(
-          processScopeLookup.get(processScopeLookupKey(entry.process_id, entry.process_version)),
-          dataScope,
-          userId,
-        )
-      ) {
-        continue;
-      }
-
-      if (!Number.isInteger(entry.process_index) || entry.process_index < 0) {
-        return json({ error: 'snapshot_index_invalid', process_id: entry.process_id }, 500);
-      }
-
-      const hRow = queryArtifact.data.h_matrix[entry.process_index];
-      if (!Array.isArray(hRow)) {
-        return json({ error: 'query_artifact_shape_invalid' }, 500);
-      }
-
-      const value = Number(hRow[impactIndex] ?? 0);
-      const absoluteValue = Math.abs(value);
-      totalAbsoluteValue += absoluteValue;
-
-      rankedValues.push({
-        process_id: entry.process_id,
-        process_version: String(entry.process_version ?? '').trim(),
-        process_index: entry.process_index,
-        value,
-        absolute_value: absoluteValue,
-      });
-    }
-
-    rankedValues.sort((left, right) =>
-      compareRankedProcessValues(left, right, sortBy.value, sortDirection.value),
-    );
-
-    const offsetValue = offset.value;
-    const limitValue = topN.value;
-    const slicedValues = rankedValues.slice(offsetValue, offsetValue + limitValue).map((item) => ({
-      process_id: item.process_id,
-      process_version: item.process_version,
-      process_index: item.process_index,
-      value: item.value,
-      absolute_value: item.absolute_value,
-    }));
-
-    return json(
-      {
-        snapshot_id: snapshotId,
-        result_id: latestAllUnit.row.result_id,
-        source: 'all_unit',
-        mode,
-        data: {
-          kind: 'ranked_processes',
-          impact_id: impactId,
-          impact_index: impactIndex,
-          sort_by: sortBy.value,
-          sort_direction: sortDirection.value,
-          offset: offsetValue,
-          limit: limitValue,
-          returned_count: slicedValues.length,
-          total_process_count: rankedValues.length,
-          total_absolute_value: totalAbsoluteValue,
-          values: slicedValues,
-        },
-        meta: {
-          cache_hit: false,
-          computed_at: latestAllUnit.row.computed_at,
-          query_artifact_format: latestAllUnit.row.query_artifact_format,
-        },
-      },
-      200,
-    );
-  }
-
-  const missingProcessIds: string[] = [];
-  const requestedEntries: SnapshotIndexProcessEntry[] = [];
-  const values: Record<string, number> = {};
-  for (const processId of processIds) {
-    const processEntry = processEntryForId(snapshotIndex.data, processId);
-    if (!processEntry) {
-      missingProcessIds.push(processId);
-      continue;
-    }
-    requestedEntries.push(processEntry);
-  }
-
-  if (missingProcessIds.length > 0) {
-    return json(
-      {
-        error: 'process_not_in_snapshot',
-        process_ids: missingProcessIds,
-      },
-      404,
-    );
-  }
-
   const processScopeValidation = await validateProcessEntriesInDataScope(
-    requestedEntries,
+    [selectedProcessEntry],
     dataScope,
     userId,
   );
@@ -496,35 +241,425 @@ Deno.serve(async (req) => {
     return json(processScopeValidation.body, processScopeValidation.status);
   }
 
-  for (const processEntry of requestedEntries) {
-    const hRow = queryArtifact.data.h_matrix[processEntry.process_index];
-    if (!Array.isArray(hRow)) {
-      return json({ error: 'query_artifact_shape_invalid' }, 500);
-    }
-    values[processEntry.process_id] = Number(hRow[impactIndex] ?? 0);
+  const impactIndex = impactIndexOf(snapshotIndex.data, impactId);
+  if (impactIndex === null) {
+    return json({ error: 'impact_not_in_snapshot', impact_id: impactId }, 404);
   }
 
-  return json(
-    {
+  const normalizedRequest = {
+    version: REQUEST_VERSION,
+    scope,
+    snapshot_id: snapshotId,
+    data_scope: dataScope,
+    process_id: processId,
+    process_version: processVersion || null,
+    process_index: processIndex,
+    impact_id: impactId,
+    impact_index: impactIndex,
+    amount,
+    options,
+    print_level: printLevel,
+  };
+  const requestKey = await sha256Hex(JSON.stringify(normalizedRequest));
+  const nowIso = new Date().toISOString();
+  let retryAfterJobId: string | null = null;
+
+  const existingCache = await fetchResultCache(scope, snapshotId, requestKey);
+  if (!existingCache.ok) {
+    return json({ error: 'cache_lookup_failed' }, 500);
+  }
+
+  if (existingCache.row) {
+    await touchResultCache(existingCache.row, {
+      updated_at: nowIso,
+      last_accessed_at: nowIso,
+      hit_count: existingCache.row.hit_count + 1,
+    });
+
+    if (existingCache.row.status === 'ready' && existingCache.row.result_id) {
+      const cacheHit: ContributionPathResponse = {
+        mode: 'cache_hit',
+        snapshot_id: snapshotId,
+        cache_key: requestKey,
+        result_id: existingCache.row.result_id,
+      };
+      return json(cacheHit, 200);
+    }
+
+    if (existingCache.row.status === 'failed' || existingCache.row.status === 'stale') {
+      retryAfterJobId = existingCache.row.job_id ?? 'cache_failed';
+    }
+
+    if (
+      (existingCache.row.status === 'pending' || existingCache.row.status === 'running') &&
+      existingCache.row.job_id
+    ) {
+      const cacheJobState = await fetchCacheJobState(existingCache.row.job_id);
+      if (cacheJobState.ok) {
+        if (
+          (cacheJobState.data.status === 'ready' || cacheJobState.data.status === 'completed') &&
+          cacheJobState.data.result_id
+        ) {
+          await updateResultCacheState(existingCache.row.id, {
+            status: 'ready',
+            result_id: cacheJobState.data.result_id,
+            updated_at: nowIso,
+            last_accessed_at: nowIso,
+            hit_count: existingCache.row.hit_count + 1,
+          });
+          const cacheHit: ContributionPathResponse = {
+            mode: 'cache_hit',
+            snapshot_id: snapshotId,
+            cache_key: requestKey,
+            result_id: cacheJobState.data.result_id,
+          };
+          return json(cacheHit, 200);
+        }
+
+        if (cacheJobState.data.status === 'queued' || cacheJobState.data.status === 'running') {
+          const inProgress: ContributionPathResponse = {
+            mode: 'in_progress',
+            snapshot_id: snapshotId,
+            cache_key: requestKey,
+            job_id: existingCache.row.job_id,
+          };
+          return json(inProgress, 200);
+        }
+
+        if (cacheJobState.data.status === 'failed' || cacheJobState.data.status === 'stale') {
+          retryAfterJobId = existingCache.row.job_id;
+          await updateResultCacheState(existingCache.row.id, {
+            status: 'failed',
+            updated_at: nowIso,
+            last_accessed_at: nowIso,
+            hit_count: existingCache.row.hit_count + 1,
+          });
+        }
+      } else {
+        const inProgress: ContributionPathResponse = {
+          mode: 'in_progress',
+          snapshot_id: snapshotId,
+          cache_key: requestKey,
+          job_id: existingCache.row.job_id,
+        };
+        return json(inProgress, 200);
+      }
+    }
+  }
+
+  const idempotencyKeyBase = `${userId}:${requestKey}`;
+  const idempotencyKey = retryAfterJobId
+    ? `${idempotencyKeyBase}:retry_after:${retryAfterJobId}`
+    : idempotencyKeyBase;
+
+  const newJobId = crypto.randomUUID();
+  const payload = {
+    type: 'analyze_contribution_path',
+    job_id: newJobId,
+    snapshot_id: snapshotId,
+    process_id: processId,
+    process_index: processIndex,
+    impact_id: impactId,
+    impact_index: impactIndex,
+    amount,
+    options,
+    print_level: printLevel,
+  };
+
+  const { error: insertJobError } = await supabaseClient.from('lca_jobs').insert({
+    id: newJobId,
+    job_type: 'analyze_contribution_path',
+    snapshot_id: snapshotId,
+    status: 'queued',
+    payload,
+    diagnostics: {},
+    requested_by: userId,
+    request_key: requestKey,
+    idempotency_key: idempotencyKey,
+    created_at: nowIso,
+    updated_at: nowIso,
+  });
+
+  if (insertJobError && !isDuplicateKey(insertJobError.code)) {
+    console.error('insert lca_jobs failed', {
+      error: insertJobError.message,
+      code: insertJobError.code,
+      idempotency_key: idempotencyKey,
+    });
+    return json({ error: 'job_insert_failed' }, 500);
+  }
+
+  const { data: jobRow, error: jobReadError } = await supabaseClient
+    .from('lca_jobs')
+    .select('id')
+    .eq('idempotency_key', idempotencyKey)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (jobReadError || !jobRow?.id) {
+    console.error('read lca_jobs by idempotency_key failed', {
+      error: jobReadError?.message,
+      code: jobReadError?.code,
+      idempotency_key: idempotencyKey,
+    });
+    return json({ error: 'job_lookup_failed' }, 500);
+  }
+
+  const finalJobId = String(jobRow.id);
+  if (finalJobId === newJobId) {
+    const { error: enqueueError } = await supabaseClient.rpc('lca_enqueue_job', {
+      p_queue_name: QUEUE_NAME,
+      p_message: payload,
+    });
+
+    if (enqueueError) {
+      console.error('enqueue queue message failed', {
+        error: enqueueError.message,
+        code: enqueueError.code,
+        details: enqueueError.details,
+        hint: enqueueError.hint,
+      });
+
+      if (enqueueError.code === 'PGRST202' || enqueueError.message.includes('lca_enqueue_job')) {
+        return json({ error: 'queue_rpc_missing' }, 500);
+      }
+
+      return json({ error: 'queue_enqueue_failed' }, 500);
+    }
+  }
+
+  if (existingCache.row) {
+    const { error: cacheUpdateError } = await supabaseClient
+      .from('lca_result_cache')
+      .update({
+        status: 'pending',
+        job_id: finalJobId,
+        request_payload: normalizedRequest,
+        hit_count: existingCache.row.hit_count + 1,
+        last_accessed_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq('id', existingCache.row.id);
+
+    if (cacheUpdateError) {
+      console.error('update lca_result_cache failed', {
+        error: cacheUpdateError.message,
+        code: cacheUpdateError.code,
+      });
+      return json({ error: 'cache_update_failed' }, 500);
+    }
+  } else {
+    const { error: cacheInsertError } = await supabaseClient.from('lca_result_cache').insert({
+      scope,
       snapshot_id: snapshotId,
-      result_id: latestAllUnit.row.result_id,
-      source: 'all_unit',
-      mode,
-      data: {
-        kind: 'selected_processes',
-        impact_id: impactId,
-        impact_index: impactIndex,
-        values,
-      },
-      meta: {
-        cache_hit: false,
-        computed_at: latestAllUnit.row.computed_at,
-        query_artifact_format: latestAllUnit.row.query_artifact_format,
-      },
-    },
-    200,
-  );
+      request_key: requestKey,
+      request_payload: normalizedRequest,
+      status: 'pending',
+      job_id: finalJobId,
+      hit_count: 1,
+      last_accessed_at: nowIso,
+      created_at: nowIso,
+      updated_at: nowIso,
+    });
+
+    if (cacheInsertError && !isDuplicateKey(cacheInsertError.code)) {
+      console.error('insert lca_result_cache failed', {
+        error: cacheInsertError.message,
+        code: cacheInsertError.code,
+      });
+      return json({ error: 'cache_insert_failed' }, 500);
+    }
+  }
+
+  const response: ContributionPathResponse = {
+    mode: 'queued',
+    snapshot_id: snapshotId,
+    cache_key: requestKey,
+    job_id: finalJobId,
+  };
+  return json(response, 202);
 });
+
+function parseContributionPathOptions(
+  raw: ContributionPathRequest['options'],
+): { ok: true; value: ContributionPathOptions } | { ok: false; error: string } {
+  const maxDepth = raw?.max_depth ?? 4;
+  const topKChildren = raw?.top_k_children ?? 5;
+  const cutoffShare = raw?.cutoff_share ?? 0.01;
+  const maxNodes = raw?.max_nodes ?? 200;
+
+  if (!Number.isInteger(maxDepth) || maxDepth < 1 || maxDepth > 8) {
+    return { ok: false, error: 'invalid_max_depth' };
+  }
+  if (!Number.isInteger(topKChildren) || topKChildren < 1 || topKChildren > 20) {
+    return { ok: false, error: 'invalid_top_k_children' };
+  }
+  if (!Number.isFinite(cutoffShare) || cutoffShare < 0 || cutoffShare > 1) {
+    return { ok: false, error: 'invalid_cutoff_share' };
+  }
+  if (!Number.isInteger(maxNodes) || maxNodes < 10 || maxNodes > 2000) {
+    return { ok: false, error: 'invalid_max_nodes' };
+  }
+
+  return {
+    ok: true,
+    value: {
+      max_depth: maxDepth,
+      top_k_children: topKChildren,
+      cutoff_share: cutoffShare,
+      max_nodes: maxNodes,
+    },
+  };
+}
+
+async function fetchResultCache(
+  scope: string,
+  snapshotId: string,
+  requestKey: string,
+): Promise<{ ok: true; row: ResultCacheRow | null } | { ok: false }> {
+  const { data, error } = await supabaseClient
+    .from('lca_result_cache')
+    .select('id,status,job_id,result_id,hit_count')
+    .eq('scope', scope)
+    .eq('snapshot_id', snapshotId)
+    .eq('request_key', requestKey)
+    .maybeSingle();
+
+  if (error) {
+    console.error('fetch lca_result_cache failed', {
+      error: error.message,
+      scope,
+      snapshot_id: snapshotId,
+      request_key: requestKey,
+    });
+    return { ok: false };
+  }
+
+  if (!data) {
+    return { ok: true, row: null };
+  }
+
+  return {
+    ok: true,
+    row: {
+      id: String(data.id),
+      status: String(data.status),
+      job_id: data.job_id ? String(data.job_id) : null,
+      result_id: data.result_id ? String(data.result_id) : null,
+      hit_count: Number(data.hit_count ?? 0),
+    },
+  };
+}
+
+async function touchResultCache(
+  row: ResultCacheRow,
+  patch: {
+    updated_at: string;
+    last_accessed_at: string;
+    hit_count: number;
+  },
+): Promise<void> {
+  const { error } = await supabaseClient
+    .from('lca_result_cache')
+    .update({
+      updated_at: patch.updated_at,
+      last_accessed_at: patch.last_accessed_at,
+      hit_count: patch.hit_count,
+    })
+    .eq('id', row.id);
+
+  if (error) {
+    console.warn('touch lca_result_cache failed', {
+      error: error.message,
+      cache_id: row.id,
+    });
+  }
+}
+
+async function updateResultCacheState(
+  cacheId: string,
+  patch: {
+    status: string;
+    updated_at: string;
+    last_accessed_at: string;
+    hit_count: number;
+    result_id?: string | null;
+  },
+): Promise<void> {
+  const updatePayload: Record<string, unknown> = {
+    status: patch.status,
+    updated_at: patch.updated_at,
+    last_accessed_at: patch.last_accessed_at,
+    hit_count: patch.hit_count,
+  };
+  if (patch.result_id !== undefined) {
+    updatePayload.result_id = patch.result_id;
+  }
+
+  const { error } = await supabaseClient
+    .from('lca_result_cache')
+    .update(updatePayload)
+    .eq('id', cacheId);
+
+  if (error) {
+    console.warn('update lca_result_cache state failed', {
+      error: error.message,
+      cache_id: cacheId,
+      next_status: patch.status,
+    });
+  }
+}
+
+async function fetchCacheJobState(
+  jobId: string,
+): Promise<{ ok: true; data: CacheJobState } | { ok: false }> {
+  const { data: jobData, error: jobError } = await supabaseClient
+    .from('lca_jobs')
+    .select('id,status')
+    .eq('id', jobId)
+    .maybeSingle();
+
+  if (jobError) {
+    console.warn('fetch cache job state failed', {
+      error: jobError.message,
+      job_id: jobId,
+    });
+    return { ok: false };
+  }
+
+  if (!jobData) {
+    return { ok: false };
+  }
+
+  let resultId: string | null = null;
+  if (jobData.status === 'ready' || jobData.status === 'completed') {
+    const { data: resultData, error: resultError } = await supabaseClient
+      .from('lca_results')
+      .select('id')
+      .eq('job_id', jobId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (resultError) {
+      console.warn('fetch contribution path result by job_id failed', {
+        error: resultError.message,
+        job_id: jobId,
+      });
+      return { ok: false };
+    }
+    resultId = resultData?.id ? String(resultData.id) : null;
+  }
+
+  return {
+    ok: true,
+    data: {
+      status: String(jobData.status),
+      result_id: resultId,
+    },
+  };
+}
 
 async function resolveReadySnapshot(
   scope: string,
@@ -966,157 +1101,8 @@ async function fetchSnapshotArtifactMeta(
   };
 }
 
-async function fetchLatestAllUnit(
-  snapshotId: string,
-): Promise<
-  { ok: true; row: LatestAllUnitRow | null } | { ok: false; error: string; status: number }
-> {
-  const { data, error } = await supabaseClient
-    .from('lca_latest_all_unit_results')
-    .select(
-      'snapshot_id,result_id,computed_at,query_artifact_url,query_artifact_format,status,updated_at',
-    )
-    .eq('snapshot_id', snapshotId)
-    .eq('status', 'ready')
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error('query lca_latest_all_unit_results failed', {
-      error: error.message,
-      snapshot_id: snapshotId,
-    });
-    return { ok: false, error: 'latest_all_unit_lookup_failed', status: 500 };
-  }
-
-  if (!data) {
-    return { ok: true, row: null };
-  }
-
-  return {
-    ok: true,
-    row: {
-      snapshot_id: String(data.snapshot_id),
-      result_id: String(data.result_id),
-      computed_at: String(data.computed_at),
-      query_artifact_url: String(data.query_artifact_url),
-      query_artifact_format: String(data.query_artifact_format),
-    },
-  };
-}
-
-async function fetchLatestSingleSolveForProcess(
-  snapshotId: string,
-  userId: string,
-  processIndex: number,
-): Promise<{ ok: true; row: LatestSingleSolveRow | null } | { ok: false; error: string }> {
-  const { data: jobs, error: jobsError } = await supabaseClient
-    .from('lca_jobs')
-    .select('id,payload,created_at')
-    .eq('snapshot_id', snapshotId)
-    .eq('job_type', 'solve_one')
-    .eq('status', 'completed')
-    .eq('requested_by', userId)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (jobsError) {
-    console.warn('query latest solve_one jobs failed', {
-      error: jobsError.message,
-      snapshot_id: snapshotId,
-      user_id: userId,
-    });
-    return { ok: false, error: 'latest_single_lookup_failed' };
-  }
-
-  for (const row of jobs ?? []) {
-    const jobId = String((row as { id?: unknown }).id ?? '').trim();
-    if (!jobId) {
-      continue;
-    }
-
-    const amount = amountForProcessIndex((row as { payload?: unknown }).payload, processIndex);
-    if (amount === null) {
-      continue;
-    }
-
-    const { data: resultRow, error: resultError } = await supabaseClient
-      .from('lca_results')
-      .select('id,created_at')
-      .eq('job_id', jobId)
-      .maybeSingle();
-
-    if (resultError) {
-      console.warn('query result by solve_one job failed', {
-        error: resultError.message,
-        snapshot_id: snapshotId,
-        user_id: userId,
-        job_id: jobId,
-      });
-      continue;
-    }
-    if (!resultRow) {
-      continue;
-    }
-
-    return {
-      ok: true,
-      row: {
-        result_id: String(resultRow.id),
-        computed_at: String(resultRow.created_at),
-        amount,
-      },
-    };
-  }
-
-  return { ok: true, row: null };
-}
-
-function amountForProcessIndex(payload: unknown, processIndex: number): number | null {
-  const obj = (payload ?? {}) as {
-    demand?: unknown;
-    rhs?: unknown;
-  };
-
-  const demand = obj.demand as { process_index?: unknown; amount?: unknown } | undefined;
-  if (
-    demand &&
-    Number.isInteger(demand.process_index) &&
-    Number(demand.process_index) === processIndex
-  ) {
-    const amount = Number(demand.amount ?? 1);
-    if (Number.isFinite(amount) && amount !== 0) {
-      return amount;
-    }
-  }
-
-  if (!Array.isArray(obj.rhs)) {
-    return null;
-  }
-  if (!Number.isInteger(processIndex) || processIndex < 0 || processIndex >= obj.rhs.length) {
-    return null;
-  }
-  const amount = Number(obj.rhs[processIndex]);
-  if (!Number.isFinite(amount) || amount === 0) {
-    return null;
-  }
-  return amount;
-}
-
 function isDuplicateKey(code: string | undefined): boolean {
   return code === '23505';
-}
-
-function processEntryForId(
-  snapshotIndex: SnapshotIndexDocument,
-  processId: string,
-): SnapshotIndexProcessEntry | null {
-  const hit = snapshotIndex.process_map.find((entry) => entry.process_id === processId);
-  if (!hit || !Number.isInteger(hit.process_index) || hit.process_index < 0) {
-    return null;
-  }
-  return hit;
 }
 
 function processEntryForIndex(
@@ -1203,72 +1189,6 @@ function impactIndexOf(snapshotIndex: SnapshotIndexDocument, impactId: string): 
     return null;
   }
   return hit.impact_index;
-}
-
-function parseHotspotLimit(input: unknown): { ok: true; value: number } | { ok: false } {
-  if (input === undefined || input === null) {
-    return { ok: true, value: DEFAULT_HOTSPOT_LIMIT };
-  }
-  const parsed = Number(input);
-  if (!Number.isInteger(parsed) || parsed <= 0 || parsed > MAX_HOTSPOT_LIMIT) {
-    return { ok: false };
-  }
-  return { ok: true, value: parsed };
-}
-
-function parseHotspotOffset(input: unknown): { ok: true; value: number } | { ok: false } {
-  if (input === undefined || input === null) {
-    return { ok: true, value: 0 };
-  }
-  const parsed = Number(input);
-  if (!Number.isInteger(parsed) || parsed < 0) {
-    return { ok: false };
-  }
-  return { ok: true, value: parsed };
-}
-
-function parseHotspotSortBy(input: unknown): { ok: true; value: HotspotSortBy } | { ok: false } {
-  if (input === undefined || input === null || input === '') {
-    return { ok: true, value: 'absolute_value' };
-  }
-  if (input === 'absolute_value' || input === 'value' || input === 'process_index') {
-    return { ok: true, value: input };
-  }
-  return { ok: false };
-}
-
-function parseSortDirection(input: unknown): { ok: true; value: SortDirection } | { ok: false } {
-  if (input === undefined || input === null || input === '') {
-    return { ok: true, value: 'desc' };
-  }
-  if (input === 'asc' || input === 'desc') {
-    return { ok: true, value: input };
-  }
-  return { ok: false };
-}
-
-function compareRankedProcessValues(
-  left: RankedProcessValue,
-  right: RankedProcessValue,
-  sortBy: HotspotSortBy,
-  sortDirection: SortDirection,
-): number {
-  const primary =
-    sortBy === 'value'
-      ? left.value - right.value
-      : sortBy === 'process_index'
-        ? left.process_index - right.process_index
-        : left.absolute_value - right.absolute_value;
-
-  if (primary !== 0) {
-    return sortDirection === 'asc' ? primary : -primary;
-  }
-
-  if (left.process_index !== right.process_index) {
-    return left.process_index - right.process_index;
-  }
-
-  return left.process_id.localeCompare(right.process_id);
 }
 
 function deriveSnapshotIndexUrl(snapshotArtifactUrl: string): string {

@@ -17,6 +17,7 @@ const mockFunctionsInvoke = jest.fn();
 const mockStorageFrom = jest.fn();
 const mockUploadToSignedUrl = jest.fn();
 const mockGetLocale = jest.fn(() => 'en-US');
+const originalSupabaseUrl = process.env.SUPABASE_URL;
 
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
@@ -157,6 +158,7 @@ describe('general/api TIDAS package helpers', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useRealTimers();
+    delete process.env.SUPABASE_URL;
 
     mockFrom.mockReset();
     mockAuthGetSession.mockReset();
@@ -204,6 +206,15 @@ describe('general/api TIDAS package helpers', () => {
         writable: true,
       });
     }
+  });
+
+  afterAll(() => {
+    if (typeof originalSupabaseUrl === 'string') {
+      process.env.SUPABASE_URL = originalSupabaseUrl;
+      return;
+    }
+
+    delete process.env.SUPABASE_URL;
   });
 
   it('returns unauthorized when queueing an export without a session', async () => {
@@ -755,6 +766,113 @@ describe('general/api TIDAS package helpers', () => {
     createElementSpy.mockRestore();
   });
 
+  it('rewrites docker-internal export download URLs to the browser-accessible Supabase origin', async () => {
+    process.env.SUPABASE_URL = 'http://localhost:54321';
+    const { createElementSpy, createObjectURLSpy, revokeObjectURLSpy } = makeDownloadHooks();
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: makeJobResponse({
+        job_id: 'job-internal-download',
+        status: 'completed',
+        artifacts_by_kind: {
+          export_zip: {
+            signed_download_url:
+              'http://kong:8000/storage/v1/object/sign/lca_results/export-package.zip?token=abc',
+            metadata: {},
+          },
+        },
+      }),
+      error: null,
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      blob: jest.fn().mockResolvedValue(new Blob(['zip-data'])),
+    });
+
+    const result = await downloadReadyTidasPackageExportApi('job-internal-download');
+
+    expect(result).toEqual({
+      data: {
+        ok: true,
+        job_id: 'job-internal-download',
+        filename: 'tidas-package.zip',
+      },
+      error: null,
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:54321/storage/v1/object/sign/lca_results/export-package.zip?token=abc',
+    );
+
+    createElementSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+
+  it('keeps already-public export download URLs unchanged when a public Supabase origin is configured', async () => {
+    process.env.SUPABASE_URL = 'http://localhost:54321';
+    const { createElementSpy, createObjectURLSpy, revokeObjectURLSpy } = makeDownloadHooks();
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: makeJobResponse({
+        job_id: 'job-public-download',
+        status: 'completed',
+        artifacts_by_kind: {
+          export_zip: {
+            signed_download_url:
+              'http://localhost:54321/storage/v1/object/sign/lca_results/export-package.zip?token=def',
+            metadata: {},
+          },
+        },
+      }),
+      error: null,
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      blob: jest.fn().mockResolvedValue(new Blob(['zip-data'])),
+    });
+
+    await downloadReadyTidasPackageExportApi('job-public-download');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:54321/storage/v1/object/sign/lca_results/export-package.zip?token=def',
+    );
+
+    createElementSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+
+  it('keeps non-docker export download URLs unchanged when a public Supabase origin is configured', async () => {
+    process.env.SUPABASE_URL = 'http://localhost:54321';
+    const { createElementSpy, createObjectURLSpy, revokeObjectURLSpy } = makeDownloadHooks();
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: makeJobResponse({
+        job_id: 'job-external-download',
+        status: 'completed',
+        artifacts_by_kind: {
+          export_zip: {
+            signed_download_url: 'https://example.com/download.zip?token=ghi',
+            metadata: {},
+          },
+        },
+      }),
+      error: null,
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      blob: jest.fn().mockResolvedValue(new Blob(['zip-data'])),
+    });
+
+    await downloadReadyTidasPackageExportApi('job-external-download');
+
+    expect(mockFetch).toHaveBeenCalledWith('https://example.com/download.zip?token=ghi');
+
+    createElementSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+
   it('falls back to generic ready-export status errors and default filenames', async () => {
     const { createElementSpy, link } = makeDownloadHooks();
 
@@ -951,6 +1069,190 @@ describe('general/api TIDAS package helpers', () => {
         Authorization: 'Bearer token-123',
       },
       region: FunctionRegion.UsEast1,
+    });
+  });
+
+  it('rewrites docker-internal import report URLs to the browser-accessible Supabase origin', async () => {
+    process.env.SUPABASE_URL = 'http://localhost:54321';
+    mockDigest.mockResolvedValueOnce(new Uint8Array([0x0a]).buffer);
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          action: 'prepare_upload',
+          job_id: 'job-report-rewrite',
+          source_artifact_id: 'artifact-report-rewrite',
+          artifact_url: 'https://example.com/source',
+          upload: {
+            bucket: 'tidas',
+            object_path: 'exports/package.zip',
+            token: 'signed-token',
+            path: 'exports/package.zip',
+            signed_url: 'https://example.com/upload',
+            expires_in_seconds: 300,
+            filename: 'package.zip',
+            byte_size: 8,
+            content_type: 'application/zip',
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          mode: 'queued',
+          job_id: 'job-report-rewrite',
+          source_artifact_id: 'artifact-report-rewrite',
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: makeJobResponse({
+          job_id: 'job-report-rewrite',
+          job_type: 'import_package',
+          status: 'completed',
+          artifacts_by_kind: {
+            import_report: {
+              signed_download_url:
+                'http://kong:8000/storage/v1/object/sign/lca_results/import-report.json?token=xyz',
+            },
+          },
+        }),
+        error: null,
+      });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        payload: {
+          ok: true,
+          code: 'IMPORTED',
+          message: 'rewritten',
+          summary: {
+            total_entries: 1,
+            filtered_open_data_count: 0,
+            user_conflict_count: 0,
+            importable_count: 1,
+            imported_count: 1,
+          },
+          filtered_open_data: [],
+          user_conflicts: [],
+        },
+      }),
+    });
+
+    const result = await importTidasPackageApi(createZipFile());
+
+    expect(result.data).toEqual({
+      ok: true,
+      code: 'IMPORTED',
+      message: 'rewritten',
+      summary: {
+        total_entries: 1,
+        filtered_open_data_count: 0,
+        user_conflict_count: 0,
+        importable_count: 1,
+        imported_count: 1,
+      },
+      filtered_open_data: [],
+      user_conflicts: [],
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:54321/storage/v1/object/sign/lca_results/import-report.json?token=xyz',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+    );
+  });
+
+  it('passes malformed package report URLs through unchanged when normalization cannot parse them', async () => {
+    process.env.SUPABASE_URL = 'http://localhost:54321';
+    mockDigest.mockResolvedValueOnce(new Uint8Array([0x0b]).buffer);
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          action: 'prepare_upload',
+          job_id: 'job-report-invalid-url',
+          source_artifact_id: 'artifact-report-invalid-url',
+          artifact_url: 'https://example.com/source',
+          upload: {
+            bucket: 'tidas',
+            object_path: 'exports/package.zip',
+            token: 'signed-token',
+            path: 'exports/package.zip',
+            signed_url: 'https://example.com/upload',
+            expires_in_seconds: 300,
+            filename: 'package.zip',
+            byte_size: 8,
+            content_type: 'application/zip',
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          mode: 'queued',
+          job_id: 'job-report-invalid-url',
+          source_artifact_id: 'artifact-report-invalid-url',
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: makeJobResponse({
+          job_id: 'job-report-invalid-url',
+          job_type: 'import_package',
+          status: 'completed',
+          artifacts_by_kind: {
+            import_report: {
+              signed_download_url: 'not-a-url',
+            },
+          },
+        }),
+        error: null,
+      });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        ok: true,
+        code: 'RAW',
+        message: 'invalid url',
+        summary: {
+          total_entries: 0,
+          filtered_open_data_count: 0,
+          user_conflict_count: 0,
+          importable_count: 0,
+          imported_count: 0,
+        },
+        filtered_open_data: [],
+        user_conflicts: [],
+      }),
+    });
+
+    const result = await importTidasPackageApi(createZipFile());
+
+    expect(result.data).toEqual({
+      ok: true,
+      code: 'RAW',
+      message: 'invalid url',
+      summary: {
+        total_entries: 0,
+        filtered_open_data_count: 0,
+        user_conflict_count: 0,
+        importable_count: 0,
+        imported_count: 0,
+      },
+      filtered_open_data: [],
+      user_conflicts: [],
+    });
+    expect(mockFetch).toHaveBeenCalledWith('not-a-url', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
     });
   });
 
