@@ -8,6 +8,8 @@ jest.mock('@/services/flowproperties/api');
 jest.mock('@/services/flows/api');
 jest.mock('@/services/unitgroups/api');
 
+import enValidatorMessages from '@/locales/en-US/validator';
+import zhValidatorMessages from '@/locales/zh-CN/validator';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import {
@@ -1040,13 +1042,44 @@ describe('General Utility Functions', () => {
   });
 
   describe('getLangValidationErrorMessage', () => {
-    it('should return compact message for multiple issue paths', () => {
+    it('should return compact field-only message for multiple issue paths', () => {
       const message = getLangValidationErrorMessage([
-        { path: 'a', code: 'missing_en', message: 'x' },
-        { path: 'b', code: 'invalid_en', message: 'y' },
+        {
+          path: 'processDataSet.processInformation.dataSetInformation.name.treatmentStandardsRoutes',
+          code: 'missing_en',
+          message: 'x',
+        },
+        {
+          path: 'processDataSet.processInformation.dataSetInformation.name.baseName',
+          code: 'invalid_en',
+          message: 'y',
+        },
       ]);
 
-      expect(message).toBe('Language validation failed: a, b.');
+      expect(message).toBe(
+        'The following fields are missing English: treatmentStandardsRoutes,baseName.',
+      );
+    });
+
+    it('should return Chinese localized field-only message when locale is zh-CN', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          {
+            path: 'processDataSet.processInformation.dataSetInformation.name.treatmentStandardsRoutes',
+            code: 'missing_en',
+            message: 'x',
+          },
+          {
+            path: 'processDataSet.processInformation.dataSetInformation.name.baseName',
+            code: 'invalid_en',
+            message: 'y',
+          },
+        ],
+        5,
+        'zh-CN',
+      );
+
+      expect(message).toBe('以下字段缺少英文：treatmentStandardsRoutes,baseName.');
     });
 
     it('should return empty string when there are no issues', () => {
@@ -1065,14 +1098,86 @@ describe('General Utility Functions', () => {
         2,
       );
 
-      expect(message).toBe('Language validation failed: a, b and 2 more field(s).');
+      expect(message).toBe('The following fields are missing English: a,b and 2 more field(s).');
     });
 
     it('should treat empty issue paths as root', () => {
       const message = getLangValidationErrorMessage([
         { path: '', code: 'missing_en', message: 'x' },
       ]);
-      expect(message).toBe('Language validation failed: (root).');
+      expect(message).toBe('The following fields are missing English: (root).');
+    });
+
+    it('should fall back to built-in English templates when validator locale messages are missing', () => {
+      const mutableEnMessages = enValidatorMessages as Record<string, string | undefined>;
+      const originalMessages = {
+        missingEnglish: mutableEnMessages['validator.langValidation.missingEnglish'],
+        missingEnglishMore: mutableEnMessages['validator.langValidation.missingEnglishMore'],
+        root: mutableEnMessages['validator.langValidation.root'],
+      };
+
+      mutableEnMessages['validator.langValidation.missingEnglish'] = undefined;
+      mutableEnMessages['validator.langValidation.missingEnglishMore'] = undefined;
+      mutableEnMessages['validator.langValidation.root'] = undefined;
+
+      try {
+        expect(
+          getLangValidationErrorMessage([{ path: '', code: 'missing_en', message: 'x' }]),
+        ).toBe('The following fields are missing English: (root).');
+
+        expect(
+          getLangValidationErrorMessage(
+            [
+              { path: 'a', code: 'missing_en', message: 'x' },
+              { path: 'b', code: 'invalid_en', message: 'y' },
+            ],
+            1,
+          ),
+        ).toBe('The following fields are missing English: a and 1 more field(s).');
+      } finally {
+        mutableEnMessages['validator.langValidation.missingEnglish'] =
+          originalMessages.missingEnglish;
+        mutableEnMessages['validator.langValidation.missingEnglishMore'] =
+          originalMessages.missingEnglishMore;
+        mutableEnMessages['validator.langValidation.root'] = originalMessages.root;
+      }
+    });
+
+    it('should fall back to the Chinese root label when the locale root message is missing', () => {
+      const mutableZhMessages = zhValidatorMessages as Record<string, string | undefined>;
+      const originalRoot = mutableZhMessages['validator.langValidation.root'];
+
+      mutableZhMessages['validator.langValidation.root'] = undefined;
+
+      try {
+        expect(
+          getLangValidationErrorMessage(
+            [{ path: '', code: 'missing_en', message: 'x' }],
+            5,
+            'zh-CN',
+          ),
+        ).toBe('以下字段缺少英文：根节点.');
+      } finally {
+        mutableZhMessages['validator.langValidation.root'] = originalRoot;
+      }
+    });
+
+    it('should fall back to the root label when the last path segment becomes empty', () => {
+      const message = getLangValidationErrorMessage([
+        { path: 'items.[0]', code: 'missing_en', message: 'x' },
+      ]);
+
+      expect(message).toBe('The following fields are missing English: (root).');
+    });
+
+    it('should reuse the normalized path when split().pop() returns undefined', () => {
+      const normalizedPath = new String('syntheticField') as any;
+      normalizedPath.split = jest.fn(() => ({ pop: () => undefined }));
+      const path = { trim: () => normalizedPath } as any;
+
+      const message = getLangValidationErrorMessage([{ path, code: 'missing_en', message: 'x' }]);
+
+      expect(message).toBe('The following fields are missing English: syntheticField.');
     });
   });
 

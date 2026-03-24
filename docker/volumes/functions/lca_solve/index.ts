@@ -3,15 +3,17 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { validateProcessEntriesInDataScope } from '../_shared/lca_process_scope.ts';
 import {
   buildSnapshotBuildPayloadFields,
   buildSnapshotContainsFilter,
   buildSnapshotProcessFilter,
-  type LcaDataScope,
   matchesSnapshotProcessFilter,
-  normalizeLcaDataScope,
-  type ParsedSnapshotProcessFilter,
+  parseLcaDataScope,
   parseSnapshotProcessFilter,
+  shouldAutoBuildSnapshot,
+  type LcaDataScope,
+  type ParsedSnapshotProcessFilter,
   type SnapshotProcessFilter,
 } from '../_shared/lca_snapshot_scope.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
@@ -20,7 +22,7 @@ import { supabaseClient } from '../_shared/supabase_client.ts';
 type SolveRequest = {
   scope?: string;
   snapshot_id?: string;
-  data_scope?: string;
+  data_scope?: LcaDataScope;
   demand_mode?: string;
   demand?: {
     process_index?: number;
@@ -116,13 +118,10 @@ Deno.serve(async (req) => {
   }
 
   const scope = (body.scope ?? 'prod').trim() || 'prod';
-  const dataScope = normalizeLcaDataScope(body.data_scope);
+  const dataScope = parseLcaDataScope(body.data_scope);
   const demandMode = body.demand_mode ?? 'single';
   const printLevel = body.print_level ?? 0.0;
 
-  if (!dataScope) {
-    return json({ error: 'invalid_data_scope' }, 400);
-  }
   if (demandMode !== 'single' && demandMode !== 'all_unit') {
     return json({ error: 'invalid_demand_mode' }, 400);
   }
@@ -133,6 +132,7 @@ Deno.serve(async (req) => {
   const snapshotMeta = await resolveReadySnapshot(scope, dataScope, body.snapshot_id, userId);
   if (!snapshotMeta.ok) {
     const shouldQueueBuild =
+      shouldAutoBuildSnapshot(dataScope) &&
       !body.snapshot_id &&
       (snapshotMeta.error === 'no_ready_snapshot' ||
         snapshotMeta.error === 'snapshot_stale_rebuild_required');
@@ -222,6 +222,8 @@ Deno.serve(async (req) => {
         return json({ error: 'invalid_process_id' }, 400);
       }
       const resolved = await resolveProcessIndexFromSnapshot({
+        data_scope: dataScope,
+        user_id: userId,
         snapshot_id: snapshotId,
         artifact_url: snapshotMeta.data.artifact_url,
         process_id: demandProcessId,
@@ -247,6 +249,18 @@ Deno.serve(async (req) => {
         },
         400,
       );
+    }
+    if (!hasProcessIdDemand) {
+      const scopeValidation = await validateProcessIndexForDataScope({
+        data_scope: dataScope,
+        user_id: userId,
+        snapshot_id: snapshotId,
+        artifact_url: snapshotMeta.data.artifact_url,
+        process_index: processIndex,
+      });
+      if (!scopeValidation.ok) {
+        return json(scopeValidation.body, scopeValidation.status);
+      }
     }
 
     const rhs = buildRhs(processCount, processIndex, demandAmount);
@@ -535,14 +549,7 @@ async function resolveReadySnapshot(
   dataScope: LcaDataScope,
   requestedSnapshotId?: string,
   userId?: string,
-): Promise<
-  | { ok: true; data: ReadySnapshotMeta }
-  | {
-      ok: false;
-      error: string;
-      status: number;
-    }
-> {
+): Promise<{ ok: true; data: ReadySnapshotMeta } | { ok: false; error: string; status: number }> {
   const explicit = requestedSnapshotId?.trim();
 
   if (explicit) {
@@ -559,11 +566,7 @@ async function resolveReadySnapshot(
       return { ok: true, data: scopedReady.data };
     }
     if (scopedReady.kind === 'stale') {
-      return {
-        ok: false,
-        error: 'snapshot_stale_rebuild_required',
-        status: 409,
-      };
+      return { ok: false, error: 'snapshot_stale_rebuild_required', status: 409 };
     }
     return { ok: false, error: 'no_ready_snapshot', status: 404 };
   }
@@ -575,10 +578,7 @@ async function resolveReadySnapshot(
     .maybeSingle();
 
   if (activeErr) {
-    console.warn('read lca_active_snapshots failed', {
-      error: activeErr.message,
-      scope,
-    });
+    console.warn('read lca_active_snapshots failed', { error: activeErr.message, scope });
   }
 
   if (activeRow?.snapshot_id) {
@@ -596,9 +596,7 @@ async function resolveReadySnapshot(
     .limit(1);
 
   if (latestErr) {
-    console.error('read latest ready snapshot failed', {
-      error: latestErr.message,
-    });
+    console.error('read latest ready snapshot failed', { error: latestErr.message });
     return { ok: false, error: 'snapshot_lookup_failed', status: 500 };
   }
 
@@ -680,10 +678,7 @@ async function fetchReadySnapshotMeta(snapshotId: string): Promise<ReadySnapshot
     .limit(1);
 
   if (error) {
-    console.error('fetch snapshot meta failed', {
-      error: error.message,
-      snapshot_id: snapshotId,
-    });
+    console.error('fetch snapshot meta failed', { error: error.message, snapshot_id: snapshotId });
     return null;
   }
 
@@ -752,9 +747,7 @@ async function fetchProcessMaxModifiedAt(
 
   const { data, error } = await query.maybeSingle();
   if (error) {
-    console.warn('fetch process max modified_at failed', {
-      error: error.message,
-    });
+    console.warn('fetch process max modified_at failed', { error: error.message });
     return null;
   }
   return data?.modified_at ? String(data.modified_at) : null;
@@ -784,10 +777,7 @@ async function fetchTableMaxModifiedAt(
 
   const { data, error } = await query.maybeSingle();
   if (error) {
-    console.warn('fetch table max modified_at failed', {
-      table,
-      error: error.message,
-    });
+    console.warn('fetch table max modified_at failed', { table, error: error.message });
     return null;
   }
   return data?.modified_at ? String(data.modified_at) : null;
@@ -808,11 +798,7 @@ async function ensureSnapshotBuildQueued(
     return activeBuild;
   }
   if (activeBuild.job_id && activeBuild.snapshot_id) {
-    return {
-      ok: true,
-      job_id: activeBuild.job_id,
-      snapshot_id: activeBuild.snapshot_id,
-    };
+    return { ok: true, job_id: activeBuild.job_id, snapshot_id: activeBuild.snapshot_id };
   }
 
   const snapshotId = crypto.randomUUID();
@@ -876,11 +862,7 @@ async function ensureSnapshotBuildQueued(
       code: jobInsertError.code,
       job_id: jobId,
     });
-    return {
-      ok: false,
-      error: 'snapshot_build_job_insert_failed',
-      status: 500,
-    };
+    return { ok: false, error: 'snapshot_build_job_insert_failed', status: 500 };
   }
 
   const { data: jobRow, error: jobReadError } = await supabaseClient
@@ -898,11 +880,7 @@ async function ensureSnapshotBuildQueued(
       code: jobReadError?.code,
       request_key: requestKey,
     });
-    return {
-      ok: false,
-      error: 'snapshot_build_job_lookup_failed',
-      status: 500,
-    };
+    return { ok: false, error: 'snapshot_build_job_lookup_failed', status: 500 };
   }
 
   const finalJobId = String(jobRow.id);
@@ -944,11 +922,7 @@ async function findActiveBuildJob(
       error: error.message,
       code: error.code,
     });
-    return {
-      ok: false,
-      error: 'snapshot_build_job_lookup_failed',
-      status: 500,
-    };
+    return { ok: false, error: 'snapshot_build_job_lookup_failed', status: 500 };
   }
 
   for (const row of rows ?? []) {
@@ -979,11 +953,7 @@ async function findActiveBuildJob(
       continue;
     }
 
-    const payload = (row as { payload?: unknown }).payload as
-      | {
-          scope?: unknown;
-        }
-      | undefined;
+    const payload = (row as { payload?: unknown }).payload as { scope?: unknown } | undefined;
     if ((payload?.scope ?? '') !== scope) {
       continue;
     }
@@ -1010,17 +980,14 @@ async function findActiveBuildJob(
 }
 
 async function resolveProcessIndexFromSnapshot(input: {
+  data_scope: LcaDataScope;
+  user_id: string;
   snapshot_id: string;
   artifact_url?: string;
   process_id: string;
   process_version?: string;
 }): Promise<
-  | { ok: true; process_index: number }
-  | {
-      ok: false;
-      status: number;
-      body: Record<string, unknown>;
-    }
+  { ok: true; process_index: number } | { ok: false; status: number; body: Record<string, unknown> }
 > {
   const snapshotIndex = await fetchSnapshotIndex(input.snapshot_id, input.artifact_url);
   if (!snapshotIndex.ok) {
@@ -1100,7 +1067,60 @@ async function resolveProcessIndexFromSnapshot(input: {
     };
   }
 
+  const processScopeValidation = await validateProcessEntriesInDataScope(
+    [selected],
+    input.data_scope,
+    input.user_id,
+  );
+  if (!processScopeValidation.ok) {
+    return processScopeValidation;
+  }
+
   return { ok: true, process_index: selected.process_index };
+}
+
+async function validateProcessIndexForDataScope(input: {
+  data_scope: LcaDataScope;
+  user_id: string;
+  snapshot_id: string;
+  artifact_url?: string;
+  process_index: number;
+}): Promise<{ ok: true } | { ok: false; status: number; body: Record<string, unknown> }> {
+  const snapshotIndex = await fetchSnapshotIndex(input.snapshot_id, input.artifact_url);
+  if (!snapshotIndex.ok) {
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        error: 'snapshot_index_fetch_failed',
+        detail: snapshotIndex.error,
+      },
+    };
+  }
+
+  if (snapshotIndex.data.snapshot_id !== input.snapshot_id) {
+    return {
+      ok: false,
+      status: 500,
+      body: { error: 'snapshot_index_mismatch' },
+    };
+  }
+
+  const selected = snapshotIndex.data.process_map.find(
+    (entry) => entry.process_index === input.process_index,
+  );
+  if (!selected) {
+    return {
+      ok: false,
+      status: 500,
+      body: {
+        error: 'snapshot_index_invalid',
+        process_index: input.process_index,
+      },
+    };
+  }
+
+  return await validateProcessEntriesInDataScope([selected], input.data_scope, input.user_id);
 }
 
 async function fetchSnapshotIndex(
@@ -1120,10 +1140,7 @@ async function fetchSnapshotIndex(
       .maybeSingle();
 
     if (error) {
-      return {
-        ok: false,
-        error: `snapshot_artifact_lookup_failed:${error.message}`,
-      };
+      return { ok: false, error: `snapshot_artifact_lookup_failed:${error.message}` };
     }
 
     resolvedArtifactUrl = String(
@@ -1221,10 +1238,7 @@ async function fetchJsonByHttp<T>(
     const parsed = (await response.json()) as T;
     return { ok: true, data: parsed };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : 'fetch_failed',
-    };
+    return { ok: false, error: error instanceof Error ? error.message : 'fetch_failed' };
   }
 }
 
