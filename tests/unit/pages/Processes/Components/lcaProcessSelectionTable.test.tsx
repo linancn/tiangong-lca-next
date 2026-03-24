@@ -18,7 +18,7 @@ jest.mock('antd', () => {
 
   return {
     ...base,
-    Table: ({ columns = [], dataSource = [], rowKey, rowSelection, locale }: any) => (
+    Table: ({ columns = [], dataSource = [], rowKey, rowSelection, locale, footer }: any) => (
       <div>
         <table data-testid='table'>
           <thead>
@@ -48,6 +48,7 @@ jest.mock('antd', () => {
         {Array.isArray(dataSource) && dataSource.length === 0 ? (
           <div>{locale?.emptyText}</div>
         ) : null}
+        {footer ? <div>{footer()}</div> : null}
         {rowSelection
           ? dataSource.map((row: any, rowIndex: number) => {
               const resolvedRowKey = String(resolveRowKey(row, rowKey, rowIndex));
@@ -213,5 +214,86 @@ describe('LcaProcessSelectionTable', () => {
 
     expect(screen.queryByText('Battery pack assembly')).not.toBeInTheDocument();
     expect(screen.getByText('No processes available.')).toBeInTheDocument();
+  });
+
+  it('renders pagination controls alongside the table footer', () => {
+    const onPrevious = jest.fn();
+    const onNext = jest.fn();
+
+    render(
+      <LcaProcessSelectionTable
+        processOptions={processOptions}
+        selectedProcessIds={[]}
+        totalProcessCount={12}
+        pagination={{
+          current: 2,
+          totalPages: 4,
+          rangeStart: 11,
+          rangeEnd: 20,
+          onPrevious,
+          onNext,
+        }}
+        titleMessage={{
+          id: 'title',
+          defaultMessage: 'Process selection',
+        }}
+        hintMessage={{
+          id: 'hint',
+          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
+        }}
+        emptyMessage={{
+          id: 'empty',
+          defaultMessage: 'No processes available.',
+        }}
+        onSelectionChange={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Showing 11-20 on page 2 of 4.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+
+    expect(onPrevious).toHaveBeenCalledTimes(1);
+    expect(onNext).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides pagination controls when showing selected processes only', () => {
+    render(
+      <LcaProcessSelectionTable
+        processOptions={processOptions}
+        selectedProcessIds={['process-2:01.00.000']}
+        selectedProcessOptions={processOptions}
+        totalProcessCount={12}
+        pagination={{
+          current: 2,
+          totalPages: 4,
+          rangeStart: 11,
+          rangeEnd: 20,
+          onPrevious: jest.fn(),
+          onNext: jest.fn(),
+        }}
+        titleMessage={{
+          id: 'title',
+          defaultMessage: 'Process selection',
+        }}
+        hintMessage={{
+          id: 'hint',
+          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
+        }}
+        emptyMessage={{
+          id: 'empty',
+          defaultMessage: 'No processes available.',
+        }}
+        onSelectionChange={jest.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Selection visibility'), {
+      target: { value: 'selected' },
+    });
+
+    expect(screen.queryByText('Showing 11-20 on page 2 of 4.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Previous page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
   });
 });
