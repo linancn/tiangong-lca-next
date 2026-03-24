@@ -1,4 +1,4 @@
-import { Input, Select, Space, Table, Typography } from 'antd';
+import { Button, Input, Select, Space, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -16,6 +16,15 @@ type LcaProcessSelectionTableProps = {
   selectedProcessIds: string[];
   selectedProcessOptions?: LcaProcessOption[];
   totalProcessCount?: number;
+  pagination?: {
+    current: number;
+    totalPages: number;
+    rangeStart: number;
+    rangeEnd: number;
+    loading?: boolean;
+    onPrevious: () => void;
+    onNext: () => void;
+  };
   titleMessage: IntlMessageDescriptor;
   hintMessage: IntlMessageDescriptor;
   emptyMessage: IntlMessageDescriptor;
@@ -45,6 +54,7 @@ const LcaProcessSelectionTable = ({
   selectedProcessIds,
   selectedProcessOptions = [],
   totalProcessCount,
+  pagination,
   titleMessage,
   hintMessage,
   emptyMessage,
@@ -93,6 +103,7 @@ const LcaProcessSelectionTable = ({
       }),
     [baseProcessOptions, normalizedFilterKeyword, selectedProcessKeySet, selectionViewMode],
   );
+  const showPaginationFooter = !!pagination && selectionViewMode !== 'selected';
 
   return (
     <Space direction='vertical' size='small' style={{ width: '100%' }}>
@@ -171,6 +182,52 @@ const LcaProcessSelectionTable = ({
         columns={processSelectionColumns}
         dataSource={visibleProcessOptions}
         pagination={false}
+        footer={
+          showPaginationFooter
+            ? () => (
+                <Space
+                  align='center'
+                  style={{ width: '100%', justifyContent: 'space-between' }}
+                  wrap={true}
+                >
+                  <Typography.Text type='secondary'>
+                    <FormattedMessage
+                      id='pages.process.lca.page.processes.range'
+                      defaultMessage='Showing {start}-{end} on page {current} of {totalPages}.'
+                      values={{
+                        start: pagination.rangeStart,
+                        end: pagination.rangeEnd,
+                        current: pagination.current,
+                        totalPages: pagination.totalPages,
+                      }}
+                    />
+                  </Typography.Text>
+                  <Space size='small'>
+                    <Button
+                      size='small'
+                      disabled={pagination.loading || pagination.current <= 1}
+                      onClick={pagination.onPrevious}
+                    >
+                      <FormattedMessage
+                        id='pages.process.lca.page.processes.action.previousPage'
+                        defaultMessage='Previous page'
+                      />
+                    </Button>
+                    <Button
+                      size='small'
+                      disabled={pagination.loading || pagination.current >= pagination.totalPages}
+                      onClick={pagination.onNext}
+                    >
+                      <FormattedMessage
+                        id='pages.process.lca.page.processes.action.nextPage'
+                        defaultMessage='Next page'
+                      />
+                    </Button>
+                  </Space>
+                </Space>
+              )
+            : undefined
+        }
         locale={{
           emptyText: intl.formatMessage({
             id: emptyMessage.id,

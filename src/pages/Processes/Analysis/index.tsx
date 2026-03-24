@@ -19,11 +19,6 @@ import {
   buildLcaImpactCompareModel,
   type LcaImpactCompareItem,
 } from '@/pages/Processes/Components/lcaImpactCompareToolbar';
-import {
-  buildSelectedProcessHotspotModel,
-  type LcaImpactHotspotItem,
-  type LcaImpactHotspotModel,
-} from '@/pages/Processes/Components/lcaImpactHotspotToolbar';
 import LcaProcessSelectionTable from '@/pages/Processes/Components/lcaProcessSelectionTable';
 import LcaProfileSummary, {
   buildLcaProfileModel,
@@ -176,13 +171,6 @@ type CompareResultState = QueryMeta & {
   impactLabel: string;
   unit: string;
   model: ReturnType<typeof buildLcaImpactCompareModel>;
-};
-
-type HotspotResultState = QueryMeta & {
-  impactId: string;
-  impactLabel: string;
-  unit: string;
-  model: LcaImpactHotspotModel;
 };
 
 type GroupedResultState = QueryMeta & {
@@ -440,8 +428,6 @@ const LcaAnalysisPage = () => {
   const [selectedProfileProcessId, setSelectedProfileProcessId] = useState('');
   const [selectedCompareImpactId, setSelectedCompareImpactId] = useState('');
   const [selectedCompareProcessIds, setSelectedCompareProcessIds] = useState<string[]>([]);
-  const [selectedHotspotImpactId, setSelectedHotspotImpactId] = useState('');
-  const [selectedHotspotProcessIds, setSelectedHotspotProcessIds] = useState<string[]>([]);
   const [selectedGroupedImpactId, setSelectedGroupedImpactId] = useState('');
   const [selectedGroupedProcessIds, setSelectedGroupedProcessIds] = useState<string[]>([]);
   const [selectedGroupedBy, setSelectedGroupedBy] = useState<LcaGroupedResultBy>('location');
@@ -463,10 +449,6 @@ const LcaAnalysisPage = () => {
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState<string | null>(null);
   const [compareResult, setCompareResult] = useState<CompareResultState | null>(null);
-
-  const [hotspotLoading, setHotspotLoading] = useState(false);
-  const [hotspotError, setHotspotError] = useState<string | null>(null);
-  const [hotspotResult, setHotspotResult] = useState<HotspotResultState | null>(null);
 
   const [groupedLoading, setGroupedLoading] = useState(false);
   const [groupedError, setGroupedError] = useState<string | null>(null);
@@ -522,13 +504,6 @@ const LcaAnalysisPage = () => {
         .map((processId) => processOptionMap.get(processId))
         .filter((item): item is LcaProcessOption => !!item),
     [processOptionMap, selectedCompareProcessIds],
-  );
-  const selectedHotspotProcesses = useMemo(
-    () =>
-      selectedHotspotProcessIds
-        .map((processId) => processOptionMap.get(processId))
-        .filter((item): item is LcaProcessOption => !!item),
-    [processOptionMap, selectedHotspotProcessIds],
   );
   const selectedGroupedProcesses = useMemo(
     () =>
@@ -613,11 +588,6 @@ const LcaAnalysisPage = () => {
         ? current
         : impactOptions[0].value,
     );
-    setSelectedHotspotImpactId((current) =>
-      current && impactOptions.some((item) => item.value === current)
-        ? current
-        : impactOptions[0].value,
-    );
     setSelectedGroupedImpactId((current) =>
       current && impactOptions.some((item) => item.value === current)
         ? current
@@ -640,7 +610,6 @@ const LcaAnalysisPage = () => {
     if (processOptions.length === 0) {
       setSelectedProfileProcessId('');
       setSelectedCompareProcessIds([]);
-      setSelectedHotspotProcessIds([]);
       setSelectedGroupedProcessIds([]);
       setSelectedPathProcessId('');
       return;
@@ -653,16 +622,6 @@ const LcaAnalysisPage = () => {
     );
 
     setSelectedCompareProcessIds((current) => {
-      const filtered = current.filter((item) => processOptionMap.has(item));
-      if (filtered.length > 0) {
-        return filtered;
-      }
-      return processOptions
-        .slice(0, Math.max(1, Math.min(DEFAULT_COMPARE_SELECTION_LIMIT, processOptions.length)))
-        .map(getProcessOptionSelectionKey);
-    });
-
-    setSelectedHotspotProcessIds((current) => {
       const filtered = current.filter((item) => processOptionMap.has(item));
       if (filtered.length > 0) {
         return filtered;
@@ -727,12 +686,10 @@ const LcaAnalysisPage = () => {
   const clearAnalysisResults = () => {
     setProfileResult(null);
     setCompareResult(null);
-    setHotspotResult(null);
     setGroupedResult(null);
     setPathResult(null);
     setProfileError(null);
     setCompareError(null);
-    setHotspotError(null);
     setGroupedError(null);
     setPathError(null);
   };
@@ -818,6 +775,20 @@ const LcaAnalysisPage = () => {
 
   const changeProcessPage = async (nextPage: number) => {
     await loadProcessOptions(appliedProcessSearchKeyword, selectedDataScope, nextPage);
+  };
+
+  const processSelectionPagination = {
+    current: processCurrentPage,
+    totalPages: processPageCount,
+    rangeStart: processRangeStart,
+    rangeEnd: processRangeEnd,
+    loading: processOptionsLoading,
+    onPrevious: () => {
+      void changeProcessPage(processCurrentPage - 1);
+    },
+    onNext: () => {
+      void changeProcessPage(processCurrentPage + 1);
+    },
   };
 
   const loadAnalysisOptions = async () => {
@@ -1099,54 +1070,6 @@ const LcaAnalysisPage = () => {
     }
   };
 
-  const runHotspotAnalysis = async () => {
-    setHotspotLoading(true);
-    setHotspotError(null);
-
-    try {
-      const queried = await queryLcaResults({
-        scope: LCA_SCOPE,
-        data_scope: selectedDataScope,
-        mode: 'processes_one_impact',
-        process_ids: buildUniqueProcessIdList(selectedHotspotProcesses),
-        impact_id: selectedHotspotImpactId,
-        allow_fallback: false,
-      });
-
-      const values = (queried.data as { values?: Record<string, unknown> })?.values;
-      const valuesByProcessId =
-        values && typeof values === 'object' && !Array.isArray(values)
-          ? (values as Record<string, unknown>)
-          : {};
-      const selectedImpact = impactOptions.find((item) => item.value === selectedHotspotImpactId);
-
-      setHotspotResult({
-        impactId: selectedHotspotImpactId,
-        impactLabel: selectedImpact?.label || selectedHotspotImpactId,
-        unit: selectedImpact?.unit || '-',
-        snapshotId: queried.snapshot_id,
-        resultId: queried.result_id,
-        source: queried.source,
-        computedAt: queried.meta.computed_at,
-        model: buildSelectedProcessHotspotModel(selectedHotspotProcesses, valuesByProcessId),
-      });
-    } catch (error: unknown) {
-      setHotspotResult(null);
-      setHotspotError(
-        resolveQueuedSnapshotMessage(
-          error,
-          intl,
-          intl.formatMessage({
-            id: 'pages.process.lca.hotspots.message.runFailed',
-            defaultMessage: 'Failed to run hotspot analysis.',
-          }),
-        ),
-      );
-    } finally {
-      setHotspotLoading(false);
-    }
-  };
-
   const runGroupedAnalysis = async () => {
     setGroupedLoading(true);
     setGroupedError(null);
@@ -1336,7 +1259,6 @@ const LcaAnalysisPage = () => {
     [lang, profileResult],
   );
   const compareUnit = compareResult?.unit ?? '-';
-  const hotspotUnit = hotspotResult?.unit ?? '-';
   const groupedUnit = groupedResult?.unit ?? '-';
   const pathUnit = pathResult?.unit ?? '-';
 
@@ -1362,18 +1284,6 @@ const LcaAnalysisPage = () => {
         direction: item.direction,
       })),
     [compareResult],
-  );
-
-  const hotspotChartData = useMemo(
-    () =>
-      (hotspotResult?.model.items ?? []).map((item) => ({
-        key: item.processId,
-        label: truncateChartLabel(`#${item.rank} ${item.processName}`),
-        fullLabel: `#${item.rank} ${item.processName}`,
-        value: item.value,
-        direction: item.direction,
-      })),
-    [hotspotResult],
   );
 
   const groupedChartData = useMemo(
@@ -1459,7 +1369,6 @@ const LcaAnalysisPage = () => {
 
   const profileChartHeight = Math.max(280, profileChartData.length * 44 + 80);
   const compareChartHeight = Math.max(280, compareChartData.length * 44 + 80);
-  const hotspotChartHeight = Math.max(280, hotspotChartData.length * 44 + 80);
   const groupedChartHeight = Math.max(280, groupedChartData.length * 44 + 80);
   const pathChartHeight = Math.max(280, pathChartData.length * 44 + 80);
   const pathSankeyHeight = Math.max(
@@ -1519,61 +1428,6 @@ const LcaAnalysisPage = () => {
         <>
           <AlignedNumber value={item.value} />{' '}
           <Typography.Text type='secondary'>{compareUnit}</Typography.Text>
-        </>
-      ),
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.lca.analysis.table.share'
-          defaultMessage='Absolute share'
-        />
-      ),
-      key: 'share',
-      render: (_, item) => formatPercent(item.share),
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.lca.analysis.table.cumulativeShare'
-          defaultMessage='Cumulative share'
-        />
-      ),
-      key: 'cumulativeShare',
-      render: (_, item) => formatPercent(item.cumulativeShare),
-    },
-  ];
-
-  const hotspotColumns: ColumnsType<LcaImpactHotspotItem> = [
-    {
-      title: (
-        <FormattedMessage id='pages.process.lca.page.hotspots.table.rank' defaultMessage='Rank' />
-      ),
-      dataIndex: 'rank',
-      key: 'rank',
-    },
-    {
-      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
-      key: 'processName',
-      render: (_, item) => (
-        <Space size='small'>
-          <Typography.Text strong>{item.processName}</Typography.Text>
-          <Typography.Text type='secondary'>{item.version}</Typography.Text>
-        </Space>
-      ),
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.lca.analysis.table.value'
-          defaultMessage='Impact value'
-        />
-      ),
-      key: 'value',
-      render: (_, item) => (
-        <>
-          <AlignedNumber value={item.value} />{' '}
-          <Typography.Text type='secondary'>{hotspotUnit}</Typography.Text>
         </>
       ),
     },
@@ -1923,7 +1777,7 @@ const LcaAnalysisPage = () => {
             <Typography.Paragraph type='secondary'>
               <FormattedMessage
                 id='pages.process.lca.page.description'
-                defaultMessage='Use the existing LCA query API to inspect one process profile, compare selected processes, or rank hotspots within a selected process set. Charts summarize the result; tables remain the exact source of truth.'
+                defaultMessage='Use the existing LCA query API to review the LCIA profile of a single process, compare selected processes by impact category, aggregate selected processes into grouped results, or run contribution path analysis for a selected process-impact pair across current-user, open-data, or all-data scopes. Charts support quick interpretation; tables preserve exact values.'
               />
             </Typography.Paragraph>
             <Row gutter={[16, 16]}>
@@ -1992,44 +1846,6 @@ const LcaAnalysisPage = () => {
                   }}
                 />
               </Typography.Text>
-              <Typography.Text type='secondary'>
-                <FormattedMessage
-                  id='pages.process.lca.page.processes.range'
-                  defaultMessage='Showing {start}-{end} on page {current} of {totalPages}.'
-                  values={{
-                    start: processRangeStart,
-                    end: processRangeEnd,
-                    current: processCurrentPage,
-                    totalPages: processPageCount,
-                  }}
-                />
-              </Typography.Text>
-              <Space size='small'>
-                <Button
-                  size='small'
-                  disabled={processOptionsLoading || processCurrentPage <= 1}
-                  onClick={() => {
-                    void changeProcessPage(processCurrentPage - 1);
-                  }}
-                >
-                  <FormattedMessage
-                    id='pages.process.lca.page.processes.action.previousPage'
-                    defaultMessage='Previous page'
-                  />
-                </Button>
-                <Button
-                  size='small'
-                  disabled={processOptionsLoading || processCurrentPage >= processPageCount}
-                  onClick={() => {
-                    void changeProcessPage(processCurrentPage + 1);
-                  }}
-                >
-                  <FormattedMessage
-                    id='pages.process.lca.page.processes.action.nextPage'
-                    defaultMessage='Next page'
-                  />
-                </Button>
-              </Space>
             </Space>
             {processOptionsError ? <Alert message={processOptionsError} type='error' /> : null}
             {impactOptionsError ? <Alert message={impactOptionsError} type='error' /> : null}
@@ -2080,6 +1896,50 @@ const LcaAnalysisPage = () => {
                           }}
                         />
                       </Form.Item>
+                      {processTotalCount > 0 ? (
+                        <Space
+                          align='center'
+                          style={{ width: '100%', justifyContent: 'space-between' }}
+                          wrap={true}
+                        >
+                          <Typography.Text type='secondary'>
+                            <FormattedMessage
+                              id='pages.process.lca.page.processes.range'
+                              defaultMessage='Showing {start}-{end} on page {current} of {totalPages}.'
+                              values={{
+                                start: processRangeStart,
+                                end: processRangeEnd,
+                                current: processCurrentPage,
+                                totalPages: processPageCount,
+                              }}
+                            />
+                          </Typography.Text>
+                          <Space size='small'>
+                            <Button
+                              size='small'
+                              disabled={processOptionsLoading || processCurrentPage <= 1}
+                              onClick={processSelectionPagination.onPrevious}
+                            >
+                              <FormattedMessage
+                                id='pages.process.lca.page.processes.action.previousPage'
+                                defaultMessage='Previous page'
+                              />
+                            </Button>
+                            <Button
+                              size='small'
+                              disabled={
+                                processOptionsLoading || processCurrentPage >= processPageCount
+                              }
+                              onClick={processSelectionPagination.onNext}
+                            >
+                              <FormattedMessage
+                                id='pages.process.lca.page.processes.action.nextPage'
+                                defaultMessage='Next page'
+                              />
+                            </Button>
+                          </Space>
+                        </Space>
+                      ) : null}
                       <Button
                         type='primary'
                         loading={profileLoading}
@@ -2253,6 +2113,7 @@ const LcaAnalysisPage = () => {
                         selectedProcessIds={selectedCompareProcessIds}
                         selectedProcessOptions={selectedCompareProcesses}
                         totalProcessCount={processTotalCount}
+                        pagination={processSelectionPagination}
                         titleMessage={{
                           id: 'pages.process.lca.page.compare.selectionTitle',
                           defaultMessage: 'Process selection',
@@ -2433,233 +2294,6 @@ const LcaAnalysisPage = () => {
               ),
             },
             {
-              key: 'hotspots',
-              label: (
-                <FormattedMessage
-                  id='pages.process.lca.page.tab.hotspots'
-                  defaultMessage='Impact hotspots'
-                />
-              ),
-              children: (
-                <Space direction='vertical' size='middle' style={{ width: '100%' }}>
-                  <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
-                      <Form layout='vertical'>
-                        <Form.Item
-                          label={
-                            <FormattedMessage
-                              id='pages.process.lca.analysis.field.impact'
-                              defaultMessage='Impact category'
-                            />
-                          }
-                        >
-                          <Select
-                            showSearch={true}
-                            aria-label={intl.formatMessage({
-                              id: 'pages.process.lca.analysis.field.impact',
-                              defaultMessage: 'Impact category',
-                            })}
-                            value={selectedHotspotImpactId || undefined}
-                            options={impactOptions.map((item) => ({
-                              value: item.value,
-                              label: `${item.label} (${item.unit})`,
-                            }))}
-                            disabled={impactOptionsLoading || impactOptions.length === 0}
-                            optionFilterProp='label'
-                            onChange={(value) => {
-                              setSelectedHotspotImpactId(String(value));
-                              setHotspotResult(null);
-                              setHotspotError(null);
-                            }}
-                          />
-                        </Form.Item>
-                      </Form>
-
-                      <LcaProcessSelectionTable
-                        processOptions={processOptions}
-                        selectedProcessIds={selectedHotspotProcessIds}
-                        selectedProcessOptions={selectedHotspotProcesses}
-                        totalProcessCount={processTotalCount}
-                        titleMessage={{
-                          id: 'pages.process.lca.page.hotspots.selectionTitle',
-                          defaultMessage: 'Process selection',
-                        }}
-                        hintMessage={{
-                          id: 'pages.process.lca.page.hotspots.selectionHint',
-                          defaultMessage:
-                            '{selectedCount} processes selected from {totalCount} available options.',
-                        }}
-                        emptyMessage={{
-                          id: 'pages.process.lca.page.hotspots.selectionEmpty',
-                          defaultMessage:
-                            'No processes match the current data scope and search keyword.',
-                        }}
-                        onSelectionChange={(selectedProcessIds) => {
-                          setSelectedHotspotProcessIds(selectedProcessIds);
-                          setHotspotResult(null);
-                          setHotspotError(null);
-                        }}
-                      />
-
-                      <Space>
-                        <Button
-                          onClick={() => {
-                            setSelectedHotspotProcessIds([]);
-                            setHotspotResult(null);
-                            setHotspotError(null);
-                          }}
-                          disabled={selectedHotspotProcesses.length === 0}
-                        >
-                          <FormattedMessage
-                            id='pages.process.lca.analysis.action.clearSelection'
-                            defaultMessage='Clear selection'
-                          />
-                        </Button>
-                        <Button
-                          type='primary'
-                          loading={hotspotLoading}
-                          disabled={
-                            !selectedHotspotImpactId || selectedHotspotProcesses.length === 0
-                          }
-                          onClick={runHotspotAnalysis}
-                        >
-                          <FormattedMessage
-                            id='pages.process.lca.page.hotspots.action.run'
-                            defaultMessage='Run hotspot analysis'
-                          />
-                        </Button>
-                      </Space>
-                    </Space>
-                  </Card>
-
-                  <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
-                      <Typography.Text strong>
-                        <FormattedMessage
-                          id='pages.process.lca.analysis.section.results'
-                          defaultMessage='Results'
-                        />
-                      </Typography.Text>
-                      {hotspotError ? <Alert message={hotspotError} type='error' /> : null}
-                      {!hotspotResult && !hotspotError ? (
-                        <Typography.Paragraph type='secondary'>
-                          <FormattedMessage
-                            id='pages.process.lca.page.hotspots.empty.results'
-                            defaultMessage='Select one impact category and at least one process, then run the hotspot analysis.'
-                          />
-                        </Typography.Paragraph>
-                      ) : null}
-                      <Spin spinning={hotspotLoading}>
-                        {hotspotResult ? (
-                          <Space direction='vertical' size='middle' style={{ width: '100%' }}>
-                            <QueryMetaCard
-                              meta={{
-                                snapshotId: hotspotResult.snapshotId,
-                                resultId: hotspotResult.resultId,
-                                source: hotspotResult.source,
-                                computedAt: hotspotResult.computedAt,
-                              }}
-                            />
-
-                            <Row gutter={[16, 16]}>
-                              <Col xs={24} sm={8}>
-                                <Statistic
-                                  title={
-                                    <FormattedMessage
-                                      id='pages.process.lca.hotspots.summary.rankWindow'
-                                      defaultMessage='Displayed ranks'
-                                    />
-                                  }
-                                  value={`#1 - #${hotspotResult.model.items.length}`}
-                                />
-                              </Col>
-                              <Col xs={24} sm={8}>
-                                <Statistic
-                                  title={
-                                    <FormattedMessage
-                                      id='pages.process.lca.hotspots.summary.coverage'
-                                      defaultMessage='Displayed coverage'
-                                    />
-                                  }
-                                  value={formatPercent(hotspotResult.model.coverageShare)}
-                                />
-                              </Col>
-                              <Col xs={24} sm={8}>
-                                <Statistic
-                                  title={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.hotspots.summary.totalAbsolute'
-                                      defaultMessage='Selected-set absolute total'
-                                    />
-                                  }
-                                  value={hotspotResult.model.totalAbsoluteValue}
-                                  formatter={(value) => (
-                                    <>
-                                      <AlignedNumber value={Number(value)} />{' '}
-                                      <Typography.Text type='secondary'>
-                                        {hotspotUnit}
-                                      </Typography.Text>
-                                    </>
-                                  )}
-                                />
-                              </Col>
-                            </Row>
-
-                            <Card
-                              size='small'
-                              title={
-                                <FormattedMessage
-                                  id='pages.process.lca.page.hotspots.chart.title'
-                                  defaultMessage='Hotspot ranking chart'
-                                />
-                              }
-                            >
-                              <Space direction='vertical' size='small' style={{ width: '100%' }}>
-                                <Typography.Paragraph type='secondary'>
-                                  <FormattedMessage
-                                    id='pages.process.lca.page.hotspots.shareNote'
-                                    defaultMessage='Shares are calculated from the selected processes only, so the ranking reflects the chosen comparison set.'
-                                  />
-                                </Typography.Paragraph>
-                                <Bar
-                                  autoFit={true}
-                                  data={hotspotChartData}
-                                  xField='label'
-                                  yField='value'
-                                  colorField='direction'
-                                  legend={false}
-                                  height={hotspotChartHeight}
-                                  theme={barChartTheme}
-                                  scale={{
-                                    color: {
-                                      domain: ['negative', 'neutral', 'positive'],
-                                      range: [
-                                        token.colorError,
-                                        token.colorTextSecondary,
-                                        token.colorPrimary,
-                                      ],
-                                    },
-                                  }}
-                                />
-                              </Space>
-                            </Card>
-
-                            <Table<LcaImpactHotspotItem>
-                              rowKey='processId'
-                              size='small'
-                              pagination={false}
-                              columns={hotspotColumns}
-                              dataSource={hotspotResult.model.items}
-                            />
-                          </Space>
-                        ) : null}
-                      </Spin>
-                    </Space>
-                  </Card>
-                </Space>
-              ),
-            },
-            {
               key: 'grouped',
               label: (
                 <FormattedMessage
@@ -2737,6 +2371,7 @@ const LcaAnalysisPage = () => {
                           .map((processId) => processOptionMap.get(processId))
                           .filter((item): item is LcaProcessOption => !!item)}
                         totalProcessCount={processTotalCount}
+                        pagination={processSelectionPagination}
                         titleMessage={{
                           id: 'pages.process.lca.page.grouped.selectionTitle',
                           defaultMessage: 'Process selection',
@@ -3088,6 +2723,7 @@ const LcaAnalysisPage = () => {
                         selectedProcessIds={selectedPathProcessId ? [selectedPathProcessId] : []}
                         selectedProcessOptions={selectedPathProcess ? [selectedPathProcess] : []}
                         totalProcessCount={processTotalCount}
+                        pagination={processSelectionPagination}
                         selectionType='radio'
                         titleMessage={{
                           id: 'pages.process.lca.page.path.selectionTitle',
