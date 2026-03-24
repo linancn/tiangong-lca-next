@@ -1,6 +1,6 @@
 import { ValidationIssue } from '@/pages/Utils/review';
 import { CloseOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, Modal, Space, Table, theme } from 'antd';
+import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -113,6 +113,9 @@ type GroupedValidationIssue = {
   ref: ValidationIssue['ref'];
   link: string;
   issues: ValidationIssue[];
+  ownerName: string;
+  ownerUserId?: string;
+  isOwnedByCurrentUser?: boolean;
   order: number;
 };
 
@@ -160,10 +163,15 @@ const groupValidationIssues = (issues: ValidationIssue[]): GroupedValidationIssu
     const existingGroup = groupedIssues.get(key);
 
     if (!existingGroup) {
+      const ownerUserId = issue.ownerUserId?.trim();
+
       groupedIssues.set(key, {
         ref: issue.ref,
         link: issue.link,
         issues: [issue],
+        ownerName: issue.ownerName?.trim() || '-',
+        ownerUserId: ownerUserId || undefined,
+        isOwnedByCurrentUser: issue.isOwnedByCurrentUser,
         order: groupedIssues.size,
       });
       return;
@@ -182,6 +190,23 @@ const groupValidationIssues = (issues: ValidationIssue[]): GroupedValidationIssu
     if (!existingGroup.link && issue.link) {
       existingGroup.link = issue.link;
     }
+
+    if (existingGroup.ownerName === '-' && issue.ownerName?.trim()) {
+      existingGroup.ownerName = issue.ownerName.trim();
+    }
+
+    if (!existingGroup.ownerUserId && issue.ownerUserId?.trim()) {
+      existingGroup.ownerUserId = issue.ownerUserId.trim();
+    }
+
+    if (issue.isOwnedByCurrentUser === false) {
+      existingGroup.isOwnedByCurrentUser = false;
+    } else if (
+      existingGroup.isOwnedByCurrentUser === undefined &&
+      typeof issue.isOwnedByCurrentUser === 'boolean'
+    ) {
+      existingGroup.isOwnedByCurrentUser = issue.isOwnedByCurrentUser;
+    }
   });
 
   return sortGroupedValidationIssues(Array.from(groupedIssues.values()));
@@ -198,6 +223,30 @@ const getGroupedIssueDescriptions = (
 
 const isValidationIssueLinkDisabled = (groupedIssue: GroupedValidationIssue) =>
   groupedIssue.issues.some((issue) => issue.code === 'nonExistentRef');
+
+const getValidationIssueActionLabel = (
+  intl: IntlShapeLike,
+  groupedIssue: GroupedValidationIssue,
+  options?: {
+    notified?: boolean;
+  },
+) => {
+  const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
+
+  if (shouldNotifyDataOwner && options?.notified) {
+    return intl.formatMessage({
+      id: 'pages.validationIssues.dataOwnerNotified',
+      defaultMessage: 'Notified',
+    });
+  }
+
+  return intl.formatMessage({
+    id: shouldNotifyDataOwner
+      ? 'pages.validationIssues.notifyDataOwner'
+      : 'pages.validationIssues.fixIssue',
+    defaultMessage: shouldNotifyDataOwner ? 'Notify data owner' : 'Fix issue',
+  });
+};
 
 const getDatasetTypeLabel = (intl: IntlShapeLike, type: string) => {
   switch (type) {
@@ -258,22 +307,13 @@ const buildValidationIssueHtml = (
       const typeLabel = getDatasetTypeLabel(intl, groupedIssue.ref['@type']);
       const descriptions = getGroupedIssueDescriptions(intl, groupedIssue);
       const description = descriptions.map((item) => escapeHtml(item)).join('<br />');
+      const actionLabel = getValidationIssueActionLabel(intl, groupedIssue);
       const action = groupedIssue.link
         ? isValidationIssueLinkDisabled(groupedIssue)
-          ? `<span class="action-link-disabled">${escapeHtml(
-              intl.formatMessage({
-                id: 'pages.validationIssues.viewDetails',
-                defaultMessage: 'View details',
-              }),
-            )}</span>`
+          ? `<span class="action-link-disabled">${escapeHtml(actionLabel)}</span>`
           : `<a class="action-link" href="${escapeHtml(
               groupedIssue.link,
-            )}" target="_blank" rel="noreferrer">${escapeHtml(
-              intl.formatMessage({
-                id: 'pages.validationIssues.viewDetails',
-                defaultMessage: 'View details',
-              }),
-            )}</a>`
+            )}" target="_blank" rel="noreferrer">${escapeHtml(actionLabel)}</a>`
         : '-';
 
       return `<tr>
@@ -281,6 +321,7 @@ const buildValidationIssueHtml = (
   <td>${escapeHtml(groupedIssue.ref['@refObjectId'])}</td>
   <td>${escapeHtml(groupedIssue.ref['@version'])}</td>
   <td>${description}</td>
+  <td>${escapeHtml(groupedIssue.ownerName)}</td>
   <td>${action}</td>
 </tr>`;
     })
@@ -335,6 +376,12 @@ const buildValidationIssueHtml = (
             intl.formatMessage({
               id: 'pages.validationIssues.table.issue',
               defaultMessage: 'Issue',
+            }),
+          )}</th>
+          <th>${escapeHtml(
+            intl.formatMessage({
+              id: 'pages.validationIssues.table.user',
+              defaultMessage: 'Data owner',
             }),
           )}</th>
           <th>${escapeHtml(
@@ -444,7 +491,65 @@ type ValidationIssueModalContentProps = {
 
 const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalContentProps) => {
   const { token } = theme.useToken();
-  const groupedIssues = groupValidationIssues(issues);
+  const groupedIssues = useMemo(() => groupValidationIssues(issues), [issues]);
+  const [loadingIssueKey, setLoadingIssueKey] = useState<string | null>(null);
+  const [notifiedIssueKeys, setNotifiedIssueKeys] = useState<Record<string, boolean>>({});
+
+  const handleNotifyDataOwner = async (groupedIssue: GroupedValidationIssue) => {
+    const issueKey = getValidationIssueGroupKey(groupedIssue);
+
+    if (!groupedIssue.ownerUserId) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.validationIssues.notifyDataOwner.ownerMissing',
+          defaultMessage: 'Unable to identify the data owner.',
+        }),
+      );
+      return;
+    }
+
+    setLoadingIssueKey(issueKey);
+    try {
+      const { upsertValidationIssueNotification } =
+        require('@/services/notifications/api') as typeof import('@/services/notifications/api');
+      const result = await upsertValidationIssueNotification({
+        recipientUserId: groupedIssue.ownerUserId,
+        ref: groupedIssue.ref,
+        link: groupedIssue.link,
+        issues: groupedIssue.issues.map((issue) => ({
+          code: issue.code,
+          tabName: issue.tabName,
+          tabNames: issue.tabNames,
+          underReviewVersion: issue.underReviewVersion,
+        })),
+      });
+
+      if (!result.success) {
+        throw result.error ?? new Error('notify_data_owner_failed');
+      }
+
+      setNotifiedIssueKeys((prev) => ({
+        ...prev,
+        [issueKey]: true,
+      }));
+      message.success(
+        intl.formatMessage({
+          id: 'pages.validationIssues.notifyDataOwner.success',
+          defaultMessage: 'Notification sent to the data owner.',
+        }),
+      );
+    } catch (error) {
+      message.error(
+        intl.formatMessage({
+          id: 'pages.validationIssues.notifyDataOwner.error',
+          defaultMessage: 'Failed to notify the data owner.',
+        }),
+      );
+    } finally {
+      setLoadingIssueKey(null);
+    }
+  };
+
   const columns: ColumnsType<GroupedValidationIssue> = [
     {
       title: intl.formatMessage({
@@ -501,33 +606,55 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
     },
     {
       title: intl.formatMessage({
+        id: 'pages.validationIssues.table.user',
+        defaultMessage: 'Data owner',
+      }),
+      key: 'ownerName',
+      width: 160,
+      render: (_, groupedIssue) => groupedIssue.ownerName,
+    },
+    {
+      title: intl.formatMessage({
         id: 'pages.validationIssues.table.action',
         defaultMessage: 'Action',
       }),
       key: 'action',
-      width: 112,
-      render: (_, groupedIssue) =>
-        groupedIssue.link ? (
+      width: 128,
+      render: (_, groupedIssue) => {
+        const issueKey = getValidationIssueGroupKey(groupedIssue);
+        const shouldNotifyDataOwner = groupedIssue.isOwnedByCurrentUser === false;
+        const actionLabel = getValidationIssueActionLabel(intl, groupedIssue, {
+          notified: notifiedIssueKeys[issueKey],
+        });
+        const isNotifyActionDisabled = notifiedIssueKeys[issueKey] || loadingIssueKey === issueKey;
+        const isOpenActionDisabled = isValidationIssueLinkDisabled(groupedIssue);
+        const isDisabled = shouldNotifyDataOwner ? isNotifyActionDisabled : isOpenActionDisabled;
+
+        return groupedIssue.link ? (
           <Button
             type='link'
-            disabled={isValidationIssueLinkDisabled(groupedIssue)}
+            disabled={isDisabled}
+            loading={loadingIssueKey === issueKey}
             style={{
-              color: isValidationIssueLinkDisabled(groupedIssue)
-                ? token.colorTextDisabled
-                : token.colorPrimary,
+              color: isDisabled ? token.colorTextDisabled : token.colorPrimary,
               fontWeight: token.fontWeightStrong,
               paddingInline: 0,
             }}
-            onClick={() => openValidationIssueLink(groupedIssue.link ?? '')}
+            onClick={() => {
+              if (shouldNotifyDataOwner) {
+                void handleNotifyDataOwner(groupedIssue);
+                return;
+              }
+
+              openValidationIssueLink(groupedIssue.link ?? '');
+            }}
           >
-            {intl.formatMessage({
-              id: 'pages.validationIssues.viewDetails',
-              defaultMessage: 'View details',
-            })}
+            {actionLabel}
           </Button>
         ) : (
           '-'
-        ),
+        );
+      },
     },
   ];
 

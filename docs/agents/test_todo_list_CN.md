@@ -12,24 +12,24 @@
 - 流程预期变化时同步更新文档。
 - 当测试工作流、覆盖率基线或 backlog 状态变化时，必须同步 `docs/agents/ai-testing-guide.md` 和本文件；若长期策略背景也变化，还要在同一 diff 中同步 `docs/agents/test_improvement_plan.md` 及 `_CN` 镜像。
 
-## 基线快照（2026年3月23日）
+## 基线快照（2026年3月24日）
 
-最新已验证全量覆盖率运行（`npm run test:coverage`，随后执行 `npm run test:coverage:assert-full`）：
+最新已验证全量覆盖率运行（`npm run test:coverage:report`，随后执行 `npm run test:coverage:assert-full`）：
 
-- Test suites：305 passed
-- Tests：3634 passed
+- Test suites：309 passed
+- Tests：3687 passed
 - 覆盖率：
-  - Statements: 100.00% (21489/21489)
-  - Branches: 100.00% (12373/12373)
-  - Functions: 100.00% (4672/4672)
-  - Lines: 100.00% (20596/20596)
+  - Statements: 100.00% (21869/21869)
+  - Branches: 100.00% (12560/12560)
+  - Functions: 100.00% (4748/4748)
+  - Lines: 100.00% (20961/20961)
 - 相比上一版已记录基线的增量：
-  - Test suites：+17
-  - Tests：+158
-  - Statements：+1476
-  - Branches：+954
-  - Functions：+293
-  - Lines：+1453
+  - Test suites：+1
+  - Tests：+22
+  - Statements：+120
+  - Branches：+54
+  - Functions：+8
+  - Lines：+110
 - 当前全局 branch 门槛：50%
 - 门禁状态：**已通过**（高于门槛 50.00 个百分点）
 
@@ -79,8 +79,8 @@
 
 同一轮运行得到的全仓逐文件状态：
 
-- 追踪的源码文件：330
-- 已全满文件（`100/100/100/100`）：330
+- 追踪的源码文件：334
+- 已全满文件（`100/100/100/100`）：334
 - 仍有缺口的文件：0
 - Branch 分桶：
   - `<50`：0 个文件

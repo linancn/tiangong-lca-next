@@ -16,8 +16,10 @@ import {
   getCurrentUser,
   getFreshUserMetadata,
   updateDataNotificationTime,
+  updateIssueNotificationTime,
   updateTeamNotificationTime,
 } from '@/services/auth';
+import { getNotificationsCount } from '@/services/notifications/api';
 import { getLatestReviewOfMine, getNotifyReviewsCount } from '@/services/reviews/api';
 import { getLatestRolesOfMine, getTeamInvitationCountApi } from '@/services/roles/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -28,7 +30,12 @@ jest.mock('@/services/auth', () => ({
   getCurrentUser: jest.fn(),
   getFreshUserMetadata: jest.fn(),
   updateDataNotificationTime: jest.fn(),
+  updateIssueNotificationTime: jest.fn(),
   updateTeamNotificationTime: jest.fn(),
+}));
+
+jest.mock('@/services/notifications/api', () => ({
+  getNotificationsCount: jest.fn(),
 }));
 
 jest.mock('@/services/reviews/api', () => ({
@@ -70,10 +77,22 @@ jest.mock('@/components/Notification/TeamNotification', () => {
   };
 });
 
+jest.mock('@/components/Notification/IssueNotification', () => {
+  return function IssueNotification({ timeFilter, onDataLoaded }: any) {
+    return (
+      <button type='button' data-testid='issue-notification' onClick={() => onDataLoaded?.()}>
+        Issue Notification {timeFilter}
+      </button>
+    );
+  };
+});
+
 const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<any>;
 const mockGetFreshUserMetadata = getFreshUserMetadata as jest.MockedFunction<any>;
 const mockUpdateDataNotificationTime = updateDataNotificationTime as jest.MockedFunction<any>;
+const mockUpdateIssueNotificationTime = updateIssueNotificationTime as jest.MockedFunction<any>;
 const mockUpdateTeamNotificationTime = updateTeamNotificationTime as jest.MockedFunction<any>;
+const mockGetNotificationsCount = getNotificationsCount as jest.MockedFunction<any>;
 const mockGetLatestReviewOfMine = getLatestReviewOfMine as jest.MockedFunction<any>;
 const mockGetLatestRolesOfMine = getLatestRolesOfMine as jest.MockedFunction<any>;
 const mockGetNotifyReviewsCount = getNotifyReviewsCount as jest.MockedFunction<any>;
@@ -88,19 +107,23 @@ describe('Notification Component', () => {
       userid: 'user-1',
       update_team_notification_time: 0,
       update_data_notification_time: 0,
+      update_issue_notification_time: 0,
     });
 
     mockGetFreshUserMetadata.mockResolvedValue({
       userid: 'user-1',
       update_team_notification_time: 0,
       update_data_notification_time: 0,
+      update_issue_notification_time: 0,
     });
 
     mockGetLatestReviewOfMine.mockResolvedValue([]);
     mockGetLatestRolesOfMine.mockResolvedValue(null);
+    mockGetNotificationsCount.mockResolvedValue({ success: true, total: 0 });
     mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
     mockUpdateDataNotificationTime.mockResolvedValue(undefined);
+    mockUpdateIssueNotificationTime.mockResolvedValue(undefined);
     mockUpdateTeamNotificationTime.mockResolvedValue(undefined);
   });
 
@@ -118,6 +141,7 @@ describe('Notification Component', () => {
   it('should show badge dot when there are notifications', async () => {
     mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 1 });
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 1 });
+    mockGetNotificationsCount.mockResolvedValue({ success: true, total: 1 });
 
     render(
       <ConfigProvider>
@@ -132,6 +156,7 @@ describe('Notification Component', () => {
   });
 
   it('should not show badge dot when there are no notifications', async () => {
+    mockGetNotificationsCount.mockResolvedValue({ success: true, total: 0 });
     mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
 
@@ -212,6 +237,7 @@ describe('Notification Component', () => {
 
     expect(screen.getByText('Team Notifications')).toBeInTheDocument();
     expect(screen.getByText('Data Notifications')).toBeInTheDocument();
+    expect(screen.getByText('Issue Notifications')).toBeInTheDocument();
   });
 
   it('should render team notification by default', async () => {
@@ -288,12 +314,14 @@ describe('Notification Component', () => {
 
     await waitFor(() => {
       expect(mockGetFreshUserMetadata).toHaveBeenCalled();
+      expect(mockGetNotificationsCount).toHaveBeenCalled();
       expect(mockGetNotifyReviewsCount).toHaveBeenCalled();
       expect(mockGetTeamInvitationCountApi).toHaveBeenCalled();
     });
   });
 
   it('falls back to zero unread counts when count APIs report unsuccessful results', async () => {
+    mockGetNotificationsCount.mockResolvedValue({ success: false, total: 99 });
     mockGetNotifyReviewsCount.mockResolvedValue({ success: false, total: 99 });
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: false, total: 99 });
 
@@ -321,6 +349,7 @@ describe('Notification Component', () => {
     );
 
     await waitFor(() => {
+      expect(mockGetNotificationsCount).toHaveBeenCalledWith(3, 0);
       expect(mockGetNotifyReviewsCount).toHaveBeenCalledWith(3, 0);
       expect(mockGetTeamInvitationCountApi).toHaveBeenCalledWith(3, 0);
     });
@@ -349,6 +378,7 @@ describe('Notification Component', () => {
   it('should show badge dot on data tab when data notification exists', async () => {
     mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 1 });
     mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
+    mockGetNotificationsCount.mockResolvedValue({ success: true, total: 0 });
 
     render(
       <ConfigProvider>
@@ -362,6 +392,27 @@ describe('Notification Component', () => {
     await waitFor(() => {
       const dataTab = screen.getByText('Data Notifications');
       const badge = dataTab.closest('.ant-badge');
+      expect(badge).toHaveClass('ant-badge');
+    });
+  });
+
+  it('should show badge dot on issue tab when issue notification exists', async () => {
+    mockGetNotifyReviewsCount.mockResolvedValue({ success: true, total: 0 });
+    mockGetTeamInvitationCountApi.mockResolvedValue({ success: true, total: 0 });
+    mockGetNotificationsCount.mockResolvedValue({ success: true, total: 1 });
+
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    const icon = await screen.findByRole('img', { hidden: true });
+    fireEvent.click(icon);
+
+    await waitFor(() => {
+      const issueTab = screen.getByText('Issue Notifications');
+      const badge = issueTab.closest('.ant-badge');
       expect(badge).toHaveClass('ant-badge');
     });
   });
@@ -446,6 +497,37 @@ describe('Notification Component', () => {
     await waitFor(() => expect(mockUpdateDataNotificationTime).toHaveBeenCalledTimes(1));
     fireEvent.click(screen.getByTestId('data-notification'));
     await waitFor(() => expect(mockUpdateDataNotificationTime).toHaveBeenCalledTimes(1));
+  });
+
+  it('updates issue notification time only once per modal session and resets after reopen', async () => {
+    mockGetNotificationsCount.mockResolvedValue({ success: true, total: 2 });
+
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    const icon = await screen.findByRole('img', { hidden: true });
+    fireEvent.click(icon);
+    fireEvent.click(screen.getByText('Issue Notifications'));
+
+    const issueNotification = await screen.findByTestId('issue-notification');
+    expect(issueNotification).toHaveTextContent('Issue Notification 3');
+
+    fireEvent.click(issueNotification);
+    await waitFor(() => expect(mockUpdateIssueNotificationTime).toHaveBeenCalledTimes(1));
+    fireEvent.click(issueNotification);
+    await waitFor(() => expect(mockUpdateIssueNotificationTime).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    fireEvent.click(icon);
+    fireEvent.click(screen.getByText('Issue Notifications'));
+    fireEvent.click(await screen.findByTestId('issue-notification'));
+
+    await waitFor(() => expect(mockUpdateIssueNotificationTime).toHaveBeenCalledTimes(2));
   });
 
   it('applies the all-time filter value to both tabs after reopening', async () => {

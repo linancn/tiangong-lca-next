@@ -65,14 +65,14 @@ npm run lint
 - 硬约束：任何代码修改都必须让全仓 Statements / Branches / Functions / Lines 保持 `100%`。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
-- 截至 2026年3月23日，最新已验证全量运行（`npm run test:coverage`，随后执行 `npm run test:coverage:assert-full`）是 `305 suites / 3634 tests`，全局覆盖率为：
-  - Statements: `100.00%` (21489/21489)
-  - Branches: `100.00%` (12373/12373)
-  - Functions: `100.00%` (4672/4672)
-  - Lines: `100.00%` (20596/20596)
+- 截至 2026 年 3 月 24 日，最新已验证全量运行（`npm run test:coverage:report`，随后执行 `npm run test:coverage:assert-full`）是 `309 suites / 3687 tests`，全局覆盖率为：
+  - Statements: `100.00%` (21869/21869)
+  - Branches: `100.00%` (12560/12560)
+  - Functions: `100.00%` (4748/4748)
+  - Lines: `100.00%` (20961/20961)
 - 同一轮运行得到的逐文件库存摘要：
-  - 追踪的源码文件：`330`
-  - 已全满文件（`100/100/100/100`）：`330`
+  - 追踪的源码文件：`334`
+  - 已全满文件（`100/100/100/100`）：`334`
   - 仍有缺口的文件：`0`
   - Branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 0`、`90-<100 = 0`
   - `line=100` 但 `branch<100` 的文件：`0`

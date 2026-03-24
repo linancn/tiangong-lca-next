@@ -36,6 +36,7 @@ const mockCheckData = jest.fn(async () => {});
 const mockGetErrRefTab = jest.fn(() => 'contactInformation');
 const mockFindProblemNodes = jest.fn(() => []);
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGenContactJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
@@ -329,6 +330,7 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest
     .fn()
     .mockImplementation(() => ({ findProblemNodes: () => mockFindProblemNodes() })),
@@ -428,6 +430,7 @@ describe('ContactEdit component', () => {
     mockLatestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGetContactDetail.mockResolvedValue({
       data: {
         stateCode: 0,
@@ -1087,10 +1090,10 @@ describe('ContactEdit component', () => {
     );
   });
 
-  it('falls back to false rule verification and an empty problem-node list during data check', async () => {
+  it('treats a null rule verification as passed during data check', async () => {
     const user = userEvent.setup();
     mockUpdateContact.mockResolvedValueOnce({
-      data: [{}],
+      data: [{ rule_verification: null }],
     });
     mockReffPath.mockImplementationOnce(() => ({ findProblemNodes: () => undefined }));
 
@@ -1109,6 +1112,15 @@ describe('ContactEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
+    expect(mockReffPath).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        '@type': 'contact data set',
+        '@refObjectId': 'contact-123',
+        '@version': '01.00.000',
+      }),
+      true,
+      false,
+    );
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
   });
 

@@ -1,20 +1,20 @@
 # 测试改进计划（中文镜像）
 
-> 快照日期：2026年3月23日。本文件用于记录测试工程的长期背景与策略；日常可执行 backlog 以 `docs/agents/test_todo_list.md` 为准。镜像约束：每次变更需同步英文版 `docs/agents/test_improvement_plan.md`。
+> 快照日期：2026年3月24日。本文件用于记录测试工程的长期背景与策略；日常可执行 backlog 以 `docs/agents/test_todo_list.md` 为准。镜像约束：每次变更需同步英文版 `docs/agents/test_improvement_plan.md`。
 
 ## 当前基线
 
-- 最新已验证全量运行命令：`npm run test:coverage`
-- 当前全量运行规模：305 suites / 3634 tests
+- 最新已验证全量运行命令：`npm run test:coverage:report`（随后执行 `npm run test:coverage:assert-full`）
+- 当前全量运行规模：309 suites / 3687 tests
 - 当前 Jest 全量覆盖率：
-  - Statements: 100.00%
-  - Branches: 100.00%
-  - Functions: 100.00%
-  - Lines: 100.00%
-- 当前逐文件库存：追踪 330 个源码文件，已全满 330 个，仍有缺口 0 个。
+  - Statements: 100.00% (21869/21869)
+  - Branches: 100.00% (12560/12560)
+  - Functions: 100.00% (4748/4748)
+  - Lines: 100.00% (20961/20961)
+- 当前逐文件库存：追踪 334 个源码文件，已全满 334 个，仍有缺口 0 个。
 - 当前 branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 0`、`90-<100 = 0`。
 - `jest.config.cjs` 当前全局门槛：50%（branches/functions/lines/statements）。
-- 眼下主要问题：**全仓收口已经完成。当前战略任务改为维护态：保持所有触达或新增的 `src/**`文件继续维持`100/100/100/100`，一旦未来有回归，就立刻重新开启有序队列。\*\*
+- 当前战略任务：**全仓收口仍保持完成状态。工作重点是维护态：保持所有触达或新增的 `src/**`文件继续维持`100/100/100/100`，一旦未来有回归，就立刻重新开启有序队列。\*\*
 
 ## 原则
 

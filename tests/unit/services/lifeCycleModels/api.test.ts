@@ -1560,7 +1560,7 @@ describe('updateLifeCycleModelJsonApi', () => {
     expect(result).toEqual(edgePayload);
   });
 
-  it('uses raw review payloads and defaults missing current json_tg/rule verification fields', async () => {
+  it('uses raw review payloads and treats missing current rule verification as passed', async () => {
     const rawJson = buildLifecycleModelJsonOrdered();
     const edgePayload = buildSaveResult();
     mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
@@ -1585,7 +1585,7 @@ describe('updateLifeCycleModelJsonApi', () => {
       parent: {
         jsonOrdered: rawJson,
         jsonTg: {},
-        ruleVerification: false,
+        ruleVerification: true,
       },
       processMutations: [],
     });

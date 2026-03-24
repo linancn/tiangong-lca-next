@@ -28,6 +28,7 @@ const mockCheckData = jest.fn(async () => {});
 const mockGetErrRefTab = jest.fn(() => 'sourceInformation');
 const mockFindProblemNodes = jest.fn(() => []);
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGenSourceJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
@@ -400,6 +401,7 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest.fn().mockImplementation(() => ({
     findProblemNodes: () => mockFindProblemNodes(),
   })),
@@ -477,12 +479,14 @@ const {
   removeFile: mockRemoveFile,
   uploadFile: mockUploadFile,
 } = jest.requireMock('@/services/supabase/storage');
+const { ReffPath: mockReffPath } = jest.requireMock('@/pages/Utils/review');
 
 describe('SourceEdit component', () => {
   beforeEach(() => {
     latestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGetSourceDetail.mockResolvedValue({
       data: {
         json: {
@@ -959,10 +963,10 @@ describe('SourceEdit component', () => {
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
   });
 
-  it('uses the false default when rule verification is missing during data checks', async () => {
+  it('treats a null rule verification as passed during source data checks', async () => {
     const user = userEvent.setup();
     mockUpdateSource.mockResolvedValueOnce({
-      data: [{}],
+      data: [{ rule_verification: null }],
     });
 
     renderWithProviders(
@@ -989,6 +993,15 @@ describe('SourceEdit component', () => {
           findProblemNodes: expect.any(Function),
         }),
       ),
+    );
+    expect(mockReffPath).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        '@type': 'source data set',
+        '@refObjectId': 'source-123',
+        '@version': '01.00.000',
+      }),
+      true,
+      false,
     );
   });
 

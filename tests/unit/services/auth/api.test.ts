@@ -18,6 +18,7 @@ import {
   sendMagicLink,
   signUp,
   updateDataNotificationTime,
+  updateIssueNotificationTime,
   updateTeamNotificationTime,
 } from '@/services/auth/api';
 import { supabase } from '@/services/supabase';
@@ -67,6 +68,7 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
           display_name: 'User Example',
           team_id: 'team-456',
           update_data_notification_time: 1700000000000,
+          update_issue_notification_time: 1700000500000,
           update_team_notification_time: 1700001000000,
         },
       };
@@ -82,6 +84,7 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
         email: 'user@example.com',
         role: 'member',
         update_data_notification_time: 1700000000000,
+        update_issue_notification_time: 1700000500000,
         update_team_notification_time: 1700001000000,
       });
     });
@@ -104,6 +107,7 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
         email: 'missing-name@example.com',
         role: 'guest',
         update_data_notification_time: undefined,
+        update_issue_notification_time: undefined,
         update_team_notification_time: undefined,
       });
     });
@@ -380,6 +384,26 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
     });
   });
 
+  describe('updateIssueNotificationTime', () => {
+    it('updates the timestamp used by IssueNotification component', async () => {
+      const mockTime = new Date('2024-01-03T06:07:08Z');
+      jest.useFakeTimers();
+      jest.setSystemTime(mockTime);
+      authMock.updateUser.mockResolvedValueOnce({ error: null });
+
+      try {
+        const result = await updateIssueNotificationTime();
+
+        expect(authMock.updateUser).toHaveBeenCalledWith({
+          data: { update_issue_notification_time: mockTime.getTime() },
+        });
+        expect(result).toEqual({ error: null });
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
+
   describe('getFreshUserMetadata', () => {
     it('returns null when getUser fails or user is absent', async () => {
       authMock.getUser.mockResolvedValueOnce({
@@ -398,6 +422,7 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
           user: {
             user_metadata: {
               update_data_notification_time: 111,
+              update_issue_notification_time: 333,
               update_team_notification_time: 222,
             },
           },
@@ -409,6 +434,7 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
 
       expect(result).toEqual({
         update_data_notification_time: 111,
+        update_issue_notification_time: 333,
         update_team_notification_time: 222,
       });
     });

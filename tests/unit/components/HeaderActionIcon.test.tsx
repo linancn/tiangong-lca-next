@@ -64,6 +64,14 @@ describe('HeaderActionIcon', () => {
     expect(screen.getByTestId('badge')).toHaveStyle({ backgroundColor: 'blue' });
   });
 
+  it('uses the top-right badge offset by default', () => {
+    render(
+      <HeaderActionIcon title='Default Offset' icon={<span data-testid='icon' />} badgeCount={1} />,
+    );
+
+    expect(screen.getByTestId('badge')).toHaveAttribute('data-offset', '[0,0]');
+  });
+
   it('fires actions from the wrapper click and keyboard handlers', () => {
     const onClick = jest.fn();
 

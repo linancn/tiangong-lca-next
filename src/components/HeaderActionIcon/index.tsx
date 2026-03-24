@@ -22,7 +22,7 @@ const HeaderActionIcon: React.FC<HeaderActionIconProps> = ({
   icon,
   onClick,
   badgeCount = 0,
-  badgeOffset = [-5, 6],
+  badgeOffset = [0, 0],
   badgeStyle,
 }) => {
   const handleKeyDown: React.KeyboardEventHandler<HTMLSpanElement> = (event) => {

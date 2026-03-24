@@ -2,8 +2,10 @@ import HeaderActionIcon from '@/components/HeaderActionIcon';
 import {
   getFreshUserMetadata,
   updateDataNotificationTime,
+  updateIssueNotificationTime,
   updateTeamNotificationTime,
 } from '@/services/auth';
+import { getNotificationsCount } from '@/services/notifications/api';
 import { getNotifyReviewsCount } from '@/services/reviews/api';
 import { getTeamInvitationCountApi } from '@/services/roles/api';
 import { MessageOutlined } from '@ant-design/icons';
@@ -11,6 +13,7 @@ import { Badge, Modal, Select, Space, Tabs, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 import DataNotification from './DataNotification';
+import IssueNotification from './IssueNotification';
 import TeamNotification from './TeamNotification';
 
 const TIME_FILTER_OPTIONS = (intl: any) => [
@@ -46,17 +49,20 @@ const Notification: React.FC = () => {
     total: number;
     team: number;
     data: number;
+    issue: number;
   }>({
     total: 0,
     team: 0,
     data: 0,
+    issue: 0,
   });
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [timeFilter, setTimeFilter] = useState<number>(3);
   // Track which tabs have had their notification time updated (to avoid duplicate updates)
-  const [tabsViewed, setTabsViewed] = useState<{ team: boolean; data: boolean }>({
+  const [tabsViewed, setTabsViewed] = useState<{ team: boolean; data: boolean; issue: boolean }>({
     team: false,
     data: false,
+    issue: false,
   });
   const { token } = theme.useToken();
   const intl = useIntl();
@@ -66,10 +72,14 @@ const Notification: React.FC = () => {
     const user = await getFreshUserMetadata();
     const lastTeamViewTime = user?.update_team_notification_time ?? 0;
     const lastDataViewTime = user?.update_data_notification_time ?? 0;
+    const lastIssueViewTime = user?.update_issue_notification_time ?? 0;
 
     // Get data notification count (only count records newer than last view time)
     const dataCountRes = await getNotifyReviewsCount(3, lastDataViewTime);
     const dataCount = dataCountRes.success ? dataCountRes.total : 0;
+
+    const issueCountRes = await getNotificationsCount(3, lastIssueViewTime);
+    const issueCount = issueCountRes.success ? issueCountRes.total : 0;
 
     // Get team notification count (only count records newer than last view time)
     const teamCountRes = await getTeamInvitationCountApi(3, lastTeamViewTime);
@@ -77,8 +87,9 @@ const Notification: React.FC = () => {
 
     // Update all counts
     setUnreadCounts({
-      total: dataCount + teamCount,
+      total: dataCount + teamCount + issueCount,
       data: dataCount,
+      issue: issueCount,
       team: teamCount,
     });
   };
@@ -90,7 +101,7 @@ const Notification: React.FC = () => {
   const handleIconClick = () => {
     setModalVisible(true);
     // Reset viewed state when opening modal
-    setTabsViewed({ team: false, data: false });
+    setTabsViewed({ team: false, data: false, issue: false });
   };
 
   const handleModalClose = () => {
@@ -105,7 +116,7 @@ const Notification: React.FC = () => {
       setUnreadCounts((prev) => ({
         ...prev,
         team: 0,
-        total: prev.data, // total = data count (team is now 0)
+        total: prev.data + prev.issue,
       }));
     }
   };
@@ -118,7 +129,19 @@ const Notification: React.FC = () => {
       setUnreadCounts((prev) => ({
         ...prev,
         data: 0,
-        total: prev.team, // total = team count (data is now 0)
+        total: prev.team + prev.issue,
+      }));
+    }
+  };
+
+  const handleIssueDataLoaded = async () => {
+    if (!tabsViewed.issue) {
+      await updateIssueNotificationTime();
+      setTabsViewed((prev) => ({ ...prev, issue: true }));
+      setUnreadCounts((prev) => ({
+        ...prev,
+        issue: 0,
+        total: prev.team + prev.data,
       }));
     }
   };
@@ -177,6 +200,26 @@ const Notification: React.FC = () => {
         </Badge>
       ),
       children: <DataNotification timeFilter={timeFilter} onDataLoaded={handleDataDataLoaded} />,
+    },
+    {
+      key: 'issue',
+      label: (
+        <Badge
+          count={unreadCounts.issue}
+          offset={[5, 0]}
+          size='small'
+          showZero={false}
+          style={badgeStyles}
+        >
+          <span>
+            {intl.formatMessage({
+              id: 'notification.tabs.issue',
+              defaultMessage: 'Issue Notifications',
+            })}
+          </span>
+        </Badge>
+      ),
+      children: <IssueNotification timeFilter={timeFilter} onDataLoaded={handleIssueDataLoaded} />,
     },
   ];
 
