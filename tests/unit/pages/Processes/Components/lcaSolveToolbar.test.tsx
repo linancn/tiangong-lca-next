@@ -1,6 +1,5 @@
 import LcaSolveToolbar from '@/pages/Processes/Components/lcaSolveToolbar';
 import { submitLcaTask } from '@/services/lca/taskCenter';
-import { listMyProcessesForLca } from '@/services/processes/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 type ReactNode = import('react').ReactNode;
@@ -59,11 +58,6 @@ jest.mock('@/components/ToolBarButton', () => ({
 jest.mock('@/services/lca/taskCenter', () => ({
   __esModule: true,
   submitLcaTask: jest.fn(),
-}));
-
-jest.mock('@/services/processes/api', () => ({
-  __esModule: true,
-  listMyProcessesForLca: jest.fn(),
 }));
 
 jest.mock('umi', () => ({
@@ -290,43 +284,29 @@ jest.mock('antd', () => {
 import { message } from 'antd';
 
 const mockSubmitLcaTask = submitLcaTask as unknown as jest.Mock;
-const mockListMyProcessesForLca = listMyProcessesForLca as unknown as jest.Mock;
 
 describe('LcaSolveToolbar component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIntlLocale = 'en-US';
     mockSubmitLcaTask.mockReturnValue({ id: 'task-1' });
-    mockListMyProcessesForLca.mockResolvedValue({
-      success: true,
-      data: [
-        {
-          id: 'process-1',
-          version: '01.00.000',
-          name: 'Process One',
-        },
-      ],
-    });
   });
 
-  const openModal = async () => {
+  const openModal = () => {
     fireEvent.click(screen.getByTestId('lca-toolbar-trigger'));
     expect(screen.getByTestId('lca-modal')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(mockListMyProcessesForLca).toHaveBeenCalled();
-    });
   };
 
   it('opens modal from toolbar trigger', async () => {
     render(<LcaSolveToolbar />);
     expect(screen.queryByTestId('lca-modal')).not.toBeInTheDocument();
 
-    await openModal();
+    openModal();
   });
 
   it('submits all_unit request by default', async () => {
     render(<LcaSolveToolbar />);
-    await openModal();
+    openModal();
 
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
@@ -344,48 +324,17 @@ describe('LcaSolveToolbar component', () => {
     });
 
     expect(message.success).toHaveBeenCalledWith(
-      'Task submitted (task-1). Check progress in the top-right task center.',
+      'Task submitted (task-1). Track progress in the task center at the top right.',
     );
   });
 
-  it('submits single request with selected process id and version', async () => {
+  it('does not expose solve mode switching or process selection in the simplified UI', () => {
     render(<LcaSolveToolbar />);
-    await openModal();
+    openModal();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
-    await waitFor(() => {
-      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByTestId('field-process_ref'), {
-      target: { value: 'process-1::01.00.000' },
-    });
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(mockSubmitLcaTask).toHaveBeenCalledWith({
-        scope: 'dev-v1',
-        demand_mode: 'single',
-        demand: {
-          process_id: 'process-1',
-          process_version: '01.00.000',
-          amount: 1,
-        },
-        solve: {
-          return_x: false,
-          return_g: true,
-          return_h: true,
-        },
-        print_level: 0,
-      });
-    });
-  });
-
-  it('hides amount and unit_batch_size inputs for simplified UI', async () => {
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    expect(screen.queryByTestId('field-amount')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('field-unit_batch_size')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('field-demand_mode')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('field-process_ref')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Single Demand' })).not.toBeInTheDocument();
   });
 
   it('shows error when task submission throws', async () => {
@@ -394,11 +343,11 @@ describe('LcaSolveToolbar component', () => {
     });
 
     render(<LcaSolveToolbar />);
-    await openModal();
+    openModal();
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
     await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Calculation request failed: boom');
+      expect(message.error).toHaveBeenCalledWith('Failed to submit the calculation request: boom');
     });
   });
 
@@ -408,124 +357,28 @@ describe('LcaSolveToolbar component', () => {
     });
 
     render(<LcaSolveToolbar />);
-    await openModal();
+    openModal();
     fireEvent.click(screen.getByTestId('lca-modal-ok'));
 
     await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Calculation request failed: boom-string');
+      expect(message.error).toHaveBeenCalledWith(
+        'Failed to submit the calculation request: boom-string',
+      );
     });
   });
 
-  it('shows an error when loading the process list returns an unsuccessful response', async () => {
-    mockListMyProcessesForLca.mockResolvedValueOnce({
-      success: false,
-      data: [],
-    });
-
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Failed to load your process list');
-    });
-  });
-
-  it('loads the process list using zh when the active locale starts with zh', async () => {
+  it('renders all-process messaging for zh locales without loading process options', () => {
     mockIntlLocale = 'zh-CN';
 
     render(<LcaSolveToolbar />);
-    await openModal();
+    openModal();
 
-    await waitFor(() => {
-      expect(mockListMyProcessesForLca).toHaveBeenCalledWith('zh', { limit: 300 });
-    });
-  });
-
-  it('falls back to en when the active locale is missing', async () => {
-    mockIntlLocale = undefined as any;
-
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    await waitFor(() => {
-      expect(mockListMyProcessesForLca).toHaveBeenCalledWith('en', { limit: 300 });
-    });
-  });
-
-  it('shows an error when loading the process list throws', async () => {
-    mockListMyProcessesForLca.mockRejectedValueOnce(new Error('network down'));
-
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Failed to load your process list');
-    });
-  });
-
-  it('requires a valid process reference in single-demand mode before submitting', async () => {
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
-    await waitFor(() => {
-      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByTestId('field-process_ref'), {
-      target: { value: 'invalid-ref' },
-    });
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Please select a process');
-    });
-    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
-  });
-
-  it('rejects process references that are missing the version segment', async () => {
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
-    await waitFor(() => {
-      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByTestId('field-process_ref'), {
-      target: { value: 'process-1::' },
-    });
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Please select a process');
-    });
-    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
-  });
-
-  it('rejects process references that are missing the process id segment', async () => {
-    render(<LcaSolveToolbar />);
-    await openModal();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Single Demand' }));
-    await waitFor(() => {
-      expect(screen.getByTestId('field-process_ref')).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByTestId('field-process_ref'), {
-      target: { value: '::01.00.000' },
-    });
-    fireEvent.click(screen.getByTestId('lca-modal-ok'));
-
-    await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Please select a process');
-    });
-    expect(mockSubmitLcaTask).not.toHaveBeenCalled();
+    expect(screen.getByText('All Processes (Reference Flow = 1)')).toBeInTheDocument();
   });
 
   it('closes the modal from the cancel action when not submitting', async () => {
     render(<LcaSolveToolbar />);
-    await openModal();
+    openModal();
 
     fireEvent.click(screen.getByTestId('lca-modal-cancel'));
 

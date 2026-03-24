@@ -593,49 +593,14 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getByText('Top contributor')).toBeInTheDocument();
   });
 
-  it('runs hotspot analysis against selected processes on the independent page', async () => {
+  it('keeps impact comparison as the only process-set ranking tab', async () => {
     render(<LcaAnalysisPage />);
 
     expect(
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
-
-    queryLcaResults.mockResolvedValueOnce({
-      snapshot_id: 'snapshot-hotspot',
-      result_id: 'result-hotspot',
-      source: 'all_unit',
-      mode: 'processes_one_impact',
-      data: {
-        impact_id: 'impact-1',
-        values: {
-          'process-1': 12.5,
-          'process-2': -3.5,
-          'process-3': 4,
-        },
-      },
-      meta: {
-        cache_hit: false,
-        computed_at: '2026-03-12T13:00:00Z',
-      },
-    });
-
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run hotspot analysis' }));
-
-    await waitFor(() =>
-      expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
-        data_scope: 'current_user',
-        mode: 'processes_one_impact',
-        process_ids: ['process-1', 'process-2', 'process-3'],
-        impact_id: 'impact-1',
-        allow_fallback: false,
-      }),
-    );
-
-    expect(await screen.findByText('snapshot-hotspot')).toBeInTheDocument();
-    expect(screen.getByText('Hotspot ranking chart')).toBeInTheDocument();
-    expect(screen.getAllByText('Solar panel manufacturing').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('tab-compare')).toBeInTheDocument();
+    expect(screen.queryByTestId('tab-hotspots')).not.toBeInTheDocument();
   });
 
   it('runs grouped analysis and renders grouped results', async () => {
@@ -700,34 +665,6 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
 
     queryLcaResults.mockResolvedValueOnce({
-      snapshot_id: 'snapshot-hotspot-fallback',
-      result_id: 'result-hotspot-fallback',
-      source: 'all_unit',
-      mode: 'processes_one_impact',
-      data: {
-        impact_id: 'impact-missing',
-        values: [],
-      },
-      meta: {
-        cache_hit: false,
-        computed_at: '2026-03-12T13:05:00Z',
-      },
-    });
-
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    const hotspotSelect = screen
-      .getByTestId('tab-panel-hotspots')
-      .querySelector('select[aria-label="Impact category"]') as HTMLSelectElement;
-    appendSelectOption(hotspotSelect, 'impact-missing', 'Missing impact');
-    fireEvent.change(hotspotSelect, {
-      target: { value: 'impact-missing' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot analysis' }));
-
-    expect(await screen.findByText('snapshot-hotspot-fallback')).toBeInTheDocument();
-    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
-
-    queryLcaResults.mockResolvedValueOnce({
       snapshot_id: 'snapshot-grouped-fallback',
       result_id: 'result-grouped-fallback',
       source: 'all_unit',
@@ -777,16 +714,6 @@ describe('LcaAnalysisPage', () => {
       },
     );
 
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    fireEvent.change(
-      screen
-        .getByTestId('tab-panel-hotspots')
-        .querySelector('select[aria-label="Impact category"]')!,
-      {
-        target: { value: 'impact-2' },
-      },
-    );
-
     fireEvent.click(screen.getByTestId('tab-grouped'));
     fireEvent.change(
       screen
@@ -822,15 +749,6 @@ describe('LcaAnalysisPage', () => {
       (
         screen
           .getByTestId('tab-panel-compare')
-          .querySelector('select[aria-label="Impact category"]') as HTMLSelectElement
-      ).value,
-    ).toBe('impact-2');
-
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    expect(
-      (
-        screen
-          .getByTestId('tab-panel-hotspots')
           .querySelector('select[aria-label="Impact category"]') as HTMLSelectElement
       ).value,
     ).toBe('impact-2');
@@ -1257,7 +1175,7 @@ describe('LcaAnalysisPage', () => {
     );
   });
 
-  it('switches data scope and uses the selected scope for option loading and hotspot queries', async () => {
+  it('switches data scope and uses the selected scope for option loading and compare queries', async () => {
     render(<LcaAnalysisPage />);
 
     expect(
@@ -1284,27 +1202,8 @@ describe('LcaAnalysisPage', () => {
       ),
     );
 
-    queryLcaResults.mockResolvedValueOnce({
-      snapshot_id: 'snapshot-hotspot',
-      result_id: 'result-hotspot',
-      source: 'all_unit',
-      mode: 'processes_one_impact',
-      data: {
-        impact_id: 'impact-1',
-        values: {
-          'process-1': 12.5,
-          'process-2': -3.5,
-          'process-3': 4,
-        },
-      },
-      meta: {
-        cache_hit: false,
-        computed_at: '2026-03-12T13:00:00Z',
-      },
-    });
-
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run hotspot analysis' }));
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
@@ -1545,7 +1444,7 @@ describe('LcaAnalysisPage', () => {
     expect(umiMocks.historyPush).toHaveBeenCalledWith('/mydata/processes');
   });
 
-  it('renders queued snapshot error states for profile and compare analyses', async () => {
+  it('renders queued snapshot error states for profile, compare, and grouped analyses', async () => {
     isLcaFunctionInvokeError.mockImplementation((error: { code?: string } | undefined) =>
       Boolean(error?.code),
     );
@@ -1586,12 +1485,12 @@ describe('LcaAnalysisPage', () => {
       ),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
+    fireEvent.click(screen.getByTestId('tab-grouped'));
     queryLcaResults.mockRejectedValueOnce({
       code: 'snapshot_build_queued',
       body: {},
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot analysis' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
     expect(
       await screen.findByText(
         'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
@@ -1620,13 +1519,13 @@ describe('LcaAnalysisPage', () => {
       ),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    queryLcaResults.mockRejectedValueOnce('unexpected-hotspot-failure');
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot analysis' }));
-    expect(await screen.findByText('Failed to run hotspot analysis.')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    queryLcaResults.mockRejectedValueOnce('unexpected-compare-failure');
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    expect(await screen.findByText('Failed to run impact analysis.')).toBeInTheDocument();
   });
 
-  it('resets compare, hotspot, and grouped results when filters or selections change', async () => {
+  it('resets compare and grouped results when filters or selections change', async () => {
     getDecompressedMethod.mockResolvedValue({
       files: methodListFiles,
     });
@@ -1652,19 +1551,6 @@ describe('LcaAnalysisPage', () => {
     fireEvent.click(within(activePanel).getByRole('button', { name: 'Clear selection' }));
     expect(within(activePanel).getByRole('button', { name: 'Run analysis' })).toBeDisabled();
 
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
-    activePanel = screen.getByTestId('tab-panel-hotspots');
-    fireEvent.change(within(activePanel).getByLabelText('Impact category'), {
-      target: { value: 'impact-2' },
-    });
-    fireEvent.click(
-      within(activePanel).getByRole('button', { name: 'Mock select alternate process' }),
-    );
-    fireEvent.click(within(activePanel).getByRole('button', { name: 'Clear selection' }));
-    expect(
-      within(activePanel).getByRole('button', { name: 'Run hotspot analysis' }),
-    ).toBeDisabled();
-
     fireEvent.click(screen.getByTestId('tab-grouped'));
     activePanel = screen.getByTestId('tab-panel-grouped');
     fireEvent.change(within(activePanel).getByLabelText('Group by'), {
@@ -1682,7 +1568,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeDisabled();
   });
 
-  it('shows hotspot and grouped analysis failure alerts', async () => {
+  it('shows grouped analysis failure alerts', async () => {
     isLcaFunctionInvokeError.mockImplementation((error: { code?: string } | undefined) =>
       Boolean(error?.code),
     );
@@ -1693,16 +1579,15 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('tab-hotspots'));
+    fireEvent.click(screen.getByTestId('tab-grouped'));
     queryLcaResults.mockRejectedValueOnce({ code: 'snapshot_stale_rebuild_required' });
-    fireEvent.click(await screen.findByRole('button', { name: 'Run hotspot analysis' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
     expect(
       await screen.findByText(
         'The ready snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
       ),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('tab-grouped'));
     queryLcaResults.mockRejectedValueOnce(new Error('grouped failed'));
     fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
     expect(await screen.findByText('grouped failed')).toBeInTheDocument();
