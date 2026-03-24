@@ -1,9 +1,11 @@
+const mockGetDataSource = jest.fn();
 const mockGetLangJson = jest.fn();
 const mockCacheAndDecompressMethod = jest.fn();
 const mockGetDecompressedMethod = jest.fn();
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
+  getDataSource: (...args: unknown[]) => mockGetDataSource(...args),
   getLangJson: (...args: unknown[]) => mockGetLangJson(...args),
 }));
 
@@ -19,6 +21,7 @@ import {
   buildMergedLcaRows,
   formatPercent,
   formatSourceLabel,
+  getDefaultLcaDataScopeForPath,
   getLcaMethodMetaMap,
   loadImpactOptions,
   normalizeNumber,
@@ -31,6 +34,18 @@ import {
 describe('lcaAnalysisShared', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetDataSource.mockImplementation((pathname: unknown) => {
+      if (typeof pathname !== 'string') {
+        return '';
+      }
+      if (pathname.includes('/mydata')) {
+        return 'my';
+      }
+      if (pathname.includes('/tgdata')) {
+        return 'tg';
+      }
+      return '';
+    });
     mockGetLangJson.mockImplementation((value) => value);
     mockCacheAndDecompressMethod.mockResolvedValue(true);
     mockGetDecompressedMethod.mockResolvedValue({
@@ -93,9 +108,16 @@ describe('lcaAnalysisShared', () => {
     expect(toProgressStatus('positive')).toBe('normal');
   });
 
+  it('maps route data sources into default LCA scopes', () => {
+    expect(getDefaultLcaDataScopeForPath('/mydata/processes')).toBe('current_user');
+    expect(getDefaultLcaDataScopeForPath('/tgdata/processes')).toBe('open_data');
+    expect(getDefaultLcaDataScopeForPath('/processes')).toBeUndefined();
+  });
+
   it('builds process options with duplicate filtering and name/version fallbacks', () => {
     expect(buildLcaProcessSelectionKey('process-1', '02.00.000')).toBe('process-1:02.00.000');
     expect(buildLcaProcessSelectionKey('process-1', '')).toBe('process-1');
+    expect(buildLcaProcessSelectionKey(undefined as any, undefined)).toBe('');
 
     expect(
       buildLcaProcessOptions([
