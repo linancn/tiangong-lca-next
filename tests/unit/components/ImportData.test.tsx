@@ -7,7 +7,7 @@ import ImportData from '@/components/ImportData';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 type ImportDataProps = {
-  onJsonData: (data: unknown) => void;
+  onJsonData: (data: unknown[]) => void;
   disabled?: boolean;
 };
 
@@ -199,14 +199,18 @@ describe('ImportData Component', () => {
     expect(message.warning).toHaveBeenCalledWith('Please select a file to import');
   });
 
-  it('accepts a valid JSON file and forwards parsed data', async () => {
-    mockFileReader({ content: JSON.stringify({ flows: [] }) });
+  it('wraps a single imported dataset object into an array before forwarding it', async () => {
+    mockFileReader({ content: JSON.stringify({ contactDataSet: { contactInformation: {} } }) });
     setup();
     openModal();
 
-    const file = new File([JSON.stringify({ flows: [] })], 'flows.json', {
-      type: 'application/json',
-    });
+    const file = new File(
+      [JSON.stringify({ contactDataSet: { contactInformation: {} } })],
+      'contact.json',
+      {
+        type: 'application/json',
+      },
+    );
 
     await act(async () => {
       latestDraggerProps?.beforeUpload?.(file as any);
@@ -219,7 +223,7 @@ describe('ImportData Component', () => {
     fireEvent.click(screen.getByTestId('modal-ok'));
 
     await waitFor(() => {
-      expect(onJsonDataMock).toHaveBeenCalledWith({ flows: [] });
+      expect(onJsonDataMock).toHaveBeenCalledWith([{ contactDataSet: { contactInformation: {} } }]);
     });
 
     await waitFor(() => {
@@ -227,6 +231,30 @@ describe('ImportData Component', () => {
     });
 
     expect(message.error).not.toHaveBeenCalled();
+  });
+
+  it('preserves imported arrays without adding another wrapper layer', async () => {
+    mockFileReader({ content: JSON.stringify([{ flowDataSet: { flowInformation: {} } }]) });
+    setup();
+    openModal();
+
+    const file = new File(
+      [JSON.stringify([{ flowDataSet: { flowInformation: {} } }])],
+      'flows.json',
+      {
+        type: 'application/json',
+      },
+    );
+
+    await act(async () => {
+      latestDraggerProps?.beforeUpload?.(file as any);
+    });
+
+    fireEvent.click(screen.getByTestId('modal-ok'));
+
+    await waitFor(() => {
+      expect(onJsonDataMock).toHaveBeenCalledWith([{ flowDataSet: { flowInformation: {} } }]);
+    });
   });
 
   it('clears the selected file when the user removes it', async () => {

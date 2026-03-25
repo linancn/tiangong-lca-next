@@ -6,7 +6,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 interface ImportDataProps {
-  onJsonData: (data: any) => void;
+  onJsonData: (data: any[]) => void;
   disabled?: boolean;
 }
 
@@ -43,8 +43,9 @@ const ImportData: FC<ImportDataProps> = ({ onJsonData, disabled = false }) => {
         try {
           const content = e.target?.result as string;
           const jsonData = JSON.parse(content);
+          const normalizedJsonData = Array.isArray(jsonData) ? jsonData : [jsonData];
 
-          onJsonData(jsonData);
+          onJsonData(normalizedJsonData);
 
           handleCancel();
         } catch (error) {
