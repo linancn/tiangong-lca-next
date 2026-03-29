@@ -32,6 +32,7 @@ const mockCheckData = jest.fn(async () => {});
 const mockFindProblemNodes = jest.fn(() => []);
 const mockGetErrRefTab = jest.fn(() => '');
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGenFlowpropertyJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
@@ -330,6 +331,7 @@ jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkData: (...args: any[]) => mockCheckData(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest.fn(() => ({
     findProblemNodes: () => mockFindProblemNodes(),
   })),
@@ -369,6 +371,7 @@ describe('FlowpropertiesEdit', () => {
     latestRefsDrawerProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
     mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
     mockUpdateRefsData.mockImplementation((data: any) => data);

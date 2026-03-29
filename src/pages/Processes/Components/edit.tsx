@@ -8,6 +8,7 @@ import {
   checkReferences,
   checkVersions,
   dealProcress,
+  enrichValidationIssuesWithOwner,
   getAllRefObj,
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
@@ -683,9 +684,10 @@ const ProcessEdit: FC<Props> = ({
     }
 
     if (!silent && validationIssues.length > 0) {
+      const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
       showValidationIssueModal({
         intl,
-        issues: validationIssues,
+        issues: validationIssuesWithOwner,
         title: intl.formatMessage({
           id:
             from === 'review'

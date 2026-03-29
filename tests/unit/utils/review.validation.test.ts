@@ -2,6 +2,7 @@ import {
   buildValidationIssues,
   dealModel,
   dealProcress,
+  enrichValidationIssuesWithOwner,
   getDatasetDetailPath,
   getDatasetDetailUrl,
   getDatasetPath,
@@ -73,6 +74,13 @@ jest.mock('@/services/users/api', () => ({
   getUsersByIds: jest.fn(),
 }));
 
+const { getUserId: mockGetUserId, getUsersByIds: mockGetUsersByIds } = jest.requireMock(
+  '@/services/users/api',
+) as {
+  getUserId: jest.Mock;
+  getUsersByIds: jest.Mock;
+};
+
 const makeSdkFactory = (result: any) =>
   jest.fn(() => ({ validateEnhanced: jest.fn(() => result) }));
 
@@ -83,6 +91,9 @@ describe('review helper coverage', () => {
     mockGetRefDataByIds.mockReset();
     mockGetReviewsOfData.mockReset();
     mockUpdateDateToReviewState.mockReset();
+    mockGetUserId.mockReset();
+    mockGetUsersByIds.mockReset();
+    mockGetUserId.mockResolvedValue('user-1');
 
     mockCreateContact.mockImplementation(makeSdkFactory({ success: true }));
     mockCreateSource.mockImplementation(makeSdkFactory({ success: true }));
@@ -342,6 +353,294 @@ describe('review helper coverage', () => {
         },
       }),
     ).toEqual([]);
+  });
+
+  it('returns the same empty issue list when owner enrichment receives no issues', async () => {
+    const issues: any[] = [];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toBe(issues);
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(mockGetUserId).not.toHaveBeenCalled();
+    expect(mockGetUsersByIds).not.toHaveBeenCalled();
+  });
+
+  it('enriches validation issues with owner names while deduplicating ref lookups', async () => {
+    mockGetRefData.mockImplementation(
+      async (id: string, version: string, table: string, teamId: string, options: any) => {
+        expect(version).toBe('01.00.000');
+        expect(teamId).toBe('');
+        expect(options).toEqual({ fallbackToLatest: false });
+
+        if (id === 'process-1' && table === 'processes') {
+          return { data: { userId: 'user-1' }, success: true };
+        }
+
+        if (id === 'process-2' && table === 'processes') {
+          return { data: { userId: 'user-2' }, success: true };
+        }
+
+        if (id === 'process-3' && table === 'processes') {
+          return { data: null, success: false };
+        }
+
+        return { data: null, success: false };
+      },
+    );
+    mockGetUsersByIds.mockResolvedValue([
+      {
+        id: 'user-1',
+        raw_user_meta_data: {
+          display_name: 'Alice',
+        },
+      },
+      {
+        id: 'user-2',
+        email: 'bob@example.com',
+      },
+    ]);
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/a',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'nonExistentRef',
+        link: '/a',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/b',
+        ownerName: 'Provided owner',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-provided',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/c',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-2',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/d',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-3',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/e',
+        ref: {
+          '@type': 'mystery data set',
+          '@refObjectId': 'unknown-1',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/a',
+        isOwnedByCurrentUser: true,
+        ownerName: 'Alice',
+        ownerUserId: 'user-1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'nonExistentRef',
+        link: '/a',
+        isOwnedByCurrentUser: true,
+        ownerName: 'Alice',
+        ownerUserId: 'user-1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/b',
+        ownerName: 'Provided owner',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-provided',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/c',
+        isOwnedByCurrentUser: false,
+        ownerName: 'bob@example.com',
+        ownerUserId: 'user-2',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-2',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/d',
+        ownerName: '-',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-3',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: '/e',
+        ownerName: '-',
+        ref: {
+          '@type': 'mystery data set',
+          '@refObjectId': 'unknown-1',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetRefData).toHaveBeenCalledTimes(3);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-1', 'user-2']);
+  });
+
+  it('keeps provided owner names when the current user id is blank and no owner ids need resolving', async () => {
+    mockGetUserId.mockResolvedValue('   ');
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/provided',
+        ownerName: ' Provided owner ',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-provided-only',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        link: '/provided',
+        ownerName: 'Provided owner',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-provided-only',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(mockGetUsersByIds).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a dash when resolved owner profiles have no usable display fields', async () => {
+    mockGetRefData.mockResolvedValue({
+      data: { userId: 'user-blank' },
+      success: true,
+    });
+    mockGetUsersByIds.mockResolvedValue([
+      {
+        id: 'user-blank',
+        display_name: '   ',
+        email: '   ',
+        raw_user_meta_data: {
+          display_name: '',
+          email: '   ',
+        },
+      },
+    ]);
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/blank-owner',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-blank-owner',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        isOwnedByCurrentUser: false,
+        link: '/blank-owner',
+        ownerName: '-',
+        ownerUserId: 'user-blank',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-blank-owner',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-blank']);
+  });
+
+  it('falls back to a dash when owner ids resolve but the user lookup returns no profiles', async () => {
+    mockGetRefData.mockResolvedValue({
+      data: { userId: 'user-missing' },
+      success: true,
+    });
+    mockGetUsersByIds.mockResolvedValue(undefined);
+
+    const issues = [
+      {
+        code: 'ruleVerificationFailed',
+        link: '/missing-owner-profile',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-missing-owner-profile',
+          '@version': '01.00.000',
+        },
+      },
+    ] as any[];
+
+    await expect(enrichValidationIssuesWithOwner(issues)).resolves.toEqual([
+      {
+        code: 'ruleVerificationFailed',
+        isOwnedByCurrentUser: false,
+        link: '/missing-owner-profile',
+        ownerName: '-',
+        ownerUserId: 'user-missing',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-missing-owner-profile',
+          '@version': '01.00.000',
+        },
+      },
+    ]);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-missing']);
   });
 
   it('validates each dataset type through the sdk and filters process/model review issues', () => {

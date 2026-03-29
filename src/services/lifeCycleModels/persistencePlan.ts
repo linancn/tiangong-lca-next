@@ -3,6 +3,7 @@
 import { normalizeLangPayloadForSave } from '@/services/general/api';
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
 import { jsonToList } from '@/services/general/util';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import {
   createLifeCycleModel as createTidasLifeCycleModel,
   createProcess as createTidasProcess,
@@ -205,7 +206,7 @@ export async function buildReviewUpdateLifeCycleModelPersistencePlan(
       version: currentProcess.version,
       modelId: args.modelId,
       jsonOrdered: normalizedJson,
-      ruleVerification: Boolean(currentProcess.rule_verification),
+      ruleVerification: isRuleVerificationPassed(currentProcess.rule_verification),
     });
   }
 

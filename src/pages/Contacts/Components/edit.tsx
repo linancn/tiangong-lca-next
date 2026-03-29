@@ -6,6 +6,7 @@ import {
   ReffPath,
   buildValidationIssues,
   checkData,
+  enrichValidationIssuesWithOwner,
   getAllRefObj,
   getErrRefTab,
   getRefTableName,
@@ -27,6 +28,7 @@ import { getRefData, updateStateCodeApi } from '@/services/general/api';
 import { getReviewUserRoleApi, getUserTeamId } from '@/services/roles/api';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
@@ -223,16 +225,17 @@ const ContactEdit: FC<Props> = ({
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
     const updateResult: UpdateContactResult = await updateContact(id, version, formFieldsValue);
     if (updateResult?.data) {
+      const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
       if (typeof updateResult?.data?.[0]?.state_code === 'number') {
         setCurrentStateCode(updateResult?.data?.[0]?.state_code);
       }
-      if (updateResult?.data[0]?.rule_verification === true) {
+      if (isRuleVerified) {
         updateErrRef(null);
       } else {
         updateErrRef({
           id: id,
           version: version,
-          ruleVerification: Boolean(updateResult?.data[0]?.rule_verification),
+          ruleVerification: isRuleVerified,
           nonExistent: false,
         });
       }
@@ -372,13 +375,16 @@ const ContactEdit: FC<Props> = ({
     setShowRules(true);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
+    const rootRuleVerification = isRuleVerificationPassed(
+      updateResult?.data?.[0]?.rule_verification,
+    );
     const pathRef = new ReffPath(
       {
         '@type': 'contact data set',
         '@refObjectId': id,
         '@version': version,
       },
-      updateResult?.data?.[0]?.rule_verification ?? false,
+      rootRuleVerification,
       false,
     );
     await checkData(
@@ -483,9 +489,10 @@ const ContactEdit: FC<Props> = ({
               defaultMessage: 'Data check failed!',
             });
       if (!silent && validationIssues.length > 0) {
+        const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
         showValidationIssueModal({
           intl,
-          issues: validationIssues,
+          issues: validationIssuesWithOwner,
           title: intl.formatMessage({
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',
@@ -510,7 +517,7 @@ const ContactEdit: FC<Props> = ({
     const currentId = latestData?.id ?? id;
     const currentVersion = latestData?.version ?? version;
 
-    if (latestData?.rule_verification !== true) {
+    if (!isRuleVerificationPassed(latestData?.rule_verification)) {
       message.error(
         intl.formatMessage({
           id: 'pages.contact.syncToOpenData.ruleVerificationRequired',

@@ -208,6 +208,7 @@ jest.mock('@/pages/Utils/updateReference', () => ({
 const mockCheckData = jest.fn(async () => undefined);
 const mockGetErrRefTab = jest.fn(() => null);
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 
 jest.mock('@/pages/Utils/review', () => ({
@@ -219,6 +220,7 @@ jest.mock('@/pages/Utils/review', () => ({
   },
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkData: (...args: any[]) => mockCheckData(...args),
+  enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
@@ -330,6 +332,7 @@ describe('UnitGroupEdit', () => {
     jest.clearAllMocks();
     latestRefsDrawerProps = null;
     mockProblemNodes = [];
+    mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGenUnitGroupFromData.mockImplementation(() => generatedUnitGroup);
     mockGetUnitGroupDetail.mockResolvedValue({
       data: {

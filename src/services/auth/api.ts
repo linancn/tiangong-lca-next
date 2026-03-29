@@ -23,6 +23,7 @@ export async function getCurrentUser(): Promise<Auth.CurrentUser | null> {
     email: claims?.email,
     role: claims?.role,
     update_data_notification_time: claims?.user_metadata?.update_data_notification_time,
+    update_issue_notification_time: claims?.user_metadata?.update_issue_notification_time,
     update_team_notification_time: claims?.user_metadata?.update_team_notification_time,
   };
   return user;
@@ -126,6 +127,17 @@ export async function updateDataNotificationTime() {
   };
 }
 
+export async function updateIssueNotificationTime() {
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      update_issue_notification_time: new Date().getTime(),
+    },
+  });
+  return {
+    error,
+  };
+}
+
 /**
  * Get fresh user metadata from database (not from cached JWT claims)
  * @returns Fresh user metadata or null
@@ -146,6 +158,7 @@ export async function getFreshUserMetadata(): Promise<Auth.CurrentUser | null> {
     // email: user?.email ?? '',
     // role: user?.user_metadata?.role,
     update_data_notification_time: user?.user_metadata?.update_data_notification_time,
+    update_issue_notification_time: user?.user_metadata?.update_issue_notification_time,
     update_team_notification_time: user?.user_metadata?.update_team_notification_time,
   };
 }

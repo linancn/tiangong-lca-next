@@ -1,20 +1,20 @@
 # Test Improvement Plan
 
-> Snapshot date: March 23, 2026. This file keeps long-term testing context and strategy. For the actionable day-to-day backlog, use `docs/agents/test_todo_list.md`. Mirror requirement: sync `docs/agents/test_improvement_plan_CN.md` with every change.
+> Snapshot date: March 24, 2026. This file keeps long-term testing context and strategy. For the actionable day-to-day backlog, use `docs/agents/test_todo_list.md`. Mirror requirement: sync `docs/agents/test_improvement_plan_CN.md` with every change.
 
 ## Current Baseline
 
-- Latest verified full run: `npm run test:coverage`
-- Current full run footprint: 305 suites / 3634 tests
+- Latest verified full run: `npm run test:coverage:report` (then `npm run test:coverage:assert-full`)
+- Current full run footprint: 309 suites / 3687 tests
 - Current Jest coverage (full run):
-  - Statements: 100.00%
-  - Branches: 100.00%
-  - Functions: 100.00%
-  - Lines: 100.00%
-- Current file inventory: 330 tracked source files, 330 fully covered, 0 still incomplete.
+  - Statements: 100.00% (21869/21869)
+  - Branches: 100.00% (12560/12560)
+  - Functions: 100.00% (4748/4748)
+  - Lines: 100.00% (20961/20961)
+- Current file inventory: 334 tracked source files, 334 fully covered, 0 still incomplete.
 - Current branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 0`, `90-<100 = 0`.
 - Current enforced threshold in `jest.config.cjs`: 50% global (branches/functions/lines/statements).
-- Immediate issue: **full closure has been achieved. The strategic task is now maintenance: keep every touched or newly added `src/**`file at`100/100/100/100`, and reopen the ordered queue immediately if a future regression appears.\*\*
+- Immediate focus: **full closure remains intact. The strategic task is maintenance: keep every touched or newly added `src/**`file at`100/100/100/100`, and reopen the ordered queue immediately if a future regression appears.\*\*
 
 ## Principles
 

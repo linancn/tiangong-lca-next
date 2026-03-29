@@ -8,6 +8,7 @@ export {
   sendMagicLink,
   signUp,
   updateDataNotificationTime,
+  updateIssueNotificationTime,
   updateTeamNotificationTime,
 } from './api';
 export { cognitoChangeEmail, cognitoChangePassword, cognitoSignUp } from './cognito';
