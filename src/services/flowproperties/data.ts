@@ -1,5 +1,5 @@
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
-import type { FlowProperty } from '@tiangong-lca/tidas-sdk';
+import type { FlowProperty } from '@tiangong-lca/tidas-sdk/types';
 
 export type FlowpropertyReference = ReferenceItem | ReferenceItem[];
 

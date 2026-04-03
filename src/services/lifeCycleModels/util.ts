@@ -1,4 +1,4 @@
-import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk';
+import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk/core';
 import { v4 } from 'uuid';
 import {
   classificationToJsonList,

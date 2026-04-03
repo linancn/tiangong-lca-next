@@ -1,5 +1,6 @@
 import { FormFlow } from '@/services/flows/data';
-import { createFlow as createTidasFlow, Flow } from '@tiangong-lca/tidas-sdk';
+import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk/core';
+import type { Flow } from '@tiangong-lca/tidas-sdk/types';
 import {
   classificationToJsonList,
   classificationToStringList,

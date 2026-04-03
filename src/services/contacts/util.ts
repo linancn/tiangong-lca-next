@@ -1,5 +1,5 @@
 import { FormContact } from '@/services/contacts/data';
-import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk';
+import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk/core';
 import {
   classificationToJsonList,
   classificationToStringList,

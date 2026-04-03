@@ -61,6 +61,7 @@ module.exports = async () => {
       ...dockerPathIgnores,
     ],
     moduleNameMapper: {
+      '^@tiangong-lca/tidas-sdk/core$': '<rootDir>/tests/mocks/tidas-sdk-core.js',
       '^@/tests/(.*)$': '<rootDir>/tests/$1',
       ...config.moduleNameMapper,
     },

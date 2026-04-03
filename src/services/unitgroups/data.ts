@@ -1,5 +1,5 @@
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
-import type { UnitGroup } from '@tiangong-lca/tidas-sdk';
+import type { UnitGroup } from '@tiangong-lca/tidas-sdk/types';
 
 export type UnitGroupImportItem = {
   unitGroupDataSet?: UnitGroup['unitGroupDataSet'];

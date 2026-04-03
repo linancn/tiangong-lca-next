@@ -21,7 +21,7 @@ import {
   createProcess as createTidasProcess,
   createSource as createTidasSource,
   createUnitGroup as createTidasUnitGroup,
-} from '@tiangong-lca/tidas-sdk';
+} from '@tiangong-lca/tidas-sdk/core';
 
 export class ConcurrencyController {
   private maxConcurrency: number;

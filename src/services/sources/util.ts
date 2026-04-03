@@ -1,5 +1,5 @@
 import { FormSource } from '@/services/sources/data';
-import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk';
+import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk/core';
 import {
   classificationToJsonList,
   classificationToStringList,

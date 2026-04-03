@@ -1,5 +1,5 @@
 import { FormFlowProperty } from '@/services/flowproperties/data';
-import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tidas-sdk';
+import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tidas-sdk/core';
 import {
   classificationToJsonList,
   classificationToStringList,

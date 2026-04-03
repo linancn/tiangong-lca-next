@@ -1,6 +1,6 @@
 import { getAISuggestion } from '@/services/general/api';
 import { CheckOutlined, CloseOutlined, CopyOutlined, UndoOutlined } from '@ant-design/icons';
-import { createFlow, createProcess } from '@tiangong-lca/tidas-sdk';
+import { createFlow, createProcess } from '@tiangong-lca/tidas-sdk/core';
 import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
 import React, { useEffect, useMemo, useState } from 'react';

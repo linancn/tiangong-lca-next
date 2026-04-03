@@ -1,5 +1,5 @@
 import { FormProcess } from '@/services/processes/data';
-import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk';
+import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk/core';
 import {
   capitalize,
   classificationToJsonList,

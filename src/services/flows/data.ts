@@ -1,5 +1,5 @@
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
-import { Flow } from '@tiangong-lca/tidas-sdk';
+import type { Flow } from '@tiangong-lca/tidas-sdk/types';
 export type FlowTable = {
   id: string;
   version: string;

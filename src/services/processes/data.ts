@@ -1,5 +1,5 @@
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
-import type { Process } from '@tiangong-lca/tidas-sdk';
+import type { Process } from '@tiangong-lca/tidas-sdk/types';
 
 export type ProcessTable = {
   key: string;

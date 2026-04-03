@@ -16,7 +16,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@@/*": ["./src/.umi/*"],
-      "@@test/*": ["./src/.umi-test/*"]
+      "@@test/*": ["./src/.umi-test/*"],
+      "@tiangong-lca/tidas-sdk/core": ["./node_modules/@tiangong-lca/tidas-sdk/dist/core"],
+      "@tiangong-lca/tidas-sdk/types": ["./node_modules/@tiangong-lca/tidas-sdk/dist/types"]
     },
     "forceConsistentCasingInFileNames": true
   },

@@ -1,5 +1,5 @@
 import type { ReferenceItem } from '@/services/general/data';
-import type { Source } from '@tiangong-lca/tidas-sdk';
+import type { Source } from '@tiangong-lca/tidas-sdk/types';
 export type SourceTable = {
   key: React.Key;
   id: string;

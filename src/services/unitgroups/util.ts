@@ -1,5 +1,5 @@
 import { FormUnitGroup } from '@/services/unitgroups/data';
-import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk';
+import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk/core';
 import {
   classificationToJsonList,
   classificationToStringList,

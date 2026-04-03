@@ -7,7 +7,7 @@ import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import {
   createLifeCycleModel as createTidasLifeCycleModel,
   createProcess as createTidasProcess,
-} from '@tiangong-lca/tidas-sdk';
+} from '@tiangong-lca/tidas-sdk/core';
 import { genProcessJsonOrdered } from '../processes/util';
 import type {
   LifeCycleModelGraphEdge,

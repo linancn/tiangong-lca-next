@@ -1,5 +1,5 @@
 import type { ReferenceItem } from '@/services/general/data';
-import type { Contact } from '@tiangong-lca/tidas-sdk';
+import type { Contact } from '@tiangong-lca/tidas-sdk/types';
 
 export type ContactTable = {
   key: React.Key;

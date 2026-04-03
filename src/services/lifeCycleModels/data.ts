@@ -1,4 +1,4 @@
-import { LifeCycleModel } from '@tiangong-lca/tidas-sdk';
+import type { LifeCycleModel } from '@tiangong-lca/tidas-sdk/types';
 import type { LangTextValue } from '../general/data';
 import type { ProcessExchangeData, ProcessTable } from '../processes/data';
 
