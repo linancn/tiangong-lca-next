@@ -13,14 +13,30 @@
 
 - Node.js **>= 24**（执行 `nvm use 24`，`.nvmrc` 已固定为 `24`）。
 - 技术栈：React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript。
-- Supabase 环境变量已由仓库 fallback `.env` 预置；禁止在 `src/services/**` 之外创建临时 Supabase client。
+- Supabase 环境变量已由仓库预置：日常开发连接持久化 Supabase `dev` 分支时使用 `npm run start:dev`，只有任务明确需要 `main` 数据库时才使用 `npm start` 或 `npm run start:main`；禁止在 `src/services/**` 之外创建临时 Supabase client。
+- 数据库侧的 Edge Function SQL 必须通过分支级 Vault secret 读取配置：标准 webhook 鉴权使用 `project_url` 和 `project_secret_key`，兼容旧 `generate_flow_embedding()` 路径时还需要 `project_x_key`；不要把 branch URL 或 service key 硬编码进 SQL、migration 或 baseline dump。
+- Supabase Branching 只使用一套共享的 `supabase/` 目录：根部配置是 production / preview 的基线，`[remotes.dev]` 保存持久化 `dev` 分支的覆盖配置；不要按 Git 分支复制多套 `supabase/` 目录，也不要再叠加额外的 `supabase db push` GitHub Actions 流程。
 - 未经人工明确批准，不得新增 npm 依赖。
+
+## 开发流程摘要
+
+- 默认分支推进路径为 `feature/* -> dev -> main`。
+- 日常开发先同步最新 Git `dev`，再从 `dev` 创建 feature 分支。
+- 常规功能和修复 PR 统一提交到 Git `dev`，不要直接提交到 Git `main`。
+- 日常前端开发统一使用 `npm run start:dev`，连接共享且持久化的 Supabase `dev` 分支。
+- Schema 变更必须先在本地通过 Supabase CLI 和已提交的 migration 文件完成，不要把共享远端 `dev` 当成第一次编写 schema 变更的地方。
+- PR 合并到 Git `dev` 后，应在共享 Supabase `dev` 分支再次验证集成结果。
+- 验证通过后，再从 Git `dev` 向 Git `main` 发起发布 PR。
+- 只有在任务明确需要连接生产环境时，才使用 `npm start` 或 `npm run start:main` 访问 `main`，例如生产排查、行为比对或 hotfix。
+- 只有当工作必须从生产分支开始时才从 Git `main` 拉分支，例如 hotfix；此类改动合并回 `main` 后，还必须把 `main` 回合到 `dev`。
+- `docs/agents/supabase-branching.md` 是分支与数据库工作流的唯一详细规范。
 
 ## 核心命令
 
 ```bash
 npm install
 npm start
+npm run start:main
 npm run lint
 npm test
 npm run test:coverage
@@ -60,10 +76,13 @@ npm run build
 5. 团队管理/数据审核流程
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
+6. Supabase Branching / 环境配置
+   - `docs/agents/supabase-branching.md`
 
 ## 仓库关键位置
 
 - `config/routes.ts`：`/tgdata`、`/codata`、`/mydata`、`/tedata` 路由镜像。
+- `supabase/config.toml`：Supabase 配置即代码的基线文件。根部配置用于 production 和 preview 分支，`[remotes.dev]` 保存持久化 `dev` 分支的覆盖项。
 - `src/services/**`：唯一允许访问 Supabase 的边界层。
 - `src/pages/<Feature>/`：页面入口与 `Components/` 抽屉/弹窗。
 - `src/components/**`、`src/contexts/**`、`types/**`：共享 UI/上下文/类型。

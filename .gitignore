@@ -44,7 +44,8 @@ build
 .env.local
 
 # supabase
-supabase/*
+supabase/.branches/
+supabase/.temp/
 
 dev_docs/*
 
@@ -61,3 +62,5 @@ __pycache__/
 
 # local deploy env
 docker/.env.deploy.local
+
+.env.supabase*.local

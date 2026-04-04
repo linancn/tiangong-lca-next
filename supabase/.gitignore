@@ -1,0 +1,9 @@
+# Supabase
+# Keep local CLI state out of Git. Config, migrations, seeds, and functions stay trackable.
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
