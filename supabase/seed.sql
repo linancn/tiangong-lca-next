@@ -1,0 +1,2 @@
+-- Shared seed data for the production baseline, local development, and preview branches.
+-- Leave this file empty until the repo needs global seed data.

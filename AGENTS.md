@@ -13,7 +13,8 @@ Use this file as the single entry point for coding agents.
 
 - Node.js **>= 24** (`nvm use 24`; `.nvmrc` is `24`).
 - Stack: React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript.
-- Supabase env keys are prewired via fallback `.env`; do not create ad-hoc Supabase clients outside `src/services/**`.
+- Supabase env keys are prewired via committed env files: `.env` is the production fallback and `.env.development` targets the persistent Supabase `dev` branch for local `npm start`. Do not create ad-hoc Supabase clients outside `src/services/**`.
+- Supabase Branching uses one shared `supabase/` directory: root config is the production baseline inherited by preview branches, while `[remotes.dev]` stores persistent-dev overrides. Do not clone per-branch `supabase/` directories or add a parallel `supabase db push` GitHub Action on top of Supabase GitHub integration.
 - Do not add npm dependencies without explicit human approval.
 
 ## Core Commands
@@ -60,10 +61,13 @@ Read only what matches the current task:
 5. Team/data audit process tasks
    - `docs/agents/team_management.md`
    - `docs/agents/data_audit_instruction.md`
+6. Supabase Branching / environment configuration
+   - `docs/agents/supabase-branching.md`
 
 ## Repo Landmarks
 
 - `config/routes.ts`: mirrored route branches (`/tgdata`, `/codata`, `/mydata`, `/tedata`).
+- `supabase/config.toml`: Supabase config-as-code baseline. Root settings apply to production and preview branches; `[remotes.dev]` holds the persistent dev branch overrides.
 - `src/services/**`: only allowed boundary for Supabase calls.
 - `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.
 - `src/components/**`, `src/contexts/**`, `types/**`: shared UI/context/types.
