@@ -1159,6 +1159,45 @@ describe('ToolbarEditInfo', () => {
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
   });
 
+  it('falls back to the default submit-review error when the command omits a message', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '1.0',
+        stateCode: 10,
+        teamId: 'team-1',
+        json_tg: { xflow: { nodes: [], edges: [] } },
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: { dataSetInformation: { name: {} } },
+          },
+        },
+        ruleVerification: [],
+      },
+    });
+    mockGetProcessDetail.mockResolvedValue({});
+    mockSubmitDatasetReview.mockResolvedValue({ error: {} });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    let checkResult;
+    await act(async () => {
+      checkResult = await ref.current?.handleCheckData('review', nodes, [{}]);
+    });
+    mockAntdMessage.success.mockClear();
+
+    await act(async () => {
+      await ref.current?.submitReview(checkResult.unReview);
+    });
+
+    expect(mockSubmitDatasetReview).toHaveBeenCalled();
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
   it('fails imperative review submission when no model detail has been checked yet', async () => {
     const ref = React.createRef<any>();
 

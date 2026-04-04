@@ -589,6 +589,73 @@ describe('invokeDatasetCommand', () => {
     });
   });
 
+  it('normalizes array payloads without wrapping them again', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+        },
+      ],
+      error: null,
+    });
+
+    const result = await generalApi.invokeDatasetCommand(
+      'app_dataset_save_draft',
+      {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'flows',
+        jsonOrdered: { ordered: true },
+      },
+      {
+        ruleVerification: true,
+      },
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          rule_verification: true,
+        },
+      ],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('returns an empty normalized array when the command envelope has null data', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_save_draft',
+        data: null,
+      },
+      error: null,
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
   it('returns an auth-required error when no session is available', async () => {
     mockAuthGetSession.mockResolvedValue({ data: { session: null } });
 
@@ -782,6 +849,85 @@ describe('invokeDatasetCommand', () => {
     });
     expect(result.error).not.toHaveProperty('state_code');
     expect(result.error).not.toHaveProperty('review_state_code');
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('prefers top-level state codes from the parsed edge-function error body', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Conflict',
+        context: createErrorContext(
+          {
+            code: 'STATE_CONFLICT',
+            message: 'Conflict',
+            state_code: 91,
+            review_state_code: 81,
+            details: {
+              state_code: 20,
+              review_state_code: 10,
+            },
+          },
+          409,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Conflict',
+        code: 'STATE_CONFLICT',
+        state_code: 91,
+        review_state_code: 81,
+      }),
+      count: null,
+      status: 409,
+      statusText: 'STATE_CONFLICT',
+    });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('falls back to a generic function error when invoke errors have no context', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Network failure',
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Network failure',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
 
     consoleLogSpy.mockRestore();
   });

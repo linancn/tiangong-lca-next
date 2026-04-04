@@ -708,6 +708,39 @@ describe('ContactEdit component', () => {
     );
   });
 
+  it('falls back to state code 100 when sync-to-open-data returns no state code', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({ data: [{}], error: null });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000'),
+    );
+    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith(
+      'Synchronized to open data successfully!',
+    );
+  });
+
   it('falls back to the original id, version, dataset, and empty team id while syncing', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
@@ -746,6 +779,34 @@ describe('ContactEdit component', () => {
     );
     expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to state_code 100 when sync succeeds without a returned state code', async () => {
+    const user = userEvent.setup();
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({ data: [{}], error: null });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    await user.click(await screen.findByRole('button', { name: 'Sync to Open Data' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Sync to Open Data' })).toBeDisabled(),
+    );
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith(
+      'Synchronized to open data successfully!',
+    );
   });
 
   it('blocks sync when referenced non-contact data is not open', async () => {
@@ -787,6 +848,72 @@ describe('ContactEdit component', () => {
       );
     });
     expect(mockPublishDatasetApi).not.toHaveBeenCalled();
+  });
+
+  it('shows the open-data error when sync-to-open-data is rejected with state_code 100', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({
+      data: null,
+      error: { state_code: 100, message: 'open data' },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'This data is open data, save failed',
+      ),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('shows the under-review error when sync-to-open-data is rejected with state_code 20', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({
+      data: null,
+      error: { state_code: 20, message: 'under review' },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
 
   it('shows an under-review error when saving is rejected with state_code 20', async () => {
@@ -1556,6 +1683,41 @@ describe('ContactEdit component', () => {
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Action failed'));
   });
+
+  it.each([
+    [100, 'This data is open data, save failed'],
+    [20, 'Data is under review, save failed'],
+  ])(
+    'shows the state-code specific sync error when publishDatasetApi returns %s',
+    async (stateCode, expectedMessage) => {
+      const user = userEvent.setup();
+      mockGetReviewUserRoleApi.mockResolvedValue({
+        user_id: 'review-admin-1',
+        role: 'review-admin',
+      });
+      mockGetAllRefObj.mockReturnValue([]);
+      mockPublishDatasetApi.mockResolvedValueOnce({
+        data: null,
+        error: { state_code: stateCode, message: 'sync failed' },
+      });
+
+      renderWithProviders(
+        <ContactEdit
+          id='contact-123'
+          version='01.00.000'
+          buttonType='icon'
+          lang='en'
+          setViewDrawerVisible={jest.fn()}
+          showSyncOpenDataButton={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Edit' }));
+      await user.click(await screen.findByRole('button', { name: 'Sync to Open Data' }));
+
+      await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith(expectedMessage));
+    },
+  );
 
   it('opens automatically and triggers silent auto-check when requested', async () => {
     renderWithProviders(
