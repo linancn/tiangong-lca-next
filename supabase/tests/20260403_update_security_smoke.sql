@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(6);
+select plan(8);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -120,6 +120,24 @@ values
   ('20000000-0000-0000-0000-000000000002', '{"name":"Team B"}'::jsonb, 2, false),
   ('00000000-0000-0000-0000-000000000000', '{"name":"System Team"}'::jsonb, 0, false);
 
+insert into public.users (id, raw_user_meta_data, contact)
+values
+  (
+    '10000000-0000-0000-0000-000000000001',
+    '{"email":"team-admin@example.com"}'::jsonb,
+    null
+  ),
+  (
+    '10000000-0000-0000-0000-000000000002',
+    '{"email":"dataset-owner@example.com"}'::jsonb,
+    null
+  ),
+  (
+    '10000000-0000-0000-0000-000000000006',
+    '{"email":"outsider@example.com"}'::jsonb,
+    null
+  );
+
 insert into public.roles (user_id, team_id, role)
 values
   ('10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'admin'),
@@ -204,9 +222,18 @@ values (
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
 
-update public.teams
-set rank = 99
-where id = '20000000-0000-0000-0000-000000000002';
+do $$
+begin
+  begin
+    update public.teams
+    set rank = 99
+    where id = '20000000-0000-0000-0000-000000000002';
+  exception
+    when others then
+      null;
+  end;
+end;
+$$;
 
 reset role;
 
@@ -254,9 +281,18 @@ select ok(
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000003', true);
 
-update public.reviews
-set state_code = 2
-where id = '40000000-0000-0000-0000-000000000001';
+do $$
+begin
+  begin
+    update public.reviews
+    set state_code = 2
+    where id = '40000000-0000-0000-0000-000000000001';
+  exception
+    when others then
+      null;
+  end;
+end;
+$$;
 
 reset role;
 
@@ -296,9 +332,18 @@ select is(
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000006', true);
 
-update public.reviews
-set state_code = 1
-where id = '40000000-0000-0000-0000-000000000002';
+do $$
+begin
+  begin
+    update public.reviews
+    set state_code = 1
+    where id = '40000000-0000-0000-0000-000000000002';
+  exception
+    when others then
+      null;
+  end;
+end;
+$$;
 
 reset role;
 
@@ -320,6 +365,66 @@ select is(
   (select count(*)::text from public.notifications where id = '50000000-0000-0000-0000-000000000001'),
   '1',
   'arbitrary user cannot delete notification row'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000006', true);
+
+do $$
+begin
+  begin
+    insert into public.roles (user_id, team_id, role)
+    values (
+      '10000000-0000-0000-0000-000000000006',
+      '20000000-0000-0000-0000-000000000001',
+      'member'
+    );
+  exception
+    when others then
+      null;
+  end;
+end;
+$$;
+
+reset role;
+
+select is(
+  (
+    select count(*)::text
+    from public.roles
+    where user_id = '10000000-0000-0000-0000-000000000006'
+      and team_id = '20000000-0000-0000-0000-000000000001'
+  ),
+  '0',
+  'authenticated user cannot directly insert roles rows'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
+
+do $$
+begin
+  begin
+    update public.users
+    set contact = '{"phone":"13800000000"}'::jsonb
+    where id = '10000000-0000-0000-0000-000000000002';
+  exception
+    when others then
+      null;
+  end;
+end;
+$$;
+
+reset role;
+
+select is(
+  (
+    select coalesce(contact::text, 'null')
+    from public.users
+    where id = '10000000-0000-0000-0000-000000000002'
+  ),
+  'null',
+  'authenticated user cannot directly update users rows'
 );
 
 select * from finish();
