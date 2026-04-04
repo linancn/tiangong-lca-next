@@ -8,7 +8,48 @@ import { getLangText } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
 
-type ReviewSubmitDatasetTable = Extract<TidasPackageRootTable, 'processes' | 'lifecyclemodels'>;
+export type ReviewSubmitDatasetTable = Extract<
+  TidasPackageRootTable,
+  'processes' | 'lifecyclemodels'
+>;
+type ReviewWorkflowCommandFunctionName =
+  | 'admin_review_save_assignment_draft'
+  | 'admin_review_assign_reviewers'
+  | 'admin_review_revoke_reviewer'
+  | 'admin_review_approve'
+  | 'admin_review_reject';
+
+async function invokeReviewWorkflowCommand<Row extends Record<string, unknown>>(
+  functionName: ReviewWorkflowCommandFunctionName,
+  body: Record<string, unknown>,
+) {
+  return invokeDatasetCommand<Row>(functionName as never, body);
+}
+
+async function invokeReviewWorkflowCommandBatch<Row extends Record<string, unknown>>(
+  functionName: Exclude<
+    ReviewWorkflowCommandFunctionName,
+    'admin_review_revoke_reviewer' | 'admin_review_approve' | 'admin_review_reject'
+  >,
+  reviewIds: React.Key[],
+  buildBody: (reviewId: string) => Record<string, unknown>,
+) {
+  const results = await Promise.all(
+    reviewIds.map((reviewId) =>
+      invokeReviewWorkflowCommand<Row>(functionName, buildBody(String(reviewId))),
+    ),
+  );
+
+  const firstError = results.find((result) => result.error);
+
+  return {
+    data: results.flatMap((result) => result.data ?? []),
+    error: firstError?.error ?? null,
+    count: null,
+    status: firstError?.status ?? 200,
+    statusText: firstError?.statusText ?? 'OK',
+  };
+}
 
 export async function addReviewsApi(id: string, data: any) {
   const { error } = await supabase
@@ -29,6 +70,61 @@ export async function submitDatasetReviewApi<
     id,
     version,
     table: tableName,
+  });
+}
+
+export async function saveReviewAssignmentDraftApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(reviewIds: React.Key[], reviewerIds: string[]) {
+  return invokeReviewWorkflowCommandBatch<Row>(
+    'admin_review_save_assignment_draft',
+    reviewIds,
+    (reviewId) => ({
+      reviewId,
+      reviewerIds,
+    }),
+  );
+}
+
+export async function assignReviewersApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(reviewIds: React.Key[], reviewerIds: string[], deadline?: string | null) {
+  return invokeReviewWorkflowCommandBatch<Row>(
+    'admin_review_assign_reviewers',
+    reviewIds,
+    (reviewId) => ({
+      reviewId,
+      reviewerIds,
+      deadline: deadline ?? null,
+    }),
+  );
+}
+
+export async function revokeReviewerApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(reviewId: string, reviewerId: string) {
+  return invokeReviewWorkflowCommand<Row>('admin_review_revoke_reviewer', {
+    reviewId,
+    reviewerId,
+  });
+}
+
+export async function approveReviewApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(reviewId: string, table: ReviewSubmitDatasetTable) {
+  return invokeReviewWorkflowCommand<Row>('admin_review_approve', {
+    reviewId,
+    table,
+  });
+}
+
+export async function rejectReviewApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(reviewId: string, table: ReviewSubmitDatasetTable, reason: string) {
+  return invokeReviewWorkflowCommand<Row>('admin_review_reject', {
+    reviewId,
+    table,
+    reason,
   });
 }
 
@@ -56,13 +152,15 @@ export async function updateReviewApi(reviewIds: React.Key[], data: any) {
 }
 
 export async function getReviewerIdsApi(reviewIds: React.Key[]) {
-  const { data } = await supabase
-    .from('reviews')
-    .select('reviewer_id')
-    .in('id', reviewIds)
-    .single();
+  const { data } = await supabase.from('reviews').select('reviewer_id').in('id', reviewIds);
 
-  return data?.reviewer_id ?? [];
+  return Array.from(
+    new Set(
+      (data ?? []).flatMap((item: any) =>
+        Array.isArray(item?.reviewer_id) ? item.reviewer_id : [],
+      ),
+    ),
+  );
 }
 
 export async function getReviewsDetail(id: string) {

@@ -1,18 +1,4 @@
-import type { refDataType } from '@/pages/Utils/review';
-import {
-  ConcurrencyController,
-  dealModel,
-  dealProcress,
-  getAllRefObj,
-  getRefTableName,
-} from '@/pages/Utils/review';
-import { getCommentApi, updateCommentApi } from '@/services/comments/api';
-import { getRefData, updateDateToReviewState } from '@/services/general/api';
-import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
-import { getProcessDetail } from '@/services/processes/api';
-import { getReviewsDetail, updateReviewApi } from '@/services/reviews/api';
-import { getUserTeamId } from '@/services/roles/api';
-import { getUserId, getUsersByIds } from '@/services/users/api';
+import { rejectReviewApi } from '@/services/reviews/api';
 import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
@@ -30,8 +16,6 @@ interface RejectReviewProps {
 
 const RejectReview: React.FC<RejectReviewProps> = ({
   reviewId,
-  dataId,
-  dataVersion,
   isModel,
   actionRef,
   buttonType = 'icon',
@@ -57,170 +41,6 @@ const RejectReview: React.FC<RejectReviewProps> = ({
     setOpen(false);
   };
 
-  const updateUnderReviewToRejected = async (underReview: refDataType[]) => {
-    const controller = new ConcurrencyController(5);
-    for (const item of underReview) {
-      const updateData = {
-        state_code: 0,
-      };
-
-      controller.add(async () => {
-        return await updateDateToReviewState(
-          item['@refObjectId'],
-          item['@version'],
-          getRefTableName(item['@type']),
-          updateData,
-        );
-      });
-    }
-    await controller.waitForAll();
-  };
-
-  const getUnderReviewReferences = async (
-    refs: any[],
-    refMaps: Map<string, any>,
-    userTeamId: string,
-    underReview: refDataType[],
-    requestKeysSet?: Set<string>,
-  ): Promise<undefined> => {
-    const controller = new ConcurrencyController(5);
-    const requestKeys = requestKeysSet || new Set<string>();
-    const handelSameModelWithProcress = async (ref: refDataType) => {
-      if (ref['@type'] === 'process data set') {
-        const { data: sameModelWithProcress, success } = await getLifeCycleModelDetail(
-          ref['@refObjectId'],
-          ref['@version'],
-        );
-        if (success && sameModelWithProcress) {
-          if (
-            sameModelWithProcress?.stateCode >= 20 &&
-            sameModelWithProcress?.stateCode < 100 &&
-            !underReview.find(
-              (item) =>
-                item['@refObjectId'] === ref['@refObjectId'] &&
-                item['@version'] === ref['@version'],
-            )
-          ) {
-            underReview.push({
-              '@type': 'lifeCycleModel data set',
-              '@refObjectId': sameModelWithProcress?.id,
-              '@version': sameModelWithProcress?.version,
-            });
-          }
-          const modelRefs = getAllRefObj(sameModelWithProcress);
-          await getUnderReviewReferences(modelRefs, refMaps, userTeamId, underReview, requestKeys);
-        }
-      }
-    };
-
-    const processRef = async (ref: any) => {
-      const refResult = await getRefData(
-        ref['@refObjectId'],
-        ref['@version'],
-        getRefTableName(ref['@type']),
-        userTeamId,
-      );
-      refMaps.set(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`, refResult?.data);
-
-      if (refResult.success && refResult?.data) {
-        const refData = refResult?.data;
-        if (refData?.stateCode >= 20 && refData?.stateCode < 100) {
-          if (
-            !underReview.find(
-              (item) =>
-                item['@refObjectId'] === ref['@refObjectId'] &&
-                item['@version'] === ref['@version'],
-            )
-          ) {
-            underReview.push(ref);
-            await getUnderReviewReferences(
-              getAllRefObj(refData),
-              refMaps,
-              userTeamId,
-              underReview,
-              requestKeys,
-            );
-          }
-        }
-        await handelSameModelWithProcress(ref);
-      }
-    };
-
-    for (const ref of refs) {
-      const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
-      if (!requestKeys.has(key)) {
-        requestKeys.add(key);
-        controller.add(() => processRef(ref));
-      }
-    }
-
-    await controller.waitForAll();
-  };
-
-  const hendleRejectProcress = async () => {
-    const { data: processDetail } = await getProcessDetail(dataId, dataVersion);
-    if (!processDetail) {
-      return;
-    }
-    const unReview: any[] = []; // stateCode < 20
-    const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
-    const unRuleVerification: any[] = [];
-    const nonExistentRef: any[] = [];
-
-    dealProcress(processDetail, unReview, underReview, unRuleVerification, nonExistentRef);
-
-    const userTeamId = await getUserTeamId();
-    const refObjs = getAllRefObj(processDetail);
-    await getUnderReviewReferences(refObjs, new Map<string, any>(), userTeamId, underReview);
-
-    await updateUnderReviewToRejected(underReview);
-  };
-
-  const hendleRejectModel = async () => {
-    const { data: modelDetail, success } = await getLifeCycleModelDetail(dataId, dataVersion);
-    if (!success) {
-      return;
-    }
-    const unReview: any[] = []; // stateCode < 20
-    const underReview: any[] = []; // stateCode >= 20 && stateCode < 100
-    const unRuleVerification: any[] = [];
-    const nonExistentRef: any[] = [];
-    dealModel(modelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
-    const { data: sameProcressWithModel } = await getProcessDetail(
-      modelDetail?.id,
-      modelDetail?.version,
-    );
-    dealProcress(sameProcressWithModel, unReview, underReview, unRuleVerification, nonExistentRef);
-
-    const refObjs = getAllRefObj(modelDetail);
-    const userTeamId = await getUserTeamId();
-    const refsMap = new Map<string, any>();
-    await getUnderReviewReferences(refObjs, refsMap, userTeamId, underReview);
-    const submodels = modelDetail?.json_tg?.submodels;
-    if (submodels) {
-      submodels.forEach((item: any) => {
-        underReview.push({
-          '@refObjectId': item.id,
-          '@version': modelDetail?.version,
-          '@type': 'process data set',
-        });
-      });
-    }
-    await updateUnderReviewToRejected(underReview);
-  };
-
-  const updateUnderReviewCommentRefToRejected = async () => {
-    const { data: commentDetail } = await getCommentApi(reviewId, 'assigned');
-    if (commentDetail && commentDetail.length > 0) {
-      const refObjs = getAllRefObj(commentDetail);
-      const userTeamId = await getUserTeamId();
-      const underReview: any[] = [];
-      await getUnderReviewReferences(refObjs, new Map<string, any>(), userTeamId, underReview);
-
-      await updateUnderReviewToRejected(underReview);
-    }
-  };
-
   const handleOk = async () => {
     try {
       setLoading(true);
@@ -230,50 +50,14 @@ const RejectReview: React.FC<RejectReviewProps> = ({
         setOpen(false);
         return;
       }
-      const oldReviews = await getReviewsDetail(reviewId);
-      if (oldReviews?.state_code === 1) {
-        await updateCommentApi(
-          reviewId,
-          {
-            state_code: -1,
-          },
-          'assigned',
-        );
-      }
-      const { json: oldReviewJson } = oldReviews ?? {};
-      const userId = await getUserId();
-      const user = await getUsersByIds([userId]);
-      const { error } = await updateReviewApi([reviewId], {
-        state_code: -1,
-        json: {
-          ...oldReviewJson,
-          comment: {
-            message: values.reason,
-          },
-          logs: [
-            ...(oldReviewJson?.logs ?? []),
-            {
-              action: 'rejected',
-              time: new Date(),
-              user: {
-                id: userId,
-                display_name: user?.[0]?.display_name,
-              },
-            },
-          ],
-        },
-      });
+      const result = await rejectReviewApi(
+        reviewId,
+        isModel ? 'lifecyclemodels' : 'processes',
+        values.reason,
+      );
 
-      if (error) {
-        throw error;
-      }
-
-      await updateUnderReviewCommentRefToRejected();
-
-      if (isModel) {
-        await hendleRejectModel();
-      } else {
-        await hendleRejectProcress();
+      if (result.error) {
+        throw result.error;
       }
       message.success(
         intl.formatMessage({

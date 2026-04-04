@@ -187,6 +187,133 @@ describe('submitDatasetReviewApi', () => {
   });
 });
 
+describe('review workflow command wrappers', () => {
+  it('saves reviewer assignment drafts through the admin review command', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-1' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-2' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+    const result = await reviewsApi.saveReviewAssignmentDraftApi(
+      ['review-1', 'review-2'],
+      ['user-1', 'user-2'],
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(
+      1,
+      'admin_review_save_assignment_draft',
+      {
+        reviewId: 'review-1',
+        reviewerIds: ['user-1', 'user-2'],
+      },
+    );
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(
+      2,
+      'admin_review_save_assignment_draft',
+      {
+        reviewId: 'review-2',
+        reviewerIds: ['user-1', 'user-2'],
+      },
+    );
+    expect(result).toEqual({
+      data: [{ review: { id: 'review-1' } }, { review: { id: 'review-2' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('assigns reviewers with an explicit deadline through the admin review command', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.assignReviewersApi(
+      ['review-1'],
+      ['user-3'],
+      '2026-04-10T12:00:00.000Z',
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-3'],
+      deadline: '2026-04-10T12:00:00.000Z',
+    });
+    expect(result).toEqual(commandResult);
+  });
+
+  it('revokes reviewers through the admin review command', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.revokeReviewerApi('review-1', 'user-9');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_revoke_reviewer', {
+      reviewId: 'review-1',
+      reviewerId: 'user-9',
+    });
+    expect(result).toEqual(commandResult);
+  });
+
+  it('approves and rejects reviews through the admin review commands', async () => {
+    const approveResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    const rejectResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce(approveResult)
+      .mockResolvedValueOnce(rejectResult);
+
+    const approve = await reviewsApi.approveReviewApi('review-1', 'processes');
+    const reject = await reviewsApi.rejectReviewApi('review-1', 'lifecyclemodels', 'Needs fixes');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'admin_review_approve', {
+      reviewId: 'review-1',
+      table: 'processes',
+    });
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(2, 'admin_review_reject', {
+      reviewId: 'review-1',
+      table: 'lifecyclemodels',
+      reason: 'Needs fixes',
+    });
+    expect(approve).toEqual(approveResult);
+    expect(reject).toEqual(rejectResult);
+  });
+});
+
 describe('updateReviewApi', () => {
   it('invokes edge function and adds modified_at when updating terminal states', async () => {
     const now = new Date('2024-05-01T12:34:56.000Z');
@@ -285,17 +412,19 @@ describe('updateReviewApi', () => {
 });
 
 describe('getReviewerIdsApi', () => {
-  it('returns reviewer ids when supabase responds with data', async () => {
-    const supabaseResult = { data: { reviewer_id: ['user-1', 'user-2'] } };
+  it('returns deduplicated reviewer ids when supabase responds with multiple rows', async () => {
+    const supabaseResult = {
+      data: [{ reviewer_id: ['user-1', 'user-2'] }, { reviewer_id: ['user-2', 'user-3'] }],
+    };
     const builder = createQueryBuilder(supabaseResult);
     mockFrom.mockReturnValueOnce(builder);
 
-    const result = await reviewsApi.getReviewerIdsApi(['review-1']);
+    const result = await reviewsApi.getReviewerIdsApi(['review-1', 'review-2']);
 
     expect(mockFrom).toHaveBeenCalledWith('reviews');
     expect(builder.select).toHaveBeenCalledWith('reviewer_id');
-    expect(builder.in).toHaveBeenCalledWith('id', ['review-1']);
-    expect(result).toEqual(['user-1', 'user-2']);
+    expect(builder.in).toHaveBeenCalledWith('id', ['review-1', 'review-2']);
+    expect(result).toEqual(['user-1', 'user-2', 'user-3']);
   });
 
   it('returns empty array when supabase payload is missing', async () => {
@@ -305,16 +434,6 @@ describe('getReviewerIdsApi', () => {
     const result = await reviewsApi.getReviewerIdsApi(['review-1']);
 
     expect(result).toEqual([]);
-  });
-
-  test.failing('supports retrieving reviewers for multiple review ids', async () => {
-    const builder = createQueryBuilder({});
-    builder.single = jest.fn().mockRejectedValue(new Error('Multiple rows found'));
-    mockFrom.mockReturnValueOnce(builder);
-
-    await expect(reviewsApi.getReviewerIdsApi(['review-1', 'review-2'])).resolves.toEqual([
-      'user-1',
-    ]);
   });
 });
 

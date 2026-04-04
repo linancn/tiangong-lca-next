@@ -18,6 +18,8 @@ import {
   getReviewedComment,
   getReviewerIdsByReviewId,
   getUserManageComments,
+  saveReviewCommentDraftApi,
+  submitReviewCommentApi,
   updateCommentApi,
   updateCommentByreviewerApi,
 } from '@/services/comments/api';
@@ -38,6 +40,10 @@ jest.mock('@/services/users/api', () => ({
   getUserId: jest.fn(),
 }));
 
+jest.mock('@/services/general/api', () => ({
+  invokeDatasetCommand: jest.fn(),
+}));
+
 const {
   supabase: {
     from: mockFrom,
@@ -47,6 +53,8 @@ const {
 } = jest.requireMock('@/services/supabase');
 
 const { getUserId: mockGetUserId } = jest.requireMock('@/services/users/api');
+const { invokeDatasetCommand: mockInvokeDatasetCommand } =
+  jest.requireMock('@/services/general/api');
 
 const createPagedCommentsQueryBuilder = (resolvedValue: any) => {
   const builder: any = {
@@ -63,6 +71,59 @@ const createPagedCommentsQueryBuilder = (resolvedValue: any) => {
 describe('Comments API service (src/services/comments/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('review workflow comment command wrappers', () => {
+    it('saves comment drafts through the review command boundary', async () => {
+      const commandResult = {
+        data: [{ comment: { review_id: 'review-123' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
+      mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+      const result = await saveReviewCommentDraftApi('review-123', { foo: 'bar' });
+
+      expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_review_save_comment_draft', {
+        reviewId: 'review-123',
+        json: { foo: 'bar' },
+      });
+      expect(result).toEqual(commandResult);
+    });
+
+    it('submits review comments and forwards reviewer reject state when provided', async () => {
+      const submitResult = {
+        data: [{ comment: { review_id: 'review-123' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
+      mockInvokeDatasetCommand
+        .mockResolvedValueOnce(submitResult)
+        .mockResolvedValueOnce(submitResult);
+
+      const defaultSubmit = await submitReviewCommentApi('review-123', { summary: 'ok' });
+      const rejectSubmit = await submitReviewCommentApi(
+        'review-123',
+        { comment: { message: 'reject' } },
+        -3,
+      );
+
+      expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'app_review_submit_comment', {
+        reviewId: 'review-123',
+        json: { summary: 'ok' },
+      });
+      expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(2, 'app_review_submit_comment', {
+        reviewId: 'review-123',
+        json: { comment: { message: 'reject' } },
+        commentState: -3,
+      });
+      expect(defaultSubmit).toEqual(submitResult);
+      expect(rejectSubmit).toEqual(submitResult);
+    });
   });
 
   describe('addCommentApi', () => {
