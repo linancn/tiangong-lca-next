@@ -846,6 +846,27 @@ export async function resolveFunctionInvokeError(error: {
   }
 }
 
+export function createLegacyMutationRemovedError(boundary: string): SupabaseError {
+  return {
+    message: 'Use explicit command endpoints instead',
+    code: 'LEGACY_ENDPOINT_REMOVED',
+    details: boundary,
+    hint: '',
+  } as SupabaseError;
+}
+
+export function createLegacyMutationRemovedResult<Row extends Record<string, unknown>>(
+  boundary: string,
+): SupabaseMutationResult<Row> {
+  return {
+    data: null,
+    error: createLegacyMutationRemovedError(boundary),
+    count: null,
+    status: 410,
+    statusText: 'LEGACY_ENDPOINT_REMOVED',
+  };
+}
+
 export async function invokeDatasetCommand<Row extends Record<string, unknown>>(
   functionName: DatasetCommandFunctionName,
   body: Record<string, unknown>,
@@ -1041,24 +1062,12 @@ export async function updateStateCodeApi(
   stateCode: number,
 ) {
   if (!table) return;
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table, data: { state_code: stateCode } },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return {
-      error: await resolveFunctionInvokeError(result.error),
-    };
-  }
-  return result?.data;
+  void id;
+  void version;
+  void stateCode;
+  return {
+    error: createLegacyMutationRemovedError(`updateStateCodeApi:${table}`),
+  };
 }
 
 export async function getReviewsOfData(id: string, version: string, table: string) {
@@ -1072,24 +1081,12 @@ export async function updateDateToReviewState(
   data: any,
 ) {
   if (!table) return;
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table, data },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return {
-      error: await resolveFunctionInvokeError(result.error),
-    };
-  }
-  return result?.data;
+  void id;
+  void version;
+  void data;
+  return {
+    error: createLegacyMutationRemovedError(`updateDateToReviewState:${table}`),
+  };
 }
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user

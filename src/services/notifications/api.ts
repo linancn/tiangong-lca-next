@@ -1,6 +1,6 @@
-import { getCurrentUser } from '@/services/auth';
+import { resolveFunctionInvokeError } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
-import { getUserId } from '@/services/users/api';
+import { FunctionRegion } from '@supabase/supabase-js';
 import type {
   NotificationListItem,
   NotificationRef,
@@ -8,13 +8,20 @@ import type {
   ValidationIssueNotificationIssue,
 } from './data';
 
-const VALIDATION_ISSUE_NOTIFICATION_TYPE = 'validation_issue' as const;
+type NotificationQueryRow = NotificationTableRow & {
+  total_count?: number | string | null;
+};
+
+type NotificationCommandEnvelope = {
+  code?: string;
+  details?: unknown;
+  message?: string;
+  ok?: boolean;
+  status?: number;
+};
 
 const normalizeString = (value?: string | null) =>
   typeof value === 'string' && value.trim() ? value.trim() : undefined;
-
-const getNotificationSenderName = (user?: Auth.CurrentUser | null) =>
-  normalizeString(user?.name) ?? normalizeString(user?.email) ?? '-';
 
 const getNotificationIssueCodes = (issues: ValidationIssueNotificationIssue[]) =>
   issues
@@ -35,67 +42,19 @@ const getNotificationTabNames = (issues: ValidationIssueNotificationIssue[]) =>
         Boolean(tabName) && allTabNames.indexOf(tabName) === index,
     );
 
-export async function upsertValidationIssueNotification({
-  recipientUserId,
-  ref,
-  link,
-  issues,
-}: {
-  recipientUserId?: string;
-  ref: NotificationRef;
-  link?: string;
-  issues: ValidationIssueNotificationIssue[];
-}) {
-  const senderUserId = normalizeString(await getUserId());
-  const normalizedRecipientUserId = normalizeString(recipientUserId);
-  const datasetType = normalizeString(ref?.['@type']);
-  const datasetId = normalizeString(ref?.['@refObjectId']);
-  const datasetVersion = normalizeString(ref?.['@version']);
+const getNotificationLastViewAt = (lastViewTime?: number) =>
+  lastViewTime && lastViewTime > 0 ? new Date(lastViewTime).toISOString() : null;
 
-  if (
-    !senderUserId ||
-    !normalizedRecipientUserId ||
-    senderUserId === normalizedRecipientUserId ||
-    !datasetType ||
-    !datasetId ||
-    !datasetVersion
-  ) {
-    return {
-      success: false,
-      error: new Error('Invalid validation issue notification payload'),
-    };
-  }
+const toNotificationCommandError = async (error: { message?: string; context?: Response }) => {
+  const resolved = await resolveFunctionInvokeError(error);
+  return Object.assign(new Error(resolved.message), {
+    code: resolved.code,
+    details: resolved.details,
+    status: resolved.status,
+  });
+};
 
-  const currentUser = await getCurrentUser();
-  const { error } = await supabase.from('notifications').upsert(
-    {
-      recipient_user_id: normalizedRecipientUserId,
-      sender_user_id: senderUserId,
-      type: VALIDATION_ISSUE_NOTIFICATION_TYPE,
-      dataset_type: datasetType,
-      dataset_id: datasetId,
-      dataset_version: datasetVersion,
-      modified_at: new Date().toISOString(),
-      json: {
-        issueCodes: getNotificationIssueCodes(issues),
-        issueCount: issues.length,
-        link: normalizeString(link),
-        senderName: getNotificationSenderName(currentUser),
-        tabNames: getNotificationTabNames(issues),
-      },
-    },
-    {
-      onConflict: 'recipient_user_id,sender_user_id,type,dataset_type,dataset_id,dataset_version',
-    },
-  );
-
-  return {
-    success: !error,
-    error,
-  };
-}
-
-const mapNotificationRow = (row: NotificationTableRow): NotificationListItem => {
+const mapNotificationRow = (row: NotificationQueryRow): NotificationListItem => {
   const modifiedAt = normalizeString(row.modified_at);
   const normalizedModifiedAt =
     modifiedAt && !Number.isNaN(new Date(modifiedAt).getTime())
@@ -116,13 +75,89 @@ const mapNotificationRow = (row: NotificationTableRow): NotificationListItem => 
   };
 };
 
+export async function upsertValidationIssueNotification({
+  recipientUserId,
+  ref,
+  link,
+  issues,
+}: {
+  recipientUserId?: string;
+  ref: NotificationRef;
+  link?: string;
+  issues: ValidationIssueNotificationIssue[];
+}) {
+  const session = await supabase.auth.getSession();
+  const senderUserId = normalizeString(session.data.session?.user?.id);
+  const normalizedRecipientUserId = normalizeString(recipientUserId);
+  const datasetType = normalizeString(ref?.['@type']);
+  const datasetId = normalizeString(ref?.['@refObjectId']);
+  const datasetVersion = normalizeString(ref?.['@version']);
+
+  if (
+    !senderUserId ||
+    !normalizedRecipientUserId ||
+    senderUserId === normalizedRecipientUserId ||
+    !datasetType ||
+    !datasetId ||
+    !datasetVersion
+  ) {
+    return {
+      success: false,
+      error: new Error('Invalid validation issue notification payload'),
+    };
+  }
+
+  const { data, error } = await supabase.functions.invoke<NotificationCommandEnvelope>(
+    'app_notification_send_validation_issue',
+    {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      },
+      body: {
+        recipientUserId: normalizedRecipientUserId,
+        datasetType,
+        datasetId,
+        datasetVersion,
+        issueCodes: getNotificationIssueCodes(issues),
+        issueCount: issues.length,
+        link: normalizeString(link),
+        tabNames: getNotificationTabNames(issues),
+      },
+      region: FunctionRegion.UsEast1,
+    },
+  );
+
+  if (error) {
+    return {
+      success: false,
+      error: await toNotificationCommandError(error),
+    };
+  }
+
+  if (data?.ok === false) {
+    return {
+      success: false,
+      error: Object.assign(new Error(data.message || 'Request failed'), {
+        code: data.code,
+        details: data.details,
+        status: data.status,
+      }),
+    };
+  }
+
+  return {
+    success: true,
+    error: null,
+  };
+}
+
 export async function getNotifications(
   params: { pageSize: number; current: number },
   timeFilter: number = 3,
 ) {
-  const userId = normalizeString(await getUserId());
+  const session = await supabase.auth.getSession();
 
-  if (!userId) {
+  if (!session.data.session) {
     return Promise.resolve({
       data: [],
       success: false,
@@ -130,76 +165,54 @@ export async function getNotifications(
     });
   }
 
-  let query = supabase
-    .from('notifications')
-    .select('*', { count: 'exact' })
-    .eq('recipient_user_id', userId)
-    .eq('type', VALIDATION_ISSUE_NOTIFICATION_TYPE)
-    .order('modified_at', { ascending: false });
+  const { data, error } = await supabase.rpc('qry_notification_get_my_issue_items', {
+    p_page: params.current ?? 1,
+    p_page_size: params.pageSize ?? 10,
+    p_days: timeFilter,
+  });
 
-  if (timeFilter > 0) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
-    query = query.gte('modified_at', cutoffDate.toISOString());
-  }
-
-  const result = await query.range(
-    ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-    (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-  );
-
-  if (result?.data) {
-    if (result.data.length === 0) {
-      return Promise.resolve({
-        data: [],
-        success: true,
-        total: 0,
-      });
-    }
-
+  if (error || !Array.isArray(data)) {
     return Promise.resolve({
-      data: result.data.map((item: NotificationTableRow) => mapNotificationRow(item)),
-      page: params?.current ?? 1,
-      success: true,
-      total: result?.count ?? 0,
+      data: [],
+      success: false,
+      total: 0,
     });
   }
 
+  if (data.length === 0) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+      total: 0,
+    });
+  }
+
+  const rows = data as NotificationQueryRow[];
   return Promise.resolve({
-    data: [],
-    success: false,
-    total: 0,
+    data: rows.map((row) => mapNotificationRow(row)),
+    page: params?.current ?? 1,
+    success: true,
+    total: Number(rows[0]?.total_count ?? 0) || 0,
   });
 }
 
 export async function getNotificationsCount(timeFilter: number = 3, lastViewTime?: number) {
-  const userId = normalizeString(await getUserId());
+  const session = await supabase.auth.getSession();
 
-  if (!userId) {
+  if (!session.data.session) {
     return Promise.resolve({
       success: false,
       total: 0,
     });
   }
 
-  let query = supabase
-    .from('notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('recipient_user_id', userId)
-    .eq('type', VALIDATION_ISSUE_NOTIFICATION_TYPE);
-
-  if (lastViewTime && lastViewTime > 0) {
-    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
-  } else if (timeFilter > 0) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
-    query = query.gte('modified_at', cutoffDate.toISOString());
-  }
-
-  const { count, error } = await query;
+  const { data, error } = await supabase.rpc('qry_notification_get_my_issue_count', {
+    p_days: timeFilter,
+    p_last_view_at: getNotificationLastViewAt(lastViewTime),
+  });
 
   return Promise.resolve({
     success: !error,
-    total: count ?? 0,
+    total: Number(data ?? 0) || 0,
   });
 }

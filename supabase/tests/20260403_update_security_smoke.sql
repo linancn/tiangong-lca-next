@@ -356,8 +356,17 @@ select is(
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000006', true);
 
-delete from public.notifications
-where id = '50000000-0000-0000-0000-000000000001';
+do $$
+begin
+  begin
+    delete from public.notifications
+    where id = '50000000-0000-0000-0000-000000000001';
+  exception
+    when others then
+      null;
+  end;
+end;
+$$;
 
 reset role;
 

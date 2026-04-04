@@ -3,6 +3,8 @@ import {
   addSystemMemberApi,
   delRoleApi,
   getSystemMembersApi,
+  getTeamInvitationCountApi,
+  getTeamInvitationStatusApi,
   getTeamRoles,
   getUserManageTableData,
   reInvitedApi,
@@ -127,6 +129,57 @@ describe('roles api task-4 boundaries', () => {
         body: { teamId: 'team-id' },
       }),
     );
+  });
+
+  it('loads team notification rows via qry_notification_get_my_team_items', async () => {
+    supabase.rpc.mockResolvedValue({
+      data: [
+        {
+          user_id: 'user-id',
+          team_id: 'team-id',
+          role: 'is_invited',
+          team_title: [{ '@xml:lang': 'en', '#text': 'Team Title' }],
+          modified_at: '2024-05-01T10:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+
+    const result = await getTeamInvitationStatusApi(7);
+
+    expect(supabase.rpc).toHaveBeenCalledWith('qry_notification_get_my_team_items', {
+      p_days: 7,
+    });
+    expect(result).toEqual({
+      success: true,
+      data: {
+        user_id: 'user-id',
+        team_id: 'team-id',
+        role: 'is_invited',
+        teamTitle: [{ '@xml:lang': 'en', '#text': 'Team Title' }],
+        modifiedAt: '2024-05-01T10:00:00.000Z',
+      },
+    });
+  });
+
+  it('loads team notification counts via qry_notification_get_my_team_count', async () => {
+    supabase.rpc.mockResolvedValue({
+      data: 3,
+      error: null,
+    });
+
+    const lastViewTime = new Date('2024-05-01T00:00:00.000Z').getTime();
+    const result = await getTeamInvitationCountApi(3, lastViewTime);
+
+    expect(supabase.rpc).toHaveBeenCalledWith('qry_notification_get_my_team_count', {
+      p_days: 3,
+      p_last_view_at: new Date(lastViewTime).toISOString(),
+    });
+    expect(result).toEqual({
+      success: true,
+      data: [],
+      total: 3,
+    });
   });
 
   it('loads system members via qry_system_get_member_list', async () => {

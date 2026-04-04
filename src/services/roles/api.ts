@@ -21,6 +21,14 @@ type MemberListRow = {
   __total?: number;
 };
 
+type TeamNotificationRpcRow = {
+  user_id: string;
+  team_id: string;
+  role: string;
+  team_title?: unknown;
+  modified_at?: string | null;
+};
+
 const getSortParams = (sort: Record<string, SortOrder>) => {
   const sortBy = Object.keys(sort)[0] ?? 'created_at';
   const sortOrder = (sort[sortBy] ?? 'descend') === 'ascend' ? 'asc' : 'desc';
@@ -50,6 +58,17 @@ const mapMemberRows = (rows: MemberListRow[], defaultTeamId: string) =>
     pendingCount: Number(row.pendingCount ?? row.pending_count ?? 0) || 0,
     reviewedCount: Number(row.reviewedCount ?? row.reviewed_count ?? 0) || 0,
   }));
+
+const mapTeamNotificationRow = (row: TeamNotificationRpcRow) => ({
+  user_id: row.user_id,
+  team_id: row.team_id,
+  role: row.role,
+  teamTitle: row.team_title ?? [],
+  modifiedAt: row.modified_at ?? null,
+});
+
+const getNotificationLastViewAt = (lastViewTime?: number) =>
+  lastViewTime && lastViewTime > 0 ? new Date(lastViewTime).toISOString() : null;
 
 async function invokeMembershipCommand(command: string, body: Record<string, unknown>) {
   const session = await supabase.auth.getSession();
@@ -160,44 +179,34 @@ export const getUserIdsByTeamIds = async (teamIds: string[]) => {
 };
 
 export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
-  const userId = await getUserId();
-  if (!userId?.length) {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
     return {
       success: false,
       data: null,
     };
-  } else {
-    let query = supabase
-      .from('roles')
-      .select('*')
-      .eq('user_id', userId)
-      .neq('team_id', SYSTEM_TEAM_ID)
-      .order('modified_at', { ascending: false });
+  }
 
-    if (timeFilter > 0) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
-      query = query.gte('modified_at', cutoffDate.toISOString());
-    }
+  const { data, error } = await supabase.rpc('qry_notification_get_my_team_items', {
+    p_days: timeFilter,
+  });
 
-    const { data: roleResult, error: roleError } = await query.maybeSingle();
-
-    if (roleError) {
-      return {
-        success: false,
-        data: null,
-      };
-    }
+  if (error || !Array.isArray(data)) {
     return {
-      success: true,
-      data: roleResult,
+      success: false,
+      data: null,
     };
   }
+
+  return {
+    success: true,
+    data: data.length > 0 ? mapTeamNotificationRow(data[0] as TeamNotificationRpcRow) : null,
+  };
 }
 
 export async function getTeamInvitationCountApi(timeFilter: number = 3, lastViewTime?: number) {
-  const userId = await getUserId();
-  if (!userId?.length) {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
     return {
       success: false,
       data: [],
@@ -205,25 +214,12 @@ export async function getTeamInvitationCountApi(timeFilter: number = 3, lastView
     };
   }
 
-  let query = supabase
-    .from('roles')
-    .select('*', { count: 'exact' })
-    .eq('user_id', userId)
-    .in('role', ['is_invited'])
-    .neq('team_id', SYSTEM_TEAM_ID)
-    .order('modified_at', { ascending: false });
+  const { data, error } = await supabase.rpc('qry_notification_get_my_team_count', {
+    p_days: timeFilter,
+    p_last_view_at: getNotificationLastViewAt(lastViewTime),
+  });
 
-  if (lastViewTime && lastViewTime > 0) {
-    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
-  } else if (timeFilter > 0) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
-    query = query.gte('modified_at', cutoffDate.toISOString());
-  }
-
-  const { data: roleResult, error: roleError, count } = await query;
-
-  if (roleError) {
+  if (error) {
     return {
       success: false,
       data: [],
@@ -232,8 +228,8 @@ export async function getTeamInvitationCountApi(timeFilter: number = 3, lastView
   }
   return {
     success: true,
-    data: roleResult ?? [],
-    total: count ?? 0,
+    data: [],
+    total: Number(data ?? 0) || 0,
   };
 }
 

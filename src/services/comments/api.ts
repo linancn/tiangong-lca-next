@@ -1,7 +1,6 @@
-import { invokeDatasetCommand } from '@/services/general/api';
+import { createLegacyMutationRemovedError, invokeDatasetCommand } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
-import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 
 type ReviewCommentCommandFunctionName =
@@ -16,17 +15,15 @@ async function invokeReviewCommentCommand<Row extends Record<string, unknown>>(
 }
 
 export async function addCommentApi(data: any) {
-  const { error } = await supabase.from('comments').upsert(data).select();
-  return { error };
+  void data;
+  return { error: createLegacyMutationRemovedError('addCommentApi') };
 }
 
 export async function updateCommentByreviewerApi(reviewId: string, reviewerId: string, data: any) {
-  const { error } = await supabase
-    .from('comments')
-    .update(data)
-    .eq('reviewer_id', reviewerId)
-    .eq('review_id', reviewId);
-  return { error };
+  void reviewId;
+  void reviewerId;
+  void data;
+  return { error: createLegacyMutationRemovedError('updateCommentByreviewerApi') };
 }
 
 export async function updateCommentApi(
@@ -34,21 +31,12 @@ export async function updateCommentApi(
   data: any,
   tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected',
 ) {
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_comment', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id: reviewId, data, tabType },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-  }
-  return result?.data;
+  void reviewId;
+  void data;
+  void tabType;
+  return {
+    error: createLegacyMutationRemovedError('updateCommentApi'),
+  };
 }
 
 export async function saveReviewCommentDraftApi<

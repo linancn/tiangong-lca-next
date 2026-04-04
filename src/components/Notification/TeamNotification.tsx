@@ -3,7 +3,6 @@ import {
   getTeamInvitationStatusApi,
   rejectTeamInvitationApi,
 } from '@/services/roles/api';
-import { getTeamById } from '@/services/teams/api';
 import { Button, message, Space, Table, Tag, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
@@ -24,6 +23,24 @@ interface TeamNotificationProps {
   onDataLoaded?: () => Promise<void>;
 }
 
+const resolveTeamTitle = (teamTitle: unknown, locale: string) => {
+  if (Array.isArray(teamTitle)) {
+    return locale === 'zh-CN'
+      ? (teamTitle.find((item: any) => item?.['@xml:lang'] === 'zh')?.['#text'] ??
+          teamTitle[0]?.['#text'] ??
+          'Unknown Team')
+      : (teamTitle.find((item: any) => item?.['@xml:lang'] === 'en')?.['#text'] ??
+          teamTitle[0]?.['#text'] ??
+          'Unknown Team');
+  }
+
+  if (typeof teamTitle === 'string' && teamTitle.trim()) {
+    return teamTitle;
+  }
+
+  return 'Unknown Team';
+};
+
 const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataLoaded }) => {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -37,28 +54,17 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataL
       const res = await getTeamInvitationStatusApi(timeFilter);
 
       if (res.success && res.data) {
-        const teamData = await getTeamById(res.data.team_id);
-        if (teamData.success && teamData.data?.[0]) {
-          const teamTitle = teamData.data[0]?.json?.title;
-          const title =
-            intl.locale === 'zh-CN'
-              ? (teamTitle?.find((item: any) => item['@xml:lang'] === 'zh')?.['#text'] ??
-                teamTitle[0]?.['#text'])
-              : (teamTitle?.find((item: any) => item['@xml:lang'] === 'en')?.['#text'] ??
-                teamTitle[0]?.['#text']);
-
-          setData([
-            {
-              key: res.data.team_id,
-              id: res.data.team_id,
-              teamId: res.data.team_id,
-              userId: res.data.user_id,
-              teamTitle: title || 'Unknown Team',
-              role: res.data.role,
-              createTime: new Date().toLocaleString(),
-            },
-          ]);
-        }
+        setData([
+          {
+            key: res.data.team_id,
+            id: res.data.team_id,
+            teamId: res.data.team_id,
+            userId: res.data.user_id,
+            teamTitle: resolveTeamTitle(res.data.teamTitle, intl.locale),
+            role: res.data.role,
+            createTime: res.data.modifiedAt ?? new Date().toISOString(),
+          },
+        ]);
       } else {
         setData([]);
       }

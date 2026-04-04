@@ -6,10 +6,10 @@ import {
 import { getCurrentUser } from '@/services/auth';
 import {
   contributeSource,
+  createLegacyMutationRemovedError,
   getRefData,
   invokeDatasetCommand,
   normalizeLangPayloadForSave,
-  resolveFunctionInvokeError,
 } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
@@ -245,22 +245,12 @@ export async function updateProcess(
 }
 
 export async function updateProcessApi(id: string, version: string, data: any) {
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table: 'processes', data },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return { error: await resolveFunctionInvokeError(result.error) };
-  }
-  return result?.data;
+  void id;
+  void version;
+  void data;
+  return {
+    error: createLegacyMutationRemovedError('updateProcessApi'),
+  };
 }
 
 export async function getProcessTableAll(

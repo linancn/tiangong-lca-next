@@ -42,6 +42,12 @@ const mockResolveFunctionInvokeError = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  createLegacyMutationRemovedError: (boundary: string) => ({
+    message: 'Use explicit command endpoints instead',
+    code: 'LEGACY_ENDPOINT_REMOVED',
+    details: boundary,
+    hint: '',
+  }),
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
   getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
@@ -491,68 +497,19 @@ describe('updateProcess', () => {
 });
 
 describe('updateProcessApi', () => {
-  it('invokes update function with provided data payload', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'token-abc',
-        },
-      },
-    });
-    const invokeResult = { data: { updated: true } };
-    mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
-
+  it('returns a structured deprecation error', async () => {
     const payload = { json_ordered: { foo: 'bar' } };
     const result = await processesApi.updateProcessApi(sampleId, sampleVersion, payload);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token-abc' },
-      body: {
-        id: sampleId,
-        version: sampleVersion,
-        table: 'processes',
-        data: payload,
-      },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(result).toEqual({ updated: true });
-  });
-
-  it('returns undefined when session is missing', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
-
-    const result = await processesApi.updateProcessApi(sampleId, sampleVersion, { foo: 'bar' });
-
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
-  });
-
-  it('logs invocation errors and returns normalized error payload', async () => {
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: undefined,
-        },
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateProcessApi',
+        hint: '',
       },
     });
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: undefined, error: { message: 'bad req' } });
-
-    const result = await processesApi.updateProcessApi(sampleId, sampleVersion, { foo: 'bar' });
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: {
-        id: sampleId,
-        version: sampleVersion,
-        table: 'processes',
-        data: { foo: 'bar' },
-      },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(logSpy).toHaveBeenCalledWith('error', { message: 'bad req' });
-    expect(result).toEqual({ error: { message: 'bad req' } });
-    logSpy.mockRestore();
   });
 });
 

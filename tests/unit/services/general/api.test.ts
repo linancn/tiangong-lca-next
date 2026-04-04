@@ -499,39 +499,31 @@ describe('getRefData', () => {
 });
 
 describe('updateStateCodeApi', () => {
-  it('should invoke edge function when session exists', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-1' } } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { updated: true } });
-
+  it('should return a structured deprecation error for legacy direct state updates', async () => {
     const result = await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 300);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token-1' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: { state_code: 300 } },
-      region: expect.anything(),
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateStateCodeApi:flows',
+        hint: '',
+      },
     });
-    expect(result).toEqual({ updated: true });
   });
 
-  it('should return undefined when session is missing', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
-
+  it('should return a deprecation error even when session is missing', async () => {
     const result = await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 100);
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
-  });
-
-  it('should use an empty bearer token when the session has no access token', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { updated: true } });
-
-    await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 300);
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: { state_code: 300 } },
-      region: expect.anything(),
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateStateCodeApi:flows',
+        hint: '',
+      },
     });
   });
 });
@@ -957,9 +949,7 @@ describe('getReviewsOfData', () => {
 });
 
 describe('updateDateToReviewState', () => {
-  it('should invoke edge function with provided data', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-2' } } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true } });
+  it('should return a structured deprecation error for legacy review-state updates', async () => {
     const payload = { foo: 'bar' };
 
     const result = await generalApi.updateDateToReviewState(
@@ -969,25 +959,14 @@ describe('updateDateToReviewState', () => {
       payload,
     );
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token-2' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: payload },
-      region: expect.anything(),
-    });
-    expect(result).toEqual({ ok: true });
-  });
-
-  it('should use an empty bearer token when review-state update has no access token', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true } });
-    const payload = { foo: 'bar' };
-
-    await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', payload);
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: payload },
-      region: expect.anything(),
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateDateToReviewState:flows',
+        hint: '',
+      },
     });
   });
 });
@@ -1785,19 +1764,17 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should log error when function returns error', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-1' } } });
-      mockFunctionsInvoke.mockResolvedValue({
-        error: { message: 'Update failed' },
-        data: null,
+    it('should return a deprecation error instead of invoking legacy functions', async () => {
+      const result = await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 100);
+
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'updateStateCodeApi:flows',
+          hint: '',
+        },
       });
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 100);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-
-      consoleLogSpy.mockRestore();
     });
   });
 
@@ -1843,33 +1820,19 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should pass empty data object', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-2' } } });
-      mockFunctionsInvoke.mockResolvedValue({ data: { success: true } });
-
-      const result = await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', {});
-
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-        headers: { Authorization: 'Bearer token-2' },
-        body: { id: sampleId, version: sampleVersion, table: 'flows', data: {} },
-        region: expect.anything(),
-      });
-      expect(result).toEqual({ success: true });
-    });
-
-    it('should log error when edge function returns failure', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-2' } } });
-      mockFunctionsInvoke.mockResolvedValue({ data: null, error: { message: 'Update failed' } });
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
+    it('should return a deprecation error when legacy review-state helpers are called', async () => {
       const result = await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', {
         state_code: 2,
       });
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-      expect(result).toEqual({ error: { message: 'Update failed' } });
-
-      consoleLogSpy.mockRestore();
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'updateDateToReviewState:flows',
+          hint: '',
+        },
+      });
     });
   });
 

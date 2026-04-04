@@ -1,8 +1,11 @@
-import { invokeDatasetCommand, type TidasPackageRootTable } from '@/services/general/api';
+import {
+  createLegacyMutationRemovedError,
+  invokeDatasetCommand,
+  type TidasPackageRootTable,
+} from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
-import { FunctionRegion } from '@supabase/supabase-js';
 import { getPendingComment, getRejectedComment, getReviewedComment } from '../comments/api';
 import { getLangText } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
@@ -18,6 +21,14 @@ type ReviewWorkflowCommandFunctionName =
   | 'admin_review_revoke_reviewer'
   | 'admin_review_approve'
   | 'admin_review_reject';
+
+type DataNotificationRpcRow = {
+  id: string;
+  state_code: number;
+  json: any;
+  modified_at: string;
+  total_count?: number | string | null;
+};
 
 async function invokeReviewWorkflowCommand<Row extends Record<string, unknown>>(
   functionName: ReviewWorkflowCommandFunctionName,
@@ -52,15 +63,9 @@ async function invokeReviewWorkflowCommandBatch<Row extends Record<string, unkno
 }
 
 export async function addReviewsApi(id: string, data: any) {
-  const { error } = await supabase
-    .from('reviews')
-    .insert({
-      id: id,
-      json: data,
-      state_code: 0,
-    })
-    .select();
-  return { error };
+  void id;
+  void data;
+  return { error: createLegacyMutationRemovedError('addReviewsApi') };
 }
 
 export async function submitDatasetReviewApi<
@@ -129,26 +134,11 @@ export async function rejectReviewApi<
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {
-  const session = await supabase.auth.getSession();
-  const newData =
-    data?.state_code && [-1, 2, 1].includes(data.state_code)
-      ? { ...data, modified_at: new Date().toISOString() }
-      : data;
-  if (!session.data.session) {
-    return undefined;
-  }
-  const result = await supabase.functions.invoke('update_review', {
-    headers: {
-      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-    },
-    body: { reviewIds, data: newData },
-    region: FunctionRegion.UsEast1,
-  });
-
-  if (result.error) {
-    return { error: result.error };
-  }
-  return result?.data;
+  void reviewIds;
+  void data;
+  return {
+    error: createLegacyMutationRemovedError('updateReviewApi'),
+  };
 }
 
 export async function getReviewerIdsApi(reviewIds: React.Key[]) {
@@ -382,9 +372,9 @@ export async function getNotifyReviews(
   lang: string,
   timeFilter: number = 3,
 ) {
-  const userId = await getUserId();
+  const session = await supabase.auth.getSession();
 
-  if (!userId) {
+  if (!session.data.session) {
     return Promise.resolve({
       data: [],
       success: false,
@@ -392,107 +382,87 @@ export async function getNotifyReviews(
     });
   }
 
-  let query = supabase
-    .from('reviews')
-    .select('*', { count: 'exact' })
-    .filter('json->user->>id', 'eq', userId)
-    .in('state_code', [1, -1, 2])
-    .order('modified_at', { ascending: false });
+  const { data, error } = await supabase.rpc('qry_notification_get_my_data_items', {
+    p_page: params.current ?? 1,
+    p_page_size: params.pageSize ?? 10,
+    p_days: timeFilter,
+  });
 
-  if (timeFilter > 0) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
-    query = query.gte('modified_at', cutoffDate.toISOString());
-  }
-
-  const result = await query.range(
-    ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-    (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-  );
-
-  if (result?.data) {
-    if (result?.data.length === 0) {
-      return Promise.resolve({
-        data: [],
-        success: true,
-        total: 0,
-      });
-    }
-
-    const processIdAndVersions: { id: string; version: string }[] = [];
-    result?.data.forEach((i) => {
-      const id = i?.json?.data?.id;
-      const version = i?.json?.data?.version;
-      if (id && version) {
-        processIdAndVersions.push({ id, version });
-      }
-    });
-    const modelResult = await getLifeCyclesByIdAndVersion(processIdAndVersions);
-    let data = result?.data.map((i: any) => {
-      const model = modelResult?.data?.find(
-        (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
-      );
-      const name =
-        model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
-      return {
-        key: i.id,
-        id: i.id,
-        isFromLifeCycle: model ? true : false,
-        name:
-          (model
-            ? genProcessName(name ?? {}, lang)
-            : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
-        teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
-        modifiedAt: new Date(i.modified_at).toISOString(),
-        stateCode: i.state_code,
-        json: i?.json,
-      };
-    });
-
+  if (error || !Array.isArray(data)) {
     return Promise.resolve({
-      data: data,
-      page: params?.current ?? 1,
-      success: true,
-      total: result?.count ?? 0,
+      data: [],
+      success: false,
+      total: 0,
     });
   }
+
+  if (data.length === 0) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+      total: 0,
+    });
+  }
+
+  const rows = data as DataNotificationRpcRow[];
+  const processIdAndVersions: { id: string; version: string }[] = [];
+  rows.forEach((row) => {
+    const id = row?.json?.data?.id;
+    const version = row?.json?.data?.version;
+    if (id && version) {
+      processIdAndVersions.push({ id, version });
+    }
+  });
+  const modelResult = await getLifeCyclesByIdAndVersion(processIdAndVersions);
+  const mappedRows = rows.map((row) => {
+    const model = modelResult?.data?.find(
+      (candidate) =>
+        candidate.id === row?.json?.data?.id && candidate.version === row?.json?.data?.version,
+    );
+    const name =
+      model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
+    return {
+      key: row.id,
+      id: row.id,
+      isFromLifeCycle: model ? true : false,
+      name:
+        (model
+          ? genProcessName(name ?? {}, lang)
+          : genProcessName(row?.json?.data?.name ?? {}, lang)) || '-',
+      teamName: getLangText(row?.json?.team?.name ?? {}, lang),
+      userName: row?.json?.user?.name ?? row?.json?.user?.email ?? '-',
+      modifiedAt: new Date(row.modified_at).toISOString(),
+      stateCode: row.state_code,
+      json: row?.json,
+    };
+  });
+
   return Promise.resolve({
-    data: [],
-    success: false,
-    total: 0,
+    data: mappedRows,
+    page: params?.current ?? 1,
+    success: true,
+    total: Number(rows[0]?.total_count ?? 0) || 0,
   });
 }
 
 export async function getNotifyReviewsCount(timeFilter: number = 3, lastViewTime?: number) {
-  const userId = await getUserId();
+  const session = await supabase.auth.getSession();
 
-  if (!userId) {
+  if (!session.data.session) {
     return Promise.resolve({
       success: false,
       total: 0,
     });
   }
 
-  let query = supabase
-    .from('reviews')
-    .select('*', { count: 'exact', head: true })
-    .filter('json->user->>id', 'eq', userId)
-    .in('state_code', [1, -1, 2]);
-
-  if (lastViewTime && lastViewTime > 0) {
-    query = query.gt('modified_at', new Date(lastViewTime).toISOString());
-  } else if (timeFilter > 0) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - timeFilter);
-    query = query.gte('modified_at', cutoffDate.toISOString());
-  }
-
-  const { count, error } = await query;
+  const { data, error } = await supabase.rpc('qry_notification_get_my_data_count', {
+    p_days: timeFilter,
+    p_last_view_at: lastViewTime && lastViewTime > 0 ? new Date(lastViewTime).toISOString() : null,
+  });
 
   return Promise.resolve({
     success: !error,
-    total: count ?? 0,
+    total: Number(data ?? 0) || 0,
   });
 }
 
