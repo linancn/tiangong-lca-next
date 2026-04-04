@@ -923,7 +923,7 @@ describe('Teams management workflows', () => {
     });
 
     await waitFor(() => {
-      expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1');
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'member');
     });
 
     expect(message.error).toHaveBeenCalledWith('Action failed!');
@@ -1084,7 +1084,7 @@ describe('Teams management workflows', () => {
       await confirmConfig.onOk?.();
     });
 
-    expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1');
+    expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'member');
 
     const rejectedRow = screen.getByTestId('pro-table-row-rejected@example.com');
     fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
