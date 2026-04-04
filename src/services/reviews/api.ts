@@ -1,3 +1,4 @@
+import { invokeDatasetCommand, type TidasPackageRootTable } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
@@ -6,6 +7,8 @@ import { getPendingComment, getRejectedComment, getReviewedComment } from '../co
 import { getLangText } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
+
+type ReviewSubmitDatasetTable = Extract<TidasPackageRootTable, 'processes' | 'lifecyclemodels'>;
 
 export async function addReviewsApi(id: string, data: any) {
   const { error } = await supabase
@@ -17,6 +20,16 @@ export async function addReviewsApi(id: string, data: any) {
     })
     .select();
   return { error };
+}
+
+export async function submitDatasetReviewApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(tableName: ReviewSubmitDatasetTable, id: string, version: string) {
+  return invokeDatasetCommand<Row>('app_dataset_submit_review', {
+    id,
+    version,
+    table: tableName,
+  });
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {

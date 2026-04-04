@@ -367,8 +367,9 @@ const mockCheckVersions = jest.fn().mockResolvedValue(undefined);
 const mockBuildValidationIssues = jest.fn().mockReturnValue([]);
 const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockGetAllRefObj = jest.fn().mockReturnValue([]);
-const mockUpdateReviewsAfterCheckData = jest.fn().mockResolvedValue({});
-const mockUpdateUnReviewToUnderReview = jest.fn().mockResolvedValue({});
+const mockSubmitDatasetReview = jest.fn().mockResolvedValue({
+  data: [{ review: { id: 'review-1' } }],
+});
 const mockGetErrRefTab = jest.fn().mockReturnValue(null);
 const mockMapValidationIssuesToRefCheckData = jest.fn().mockReturnValue([]);
 const mockValidateDatasetWithSdk = jest.fn().mockReturnValue({ success: true, issues: [] });
@@ -392,8 +393,7 @@ jest.mock('@/pages/Utils/review', () => ({
   mapValidationIssuesToRefCheckData: (...args: any[]) =>
     mockMapValidationIssuesToRefCheckData(...args),
   ReffPath: MockReffPath,
-  updateReviewsAfterCheckData: (...args: any[]) => mockUpdateReviewsAfterCheckData(...args),
-  updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
+  submitDatasetReview: (...args: any[]) => mockSubmitDatasetReview(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
@@ -483,8 +483,9 @@ beforeEach(() => {
   mockGetRefsOfCurrentVersion.mockReset().mockResolvedValue({ oldRefs: [] });
   mockGetRefsOfNewVersion.mockReset().mockResolvedValue({ newRefs: [], oldRefs: [] });
   mockUpdateRefsData.mockReset().mockImplementation((data: any) => data);
-  mockUpdateReviewsAfterCheckData.mockReset().mockResolvedValue({});
-  mockUpdateUnReviewToUnderReview.mockReset().mockResolvedValue({});
+  mockSubmitDatasetReview.mockReset().mockResolvedValue({
+    data: [{ review: { id: 'review-1' } }],
+  });
 });
 
 describe('ToolbarEditInfo', () => {
@@ -1115,20 +1116,11 @@ describe('ToolbarEditInfo', () => {
       await ref.current?.submitReview(checkResult.unReview);
     });
 
-    expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalledWith(
-      'team-1',
-      {
-        id: 'model-1',
-        version: '1.0',
-        name: {},
-      },
-      'uuid-1',
-    );
-    expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalledWith(checkResult.unReview, 'uuid-1');
+    expect(mockSubmitDatasetReview).toHaveBeenCalledWith('lifecyclemodels', 'model-1', '1.0');
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
   });
 
-  it('stops the imperative review submission when creating the review record fails', async () => {
+  it('stops the imperative review submission when the submit-review command fails', async () => {
     const ref = React.createRef<any>();
     mockGetLifeCycleModelDetail.mockResolvedValue({
       success: true,
@@ -1147,7 +1139,7 @@ describe('ToolbarEditInfo', () => {
       },
     });
     mockGetProcessDetail.mockResolvedValue({});
-    mockUpdateReviewsAfterCheckData.mockResolvedValue({ error: { message: 'review failed' } });
+    mockSubmitDatasetReview.mockResolvedValue({ error: { message: 'review failed' } });
 
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
@@ -1162,8 +1154,8 @@ describe('ToolbarEditInfo', () => {
       await ref.current?.submitReview(checkResult.unReview);
     });
 
-    expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalled();
-    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockSubmitDatasetReview).toHaveBeenCalled();
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('review failed');
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
   });
 
@@ -1176,7 +1168,7 @@ describe('ToolbarEditInfo', () => {
       await ref.current?.submitReview([]);
     });
 
-    expect(mockUpdateReviewsAfterCheckData).not.toHaveBeenCalled();
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed');
   });
 
@@ -1548,15 +1540,7 @@ describe('ToolbarEditInfo', () => {
       await ref.current?.submitReview(checkResult.unReview);
     });
 
-    expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalledWith(
-      '',
-      {
-        id: 'model-1',
-        version: '1.0',
-        name: {},
-      },
-      'uuid-1',
-    );
+    expect(mockSubmitDatasetReview).toHaveBeenCalledWith('lifecyclemodels', 'model-1', '1.0');
   });
 
   it('hides the update-reference action outside edit mode', async () => {

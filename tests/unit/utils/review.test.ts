@@ -14,6 +14,7 @@ import {
   getRefTableName,
   getRejectedComments,
   mergeCommentsToData,
+  submitDatasetReview,
   updateReviewsAfterCheckData,
   updateUnReviewToUnderReview,
   validateDatasetRuleVerification,
@@ -91,11 +92,13 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockAddReviewsApi = jest.fn();
 const mockGetRejectReviewsByProcess = jest.fn();
+const mockSubmitDatasetReviewApi = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
   addReviewsApi: (...args: any[]) => mockAddReviewsApi(...args),
   getRejectReviewsByProcess: (...args: any[]) => mockGetRejectReviewsByProcess(...args),
+  submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
 const mockGetRejectedCommentsByReviewIds = jest.fn();
@@ -139,6 +142,7 @@ describe('review utilities', () => {
     mockGetLifeCycleModelDetail.mockReset();
     mockAddReviewsApi.mockReset();
     mockGetRejectReviewsByProcess.mockReset();
+    mockSubmitDatasetReviewApi.mockReset();
     mockGetRejectedCommentsByReviewIds.mockReset();
     mockGetSourcesByIdsAndVersions.mockReset();
     mockGetTeamMessageApi.mockReset();
@@ -1543,6 +1547,23 @@ describe('review utilities', () => {
         logs: expect.arrayContaining([expect.objectContaining({ action: 'submit_review' })]),
       }),
     );
+  });
+
+  it('forwards dataset review submission to the dedicated review command API', async () => {
+    mockSubmitDatasetReviewApi.mockResolvedValue({ data: [{ review: { id: 'review-1' } }] });
+
+    const result = await submitDatasetReview(
+      'processes',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
+    );
+
+    expect(mockSubmitDatasetReviewApi).toHaveBeenCalledWith(
+      'processes',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
+    );
+    expect(result).toEqual({ data: [{ review: { id: 'review-1' } }] });
   });
 
   it('returns references that remain under review when checking reports', async () => {

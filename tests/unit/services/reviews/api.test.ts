@@ -8,6 +8,7 @@ import { FunctionRegion } from '@supabase/supabase-js';
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
+const mockInvokeDatasetCommand = jest.fn();
 
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
@@ -20,6 +21,11 @@ jest.mock('@/services/supabase', () => ({
       invoke: (...args: any[]) => mockFunctionsInvoke.apply(null, args),
     },
   },
+}));
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  invokeDatasetCommand: (...args: any[]) => mockInvokeDatasetCommand.apply(null, args),
 }));
 
 const mockGetLifeCyclesByIdAndVersion = jest.fn();
@@ -99,6 +105,7 @@ beforeEach(() => {
   mockFrom.mockReset();
   mockAuthGetSession.mockReset();
   mockFunctionsInvoke.mockReset();
+  mockInvokeDatasetCommand.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
   mockGetPendingComment.mockReset();
@@ -151,6 +158,32 @@ describe('addReviewsApi', () => {
     });
     expect(selectMock).toHaveBeenCalled();
     expect(result).toEqual({ error: null });
+  });
+});
+
+describe('submitDatasetReviewApi', () => {
+  it('delegates review submission to the dataset command boundary', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.submitDatasetReviewApi(
+      'processes',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_submit_review', {
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      table: 'processes',
+    });
+    expect(result).toBe(commandResult);
   });
 });
 

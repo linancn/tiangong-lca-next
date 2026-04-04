@@ -12,8 +12,7 @@ import {
   getAllRefObj,
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
-  updateReviewsAfterCheckData,
-  updateUnReviewToUnderReview,
+  submitDatasetReview,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 
@@ -46,7 +45,6 @@ import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { v4 } from 'uuid';
 import { ProcessForm } from './form';
 
 type TabKeysType = ProcessDataSetObjectKeys | 'validation' | 'complianceDeclarations';
@@ -767,7 +765,7 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    const { checkResult, unReview } = await handleCheckData('review', {
+    const { checkResult } = await handleCheckData('review', {
       id: updatedProcess.id,
       version: updatedProcess.version,
       ...genProcessFromData(updatedProcess.json?.processDataSet),
@@ -777,19 +775,22 @@ const ProcessEdit: FC<Props> = ({
 
     if (checkResult) {
       setSpinning(true);
-      const reviewId = v4();
-      const result = await updateReviewsAfterCheckData(
-        processDetail.teamId,
-        {
-          id,
-          version,
-          name:
-            processDetail?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
-        },
-        reviewId,
+      const result = await submitDatasetReview(
+        'processes',
+        updatedProcess.id,
+        updatedProcess.version,
       );
-      if (result?.error) return;
-      await updateUnReviewToUnderReview(unReview, reviewId);
+      if (result?.error) {
+        message.error(
+          result.error.message ||
+            intl.formatMessage({
+              id: 'pages.process.review.submitError',
+              defaultMessage: 'Submit review failed',
+            }),
+        );
+        setSpinning(false);
+        return;
+      }
       message.success(
         intl.formatMessage({
           id: 'pages.process.review.submitSuccess',

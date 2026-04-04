@@ -8,7 +8,11 @@ import {
 } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { FormProcess } from '@/services/processes/data';
-import { addReviewsApi, getRejectReviewsByProcess } from '@/services/reviews/api';
+import {
+  addReviewsApi,
+  getRejectReviewsByProcess,
+  submitDatasetReviewApi,
+} from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
@@ -1222,6 +1226,14 @@ export const updateReviewsAfterCheckData = async (teamId: string, data: any, rev
   };
   const result = await addReviewsApi(reviewId, reviewJson);
   return result;
+};
+
+export const submitDatasetReview = async (
+  table: 'processes' | 'lifecyclemodels',
+  id: string,
+  version: string,
+) => {
+  return submitDatasetReviewApi(table, id, version);
 };
 
 export const updateUnReviewToUnderReview = async (unReview: refDataType[], reviewId: string) => {
