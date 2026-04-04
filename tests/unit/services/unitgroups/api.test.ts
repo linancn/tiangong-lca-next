@@ -61,13 +61,14 @@ const { getCachedClassificationData: mockGetCachedClassificationData } = jest.re
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
-  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
+  invokeDatasetCommand: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
 const {
   getDataDetail: mockGetDataDetail,
   getTeamIdByUserId: mockGetTeamIdByUserId,
+  invokeDatasetCommand: mockInvokeDatasetCommand,
   normalizeLangPayloadForSave: mockNormalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
 
@@ -205,6 +206,13 @@ beforeEach(() => {
   mockGetCachedClassificationData.mockResolvedValue([]);
   mockGetTeamIdByUserId.mockResolvedValue(null);
   mockGetDataDetail.mockResolvedValue({ data: null });
+  mockInvokeDatasetCommand.mockResolvedValue({
+    data: [],
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
   mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
     payload,
     validationError: undefined,
@@ -270,69 +278,72 @@ describe('createUnitGroup', () => {
 
 describe('updateUnitGroup', () => {
   it('invokes edge function with ordered payload', async () => {
-    const updateResult = { data: { success: true } };
-    mockFunctionsInvoke.mockResolvedValueOnce(updateResult as any);
+    const updateResult = {
+      data: [{ id: 'ug-1', rule_verification: true }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(updateResult as any);
     mockGenUnitGroupJsonOrdered.mockReturnValueOnce({ updated: true });
 
     const result = await updateUnitGroup('ug-1', '01.00.000', { name: 'Updated' });
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token' },
-      body: {
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_save_draft',
+      {
         id: 'ug-1',
         version: '01.00.000',
         table: 'unitgroups',
-        data: {
-          json_ordered: { updated: true },
-          rule_verification: true,
-        },
+        jsonOrdered: { updated: true },
       },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(result).toEqual(updateResult.data);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toEqual(updateResult);
   });
 
   it('returns undefined when no active session exists', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockInvokeDatasetCommand.mockResolvedValueOnce(undefined);
 
     const result = await updateUnitGroup('ug-1', '01.00.000', { name: 'Updated' });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).toHaveBeenCalled();
     expect(result).toBeUndefined();
   });
 
   it('uses empty bearer token fallback and logs invocation error', async () => {
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: undefined,
-        },
-      },
-    });
-    mockFunctionsInvoke.mockResolvedValueOnce({
-      data: undefined,
-      error: { message: 'invoke failed' },
+    mockInvokeDatasetCommand.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'invoke failed', code: 'FUNCTION_ERROR', details: '', hint: '' },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
     });
 
     const result = await updateUnitGroup('ug-1', '01.00.000', { name: 'Updated' });
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: {
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_save_draft',
+      {
         id: 'ug-1',
         version: '01.00.000',
         table: 'unitgroups',
-        data: {
-          json_ordered: expect.any(Object),
-          rule_verification: true,
-        },
+        jsonOrdered: expect.any(Object),
       },
-      region: FunctionRegion.UsEast1,
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toEqual({
+      data: null,
+      error: { message: 'invoke failed', code: 'FUNCTION_ERROR', details: '', hint: '' },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
     });
-    expect(logSpy).toHaveBeenCalledWith('error', { message: 'invoke failed' });
-    expect(result).toEqual({ error: { message: 'invoke failed' } });
-    logSpy.mockRestore();
   });
 
   it('returns a language validation error before invoking the update edge function', async () => {
@@ -343,7 +354,7 @@ describe('updateUnitGroup', () => {
 
     const result = await updateUnitGroup('ug-1', '01.00.000', { name: 'Updated' });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).not.toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
         data: null,

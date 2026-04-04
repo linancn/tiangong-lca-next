@@ -252,13 +252,13 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          const { error } = await contributeSource(
+                          const contributeResult = await contributeSource(
                             'unitgroups',
                             row.id,
                             row.version,
                           );
-                          if (error) {
-                            console.log(error);
+                          if (contributeResult?.error) {
+                            console.log(contributeResult.error);
                           } else {
                             message.success(
                               intl.formatMessage({

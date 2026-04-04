@@ -137,6 +137,11 @@ afterEach(() => {
 const sampleId = '12345678-1234-1234-1234-123456789012';
 const sampleVersion = '01.00.000';
 
+const createErrorContext = (body: Record<string, unknown>, status: number) => ({
+  status,
+  text: jest.fn().mockResolvedValue(JSON.stringify(body)),
+});
+
 describe('exportDataApi', () => {
   it('should select lifecycle model fields when table is lifecyclemodels', async () => {
     const resultPayload = { data: [{ json_ordered: { foo: 'bar' }, json_tg: {} }] };
@@ -531,6 +536,100 @@ describe('updateStateCodeApi', () => {
   });
 });
 
+describe('invokeDatasetCommand', () => {
+  it('normalizes command envelopes into legacy mutation results', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_save_draft',
+        data: {
+          id: sampleId,
+          version: sampleVersion,
+        },
+      },
+      error: null,
+    });
+
+    const result = await generalApi.invokeDatasetCommand(
+      'app_dataset_save_draft',
+      {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'flows',
+        jsonOrdered: { ordered: true },
+      },
+      {
+        ruleVerification: false,
+      },
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_save_draft', {
+      headers: { Authorization: 'Bearer token-cmd' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'flows',
+        jsonOrdered: { ordered: true },
+      },
+      region: expect.anything(),
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          rule_verification: false,
+        },
+      ],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('flattens command error details back into the legacy error shape', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Forbidden',
+        context: createErrorContext(
+          {
+            code: 'DATA_UNDER_REVIEW',
+            message: 'Data is under review and cannot be modified',
+            details: {
+              state_code: 20,
+              review_state_code: 20,
+            },
+          },
+          403,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Data is under review and cannot be modified',
+        code: 'DATA_UNDER_REVIEW',
+        state_code: 20,
+      }),
+      count: null,
+      status: 403,
+      statusText: 'DATA_UNDER_REVIEW',
+    });
+  });
+});
+
 describe('getReviewsOfData', () => {
   it('should return reviews array when present', async () => {
     const payload = { data: [{ reviews: ['review-1'] }] };
@@ -654,21 +753,34 @@ describe('contributeSource', () => {
       ],
     });
     mockFrom.mockReturnValueOnce(rolesBuilder);
-    mockFunctionsInvoke.mockResolvedValue({ data: { contributed: true } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_assign_team',
+        data: { id: sampleId, team_id: 'team-123' },
+      },
+      error: null,
+    });
 
     const result = await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_assign_team', {
       headers: { Authorization: 'Bearer token-3' },
       body: {
         id: sampleId,
         version: sampleVersion,
         table: 'flows',
-        data: { team_id: 'team-123' },
+        teamId: 'team-123',
       },
       region: expect.anything(),
     });
-    expect(result).toEqual({ contributed: true });
+    expect(result).toEqual({
+      data: [{ id: sampleId, team_id: 'team-123' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
   });
 
   it('should show error when user is not in a team', async () => {
@@ -705,19 +817,59 @@ describe('contributeSource', () => {
       data: [{ user_id: 'user-1', team_id: 'team-empty-token', role: 'member' }],
     });
     mockFrom.mockReturnValueOnce(rolesBuilder);
-    mockFunctionsInvoke.mockResolvedValue({ data: { contributed: true } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_assign_team',
+        data: { id: sampleId, team_id: 'team-empty-token' },
+      },
+      error: null,
+    });
 
     await generalApi.contributeSource('sources', sampleId, sampleVersion);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_assign_team', {
       headers: { Authorization: 'Bearer ' },
       body: {
         id: sampleId,
         version: sampleVersion,
         table: 'sources',
-        data: { team_id: 'team-empty-token' },
+        teamId: 'team-empty-token',
       },
       region: expect.anything(),
+    });
+  });
+});
+
+describe('publishDatasetApi', () => {
+  it('publishes a dataset through the dedicated command boundary', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-publish' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_publish',
+        data: { id: sampleId, state_code: 100 },
+      },
+      error: null,
+    });
+
+    const result = await generalApi.publishDatasetApi('contacts', sampleId, sampleVersion);
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_publish', {
+      headers: { Authorization: 'Bearer token-publish' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'contacts',
+      },
+      region: expect.anything(),
+    });
+    expect(result).toEqual({
+      data: [{ id: sampleId, state_code: 100 }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
     });
   });
 });
@@ -1499,12 +1651,40 @@ describe('Edge Cases and Error Handling', () => {
         data: [{ user_id: 'user-1', team_id: 'team-123', role: 'member' }],
       });
       mockFrom.mockReturnValueOnce(rolesBuilder);
-      mockFunctionsInvoke.mockResolvedValue({ error: { message: 'Network error' } });
+      mockFunctionsInvoke.mockResolvedValue({
+        data: null,
+        error: {
+          message: 'Forbidden',
+          context: createErrorContext(
+            {
+              code: 'TEAM_MEMBERSHIP_REQUIRED',
+              message: 'You must belong to the target team before assigning dataset ownership',
+              details: {
+                state_code: 403,
+              },
+            },
+            403,
+          ),
+        },
+      });
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      await generalApi.contributeSource('flows', sampleId, sampleVersion);
+      const result = await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Network error' });
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({ message: 'Forbidden' }),
+      );
+      expect(result).toEqual({
+        data: null,
+        error: expect.objectContaining({
+          code: 'TEAM_MEMBERSHIP_REQUIRED',
+          state_code: 403,
+        }),
+        count: null,
+        status: 403,
+        statusText: 'TEAM_MEMBERSHIP_REQUIRED',
+      });
 
       consoleLogSpy.mockRestore();
     });

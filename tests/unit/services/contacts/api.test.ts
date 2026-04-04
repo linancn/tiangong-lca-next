@@ -20,12 +20,8 @@ jest.mock('@/services/contacts/util');
 
 describe('Contacts API Service', () => {
   const { supabase } = jest.requireMock('@/services/supabase');
-  const {
-    getTeamIdByUserId,
-    getDataDetail,
-    normalizeLangPayloadForSave,
-    resolveFunctionInvokeError,
-  } = jest.requireMock('@/services/general/api');
+  const { getTeamIdByUserId, getDataDetail, invokeDatasetCommand, normalizeLangPayloadForSave } =
+    jest.requireMock('@/services/general/api');
   const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
   const { getLangText, jsonToList, genClassificationZH, classificationToString } =
     jest.requireMock('@/services/general/util');
@@ -67,8 +63,6 @@ describe('Contacts API Service', () => {
       payload: value,
       validationError: undefined,
     }));
-    resolveFunctionInvokeError.mockImplementation(async (error: any) => error);
-
     getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] || '');
     jsonToList.mockImplementation((value: any) => (Array.isArray(value) ? value : [value]));
     genClassificationZH.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);
@@ -161,19 +155,12 @@ describe('Contacts API Service', () => {
   describe('updateContact', () => {
     it('should update contact via edge function with session', async () => {
       const { updateContact } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            access_token: 'test-token',
-            user: { id: 'user-123' },
-          },
-        },
-      });
-
-      mockFunctions.mockResolvedValue({
-        data: { success: true, id: 'contact-123' },
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ id: 'contact-123', rule_verification: true }],
         error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
 
       const testData = {
@@ -186,62 +173,56 @@ describe('Contacts API Service', () => {
 
       const result = await updateContact('contact-123', 'v1.0', testData);
 
-      expect(mockAuth).toHaveBeenCalled();
-      expect(mockFunctions).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer test-token',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: 'contact-123',
           version: 'v1.0',
           table: 'contacts',
-          data: {
-            json_ordered: expect.any(Object),
-            rule_verification: true,
-          },
+          jsonOrdered: expect.any(Object),
         },
-        region: expect.any(String),
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual({
+        data: [{ id: 'contact-123', rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
-      expect(result.success).toBe(true);
     });
 
     it('should not update contact when no session', async () => {
       const { updateContact } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: { session: null },
-      });
+      invokeDatasetCommand.mockResolvedValue(undefined);
 
       const result = await updateContact('contact-123', 'v1.0', {});
 
-      expect(mockFunctions).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
     it('should handle edge function error', async () => {
       const { updateContact } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            access_token: 'test-token',
-          },
-        },
-      });
-
-      mockFunctions.mockResolvedValue({
+      invokeDatasetCommand.mockResolvedValue({
         data: null,
-        error: { message: 'Update failed' },
+        error: { message: 'Update failed', code: 'FUNCTION_ERROR', details: '', hint: '' },
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
       });
-
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
       const result = await updateContact('contact-123', 'v1.0', {});
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-      expect(result).toEqual({ error: { message: 'Update failed' } });
-
-      consoleLogSpy.mockRestore();
+      expect(result).toEqual({
+        data: null,
+        error: { message: 'Update failed', code: 'FUNCTION_ERROR', details: '', hint: '' },
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
     });
 
     it('should return a validation error when language normalization fails during update', async () => {
@@ -254,7 +235,7 @@ describe('Contacts API Service', () => {
 
       const result = await updateContact('contact-123', 'v1.0', {});
 
-      expect(mockFunctions).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).not.toHaveBeenCalled();
       expect(result).toMatchObject({
         data: null,
         status: 400,
@@ -273,16 +254,12 @@ describe('Contacts API Service', () => {
         payload: undefined,
         validationError: undefined,
       });
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
-      mockFunctions.mockResolvedValue({
-        data: { success: true },
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
         error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
 
       const result = await updateContact('contact-123', 'v1.0', {
@@ -293,24 +270,27 @@ describe('Contacts API Service', () => {
         },
       });
 
-      expect(mockFunctions).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer ',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: 'contact-123',
           version: 'v1.0',
           table: 'contacts',
-          data: {
-            json_ordered: expect.objectContaining({
-              contactDataSet: expect.any(Object),
-            }),
-            rule_verification: true,
-          },
+          jsonOrdered: expect.objectContaining({
+            contactDataSet: expect.any(Object),
+          }),
         },
-        region: expect.any(String),
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
-      expect(result).toEqual({ success: true });
     });
   });
 

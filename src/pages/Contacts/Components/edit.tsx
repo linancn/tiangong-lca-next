@@ -24,7 +24,7 @@ import {
   FormContact,
 } from '@/services/contacts/data';
 import { genContactFromData, genContactJsonOrdered } from '@/services/contacts/util';
-import { getRefData, updateStateCodeApi } from '@/services/general/api';
+import { getRefData, publishDatasetApi } from '@/services/general/api';
 import { getReviewUserRoleApi, getUserTeamId } from '@/services/roles/api';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
@@ -223,7 +223,11 @@ const ContactEdit: FC<Props> = ({
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
-    const updateResult: UpdateContactResult = await updateContact(id, version, formFieldsValue);
+    const updateResult: UpdateContactResult | undefined = await updateContact(
+      id,
+      version,
+      formFieldsValue,
+    );
     if (updateResult?.data) {
       const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
       if (typeof updateResult?.data?.[0]?.state_code === 'number') {
@@ -540,19 +544,40 @@ const ContactEdit: FC<Props> = ({
       return;
     }
 
-    const result = await updateStateCodeApi(currentId, currentVersion, 'contacts', 100);
-    if (!result) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.action.error',
-          defaultMessage: 'Action failed',
-        }),
-      );
+    const result = await publishDatasetApi<{ state_code?: number }>(
+      'contacts',
+      currentId,
+      currentVersion,
+    );
+    if (!result || result.error || !result.data?.[0]) {
+      if (result?.error?.state_code === 100) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.openData',
+            defaultMessage: 'This data is open data, save failed',
+          }),
+        );
+      } else if (result?.error?.state_code === 20) {
+        message.error(
+          intl.formatMessage({
+            id: 'pages.review.underReview',
+            defaultMessage: 'Data is under review, save failed',
+          }),
+        );
+      } else {
+        message.error(
+          result?.error?.message ??
+            intl.formatMessage({
+              id: 'pages.action.error',
+              defaultMessage: 'Action failed',
+            }),
+        );
+      }
       setSpinning(false);
       return;
     }
 
-    setCurrentStateCode(100);
+    setCurrentStateCode(result.data[0]?.state_code ?? 100);
     actionRef?.current?.reload();
     message.success(
       intl.formatMessage({

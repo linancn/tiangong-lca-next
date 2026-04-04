@@ -77,7 +77,7 @@ jest.mock('@/services/classifications/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
-  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
+  invokeDatasetCommand: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -89,7 +89,7 @@ const { supabase } = jest.requireMock('@/services/supabase');
 const { classificationToString, genClassificationZH, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
-const { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } =
+const { getDataDetail, getTeamIdByUserId, invokeDatasetCommand, normalizeLangPayloadForSave } =
   jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
 const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
@@ -100,6 +100,13 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    invokeDatasetCommand.mockResolvedValue({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
     normalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
       payload,
       validationError: undefined,
@@ -234,32 +241,37 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockVersion = '01.00.000';
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
-      const mockFunctionResult = createMockEdgeFunctionResponse({ success: true });
       const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
+      const mockFunctionResult = {
+        data: [{ id: mockId, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
       mockCreateSource.mockReturnValue({
         validateEnhanced: mockValidateEnhanced,
       });
-      supabase.functions.invoke.mockResolvedValue(mockFunctionResult);
+      invokeDatasetCommand.mockResolvedValue(mockFunctionResult);
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
       expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
-      expect(supabase.auth.getSession).toHaveBeenCalled();
-      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer test-token',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: mockId,
           version: mockVersion,
           table: 'sources',
-          data: { json_ordered: mockOrderedData, rule_verification: true },
+          jsonOrdered: mockOrderedData,
         },
-        region: FunctionRegion.UsEast1,
-      });
-      expect(result).toEqual({ success: true });
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual(mockFunctionResult);
     });
 
     it('should return a language validation error instead of invoking the update edge function', async () => {
@@ -275,7 +287,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await updateSource(mockId, mockVersion, { sourceDataSet: {} });
 
-      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).not.toHaveBeenCalled();
       expect(result).toMatchObject({
         data: null,
         error: {
@@ -291,15 +303,15 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockVersion = '01.00.000';
       const mockData = { sourceDataSet: {} };
 
-      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
       genSourceJsonOrdered.mockReturnValue({});
       mockCreateSource.mockReturnValue({
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
+      invokeDatasetCommand.mockResolvedValue(undefined);
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
-      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
@@ -307,22 +319,29 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockId = 'source-123';
       const mockVersion = '01.00.000';
       const mockData = { sourceDataSet: {} };
-      const mockError = { message: 'Update failed' };
+      const mockError = { message: 'Update failed', code: 'FUNCTION_ERROR', details: '', hint: '' };
 
       genSourceJsonOrdered.mockReturnValue({});
       mockCreateSource.mockReturnValue({
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
-      supabase.functions.invoke.mockResolvedValue({ data: null, error: mockError });
-
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      invokeDatasetCommand.mockResolvedValue({
+        data: null,
+        error: mockError,
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toEqual({ error: mockError });
-
-      consoleLogSpy.mockRestore();
+      expect(result).toEqual({
+        data: null,
+        error: mockError,
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
     });
 
     it('should fall back to raw ordered data and an empty bearer token when normalization omits the payload', async () => {
@@ -330,37 +349,34 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockVersion = '01.00.000';
       const rawOrderedData = { ordered: 'raw-update' };
 
-      supabase.auth.getSession.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
       genSourceJsonOrdered.mockReturnValue(rawOrderedData);
       normalizeLangPayloadForSave.mockResolvedValue({
         payload: undefined,
         validationError: undefined,
       });
-      supabase.functions.invoke.mockResolvedValue(
-        createMockEdgeFunctionResponse({ success: true }),
-      );
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       await updateSource(mockId, mockVersion, { sourceDataSet: {} });
 
       expect(mockCreateSource).toHaveBeenCalledWith(rawOrderedData);
-      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer ',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: mockId,
           version: mockVersion,
           table: 'sources',
-          data: { json_ordered: rawOrderedData, rule_verification: true },
+          jsonOrdered: rawOrderedData,
         },
-        region: FunctionRegion.UsEast1,
-      });
+        {
+          ruleVerification: true,
+        },
+      );
     });
   });
 

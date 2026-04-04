@@ -4,7 +4,10 @@ import type {
   PostgrestSingleResponse,
 } from '@supabase/supabase-js';
 
-export type SupabaseError = PostgrestError & { state_code?: number };
+export type SupabaseError = PostgrestError & {
+  state_code?: number;
+  review_state_code?: number;
+};
 
 export type SupabaseQueryResult<T> = Omit<PostgrestResponse<T>, 'error'> & {
   error: SupabaseError | null;

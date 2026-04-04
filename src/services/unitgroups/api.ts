@@ -13,8 +13,8 @@ import { getCachedClassificationData } from '../classifications/cache';
 import {
   getDataDetail,
   getTeamIdByUserId,
+  invokeDatasetCommand,
   normalizeLangPayloadForSave,
-  resolveFunctionInvokeError,
 } from '../general/api';
 import { genUnitGroupJsonOrdered } from './util';
 
@@ -78,29 +78,18 @@ export async function updateUnitGroup(id: string, version: string, data: any) {
     userTeamId,
   );
 
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: {
-        id,
-        version,
-        table: 'unitgroups',
-        data: { json_ordered: newData, rule_verification },
-      },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return {
-      error: await resolveFunctionInvokeError(result.error),
-    };
-  }
-  return result?.data;
+  return invokeDatasetCommand(
+    'app_dataset_save_draft',
+    {
+      id,
+      version,
+      table: 'unitgroups',
+      jsonOrdered: newData,
+    },
+    {
+      ruleVerification: rule_verification,
+    },
+  );
 }
 
 export async function deleteUnitGroup(id: string, version: string) {
