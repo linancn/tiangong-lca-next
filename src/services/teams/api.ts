@@ -1,16 +1,44 @@
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { addRoleApi, getRoleByuserId, getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
-import { getUserEmailByUserIds, getUserIdByEmail, getUsersByIds } from '../users/api';
+import { getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
+import { getUserEmailByUserIds, getUserIdByEmail } from '../users/api';
 
 interface TeamMember {
   user_id: string;
   team_id: string;
   email: any;
-  role: 'admin' | 'member' | 'is_invited';
+  role: string;
   team_title?: string;
 }
+
+type TeamMemberRpcRow = {
+  user_id: string;
+  team_id?: string;
+  email?: string;
+  role: 'admin' | 'member' | 'is_invited' | string;
+  display_name?: string;
+};
+
+async function invokeTeamCommand(command: string, body: Record<string, unknown>) {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    return {
+      data: null,
+      error: { message: 'No session' },
+    };
+  }
+  return supabase.functions.invoke(command, {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body,
+    region: FunctionRegion.UsEast1,
+  });
+}
+
+const getCommandError = (result: { data: any; error: any }) =>
+  result.error ?? (result.data?.ok === false ? result.data : null);
 
 export async function getTeams() {
   const result = await supabase
@@ -101,17 +129,10 @@ export async function getAllTableTeams(
   }
 }
 export async function updateTeamRank(id: string, rank: number) {
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_team', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, data: { rank } },
-      region: FunctionRegion.UsEast1,
-    });
-  }
+  const result = await invokeTeamCommand('admin_team_set_rank', {
+    teamId: id,
+    rank,
+  });
   return result?.data;
 }
 
@@ -146,33 +167,28 @@ export async function getTeamById(id: string) {
 }
 
 export async function editTeamMessage(id: string, data: any, rank?: number, is_public?: boolean) {
-  if (typeof rank !== 'undefined') {
-    let result: any = {};
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      result = await supabase.functions.invoke('update_team', {
-        headers: {
-          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-        },
-        body: { id, data: { json: data, rank, is_public } },
-        region: FunctionRegion.UsEast1,
-      });
-    }
-    return result?.data;
-  } else {
-    let result: any = {};
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      result = await supabase.functions.invoke('update_team', {
-        headers: {
-          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-        },
-        body: { id, data: { json: data, is_public } },
-        region: FunctionRegion.UsEast1,
-      });
-    }
-    return result?.data;
+  const profileResult = await invokeTeamCommand('app_team_update_profile', {
+    teamId: id,
+    json: data,
+    isPublic: is_public ?? false,
+  });
+  const profileError = getCommandError(profileResult);
+  if (profileError) {
+    return { error: profileError };
   }
+
+  if (typeof rank !== 'undefined') {
+    const rankResult = await invokeTeamCommand('admin_team_set_rank', {
+      teamId: id,
+      rank,
+    });
+    const rankError = getCommandError(rankResult);
+    if (rankError) {
+      return { error: rankError };
+    }
+    return rankResult?.data;
+  }
+  return profileResult?.data;
 }
 
 export async function getTeamMessageApi(id: string) {
@@ -200,39 +216,19 @@ export async function getTeamMembersApi(
   try {
     const { error, data: rolesResult } = await getTeamRoles(params, sort, teamId);
 
-    if (!error) {
-      const ids = rolesResult.map((item) => item.user_id);
+    if (!error && rolesResult) {
+      const result: TeamMember[] = (rolesResult as TeamMemberRpcRow[]).map((role) => ({
+        user_id: role.user_id,
+        team_id: role.team_id ?? teamId,
+        email: role.email ?? '',
+        role: role.role,
+        display_name: role.display_name ?? '-',
+      }));
 
-      const usersResult = await getUsersByIds(ids);
-
-      if (usersResult) {
-        const result: TeamMember[] = rolesResult.map((role) => {
-          const user = usersResult?.find((u) => u.id === role.user_id);
-          return {
-            user_id: role.user_id,
-            team_id: role.team_id,
-            email: user?.email ?? '',
-            role: role.role,
-            display_name: user?.display_name ?? '-',
-          };
-        });
-
-        // get team title
-        // const teams = await getTeamsByIds(rolesResult.map((r) => r.team_id));
-        // if (teams) {
-        //   result.forEach((r) => {
-        //     const team = teams.find((t) => t.id === r.team_id);
-        //     if (team) {
-        //       r.team_title = team.json?.title;
-        //     }
-        //   });
-        // }
-
-        return {
-          success: true,
-          data: result,
-        };
-      }
+      return {
+        success: true,
+        data: result,
+      };
     }
 
     return {
@@ -258,27 +254,37 @@ export async function addTeamMemberApi(teamId: string, email: string) {
     };
   }
 
-  // Check if the user is already on the team
-  const { data: existingUser, error: roleCheckError } = await getRoleByuserId(id);
-  if (!roleCheckError) {
-    if (existingUser.length === 0) {
-      // The user is not on the team, add an invitation record
-      const adderror = await addRoleApi(id, teamId, 'is_invited');
-
-      return { error: adderror };
-    } else {
-      return {
-        error: {
-          message: 'exists',
-        },
-      };
-    }
+  const result = await invokeTeamCommand('admin_team_change_member_role', {
+    teamId,
+    userId: id,
+    role: 'is_invited',
+    action: 'set',
+  });
+  const commandError = getCommandError(result);
+  if (!commandError) {
+    return { error: null };
   }
+
+  const code = String(commandError?.code ?? commandError?.message ?? '').toLowerCase();
+  if (code.includes('already') || code.includes('exist') || code.includes('conflict')) {
+    return {
+      error: {
+        message: 'exists',
+      },
+    };
+  }
+
+  return { error: commandError };
 }
 
 export async function addTeam(id: string, data: any, rank: number, is_public: boolean) {
-  const { error } = await supabase.from('teams').insert({ id, json: data, rank, is_public });
-  return error;
+  const result = await invokeTeamCommand('app_team_create', {
+    teamId: id,
+    json: data,
+    rank,
+    isPublic: is_public,
+  });
+  return getCommandError(result);
 }
 
 export async function getUnrankedTeams(params: { pageSize?: number; current?: number }) {

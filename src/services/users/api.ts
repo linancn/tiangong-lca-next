@@ -80,11 +80,11 @@ export async function updateUserContact(userId: string, contactInfo: any) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
-    result = await supabase.functions.invoke('update_user', {
+    result = await supabase.functions.invoke('app_user_update_contact', {
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body: { userId, data: { contact: contactInfo } },
+      body: { userId, contact: contactInfo },
       region: FunctionRegion.UsEast1,
     });
   }
