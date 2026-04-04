@@ -7,6 +7,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
@@ -27,7 +30,7 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v6
 
-      - name: Install Node.js, NPM and Yarn
+      - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -36,15 +39,9 @@ jobs:
         run: npm install
 
       - name: Build/release Electron app
-        uses: linancn/action-electron-builder@v1.0.0
-        with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
-
-          release: true
-
-          # script run before eletron-builder
-          build_script_name: dist
-
-          max_attempts: 3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run build
+          npx tsc --project tsconfig.electron.json
+          npx electron-builder --config electron-builder.json --publish onTag --${{ matrix.arch }} -c.publish.provider=github -c.publish.releaseType=draft
