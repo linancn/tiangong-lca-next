@@ -5,7 +5,9 @@
 ## 环境与硬约束
 
 - Node.js **>= 24**（先 `nvm use 24`）。
-- Supabase key 由 fallback `.env` 预置，必须通过 `src/services/supabase` 读取。
+- 前端 Supabase 环境变量由 `.env` 和 `.env.development` 提供；共享 `dev` 环境统一使用 `npm run start:dev`，只有任务明确需要 `main` 时才使用 `npm run start:main`。相关读取必须通过 `src/services/supabase`。
+- 数据库触发的 Edge Function 调用不会读取这些前端 env 文件。标准 webhook 鉴权依赖当前 branch 的 Vault secret `project_url` 和 `project_secret_key`；兼容旧 `generate_flow_embedding()` 路径时还依赖 `project_x_key`。详见 `docs/agents/supabase-branching.md`。
+- 分支选择、本地/远端数据库使用方式，以及 schema 工作流，统一遵循 `docs/agents/supabase-branching.md`。
 - 未经人工批准，不得新增 npm 依赖。
 - 先 service 后 UI：先改 `src/services/<feature>/{data,api,util}.ts`，再接页面。
 
@@ -14,6 +16,7 @@
 ```bash
 npm install
 npm run start:dev
+npm run start:main
 npm run lint
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
 npm run build

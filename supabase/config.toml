@@ -53,8 +53,13 @@ default_pool_size = 20
 # Maximum number of client connections allowed.
 max_client_conn = 100
 
+# Database-side edge-function webhooks use Vault secrets when configured.
+# Standard webhook auth uses `project_url` + `project_secret_key`.
+# Legacy `generate_flow_embedding()` compatibility additionally uses `project_x_key`.
 # [db.vault]
-# secret_key = "env(SECRET_VALUE)"
+# project_url = "env(SUPABASE_VAULT_PROJECT_URL)"
+# project_x_key = "env(SUPABASE_VAULT_PROJECT_X_KEY)"
+# project_secret_key = "env(SUPABASE_VAULT_PROJECT_SECRET_KEY)"
 
 [db.migrations]
 # If disabled, migrations will be skipped during a db push or reset.
@@ -414,9 +419,10 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
 # Persistent branch overrides for Supabase Branching.
-# `dev` currently maps to the persistent Supabase branch with project ref `lquuatmjxzjomctajxns`.
+# Keep this project ref synchronized with the actual persistent `dev` branch returned by
+# `npx supabase --experimental branches list --project-ref qgzvkongdjqiiamzbbts`.
 [remotes.dev]
-project_id = "lquuatmjxzjomctajxns"
+project_id = "culgbbvzltdodcpykupc"
 
 [remotes.dev.auth]
 site_url = "http://localhost:8000"

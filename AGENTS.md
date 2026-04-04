@@ -13,15 +13,30 @@ Use this file as the single entry point for coding agents.
 
 - Node.js **>= 24** (`nvm use 24`; `.nvmrc` is `24`).
 - Stack: React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript.
-- Supabase env keys are prewired via committed env files: `.env` is the production fallback and `.env.development` targets the persistent Supabase `dev` branch for local `npm start`. Do not create ad-hoc Supabase clients outside `src/services/**`.
+- Supabase env keys are prewired via committed env files: use `npm run start:dev` for the persistent Supabase `dev` branch, and use `npm start` or `npm run start:main` only when a task explicitly needs the `main` database. Do not create ad-hoc Supabase clients outside `src/services/**`.
+- Database-side Edge Function SQL must read branch-specific Vault secrets. Standard webhook auth uses `project_url` and `project_secret_key`; legacy `generate_flow_embedding()` compatibility additionally uses `project_x_key`. Never hardcode branch URLs or service keys in SQL, migrations, or baseline dumps.
 - Supabase Branching uses one shared `supabase/` directory: root config is the production baseline inherited by preview branches, while `[remotes.dev]` stores persistent-dev overrides. Do not clone per-branch `supabase/` directories or add a parallel `supabase db push` GitHub Action on top of Supabase GitHub integration.
 - Do not add npm dependencies without explicit human approval.
+
+## Development Workflow Summary
+
+- Default branch progression is `feature/* -> dev -> main`.
+- Start normal work from the latest Git `dev`, then create a feature branch from `dev`.
+- Open routine feature and fix PRs into Git `dev`, not directly into Git `main`.
+- Use `npm run start:dev` for routine frontend work against the shared persistent Supabase `dev` branch.
+- Create schema changes locally with the Supabase CLI and committed migration files. Do not use the shared remote `dev` database as the first place to author schema changes.
+- After a PR merges into Git `dev`, verify the integrated result in the shared Supabase `dev` branch.
+- Promote validated changes by opening a PR from Git `dev` into Git `main`.
+- Use `main` only through the explicit `npm start` or `npm run start:main` workflow for task-specific verification, production investigation, or hotfix work.
+- Branch from Git `main` only when the work must start from production, such as a hotfix. After that work merges to `main`, back-merge `main` into `dev`.
+- `docs/agents/supabase-branching.md` is the canonical detailed procedure for branch and database workflow.
 
 ## Core Commands
 
 ```bash
 npm install
 npm start
+npm run start:main
 npm run lint
 npm test
 npm run test:coverage

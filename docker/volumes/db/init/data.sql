@@ -480,12 +480,22 @@ CREATE FUNCTION public.generate_flow_embedding() RETURNS trigger
     LANGUAGE plpgsql
     SET search_path TO 'public', 'pg_temp'
     AS $$
+DECLARE
+  request_url text;
+  legacy_x_key text;
 BEGIN
+  request_url := util.project_url();
+  legacy_x_key := util.project_x_key();
+
   SELECT embedding, extracted_text INTO NEW.embedding, NEW.extracted_text
   FROM supabase_functions.http_request(
-    'https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/flow_embedding',
+    request_url || '/functions/v1/flow_embedding',
     'POST',
-    '{"Content-Type":"application/json","x_key":"edge-functions-key","x-region":"us-east-1"}',
+    jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x_key', legacy_x_key,
+      'x_region', 'us-east-1'
+    )::text,
     to_json(NEW.json_ordered)::text,
     '1000'
   );
@@ -2904,14 +2914,7 @@ CREATE FUNCTION util.invoke_edge_function(name text, body jsonb, timeout_millise
 declare
   service_key text;
 begin
-  select ds.decrypted_secret
-    into service_key
-  from vault.decrypted_secrets ds
-  where ds.name = 'project_secret_key';
-
-  if service_key is null or service_key = '' then
-    raise exception 'Missing vault secret: project_secret_key';
-  end if;
+  service_key := util.project_secret_key();
 
   perform net.http_post(
     url => util.project_url() || '/functions/v1/' || name,
@@ -2928,6 +2931,48 @@ $$;
 
 
 ALTER FUNCTION util.invoke_edge_function(name text, body jsonb, timeout_milliseconds integer) OWNER TO postgres;
+
+--
+-- Name: invoke_edge_webhook(); Type: FUNCTION; Schema: util; Owner: postgres
+--
+
+CREATE FUNCTION util.invoke_edge_webhook() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  edge_function text := TG_ARGV[0];
+  timeout_milliseconds integer := coalesce(nullif(TG_ARGV[1], '')::integer, 1000);
+  payload jsonb;
+begin
+  if edge_function is null or edge_function = '' then
+    raise exception 'Missing webhook edge function name';
+  end if;
+
+  payload := jsonb_build_object(
+    'type', TG_OP,
+    'schema', TG_TABLE_SCHEMA,
+    'table', TG_TABLE_NAME,
+    'record', case when TG_OP = 'DELETE' then to_jsonb(OLD) else to_jsonb(NEW) end,
+    'old_record', case when TG_OP = 'INSERT' then null else to_jsonb(OLD) end
+  );
+
+  perform util.invoke_edge_function(
+    name => edge_function,
+    body => payload,
+    timeout_milliseconds => timeout_milliseconds
+  );
+
+  if TG_OP = 'DELETE' then
+    return OLD;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION util.invoke_edge_webhook() OWNER TO postgres;
 
 --
 -- Name: process_embeddings(integer, integer, integer); Type: FUNCTION; Schema: util; Owner: postgres
@@ -3124,6 +3169,60 @@ $$;
 ALTER FUNCTION util.process_webhook_jobs(batch_size integer, max_batches integer, timeout_milliseconds integer) OWNER TO postgres;
 
 --
+-- Name: project_x_key(); Type: FUNCTION; Schema: util; Owner: postgres
+--
+
+CREATE FUNCTION util.project_x_key() RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  secret_value text;
+begin
+  select ds.decrypted_secret
+    into secret_value
+  from vault.decrypted_secrets ds
+  where ds.name = 'project_x_key';
+
+  if secret_value is null or secret_value = '' then
+    raise exception 'Missing vault secret: project_x_key';
+  end if;
+
+  return secret_value;
+end;
+$$;
+
+
+ALTER FUNCTION util.project_x_key() OWNER TO postgres;
+
+--
+-- Name: project_secret_key(); Type: FUNCTION; Schema: util; Owner: postgres
+--
+
+CREATE FUNCTION util.project_secret_key() RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  secret_value text;
+begin
+  select ds.decrypted_secret
+    into secret_value
+  from vault.decrypted_secrets ds
+  where ds.name = 'project_secret_key';
+
+  if secret_value is null or secret_value = '' then
+    raise exception 'Missing vault secret: project_secret_key';
+  end if;
+
+  return secret_value;
+end;
+$$;
+
+
+ALTER FUNCTION util.project_secret_key() OWNER TO postgres;
+
+--
 -- Name: project_url(); Type: FUNCTION; Schema: util; Owner: postgres
 --
 
@@ -3135,7 +3234,15 @@ declare
   secret_value text;
 begin
   -- Retrieve the project URL from Vault
-  select decrypted_secret into secret_value from vault.decrypted_secrets where name = 'project_url';
+  select ds.decrypted_secret
+    into secret_value
+  from vault.decrypted_secrets ds
+  where ds.name = 'project_url';
+
+  if secret_value is null or secret_value = '' then
+    raise exception 'Missing vault secret: project_url';
+  end if;
+
   return secret_value;
 end;
 $$;
@@ -5182,14 +5289,14 @@ CREATE TRIGGER flow_embedding_ft_on_extract_md_update AFTER UPDATE OF extracted_
 -- Name: flows flow_extract_md_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER flow_extract_md_trigger_insert AFTER INSERT ON public.flows FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER flow_extract_md_trigger_insert AFTER INSERT ON public.flows FOR EACH ROW EXECUTE FUNCTION util.invoke_edge_webhook('webhook_flow_embedding_ft', '1000');
 
 
 --
 -- Name: flows flow_extract_md_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER flow_extract_md_trigger_update AFTER UPDATE OF "json" ON public.flows FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER flow_extract_md_trigger_update AFTER UPDATE OF "json" ON public.flows FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION util.invoke_edge_webhook('webhook_flow_embedding_ft', '1000');
 
 
 --
@@ -5203,14 +5310,14 @@ CREATE TRIGGER flow_extract_md_trigger_update_flag AFTER UPDATE OF embedding_fla
 -- Name: flows flow_extract_text_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER flow_extract_text_trigger_insert AFTER INSERT ON public.flows FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER flow_extract_text_trigger_insert AFTER INSERT ON public.flows FOR EACH ROW EXECUTE FUNCTION util.invoke_edge_webhook('webhook_flow_embedding', '1000');
 
 
 --
 -- Name: flows flow_extract_text_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER flow_extract_text_trigger_update AFTER UPDATE OF "json" ON public.flows FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_flow_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER flow_extract_text_trigger_update AFTER UPDATE OF "json" ON public.flows FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION util.invoke_edge_webhook('webhook_flow_embedding', '1000');
 
 
 --
@@ -5280,14 +5387,14 @@ CREATE TRIGGER lifecyclemodel_embedding_ft_on_extract_md_update AFTER UPDATE OF 
 -- Name: lifecyclemodels lifecyclemodel_extract_md_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER lifecyclemodel_extract_md_trigger_insert AFTER INSERT ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER lifecyclemodel_extract_md_trigger_insert AFTER INSERT ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION util.invoke_edge_webhook('webhook_model_embedding_ft', '1000');
 
 
 --
 -- Name: lifecyclemodels lifecyclemodel_extract_md_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER lifecyclemodel_extract_md_trigger_update AFTER UPDATE OF "json" ON public.lifecyclemodels FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER lifecyclemodel_extract_md_trigger_update AFTER UPDATE OF "json" ON public.lifecyclemodels FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION util.invoke_edge_webhook('webhook_model_embedding_ft', '1000');
 
 
 --
@@ -5301,14 +5408,14 @@ CREATE TRIGGER lifecyclemodel_extract_md_trigger_update_flag AFTER UPDATE OF emb
 -- Name: lifecyclemodels lifecyclemodels_extract_text_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER lifecyclemodels_extract_text_trigger_insert AFTER INSERT ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER lifecyclemodels_extract_text_trigger_insert AFTER INSERT ON public.lifecyclemodels FOR EACH ROW EXECUTE FUNCTION util.invoke_edge_webhook('webhook_model_embedding', '1000');
 
 
 --
 -- Name: lifecyclemodels lifecyclemodels_extract_text_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER lifecyclemodels_extract_text_trigger_update AFTER UPDATE OF "json" ON public.lifecyclemodels FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_model_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER lifecyclemodels_extract_text_trigger_update AFTER UPDATE OF "json" ON public.lifecyclemodels FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION util.invoke_edge_webhook('webhook_model_embedding', '1000');
 
 
 --
@@ -5343,14 +5450,14 @@ CREATE TRIGGER process_embedding_ft_on_extract_md_update AFTER UPDATE OF extract
 -- Name: processes process_extract_md_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER process_extract_md_trigger_insert AFTER INSERT ON public.processes FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER process_extract_md_trigger_insert AFTER INSERT ON public.processes FOR EACH ROW EXECUTE FUNCTION util.invoke_edge_webhook('webhook_process_embedding_ft', '1000');
 
 
 --
 -- Name: processes process_extract_md_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER process_extract_md_trigger_update AFTER UPDATE OF "json" ON public.processes FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding_ft', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key", "x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER process_extract_md_trigger_update AFTER UPDATE OF "json" ON public.processes FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION util.invoke_edge_webhook('webhook_process_embedding_ft', '1000');
 
 
 --
@@ -5364,14 +5471,14 @@ CREATE TRIGGER process_extract_md_trigger_update_flag AFTER UPDATE OF embedding_
 -- Name: processes process_extract_text_trigger_insert; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER process_extract_text_trigger_insert AFTER INSERT ON public.processes FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER process_extract_text_trigger_insert AFTER INSERT ON public.processes FOR EACH ROW EXECUTE FUNCTION util.invoke_edge_webhook('webhook_process_embedding', '1000');
 
 
 --
 -- Name: processes process_extract_text_trigger_update; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER process_extract_text_trigger_update AFTER UPDATE OF "json" ON public.processes FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION supabase_functions.http_request('https://qgzvkongdjqiiamzbbts.supabase.co/functions/v1/webhook_process_embedding', 'POST', '{"Content-Type":"application/json","apikey":"edge-functions-key","x_region":"us-east-1"}', '{}', '1000');
+CREATE TRIGGER process_extract_text_trigger_update AFTER UPDATE OF "json" ON public.processes FOR EACH ROW WHEN ((new."json" IS DISTINCT FROM old."json")) EXECUTE FUNCTION util.invoke_edge_webhook('webhook_process_embedding', '1000');
 
 
 --
@@ -7044,5 +7151,3 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,I
 ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLES TO service_role;
-
-
