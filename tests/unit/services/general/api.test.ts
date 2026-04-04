@@ -589,7 +589,33 @@ describe('invokeDatasetCommand', () => {
     });
   });
 
+  it('returns an auth-required error when no session is available', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    });
+  });
+
   it('flattens command error details back into the legacy error shape', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
     mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
     mockFunctionsInvoke.mockResolvedValue({
       data: null,
@@ -627,6 +653,137 @@ describe('invokeDatasetCommand', () => {
       status: 403,
       statusText: 'DATA_UNDER_REVIEW',
     });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('uses review_state_code from object details when state_code is absent', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Review still pending',
+        context: createErrorContext(
+          {
+            code: 'REVIEW_PENDING',
+            message: 'Review is still pending',
+            details: {
+              review_state_code: 55,
+            },
+          },
+          409,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Review is still pending',
+        code: 'REVIEW_PENDING',
+        state_code: 55,
+        review_state_code: 55,
+      }),
+      count: null,
+      status: 409,
+      statusText: 'REVIEW_PENDING',
+    });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('ignores non-object error details when normalizing function invoke errors', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Malformed payload',
+        context: createErrorContext(
+          {
+            code: 'MALFORMED_PAYLOAD',
+            message: 'Malformed payload',
+            details: 'not-an-object',
+          },
+          400,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Malformed payload',
+        code: 'MALFORMED_PAYLOAD',
+        details: 'not-an-object',
+      }),
+      count: null,
+      status: 400,
+      statusText: 'MALFORMED_PAYLOAD',
+    });
+    expect(result.error).not.toHaveProperty('state_code');
+    expect(result.error).not.toHaveProperty('review_state_code');
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('drops invalid state-code details that are not numeric', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Invalid state details',
+        context: createErrorContext(
+          {
+            code: 'INVALID_STATE_DETAILS',
+            message: 'Invalid state details',
+            details: {
+              state_code: '20',
+              review_state_code: '21',
+            },
+          },
+          422,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Invalid state details',
+        code: 'INVALID_STATE_DETAILS',
+      }),
+      count: null,
+      status: 422,
+      statusText: 'INVALID_STATE_DETAILS',
+    });
+    expect(result.error).not.toHaveProperty('state_code');
+    expect(result.error).not.toHaveProperty('review_state_code');
+
+    consoleLogSpy.mockRestore();
   });
 });
 
