@@ -262,22 +262,31 @@ beforeEach(() => {
 
 describe('createFlows', () => {
   it('stores ordered payload with rule verification result', async () => {
-    const insertResult = { data: [{ id: 'flow-id', version: '01.00.000' }], error: null };
-    const query = createQuery(insertResult);
-    mockFrom.mockReturnValue(query as any);
+    const createResult = {
+      data: [{ id: 'flow-id', version: '01.00.000' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(createResult as any);
 
     const result = await createFlows('flow-id', { name: 'Flow payload' });
 
     expect(mockGenFlowJsonOrdered).toHaveBeenCalledWith('flow-id', { name: 'Flow payload' });
-    expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.insertArgs).toEqual([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       expect.objectContaining({
         id: 'flow-id',
-        json_ordered: expect.objectContaining({ id: 'flow-id' }),
-        rule_verification: true,
+        table: 'flows',
+        jsonOrdered: expect.objectContaining({ id: 'flow-id' }),
+        ruleVerification: true,
       }),
-    ]);
-    expect(result).toBe(insertResult);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
   });
 
   it('returns a language validation error when normalization fails', async () => {
@@ -411,19 +420,23 @@ describe('updateFlows', () => {
 
 describe('deleteFlows', () => {
   it('removes flow by id and version', async () => {
-    const deleteResult = { data: null, error: null };
-    const query = createQuery(deleteResult);
-    mockFrom.mockReturnValue(query as any);
+    const deleteResult = { data: null, error: null, count: null, status: 200, statusText: 'OK' };
+    mockInvokeDatasetCommand.mockResolvedValue(deleteResult as any);
 
     const result = await deleteFlows('flow-id', '01.00.000');
 
-    expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.deleteCalled).toBe(true);
-    expect(query.calls.eqArgs).toEqual([
-      { field: 'id', value: 'flow-id' },
-      { field: 'version', value: '01.00.000' },
-    ]);
-    expect(result).toBe(deleteResult);
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+      id: 'flow-id',
+      version: '01.00.000',
+      table: 'flows',
+    });
+    expect(result).toEqual({
+      data: null,
+      error: null,
+      count: null,
+      status: 204,
+      statusText: 'No Content',
+    });
   });
 });
 

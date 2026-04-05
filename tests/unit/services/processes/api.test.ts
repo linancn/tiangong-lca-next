@@ -326,43 +326,59 @@ describe('listMyProcessesForLca', () => {
 
 describe('createProcess', () => {
   it('inserts ordered payload with rule verification flag', async () => {
-    const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
-    const selectMock = jest.fn().mockResolvedValue(insertResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
+    const createResult = {
+      data: [{ id: sampleId, version: sampleVersion }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(createResult);
 
     const result = await processesApi.createProcess(sampleId, { raw: true });
 
     expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, { raw: true });
-    expect(insertMock).toHaveBeenCalledWith([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       {
         id: sampleId,
-        json_ordered: { ordered: true },
-        model_id: undefined,
-        rule_verification: true,
+        table: 'processes',
+        jsonOrdered: { ordered: true },
+        modelId: null,
+        ruleVerification: true,
       },
-    ]);
-    expect(selectMock).toHaveBeenCalled();
-    expect(result).toBe(insertResult);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
   });
 
   it('sets rule verification to false when non-validation issues exist', async () => {
     mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
-    const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
-    const selectMock = jest.fn().mockResolvedValue(insertResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
+    mockInvokeDatasetCommand.mockResolvedValueOnce({
+      data: [{ id: sampleId, version: sampleVersion }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
 
     await processesApi.createProcess(sampleId, { raw: true }, 'model-1');
 
-    expect(insertMock).toHaveBeenCalledWith([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       {
         id: sampleId,
-        json_ordered: { ordered: true },
-        model_id: 'model-1',
-        rule_verification: false,
+        table: 'processes',
+        jsonOrdered: { ordered: true },
+        modelId: 'model-1',
+        ruleVerification: false,
       },
-    ]);
+      {
+        ruleVerification: false,
+      },
+    );
   });
 
   it('returns a structured validation error when language normalization fails', async () => {
@@ -515,15 +531,29 @@ describe('updateProcessApi', () => {
 
 describe('deleteProcess', () => {
   it('deletes process by id and version', async () => {
-    const deleteResult = { data: [{ id: sampleId }], error: null };
-    const deleteBuilder: any = createQueryBuilder(deleteResult);
-    mockFrom.mockReturnValueOnce({ delete: jest.fn().mockReturnValue(deleteBuilder) });
+    const deleteResult = {
+      data: [{ id: sampleId }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(deleteResult);
 
     const result = await processesApi.deleteProcess(sampleId, sampleVersion);
 
-    expect(deleteBuilder.eq).toHaveBeenNthCalledWith(1, 'id', sampleId);
-    expect(deleteBuilder.eq).toHaveBeenNthCalledWith(2, 'version', sampleVersion);
-    expect(result).toEqual(deleteResult);
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'processes',
+    });
+    expect(result).toEqual({
+      data: null,
+      error: null,
+      count: null,
+      status: 204,
+      statusText: 'No Content',
+    });
   });
 });
 

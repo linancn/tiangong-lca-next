@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(10);
+select plan(11);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -126,8 +126,11 @@ values (
   true
 );
 
+alter table public.processes disable trigger "processes_json_sync_trigger";
 alter table public.processes disable trigger "process_extract_md_trigger_insert";
+alter table public.processes disable trigger "process_extract_md_trigger_update";
 alter table public.processes disable trigger "process_extract_text_trigger_insert";
+alter table public.processes disable trigger "process_extract_text_trigger_update";
 
 insert into public.processes (
   id,
@@ -236,9 +239,18 @@ select is(
     }'::jsonb,
     null,
     '{}'::jsonb
-  )->>'code',
-  'MODEL_ID_REQUIRED',
-  'process draft save requires modelId'
+  )->>'ok',
+  'true',
+  'process draft save works when modelId is omitted'
+);
+
+select is(
+  (select model_id::text
+   from public.processes
+   where id = '31000000-0000-0000-0000-000000000003'
+     and version = '01.00.000'),
+  '41000000-0000-0000-0000-000000000001',
+  'cmd_dataset_save_draft preserves the existing process model_id when modelId is omitted'
 );
 
 select is(
@@ -315,7 +327,7 @@ select is(
      'cmd_dataset_assign_team',
      'cmd_dataset_publish'
    )),
-  '3',
+  '4',
   'successful dataset commands write command_audit_log entries'
 );
 

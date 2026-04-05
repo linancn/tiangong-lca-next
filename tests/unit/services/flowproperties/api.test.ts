@@ -115,28 +115,25 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         validateEnhanced: mockValidateEnhanced,
       });
 
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue(mockResult);
-
-      supabase.from.mockReturnValue({
-        insert: mockInsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue(mockResult);
 
       const result = await createFlowproperties(mockId, mockData);
 
       expect(genFlowpropertyJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
       expect(mockCreateFlowProperty).toHaveBeenCalledWith(mockOrderedData);
       expect(mockValidateEnhanced).toHaveBeenCalled();
-      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
-      expect(mockInsert).toHaveBeenCalledWith([
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
         {
           id: mockId,
-          json_ordered: mockOrderedData,
-          rule_verification: true,
+          table: 'flowproperties',
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
         },
-      ]);
+        {
+          ruleVerification: true,
+        },
+      );
       expect(result).toEqual(mockResult);
     });
 
@@ -147,23 +144,20 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         validateEnhanced: mockValidateEnhanced,
       });
 
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({ data: [], error: null });
-
-      supabase.from.mockReturnValue({
-        insert: mockInsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue({ data: [], error: null });
 
       await createFlowproperties('test-id', {});
 
-      expect(mockInsert).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            rule_verification: false,
-          }),
-        ]),
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        expect.objectContaining({
+          id: 'test-id',
+          table: 'flowproperties',
+          ruleVerification: false,
+        }),
+        expect.objectContaining({
+          ruleVerification: false,
+        }),
       );
     });
 
@@ -196,23 +190,23 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         validationError: undefined,
       });
 
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({ data: [{ id: 'test-id' }], error: null });
-
-      supabase.from.mockReturnValue({
-        insert: mockInsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue({ data: [{ id: 'test-id' }], error: null });
 
       await createFlowproperties('test-id', {});
 
       expect(mockCreateFlowProperty).toHaveBeenCalledWith({ ordered: true, fallback: 'raw' });
-      expect(mockInsert).toHaveBeenCalledWith([
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
         expect.objectContaining({
-          json_ordered: { ordered: true, fallback: 'raw' },
+          id: 'test-id',
+          table: 'flowproperties',
+          jsonOrdered: { ordered: true, fallback: 'raw' },
+          ruleVerification: true,
         }),
-      ]);
+        expect.objectContaining({
+          ruleVerification: true,
+        }),
+      );
     });
   });
 
@@ -378,22 +372,22 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const mockVersion = '1.0.0';
       const mockResult = { data: null, error: null };
 
-      const mockDelete = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-
-      supabase.from.mockReturnValue({
-        delete: mockDelete.mockReturnValue({
-          eq: mockEq.mockReturnValue({
-            eq: jest.fn().mockResolvedValue(mockResult),
-          }),
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue(mockResult);
 
       const result = await deleteFlowproperties(mockId, mockVersion);
 
-      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
-      expect(mockDelete).toHaveBeenCalled();
-      expect(result).toEqual(mockResult);
+      expect(invokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+        id: mockId,
+        version: mockVersion,
+        table: 'flowproperties',
+      });
+      expect(result).toEqual({
+        data: null,
+        error: null,
+        count: null,
+        status: 204,
+        statusText: 'No Content',
+      });
     });
   });
 

@@ -1,20 +1,10 @@
 import type { RefCheckType } from '@/contexts/refCheckContext';
 import { getRejectedCommentsByReviewIds } from '@/services/comments/api';
-import {
-  getRefData,
-  getRefDataByIds,
-  getReviewsOfData,
-  updateDateToReviewState,
-} from '@/services/general/api';
+import { getRefData, getRefDataByIds } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { FormProcess } from '@/services/processes/data';
-import {
-  addReviewsApi,
-  getRejectReviewsByProcess,
-  submitDatasetReviewApi,
-} from '@/services/reviews/api';
+import { getRejectReviewsByProcess, submitDatasetReviewApi } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
-import { getTeamMessageApi } from '@/services/teams/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
 import { buildAppAbsoluteUrl } from '@/utils/appUrl';
 import {
@@ -1201,90 +1191,12 @@ export const validateDatasetRuleVerification = async (
   };
 };
 
-export const updateReviewsAfterCheckData = async (teamId: string, data: any, reviewId: string) => {
-  const team = await getTeamMessageApi(teamId);
-  const userId = await getUserId();
-  const user = await getUsersByIds([userId]);
-  const reviewJson = {
-    data,
-    team: {
-      id: teamId,
-      name: team?.data?.[0]?.json?.title,
-    },
-    user: {
-      id: userId,
-      name: user?.[0]?.display_name,
-      email: user?.[0]?.email,
-    },
-    comment: {
-      message: '',
-    },
-    logs: [
-      {
-        action: 'submit_review',
-        time: new Date(),
-        user: {
-          id: userId,
-          display_name: user?.[0]?.display_name,
-        },
-      },
-    ],
-  };
-  const result = await addReviewsApi(reviewId, reviewJson);
-  return result;
-};
-
 export const submitDatasetReview = async (
   table: 'processes' | 'lifecyclemodels',
   id: string,
   version: string,
 ) => {
   return submitDatasetReviewApi(table, id, version);
-};
-
-export const updateUnReviewToUnderReview = async (unReview: refDataType[], reviewId: string) => {
-  const controller = new ConcurrencyController(5);
-  const results: any[] = [];
-
-  const processItem = async (item: refDataType) => {
-    try {
-      const oldReviews = await getReviewsOfData(
-        item['@refObjectId'],
-        item['@version'],
-        getRefTableName(item['@type']),
-      );
-      const updateData = {
-        state_code: 20,
-        reviews: [
-          ...oldReviews,
-          {
-            key: oldReviews?.length,
-            id: reviewId,
-          },
-        ],
-      };
-      const result = await updateDateToReviewState(
-        item['@refObjectId'],
-        item['@version'],
-        getRefTableName(item['@type']),
-        updateData,
-      );
-      return { success: true, result, item };
-    } catch (error) {
-      return { success: false, error, item };
-    }
-  };
-
-  for (const item of unReview) {
-    controller.add(async () => {
-      const result = await processItem(item);
-      results.push(result);
-      return result;
-    });
-  }
-
-  await controller.waitForAll();
-  return results;
 };
 
 const checkValidationFields = (data: any) => {

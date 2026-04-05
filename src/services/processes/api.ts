@@ -13,7 +13,10 @@ import {
 } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
-import type { SupabaseMutationResult } from '@/services/supabase/data';
+import {
+  normalizeDeleteCommandResult,
+  type SupabaseMutationResult,
+} from '@/services/supabase/data';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
@@ -191,11 +194,19 @@ export async function createProcess(id: string, data: any, modelId?: string) {
     newData,
     userTeamId,
   );
-  const result = await supabase
-    .from('processes')
-    .insert([{ id: id, json_ordered: newData, model_id: modelId, rule_verification }])
-    .select();
-  return result;
+  return invokeDatasetCommand<ProcessCommandRow>(
+    'app_dataset_create',
+    {
+      id,
+      table: 'processes',
+      jsonOrdered: newData,
+      modelId: modelId ?? null,
+      ruleVerification: rule_verification,
+    },
+    {
+      ruleVerification: rule_verification,
+    },
+  );
 }
 
 export async function updateProcess(
@@ -1322,8 +1333,12 @@ export async function getProcessDetail(id: string, version: string) {
 }
 
 export async function deleteProcess(id: string, version: string) {
-  const result = await supabase.from('processes').delete().eq('id', id).eq('version', version);
-  return result;
+  const result = await invokeDatasetCommand('app_dataset_delete', {
+    id,
+    version,
+    table: 'processes',
+  });
+  return normalizeDeleteCommandResult(result);
 }
 
 export async function getProcessExchange(

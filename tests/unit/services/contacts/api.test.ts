@@ -72,18 +72,12 @@ describe('Contacts API Service', () => {
   describe('createContact', () => {
     it('should create a contact with generated JSON and rule verification', async () => {
       const { createContact } = require('@/services/contacts/api');
-
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({
+      invokeDatasetCommand.mockResolvedValue({
         data: [{ id: 'contact-123', json_ordered: {} }],
         error: null,
-      });
-
-      mockFrom.mockReturnValue({
-        insert: mockInsert,
-      });
-      mockInsert.mockReturnValue({
-        select: mockSelect,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
 
       const testData = {
@@ -97,31 +91,29 @@ describe('Contacts API Service', () => {
       const result = await createContact('contact-123', testData);
 
       expect(genContactJsonOrdered).toHaveBeenCalledWith('contact-123', testData);
-      expect(mockFrom).toHaveBeenCalledWith('contacts');
-      expect(mockInsert).toHaveBeenCalledWith([
-        {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        expect.objectContaining({
           id: 'contact-123',
-          json_ordered: expect.any(Object),
-          rule_verification: true,
+          table: 'contacts',
+          jsonOrdered: expect.any(Object),
+          ruleVerification: true,
+        }),
+        {
+          ruleVerification: true,
         },
-      ]);
+      );
       expect(result.data).toBeDefined();
     });
 
     it('should handle create with invalid data', async () => {
       const { createContact } = require('@/services/contacts/api');
-
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({
+      invokeDatasetCommand.mockResolvedValue({
         data: [{ id: 'contact-123', rule_verification: false }],
         error: null,
-      });
-
-      mockFrom.mockReturnValue({
-        insert: mockInsert,
-      });
-      mockInsert.mockReturnValue({
-        select: mockSelect,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
 
       const result = await createContact('contact-123', {});
@@ -297,27 +289,28 @@ describe('Contacts API Service', () => {
   describe('deleteContact', () => {
     it('should delete contact by id and version', async () => {
       const { deleteContact } = require('@/services/contacts/api');
-
-      const mockDelete = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-
-      mockFrom.mockReturnValue({
-        delete: mockDelete,
+      invokeDatasetCommand.mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
       });
-      mockDelete.mockReturnValue({
-        eq: mockEq,
-      });
-      mockEq
-        .mockReturnValueOnce({
-          eq: jest.fn().mockResolvedValue({ data: null, error: null }),
-        })
-        .mockReturnValueOnce({ data: null, error: null });
 
       const result = await deleteContact('contact-123', 'v1.0');
 
-      expect(mockFrom).toHaveBeenCalledWith('contacts');
-      expect(mockDelete).toHaveBeenCalled();
-      expect(result.error).toBeNull();
+      expect(invokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+        id: 'contact-123',
+        version: 'v1.0',
+        table: 'contacts',
+      });
+      expect(result).toEqual({
+        data: null,
+        error: null,
+        count: null,
+        status: 204,
+        statusText: 'No Content',
+      });
     });
   });
 

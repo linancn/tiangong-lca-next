@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(5);
+select plan(7);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -291,6 +291,48 @@ select is(
   ),
   '0',
   'reviewer cannot directly insert comments row after raw write revoke'
+);
+
+select is(
+  (
+    select count(*)::text
+    from (
+      values
+        ('contacts'),
+        ('sources'),
+        ('unitgroups'),
+        ('flowproperties'),
+        ('flows'),
+        ('processes'),
+        ('lifecyclemodels')
+    ) as dataset_tables(table_name)
+    where not has_table_privilege('authenticated', format('public.%I', table_name), 'INSERT')
+      and not has_table_privilege('authenticated', format('public.%I', table_name), 'UPDATE')
+      and not has_table_privilege('authenticated', format('public.%I', table_name), 'DELETE')
+  ),
+  '7',
+  'authenticated role has no raw insert, update, or delete grants on dataset tables after revoke'
+);
+
+select is(
+  (
+    select count(*)::text
+    from (
+      values
+        ('contacts'),
+        ('sources'),
+        ('unitgroups'),
+        ('flowproperties'),
+        ('flows'),
+        ('processes'),
+        ('lifecyclemodels')
+    ) as dataset_tables(table_name)
+    where not has_table_privilege('anon', format('public.%I', table_name), 'INSERT')
+      and not has_table_privilege('anon', format('public.%I', table_name), 'UPDATE')
+      and not has_table_privilege('anon', format('public.%I', table_name), 'DELETE')
+  ),
+  '7',
+  'anon role has no raw insert, update, or delete grants on dataset tables after revoke'
 );
 
 select * from finish();

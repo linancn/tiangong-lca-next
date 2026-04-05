@@ -140,6 +140,8 @@ export type TidasPackageRoot = {
 };
 
 type DatasetCommandFunctionName =
+  | 'app_dataset_create'
+  | 'app_dataset_delete'
   | 'app_dataset_save_draft'
   | 'app_dataset_assign_team'
   | 'app_dataset_publish'

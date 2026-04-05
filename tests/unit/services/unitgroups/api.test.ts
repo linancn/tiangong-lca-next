@@ -233,24 +233,32 @@ beforeEach(() => {
 
 describe('createUnitGroup', () => {
   it('stores ordered payload with rule verification result', async () => {
-    const insertResult = { data: [{ id: 'ug-1' }], error: null };
-    const query = createQuery(insertResult);
-    mockFrom.mockReturnValueOnce(query as any);
+    const createResult = {
+      data: [{ id: 'ug-1' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
     mockGenUnitGroupJsonOrdered.mockReturnValueOnce({ data: 'ordered' });
+    mockInvokeDatasetCommand.mockResolvedValueOnce(createResult as any);
 
     const result = await createUnitGroup('ug-1', { name: 'Unit Group' });
 
     expect(mockGenUnitGroupJsonOrdered).toHaveBeenCalledWith('ug-1', { name: 'Unit Group' });
-    expect(mockFrom).toHaveBeenCalledWith('unitgroups');
-    expect(query.calls.insertArgs).toEqual([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       {
         id: 'ug-1',
-        json_ordered: { data: 'ordered' },
-        rule_verification: true,
+        table: 'unitgroups',
+        jsonOrdered: { data: 'ordered' },
+        ruleVerification: true,
       },
-    ]);
-    expect(query.calls.selectArgs).toEqual([]);
-    expect(result).toBe(insertResult);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
   });
 
   it('returns a language validation error when normalization fails', async () => {
@@ -371,19 +379,23 @@ describe('updateUnitGroup', () => {
 
 describe('deleteUnitGroup', () => {
   it('removes unit group by id and version', async () => {
-    const deleteResult = { data: null, error: null };
-    const query = createQuery(deleteResult);
-    mockFrom.mockReturnValueOnce(query as any);
+    const deleteResult = { data: null, error: null, count: null, status: 200, statusText: 'OK' };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(deleteResult as any);
 
     const result = await deleteUnitGroup('ug-1', '01.00.000');
 
-    expect(mockFrom).toHaveBeenCalledWith('unitgroups');
-    expect(query.calls.deleteCalled).toBe(true);
-    expect(query.calls.eqArgs).toEqual([
-      { field: 'id', value: 'ug-1' },
-      { field: 'version', value: '01.00.000' },
-    ]);
-    expect(result).toBe(deleteResult);
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+      id: 'ug-1',
+      version: '01.00.000',
+      table: 'unitgroups',
+    });
+    expect(result).toEqual({
+      data: null,
+      error: null,
+      count: null,
+      status: 204,
+      statusText: 'No Content',
+    });
   });
 });
 

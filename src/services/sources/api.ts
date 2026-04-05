@@ -8,6 +8,7 @@ import {
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
+import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
@@ -44,11 +45,18 @@ export async function createSource(id: string, data: any) {
     newData,
     userTeamId,
   );
-  const result = await supabase
-    .from('sources')
-    .insert([{ id: id, json_ordered: newData, rule_verification }])
-    .select();
-  return result;
+  return invokeDatasetCommand(
+    'app_dataset_create',
+    {
+      id,
+      table: 'sources',
+      jsonOrdered: newData,
+      ruleVerification: rule_verification,
+    },
+    {
+      ruleVerification: rule_verification,
+    },
+  );
 }
 
 export async function updateSource(id: string, version: string, data: any) {
@@ -92,8 +100,12 @@ export async function updateSource(id: string, version: string, data: any) {
 }
 
 export async function deleteSource(id: string, version: string) {
-  const result = await supabase.from('sources').delete().eq('id', id).eq('version', version);
-  return result;
+  const result = await invokeDatasetCommand('app_dataset_delete', {
+    id,
+    version,
+    table: 'sources',
+  });
+  return normalizeDeleteCommandResult(result);
 }
 
 export async function getSourceTableAll(

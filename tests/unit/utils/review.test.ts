@@ -15,8 +15,6 @@ import {
   getRejectedComments,
   mergeCommentsToData,
   submitDatasetReview,
-  updateReviewsAfterCheckData,
-  updateUnReviewToUnderReview,
   validateDatasetRuleVerification,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
@@ -70,16 +68,12 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 
 const mockGetRefData = jest.fn();
 const mockGetRefDataByIds = jest.fn();
-const mockGetReviewsOfData = jest.fn();
-const mockUpdateDateToReviewState = jest.fn();
 const mockUpdateStateCodeApi = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getRefData: (...args: any[]) => mockGetRefData(...args),
   getRefDataByIds: (...args: any[]) => mockGetRefDataByIds(...args),
-  getReviewsOfData: (...args: any[]) => mockGetReviewsOfData(...args),
-  updateDateToReviewState: (...args: any[]) => mockUpdateDateToReviewState(...args),
   updateStateCodeApi: (...args: any[]) => mockUpdateStateCodeApi(...args),
 }));
 
@@ -90,13 +84,11 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
 }));
 
-const mockAddReviewsApi = jest.fn();
 const mockGetRejectReviewsByProcess = jest.fn();
 const mockSubmitDatasetReviewApi = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
-  addReviewsApi: (...args: any[]) => mockAddReviewsApi(...args),
   getRejectReviewsByProcess: (...args: any[]) => mockGetRejectReviewsByProcess(...args),
   submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
@@ -115,39 +107,17 @@ jest.mock('@/services/sources/api', () => ({
   getSourcesByIdsAndVersions: (...args: any[]) => mockGetSourcesByIdsAndVersions(...args),
 }));
 
-const mockGetTeamMessageApi = jest.fn();
-
-jest.mock('@/services/teams/api', () => ({
-  __esModule: true,
-  getTeamMessageApi: (...args: any[]) => mockGetTeamMessageApi(...args),
-}));
-
-const mockGetUserId = jest.fn();
-const mockGetUsersByIds = jest.fn();
-
-jest.mock('@/services/users/api', () => ({
-  __esModule: true,
-  getUserId: (...args: any[]) => mockGetUserId(...args),
-  getUsersByIds: (...args: any[]) => mockGetUsersByIds(...args),
-}));
-
 describe('review utilities', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetRefData.mockReset();
     mockGetRefDataByIds.mockReset();
-    mockGetReviewsOfData.mockReset();
-    mockUpdateDateToReviewState.mockReset();
     mockUpdateStateCodeApi.mockReset();
     mockGetLifeCycleModelDetail.mockReset();
-    mockAddReviewsApi.mockReset();
     mockGetRejectReviewsByProcess.mockReset();
     mockSubmitDatasetReviewApi.mockReset();
     mockGetRejectedCommentsByReviewIds.mockReset();
     mockGetSourcesByIdsAndVersions.mockReset();
-    mockGetTeamMessageApi.mockReset();
-    mockGetUserId.mockReset();
-    mockGetUsersByIds.mockReset();
     mockCreateContact.mockReset();
     mockCreateFlow.mockReset();
     mockCreateFlowProperty.mockReset();
@@ -975,61 +945,6 @@ describe('review utilities', () => {
     ).toBe(false);
   });
 
-  it('updates under review items to pending review', async () => {
-    mockGetReviewsOfData.mockResolvedValue([{ id: 'existing-review' }]);
-    mockUpdateDateToReviewState.mockResolvedValue({ success: true });
-
-    const items = [
-      { '@refObjectId': 'item-1', '@version': '01', '@type': 'process data set' },
-      { '@refObjectId': 'item-2', '@version': '01', '@type': 'flow data set' },
-    ];
-
-    const results = await updateUnReviewToUnderReview(items, 'review-1');
-
-    expect(mockGetReviewsOfData).toHaveBeenCalledTimes(2);
-    expect(mockUpdateDateToReviewState).toHaveBeenCalledTimes(2);
-    expect(results).toHaveLength(2);
-    expect(mockUpdateDateToReviewState).toHaveBeenCalledWith(
-      'item-1',
-      '01',
-      'processes',
-      expect.objectContaining({
-        state_code: 20,
-      }),
-    );
-  });
-
-  it('captures per-item update failures when moving refs under review', async () => {
-    mockGetReviewsOfData.mockImplementation(async (id: string) => {
-      if (id === 'broken-item') {
-        throw new Error('cannot load reviews');
-      }
-      return [];
-    });
-    mockUpdateDateToReviewState.mockResolvedValue({ success: true });
-
-    const results = await updateUnReviewToUnderReview(
-      [
-        { '@refObjectId': 'broken-item', '@version': '01', '@type': 'process data set' },
-        { '@refObjectId': 'ok-item', '@version': '01', '@type': 'flow data set' },
-      ],
-      'review-2',
-    );
-
-    expect(results).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          success: false,
-          item: expect.objectContaining({ '@refObjectId': 'broken-item' }),
-        }),
-        expect.objectContaining({
-          success: true,
-          item: expect.objectContaining({ '@refObjectId': 'ok-item' }),
-        }),
-      ]),
-    );
-  });
-
   it('validates required fields and returns unique tab names', () => {
     const requiredFields = {
       'modellingAndValidation.validation.review': 'validation',
@@ -1523,29 +1438,6 @@ describe('review utilities', () => {
         }),
         expect.objectContaining({ '@refObjectId': 'parent' }),
       ]),
-    );
-  });
-
-  it('aggregates review data and submits to reviews API', async () => {
-    mockGetTeamMessageApi.mockResolvedValue({
-      data: [{ json: { title: 'Team Title' } }],
-    });
-    mockGetUserId.mockResolvedValue('user-1');
-    mockGetUsersByIds.mockResolvedValue([
-      { id: 'user-1', display_name: 'Tester', email: 't@ex.com' },
-    ]);
-    mockAddReviewsApi.mockResolvedValue({ success: true });
-
-    await updateReviewsAfterCheckData('team-1', { foo: 'bar' }, 'review-7');
-
-    expect(mockAddReviewsApi).toHaveBeenCalledWith(
-      'review-7',
-      expect.objectContaining({
-        team: expect.objectContaining({ id: 'team-1', name: 'Team Title' }),
-        user: expect.objectContaining({ id: 'user-1', name: 'Tester' }),
-        data: { foo: 'bar' },
-        logs: expect.arrayContaining([expect.objectContaining({ action: 'submit_review' })]),
-      }),
     );
   });
 
