@@ -363,6 +363,47 @@ describe('IssueNotification Component', () => {
     });
   });
 
+  it('does not render a clickable action for unsafe notification links', async () => {
+    mockGetNotifications.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          key: 'notification-unsafe-link',
+          id: 'notification-unsafe-link',
+          type: 'validation_issue',
+          datasetType: 'process data set',
+          datasetId: 'process-unsafe',
+          datasetVersion: '01.00.000',
+          senderName: 'Alice',
+          modifiedAt: '2024-05-01T10:00:00.000Z',
+          link: 'javascript:alert(1)',
+          json: {
+            issueCodes: ['ruleVerificationFailed'],
+          },
+        },
+      ],
+      total: 1,
+      page: 1,
+    });
+
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+    render(
+      <ConfigProvider>
+        <IssueNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('process-unsafe')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('View')).not.toBeInTheDocument();
+    expect(openSpy).not.toHaveBeenCalled();
+
+    openSpy.mockRestore();
+  });
+
   it('handles pagination changes and avoids re-calling onDataLoaded', async () => {
     mockGetNotifications.mockResolvedValue({
       ...mockNotificationData,

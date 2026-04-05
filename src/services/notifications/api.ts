@@ -7,6 +7,7 @@ import type {
   NotificationTableRow,
   ValidationIssueNotificationIssue,
 } from './data';
+import { normalizeNotificationLink } from './link';
 
 type NotificationQueryRow = NotificationTableRow & {
   total_count?: number | string | null;
@@ -70,7 +71,7 @@ const mapNotificationRow = (row: NotificationQueryRow): NotificationListItem => 
     datasetVersion: row.dataset_version,
     senderName: normalizeString(row.json?.senderName) ?? '-',
     modifiedAt: normalizedModifiedAt,
-    link: normalizeString(row.json?.link),
+    link: normalizeNotificationLink(row.json?.link),
     json: row.json ?? undefined,
   };
 };
@@ -131,7 +132,7 @@ export async function upsertValidationIssueNotification({
         datasetVersion,
         issueCodes: getNotificationIssueCodes(issues),
         issueCount: issues.length,
-        link: normalizeString(link),
+        link: normalizeNotificationLink(link),
         tabNames: getNotificationTabNames(issues),
       },
       region: FunctionRegion.UsEast1,

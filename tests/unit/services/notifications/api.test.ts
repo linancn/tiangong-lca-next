@@ -148,6 +148,45 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       expect(result).toEqual({ success: true, error: null });
     });
 
+    it('drops unsafe navigation links before invoking the notification command', async () => {
+      mockFunctionsInvoke.mockResolvedValueOnce({
+        data: { ok: true },
+        error: null,
+      });
+
+      await notificationsApi.upsertValidationIssueNotification({
+        recipientUserId: ' owner-1 ',
+        sourceRef: SOURCE_REF,
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+        link: ' javascript:alert(1) ',
+        issues: [],
+      });
+
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_notification_send_validation_issue', {
+        headers: {
+          Authorization: 'Bearer access-token',
+        },
+        body: {
+          recipientUserId: 'owner-1',
+          sourceDatasetType: 'process data set',
+          sourceDatasetId: 'source-process-1',
+          sourceDatasetVersion: '01.00.000',
+          datasetType: 'process data set',
+          datasetId: 'process-1',
+          datasetVersion: '01.00.000',
+          issueCodes: [],
+          issueCount: 0,
+          link: undefined,
+          tabNames: [],
+        },
+        region: FunctionRegion.UsEast1,
+      });
+    });
+
     it('maps function invoke errors through resolveFunctionInvokeError', async () => {
       const invokeError = { message: 'Edge failed', context: { status: 500 } as any };
       mockFunctionsInvoke.mockResolvedValueOnce({
@@ -271,6 +310,52 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
           },
         ],
         page: 2,
+        success: true,
+        total: 1,
+      });
+    });
+
+    it('filters unsafe notification links returned from the query rpc', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: 'notification-unsafe-link',
+            type: 'validation_issue',
+            dataset_type: 'process data set',
+            dataset_id: 'process-1',
+            dataset_version: '01.00.000',
+            modified_at: '2024-04-30T12:00:00.000Z',
+            json: {
+              senderName: 'Alice',
+              link: 'javascript:alert(1)',
+            },
+            total_count: 1,
+          },
+        ],
+        error: null,
+      });
+
+      const result = await notificationsApi.getNotifications({ pageSize: 5, current: 1 }, 3);
+
+      expect(result).toEqual({
+        data: [
+          {
+            key: 'notification-unsafe-link',
+            id: 'notification-unsafe-link',
+            type: 'validation_issue',
+            datasetType: 'process data set',
+            datasetId: 'process-1',
+            datasetVersion: '01.00.000',
+            senderName: 'Alice',
+            modifiedAt: '2024-04-30T12:00:00.000Z',
+            link: undefined,
+            json: {
+              senderName: 'Alice',
+              link: 'javascript:alert(1)',
+            },
+          },
+        ],
+        page: 1,
         success: true,
         total: 1,
       });
