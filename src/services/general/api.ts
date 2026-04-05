@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { message } from 'antd';
@@ -22,7 +23,20 @@ type InvokeErrorBody = {
   detail?: string;
   error?: string;
   message?: string;
+  details?: unknown;
   state_code?: number;
+  review_state_code?: number;
+};
+
+type ResolvedFunctionInvokeError = {
+  code?: string;
+  detail?: string;
+  details?: unknown;
+  error?: string;
+  message: string;
+  review_state_code?: number;
+  state_code?: number;
+  status?: number;
 };
 
 type GetRefDataOptions = {
@@ -124,6 +138,24 @@ export type TidasPackageRoot = {
   id: string;
   version: string;
 };
+
+type DatasetCommandFunctionName =
+  | 'app_dataset_create'
+  | 'app_dataset_delete'
+  | 'app_dataset_save_draft'
+  | 'app_dataset_assign_team'
+  | 'app_dataset_publish'
+  | 'app_dataset_submit_review';
+
+const DATASET_COMMAND_TABLES: readonly TidasPackageRootTable[] = [
+  'contacts',
+  'sources',
+  'unitgroups',
+  'flowproperties',
+  'flows',
+  'processes',
+  'lifecyclemodels',
+] as const;
 
 export type TidasPackageSummary = {
   total_entries: number;
@@ -681,7 +713,102 @@ export async function importTidasPackageApi(file: File) {
 
 const VERSION_PATTERN = /^\d{2}\.\d{2}\.\d{3}$/;
 
-export async function resolveFunctionInvokeError(error: { message?: string; context?: Response }) {
+function isDatasetCommandTable(value: string): value is TidasPackageRootTable {
+  return DATASET_COMMAND_TABLES.includes(value as TidasPackageRootTable);
+}
+
+function extractStateCode(details: unknown): number | undefined {
+  if (!details || typeof details !== 'object') {
+    return undefined;
+  }
+
+  const candidate = details as { state_code?: unknown; review_state_code?: unknown };
+  if (typeof candidate.state_code === 'number') {
+    return candidate.state_code;
+  }
+  if (typeof candidate.review_state_code === 'number') {
+    return candidate.review_state_code;
+  }
+
+  return undefined;
+}
+
+function extractReviewStateCode(details: unknown): number | undefined {
+  if (!details || typeof details !== 'object') {
+    return undefined;
+  }
+
+  const candidate = details as { review_state_code?: unknown };
+  return typeof candidate.review_state_code === 'number' ? candidate.review_state_code : undefined;
+}
+
+function normalizeFunctionInvokeErrorShape(error: {
+  code?: string;
+  details?: unknown;
+  message: string;
+  review_state_code?: number;
+  state_code?: number;
+}): SupabaseError {
+  const normalized = {
+    message: error.message,
+    code: typeof error.code === 'string' ? error.code : 'FUNCTION_ERROR',
+    details: error.details ?? '',
+    hint: '',
+  } as SupabaseError;
+
+  const stateCode =
+    typeof error.state_code === 'number' ? error.state_code : extractStateCode(error.details);
+  if (typeof stateCode === 'number') {
+    normalized.state_code = stateCode;
+  }
+
+  const reviewStateCode =
+    typeof error.review_state_code === 'number'
+      ? error.review_state_code
+      : extractReviewStateCode(error.details);
+  if (typeof reviewStateCode === 'number') {
+    normalized.review_state_code = reviewStateCode;
+  }
+
+  return normalized;
+}
+
+function normalizeDatasetCommandRows<Row extends Record<string, unknown>>(
+  data: unknown,
+  ruleVerification?: boolean | null,
+): Row[] {
+  let payload = data;
+  if (payload && typeof payload === 'object' && !Array.isArray(payload) && 'data' in payload) {
+    payload = (payload as Record<string, unknown>).data;
+  }
+
+  const rows = Array.isArray(payload)
+    ? payload
+    : payload === null || payload === undefined
+      ? []
+      : [payload];
+
+  return rows.map((row) => {
+    if (
+      typeof ruleVerification !== 'boolean' ||
+      !row ||
+      typeof row !== 'object' ||
+      Array.isArray(row)
+    ) {
+      return row as Row;
+    }
+
+    return {
+      ...(row as Record<string, unknown>),
+      rule_verification: ruleVerification,
+    } as unknown as Row;
+  });
+}
+
+export async function resolveFunctionInvokeError(error: {
+  message?: string;
+  context?: Response;
+}): Promise<ResolvedFunctionInvokeError> {
   const fallbackMessage = error?.message || 'Request failed';
   const context = error?.context;
 
@@ -719,6 +846,85 @@ export async function resolveFunctionInvokeError(error: { message?: string; cont
       status: context.status,
     };
   }
+}
+
+export function createLegacyMutationRemovedError(boundary: string): SupabaseError {
+  return {
+    message: 'Use explicit command endpoints instead',
+    code: 'LEGACY_ENDPOINT_REMOVED',
+    details: boundary,
+    hint: '',
+  } as SupabaseError;
+}
+
+export function createLegacyMutationRemovedResult<Row extends Record<string, unknown>>(
+  boundary: string,
+): SupabaseMutationResult<Row> {
+  return {
+    data: null,
+    error: createLegacyMutationRemovedError(boundary),
+    count: null,
+    status: 410,
+    statusText: 'LEGACY_ENDPOINT_REMOVED',
+  };
+}
+
+export async function invokeDatasetCommand<Row extends Record<string, unknown>>(
+  functionName: DatasetCommandFunctionName,
+  body: Record<string, unknown>,
+  options: { ruleVerification?: boolean | null } = {},
+): Promise<SupabaseMutationResult<Row>> {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    return {
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      } as SupabaseError,
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    };
+  }
+
+  const result = await supabase.functions.invoke(functionName, {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body,
+    region: FunctionRegion.UsEast1,
+  });
+
+  if (result.error) {
+    console.log('error', result.error);
+    const resolved = await resolveFunctionInvokeError(result.error);
+    const normalizedError = normalizeFunctionInvokeErrorShape({
+      message: resolved.message,
+      code: resolved.code,
+      details: resolved.details,
+      review_state_code: resolved.review_state_code,
+      state_code: resolved.state_code,
+    });
+
+    return {
+      data: null,
+      error: normalizedError,
+      count: null,
+      status: resolved.status ?? result.error.context?.status ?? 500,
+      statusText: normalizedError.code,
+    };
+  }
+
+  return {
+    data: normalizeDatasetCommandRows<Row>(result.data, options.ruleVerification),
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  };
 }
 
 export async function getDataDetail(id: string, version: string, table: string) {
@@ -858,24 +1064,12 @@ export async function updateStateCodeApi(
   stateCode: number,
 ) {
   if (!table) return;
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table, data: { state_code: stateCode } },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return {
-      error: await resolveFunctionInvokeError(result.error),
-    };
-  }
-  return result?.data;
+  void id;
+  void version;
+  void stateCode;
+  return {
+    error: createLegacyMutationRemovedError(`updateStateCodeApi:${table}`),
+  };
 }
 
 export async function getReviewsOfData(id: string, version: string, table: string) {
@@ -889,24 +1083,12 @@ export async function updateDateToReviewState(
   data: any,
 ) {
   if (!table) return;
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table, data },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return {
-      error: await resolveFunctionInvokeError(result.error),
-    };
-  }
-  return result?.data;
+  void id;
+  void version;
+  void data;
+  return {
+    error: createLegacyMutationRemovedError(`updateDateToReviewState:${table}`),
+  };
 }
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
@@ -931,7 +1113,7 @@ export async function getTeamIdByUserId() {
 }
 
 export async function contributeSource(tableName: string, id: string, version: string) {
-  if (!tableName) {
+  if (!tableName || !isDatasetCommandTable(tableName)) {
     return {
       error: true,
       message: 'Contribute failed',
@@ -939,24 +1121,12 @@ export async function contributeSource(tableName: string, id: string, version: s
   }
   const teamId = await getTeamIdByUserId();
   if (teamId) {
-    let result: any = {};
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      result = await supabase.functions.invoke('update_data', {
-        headers: {
-          Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-        },
-        body: { id, version, table: tableName, data: { team_id: teamId } },
-        region: FunctionRegion.UsEast1,
-      });
-    }
-    if (result.error) {
-      console.log('error', result.error);
-      return {
-        error: await resolveFunctionInvokeError(result.error),
-      };
-    }
-    return result?.data;
+    return invokeDatasetCommand('app_dataset_assign_team', {
+      id,
+      version,
+      table: tableName,
+      teamId,
+    });
   } else {
     message.error(
       getLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',
@@ -966,6 +1136,16 @@ export async function contributeSource(tableName: string, id: string, version: s
     error: true,
     message: 'Contribute failed',
   };
+}
+
+export async function publishDatasetApi<
+  Row extends Record<string, unknown> = Record<string, unknown>,
+>(tableName: TidasPackageRootTable, id: string, version: string) {
+  return invokeDatasetCommand<Row>('app_dataset_publish', {
+    id,
+    version,
+    table: tableName,
+  });
 }
 
 export async function getAllVersions(

@@ -221,7 +221,7 @@ const SourceEdit: FC<Props> = ({
       });
     }
     const fieldsValue = formRefEdit.current?.getFieldsValue();
-    const result: UpdateSourceResult = await updateSource(id, version, {
+    const result: UpdateSourceResult | undefined = await updateSource(id, version, {
       ...fieldsValue,
       sourceInformation: {
         ...fromData?.sourceInformation,

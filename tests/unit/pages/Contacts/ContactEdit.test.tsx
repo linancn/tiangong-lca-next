@@ -383,8 +383,8 @@ jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),
   getDataDetailById: jest.fn(() => Promise.resolve({ data: [] })),
+  publishDatasetApi: jest.fn(() => Promise.resolve({ data: [{ state_code: 100 }], error: null })),
   getRefData: jest.fn(() => Promise.resolve({ success: true, data: {} })),
-  updateStateCodeApi: jest.fn(() => Promise.resolve({ updated: true })),
 }));
 
 jest.mock('@/services/general/util', () => ({
@@ -414,7 +414,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 
 const { getContactDetail: mockGetContactDetail, updateContact: mockUpdateContact } =
   jest.requireMock('@/services/contacts/api');
-const { getRefData: mockGetRefData, updateStateCodeApi: mockUpdateStateCodeApi } =
+const { getRefData: mockGetRefData, publishDatasetApi: mockPublishDatasetApi } =
   jest.requireMock('@/services/general/api');
 const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
   '@/components/ValidationIssueModal',
@@ -486,7 +486,7 @@ describe('ContactEdit component', () => {
         ruleVerification: true,
       },
     });
-    mockUpdateStateCodeApi.mockResolvedValue({ updated: true });
+    mockPublishDatasetApi.mockResolvedValue({ data: [{ state_code: 100 }], error: null });
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -699,14 +699,42 @@ describe('ContactEdit component', () => {
     await user.click(syncButton);
 
     await waitFor(() =>
-      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
-        'contact-123',
-        '01.00.000',
-        'contacts',
-        100,
-      ),
+      expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000'),
     );
     expect(mockGetRefData).toHaveBeenCalledWith('source-123', '01.00.000', 'sources', 'team-1');
+    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith(
+      'Synchronized to open data successfully!',
+    );
+  });
+
+  it('falls back to state code 100 when sync-to-open-data returns no state code', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({ data: [{}], error: null });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000'),
+    );
     expect(actionRef.current.reload).toHaveBeenCalled();
     expect(getMockAntdMessage().success).toHaveBeenCalledWith(
       'Synchronized to open data successfully!',
@@ -749,13 +777,36 @@ describe('ContactEdit component', () => {
     await waitFor(() =>
       expect(mockGetRefData).toHaveBeenCalledWith('source-1', '1.0.0', 'sources', ''),
     );
-    expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
-      'contact-123',
-      '01.00.000',
-      'contacts',
-      100,
-    );
+    expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to state_code 100 when sync succeeds without a returned state code', async () => {
+    const user = userEvent.setup();
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({ data: [{}], error: null });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    await user.click(await screen.findByRole('button', { name: 'Sync to Open Data' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Sync to Open Data' })).toBeDisabled(),
+    );
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith(
+      'Synchronized to open data successfully!',
+    );
   });
 
   it('blocks sync when referenced non-contact data is not open', async () => {
@@ -796,7 +847,73 @@ describe('ContactEdit component', () => {
         'Referenced data {id}({version}) must be open data.',
       );
     });
-    expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
+    expect(mockPublishDatasetApi).not.toHaveBeenCalled();
+  });
+
+  it('shows the open-data error when sync-to-open-data is rejected with state_code 100', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({
+      data: null,
+      error: { state_code: 100, message: 'open data' },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'This data is open data, save failed',
+      ),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+  });
+
+  it('shows the under-review error when sync-to-open-data is rejected with state_code 20', async () => {
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockPublishDatasetApi.mockResolvedValueOnce({
+      data: null,
+      error: { state_code: 20, message: 'under review' },
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        actionRef={actionRef as any}
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+        showSyncOpenDataButton={true}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const syncButton = await screen.findByRole('button', { name: 'Sync to Open Data' });
+    await user.click(syncButton);
+
+    await waitFor(() =>
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Data is under review, save failed'),
+    );
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
 
   it('shows an under-review error when saving is rejected with state_code 20', async () => {
@@ -1259,7 +1376,7 @@ describe('ContactEdit component', () => {
     await user.click(syncButton);
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('sync blocked'));
-    expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
+    expect(mockPublishDatasetApi).not.toHaveBeenCalled();
 
     mockUpdateContact.mockResolvedValueOnce({
       data: null,
@@ -1315,7 +1432,7 @@ describe('ContactEdit component', () => {
         'Current contact data is incomplete. Please fill all required fields before syncing.',
       ),
     );
-    expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
+    expect(mockPublishDatasetApi).not.toHaveBeenCalled();
   });
 
   it('treats a null rule verification as passed when syncing to open data', async () => {
@@ -1374,12 +1491,7 @@ describe('ContactEdit component', () => {
     await user.click(syncButton);
 
     await waitFor(() =>
-      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
-        'contact-123',
-        '01.00.000',
-        'contacts',
-        100,
-      ),
+      expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000'),
     );
     expect(getMockAntdMessage().error).not.toHaveBeenCalledWith(
       'Current contact data is incomplete. Please fill all required fields before syncing.',
@@ -1414,12 +1526,7 @@ describe('ContactEdit component', () => {
     await user.click(syncButton);
 
     await waitFor(() =>
-      expect(mockUpdateStateCodeApi).toHaveBeenCalledWith(
-        'contact-123',
-        '01.00.000',
-        'contacts',
-        100,
-      ),
+      expect(mockPublishDatasetApi).toHaveBeenCalledWith('contacts', 'contact-123', '01.00.000'),
     );
     expect(mockGetRefData).not.toHaveBeenCalled();
     expect(mockGetRefTableName).toHaveBeenCalledWith('unknown data set');
@@ -1550,14 +1657,14 @@ describe('ContactEdit component', () => {
         'Contact reference {id}({version}) must match the current contact ID and version.',
       ),
     );
-    expect(mockUpdateStateCodeApi).not.toHaveBeenCalled();
+    expect(mockPublishDatasetApi).not.toHaveBeenCalled();
   });
 
   it('shows an action error when state-code update fails during sync', async () => {
     const user = userEvent.setup();
     mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
     mockGetAllRefObj.mockReturnValue([]);
-    mockUpdateStateCodeApi.mockResolvedValueOnce(null);
+    mockPublishDatasetApi.mockResolvedValueOnce(null);
 
     renderWithProviders(
       <ContactEdit
@@ -1576,6 +1683,41 @@ describe('ContactEdit component', () => {
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('Action failed'));
   });
+
+  it.each([
+    [100, 'This data is open data, save failed'],
+    [20, 'Data is under review, save failed'],
+  ])(
+    'shows the state-code specific sync error when publishDatasetApi returns %s',
+    async (stateCode, expectedMessage) => {
+      const user = userEvent.setup();
+      mockGetReviewUserRoleApi.mockResolvedValue({
+        user_id: 'review-admin-1',
+        role: 'review-admin',
+      });
+      mockGetAllRefObj.mockReturnValue([]);
+      mockPublishDatasetApi.mockResolvedValueOnce({
+        data: null,
+        error: { state_code: stateCode, message: 'sync failed' },
+      });
+
+      renderWithProviders(
+        <ContactEdit
+          id='contact-123'
+          version='01.00.000'
+          buttonType='icon'
+          lang='en'
+          setViewDrawerVisible={jest.fn()}
+          showSyncOpenDataButton={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Edit' }));
+      await user.click(await screen.findByRole('button', { name: 'Sync to Open Data' }));
+
+      await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith(expectedMessage));
+    },
+  );
 
   it('opens automatically and triggers silent auto-check when requested', async () => {
     renderWithProviders(

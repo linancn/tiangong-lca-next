@@ -137,6 +137,11 @@ afterEach(() => {
 const sampleId = '12345678-1234-1234-1234-123456789012';
 const sampleVersion = '01.00.000';
 
+const createErrorContext = (body: Record<string, unknown>, status: number) => ({
+  status,
+  text: jest.fn().mockResolvedValue(JSON.stringify(body)),
+});
+
 describe('exportDataApi', () => {
   it('should select lifecycle model fields when table is lifecyclemodels', async () => {
     const resultPayload = { data: [{ json_ordered: { foo: 'bar' }, json_tg: {} }] };
@@ -494,40 +499,429 @@ describe('getRefData', () => {
 });
 
 describe('updateStateCodeApi', () => {
-  it('should invoke edge function when session exists', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-1' } } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { updated: true } });
-
+  it('should return a structured deprecation error for legacy direct state updates', async () => {
     const result = await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 300);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token-1' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: { state_code: 300 } },
-      region: expect.anything(),
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateStateCodeApi:flows',
+        hint: '',
+      },
     });
-    expect(result).toEqual({ updated: true });
   });
 
-  it('should return undefined when session is missing', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
-
+  it('should return a deprecation error even when session is missing', async () => {
     const result = await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 100);
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateStateCodeApi:flows',
+        hint: '',
+      },
+    });
   });
+});
 
-  it('should use an empty bearer token when the session has no access token', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { updated: true } });
+describe('invokeDatasetCommand', () => {
+  it('normalizes command envelopes into legacy mutation results', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_save_draft',
+        data: {
+          id: sampleId,
+          version: sampleVersion,
+        },
+      },
+      error: null,
+    });
 
-    await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 300);
+    const result = await generalApi.invokeDatasetCommand(
+      'app_dataset_save_draft',
+      {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'flows',
+        jsonOrdered: { ordered: true },
+      },
+      {
+        ruleVerification: false,
+      },
+    );
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: { state_code: 300 } },
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_save_draft', {
+      headers: { Authorization: 'Bearer token-cmd' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'flows',
+        jsonOrdered: { ordered: true },
+      },
       region: expect.anything(),
     });
+    expect(result).toEqual({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          rule_verification: false,
+        },
+      ],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('normalizes array payloads without wrapping them again', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+        },
+      ],
+      error: null,
+    });
+
+    const result = await generalApi.invokeDatasetCommand(
+      'app_dataset_save_draft',
+      {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'flows',
+        jsonOrdered: { ordered: true },
+      },
+      {
+        ruleVerification: true,
+      },
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: sampleId,
+          version: sampleVersion,
+          rule_verification: true,
+        },
+      ],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('returns an empty normalized array when the command envelope has null data', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_save_draft',
+        data: null,
+      },
+      error: null,
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('returns an auth-required error when no session is available', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    });
+  });
+
+  it('flattens command error details back into the legacy error shape', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Forbidden',
+        context: createErrorContext(
+          {
+            code: 'DATA_UNDER_REVIEW',
+            message: 'Data is under review and cannot be modified',
+            details: {
+              state_code: 20,
+              review_state_code: 20,
+            },
+          },
+          403,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Data is under review and cannot be modified',
+        code: 'DATA_UNDER_REVIEW',
+        state_code: 20,
+      }),
+      count: null,
+      status: 403,
+      statusText: 'DATA_UNDER_REVIEW',
+    });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('uses review_state_code from object details when state_code is absent', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Review still pending',
+        context: createErrorContext(
+          {
+            code: 'REVIEW_PENDING',
+            message: 'Review is still pending',
+            details: {
+              review_state_code: 55,
+            },
+          },
+          409,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Review is still pending',
+        code: 'REVIEW_PENDING',
+        state_code: 55,
+        review_state_code: 55,
+      }),
+      count: null,
+      status: 409,
+      statusText: 'REVIEW_PENDING',
+    });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('ignores non-object error details when normalizing function invoke errors', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Malformed payload',
+        context: createErrorContext(
+          {
+            code: 'MALFORMED_PAYLOAD',
+            message: 'Malformed payload',
+            details: 'not-an-object',
+          },
+          400,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Malformed payload',
+        code: 'MALFORMED_PAYLOAD',
+        details: 'not-an-object',
+      }),
+      count: null,
+      status: 400,
+      statusText: 'MALFORMED_PAYLOAD',
+    });
+    expect(result.error).not.toHaveProperty('state_code');
+    expect(result.error).not.toHaveProperty('review_state_code');
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('drops invalid state-code details that are not numeric', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Invalid state details',
+        context: createErrorContext(
+          {
+            code: 'INVALID_STATE_DETAILS',
+            message: 'Invalid state details',
+            details: {
+              state_code: '20',
+              review_state_code: '21',
+            },
+          },
+          422,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Invalid state details',
+        code: 'INVALID_STATE_DETAILS',
+      }),
+      count: null,
+      status: 422,
+      statusText: 'INVALID_STATE_DETAILS',
+    });
+    expect(result.error).not.toHaveProperty('state_code');
+    expect(result.error).not.toHaveProperty('review_state_code');
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('prefers top-level state codes from the parsed edge-function error body', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Conflict',
+        context: createErrorContext(
+          {
+            code: 'STATE_CONFLICT',
+            message: 'Conflict',
+            state_code: 91,
+            review_state_code: 81,
+            details: {
+              state_code: 20,
+              review_state_code: 10,
+            },
+          },
+          409,
+        ),
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: expect.objectContaining({
+        message: 'Conflict',
+        code: 'STATE_CONFLICT',
+        state_code: 91,
+        review_state_code: 81,
+      }),
+      count: null,
+      status: 409,
+      statusText: 'STATE_CONFLICT',
+    });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it('falls back to a generic function error when invoke errors have no context', async () => {
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Network failure',
+      },
+    });
+
+    const result = await generalApi.invokeDatasetCommand('app_dataset_save_draft', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'flows',
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Network failure',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+
+    consoleLogSpy.mockRestore();
   });
 });
 
@@ -555,9 +949,7 @@ describe('getReviewsOfData', () => {
 });
 
 describe('updateDateToReviewState', () => {
-  it('should invoke edge function with provided data', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-2' } } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true } });
+  it('should return a structured deprecation error for legacy review-state updates', async () => {
     const payload = { foo: 'bar' };
 
     const result = await generalApi.updateDateToReviewState(
@@ -567,25 +959,14 @@ describe('updateDateToReviewState', () => {
       payload,
     );
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token-2' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: payload },
-      region: expect.anything(),
-    });
-    expect(result).toEqual({ ok: true });
-  });
-
-  it('should use an empty bearer token when review-state update has no access token', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true } });
-    const payload = { foo: 'bar' };
-
-    await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', payload);
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: { id: sampleId, version: sampleVersion, table: 'flows', data: payload },
-      region: expect.anything(),
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateDateToReviewState:flows',
+        hint: '',
+      },
     });
   });
 });
@@ -654,21 +1035,34 @@ describe('contributeSource', () => {
       ],
     });
     mockFrom.mockReturnValueOnce(rolesBuilder);
-    mockFunctionsInvoke.mockResolvedValue({ data: { contributed: true } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_assign_team',
+        data: { id: sampleId, team_id: 'team-123' },
+      },
+      error: null,
+    });
 
     const result = await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_assign_team', {
       headers: { Authorization: 'Bearer token-3' },
       body: {
         id: sampleId,
         version: sampleVersion,
         table: 'flows',
-        data: { team_id: 'team-123' },
+        teamId: 'team-123',
       },
       region: expect.anything(),
     });
-    expect(result).toEqual({ contributed: true });
+    expect(result).toEqual({
+      data: [{ id: sampleId, team_id: 'team-123' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
   });
 
   it('should show error when user is not in a team', async () => {
@@ -705,19 +1099,59 @@ describe('contributeSource', () => {
       data: [{ user_id: 'user-1', team_id: 'team-empty-token', role: 'member' }],
     });
     mockFrom.mockReturnValueOnce(rolesBuilder);
-    mockFunctionsInvoke.mockResolvedValue({ data: { contributed: true } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_assign_team',
+        data: { id: sampleId, team_id: 'team-empty-token' },
+      },
+      error: null,
+    });
 
     await generalApi.contributeSource('sources', sampleId, sampleVersion);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_assign_team', {
       headers: { Authorization: 'Bearer ' },
       body: {
         id: sampleId,
         version: sampleVersion,
         table: 'sources',
-        data: { team_id: 'team-empty-token' },
+        teamId: 'team-empty-token',
       },
       region: expect.anything(),
+    });
+  });
+});
+
+describe('publishDatasetApi', () => {
+  it('publishes a dataset through the dedicated command boundary', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-publish' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_publish',
+        data: { id: sampleId, state_code: 100 },
+      },
+      error: null,
+    });
+
+    const result = await generalApi.publishDatasetApi('contacts', sampleId, sampleVersion);
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_publish', {
+      headers: { Authorization: 'Bearer token-publish' },
+      body: {
+        id: sampleId,
+        version: sampleVersion,
+        table: 'contacts',
+      },
+      region: expect.anything(),
+    });
+    expect(result).toEqual({
+      data: [{ id: sampleId, state_code: 100 }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
     });
   });
 });
@@ -1330,19 +1764,17 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should log error when function returns error', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-1' } } });
-      mockFunctionsInvoke.mockResolvedValue({
-        error: { message: 'Update failed' },
-        data: null,
+    it('should return a deprecation error instead of invoking legacy functions', async () => {
+      const result = await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 100);
+
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'updateStateCodeApi:flows',
+          hint: '',
+        },
       });
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      await generalApi.updateStateCodeApi(sampleId, sampleVersion, 'flows', 100);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-
-      consoleLogSpy.mockRestore();
     });
   });
 
@@ -1388,33 +1820,19 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should pass empty data object', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-2' } } });
-      mockFunctionsInvoke.mockResolvedValue({ data: { success: true } });
-
-      const result = await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', {});
-
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-        headers: { Authorization: 'Bearer token-2' },
-        body: { id: sampleId, version: sampleVersion, table: 'flows', data: {} },
-        region: expect.anything(),
-      });
-      expect(result).toEqual({ success: true });
-    });
-
-    it('should log error when edge function returns failure', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-2' } } });
-      mockFunctionsInvoke.mockResolvedValue({ data: null, error: { message: 'Update failed' } });
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
+    it('should return a deprecation error when legacy review-state helpers are called', async () => {
       const result = await generalApi.updateDateToReviewState(sampleId, sampleVersion, 'flows', {
         state_code: 2,
       });
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Update failed' });
-      expect(result).toEqual({ error: { message: 'Update failed' } });
-
-      consoleLogSpy.mockRestore();
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'updateDateToReviewState:flows',
+          hint: '',
+        },
+      });
     });
   });
 
@@ -1499,12 +1917,40 @@ describe('Edge Cases and Error Handling', () => {
         data: [{ user_id: 'user-1', team_id: 'team-123', role: 'member' }],
       });
       mockFrom.mockReturnValueOnce(rolesBuilder);
-      mockFunctionsInvoke.mockResolvedValue({ error: { message: 'Network error' } });
+      mockFunctionsInvoke.mockResolvedValue({
+        data: null,
+        error: {
+          message: 'Forbidden',
+          context: createErrorContext(
+            {
+              code: 'TEAM_MEMBERSHIP_REQUIRED',
+              message: 'You must belong to the target team before assigning dataset ownership',
+              details: {
+                state_code: 403,
+              },
+            },
+            403,
+          ),
+        },
+      });
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
-      await generalApi.contributeSource('flows', sampleId, sampleVersion);
+      const result = await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Network error' });
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({ message: 'Forbidden' }),
+      );
+      expect(result).toEqual({
+        data: null,
+        error: expect.objectContaining({
+          code: 'TEAM_MEMBERSHIP_REQUIRED',
+          state_code: 403,
+        }),
+        count: null,
+        status: 403,
+        statusText: 'TEAM_MEMBERSHIP_REQUIRED',
+      });
 
       consoleLogSpy.mockRestore();
     });

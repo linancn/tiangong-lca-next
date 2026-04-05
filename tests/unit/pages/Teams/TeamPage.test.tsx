@@ -1371,7 +1371,7 @@ describe('Team page validations', () => {
     });
 
     await waitFor(() => {
-      expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1');
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'member');
     });
     expect(message.success).toHaveBeenCalledWith('Action success!');
     expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(6);

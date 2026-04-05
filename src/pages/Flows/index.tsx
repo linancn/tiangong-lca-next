@@ -289,9 +289,13 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          const { error } = await contributeSource('flows', row.id, row.version);
-                          if (error) {
-                            console.log(error);
+                          const contributeResult = await contributeSource(
+                            'flows',
+                            row.id,
+                            row.version,
+                          );
+                          if (contributeResult?.error) {
+                            console.log(contributeResult.error);
                           } else {
                             message.success(
                               intl.formatMessage({

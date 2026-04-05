@@ -328,7 +328,7 @@ describe('ManageSystem page', () => {
     fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
 
     await waitFor(() => {
-      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1');
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1', 'member');
     });
     expect(mockGetManageSystemState().message.success).toHaveBeenCalled();
   });

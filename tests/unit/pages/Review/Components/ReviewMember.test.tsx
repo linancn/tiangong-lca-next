@@ -224,7 +224,9 @@ describe('ReviewMember', () => {
       await Modal.confirm.mock.calls[0][0].onOk();
     });
 
-    await waitFor(() => expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2'));
+    await waitFor(() =>
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-member'),
+    );
     expect(message.success).toHaveBeenCalledWith('Action success!');
   });
 
@@ -316,7 +318,9 @@ describe('ReviewMember', () => {
       await Modal.confirm.mock.calls[0][0].onOk();
     });
 
-    await waitFor(() => expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2'));
+    await waitFor(() =>
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-member'),
+    );
     expect(message.error).toHaveBeenCalledWith('Action failed!');
   });
 

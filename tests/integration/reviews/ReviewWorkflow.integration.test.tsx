@@ -619,7 +619,11 @@ describe('Review workflow integration', () => {
     });
 
     await waitFor(() => {
-      expect(mockDelRoleApi).toHaveBeenCalledWith(memberRecord.team_id, memberRecord.user_id);
+      expect(mockDelRoleApi).toHaveBeenCalledWith(
+        memberRecord.team_id,
+        memberRecord.user_id,
+        memberRecord.role,
+      );
     });
 
     expect(message.error).toHaveBeenCalledWith('Action failed!');

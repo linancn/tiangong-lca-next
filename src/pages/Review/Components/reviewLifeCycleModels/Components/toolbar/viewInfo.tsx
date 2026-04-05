@@ -15,7 +15,7 @@ import {
   workflowAndPublicationStatusOptions,
 } from '@/pages/Processes/Components/optiondata';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { updateCommentApi } from '@/services/comments/api';
+import { saveReviewCommentDraftApi, submitReviewCommentApi } from '@/services/comments/api';
 import { getUserDetail } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
@@ -32,13 +32,7 @@ import ReveiwItemForm from '../../../ReviewForm/form';
 import ReviewItemView from '../../../ReviewForm/view';
 
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
-import {
-  ReffPath,
-  checkReferences,
-  getAllRefObj,
-  refDataType,
-  updateUnReviewToUnderReview,
-} from '@/pages/Utils/review';
+import { ReffPath, checkReferences, getAllRefObj, refDataType } from '@/pages/Utils/review';
 import { getUserTeamId } from '@/services/roles/api';
 
 type Props = {
@@ -1615,8 +1609,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
     };
 
     setSpinning(true);
-    const { error } = await updateCommentApi(reviewId, { json: submitData }, tabType);
-    if (!error) {
+    const result = await saveReviewCommentDraftApi(reviewId, submitData);
+    if (!result.error) {
       message.success(
         intl.formatMessage({
           id: 'pages.review.temporarySaveSuccess',
@@ -1686,7 +1680,6 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
       setSpinning(false);
       return false;
     } else {
-      await updateUnReviewToUnderReview(unReview, reviewId);
       setRefCheckData([]);
       return true;
     }
@@ -1778,12 +1771,8 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                     setSpinning(false);
                     return false;
                   }
-                  const { error } = await updateCommentApi(
-                    reviewId,
-                    { json: submitData, state_code: 1 },
-                    tabType,
-                  );
-                  if (!error) {
+                  const result = await submitReviewCommentApi(reviewId, submitData);
+                  if (!result.error) {
                     message.success(
                       intl.formatMessage({
                         id: 'pages.review.ReviewProcessDetail.edit.success',

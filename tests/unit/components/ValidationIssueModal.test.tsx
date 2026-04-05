@@ -8,6 +8,12 @@ let latestTableDataSource: any[] = [];
 const mockMessageSuccess = jest.fn();
 const mockMessageError = jest.fn();
 
+const SOURCE_REF = {
+  '@refObjectId': 'source-process-1',
+  '@type': 'process data set',
+  '@version': '01.00.000',
+} as const;
+
 jest.mock('@/services/notifications/api', () => ({
   upsertValidationIssueNotification: jest.fn(),
 }));
@@ -207,6 +213,7 @@ describe('ValidationIssueModal', () => {
         'pages.validationIssues.notifyDataOwner': '通知数据拥有者',
         'pages.validationIssues.dataOwnerNotified': '已通知',
         'pages.validationIssues.notifyDataOwner.ownerMissing': '无法识别数据拥有者。',
+        'pages.validationIssues.notifyDataOwner.sourceMissing': '无法识别源数据集。',
         'pages.validationIssues.notifyDataOwner.success': '已通知数据拥有者。',
         'pages.validationIssues.notifyDataOwner.error': '通知数据拥有者失败。',
       };
@@ -309,6 +316,7 @@ describe('ValidationIssueModal', () => {
               '@type': 'process data set',
               '@version': '01.00.000',
             },
+            sourceRef: SOURCE_REF,
           },
         ],
         title: '数据校验问题',
@@ -329,6 +337,7 @@ describe('ValidationIssueModal', () => {
           '@type': 'process data set',
           '@version': '01.00.000',
         },
+        sourceRef: SOURCE_REF,
         link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000',
         issues: [
           {
@@ -405,6 +414,7 @@ describe('ValidationIssueModal', () => {
               '@type': 'process data set',
               '@version': '01.00.000',
             },
+            sourceRef: SOURCE_REF,
           },
         ],
         title: '数据校验问题',
@@ -445,6 +455,7 @@ describe('ValidationIssueModal', () => {
               '@type': 'process data set',
               '@version': '01.00.000',
             },
+            sourceRef: SOURCE_REF,
           },
         ],
         title: '数据校验问题',

@@ -32,6 +32,7 @@ export type NotificationTableRow = {
   json?: NotificationJson | null;
   created_at?: string;
   modified_at?: string;
+  total_count?: number | string | null;
 };
 
 export type NotificationListItem = {

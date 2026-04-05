@@ -313,11 +313,11 @@ describe('Users API service (src/services/users/api.ts)', () => {
       const result = await updateUserContact('user-123', contactInfo);
 
       expect(mockAuthGetSession).toHaveBeenCalledTimes(1);
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_user', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_user_update_contact', {
         headers: {
           Authorization: 'Bearer test-token',
         },
-        body: { userId: 'user-123', data: { contact: contactInfo } },
+        body: { userId: 'user-123', contact: contactInfo },
         region: 'us-east-1',
       });
       expect(result).toEqual(mockResult);
@@ -338,11 +338,11 @@ describe('Users API service (src/services/users/api.ts)', () => {
 
       await updateUserContact('user-456', { phone: '456' });
 
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_user', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_user_update_contact', {
         headers: {
           Authorization: 'Bearer ',
         },
-        body: { userId: 'user-456', data: { contact: { phone: '456' } } },
+        body: { userId: 'user-456', contact: { phone: '456' } },
         region: 'us-east-1',
       });
     });

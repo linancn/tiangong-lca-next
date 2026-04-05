@@ -36,14 +36,22 @@ jest.mock('@/services/supabase', () => ({
 const mockGetTeamIdByUserId = jest.fn();
 const mockGetRefData = jest.fn();
 const mockContributeSource = jest.fn();
+const mockInvokeDatasetCommand = jest.fn();
 const mockNormalizeLangPayloadForSave = jest.fn();
 const mockResolveFunctionInvokeError = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  createLegacyMutationRemovedError: (boundary: string) => ({
+    message: 'Use explicit command endpoints instead',
+    code: 'LEGACY_ENDPOINT_REMOVED',
+    details: boundary,
+    hint: '',
+  }),
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId.apply(null, args),
   getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
+  invokeDatasetCommand: (...args: any[]) => mockInvokeDatasetCommand.apply(null, args),
   normalizeLangPayloadForSave: (...args: any[]) =>
     mockNormalizeLangPayloadForSave.apply(null, args),
   resolveFunctionInvokeError: (...args: any[]) => mockResolveFunctionInvokeError.apply(null, args),
@@ -138,6 +146,7 @@ beforeEach(() => {
   mockFunctionsInvoke.mockReset();
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
+  mockInvokeDatasetCommand.mockReset();
   mockNormalizeLangPayloadForSave.mockReset();
   mockResolveFunctionInvokeError.mockReset();
   mockGetCachedLocationData.mockReset();
@@ -164,6 +173,13 @@ beforeEach(() => {
   mockGetCachedLocationData.mockResolvedValue([]);
   mockGetCachedClassificationData.mockResolvedValue({});
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
+  mockInvokeDatasetCommand.mockResolvedValue({
+    data: [],
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
   mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
   mockResolveFunctionInvokeError.mockImplementation(async (error: any) => error);
   mockValidateDatasetRuleVerification.mockResolvedValue({ ruleVerification: true });
@@ -310,43 +326,59 @@ describe('listMyProcessesForLca', () => {
 
 describe('createProcess', () => {
   it('inserts ordered payload with rule verification flag', async () => {
-    const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
-    const selectMock = jest.fn().mockResolvedValue(insertResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
+    const createResult = {
+      data: [{ id: sampleId, version: sampleVersion }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(createResult);
 
     const result = await processesApi.createProcess(sampleId, { raw: true });
 
     expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, { raw: true });
-    expect(insertMock).toHaveBeenCalledWith([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       {
         id: sampleId,
-        json_ordered: { ordered: true },
-        model_id: undefined,
-        rule_verification: true,
+        table: 'processes',
+        jsonOrdered: { ordered: true },
+        modelId: null,
+        ruleVerification: true,
       },
-    ]);
-    expect(selectMock).toHaveBeenCalled();
-    expect(result).toBe(insertResult);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
   });
 
   it('sets rule verification to false when non-validation issues exist', async () => {
     mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
-    const insertResult = { data: [{ id: sampleId, version: sampleVersion }], error: null };
-    const selectMock = jest.fn().mockResolvedValue(insertResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
+    mockInvokeDatasetCommand.mockResolvedValueOnce({
+      data: [{ id: sampleId, version: sampleVersion }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
 
     await processesApi.createProcess(sampleId, { raw: true }, 'model-1');
 
-    expect(insertMock).toHaveBeenCalledWith([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       {
         id: sampleId,
-        json_ordered: { ordered: true },
-        model_id: 'model-1',
-        rule_verification: false,
+        table: 'processes',
+        jsonOrdered: { ordered: true },
+        modelId: 'model-1',
+        ruleVerification: false,
       },
-    ]);
+      {
+        ruleVerification: false,
+      },
+    );
   });
 
   it('returns a structured validation error when language normalization fails', async () => {
@@ -376,88 +408,83 @@ describe('createProcess', () => {
 
 describe('updateProcess', () => {
   it('invokes update function with ordered payload when session exists', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'access-token',
-        },
-      },
-    });
-    const invokeResult = { data: { data: [{ id: sampleId }] }, error: null };
-    mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
+    const invokeResult = {
+      data: [{ id: sampleId, rule_verification: true }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(invokeResult);
 
     const result = await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' });
 
     expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, { some: 'data' });
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer access-token' },
-      body: {
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_save_draft',
+      {
         id: sampleId,
         version: sampleVersion,
         table: 'processes',
-        data: {
-          json_ordered: { ordered: true },
-          model_id: undefined,
-          rule_verification: true,
-        },
+        jsonOrdered: { ordered: true },
+        modelId: undefined,
       },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(result).toEqual(invokeResult.data);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toEqual(invokeResult);
   });
 
   it('returns undefined when no active session is available', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockInvokeDatasetCommand.mockResolvedValueOnce(undefined);
 
     const result = await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).toHaveBeenCalled();
     expect(result).toBeUndefined();
   });
 
   it('returns structured error when invocation fails', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'access-token',
-        },
-      },
-    });
-    const failure = { error: { message: 'update failed' }, data: null };
-    mockFunctionsInvoke.mockResolvedValueOnce(failure);
+    const failure = {
+      data: null,
+      error: { message: 'update failed', code: 'FUNCTION_ERROR', details: '', hint: '' },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(failure);
 
     const result = await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' });
 
-    expect(result).toEqual({ error: failure.error });
+    expect(result).toEqual(failure);
   });
 
   it('uses fallback bearer token and keeps rule verification false when validation fails', async () => {
     mockValidateDatasetRuleVerification.mockResolvedValueOnce({ ruleVerification: false });
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: undefined,
-        },
-      },
+    mockInvokeDatasetCommand.mockResolvedValueOnce({
+      data: [{ ok: true, rule_verification: false }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
     });
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { ok: true }, error: null });
 
     await processesApi.updateProcess(sampleId, sampleVersion, { some: 'data' }, 'model-x');
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: {
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_save_draft',
+      {
         id: sampleId,
         version: sampleVersion,
         table: 'processes',
-        data: {
-          json_ordered: { ordered: true },
-          model_id: 'model-x',
-          rule_verification: false,
-        },
+        jsonOrdered: { ordered: true },
+        modelId: 'model-x',
       },
-      region: FunctionRegion.UsEast1,
-    });
+      {
+        ruleVerification: false,
+      },
+    );
   });
 
   it('returns a structured validation error when language normalization fails', async () => {
@@ -481,87 +508,52 @@ describe('updateProcess', () => {
       statusText: 'LANG_VALIDATION_ERROR',
       count: null,
     });
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).not.toHaveBeenCalled();
   });
 });
 
 describe('updateProcessApi', () => {
-  it('invokes update function with provided data payload', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'token-abc',
-        },
-      },
-    });
-    const invokeResult = { data: { updated: true } };
-    mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
-
+  it('returns a structured deprecation error', async () => {
     const payload = { json_ordered: { foo: 'bar' } };
     const result = await processesApi.updateProcessApi(sampleId, sampleVersion, payload);
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer token-abc' },
-      body: {
-        id: sampleId,
-        version: sampleVersion,
-        table: 'processes',
-        data: payload,
-      },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(result).toEqual({ updated: true });
-  });
-
-  it('returns undefined when session is missing', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
-
-    const result = await processesApi.updateProcessApi(sampleId, sampleVersion, { foo: 'bar' });
-
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
-  });
-
-  it('logs invocation errors and returns normalized error payload', async () => {
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: undefined,
-        },
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateProcessApi',
+        hint: '',
       },
     });
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: undefined, error: { message: 'bad req' } });
-
-    const result = await processesApi.updateProcessApi(sampleId, sampleVersion, { foo: 'bar' });
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: { Authorization: 'Bearer ' },
-      body: {
-        id: sampleId,
-        version: sampleVersion,
-        table: 'processes',
-        data: { foo: 'bar' },
-      },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(logSpy).toHaveBeenCalledWith('error', { message: 'bad req' });
-    expect(result).toEqual({ error: { message: 'bad req' } });
-    logSpy.mockRestore();
   });
 });
 
 describe('deleteProcess', () => {
   it('deletes process by id and version', async () => {
-    const deleteResult = { data: [{ id: sampleId }], error: null };
-    const deleteBuilder: any = createQueryBuilder(deleteResult);
-    mockFrom.mockReturnValueOnce({ delete: jest.fn().mockReturnValue(deleteBuilder) });
+    const deleteResult = {
+      data: [{ id: sampleId }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValueOnce(deleteResult);
 
     const result = await processesApi.deleteProcess(sampleId, sampleVersion);
 
-    expect(deleteBuilder.eq).toHaveBeenNthCalledWith(1, 'id', sampleId);
-    expect(deleteBuilder.eq).toHaveBeenNthCalledWith(2, 'version', sampleVersion);
-    expect(result).toEqual(deleteResult);
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+      id: sampleId,
+      version: sampleVersion,
+      table: 'processes',
+    });
+    expect(result).toEqual({
+      data: null,
+      error: null,
+      count: null,
+      status: 204,
+      statusText: 'No Content',
+    });
   });
 });
 
