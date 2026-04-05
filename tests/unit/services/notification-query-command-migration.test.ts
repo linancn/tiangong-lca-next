@@ -96,6 +96,11 @@ describe('notification query and command migration boundaries', () => {
 
     await upsertValidationIssueNotification({
       recipientUserId: 'user-2',
+      sourceRef: {
+        '@type': 'process data set',
+        '@refObjectId': 'process-source-1',
+        '@version': '01.00.000',
+      },
       ref: {
         '@type': 'process data set',
         '@refObjectId': 'process-1',
@@ -109,6 +114,9 @@ describe('notification query and command migration boundaries', () => {
       expect.objectContaining({
         body: expect.objectContaining({
           recipientUserId: 'user-2',
+          sourceDatasetType: 'process data set',
+          sourceDatasetId: 'process-source-1',
+          sourceDatasetVersion: '01.00.000',
           datasetType: 'process data set',
           datasetId: 'process-1',
           datasetVersion: '01.00.000',

@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(23);
+select plan(24);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -498,6 +498,16 @@ select is(
   (select count(*)::text from public.qry_team_get_member_list('72000000-0000-0000-0000-000000000001', 1, 20, 'created_at', 'desc')),
   '4',
   'team member list query returns the full team membership view from one RPC'
+);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '71000000-0000-0000-0000-000000000003', true);
+
+select is(
+  (select count(*)::text from public.qry_team_get_member_list('72000000-0000-0000-0000-000000000001', 1, 20, 'created_at', 'desc')),
+  '0',
+  'team member list query is hidden from non-manager team members'
 );
 
 reset role;

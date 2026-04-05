@@ -3,6 +3,7 @@ import {
   addTeamMemberApi,
   editTeamMessage,
   getTeamMembersApi,
+  updateSort,
   updateTeamRank,
 } from '@/services/teams/api';
 
@@ -72,6 +73,59 @@ describe('teams api task-4 boundaries', () => {
         body: { teamId: 'team-id', rank: 3 },
       }),
     );
+  });
+
+  it('routes updateSort through admin_team_set_rank for every team rank change', async () => {
+    supabase.functions.invoke.mockResolvedValue({ data: { ok: true }, error: null });
+
+    const result = await updateSort([
+      { id: 'team-1', rank: 1 },
+      { id: 'team-2', rank: 2 },
+    ]);
+
+    expect(supabase.functions.invoke).toHaveBeenNthCalledWith(
+      1,
+      'admin_team_set_rank',
+      expect.objectContaining({
+        body: { teamId: 'team-1', rank: 1 },
+      }),
+    );
+    expect(supabase.functions.invoke).toHaveBeenNthCalledWith(
+      2,
+      'admin_team_set_rank',
+      expect.objectContaining({
+        body: { teamId: 'team-2', rank: 2 },
+      }),
+    );
+    expect(result).toEqual({
+      data: [{ ok: true }, { ok: true }],
+      error: null,
+    });
+  });
+
+  it('stops updateSort when a rank command fails', async () => {
+    supabase.functions.invoke
+      .mockResolvedValueOnce({ data: { ok: true }, error: null })
+      .mockResolvedValueOnce({
+        data: { ok: false, code: 'FORBIDDEN', message: 'forbidden' },
+        error: null,
+      });
+
+    const result = await updateSort([
+      { id: 'team-1', rank: 1 },
+      { id: 'team-2', rank: 2 },
+      { id: 'team-3', rank: 3 },
+    ]);
+
+    expect(supabase.functions.invoke).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({
+      data: null,
+      error: {
+        ok: false,
+        code: 'FORBIDDEN',
+        message: 'forbidden',
+      },
+    });
   });
 
   it('routes addTeam to app_team_create', async () => {

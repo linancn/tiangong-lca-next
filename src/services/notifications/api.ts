@@ -78,17 +78,22 @@ const mapNotificationRow = (row: NotificationQueryRow): NotificationListItem => 
 export async function upsertValidationIssueNotification({
   recipientUserId,
   ref,
+  sourceRef,
   link,
   issues,
 }: {
   recipientUserId?: string;
   ref: NotificationRef;
+  sourceRef?: NotificationRef;
   link?: string;
   issues: ValidationIssueNotificationIssue[];
 }) {
   const session = await supabase.auth.getSession();
   const senderUserId = normalizeString(session.data.session?.user?.id);
   const normalizedRecipientUserId = normalizeString(recipientUserId);
+  const sourceDatasetType = normalizeString(sourceRef?.['@type']);
+  const sourceDatasetId = normalizeString(sourceRef?.['@refObjectId']);
+  const sourceDatasetVersion = normalizeString(sourceRef?.['@version']);
   const datasetType = normalizeString(ref?.['@type']);
   const datasetId = normalizeString(ref?.['@refObjectId']);
   const datasetVersion = normalizeString(ref?.['@version']);
@@ -97,6 +102,9 @@ export async function upsertValidationIssueNotification({
     !senderUserId ||
     !normalizedRecipientUserId ||
     senderUserId === normalizedRecipientUserId ||
+    !sourceDatasetType ||
+    !sourceDatasetId ||
+    !sourceDatasetVersion ||
     !datasetType ||
     !datasetId ||
     !datasetVersion
@@ -115,6 +123,9 @@ export async function upsertValidationIssueNotification({
       },
       body: {
         recipientUserId: normalizedRecipientUserId,
+        sourceDatasetType,
+        sourceDatasetId,
+        sourceDatasetVersion,
         datasetType,
         datasetId,
         datasetVersion,

@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(11);
+select plan(14);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -99,6 +99,110 @@ values (
   '92000000-0000-0000-0000-000000000001',
   'is_invited',
   now() - interval '1 day'
+);
+
+alter table public.sources disable trigger "sources_json_sync_trigger";
+alter table public.processes disable trigger "processes_json_sync_trigger";
+alter table public.processes disable trigger "process_extract_md_trigger_insert";
+alter table public.processes disable trigger "process_extract_text_trigger_insert";
+
+insert into public.sources (
+  id,
+  version,
+  json_ordered,
+  user_id,
+  state_code,
+  team_id,
+  rule_verification
+)
+values
+  (
+    '94000000-0000-0000-0000-000000000011',
+    '01.00.000',
+    '{
+      "sourceDataSet": {
+        "sourceInformation": {
+          "dataSetInformation": {
+            "name": {
+              "baseName": [
+                { "@xml:lang": "en", "#text": "Target Source Dataset" }
+              ]
+            }
+          }
+        }
+      }
+    }'::jsonb,
+    '91000000-0000-0000-0000-000000000002',
+    0,
+    '92000000-0000-0000-0000-000000000001',
+    true
+  ),
+  (
+    '94000000-0000-0000-0000-000000000012',
+    '01.00.000',
+    '{
+      "sourceDataSet": {
+        "sourceInformation": {
+          "dataSetInformation": {
+            "name": {
+              "baseName": [
+                { "@xml:lang": "en", "#text": "Unreferenced Source Dataset" }
+              ]
+            }
+          }
+        }
+      }
+    }'::jsonb,
+    '91000000-0000-0000-0000-000000000002',
+    0,
+    '92000000-0000-0000-0000-000000000001',
+    true
+  );
+
+insert into public.processes (
+  id,
+  version,
+  json_ordered,
+  user_id,
+  state_code,
+  team_id,
+  model_id,
+  rule_verification
+)
+values (
+  '94000000-0000-0000-0000-000000000010',
+  '01.00.000',
+  '{
+    "processDataSet": {
+      "processInformation": {
+        "dataSetInformation": {
+          "name": {
+            "baseName": [
+              { "@xml:lang": "en", "#text": "Source Process Dataset" }
+            ]
+          }
+        }
+      },
+      "exchanges": {
+        "exchange": [
+          {
+            "referencesToDataSource": {
+              "referenceToDataSource": {
+                "@type": "source data set",
+                "@refObjectId": "94000000-0000-0000-0000-000000000011",
+                "@version": "01.00.000"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }'::jsonb,
+  '91000000-0000-0000-0000-000000000001',
+  0,
+  '92000000-0000-0000-0000-000000000001',
+  '94000000-0000-0000-0000-000000000099',
+  true
 );
 
 insert into public.reviews (
@@ -222,8 +326,8 @@ values
     '91000000-0000-0000-0000-000000000002',
     '91000000-0000-0000-0000-000000000001',
     'validation_issue',
-    'process data set',
-    '94000000-0000-0000-0000-000000000010',
+    'source data set',
+    '94000000-0000-0000-0000-000000000011',
     '01.00.000',
     '{"issueCodes":["underReview"],"senderName":"Sender User","tabNames":["legacy"]}'::jsonb,
     now() - interval '6 days',
@@ -306,6 +410,9 @@ select is(
       'process data set',
       '94000000-0000-0000-0000-000000000010',
       '01.00.000',
+      'source data set',
+      '94000000-0000-0000-0000-000000000011',
+      '01.00.000',
       ' https://example.com/issues/1 ',
       array['ruleVerificationFailed', 'sdkInvalid', 'ruleVerificationFailed', ' '],
       array['processInformation', 'modellingAndValidation', 'processInformation', ' '],
@@ -327,7 +434,7 @@ select ok(
     from public.notifications
     where recipient_user_id = '91000000-0000-0000-0000-000000000002'
       and sender_user_id = '91000000-0000-0000-0000-000000000001'
-      and dataset_id = '94000000-0000-0000-0000-000000000010'
+      and dataset_id = '94000000-0000-0000-0000-000000000011'
       and dataset_version = '01.00.000'
   ),
   'notification command upsert normalizes issue payload and sender metadata'
@@ -390,8 +497,53 @@ select is(
 select is(
   (
     public.cmd_notification_send_validation_issue(
+      '91000000-0000-0000-0000-000000000002',
+      'process data set',
+      '94000000-0000-0000-0000-000000000010',
+      '01.00.000',
+      'source data set',
+      '94000000-0000-0000-0000-000000000012',
+      '01.00.000',
+      null,
+      array['ruleVerificationFailed'],
+      array['processInformation'],
+      1,
+      '{}'::jsonb
+    ) ->> 'code'
+  ),
+  'SOURCE_DATASET_REF_MISMATCH',
+  'notification command rejects target datasets that are not referenced by the source dataset'
+);
+
+select is(
+  (
+    public.cmd_notification_send_validation_issue(
+      '91000000-0000-0000-0000-000000000003',
+      'process data set',
+      '94000000-0000-0000-0000-000000000010',
+      '01.00.000',
+      'source data set',
+      '94000000-0000-0000-0000-000000000011',
+      '01.00.000',
+      null,
+      array['ruleVerificationFailed'],
+      array['processInformation'],
+      1,
+      '{}'::jsonb
+    ) ->> 'code'
+  ),
+  'RECIPIENT_NOT_TARGET_OWNER',
+  'notification command requires the recipient to match the target dataset owner'
+);
+
+select is(
+  (
+    public.cmd_notification_send_validation_issue(
       '91000000-0000-0000-0000-000000000001',
       'process data set',
+      '94000000-0000-0000-0000-000000000010',
+      '01.00.000',
+      'source data set',
       '94000000-0000-0000-0000-000000000011',
       '01.00.000',
       null,
@@ -403,6 +555,32 @@ select is(
   ),
   'NOTIFICATION_SELF_TARGET',
   'notification command blocks self-target notifications'
+);
+
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '91000000-0000-0000-0000-000000000003', true);
+
+select is(
+  (
+    public.cmd_notification_send_validation_issue(
+      '91000000-0000-0000-0000-000000000002',
+      'process data set',
+      '94000000-0000-0000-0000-000000000010',
+      '01.00.000',
+      'source data set',
+      '94000000-0000-0000-0000-000000000011',
+      '01.00.000',
+      null,
+      array['ruleVerificationFailed'],
+      array['processInformation'],
+      1,
+      '{}'::jsonb
+    ) ->> 'code'
+  ),
+  'SOURCE_DATASET_OWNER_REQUIRED',
+  'notification command requires the actor to own the source dataset'
 );
 
 reset role;

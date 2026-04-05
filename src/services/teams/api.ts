@@ -137,10 +137,29 @@ export async function updateTeamRank(id: string, rank: number) {
 }
 
 export async function updateSort(params: { id: string; rank: number }[]) {
-  const result = await supabase.from('teams').upsert(params, {
-    onConflict: 'id', //A record with the same ID value already exists, update the record, or insert a new record
-  });
-  return result;
+  const results: any[] = [];
+
+  for (const { id, rank } of params) {
+    const result = await invokeTeamCommand('admin_team_set_rank', {
+      teamId: id,
+      rank,
+    });
+    const commandError = getCommandError(result);
+
+    if (commandError) {
+      return {
+        data: null,
+        error: commandError,
+      };
+    }
+
+    results.push(result?.data ?? null);
+  }
+
+  return {
+    data: results,
+    error: null,
+  };
 }
 
 export async function getTeamById(id: string) {
