@@ -4,6 +4,7 @@ create or replace function public.cmd_dataset_save_draft(
   p_version text,
   p_json_ordered jsonb,
   p_model_id uuid default null,
+  p_rule_verification boolean default null,
   p_audit jsonb default '{}'::jsonb
 ) returns jsonb
 language plpgsql
@@ -128,6 +129,20 @@ begin
       'update public.%I as t
           set json_ordered = $1::json,
               model_id = $2,
+              rule_verification = $3,
+              modified_at = now()
+        where t.id = $4
+          and t.version = $5
+      returning to_jsonb(t)',
+      p_table
+    )
+      into v_updated_row
+      using p_json_ordered, p_model_id, p_rule_verification, p_id, p_version;
+  else
+    execute format(
+      'update public.%I as t
+          set json_ordered = $1::json,
+              rule_verification = $2,
               modified_at = now()
         where t.id = $3
           and t.version = $4
@@ -135,19 +150,7 @@ begin
       p_table
     )
       into v_updated_row
-      using p_json_ordered, p_model_id, p_id, p_version;
-  else
-    execute format(
-      'update public.%I as t
-          set json_ordered = $1::json,
-              modified_at = now()
-        where t.id = $2
-          and t.version = $3
-      returning to_jsonb(t)',
-      p_table
-    )
-      into v_updated_row
-      using p_json_ordered, p_id, p_version;
+      using p_json_ordered, p_rule_verification, p_id, p_version;
   end if;
 
   insert into public.command_audit_log (
@@ -458,14 +461,14 @@ begin
 end;
 $$;
 
-revoke all on function public.cmd_dataset_save_draft(text, uuid, text, jsonb, uuid, jsonb) from public;
+revoke all on function public.cmd_dataset_save_draft(text, uuid, text, jsonb, uuid, boolean, jsonb) from public;
 revoke all on function public.cmd_dataset_assign_team(text, uuid, text, uuid, jsonb) from public;
 revoke all on function public.cmd_dataset_publish(text, uuid, text, jsonb) from public;
 
-grant execute on function public.cmd_dataset_save_draft(text, uuid, text, jsonb, uuid, jsonb) to authenticated;
+grant execute on function public.cmd_dataset_save_draft(text, uuid, text, jsonb, uuid, boolean, jsonb) to authenticated;
 grant execute on function public.cmd_dataset_assign_team(text, uuid, text, uuid, jsonb) to authenticated;
 grant execute on function public.cmd_dataset_publish(text, uuid, text, jsonb) to authenticated;
 
-grant execute on function public.cmd_dataset_save_draft(text, uuid, text, jsonb, uuid, jsonb) to service_role;
+grant execute on function public.cmd_dataset_save_draft(text, uuid, text, jsonb, uuid, boolean, jsonb) to service_role;
 grant execute on function public.cmd_dataset_assign_team(text, uuid, text, uuid, jsonb) to service_role;
 grant execute on function public.cmd_dataset_publish(text, uuid, text, jsonb) to service_role;

@@ -305,6 +305,7 @@ describe('updateUnitGroup', () => {
         version: '01.00.000',
         table: 'unitgroups',
         jsonOrdered: { updated: true },
+        ruleVerification: true,
       },
       {
         ruleVerification: true,
@@ -340,6 +341,7 @@ describe('updateUnitGroup', () => {
         version: '01.00.000',
         table: 'unitgroups',
         jsonOrdered: expect.any(Object),
+        ruleVerification: true,
       },
       {
         ruleVerification: true,

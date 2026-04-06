@@ -172,6 +172,7 @@ describe('Contacts API Service', () => {
           version: 'v1.0',
           table: 'contacts',
           jsonOrdered: expect.any(Object),
+          ruleVerification: true,
         },
         {
           ruleVerification: true,
@@ -271,6 +272,7 @@ describe('Contacts API Service', () => {
           jsonOrdered: expect.objectContaining({
             contactDataSet: expect.any(Object),
           }),
+          ruleVerification: true,
         },
         {
           ruleVerification: true,

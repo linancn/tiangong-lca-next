@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(11);
+select plan(13);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -185,6 +185,7 @@ select is(
       }
     }'::jsonb,
     null,
+    false,
     '{"command":"dataset_save_draft"}'::jsonb
   )->>'ok',
   'true',
@@ -200,6 +201,16 @@ select is(
   'cmd_dataset_save_draft updates json_ordered'
 );
 
+select ok(
+  (
+    select rule_verification = false
+    from public.contacts
+    where id = '31000000-0000-0000-0000-000000000001'
+      and version = '01.00.000'
+  ),
+  'cmd_dataset_save_draft updates rule_verification when provided'
+);
+
 reset role;
 
 set local role authenticated;
@@ -211,6 +222,7 @@ select is(
     '31000000-0000-0000-0000-000000000001',
     '01.00.000',
     '{}'::jsonb,
+    null,
     null,
     '{}'::jsonb
   )->>'code',
@@ -225,10 +237,10 @@ select set_config('request.jwt.claim.sub', '11000000-0000-0000-0000-000000000001
 
 select is(
   public.cmd_dataset_save_draft(
-    'processes',
-    '31000000-0000-0000-0000-000000000003',
-    '01.00.000',
-    '{
+    p_table => 'processes',
+    p_id => '31000000-0000-0000-0000-000000000003',
+    p_version => '01.00.000',
+    p_json_ordered => '{
       "processDataSet": {
         "administrativeInformation": {
           "publicationAndOwnership": {
@@ -237,8 +249,7 @@ select is(
         }
       }
     }'::jsonb,
-    null,
-    '{}'::jsonb
+    p_audit => '{}'::jsonb
   )->>'ok',
   'true',
   'process draft save works when modelId is omitted'
@@ -251,6 +262,20 @@ select is(
      and version = '01.00.000'),
   '41000000-0000-0000-0000-000000000001',
   'cmd_dataset_save_draft preserves the existing process model_id when modelId is omitted'
+);
+
+select is(
+  (
+    select case
+      when rule_verification is null then 'null'
+      else rule_verification::text
+    end
+    from public.processes
+    where id = '31000000-0000-0000-0000-000000000003'
+      and version = '01.00.000'
+  ),
+  'null',
+  'cmd_dataset_save_draft clears existing process rule_verification when omitted'
 );
 
 select is(
@@ -267,6 +292,7 @@ select is(
         }
       }
     }'::jsonb,
+    null,
     null,
     '{}'::jsonb
   )->>'code',

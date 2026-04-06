@@ -93,6 +93,7 @@ export async function updateFlowproperties(id: string, version: string, data: an
       version,
       table: 'flowproperties',
       jsonOrdered: newData,
+      ruleVerification: rule_verification,
     },
     {
       ruleVerification: rule_verification,

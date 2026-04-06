@@ -92,6 +92,7 @@ export async function updateSource(id: string, version: string, data: any) {
       version,
       table: 'sources',
       jsonOrdered: newData,
+      ruleVerification: rule_verification,
     },
     {
       ruleVerification: rule_verification,
