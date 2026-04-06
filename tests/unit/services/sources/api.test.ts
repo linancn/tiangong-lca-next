@@ -285,6 +285,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
           version: mockVersion,
           table: 'sources',
           jsonOrdered: mockOrderedData,
+          ruleVerification: true,
         },
         {
           ruleVerification: true,
@@ -391,6 +392,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
           version: mockVersion,
           table: 'sources',
           jsonOrdered: rawOrderedData,
+          ruleVerification: true,
         },
         {
           ruleVerification: true,

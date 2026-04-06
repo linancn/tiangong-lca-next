@@ -240,6 +240,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           version: mockVersion,
           table: 'flowproperties',
           jsonOrdered: mockOrderedData,
+          ruleVerification: true,
         },
         {
           ruleVerification: true,
@@ -327,6 +328,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
           id: 'id',
           version: '01.00.000',
           table: 'flowproperties',
+          ruleVerification: true,
         }),
         expect.objectContaining({
           ruleVerification: true,
@@ -358,6 +360,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         'app_dataset_save_draft',
         expect.objectContaining({
           jsonOrdered: { ordered: true, fallback: 'raw-update' },
+          ruleVerification: true,
         }),
         expect.objectContaining({
           ruleVerification: true,

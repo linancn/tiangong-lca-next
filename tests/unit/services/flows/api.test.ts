@@ -333,6 +333,7 @@ describe('updateFlows', () => {
         version: '01.00.000',
         table: 'flows',
         jsonOrdered: expect.objectContaining({ id: 'flow-id' }),
+        ruleVerification: true,
       },
       {
         ruleVerification: true,
@@ -410,6 +411,7 @@ describe('updateFlows', () => {
         id: 'flow-id',
         version: '01.00.000',
         table: 'flows',
+        ruleVerification: true,
       }),
       expect.objectContaining({
         ruleVerification: true,

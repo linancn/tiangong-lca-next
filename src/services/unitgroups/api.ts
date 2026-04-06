@@ -93,6 +93,7 @@ export async function updateUnitGroup(id: string, version: string, data: any) {
       version,
       table: 'unitgroups',
       jsonOrdered: newData,
+      ruleVerification: rule_verification,
     },
     {
       ruleVerification: rule_verification,

@@ -428,6 +428,7 @@ describe('updateProcess', () => {
         table: 'processes',
         jsonOrdered: { ordered: true },
         modelId: undefined,
+        ruleVerification: true,
       },
       {
         ruleVerification: true,
@@ -480,6 +481,7 @@ describe('updateProcess', () => {
         table: 'processes',
         jsonOrdered: { ordered: true },
         modelId: 'model-x',
+        ruleVerification: false,
       },
       {
         ruleVerification: false,

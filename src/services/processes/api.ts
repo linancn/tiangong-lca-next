@@ -248,6 +248,7 @@ export async function updateProcess(
       table: 'processes',
       jsonOrdered: newData,
       modelId,
+      ruleVerification: rule_verification,
     },
     {
       ruleVerification: rule_verification,

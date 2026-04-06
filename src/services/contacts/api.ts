@@ -92,6 +92,7 @@ export async function updateContact(id: string, version: string, data: any) {
       version,
       table: 'contacts',
       jsonOrdered: newData,
+      ruleVerification: rule_verification,
     },
     {
       ruleVerification: rule_verification,

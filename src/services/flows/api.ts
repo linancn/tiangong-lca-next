@@ -149,6 +149,7 @@ export async function updateFlows(id: string, version: string, data: any) {
       version,
       table: 'flows',
       jsonOrdered: newData,
+      ruleVerification: rule_verification,
     },
     {
       ruleVerification: rule_verification,
