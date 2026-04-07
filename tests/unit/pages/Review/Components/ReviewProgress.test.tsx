@@ -110,8 +110,11 @@ jest.mock('antd', () => {
   };
 });
 
+let latestColumns: any[] = [];
+
 const ProTable = ({ columns, request, actionRef, rowKey, toolBarRender }: any) => {
   const [rows, setRows] = React.useState<any[]>([]);
+  latestColumns = columns;
 
   React.useEffect(() => {
     const reload = jest.fn(async () => {
@@ -319,6 +322,97 @@ describe('ReviewProgress component', () => {
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to revoke the auditor'));
   });
 
+  it('renders manual status and comment branches for rejected, reviewed, and unknown rows', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+
+    await waitFor(() => expect(latestColumns).toHaveLength(6));
+
+    const statusRender = latestColumns.find(
+      (column: any) => column.dataIndex === 'state_code',
+    ).render;
+    const commentRender = latestColumns.find(
+      (column: any) => column.dataIndex === 'comment',
+    ).render;
+
+    expect(toText(statusRender(null, { state_code: -3 }))).toBe('Rejected');
+    expect(toText(statusRender(null, { state_code: 1 }))).toBe('Reviewed');
+    expect(toText(statusRender(null, { state_code: 99 }))).toBe('Unknown Status');
+
+    expect(
+      commentRender(null, { state_code: 0, json: { comment: { message: 'ignored' } } }),
+    ).toBeNull();
+    expect(commentRender(null, { state_code: -3, json: { comment: null } })).toBeNull();
+    expect(
+      toText(
+        commentRender(null, {
+          state_code: -3,
+          json: { comment: '{"message":"Rejected from string"}' },
+        }),
+      ),
+    ).toContain('Rejected from string');
+    expect(commentRender(null, { state_code: -3, json: { comment: '{}' } })).toBeNull();
+    expect(
+      toText(
+        commentRender(null, {
+          state_code: -3,
+          json: { comment: { message: 'Rejected from object' } },
+        }),
+      ),
+    ).toContain('Rejected from object');
+    expect(commentRender(null, { state_code: -3, json: { comment: {} } })).toBeNull();
+    expect(commentRender(null, { state_code: -3, json: { comment: 'not-json' } })).toBeNull();
+  });
+
+  it('falls back to an empty table when no assigned reviewers are returned', async () => {
+    mockGetCommentApi.mockResolvedValue({ data: [], error: null });
+
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+
+    await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'assigned'));
+    expect(screen.queryByText('Reviewer Two')).not.toBeInTheDocument();
+  });
+
+  it('logs request failures and falls back to an empty reviewer table', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetCommentApi.mockRejectedValueOnce(new Error('load failed'));
+
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+
+    await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error)));
+    consoleSpy.mockRestore();
+  });
+
+  it('shows an error when reviewer revocation returns no deleted rows and logs thrown revoke failures', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockRevokeReviewerApi
+      .mockResolvedValueOnce({
+        data: undefined,
+        error: null,
+      })
+      .mockRejectedValueOnce(new Error('revoke exploded'));
+
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('remove-user-2')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('remove-user-2'));
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to revoke the auditor'));
+
+    fireEvent.click(screen.getByTestId('remove-user-2'));
+    await waitFor(() =>
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to revoke reviewer:', expect.any(Error)),
+    );
+
+    consoleSpy.mockRestore();
+  });
+
   it('approves process reviews through the review workflow command boundary', async () => {
     const { actionRef } = renderComponent();
 
@@ -350,6 +444,71 @@ describe('ReviewProgress component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Approve Review' }));
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Approval failed'));
+  });
+
+  it('approves lifecycle model reviews and falls back to default approve errors when messages are missing', async () => {
+    mockApproveReviewApi
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-1' } }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [],
+        error: {},
+      });
+
+    renderComponent({
+      actionType: 'model',
+    });
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Approve Review' })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Approve Review' }));
+    await waitFor(() =>
+      expect(mockApproveReviewApi).toHaveBeenCalledWith('review-1', 'lifecyclemodels'),
+    );
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Approve Review' })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Approve Review' }));
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to approve review'));
+  });
+
+  it('falls back to the generic approve error when approval throws without a message', async () => {
+    mockApproveReviewApi.mockRejectedValueOnce({});
+
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Approve Review' })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Approve Review' }));
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to approve review'));
+  });
+
+  it('supports header close and drawer onClose actions', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('icon-close').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('drawer-close'));
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
   });
 
   it('passes the corrected model rejection props to RejectReview', async () => {

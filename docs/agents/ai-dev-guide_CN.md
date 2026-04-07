@@ -5,9 +5,10 @@
 ## 环境与硬约束
 
 - Node.js **>= 24**（先 `nvm use 24`）。
-- 前端 Supabase 环境变量由 `.env` 和 `.env.development` 提供；共享 `dev` 环境统一使用 `npm run start:dev`，只有任务明确需要 `main` 时才使用 `npm run start:main`。相关读取必须通过 `src/services/supabase`。
+- 前端 Supabase 环境变量由 `.env` 和 `.env.development` 提供；`npm start` 是默认的共享 `dev` 入口，`npm run start:dev` 保留为等价的显式 dev 别名，只有任务明确需要 `main` 时才使用 `npm run start:main`。相关读取必须通过 `src/services/supabase`。
 - 数据库触发的 Edge Function 调用不会读取这些前端 env 文件。标准 webhook 鉴权依赖当前 branch 的 Vault secret `project_url` 和 `project_secret_key`；兼容旧 `generate_flow_embedding()` 路径时还依赖 `project_x_key`。详见 `docs/agents/supabase-branching.md`。
 - 分支选择、本地/远端数据库使用方式，以及 schema 工作流，统一遵循 `docs/agents/supabase-branching.md`。
+- 该仓库保留 GitHub default branch 为 `main` 这一平台层例外，但日常 feature / fix 工作从 Git `dev` 开始，PR 默认回 `dev`，`dev -> main` 才是晋升路径。
 - 未经人工批准，不得新增 npm 依赖。
 - 先 service 后 UI：先改 `src/services/<feature>/{data,api,util}.ts`，再接页面。
 
@@ -15,6 +16,7 @@
 
 ```bash
 npm install
+npm start
 npm run start:dev
 npm run start:main
 npm run lint
@@ -82,5 +84,6 @@ npm run build
 ## 交付要求
 
 - diff 仅覆盖目标功能。
+- routine feature / fix PR 默认回 `dev`；`main` 仅用于晋升、生产验证或 hotfix。
 - 行为/流程/命令变更时同步更新文档。
 - 若影响协作方，英文与 `_CN` 文档必须同一提交同步更新。

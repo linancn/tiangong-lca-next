@@ -3800,6 +3800,23 @@ describe('Edge Cases and Error Handling', () => {
   });
 
   describe('getAISuggestion', () => {
+    it('returns the structured removed-result envelope for legacy mutation boundaries', () => {
+      const result = generalApi.createLegacyMutationRemovedResult('legacyBoundary');
+
+      expect(result).toEqual({
+        data: null,
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'legacyBoundary',
+          hint: '',
+        },
+        count: null,
+        status: 410,
+        statusText: 'LEGACY_ENDPOINT_REMOVED',
+      });
+    });
+
     it('should get AI suggestion successfully', async () => {
       const mockResponse = { suggestion: 'AI generated content' };
       mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });

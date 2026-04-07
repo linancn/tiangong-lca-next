@@ -176,6 +176,66 @@ describe('TeamNotification Component', () => {
     });
   });
 
+  it('falls back for english arrays, blank titles, and missing timestamps', async () => {
+    mockLocale = 'en';
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: [{ '@xml:lang': 'zh', '#text': '仅中文团队' }],
+        modifiedAt: undefined,
+      },
+    });
+
+    const { rerender } = render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('仅中文团队')).toBeInTheDocument();
+    });
+
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: [],
+        modifiedAt: undefined,
+      },
+    });
+
+    rerender(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} timeFilter={11} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+    });
+
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: '   ',
+        modifiedAt: undefined,
+      },
+    });
+
+    rerender(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} timeFilter={12} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+    });
+  });
+
   it('handles accept and reject actions', async () => {
     render(
       <ConfigProvider>
@@ -274,5 +334,51 @@ describe('TeamNotification Component', () => {
     });
 
     consoleSpy.mockRestore();
+  });
+
+  it('supports direct string team titles, unknown roles, and missing onDataLoaded handlers', async () => {
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        role: 'mystery-role',
+        teamTitle: 'Direct Team Title',
+      },
+    });
+
+    render(
+      <ConfigProvider>
+        <TeamNotification timeFilter={3} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Direct Team Title')).toBeInTheDocument();
+      expect(screen.getByText('Empty')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'Accept' })).not.toBeInTheDocument();
+  });
+
+  it('shows action errors when accept throws and reject returns an unsuccessful result', async () => {
+    mockAcceptTeamInvitationApi.mockRejectedValueOnce(new Error('accept blew up'));
+    mockRejectTeamInvitationApi.mockResolvedValueOnce({ success: false, error: 'rejected' });
+
+    render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Accept' }));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
+    });
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Reject' }));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
+    });
   });
 });
