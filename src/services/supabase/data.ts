@@ -60,7 +60,6 @@ export function normalizeDeleteCommandResult<Row extends Record<string, unknown>
       count: null,
       status: result.status,
       statusText: result.statusText,
-      success: false,
     };
   }
 
@@ -70,6 +69,5 @@ export function normalizeDeleteCommandResult<Row extends Record<string, unknown>
     count: null,
     status: 204,
     statusText: 'No Content',
-    success: true,
   };
 }
