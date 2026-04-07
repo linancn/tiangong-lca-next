@@ -93,6 +93,22 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     });
 
+    it('returns failure when the recipient matches the current user', async () => {
+      const result = await notificationsApi.upsertValidationIssueNotification({
+        recipientUserId: 'sender-user-id',
+        sourceRef: SOURCE_REF,
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-1',
+          '@version': '01.00.000',
+        },
+        issues: [],
+      });
+
+      expect(result.success).toBe(false);
+      expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    });
+
     it('invokes the explicit notification command with normalized payload', async () => {
       mockFunctionsInvoke.mockResolvedValueOnce({
         data: { ok: true },
@@ -123,6 +139,11 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
             code: 'sdkInvalid',
             tabNames: ['modellingAndValidation'],
           },
+          {
+            code: 'sdkInvalid',
+            tabName: 'processInformation',
+            tabNames: 'modellingAndValidation' as any,
+          },
         ],
       });
 
@@ -139,7 +160,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
           datasetId: 'process-1',
           datasetVersion: '01.00.000',
           issueCodes: ['ruleVerificationFailed', 'sdkInvalid'],
-          issueCount: 3,
+          issueCount: 4,
           link: 'https://example.com/process-1',
           tabNames: ['processInformation', 'modellingAndValidation'],
         },
@@ -247,6 +268,58 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         message: 'The recipient must differ from the actor',
         code: 'NOTIFICATION_SELF_TARGET',
         status: 409,
+      });
+    });
+
+    it('uses an empty bearer token and generic command text when the command envelope omits a message', async () => {
+      mockAuthGetSession.mockResolvedValueOnce({
+        data: {
+          session: {
+            user: { id: 'sender-user-id' },
+          },
+        },
+      });
+      mockFunctionsInvoke.mockResolvedValueOnce({
+        data: {
+          ok: false,
+          code: 'NO_MESSAGE',
+        },
+        error: null,
+      });
+
+      const result = await notificationsApi.upsertValidationIssueNotification({
+        recipientUserId: 'owner-2',
+        sourceRef: SOURCE_REF,
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-2',
+          '@version': '01.00.000',
+        },
+        issues: [],
+      });
+
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_notification_send_validation_issue', {
+        headers: {
+          Authorization: 'Bearer ',
+        },
+        body: {
+          recipientUserId: 'owner-2',
+          sourceDatasetType: 'process data set',
+          sourceDatasetId: 'source-process-1',
+          sourceDatasetVersion: '01.00.000',
+          datasetType: 'process data set',
+          datasetId: 'process-2',
+          datasetVersion: '01.00.000',
+          issueCodes: [],
+          issueCount: 0,
+          link: undefined,
+          tabNames: [],
+        },
+        region: FunctionRegion.UsEast1,
+      });
+      expect(result.error).toMatchObject({
+        message: 'Request failed',
+        code: 'NO_MESSAGE',
       });
     });
   });
@@ -405,6 +478,50 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         link: undefined,
       });
     });
+
+    it('uses default paging and json fallbacks when query parameters are omitted', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: 'notification-defaults',
+            type: 'validation_issue',
+            dataset_type: 'process data set',
+            dataset_id: 'process-9',
+            dataset_version: '09.00.000',
+            modified_at: 'invalid-date',
+            json: null,
+          },
+        ],
+        error: null,
+      });
+
+      const result = await notificationsApi.getNotifications({} as any);
+
+      expect(mockRpc).toHaveBeenCalledWith('qry_notification_get_my_issue_items', {
+        p_page: 1,
+        p_page_size: 10,
+        p_days: 3,
+      });
+      expect(result).toEqual({
+        data: [
+          {
+            key: 'notification-defaults',
+            id: 'notification-defaults',
+            type: 'validation_issue',
+            datasetType: 'process data set',
+            datasetId: 'process-9',
+            datasetVersion: '09.00.000',
+            senderName: '-',
+            modifiedAt: '',
+            link: undefined,
+            json: undefined,
+          },
+        ],
+        page: 1,
+        success: true,
+        total: 0,
+      });
+    });
   });
 
   describe('getNotificationsCount', () => {
@@ -442,6 +559,14 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         p_last_view_at: null,
       });
       expect(result).toEqual({ success: true, total: 0 });
+    });
+
+    it('reports rpc failures as unsuccessful notification counts', async () => {
+      mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'db failed' } });
+
+      const result = await notificationsApi.getNotificationsCount(7);
+
+      expect(result).toEqual({ success: false, total: 0 });
     });
   });
 });

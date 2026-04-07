@@ -270,6 +270,56 @@ describe('review workflow command wrappers', () => {
     expect(result).toEqual(commandResult);
   });
 
+  it('assigns reviewers with a null deadline when none is provided', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    await reviewsApi.assignReviewersApi(['review-1'], ['user-3']);
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-3'],
+      deadline: null,
+    });
+  });
+
+  it('returns the first batch error while flattening null command data', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'assignment failed' },
+        count: null,
+        status: 409,
+        statusText: 'CONFLICT',
+      });
+
+    const result = await reviewsApi.saveReviewAssignmentDraftApi(
+      ['review-1', 'review-2'],
+      ['user-1'],
+    );
+
+    expect(result).toEqual({
+      data: [],
+      error: { message: 'assignment failed' },
+      count: null,
+      status: 409,
+      statusText: 'CONFLICT',
+    });
+  });
+
   it('revokes reviewers through the admin review command', async () => {
     const commandResult = {
       data: [{ review: { id: 'review-1' } }],
@@ -364,6 +414,17 @@ describe('getReviewerIdsApi', () => {
     const result = await reviewsApi.getReviewerIdsApi(['review-1']);
 
     expect(result).toEqual([]);
+  });
+
+  it('ignores reviewer_id entries that are not arrays', async () => {
+    const builder = createQueryBuilder({
+      data: [{ reviewer_id: 'user-1' }, { reviewer_id: ['user-2'] }, { reviewer_id: null }],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getReviewerIdsApi(['review-1']);
+
+    expect(result).toEqual(['user-2']);
   });
 });
 
@@ -1278,6 +1339,36 @@ describe('getNotifyReviews', () => {
 
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
+  });
+
+  it('falls back to a zero notification total when total_count is missing', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-notify-no-total',
+          json: {
+            data: {
+              id: 'process-notify-no-total',
+              version: '01.00.000',
+              name: {
+                baseName: { en: 'Process Base' },
+                treatmentStandardsRoutes: { en: 'Process Route' },
+                mixAndLocationTypes: { en: 'Process Mix' },
+                functionalUnitFlowProperties: { en: 'Process Unit' },
+              },
+            },
+            user: { email: 'user@example.com' },
+          },
+          modified_at: '2024-06-07T12:00:00.000Z',
+          state_code: 1,
+        },
+      ],
+      error: null,
+    });
+
+    const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
+
+    expect(result.total).toBe(0);
   });
 });
 

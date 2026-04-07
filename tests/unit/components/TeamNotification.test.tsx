@@ -176,6 +176,44 @@ describe('TeamNotification Component', () => {
     });
   });
 
+  it('renders string team titles directly and falls back to Unknown Team for blank strings', async () => {
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: 'Standalone Team',
+      },
+    });
+
+    const { rerender } = render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Standalone Team')).toBeInTheDocument();
+    });
+
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: '   ',
+      },
+    });
+
+    rerender(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} timeFilter={14} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+    });
+  });
+
   it('handles accept and reject actions', async () => {
     render(
       <ConfigProvider>
@@ -219,6 +257,82 @@ describe('TeamNotification Component', () => {
 
     const rejectButton = await screen.findByRole('button', { name: 'Reject' });
     fireEvent.click(rejectButton);
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
+    });
+  });
+
+  it('uses english array fallbacks for team titles and falls back to the empty status tag', async () => {
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        role: 'mystery-role',
+        modifiedAt: undefined,
+        teamTitle: [{ '@xml:lang': 'fr', '#text': 'Fallback Array Team' }],
+      },
+    });
+
+    const { rerender } = render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Fallback Array Team')).toBeInTheDocument();
+      expect(screen.getByText('Empty')).toBeInTheDocument();
+    });
+
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        role: 'mystery-role',
+        teamTitle: [],
+      },
+    });
+
+    rerender(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} timeFilter={21} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+    });
+  });
+
+  it('shows an error toast when rejecting an invitation returns success=false', async () => {
+    mockRejectTeamInvitationApi.mockResolvedValueOnce({ success: false, error: 'failed' });
+
+    render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const rejectButton = await screen.findByRole('button', { name: 'Reject' });
+    fireEvent.click(rejectButton);
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('teams.members.actionError');
+    });
+  });
+
+  it('shows an error toast when accepting an invitation throws unexpectedly', async () => {
+    mockAcceptTeamInvitationApi.mockRejectedValueOnce(new Error('accept failed'));
+
+    render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const acceptButton = await screen.findByRole('button', { name: 'Accept' });
+    fireEvent.click(acceptButton);
 
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('teams.members.actionError');

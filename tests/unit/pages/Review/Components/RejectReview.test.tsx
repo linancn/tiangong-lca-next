@@ -238,4 +238,29 @@ describe('RejectReview component', () => {
 
     expect(message.error).toHaveBeenCalledWith('Failed to reject, please try again!');
   });
+
+  it('closes the modal from the cancel action without calling the review service', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(screen.getByTestId('modal')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
+
+    await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
+    expect(mockRejectReviewApi).not.toHaveBeenCalled();
+  });
+
+  it('uses the default icon trigger when buttonType is omitted and tolerates missing action refs', async () => {
+    render(
+      <RejectReview reviewId='review-1' dataId='process-1' dataVersion='01' isModel={false} />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(screen.getByTestId('modal')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
+
+    await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
+  });
 });
