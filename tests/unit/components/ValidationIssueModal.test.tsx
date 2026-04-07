@@ -392,7 +392,7 @@ describe('ValidationIssueModal', () => {
     });
   });
 
-  it('shows an error when notifying data owner without a source dataset reference', async () => {
+  it('shows an error when notifying data owner without a resolved source dataset', async () => {
     let modalHandle: { destroy: () => void } | null = null;
 
     await act(async () => {

@@ -8,6 +8,15 @@
 
 这份文档有意把分支拓扑、配置归属和日常工作流放在同一处，避免“分支模型”和“实际操作规则”分开后逐渐漂移。
 
+本仓库采用以下 Git 与 Supabase 分支约定：
+
+- GitHub default branch 继续保持 `main`，这是平台层例外。
+- 日常 trunk 是 Git `dev`。
+- routine feature / fix 分支从 `dev` 拉出，并向 `dev` 发起 PR。
+- `dev` -> `main` 是正式晋升路径。
+
+不要只根据 GitHub default-branch 界面推断实际工作 trunk。
+
 ## 仓库约定
 
 - 在 Git 中只维护一个共享的 `supabase/` 目录。
@@ -78,7 +87,7 @@
 1. 先同步本地 Git `dev`。
 2. 基于 Git `dev` 创建 feature 分支。
 3. 根据任务类型选择工作模式：
-   - 只改应用：运行 `npm run start:dev`，连接共享且持久化的 Supabase `dev` 分支进行开发。
+   - 只改应用：运行 `npm start`，连接共享且持久化的 Supabase `dev` 分支进行开发；`npm run start:dev` 仍保留为等价的显式 dev 别名。
    - 修改 schema：运行 `npx supabase start`，先在本地完成变更、生成 migration，并完成本地验证。
 4. 将 feature 分支的 PR 提交到 Git `dev`。
 5. 利用该 PR 自动创建的 Supabase preview branch，在合并前验证 migration 和 config 行为。
@@ -96,14 +105,14 @@
 
 | 场景 | 前端应连接到 | schema 应在哪儿修改 | 默认操作 |
 | --- | --- | --- | --- |
-| 日常页面、组件、service 开发，且不改 schema | 通过 `.env.development` 连接共享远端 `dev` | 不修改数据库 | 直接运行 `npm run start:dev` |
+| 日常页面、组件、service 开发，且不改 schema | 通过 `.env.development` 连接共享远端 `dev` | 不修改数据库 | 直接运行 `npm start`（与 `npm run start:dev` 等价） |
 | 开发表结构、policy、SQL function 或 seed 数据 | `npx supabase start` 启动的本地 Supabase | 只在本地修改 | 先在本地生成并验证 migration |
 | 功能合并进 Git `dev` 之后做 QA | 共享远端 `dev` | 不要手工修改 | 在共享 `dev` 环境验证集成结果 |
-| 需要连 `main` 做特定验证的任务 | `main`，通过显式的 `npm start` / `npm run start:main` 工作流访问 | 不能把它当成第一落点来编写 schema 变更 | 运行 `npm run start:main`，任务完成后再切回 `npm run start:dev` |
+| 需要连 `main` 做特定验证的任务 | `main`，通过显式的 `npm run start:main` 工作流访问 | 不能把它当成第一落点来编写 schema 变更 | 运行 `npm run start:main`，任务完成后再切回 `npm start` |
 
 重要规则：
 
-- 让日常本地开发目标保持明确。如果任务需要连接 `main`，应显式切换，而不是悄悄替换默认目标。
+- 让日常本地开发目标保持明确：`npm start` 与 `npm run start:dev` 都表示共享 `dev`。如果任务需要连接 `main`，应通过 `npm run start:main` 显式切换。
 - 不要把共享远端 `dev` 当成你“第一次发明 schema 变更”的地方。
 - 不要在日常开发中手工修改 production schema。
 
@@ -143,8 +152,8 @@
 
 1. 切到最新的 Git `dev`。
 2. 从 `dev` 创建 feature 分支。
-3. 运行 `npm run start:dev`。
-4. 默认情况下，应用会读取 `.env.development`，连接到共享远端 `dev` 分支。
+3. 运行 `npm start`。
+4. 默认情况下，应用会读取 `.env.development`，连接到共享远端 `dev` 分支；`npm run start:dev` 仍是等价的显式别名。
 5. 完成开发、补测试，然后向 Git `dev` 发起 PR。
 6. 合并后，再到共享 `dev` 环境验证一次结果。
 
@@ -162,7 +171,7 @@
 
 ```bash
 eval "$(npx supabase status -o env --override-name api.url=SUPABASE_URL --override-name auth.anon_key=SUPABASE_PUBLISHABLE_KEY | rg '^(SUPABASE_URL|SUPABASE_PUBLISHABLE_KEY)=' | sed 's/^/export /')"
-npm run start:dev
+npm start
 ```
 
 8. 这个 shell 会话不再需要后，执行 `unset SUPABASE_URL SUPABASE_PUBLISHABLE_KEY`，恢复到 `.env.development` 的默认行为。
@@ -177,7 +186,7 @@ npm run start:dev
 
 1. 让 main 连接流程保持显式，这样始终能看清当前 app 或 CLI 是否在访问 `main`。
 2. 对于 migration 检查之类的一次性 CLI 操作，使用 `.env.supabase.main.local`。
-3. 如果前端必须连接 `main`，运行 `npm run start:main`（或直接用 `npm start`，两者等价），而不是悄悄替换默认 `dev` 目标。
+3. 如果前端必须连接 `main`，运行 `npm run start:main`，不要复用默认的 `npm start` / `npm run start:dev` dev 入口。
 4. 除非正在执行已批准的 hotfix 或恢复步骤，否则默认把 `main` 访问视为只读。
 5. 如果确实要修代码，就从 Git `main` 拉分支，修完先合并回 `main`，再把 `main` 回合到 `dev`。
 
@@ -200,7 +209,7 @@ npm run start:dev
 - 只有在本地验证、preview 检查和共享 `dev` 验证都通过后，才合并到 `main`。
 - 让生产环境应用 Git 中已经提交的 migration，而不是依赖手动 dashboard 改 schema。
 - 如果出现只针对生产的紧急修复，就从 `main` 拉 hotfix 分支，修完先合并回 `main`，再把 `main` 反向合并回 `dev`，确保 migration 历史保持一致。
-- 如果团队存在需要让前端连接 `main` 的常规任务，应通过 `npm run start:main` 保持 main 入口显式且独立于默认 `dev` 命令。
+- 如果团队存在需要让前端连接 `main` 的常规任务，应通过 `npm run start:main` 保持 main 入口显式，并与默认的 `npm start` / `npm run start:dev` dev 命令分离。
 - 远端 dashboard 改动只应用于应急修复或一次性排查，之后要立刻回写到 Git。
 
 ## 什么时候使用 `db pull`
@@ -221,8 +230,9 @@ npm run start:dev
 ## 本地操作
 
 - 这个仓库里的 Supabase CLI 是项目依赖，所以在仓库内统一使用 `npx supabase ...`。
-- `npm run start:dev` 是日常连接共享 `dev` 的前端命令。
-- `npm start` 和 `npm run start:main` 是显式连接 `main` 的前端命令。
+- `npm start` 是默认连接共享 `dev` 的前端命令。
+- `npm run start:dev` 是等价的显式共享 `dev` 别名。
+- `npm run start:main` 是显式连接 `main` 的前端命令。
 - 当你要验证 schema 或 seed 变更时，优先使用本地 Supabase 环境，而不是共享远端 `dev` 分支。
 - `supabase link --project-ref <ref>` 只在你需要手动对某个远端项目或分支执行一次性操作时使用。
 - 开一个 PR，确认 Supabase 会自动创建 preview branch。

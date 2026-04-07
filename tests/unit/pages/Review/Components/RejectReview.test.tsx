@@ -258,6 +258,7 @@ describe('RejectReview component', () => {
 
     fireEvent.click(screen.getByRole('button'));
     await waitFor(() => expect(screen.getByTestId('modal')).toBeInTheDocument());
+    expect(screen.getByTestId('icon-file')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
 

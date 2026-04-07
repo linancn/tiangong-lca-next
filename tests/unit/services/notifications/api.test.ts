@@ -93,7 +93,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     });
 
-    it('returns failure when the recipient matches the current user', async () => {
+    it('returns failure when the sender and recipient are the same user', async () => {
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'sender-user-id',
         sourceRef: SOURCE_REF,
@@ -271,7 +271,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       });
     });
 
-    it('uses an empty bearer token and generic command text when the command envelope omits a message', async () => {
+    it('uses an empty bearer token and the default request-failed message when command payloads are sparse', async () => {
       mockAuthGetSession.mockResolvedValueOnce({
         data: {
           session: {
@@ -321,6 +321,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         message: 'Request failed',
         code: 'NO_MESSAGE',
       });
+      expect(result.success).toBe(false);
     });
   });
 
@@ -479,7 +480,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       });
     });
 
-    it('uses default paging and json fallbacks when query parameters are omitted', async () => {
+    it('uses default pagination and json fallbacks when params or totals are omitted', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [
           {
@@ -489,6 +490,15 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
             dataset_id: 'process-9',
             dataset_version: '09.00.000',
             modified_at: 'invalid-date',
+            json: null,
+          },
+          {
+            id: 'notification-3',
+            type: 'validation_issue',
+            dataset_type: 'process data set',
+            dataset_id: 'process-3',
+            dataset_version: '03.00.000',
+            modified_at: '2024-04-30T12:00:00.000Z',
             json: null,
           },
         ],
@@ -513,6 +523,18 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
             datasetVersion: '09.00.000',
             senderName: '-',
             modifiedAt: '',
+            link: undefined,
+            json: undefined,
+          },
+          {
+            key: 'notification-3',
+            id: 'notification-3',
+            type: 'validation_issue',
+            datasetType: 'process data set',
+            datasetId: 'process-3',
+            datasetVersion: '03.00.000',
+            senderName: '-',
+            modifiedAt: '2024-04-30T12:00:00.000Z',
             link: undefined,
             json: undefined,
           },
@@ -567,6 +589,14 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       const result = await notificationsApi.getNotificationsCount(7);
 
       expect(result).toEqual({ success: false, total: 0 });
+    });
+
+    it('returns an unsuccessful count response when the rpc fails', async () => {
+      mockRpc.mockResolvedValueOnce({ data: 9, error: { message: 'count failed' } });
+
+      const result = await notificationsApi.getNotificationsCount(5, 0);
+
+      expect(result).toEqual({ success: false, total: 9 });
     });
   });
 });
