@@ -449,6 +449,98 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     );
   });
 
+  it('renders sparse fallback labels, keeps empty validation arrays initialized, and invokes edit-form onData callbacks', async () => {
+    mockGetUserDetail.mockResolvedValueOnce({ data: {} });
+
+    renderComponent({
+      data: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {
+            name: {},
+          },
+        },
+        modellingAndValidation: {
+          LCIMethodAndAllocation: {
+            typeOfDataSet: 'unknown',
+            LCIMethodPrinciple: 'unknown',
+            LCIMethodApproaches: 'unknown',
+          },
+          completeness: {
+            completenessProductModel: 'unknown',
+            completenessElementaryFlows: {
+              '@type': 'unknown',
+              '@value': 'unknown',
+            },
+          },
+          complianceDeclarations: {
+            compliance: [],
+          },
+          validation: {
+            review: [],
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:workflowAndPublicationStatus': 'unknown',
+            'common:copyright': 'unknown',
+            'common:licenseType': 'unknown',
+          },
+        },
+      },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await userEvent.click(screen.getByRole('button', { name: /^Validation$/i }));
+    await waitFor(() =>
+      expect(proFormApi.setFieldValue).toHaveBeenCalledWith(
+        ['modellingAndValidation', 'validation', 'review'],
+        [{ 'common:scope': [{}] }],
+      ),
+    );
+    await userEvent.click(screen.getByTestId('review-form'));
+
+    await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
+    await userEvent.click(screen.getByTestId('compliance-form'));
+  });
+
+  it('falls back to dash labels when mapped option fields are omitted entirely', async () => {
+    renderComponent({
+      data: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {
+            name: {},
+          },
+        },
+        modellingAndValidation: {
+          completeness: {},
+          complianceDeclarations: {
+            compliance: [],
+          },
+          validation: {},
+        },
+        administrativeInformation: {},
+      },
+      type: 'view',
+      tabType: 'assigned',
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+
+    await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+  });
+
   it('temporarily saves review comments through the comment command boundary', async () => {
     const { actionRef } = renderComponent();
 
@@ -509,6 +601,48 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
     expect(mockSubmitReviewCommentApi).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('blocks submit when reference checks report problem nodes without under-review refs', async () => {
+    mockCheckReferences.mockResolvedValueOnce({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'process-3',
+          '@version': '03.00.000',
+          ruleVerification: false,
+          nonExistent: true,
+        },
+      ],
+    });
+
+    renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
+    expect(mockSubmitReviewCommentApi).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('submits the review when reference checking resolves without a path object', async () => {
+    const { actionRef } = renderComponent();
+    mockCheckReferences.mockResolvedValueOnce(undefined);
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledWith('review-1', {
+      modellingAndValidation: {
+        complianceDeclarations: {
+          compliance: [{ id: 'compliance-1' }],
+        },
+        validation: {},
+      },
+    });
+    expect(mockMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+    expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
   it('supports footer cancel, header close, and drawer onClose actions in review mode', async () => {

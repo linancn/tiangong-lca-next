@@ -139,6 +139,11 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
             code: 'sdkInvalid',
             tabNames: ['modellingAndValidation'],
           },
+          {
+            code: 'sdkInvalid',
+            tabName: 'processInformation',
+            tabNames: 'modellingAndValidation' as any,
+          },
         ],
       });
 
@@ -155,7 +160,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
           datasetId: 'process-1',
           datasetVersion: '01.00.000',
           issueCodes: ['ruleVerificationFailed', 'sdkInvalid'],
-          issueCount: 3,
+          issueCount: 4,
           link: 'https://example.com/process-1',
           tabNames: ['processInformation', 'modellingAndValidation'],
         },
@@ -277,6 +282,7 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       mockFunctionsInvoke.mockResolvedValueOnce({
         data: {
           ok: false,
+          code: 'NO_MESSAGE',
         },
         error: null,
       });
@@ -311,8 +317,11 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         },
         region: FunctionRegion.UsEast1,
       });
+      expect(result.error).toMatchObject({
+        message: 'Request failed',
+        code: 'NO_MESSAGE',
+      });
       expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('Request failed');
     });
   });
 
@@ -475,6 +484,15 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       mockRpc.mockResolvedValueOnce({
         data: [
           {
+            id: 'notification-defaults',
+            type: 'validation_issue',
+            dataset_type: 'process data set',
+            dataset_id: 'process-9',
+            dataset_version: '09.00.000',
+            modified_at: 'invalid-date',
+            json: null,
+          },
+          {
             id: 'notification-3',
             type: 'validation_issue',
             dataset_type: 'process data set',
@@ -496,6 +514,18 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       });
       expect(result).toEqual({
         data: [
+          {
+            key: 'notification-defaults',
+            id: 'notification-defaults',
+            type: 'validation_issue',
+            datasetType: 'process data set',
+            datasetId: 'process-9',
+            datasetVersion: '09.00.000',
+            senderName: '-',
+            modifiedAt: '',
+            link: undefined,
+            json: undefined,
+          },
           {
             key: 'notification-3',
             id: 'notification-3',
@@ -551,6 +581,14 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         p_last_view_at: null,
       });
       expect(result).toEqual({ success: true, total: 0 });
+    });
+
+    it('reports rpc failures as unsuccessful notification counts', async () => {
+      mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'db failed' } });
+
+      const result = await notificationsApi.getNotificationsCount(7);
+
+      expect(result).toEqual({ success: false, total: 0 });
     });
 
     it('returns an unsuccessful count response when the rpc fails', async () => {

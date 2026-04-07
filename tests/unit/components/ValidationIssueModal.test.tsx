@@ -402,11 +402,11 @@ describe('ValidationIssueModal', () => {
           {
             code: 'ruleVerificationFailed',
             isOwnedByCurrentUser: false,
-            link: 'http://localhost:8000/mydata/processes?id=process-3b&version=01.00.000',
-            ownerName: '可识别拥有者',
-            ownerUserId: 'owner-user-3b',
+            link: 'http://localhost:8000/mydata/processes?id=process-source-missing&version=01.00.000',
+            ownerName: '外部拥有者',
+            ownerUserId: 'owner-source-missing',
             ref: {
-              '@refObjectId': 'process-3b',
+              '@refObjectId': 'process-source-missing',
               '@type': 'process data set',
               '@version': '01.00.000',
             },
@@ -672,7 +672,7 @@ describe('ValidationIssueModal', () => {
     });
   });
 
-  it('hydrates grouped source datasets from later issues before notifying data owners', async () => {
+  it('hydrates grouped source references from later duplicate issues before notifying data owners', async () => {
     let modalHandle: { destroy: () => void } | null = null;
 
     await act(async () => {
@@ -682,11 +682,11 @@ describe('ValidationIssueModal', () => {
           {
             code: 'ruleVerificationFailed',
             isOwnedByCurrentUser: false,
-            link: 'http://localhost:8000/mydata/processes?id=process-8&version=01.00.000',
-            ownerName: '后续源拥有者',
-            ownerUserId: 'owner-user-source',
+            link: 'http://localhost:8000/mydata/processes?id=process-merge-source&version=01.00.000',
+            ownerName: '后续拥有者',
+            ownerUserId: 'owner-merge-source',
             ref: {
-              '@refObjectId': 'process-8',
+              '@refObjectId': 'process-merge-source',
               '@type': 'process data set',
               '@version': '01.00.000',
             },
@@ -694,11 +694,11 @@ describe('ValidationIssueModal', () => {
           {
             code: 'sdkInvalid',
             isOwnedByCurrentUser: false,
-            link: 'http://localhost:8000/mydata/processes?id=process-8&version=01.00.000',
-            ownerName: '后续源拥有者',
-            ownerUserId: 'owner-user-source',
+            link: 'http://localhost:8000/mydata/processes?id=process-merge-source&version=01.00.000',
+            ownerName: '后续拥有者',
+            ownerUserId: 'owner-merge-source',
             ref: {
-              '@refObjectId': 'process-8',
+              '@refObjectId': 'process-merge-source',
               '@type': 'process data set',
               '@version': '01.00.000',
             },
@@ -713,12 +713,30 @@ describe('ValidationIssueModal', () => {
     fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
 
     await waitFor(() => {
-      expect(mockUpsertValidationIssueNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          recipientUserId: 'owner-user-source',
-          sourceRef: SOURCE_REF,
-        }),
-      );
+      expect(mockUpsertValidationIssueNotification).toHaveBeenCalledWith({
+        recipientUserId: 'owner-merge-source',
+        ref: {
+          '@refObjectId': 'process-merge-source',
+          '@type': 'process data set',
+          '@version': '01.00.000',
+        },
+        sourceRef: SOURCE_REF,
+        link: 'http://localhost:8000/mydata/processes?id=process-merge-source&version=01.00.000',
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            tabName: undefined,
+            tabNames: undefined,
+            underReviewVersion: undefined,
+          },
+          {
+            code: 'sdkInvalid',
+            tabName: undefined,
+            tabNames: ['processInformation'],
+            underReviewVersion: undefined,
+          },
+        ],
+      });
     });
 
     await act(async () => {

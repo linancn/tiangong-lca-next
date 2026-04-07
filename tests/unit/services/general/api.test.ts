@@ -130,6 +130,23 @@ beforeEach(() => {
   });
 });
 
+describe('createLegacyMutationRemovedResult', () => {
+  it('wraps the deprecation error in a 410 mutation result envelope', () => {
+    expect(generalApi.createLegacyMutationRemovedResult('legacyBoundary')).toEqual({
+      data: null,
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'legacyBoundary',
+        hint: '',
+      },
+      count: null,
+      status: 410,
+      statusText: 'LEGACY_ENDPOINT_REMOVED',
+    });
+  });
+});
+
 afterEach(() => {
   jest.restoreAllMocks();
 });

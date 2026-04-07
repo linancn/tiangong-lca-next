@@ -270,6 +270,56 @@ describe('review workflow command wrappers', () => {
     expect(result).toEqual(commandResult);
   });
 
+  it('assigns reviewers with a null deadline when none is provided', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    await reviewsApi.assignReviewersApi(['review-1'], ['user-3']);
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-3'],
+      deadline: null,
+    });
+  });
+
+  it('returns the first batch error while flattening null command data', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'assignment failed' },
+        count: null,
+        status: 409,
+        statusText: 'CONFLICT',
+      });
+
+    const result = await reviewsApi.saveReviewAssignmentDraftApi(
+      ['review-1', 'review-2'],
+      ['user-1'],
+    );
+
+    expect(result).toEqual({
+      data: [],
+      error: { message: 'assignment failed' },
+      count: null,
+      status: 409,
+      statusText: 'CONFLICT',
+    });
+  });
+
   it('assigns reviewers with a null deadline and flattens empty batch payload rows', async () => {
     mockInvokeDatasetCommand
       .mockResolvedValueOnce({
@@ -401,7 +451,7 @@ describe('getReviewerIdsApi', () => {
 
   it('ignores reviewer rows whose reviewer_id is not an array', async () => {
     const builder = createQueryBuilder({
-      data: [{ reviewer_id: ['user-1'] }, { reviewer_id: 'user-2' }, {}],
+      data: [{ reviewer_id: ['user-1'] }, { reviewer_id: 'user-2' }, { reviewer_id: null }, {}],
     });
     mockFrom.mockReturnValueOnce(builder);
 
@@ -1342,6 +1392,7 @@ describe('getNotifyReviews', () => {
       ],
       error: null,
     });
+
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
 
     const result = await reviewsApi.getNotifyReviews({} as any, 'en', 0);
