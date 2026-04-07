@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(13);
+select plan(14);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -74,6 +74,7 @@ values
   ('12000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', 'owner');
 
 alter table public.sources disable trigger "sources_json_sync_trigger";
+alter table public.flowproperties disable trigger "flowproperties_json_sync_trigger";
 alter table public.flows disable trigger "flows_json_sync_trigger";
 alter table public.processes disable trigger "processes_json_sync_trigger";
 alter table public.lifecyclemodels disable trigger "lifecyclemodels_json_sync_trigger";
@@ -108,6 +109,17 @@ values (
             ]
           }
         }
+      },
+      "flowProperties": {
+        "flowProperty": [
+          {
+            "referenceToFlowPropertyDataSet": {
+              "@type": "flow property data set",
+              "@refObjectId": "32000000-0000-0000-0000-000000000004",
+              "@version": "01.00.000"
+            }
+          }
+        ]
       }
     }
   }'::jsonb,
@@ -120,6 +132,58 @@ values (
               { "@xml:lang": "en", "#text": "Draft Flow" }
             ]
           }
+        }
+      },
+      "flowProperties": {
+        "flowProperty": [
+          {
+            "referenceToFlowPropertyDataSet": {
+              "@type": "flow property data set",
+              "@refObjectId": "32000000-0000-0000-0000-000000000004",
+              "@version": "01.00.000"
+            }
+          }
+        ]
+      }
+    }
+  }'::json,
+  '12000000-0000-0000-0000-000000000001',
+  0,
+  '22000000-0000-0000-0000-000000000001',
+  true
+);
+
+insert into public.flowproperties (
+  id,
+  version,
+  json,
+  json_ordered,
+  user_id,
+  state_code,
+  team_id,
+  rule_verification
+)
+values (
+  '32000000-0000-0000-0000-000000000004',
+  '01.00.000',
+  '{
+    "flowPropertyDataSet": {
+      "flowPropertiesInformation": {
+        "dataSetInformation": {
+          "common:name": [
+            { "@xml:lang": "en", "#text": "Draft Flow Property" }
+          ]
+        }
+      }
+    }
+  }'::jsonb,
+  '{
+    "flowPropertyDataSet": {
+      "flowPropertiesInformation": {
+        "dataSetInformation": {
+          "common:name": [
+            { "@xml:lang": "en", "#text": "Draft Flow Property" }
+          ]
         }
       }
     }
@@ -483,6 +547,15 @@ select is(
      and version = '01.00.000'),
   '20',
   'cmd_review_submit marks draft referenced datasets under review'
+);
+
+select is(
+  (select state_code::text
+   from public.flowproperties
+   where id = '32000000-0000-0000-0000-000000000004'
+     and version = '01.00.000'),
+  '20',
+  'cmd_review_submit marks referenced flow properties under review'
 );
 
 select is(
