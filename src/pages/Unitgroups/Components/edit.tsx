@@ -15,6 +15,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import {
   UnitDraft,
@@ -92,10 +93,10 @@ const UnitGroupEdit: FC<Props> = ({
     }
   }, [autoOpen, id, version]);
   const intl = useIntl();
-  type UpdateUnitGroupResult = {
-    data?: Array<{ rule_verification?: boolean }>;
-    error?: { state_code?: number; message?: string };
-  };
+  type UpdateUnitGroupResult = Pick<
+    SupabaseMutationResult<{ rule_verification?: boolean }>,
+    'data' | 'error'
+  >;
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
     const res = updateRefsData(fromData, newRefs, true);

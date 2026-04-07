@@ -17,9 +17,9 @@ describe('supabase data shapes', () => {
       state_code: 409,
     };
     const queryResult: SupabaseQueryResult<{ id: string }> = {
-      data: [{ id: 'row-1' }],
+      data: null,
       error,
-      count: 1,
+      count: null,
       status: 409,
       statusText: 'Conflict',
     };
@@ -32,7 +32,7 @@ describe('supabase data shapes', () => {
     };
 
     expect(queryResult.error?.state_code).toBe(409);
-    expect(queryResult.data?.[0]?.id).toBe('row-1');
+    expect(queryResult.data).toBeNull();
     expect(mutationResult.error).toBeNull();
     expect(mutationResult.statusText).toBe('OK');
   });
