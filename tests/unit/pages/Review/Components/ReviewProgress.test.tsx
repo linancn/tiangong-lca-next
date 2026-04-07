@@ -77,11 +77,19 @@ jest.mock('antd', () => {
   const Spin = ({ children, spinning }: any) =>
     spinning ? <div data-testid='spin'>Loading...</div> : <>{children}</>;
 
+  const confirm = jest.fn((config: any) => {
+    void config?.onOk?.();
+    return { destroy: jest.fn() };
+  });
+
   const Modal = {
-    confirm: jest.fn((config: any) => {
-      void config?.onOk?.();
-      return { destroy: jest.fn() };
-    }),
+    confirm,
+    useModal: jest.fn(() => [
+      {
+        confirm,
+      },
+      null,
+    ]),
   };
 
   const message = {
@@ -304,6 +312,14 @@ describe('ReviewProgress component', () => {
 
     fireEvent.click(screen.getByTestId('remove-user-2'));
 
+    expect(Modal.confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        okButtonProps: { type: 'primary' },
+        cancelButtonProps: {
+          style: { borderColor: '#1677ff', color: '#1677ff' },
+        },
+      }),
+    );
     await waitFor(() => expect(mockRevokeReviewerApi).toHaveBeenCalledWith('review-1', 'user-2'));
     expect(message.success).toHaveBeenCalledWith('Successfully revoked the auditor');
   });

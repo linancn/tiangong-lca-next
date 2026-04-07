@@ -46,6 +46,7 @@ export default function ReviewProgress({
   const tableRef = useRef<any>(null);
   const intl = useIntl();
   const { token } = theme.useToken();
+  const [modal, contextHolder] = Modal.useModal();
   const fetchTableData = async () => {
     setTableLoading(true);
     try {
@@ -125,10 +126,9 @@ export default function ReviewProgress({
   };
 
   const handleRemoveReviewer = async (reviewerId: string) => {
-    Modal.confirm({
+    modal.confirm({
       okButtonProps: {
         type: 'primary',
-        style: { backgroundColor: token.colorPrimary },
       },
       cancelButtonProps: {
         style: { borderColor: token.colorPrimary, color: token.colorPrimary },
@@ -302,6 +302,7 @@ export default function ReviewProgress({
 
   return (
     <>
+      {contextHolder}
       <Tooltip
         title={
           <FormattedMessage
