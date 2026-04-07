@@ -84,7 +84,11 @@ jest.mock('antd', () => {
         data-future-disabled={String(!!futureDisabled)}
         placeholder={placeholder}
         value={value ? String(value) : ''}
-        onChange={() => onChange?.({ toISOString: () => '2026-04-01T00:00:00.000Z' })}
+        onChange={(event) =>
+          onChange?.(
+            event?.target?.value ? { toISOString: () => '2026-04-01T00:00:00.000Z' } : null,
+          )
+        }
       />
     );
   };
@@ -353,5 +357,83 @@ describe('SelectReviewer component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'drawer-on-close' }));
     await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+  });
+
+  it('closes from the footer cancel action', async () => {
+    render(
+      <SelectReviewer
+        reviewIds={['review-1']}
+        tabType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('icon-user').closest('button') as HTMLButtonElement);
+
+    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+  });
+
+  it('renders admin and fallback role labels when assigned reviewers are loaded from sparse history', async () => {
+    mockGetReviewerIdsByReviewId.mockResolvedValueOnce(null);
+    mockGetReviewMembersApi.mockResolvedValue({
+      data: [
+        {
+          user_id: 'user-admin',
+          email: 'admin@example.com',
+          display_name: 'Admin User',
+          role: 'review-admin',
+        },
+        {
+          user_id: 'user-unknown',
+          email: 'unknown@example.com',
+          display_name: 'Unknown User',
+          role: 'mystery-role',
+        },
+      ],
+      success: true,
+      total: 2,
+    });
+
+    render(
+      <SelectReviewer
+        reviewIds={['review-1']}
+        tabType='assigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('icon-user').closest('button') as HTMLButtonElement);
+
+    await waitFor(() => expect(screen.getByText('admin@example.com')).toBeInTheDocument());
+    expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.getByText('unknown@example.com')).toBeInTheDocument();
+  });
+
+  it('submits a null deadline and shows an error toast when reviewer assignment fails', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    mockAssignReviewersApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('assign failed'),
+    });
+
+    render(<SelectReviewer reviewIds={['review-1']} tabType='unassigned' actionRef={actionRef} />);
+
+    fireEvent.click(screen.getByTestId('icon-user').closest('button') as HTMLButtonElement);
+
+    await waitFor(() => expect(screen.getByText('user2@example.com')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('select-row'));
+    fireEvent.change(screen.getByTestId('date-picker'), { target: { value: '' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockAssignReviewersApi).toHaveBeenCalledWith(['review-1'], ['user-2'], null);
+    expect(message.error).toHaveBeenCalledWith('Save failed');
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
 });

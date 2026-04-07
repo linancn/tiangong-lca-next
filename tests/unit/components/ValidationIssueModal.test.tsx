@@ -392,6 +392,40 @@ describe('ValidationIssueModal', () => {
     });
   });
 
+  it('shows an error when notifying data owner without a resolved source dataset', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-3b&version=01.00.000',
+            ownerName: '可识别拥有者',
+            ownerUserId: 'owner-user-3b',
+            ref: {
+              '@refObjectId': 'process-3b',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
+
+    expect(mockMessageError).toHaveBeenCalledWith('无法识别源数据集。');
+    expect(mockUpsertValidationIssueNotification).not.toHaveBeenCalled();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
   it('shows an error when notifying data owner fails', async () => {
     mockUpsertValidationIssueNotification.mockResolvedValueOnce({
       success: false,
@@ -632,6 +666,60 @@ describe('ValidationIssueModal', () => {
     expect(screen.getByText('联系人拥有者')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '通知数据拥有者' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '修复问题' })).toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('hydrates grouped source datasets from later issues before notifying data owners', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-8&version=01.00.000',
+            ownerName: '后续源拥有者',
+            ownerUserId: 'owner-user-source',
+            ref: {
+              '@refObjectId': 'process-8',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'sdkInvalid',
+            isOwnedByCurrentUser: false,
+            link: 'http://localhost:8000/mydata/processes?id=process-8&version=01.00.000',
+            ownerName: '后续源拥有者',
+            ownerUserId: 'owner-user-source',
+            ref: {
+              '@refObjectId': 'process-8',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            sourceRef: SOURCE_REF,
+            tabNames: ['processInformation'],
+          },
+        ],
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
+
+    await waitFor(() => {
+      expect(mockUpsertValidationIssueNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientUserId: 'owner-user-source',
+          sourceRef: SOURCE_REF,
+        }),
+      );
+    });
 
     await act(async () => {
       modalHandle?.destroy();

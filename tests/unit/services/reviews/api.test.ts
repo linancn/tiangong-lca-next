@@ -270,6 +270,39 @@ describe('review workflow command wrappers', () => {
     expect(result).toEqual(commandResult);
   });
 
+  it('assigns reviewers with a null deadline and flattens empty batch payload rows', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-2' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+    const result = await reviewsApi.assignReviewersApi(['review-1', 'review-2'], ['user-9']);
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-9'],
+      deadline: null,
+    });
+    expect(result).toEqual({
+      data: [{ review: { id: 'review-2' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
   it('revokes reviewers through the admin review command', async () => {
     const commandResult = {
       data: [{ review: { id: 'review-1' } }],
@@ -364,6 +397,17 @@ describe('getReviewerIdsApi', () => {
     const result = await reviewsApi.getReviewerIdsApi(['review-1']);
 
     expect(result).toEqual([]);
+  });
+
+  it('ignores reviewer rows whose reviewer_id is not an array', async () => {
+    const builder = createQueryBuilder({
+      data: [{ reviewer_id: ['user-1'] }, { reviewer_id: 'user-2' }, {}],
+    });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await reviewsApi.getReviewerIdsApi(['review-1']);
+
+    expect(result).toEqual(['user-1']);
   });
 });
 
@@ -1278,6 +1322,54 @@ describe('getNotifyReviews', () => {
 
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
+  });
+
+  it('uses default paging and zero totals when notification rows omit total_count', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-notify-no-total',
+          json: {
+            data: {
+              id: 'process-notify-no-total',
+              version: '06.00.000',
+            },
+            user: {},
+          },
+          modified_at: '2024-06-07T12:00:00.000Z',
+          state_code: 3,
+        },
+      ],
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getNotifyReviews({} as any, 'en', 0);
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'review-notify-no-total',
+          id: 'review-notify-no-total',
+          isFromLifeCycle: false,
+          name: '-',
+          teamName: '-',
+          userName: '-',
+          modifiedAt: '2024-06-07T12:00:00.000Z',
+          stateCode: 3,
+          json: {
+            data: {
+              id: 'process-notify-no-total',
+              version: '06.00.000',
+            },
+            user: {},
+          },
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
   });
 });
 
