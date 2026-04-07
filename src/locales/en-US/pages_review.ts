@@ -103,6 +103,7 @@ export default {
   'pages.reviewDetail.submit_review': 'Submit Review',
   'pages.reviewDetail.assign_reviewers_temporary': 'Assign Reviewers Temporarily',
   'pages.reviewDetail.assign_reviewers': 'Assign Reviewers',
+  'pages.reviewDetail.revoke_reviewer': 'Revoke Reviewer',
   'pages.reviewDetail.submit_comments_temporary': 'Submit Comments Temporarily',
   'pages.reviewDetail.submit_comments': 'Submit Comments',
   'pages.reviewDetail.rejected': 'Reject Review',
