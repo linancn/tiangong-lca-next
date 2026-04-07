@@ -5,9 +5,10 @@
 ## Environment & Guardrails
 
 - Node.js **>= 24** (`nvm use 24`) before install/build/test.
-- Frontend Supabase envs are provided through `.env` and `.env.development`; use `npm run start:dev` for shared `dev` and `npm run start:main` only when the task explicitly requires `main`. Read them only through `src/services/supabase`.
+- Frontend Supabase envs are provided through `.env` and `.env.development`; use `npm start` as the default shared-`dev` entry point, keep `npm run start:dev` as the equivalent explicit dev alias, and use `npm run start:main` only when the task explicitly requires `main`. Read them only through `src/services/supabase`.
 - Database-triggered Edge Function calls do not read those frontend env files. Standard webhook auth depends on the branch's Vault secrets `project_url` and `project_secret_key`; legacy `generate_flow_embedding()` compatibility additionally depends on `project_x_key`. See `docs/agents/supabase-branching.md`.
 - For branch selection, local-vs-remote database usage, and schema workflow, follow `docs/agents/supabase-branching.md`.
+- This repository keeps GitHub default branch `main` as a platform exception, but routine feature and fix work starts from Git `dev`, PRs target `dev`, and `dev -> main` is the promotion path.
 - No new npm dependencies without human approval.
 - Service-first architecture: extend `src/services/<feature>/{data,api,util}.ts` first, then page/UI.
 
@@ -15,6 +16,7 @@
 
 ```bash
 npm install
+npm start
 npm run start:dev
 npm run start:main
 npm run lint
@@ -82,5 +84,6 @@ Keep behavior aligned with existing feature implementations.
 ## Delivery Rules
 
 - Keep diffs focused on the target feature.
+- Routine feature and fix PRs target `dev`; use `main` only for promotion, production verification, or hotfix work.
 - Update docs when behavior/workflow/commands change.
 - If the changed behavior affects other teams, update both English and `_CN` docs in the same commit.

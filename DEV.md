@@ -20,13 +20,15 @@ You can modify or add extra scripts in the `package.json` file. Below are some p
 
 ### Debug the Project
 
-🚀 **Start the project in debug mode using the command below** 🚀:
+🚀 **Start the project in debug mode against the shared `dev` environment using the command below** 🚀:
 
 ```bash
 npm start
 ```
 
 The application will run at: [localhost:8000](http://localhost:8000/)
+
+`npm start` is the default shared-`dev` entry point. `npm run start:dev` is the equivalent explicit dev alias. Use `npm run start:main` only when a task explicitly needs the `main` environment.
 
 ### Check Code Formatting
 

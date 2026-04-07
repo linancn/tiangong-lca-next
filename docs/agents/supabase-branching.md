@@ -8,6 +8,15 @@ This repository is configured for one Supabase Branching source of truth:
 
 This document intentionally keeps branch topology, config ownership, and day-to-day workflow in one place so the branch model and the operating rules do not drift apart.
 
+This repo uses the following Git and Supabase branch contract:
+
+- GitHub default branch remains `main` as a platform exception.
+- Daily trunk is Git `dev`.
+- Routine feature and fix branches start from `dev` and PR back into `dev`.
+- `dev` -> `main` is the promotion path.
+
+Do not infer the working trunk from GitHub default-branch UI alone.
+
 ## Repo contract
 
 - Keep one shared `supabase/` directory in Git.
@@ -78,7 +87,7 @@ This is the default repository workflow. Use it unless a task explicitly require
 1. Update local Git `dev`.
 2. Create a feature branch from Git `dev`.
 3. Choose the working mode:
-   - App-only change: run `npm run start:dev` and develop against the shared persistent Supabase `dev` branch.
+   - App-only change: run `npm start` and develop against the shared persistent Supabase `dev` branch. `npm run start:dev` remains the equivalent explicit dev alias.
    - Schema change: run `npx supabase start`, make the change locally, generate a migration, and validate locally first.
 4. Open the feature PR into Git `dev`.
 5. Use the Supabase preview branch created for that PR to verify migration and config behavior before merge.
@@ -96,14 +105,14 @@ Default constraints:
 
 | Situation | Frontend should connect to | Schema changes should be made in | Default action |
 | --- | --- | --- | --- |
-| Routine page, component, or service development with no schema change | Shared remote `dev` via `.env.development` | Nowhere | Run `npm run start:dev` and develop normally |
+| Routine page, component, or service development with no schema change | Shared remote `dev` via `.env.development` | Nowhere | Run `npm start` (same as `npm run start:dev`) and develop normally |
 | Schema, policy, function, or seed development | Local Supabase started by `npx supabase start` | Local only | Create and validate a migration locally first |
 | QA after a feature merges into Git `dev` | Shared remote `dev` | Nowhere by hand | Test the integrated result in the shared `dev` environment |
-| Task-specific verification against `main` | `main`, through the explicit `npm start` / `npm run start:main` workflow | Not as the first place to author schema changes | Run `npm run start:main`, then switch back to `npm run start:dev` when the task is done |
+| Task-specific verification against `main` | `main`, through the explicit `npm run start:main` workflow | Not as the first place to author schema changes | Run `npm run start:main`, then switch back to `npm start` when the task is done |
 
 Important rules:
 
-- Keep the default day-to-day local development target explicit. If the task requires `main`, switch deliberately rather than silently changing the normal target.
+- Keep the default day-to-day local development target explicit: `npm start` and `npm run start:dev` both mean shared `dev`. If the task requires `main`, switch deliberately with `npm run start:main`.
 - Do not use the shared remote `dev` database as the place where you first invent schema changes.
 - Do not manually edit production schema in the dashboard during normal work.
 
@@ -143,8 +152,8 @@ Use this flow when changing pages, components, client logic, or service code wit
 
 1. Checkout the latest Git `dev`.
 2. Create a feature branch from `dev`.
-3. Run `npm run start:dev`.
-4. By default the app will read `.env.development` and connect to the shared remote `dev` branch.
+3. Run `npm start`.
+4. By default the app will read `.env.development` and connect to the shared remote `dev` branch. `npm run start:dev` remains the equivalent explicit alias.
 5. Implement the change, add tests, and open a PR into Git `dev`.
 6. After merge, verify the result again in shared `dev`.
 
@@ -162,7 +171,7 @@ Use this flow when adding or modifying tables, columns, policies, SQL functions,
 
 ```bash
 eval "$(npx supabase status -o env --override-name api.url=SUPABASE_URL --override-name auth.anon_key=SUPABASE_PUBLISHABLE_KEY | rg '^(SUPABASE_URL|SUPABASE_PUBLISHABLE_KEY)=' | sed 's/^/export /')"
-npm run start:dev
+npm start
 ```
 
 8. After that shell session is no longer needed, run `unset SUPABASE_URL SUPABASE_PUBLISHABLE_KEY` to return to the normal `.env.development` behavior.
@@ -177,7 +186,7 @@ Use this flow when a task requires the frontend or CLI to connect to `main`, inc
 
 1. Keep the main-target workflow explicit so it is always obvious when the app or CLI is talking to `main`.
 2. Use `.env.supabase.main.local` for one-off CLI operations such as migration inspection.
-3. If the frontend must connect to `main`, run `npm run start:main` (or `npm start`, which is the same path) instead of silently replacing the default `dev` target.
+3. If the frontend must connect to `main`, run `npm run start:main` instead of reusing the default `npm start` / `npm run start:dev` dev target.
 4. Treat `main` access as read-only unless you are executing an approved hotfix or recovery step.
 5. If a code fix is required, branch from Git `main`, fix it, merge back to `main`, and then back-merge `main` into `dev`.
 
@@ -200,7 +209,7 @@ Use this flow when a task requires the frontend or CLI to connect to `main`, inc
 - Merge to `main` only after local validation, preview checks, and shared `dev` validation pass.
 - Let production apply the committed migrations from Git instead of relying on manual dashboard schema changes.
 - For an emergency production-only fix, branch from `main`, patch it, merge back to `main`, and then back-merge `main` into `dev` so the migration history stays aligned.
-- If the team has recurring workflows that require the frontend to connect to `main`, keep that entry path explicit and separate from the default `dev` command by using `npm run start:main`.
+- If the team has recurring workflows that require the frontend to connect to `main`, keep that entry path explicit and separate from the default `npm start` / `npm run start:dev` dev commands by using `npm run start:main`.
 - Use remote dashboard edits only for emergency recovery or one-off inspection, then reconcile them back into Git immediately.
 
 ## When to use `db pull`
@@ -221,8 +230,9 @@ Use this flow when a task requires the frontend or CLI to connect to `main`, inc
 ## Local operations
 
 - Use `npx supabase ...` inside this repo because the CLI is installed as a project dependency.
-- `npm run start:dev` is the routine shared-`dev` frontend command.
-- `npm start` and `npm run start:main` are the explicit main-target frontend commands.
+- `npm start` is the default shared-`dev` frontend command.
+- `npm run start:dev` is the equivalent explicit shared-`dev` alias.
+- `npm run start:main` is the explicit main-target frontend command.
 - When you are validating schema or seed changes, prefer the local Supabase stack over the shared remote `dev` branch.
 - Use `supabase link --project-ref <ref>` only for one-off manual operations against a specific remote project or branch.
 - Open a PR and verify that Supabase creates the preview branch automatically.

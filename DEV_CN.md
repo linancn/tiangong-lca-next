@@ -20,13 +20,15 @@ npm update && npm ci
 
 ### 调试项目
 
-🚀 **使用以下命令启动项目调试** 🚀：
+🚀 **使用以下命令连接共享 `dev` 环境并启动项目调试** 🚀：
 
 ```bash
 npm start
 ```
 
 程序会运行在： [localhost:8000](http://localhost:8000/)
+
+`npm start` 是默认的共享 `dev` 入口，`npm run start:dev` 是等价的显式 dev 别名。只有任务明确需要 `main` 环境时才使用 `npm run start:main`。
 
 ### 检查代码格式
 
