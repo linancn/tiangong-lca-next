@@ -21,7 +21,7 @@ describe('ContributeData utils', () => {
 
     expect(
       extractContributeDataError({
-        contributeResults: [{ data: { error: null } }, { data: { error: nestedError } }],
+        contributeResults: [null, { data: { error: null } }, { data: { error: nestedError } }],
       }),
     ).toBe(nestedError);
     expect(
@@ -61,6 +61,12 @@ describe('ContributeData utils', () => {
     ).toBe('Open data cannot be shared to a team.');
     expect(
       getContributeDataErrorMessage(zhIntl, {
+        state_code: 100,
+        message: 'Published data cannot be reassigned to another team',
+      }),
+    ).toBe('开放数据不能共享到团队。');
+    expect(
+      getContributeDataErrorMessage(zhIntl, {
         details: { state_code: 100 },
         message: 'Published data cannot be reassigned to another team',
       }),
@@ -89,6 +95,12 @@ describe('ContributeData utils', () => {
     ).toBe('Data under review cannot be contributed to a team.');
     expect(
       getContributeDataErrorMessage(zhIntl, {
+        review_state_code: 20,
+        message: 'Data is under review and cannot be reassigned',
+      }),
+    ).toBe('审核中数据不能贡献到团队。');
+    expect(
+      getContributeDataErrorMessage(zhIntl, {
         details: { state_code: 20, review_state_code: 20 },
         message: 'Data is under review and cannot be reassigned',
       }),
@@ -108,6 +120,7 @@ describe('ContributeData utils', () => {
       'contribute failed',
     );
     expect(getContributeDataErrorMessage(intl, 'plain string error')).toBe('plain string error');
+    expect(getContributeDataErrorMessage(intl, { message: '   ' })).toBe('Action failed');
     expect(getContributeDataErrorMessage(intl, true)).toBe('Action failed');
   });
 });

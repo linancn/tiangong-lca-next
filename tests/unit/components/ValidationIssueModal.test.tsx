@@ -8,12 +8,6 @@ let latestTableDataSource: any[] = [];
 const mockMessageSuccess = jest.fn();
 const mockMessageError = jest.fn();
 
-const SOURCE_REF = {
-  '@refObjectId': 'source-process-1',
-  '@type': 'process data set',
-  '@version': '01.00.000',
-} as const;
-
 jest.mock('@/services/notifications/api', () => ({
   upsertValidationIssueNotification: jest.fn(),
 }));
@@ -213,7 +207,6 @@ describe('ValidationIssueModal', () => {
         'pages.validationIssues.notifyDataOwner': '通知数据拥有者',
         'pages.validationIssues.dataOwnerNotified': '已通知',
         'pages.validationIssues.notifyDataOwner.ownerMissing': '无法识别数据拥有者。',
-        'pages.validationIssues.notifyDataOwner.sourceMissing': '无法识别源数据集。',
         'pages.validationIssues.notifyDataOwner.success': '已通知数据拥有者。',
         'pages.validationIssues.notifyDataOwner.error': '通知数据拥有者失败。',
       };
@@ -316,7 +309,6 @@ describe('ValidationIssueModal', () => {
               '@type': 'process data set',
               '@version': '01.00.000',
             },
-            sourceRef: SOURCE_REF,
           },
         ],
         title: '数据校验问题',
@@ -337,7 +329,6 @@ describe('ValidationIssueModal', () => {
           '@type': 'process data set',
           '@version': '01.00.000',
         },
-        sourceRef: SOURCE_REF,
         link: 'http://localhost:8000/mydata/processes?id=process-2&version=01.00.000',
         issues: [
           {
@@ -392,40 +383,6 @@ describe('ValidationIssueModal', () => {
     });
   });
 
-  it('shows an error when notifying data owner without a resolved source dataset', async () => {
-    let modalHandle: { destroy: () => void } | null = null;
-
-    await act(async () => {
-      modalHandle = showValidationIssueModal({
-        intl,
-        issues: [
-          {
-            code: 'ruleVerificationFailed',
-            isOwnedByCurrentUser: false,
-            link: 'http://localhost:8000/mydata/processes?id=process-source-missing&version=01.00.000',
-            ownerName: '外部拥有者',
-            ownerUserId: 'owner-source-missing',
-            ref: {
-              '@refObjectId': 'process-source-missing',
-              '@type': 'process data set',
-              '@version': '01.00.000',
-            },
-          },
-        ],
-        title: '数据校验问题',
-      }) as { destroy: () => void };
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
-
-    expect(mockMessageError).toHaveBeenCalledWith('无法识别源数据集。');
-    expect(mockUpsertValidationIssueNotification).not.toHaveBeenCalled();
-
-    await act(async () => {
-      modalHandle?.destroy();
-    });
-  });
-
   it('shows an error when notifying data owner fails', async () => {
     mockUpsertValidationIssueNotification.mockResolvedValueOnce({
       success: false,
@@ -448,7 +405,6 @@ describe('ValidationIssueModal', () => {
               '@type': 'process data set',
               '@version': '01.00.000',
             },
-            sourceRef: SOURCE_REF,
           },
         ],
         title: '数据校验问题',
@@ -489,7 +445,6 @@ describe('ValidationIssueModal', () => {
               '@type': 'process data set',
               '@version': '01.00.000',
             },
-            sourceRef: SOURCE_REF,
           },
         ],
         title: '数据校验问题',
@@ -666,78 +621,6 @@ describe('ValidationIssueModal', () => {
     expect(screen.getByText('联系人拥有者')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '通知数据拥有者' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '修复问题' })).toBeInTheDocument();
-
-    await act(async () => {
-      modalHandle?.destroy();
-    });
-  });
-
-  it('hydrates grouped source references from later duplicate issues before notifying data owners', async () => {
-    let modalHandle: { destroy: () => void } | null = null;
-
-    await act(async () => {
-      modalHandle = showValidationIssueModal({
-        intl,
-        issues: [
-          {
-            code: 'ruleVerificationFailed',
-            isOwnedByCurrentUser: false,
-            link: 'http://localhost:8000/mydata/processes?id=process-merge-source&version=01.00.000',
-            ownerName: '后续拥有者',
-            ownerUserId: 'owner-merge-source',
-            ref: {
-              '@refObjectId': 'process-merge-source',
-              '@type': 'process data set',
-              '@version': '01.00.000',
-            },
-          },
-          {
-            code: 'sdkInvalid',
-            isOwnedByCurrentUser: false,
-            link: 'http://localhost:8000/mydata/processes?id=process-merge-source&version=01.00.000',
-            ownerName: '后续拥有者',
-            ownerUserId: 'owner-merge-source',
-            ref: {
-              '@refObjectId': 'process-merge-source',
-              '@type': 'process data set',
-              '@version': '01.00.000',
-            },
-            sourceRef: SOURCE_REF,
-            tabNames: ['processInformation'],
-          },
-        ],
-        title: '数据校验问题',
-      }) as { destroy: () => void };
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: '通知数据拥有者' }));
-
-    await waitFor(() => {
-      expect(mockUpsertValidationIssueNotification).toHaveBeenCalledWith({
-        recipientUserId: 'owner-merge-source',
-        ref: {
-          '@refObjectId': 'process-merge-source',
-          '@type': 'process data set',
-          '@version': '01.00.000',
-        },
-        sourceRef: SOURCE_REF,
-        link: 'http://localhost:8000/mydata/processes?id=process-merge-source&version=01.00.000',
-        issues: [
-          {
-            code: 'ruleVerificationFailed',
-            tabName: undefined,
-            tabNames: undefined,
-            underReviewVersion: undefined,
-          },
-          {
-            code: 'sdkInvalid',
-            tabName: undefined,
-            tabNames: ['processInformation'],
-            underReviewVersion: undefined,
-          },
-        ],
-      });
-    });
 
     await act(async () => {
       modalHandle?.destroy();

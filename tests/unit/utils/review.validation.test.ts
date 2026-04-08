@@ -290,7 +290,6 @@ describe('review helper coverage', () => {
         code: 'sdkInvalid',
         link: 'http://localhost:8000/#/mydata/models?id=model-1&version=01.00.000&required=1',
         ref: rootRef,
-        sourceRef: rootRef,
         tabNames: ['validation', 'compliance'],
       },
       {
@@ -301,7 +300,6 @@ describe('review helper coverage', () => {
           '@refObjectId': 'process-3',
           '@version': '01.00.000',
         },
-        sourceRef: rootRef,
       },
       {
         code: 'nonExistentRef',
@@ -311,7 +309,6 @@ describe('review helper coverage', () => {
           '@refObjectId': 'source-1',
           '@version': '01.00.000',
         },
-        sourceRef: rootRef,
       },
       {
         code: 'underReview',
@@ -321,7 +318,6 @@ describe('review helper coverage', () => {
           '@refObjectId': 'process-1',
           '@version': '01.00.000',
         },
-        sourceRef: rootRef,
         underReviewVersion: '01.00.000',
       },
       {
@@ -332,7 +328,6 @@ describe('review helper coverage', () => {
           '@refObjectId': 'process-2',
           '@version': '01.00.000',
         },
-        sourceRef: rootRef,
         underReviewVersion: '02.00.000',
       },
       {
@@ -343,7 +338,6 @@ describe('review helper coverage', () => {
           '@refObjectId': 'flow-1',
           '@version': '01.00.000',
         },
-        sourceRef: rootRef,
       },
     ]);
   });

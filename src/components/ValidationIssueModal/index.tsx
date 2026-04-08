@@ -111,7 +111,6 @@ const getIssueDescription = (intl: IntlShapeLike, issue: ValidationIssue) => {
 
 type GroupedValidationIssue = {
   ref: ValidationIssue['ref'];
-  sourceRef?: ValidationIssue['sourceRef'];
   link: string;
   issues: ValidationIssue[];
   ownerName: string;
@@ -168,7 +167,6 @@ const groupValidationIssues = (issues: ValidationIssue[]): GroupedValidationIssu
 
       groupedIssues.set(key, {
         ref: issue.ref,
-        sourceRef: issue.sourceRef,
         link: issue.link,
         issues: [issue],
         ownerName: issue.ownerName?.trim() || '-',
@@ -191,10 +189,6 @@ const groupValidationIssues = (issues: ValidationIssue[]): GroupedValidationIssu
 
     if (!existingGroup.link && issue.link) {
       existingGroup.link = issue.link;
-    }
-
-    if (!existingGroup.sourceRef && issue.sourceRef) {
-      existingGroup.sourceRef = issue.sourceRef;
     }
 
     if (existingGroup.ownerName === '-' && issue.ownerName?.trim()) {
@@ -520,16 +514,6 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
       return;
     }
 
-    if (!groupedIssue.sourceRef) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.validationIssues.notifyDataOwner.sourceMissing',
-          defaultMessage: 'Unable to identify the source dataset.',
-        }),
-      );
-      return;
-    }
-
     setLoadingIssueKey(issueKey);
     try {
       const { upsertValidationIssueNotification } =
@@ -537,7 +521,6 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
       const result = await upsertValidationIssueNotification({
         recipientUserId: groupedIssue.ownerUserId,
         ref: groupedIssue.ref,
-        sourceRef: groupedIssue.sourceRef,
         link: groupedIssue.link,
         issues: groupedIssue.issues.map((issue) => ({
           code: issue.code,

@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(14);
+select plan(13);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -407,9 +407,6 @@ select is(
   (
     public.cmd_notification_send_validation_issue(
       '91000000-0000-0000-0000-000000000002',
-      'process data set',
-      '94000000-0000-0000-0000-000000000010',
-      '01.00.000',
       'source data set',
       '94000000-0000-0000-0000-000000000011',
       '01.00.000',
@@ -497,31 +494,7 @@ select is(
 select is(
   (
     public.cmd_notification_send_validation_issue(
-      '91000000-0000-0000-0000-000000000002',
-      'process data set',
-      '94000000-0000-0000-0000-000000000010',
-      '01.00.000',
-      'source data set',
-      '94000000-0000-0000-0000-000000000012',
-      '01.00.000',
-      null,
-      array['ruleVerificationFailed'],
-      array['processInformation'],
-      1,
-      '{}'::jsonb
-    ) ->> 'code'
-  ),
-  'SOURCE_DATASET_REF_MISMATCH',
-  'notification command rejects target datasets that are not referenced by the source dataset'
-);
-
-select is(
-  (
-    public.cmd_notification_send_validation_issue(
       '91000000-0000-0000-0000-000000000003',
-      'process data set',
-      '94000000-0000-0000-0000-000000000010',
-      '01.00.000',
       'source data set',
       '94000000-0000-0000-0000-000000000011',
       '01.00.000',
@@ -540,9 +513,6 @@ select is(
   (
     public.cmd_notification_send_validation_issue(
       '91000000-0000-0000-0000-000000000001',
-      'process data set',
-      '94000000-0000-0000-0000-000000000010',
-      '01.00.000',
       'source data set',
       '94000000-0000-0000-0000-000000000011',
       '01.00.000',
@@ -566,9 +536,6 @@ select is(
   (
     public.cmd_notification_send_validation_issue(
       '91000000-0000-0000-0000-000000000002',
-      'process data set',
-      '94000000-0000-0000-0000-000000000010',
-      '01.00.000',
       'source data set',
       '94000000-0000-0000-0000-000000000011',
       '01.00.000',
@@ -577,10 +544,10 @@ select is(
       array['processInformation'],
       1,
       '{}'::jsonb
-    ) ->> 'code'
+    ) ->> 'ok'
   ),
-  'SOURCE_DATASET_OWNER_REQUIRED',
-  'notification command requires the actor to own the source dataset'
+  'true',
+  'notification command no longer requires the actor to own a source dataset'
 );
 
 reset role;

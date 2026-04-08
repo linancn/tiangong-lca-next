@@ -25,12 +25,6 @@ jest.mock('@/services/general/api', () => ({
 
 import * as notificationsApi from '@/services/notifications/api';
 
-const SOURCE_REF = {
-  '@type': 'process data set',
-  '@refObjectId': 'source-process-1',
-  '@version': '01.00.000',
-} as const;
-
 describe('Notifications API service (src/services/notifications/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,7 +54,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
 
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'owner-1',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-1',
@@ -73,16 +66,11 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
       expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     });
 
-    it('returns failure when the source dataset reference is incomplete', async () => {
+    it('returns failure when the target dataset reference is incomplete', async () => {
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'owner-1',
-        sourceRef: {
-          '@type': '',
-          '@refObjectId': 'source-process-1',
-          '@version': '01.00.000',
-        },
         ref: {
-          '@type': 'process data set',
+          '@type': '',
           '@refObjectId': 'process-1',
           '@version': '01.00.000',
         },
@@ -96,7 +84,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
     it('returns failure when the sender and recipient are the same user', async () => {
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'sender-user-id',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-1',
@@ -117,7 +104,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
 
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: ' owner-1 ',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-1',
@@ -153,9 +139,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         },
         body: {
           recipientUserId: 'owner-1',
-          sourceDatasetType: 'process data set',
-          sourceDatasetId: 'source-process-1',
-          sourceDatasetVersion: '01.00.000',
           datasetType: 'process data set',
           datasetId: 'process-1',
           datasetVersion: '01.00.000',
@@ -177,7 +160,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
 
       await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: ' owner-1 ',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-1',
@@ -193,9 +175,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         },
         body: {
           recipientUserId: 'owner-1',
-          sourceDatasetType: 'process data set',
-          sourceDatasetId: 'source-process-1',
-          sourceDatasetVersion: '01.00.000',
           datasetType: 'process data set',
           datasetId: 'process-1',
           datasetVersion: '01.00.000',
@@ -223,7 +202,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
 
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'owner-1',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-1',
@@ -254,7 +232,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
 
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'owner-2',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-2',
@@ -289,7 +266,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
 
       const result = await notificationsApi.upsertValidationIssueNotification({
         recipientUserId: 'owner-2',
-        sourceRef: SOURCE_REF,
         ref: {
           '@type': 'process data set',
           '@refObjectId': 'process-2',
@@ -304,9 +280,6 @@ describe('Notifications API service (src/services/notifications/api.ts)', () => 
         },
         body: {
           recipientUserId: 'owner-2',
-          sourceDatasetType: 'process data set',
-          sourceDatasetId: 'source-process-1',
-          sourceDatasetVersion: '01.00.000',
           datasetType: 'process data set',
           datasetId: 'process-2',
           datasetVersion: '01.00.000',
