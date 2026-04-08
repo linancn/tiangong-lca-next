@@ -27,6 +27,10 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import {
+  extractContributeDataError,
+  getContributeDataErrorMessage,
+} from '@/components/ContributeData/utils';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -283,8 +287,11 @@ const TableList: FC = () => {
                             row.id,
                             row.version,
                           );
-                          if (contributeResult?.error) {
-                            console.log(contributeResult.error);
+                          const contributeError = extractContributeDataError(contributeResult);
+
+                          if (contributeError) {
+                            message.error(getContributeDataErrorMessage(intl, contributeError));
+                            console.log(contributeError);
                           } else {
                             message.success(
                               intl.formatMessage({

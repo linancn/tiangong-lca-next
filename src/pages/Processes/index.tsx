@@ -13,6 +13,10 @@ import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import {
+  extractContributeDataError,
+  getContributeDataErrorMessage,
+} from '@/components/ContributeData/utils';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
@@ -322,33 +326,21 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          if (row.modelId) {
-                            const { error: lifeCycleError } = await contributeLifeCycleModel(
-                              row.modelId,
-                              row.version,
-                            );
-                            if (lifeCycleError) {
-                              console.log(lifeCycleError);
-                            } else {
-                              message.success(
-                                intl.formatMessage({
-                                  id: 'component.contributeData.success',
-                                  defaultMessage: 'Contribute successfully',
-                                }),
-                              );
-                            }
+                          const contributeResult = row.modelId
+                            ? await contributeLifeCycleModel(row.modelId, row.version)
+                            : await contributeProcess(row.id, row.version);
+                          const contributeError = extractContributeDataError(contributeResult);
+
+                          if (contributeError) {
+                            message.error(getContributeDataErrorMessage(intl, contributeError));
+                            console.log(contributeError);
                           } else {
-                            const { error } = await contributeProcess(row.id, row.version);
-                            if (error) {
-                              console.log(error);
-                            } else {
-                              message.success(
-                                intl.formatMessage({
-                                  id: 'component.contributeData.success',
-                                  defaultMessage: 'Contribute successfully',
-                                }),
-                              );
-                            }
+                            message.success(
+                              intl.formatMessage({
+                                id: 'component.contributeData.success',
+                                defaultMessage: 'Contribute successfully',
+                              }),
+                            );
                           }
                           actionRef.current?.reload();
                         }}
