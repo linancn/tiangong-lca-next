@@ -877,6 +877,14 @@ describe('createLifeCycleModel', () => {
       { id: sampleProcessId, type: 'primary', finalId: {}, version: sampleVersion },
       { id: secondaryProcessId, type: 'secondary', finalId: {}, version: sampleVersion },
     ]);
+    expect(
+      mockGenLifeCycleModelProcesses.mock.calls[0][2].lifeCycleModelDataSet
+        .lifeCycleModelInformation.technology.processes.processInstance[0].connections,
+    ).toEqual([]);
+    expect(
+      body.parent.jsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+        .processInstance[0].connections,
+    ).toEqual([]);
     expect(body.parent.jsonTg.xflow.edges).toEqual([
       expect.objectContaining({
         labels: [],
@@ -1161,6 +1169,14 @@ describe('updateLifeCycleModel', () => {
     );
     expect(body.mode).toBe('update');
     expect(body.version).toBe(sampleVersion);
+    expect(
+      mockGenLifeCycleModelProcesses.mock.calls[0][2].lifeCycleModelDataSet
+        .lifeCycleModelInformation.technology.processes.processInstance[0].connections,
+    ).toEqual([]);
+    expect(
+      body.parent.jsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+        .processInstance[0].connections,
+    ).toEqual([]);
     expect(deleteMutation).toEqual({
       op: 'delete',
       id: 'old-secondary-delete',
