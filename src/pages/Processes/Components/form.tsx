@@ -633,9 +633,14 @@ export const ProcessForm: FC<Props> = ({
         >
           <LocationTextItemForm
             label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.location'
-                defaultMessage='Location'
+              <RequiredMark
+                showError={false}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.location'
+                    defaultMessage='Location'
+                  />
+                }
               />
             }
             name={[

@@ -1,27 +1,54 @@
-import type {
-  PostgrestError,
-  PostgrestResponse,
-  PostgrestSingleResponse,
-} from '@supabase/supabase-js';
+type SupabaseResponseBase = {
+  count: number | null;
+  status: number;
+  statusText: string;
+  success?: boolean;
+};
 
-export type SupabaseError = PostgrestError & {
+export type SupabaseError = {
+  code: string;
+  details: string;
+  hint: string;
+  message: string;
+  name?: string;
+  toJSON?: () => {
+    code: string;
+    details: string;
+    hint: string;
+    message: string;
+    name?: string;
+  };
   state_code?: number;
   review_state_code?: number;
 };
 
-export type SupabaseQueryResult<T> = Omit<PostgrestResponse<T>, 'error'> & {
-  error: SupabaseError | null;
+type SupabaseFailureResult = SupabaseResponseBase & {
+  data: null;
+  error: SupabaseError;
 };
 
-export type SupabaseMutationResult<T> = Omit<PostgrestResponse<T>, 'error'> & {
-  error: SupabaseError | null;
+type SupabaseQuerySuccessResult<T> = SupabaseResponseBase & {
+  data: T[];
+  error: null;
 };
 
-export type SupabaseSingleResult<T> = Omit<PostgrestSingleResponse<T>, 'error'> & {
-  error: SupabaseError | null;
+type SupabaseSingleSuccessResult<T> = SupabaseResponseBase & {
+  data: T;
+  error: null;
 };
 
-export type SupabaseDeleteResult = SupabaseSingleResult<null>;
+type SupabaseDeleteSuccessResult = SupabaseResponseBase & {
+  data: null;
+  error: null;
+};
+
+export type SupabaseQueryResult<T> = SupabaseQuerySuccessResult<T> | SupabaseFailureResult;
+
+export type SupabaseMutationResult<T> = SupabaseQueryResult<T>;
+
+export type SupabaseSingleResult<T> = SupabaseSingleSuccessResult<T> | SupabaseFailureResult;
+
+export type SupabaseDeleteResult = SupabaseDeleteSuccessResult | SupabaseFailureResult;
 
 export function normalizeDeleteCommandResult<Row extends Record<string, unknown>>(
   result: SupabaseMutationResult<Row>,
