@@ -124,7 +124,6 @@ export type ValidationIssueCode =
 export type ValidationIssue = {
   code: ValidationIssueCode;
   ref: refDataType;
-  sourceRef?: refDataType;
   link: string;
   ownerName?: string;
   ownerUserId?: string;
@@ -575,7 +574,6 @@ export const buildValidationIssues = ({
       code: 'sdkInvalid',
       link: getDatasetDetailUrl(rootRef),
       ref: rootRef,
-      sourceRef: rootRef,
       tabNames: sdkInvalidTabNames.filter(
         (tabName, index) => sdkInvalidTabNames.indexOf(tabName) === index,
       ),
@@ -587,7 +585,6 @@ export const buildValidationIssues = ({
       code: 'ruleVerificationFailed',
       link: getDatasetDetailUrl(ref),
       ref,
-      sourceRef: rootRef,
     });
   });
 
@@ -596,7 +593,6 @@ export const buildValidationIssues = ({
       code: 'nonExistentRef',
       link: getDatasetDetailUrl(ref),
       ref,
-      sourceRef: rootRef,
     });
   });
 
@@ -612,7 +608,6 @@ export const buildValidationIssues = ({
         code: 'versionIsInTg',
         link: getDatasetDetailUrl(ref),
         ref,
-        sourceRef: rootRef,
       });
       return;
     }
@@ -625,7 +620,6 @@ export const buildValidationIssues = ({
             : 'versionUnderReview',
         link: getDatasetDetailUrl(ref),
         ref,
-        sourceRef: rootRef,
         underReviewVersion: node.underReviewVersion,
       });
     }
