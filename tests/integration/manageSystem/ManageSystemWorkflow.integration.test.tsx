@@ -472,7 +472,7 @@ describe('ManageSystem workflows', () => {
     await confirmConfig.onOk?.();
 
     await waitFor(() => {
-      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1');
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1', 'member');
     });
 
     await waitFor(() => {
@@ -571,7 +571,7 @@ describe('ManageSystem workflows', () => {
     await confirmConfig.onOk?.();
 
     await waitFor(() => {
-      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1');
+      expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1', 'member');
     });
 
     expect(message.error).toHaveBeenCalledWith('Action failed!');

@@ -30,8 +30,7 @@ import {
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
   ReffPath,
-  updateReviewsAfterCheckData,
-  updateUnReviewToUnderReview,
+  submitDatasetReview,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 import {
@@ -53,7 +52,6 @@ import type {
 import { genLifeCycleModelJsonOrdered } from '@/services/lifeCycleModels/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
-import { v4 } from 'uuid';
 
 export type ToolbarEditInfoHandle = LifeCycleModelToolbarEditInfoHandle<refDataType>;
 
@@ -512,7 +510,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       return { checkResult: false, unReview, problemNodes };
     };
 
-    const submitReview = async (unReview: refDataType[]) => {
+    const submitReview = async () => {
       setSpinning(true);
       const currentModelDetail = modelDetailRef.current;
       if (!currentModelDetail) {
@@ -526,22 +524,23 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         return;
       }
 
-      const reviewId = v4();
-      const result = await updateReviewsAfterCheckData(
-        currentModelDetail.teamId ?? '',
-        {
-          id: data.id,
-          version: data.version,
-          name:
-            currentModelDetail.json?.lifeCycleModelDataSet?.lifeCycleModelInformation
-              ?.dataSetInformation?.name ?? {},
-        },
-        reviewId,
+      const result = await submitDatasetReview(
+        'lifecyclemodels',
+        currentModelDetail.id,
+        currentModelDetail.version,
       );
 
-      if (result?.error) return;
-
-      await updateUnReviewToUnderReview(unReview, reviewId);
+      if (result?.error) {
+        message.error(
+          result.error.message ||
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.review.submitError',
+              defaultMessage: 'Submit review failed',
+            }),
+        );
+        setSpinning(false);
+        return;
+      }
 
       message.success(
         intl.formatMessage({

@@ -6,12 +6,17 @@ import {
 import { getCurrentUser } from '@/services/auth';
 import {
   contributeSource,
+  createLegacyMutationRemovedError,
   getRefData,
+  invokeDatasetCommand,
   normalizeLangPayloadForSave,
-  resolveFunctionInvokeError,
 } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import {
+  normalizeDeleteCommandResult,
+  type SupabaseMutationResult,
+} from '@/services/supabase/data';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
@@ -39,7 +44,17 @@ const selectStr4Table = `
     team_id,
     user_id,
     model_id
-  `;
+`;
+
+type ProcessCommandRow = {
+  id?: string;
+  version?: string;
+  json?: { processDataSet?: any };
+  state_code?: number;
+  rule_verification?: boolean;
+};
+
+export type UpdateProcessResult = SupabaseMutationResult<ProcessCommandRow>;
 
 export type LcaMyProcessOption = {
   id: string;
@@ -179,14 +194,27 @@ export async function createProcess(id: string, data: any, modelId?: string) {
     newData,
     userTeamId,
   );
-  const result = await supabase
-    .from('processes')
-    .insert([{ id: id, json_ordered: newData, model_id: modelId, rule_verification }])
-    .select();
-  return result;
+  return invokeDatasetCommand<ProcessCommandRow>(
+    'app_dataset_create',
+    {
+      id,
+      table: 'processes',
+      jsonOrdered: newData,
+      modelId: modelId ?? null,
+      ruleVerification: rule_verification,
+    },
+    {
+      ruleVerification: rule_verification,
+    },
+  );
 }
 
-export async function updateProcess(id: string, version: string, data: any, modelId?: string) {
+export async function updateProcess(
+  id: string,
+  version: string,
+  data: any,
+  modelId?: string,
+): Promise<UpdateProcessResult | undefined> {
   const rawData = genProcessJsonOrdered(id, data);
   const normalizedResult = await normalizeLangPayloadForSave(rawData);
   const newData = normalizedResult?.payload ?? rawData;
@@ -212,46 +240,29 @@ export async function updateProcess(id: string, version: string, data: any, mode
     newData,
     userTeamId,
   );
-  const session = await supabase.auth.getSession();
-  if (!session.data.session) {
-    return undefined;
-  }
-  const result = await supabase.functions.invoke('update_data', {
-    headers: {
-      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-    },
-    body: {
+  return invokeDatasetCommand<ProcessCommandRow>(
+    'app_dataset_save_draft',
+    {
       id,
       version,
       table: 'processes',
-      data: { json_ordered: newData, model_id: modelId, rule_verification },
+      jsonOrdered: newData,
+      modelId,
+      ruleVerification: rule_verification,
     },
-    region: FunctionRegion.UsEast1,
-  });
-  if (result.error) {
-    console.error('updateProcess error', result.error);
-    return { error: await resolveFunctionInvokeError(result.error) };
-  }
-  return result?.data;
+    {
+      ruleVerification: rule_verification,
+    },
+  );
 }
 
 export async function updateProcessApi(id: string, version: string, data: any) {
-  let result: any = {};
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    result = await supabase.functions.invoke('update_data', {
-      headers: {
-        Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-      },
-      body: { id, version, table: 'processes', data },
-      region: FunctionRegion.UsEast1,
-    });
-  }
-  if (result.error) {
-    console.log('error', result.error);
-    return { error: await resolveFunctionInvokeError(result.error) };
-  }
-  return result?.data;
+  void id;
+  void version;
+  void data;
+  return {
+    error: createLegacyMutationRemovedError('updateProcessApi'),
+  };
 }
 
 export async function getProcessTableAll(
@@ -1323,8 +1334,12 @@ export async function getProcessDetail(id: string, version: string) {
 }
 
 export async function deleteProcess(id: string, version: string) {
-  const result = await supabase.from('processes').delete().eq('id', id).eq('version', version);
-  return result;
+  const result = await invokeDatasetCommand('app_dataset_delete', {
+    id,
+    version,
+    table: 'processes',
+  });
+  return normalizeDeleteCommandResult(result);
 }
 
 export async function getProcessExchange(

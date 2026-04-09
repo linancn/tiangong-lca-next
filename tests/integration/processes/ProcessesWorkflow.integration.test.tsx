@@ -288,6 +288,10 @@ jest.mock('@/services/teams/api', () => ({
   getTeamById: jest.fn(),
 }));
 
+jest.mock('@/services/general/api', () => ({
+  attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
+}));
+
 const { getProcessTableAll, getProcessTablePgroongaSearch, process_hybrid_search } =
   jest.requireMock('@/services/processes/api');
 const { getTeamById } = jest.requireMock('@/services/teams/api');

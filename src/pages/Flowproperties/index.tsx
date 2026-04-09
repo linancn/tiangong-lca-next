@@ -27,6 +27,10 @@ import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import {
+  extractContributeDataError,
+  getContributeDataErrorMessage,
+} from '@/components/ContributeData/utils';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
@@ -278,13 +282,16 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          const { error } = await contributeSource(
+                          const contributeResult = await contributeSource(
                             'flowproperties',
                             row.id,
                             row.version,
                           );
-                          if (error) {
-                            console.log(error);
+                          const contributeError = extractContributeDataError(contributeResult);
+
+                          if (contributeError) {
+                            message.error(getContributeDataErrorMessage(intl, contributeError));
+                            console.log(contributeError);
                           } else {
                             message.success(
                               intl.formatMessage({

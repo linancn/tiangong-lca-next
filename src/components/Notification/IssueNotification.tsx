@@ -1,5 +1,6 @@
 import { getNotifications } from '@/services/notifications/api';
 import type { NotificationListItem } from '@/services/notifications/data';
+import { normalizeNotificationLink } from '@/services/notifications/link';
 import { Button, Space, Table, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
@@ -243,15 +244,17 @@ const IssueNotification: React.FC<IssueNotificationProps> = ({ timeFilter, onDat
     {
       title: intl.formatMessage({ id: 'pages.review.table.actions', defaultMessage: 'Actions' }),
       key: 'actions',
-      render: (_, record) =>
-        record.link ? (
+      render: (_, record) => {
+        const safeLink = normalizeNotificationLink(record.link);
+
+        return safeLink ? (
           <Space>
             <Button
               type='link'
               size='small'
               style={{ color: token.colorPrimary }}
               onClick={() => {
-                window.open(record.link, '_blank', 'noopener,noreferrer');
+                window.open(safeLink, '_blank', 'noopener,noreferrer');
               }}
             >
               {intl.formatMessage({ id: 'pages.review.table.view', defaultMessage: 'View' })}
@@ -259,7 +262,8 @@ const IssueNotification: React.FC<IssueNotificationProps> = ({ timeFilter, onDat
           </Space>
         ) : (
           '-'
-        ),
+        );
+      },
     },
   ];
 

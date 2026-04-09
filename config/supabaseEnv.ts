@@ -1,0 +1,69 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseEnv } from 'node:util';
+
+const SUPABASE_FRONTEND_KEYS = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY'] as const;
+
+const SUPABASE_ENV_FILE_ORDER = {
+  dev: ['.env', '.env.development', '.env.local', '.env.development.local'],
+  main: ['.env', '.env.local'],
+} as const;
+
+type FrontendSupabaseTarget = keyof typeof SUPABASE_ENV_FILE_ORDER;
+type FrontendRuntimeEnv = string | false | undefined;
+
+type SupabaseFrontendEnv = Record<(typeof SUPABASE_FRONTEND_KEYS)[number], string | undefined>;
+
+const readMergedEnvFiles = (
+  rootDir: string,
+  files: readonly string[],
+): Record<string, string | undefined> => {
+  return files.reduce<Record<string, string | undefined>>((merged, file) => {
+    const filePath = join(rootDir, file);
+
+    if (!existsSync(filePath)) {
+      return merged;
+    }
+
+    return {
+      ...merged,
+      ...parseEnv(readFileSync(filePath, 'utf8')),
+    };
+  }, {});
+};
+
+export const resolveSupabaseFrontendTarget = (
+  appEnv: FrontendRuntimeEnv,
+): FrontendSupabaseTarget => {
+  return appEnv === 'dev' ? 'dev' : 'main';
+};
+
+export const getSupabaseFrontendEnv = (
+  rootDir: string,
+  appEnv: FrontendRuntimeEnv,
+): SupabaseFrontendEnv => {
+  const target = resolveSupabaseFrontendTarget(appEnv);
+  const env = readMergedEnvFiles(rootDir, SUPABASE_ENV_FILE_ORDER[target]);
+
+  return {
+    SUPABASE_URL: env.SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY: env.SUPABASE_PUBLISHABLE_KEY,
+  };
+};
+
+export const applySupabaseFrontendEnv = (
+  rootDir: string,
+  appEnv: FrontendRuntimeEnv,
+): SupabaseFrontendEnv => {
+  const env = getSupabaseFrontendEnv(rootDir, appEnv);
+
+  SUPABASE_FRONTEND_KEYS.forEach((key) => {
+    const value = env[key];
+
+    if (value) {
+      process.env[key] = value;
+    }
+  });
+
+  return env;
+};

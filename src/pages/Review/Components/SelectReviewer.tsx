@@ -1,14 +1,14 @@
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
-import { addCommentApi, getReviewerIdsByReviewId } from '@/services/comments/api';
+import { getReviewerIdsByReviewId } from '@/services/comments/api';
 import {
+  assignReviewersApi,
   getReviewerIdsApi,
   getReviewsDetail,
-  getReviewsDetailByReviewIds,
-  updateReviewApi,
+  saveReviewAssignmentDraftApi,
 } from '@/services/reviews/api';
+import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { getReviewMembersApi } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
-import { getUserId, getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -58,7 +58,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         case 'assigned': {
           const result = await getReviewerIdsByReviewId(reviewIds[0] as string);
           const keys = (result ?? [])
-            .filter((item: any) => item.state_code >= 0)
+            .filter((item: any) => isCurrentAssignedReviewerCommentState(item.state_code))
             .map((item: any) => item.reviewer_id);
           const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
           if (riviewDetail?.deadline) {
@@ -72,7 +72,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
       setSpinning(false);
     };
     init();
-  }, [drawerVisible]);
+  }, [drawerVisible, reviewIds, tabType]);
 
   const columns: ProColumns<TeamMemberTable>[] = [
     {
@@ -103,61 +103,12 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
     },
   ];
 
-  const addComment = async (data: any) => {
-    const { error } = await addCommentApi(data);
-    if (!error) {
-      setDrawerVisible(false);
-      actionRef.current?.reload();
-    }
-  };
-
   const handleTemporarySave = async () => {
     setSpinning(true);
     try {
-      const reviews = await getReviewsDetailByReviewIds(reviewIds);
+      const result = await saveReviewAssignmentDraftApi(reviewIds, selectedRowKeys.map(String));
 
-      if (!reviews || reviews.length === 0) {
-        console.error('未找到对应的review数据');
-        return;
-      }
-      const userId = await getUserId();
-      const user = await getUsersByIds([userId]);
-      const updatePromises = reviews.map(async (review: any) => {
-        if (review && review.id) {
-          const updatedJson = {
-            ...review.json,
-            logs: [
-              ...(review.json.logs ?? []),
-              {
-                action: 'assign_reviewers_temporary',
-                time: new Date(),
-                user: {
-                  id: userId,
-                  display_name: user?.[0]?.display_name,
-                },
-              },
-            ],
-          };
-
-          const { error } = await updateReviewApi([review.id], {
-            reviewer_id: selectedRowKeys,
-            json: updatedJson,
-          });
-
-          if (error) {
-            console.error(`更新review ${review.id} 失败:`, error);
-            throw error;
-          }
-
-          return { id: review.id, success: true };
-        }
-        return { id: review?.id, success: false };
-      });
-
-      const results = await Promise.all(updatePromises);
-      const successCount = results.filter((result: any) => result.success).length;
-
-      if (successCount === reviews.length) {
+      if (!result.error) {
         message.success(
           intl.formatMessage({
             id: 'pages.review.temporarySaveSuccess',
@@ -167,7 +118,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         setDrawerVisible(false);
         actionRef.current?.reload();
       } else {
-        throw new Error('部分保存成功，成功保存 ${successCount}/${reviews.length} 条记录');
+        throw result.error;
       }
     } catch (error) {
       console.error('临时保存失败:', error);
@@ -185,78 +136,32 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
   const handleSave = async () => {
     setSpinning(true);
     try {
-      const reviews = await getReviewsDetailByReviewIds(reviewIds);
+      const reviewerIds = Array.from(
+        new Set(
+          (tabType === 'unassigned'
+            ? selectedRowKeys
+            : [...defaultSelectedRowKeys.current, ...selectedRowKeys]
+          ).map(String),
+        ),
+      );
 
-      if (!reviews || reviews.length === 0) {
-        console.error('未找到对应的review数据');
-        return;
-      }
-      const userId = await getUserId();
-      const user = await getUsersByIds([userId]);
-      const commentData: any[] = [];
+      const result = await assignReviewersApi(
+        reviewIds,
+        reviewerIds,
+        reviewDeadline?.toISOString() ?? null,
+      );
 
-      const updatePromises = reviews.map(async (review: any) => {
-        if (review && review.id) {
-          const updatedJson = {
-            ...review.json,
-            logs: [
-              ...(review.json.logs ?? []),
-              {
-                action: 'assign_reviewers',
-                time: new Date(),
-                user: {
-                  id: userId,
-                  display_name: user?.[0]?.display_name,
-                },
-              },
-            ],
-          };
-
-          const { error, data } = await updateReviewApi([review.id], {
-            reviewer_id:
-              tabType === 'unassigned'
-                ? selectedRowKeys
-                : [...defaultSelectedRowKeys.current, ...selectedRowKeys],
-            state_code: 1,
-            json: updatedJson,
-            deadline: reviewDeadline?.toISOString(),
-          });
-
-          selectedRowKeys.forEach((userId) => {
-            commentData.push({
-              review_id: review.id,
-              reviewer_id: userId,
-              state_code: 0,
-            });
-          });
-
-          if (error) {
-            console.error(`更新review ${review.id} 失败:`, error);
-            throw error;
-          }
-
-          return { id: review.id, success: true, data };
-        }
-        return { id: review?.id, success: false };
-      });
-
-      const results = await Promise.all(updatePromises);
-      const successResults = results.filter((result: any) => result.success);
-      const successCount = successResults.length;
-
-      if (successCount === reviews.length) {
+      if (!result.error) {
         message.success(
           intl.formatMessage({
             id: 'pages.review.saveSuccess',
             defaultMessage: 'Save success',
           }),
         );
-
-        await addComment(commentData);
         setDrawerVisible(false);
         actionRef.current?.reload();
       } else {
-        throw new Error(`部分保存成功，成功保存 ${successCount}/${reviews.length} 条记录`);
+        throw result.error;
       }
     } catch (error) {
       console.error('保存失败:', error);

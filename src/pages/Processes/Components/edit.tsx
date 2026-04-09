@@ -12,8 +12,7 @@ import {
   getAllRefObj,
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
-  updateReviewsAfterCheckData,
-  updateUnReviewToUnderReview,
+  submitDatasetReview,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 
@@ -39,13 +38,13 @@ import {
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
+import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
-import { v4 } from 'uuid';
 import { ProcessForm } from './form';
 
 type TabKeysType = ProcessDataSetObjectKeys | 'validation' | 'complianceDeclarations';
@@ -60,6 +59,7 @@ type ProcessCheckTarget = FormProcessWithDatas & {
   stateCode: number;
   ruleVerification: boolean;
 };
+type HandleSubmitResult = Awaited<ReturnType<typeof updateProcess>>;
 type RefProblemNode = ProblemNode & {
   versionUnderReview?: boolean;
   underReviewVersion?: string;
@@ -396,7 +396,10 @@ const ProcessEdit: FC<Props> = ({
     return nextData;
   };
 
-  const handleSubmit = async (closeDrawer: boolean, options?: { silent?: boolean }) => {
+  const handleSubmit = async (
+    closeDrawer: boolean,
+    options?: { silent?: boolean },
+  ): Promise<HandleSubmitResult> => {
     const silent = options?.silent ?? false;
     if (closeDrawer) setSpinning(true);
     const currentData = getCurrentProcessData();
@@ -505,7 +508,7 @@ const ProcessEdit: FC<Props> = ({
     if (!closeDrawer) {
       return updateResult;
     }
-    return true;
+    return undefined;
   };
 
   const handleCheckData = async (
@@ -713,14 +716,23 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: false, unReview: [] as refDataType[] };
     }
+    const updatedProcess = updateResult.data?.[0];
+    if (
+      !updatedProcess?.id ||
+      !updatedProcess?.version ||
+      typeof updatedProcess.state_code !== 'number'
+    ) {
+      setSpinning(false);
+      return { checkResult: false, unReview: [] as refDataType[] };
+    }
     return handleCheckData(
       'checkData',
       {
-        id: updateResult.data[0]?.id,
-        version: updateResult.data[0]?.version,
-        ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
-        ruleVerification: updateResult.data[0]?.rule_verification,
-        stateCode: updateResult.data[0]?.state_code,
+        id: updatedProcess.id,
+        version: updatedProcess.version,
+        ...genProcessFromData(updatedProcess.json?.processDataSet),
+        ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
+        stateCode: updatedProcess.state_code,
       },
       { silent },
     );
@@ -740,33 +752,45 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return;
     }
-    if (!updateResult.data) {
+    if (!updateResult?.data) {
       setSpinning(false);
       return;
     }
-    const { checkResult, unReview } = await handleCheckData('review', {
-      id: updateResult.data[0]?.id,
-      version: updateResult.data[0]?.version,
-      ...genProcessFromData(updateResult.data[0]?.json?.processDataSet),
-      ruleVerification: updateResult.data[0]?.rule_verification,
-      stateCode: updateResult.data[0]?.state_code,
+    const updatedProcess = updateResult.data?.[0];
+    if (
+      !updatedProcess?.id ||
+      !updatedProcess?.version ||
+      typeof updatedProcess.state_code !== 'number'
+    ) {
+      setSpinning(false);
+      return;
+    }
+    const { checkResult } = await handleCheckData('review', {
+      id: updatedProcess.id,
+      version: updatedProcess.version,
+      ...genProcessFromData(updatedProcess.json?.processDataSet),
+      ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
+      stateCode: updatedProcess.state_code,
     });
 
     if (checkResult) {
       setSpinning(true);
-      const reviewId = v4();
-      const result = await updateReviewsAfterCheckData(
-        processDetail.teamId,
-        {
-          id,
-          version,
-          name:
-            processDetail?.json?.processDataSet?.processInformation?.dataSetInformation?.name ?? {},
-        },
-        reviewId,
+      const result = await submitDatasetReview(
+        'processes',
+        updatedProcess.id,
+        updatedProcess.version,
       );
-      if (result?.error) return;
-      await updateUnReviewToUnderReview(unReview, reviewId);
+      if (result?.error) {
+        message.error(
+          result.error.message ||
+            intl.formatMessage({
+              id: 'pages.process.review.submitError',
+              defaultMessage: 'Submit review failed',
+            }),
+        );
+        setSpinning(false);
+        return;
+      }
       message.success(
         intl.formatMessage({
           id: 'pages.process.review.submitSuccess',
@@ -1033,7 +1057,10 @@ const ProcessEdit: FC<Props> = ({
                   return [];
                 },
               }}
-              onFinish={() => handleSubmit(true)}
+              onFinish={async () => {
+                await handleSubmit(true);
+                return true;
+              }}
             >
               <ProcessForm
                 lang={lang}

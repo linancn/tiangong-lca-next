@@ -169,7 +169,11 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
                     }),
                     onOk: async () => {
                       try {
-                        const { error } = await delRoleApi(record.team_id, record.user_id);
+                        const { error } = await delRoleApi(
+                          record.team_id,
+                          record.user_id,
+                          record.role,
+                        );
                         if (error) {
                           message.error(
                             intl.formatMessage({

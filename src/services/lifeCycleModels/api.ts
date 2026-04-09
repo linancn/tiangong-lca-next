@@ -204,7 +204,7 @@ async function applyReferenceAwareRuleVerification(
 export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedCreateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
-  const newLifeCycleModelJsonOrdered =
+  const normalizedLifeCycleModelJsonOrdered =
     normalizedCreateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedCreateResult?.validationError;
   if (validationError) {
@@ -214,14 +214,14 @@ export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMut
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
-    newLifeCycleModelJsonOrdered,
+    normalizedLifeCycleModelJsonOrdered,
     [],
   );
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
     mode: 'create',
     modelId: data.id,
-    lifeCycleModelJsonOrdered: newLifeCycleModelJsonOrdered,
+    lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     nodes: data?.model?.nodes ?? [],
     edges: data?.model?.edges ?? [],
     up2DownEdges,
@@ -258,7 +258,7 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   const oldSubmodels = jsonToList(currentModelResult.data[0].submodels);
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedUpdateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
-  const newLifeCycleModelJsonOrdered =
+  const normalizedLifeCycleModelJsonOrdered =
     normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedUpdateResult?.validationError;
   if (validationError) {
@@ -268,7 +268,7 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
-    newLifeCycleModelJsonOrdered,
+    normalizedLifeCycleModelJsonOrdered,
     oldSubmodels,
   );
 
@@ -282,7 +282,7 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
     mode: 'update',
     modelId: data.id,
     version: data.version,
-    lifeCycleModelJsonOrdered: newLifeCycleModelJsonOrdered,
+    lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     nodes: data?.model?.nodes ?? [],
     edges: data?.model?.edges ?? [],
     up2DownEdges,

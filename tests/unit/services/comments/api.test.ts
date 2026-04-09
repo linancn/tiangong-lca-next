@@ -18,6 +18,8 @@ import {
   getReviewedComment,
   getReviewerIdsByReviewId,
   getUserManageComments,
+  saveReviewCommentDraftApi,
+  submitReviewCommentApi,
   updateCommentApi,
   updateCommentByreviewerApi,
 } from '@/services/comments/api';
@@ -38,6 +40,16 @@ jest.mock('@/services/users/api', () => ({
   getUserId: jest.fn(),
 }));
 
+jest.mock('@/services/general/api', () => ({
+  createLegacyMutationRemovedError: (boundary: string) => ({
+    message: 'Use explicit command endpoints instead',
+    code: 'LEGACY_ENDPOINT_REMOVED',
+    details: boundary,
+    hint: '',
+  }),
+  invokeDatasetCommand: jest.fn(),
+}));
+
 const {
   supabase: {
     from: mockFrom,
@@ -47,6 +59,8 @@ const {
 } = jest.requireMock('@/services/supabase');
 
 const { getUserId: mockGetUserId } = jest.requireMock('@/services/users/api');
+const { invokeDatasetCommand: mockInvokeDatasetCommand } =
+  jest.requireMock('@/services/general/api');
 
 const createPagedCommentsQueryBuilder = (resolvedValue: any) => {
   const builder: any = {
@@ -65,151 +79,112 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
     jest.clearAllMocks();
   });
 
+  describe('review workflow comment command wrappers', () => {
+    it('saves comment drafts through the review command boundary', async () => {
+      const commandResult = {
+        data: [{ comment: { review_id: 'review-123' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
+      mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+      const result = await saveReviewCommentDraftApi('review-123', { foo: 'bar' });
+
+      expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_review_save_comment_draft', {
+        reviewId: 'review-123',
+        json: { foo: 'bar' },
+      });
+      expect(result).toEqual(commandResult);
+    });
+
+    it('submits review comments and forwards reviewer reject state when provided', async () => {
+      const submitResult = {
+        data: [{ comment: { review_id: 'review-123' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
+      mockInvokeDatasetCommand
+        .mockResolvedValueOnce(submitResult)
+        .mockResolvedValueOnce(submitResult);
+
+      const defaultSubmit = await submitReviewCommentApi('review-123', { summary: 'ok' });
+      const rejectSubmit = await submitReviewCommentApi(
+        'review-123',
+        { comment: { message: 'reject' } },
+        -3,
+      );
+
+      expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'app_review_submit_comment', {
+        reviewId: 'review-123',
+        json: { summary: 'ok' },
+      });
+      expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(2, 'app_review_submit_comment', {
+        reviewId: 'review-123',
+        json: { comment: { message: 'reject' } },
+        commentState: -3,
+      });
+      expect(defaultSubmit).toEqual(submitResult);
+      expect(rejectSubmit).toEqual(submitResult);
+    });
+  });
+
   describe('addCommentApi', () => {
-    it('inserts a new comment and returns error status', async () => {
+    it('returns a structured deprecation error', async () => {
       const mockData = {
         review_id: 'review-123',
         reviewer_id: 'user-123',
         content: 'Test comment',
       };
 
-      const mockUpsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({ error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        upsert: mockUpsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
-
       const result = await addCommentApi(mockData);
 
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockUpsert).toHaveBeenCalledWith(mockData);
-      expect(result).toEqual({ error: null });
-    });
-
-    it('returns error when upsert fails', async () => {
-      const mockError = { message: 'Insert failed' };
-      const mockUpsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({ error: mockError });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        upsert: mockUpsert.mockReturnValue({
-          select: mockSelect,
-        }),
+      expect(mockFrom).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'addCommentApi',
+          hint: '',
+        },
       });
-
-      const result = await addCommentApi({});
-
-      expect(result).toEqual({ error: mockError });
     });
   });
 
   describe('updateCommentByreviewerApi', () => {
-    it('updates comment by reviewer and review IDs', async () => {
-      const mockUpdate = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockResolvedValue({ error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        update: mockUpdate.mockReturnValue({
-          eq: mockEq1.mockReturnValue({
-            eq: mockEq2,
-          }),
-        }),
-      });
-
+    it('returns a structured deprecation error', async () => {
       const result = await updateCommentByreviewerApi('review-123', 'user-123', {
         content: 'Updated',
       });
 
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockUpdate).toHaveBeenCalledWith({ content: 'Updated' });
-      expect(mockEq1).toHaveBeenCalledWith('reviewer_id', 'user-123');
-      expect(mockEq2).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(result).toEqual({ error: null });
+      expect(mockFrom).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'updateCommentByreviewerApi',
+          hint: '',
+        },
+      });
     });
   });
 
   describe('updateCommentApi', () => {
-    it('updates comment via edge function with valid session', async () => {
-      const mockSession = {
-        data: { session: { access_token: 'test-token' } },
-      };
-      const mockResult = { data: { success: true }, error: null };
-
-      (mockAuthGetSession as jest.Mock).mockResolvedValue(mockSession);
-      (mockFunctionsInvoke as jest.Mock).mockResolvedValue(mockResult);
-
+    it('returns a structured deprecation error without touching legacy edge handlers', async () => {
       const result = await updateCommentApi('review-123', { content: 'Updated' }, 'assigned');
 
-      expect(mockAuthGetSession).toHaveBeenCalledTimes(1);
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_comment', {
-        headers: {
-          Authorization: 'Bearer test-token',
-        },
-        body: {
-          id: 'review-123',
-          data: { content: 'Updated' },
-          tabType: 'assigned',
-        },
-        region: 'us-east-1',
-      });
-      expect(result).toEqual({ success: true });
-    });
-
-    it('returns undefined when session is not available', async () => {
-      (mockAuthGetSession as jest.Mock).mockResolvedValue({ data: { session: null } });
-
-      const result = await updateCommentApi('review-123', {}, 'review');
-
+      expect(mockAuthGetSession).not.toHaveBeenCalled();
       expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-      expect(result).toBeUndefined();
-    });
-
-    it('logs error when edge function fails', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      const mockSession = {
-        data: { session: { access_token: 'test-token' } },
-      };
-      const mockError = { message: 'Update failed' };
-
-      (mockAuthGetSession as jest.Mock).mockResolvedValue(mockSession);
-      (mockFunctionsInvoke as jest.Mock).mockResolvedValue({
-        error: mockError,
-        data: null,
-      });
-
-      const result = await updateCommentApi('review-123', {}, 'assigned');
-
-      expect(consoleSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toBeNull();
-
-      consoleSpy.mockRestore();
-    });
-
-    it('falls back to an empty bearer token when the session access token is missing', async () => {
-      (mockAuthGetSession as jest.Mock).mockResolvedValue({
-        data: { session: {} },
-      });
-      (mockFunctionsInvoke as jest.Mock).mockResolvedValue({
-        data: { success: true },
-        error: null,
-      });
-
-      await updateCommentApi('review-456', { content: 'Updated' }, 'admin-rejected');
-
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_comment', {
-        headers: {
-          Authorization: 'Bearer ',
+      expect(result).toEqual({
+        error: {
+          message: 'Use explicit command endpoints instead',
+          code: 'LEGACY_ENDPOINT_REMOVED',
+          details: 'updateCommentApi',
+          hint: '',
         },
-        body: {
-          id: 'review-456',
-          data: { content: 'Updated' },
-          tabType: 'admin-rejected',
-        },
-        region: 'us-east-1',
       });
     });
   });

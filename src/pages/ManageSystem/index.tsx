@@ -141,7 +141,11 @@ const ManageSystem = () => {
                       content: intl.formatMessage({ id: 'teams.members.deleteConfirm.content' }),
                       onOk: async () => {
                         try {
-                          const { error } = await delRoleApi(record.team_id, record.user_id);
+                          const { error } = await delRoleApi(
+                            record.team_id,
+                            record.user_id,
+                            record.role,
+                          );
                           if (error) {
                             message.error(
                               intl.formatMessage({

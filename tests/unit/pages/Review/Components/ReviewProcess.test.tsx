@@ -1,5 +1,5 @@
 // @ts-nocheck
-import ReviewProcessDetail, { getNewReviewJson } from '@/pages/Review/Components/reviewProcess';
+import ReviewProcessDetail from '@/pages/Review/Components/reviewProcess';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -13,7 +13,7 @@ const toText = (node: any): string => {
   return '';
 };
 
-jest.mock('@umijs/max', () => ({
+jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
@@ -26,6 +26,11 @@ jest.mock('@ant-design/icons', () => ({
   AuditOutlined: () => <span data-testid='icon-audit' />,
   CloseOutlined: () => <span data-testid='icon-close' />,
   ProfileOutlined: () => <span data-testid='icon-profile' />,
+}));
+
+jest.mock('@/style/custom.less', () => ({
+  __esModule: true,
+  default: { footer_right: 'footer-right' },
 }));
 
 let proFormApi: any;
@@ -42,7 +47,6 @@ jest.mock('antd', () => {
   );
 
   const Tooltip = ({ children }: any) => <>{children}</>;
-
   const Drawer = ({ open, children, footer, extra, title, getContainer, onClose }: any) =>
     open ? (
       <section data-testid='drawer'>
@@ -59,17 +63,14 @@ jest.mock('antd', () => {
       </section>
     ) : null;
 
-  const Space = ({ children }: any) => <div>{children}</div>;
-
-  const Spin = ({ spinning, children }: any) =>
-    spinning ? <div data-testid='spin'>{children}</div> : <>{children}</>;
-
-  const Input = (props: any) => <input {...props} />;
-
   const FormItem = ({ children }: any) => <div>{children}</div>;
-
   const FormComponent = ({ children }: any) => <div>{children}</div>;
   FormComponent.Item = FormItem;
+
+  const Input = (props: any) => <input {...props} />;
+  const Space = ({ children }: any) => <div>{children}</div>;
+  const Spin = ({ spinning, children }: any) =>
+    spinning ? <div data-testid='spin'>{children}</div> : <>{children}</>;
 
   const message = {
     success: jest.fn(),
@@ -84,7 +85,6 @@ jest.mock('antd', () => {
     Button,
     Drawer,
     Form: FormComponent,
-    FormItem,
     Input,
     Space,
     Spin,
@@ -102,22 +102,17 @@ const ProFormMock = ({ children, formRef, onFinish, onValuesChange, submitter }:
       getFieldsValue: jest.fn(),
     };
   }
-  proFormApi.submit.mockImplementation(async () => {
-    return await onFinish?.();
-  });
+
+  proFormApi.submit.mockImplementation(async () => onFinish?.());
   proFormApi.getFieldsValue.mockImplementation(() => proFormValues);
   const api = proFormApi;
   React.useImperativeHandle(formRef, () => api, [api]);
-  const submitterRender = submitter?.render?.();
-
-  const handleChange = (event: any) => {
-    onValuesChange?.({}, proFormValues);
-    event?.preventDefault?.();
-  };
 
   return (
     <form data-testid='proform' onSubmit={(event) => event.preventDefault()}>
-      <div onChange={handleChange}>{typeof children === 'function' ? children({}) : children}</div>
+      <div onChange={() => onValuesChange?.({}, proFormValues)}>
+        {typeof children === 'function' ? children({}) : children}
+      </div>
       <button
         type='button'
         data-testid='trigger-values-change'
@@ -125,7 +120,7 @@ const ProFormMock = ({ children, formRef, onFinish, onValuesChange, submitter }:
       >
         trigger-values-change
       </button>
-      <div data-testid='submitter-render'>{Array.isArray(submitterRender) ? 'array' : 'other'}</div>
+      <div data-testid='submitter-render'>{submitter?.render?.() ?? null}</div>
     </form>
   );
 };
@@ -147,16 +142,9 @@ jest.mock('@/pages/Review/Components/RejectReview', () => ({
 
 jest.mock('@/pages/Review/Components/reviewProcess/tabsDetail', () => ({
   __esModule: true,
-  TabsDetail: ({
-    onData,
-    onExchangeData,
-    onTabChange,
-    rejectedComments,
-    activeTabKey,
-    type,
-  }: any) => (
+  TabsDetail: ({ rejectedComments, onData, onExchangeData, onTabChange }: any) => (
     <div data-testid='tabs-detail'>
-      {JSON.stringify({ rejectedComments, activeTabKey, type })}
+      {JSON.stringify(rejectedComments)}
       <button type='button' data-testid='trigger-on-data' onClick={() => onData?.()}>
         trigger-on-data
       </button>
@@ -174,81 +162,48 @@ jest.mock('@/pages/Review/Components/reviewProcess/tabsDetail', () => ({
   ),
 }));
 
-const mockCheckReferences = jest.fn(() =>
-  Promise.resolve({
-    findProblemNodes: () => [],
-  }),
-);
+const mockCheckReferences = jest.fn();
 const mockGetAllRefObj = jest.fn(() => []);
-const mockGetRejectedComments = jest.fn(() => Promise.resolve([]));
-const mockUpdateUnReviewToUnderReview = jest.fn(() => Promise.resolve());
-const mockUpdateReviewDataToPublic = jest.fn(() => Promise.resolve());
+const mockGetRejectedComments = jest.fn();
+const mockReffPathFindProblemNodes = jest.fn(() => []);
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
-  updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
-  ReffPath: function () {
-    return { addChild: jest.fn(), findProblemNodes: () => [] };
-  },
-  updateReviewDataToPublic: (...args: any[]) => mockUpdateReviewDataToPublic(...args),
-  getRefTableName: jest.fn(() => 'processes'),
-  ConcurrencyController: jest.fn().mockImplementation(() => ({
-    add: jest.fn(async (fn: any) => fn()),
-    waitForAll: jest.fn(() => Promise.resolve()),
-  })),
   getRejectedComments: (...args: any[]) => mockGetRejectedComments(...args),
+  ReffPath: jest.fn().mockImplementation(() => ({
+    findProblemNodes: (...args: any[]) => mockReffPathFindProblemNodes(...args),
+  })),
 }));
 
 const mockGetCommentApi = jest.fn();
-const mockUpdateCommentApi = jest.fn();
+const mockSaveReviewCommentDraftApi = jest.fn();
+const mockSubmitReviewCommentApi = jest.fn();
 
 jest.mock('@/services/comments/api', () => ({
   __esModule: true,
   getCommentApi: (...args: any[]) => mockGetCommentApi(...args),
-  updateCommentApi: (...args: any[]) => mockUpdateCommentApi(...args),
+  saveReviewCommentDraftApi: (...args: any[]) => mockSaveReviewCommentDraftApi(...args),
+  submitReviewCommentApi: (...args: any[]) => mockSubmitReviewCommentApi(...args),
 }));
 
 const mockGetProcessDetail = jest.fn();
-const mockUpdateProcessApi = jest.fn();
-
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
-  updateProcessApi: (...args: any[]) => mockUpdateProcessApi(...args),
 }));
 
 const mockGenProcessFromData = jest.fn();
-
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
   genProcessFromData: (...args: any[]) => mockGenProcessFromData(...args),
 }));
 
-const mockGetReviewsDetail = jest.fn();
-const mockUpdateReviewApi = jest.fn();
-
-jest.mock('@/services/reviews/api', () => ({
-  __esModule: true,
-  getReviewsDetail: (...args: any[]) => mockGetReviewsDetail(...args),
-  updateReviewApi: (...args: any[]) => mockUpdateReviewApi(...args),
-}));
-
 const mockGetUserTeamId = jest.fn();
-
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
   getUserTeamId: (...args: any[]) => mockGetUserTeamId(...args),
-}));
-
-const mockGetUserId = jest.fn();
-const mockGetUsersByIds = jest.fn();
-
-jest.mock('@/services/users/api', () => ({
-  __esModule: true,
-  getUserId: (...args: any[]) => mockGetUserId(...args),
-  getUsersByIds: (...args: any[]) => mockGetUsersByIds(...args),
 }));
 
 const { message } = require('antd');
@@ -271,60 +226,41 @@ describe('ReviewProcessDetail component', () => {
     success: true,
   };
 
-  const assignedCommentData = [
-    {
-      review_id: 'review-1',
-      state_code: 1,
-      json: {
-        modellingAndValidation: {
-          validation: {
-            review: [
-              {
-                '@type': 'type',
-                'common:scope': [{ '@name': 'scope', 'common:method': { '@name': 'method' } }],
-                'common:reviewDetails': ['detail'],
-              },
-            ],
-          },
-          complianceDeclarations: {
-            compliance: [
-              {
-                key: 'ref',
-                'common:referenceToComplianceSystem': { '@refObjectId': 'sys' },
-                foo: 'bar',
-              },
-            ],
-          },
-        },
-      },
-    },
-  ];
-
   beforeEach(() => {
     jest.clearAllMocks();
     proFormApi = null;
-    proFormValues = {};
+    proFormValues = {
+      modellingAndValidation: {
+        validation: { review: [] },
+        complianceDeclarations: { compliance: [] },
+      },
+    };
     mockGetProcessDetail.mockResolvedValue(baseProcessDetail);
+    mockGetCommentApi.mockResolvedValue({ data: [], error: null });
+    mockGetRejectedComments.mockResolvedValue([]);
     mockGenProcessFromData.mockReturnValue({
       processInformation: {},
       exchanges: { exchange: [] },
+      modellingAndValidation: {
+        validation: { review: [] },
+        complianceDeclarations: { compliance: [] },
+      },
     });
-    mockGetCommentApi.mockResolvedValue({ data: assignedCommentData, error: null });
-    mockUpdateCommentApi.mockResolvedValue({ error: null });
-    mockUpdateProcessApi.mockResolvedValue({ success: true });
-    mockUpdateReviewApi.mockResolvedValue({ error: null });
+    mockCheckReferences.mockResolvedValue({
+      findProblemNodes: () => [],
+    });
+    mockGetAllRefObj.mockReturnValue([]);
+    mockReffPathFindProblemNodes.mockReturnValue([]);
+    mockSaveReviewCommentDraftApi.mockResolvedValue({ data: [{}], error: null });
+    mockSubmitReviewCommentApi.mockResolvedValue({ data: [{}], error: null });
     mockGetUserTeamId.mockResolvedValue('team-1');
-    mockGetUserId.mockResolvedValue('user-1');
-    mockGetUsersByIds.mockResolvedValue([{ id: 'user-1', display_name: 'Reviewer' }]);
-    mockGetReviewsDetail.mockResolvedValue({ json: { logs: [] } });
-    mockGetRejectedComments.mockResolvedValue([]);
-    mockUpdateReviewDataToPublic.mockResolvedValue(undefined);
     message.success.mockReset();
     message.error.mockReset();
   });
 
-  const renderComponent = (props: any) => {
+  const renderComponent = (props: any = {}) => {
     const actionRef = props.actionRef ?? { current: { reload: jest.fn() } };
+
     render(
       <ReviewProcessDetail
         id='process-1'
@@ -332,93 +268,68 @@ describe('ReviewProcessDetail component', () => {
         version='01'
         lang='en'
         actionRef={actionRef}
+        type='edit'
+        tabType='review'
         {...props}
       />,
     );
+
     return { actionRef };
   };
 
-  it('builds review json logs with the current user context', async () => {
-    const result = await getNewReviewJson('submit_comments', 'review-1');
+  it('temporarily saves review comment drafts through the comment command boundary', async () => {
+    const { actionRef } = renderComponent();
 
-    expect(mockGetUserId).toHaveBeenCalled();
-    expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-1']);
-    expect(mockGetReviewsDetail).toHaveBeenCalledWith('review-1');
-    expect(result.logs).toHaveLength(1);
-    expect(result.logs[0]).toEqual(
-      expect.objectContaining({
-        action: 'submit_comments',
-        user: {
-          id: 'user-1',
-          display_name: 'Reviewer',
-        },
-      }),
-    );
-  });
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '01'));
 
-  it('builds review json logs when previous logs are missing', async () => {
-    mockGetReviewsDetail.mockResolvedValueOnce({ json: {} });
-
-    const result = await getNewReviewJson('submit_comments', 'review-1');
-
-    expect(result.logs).toHaveLength(1);
-    expect(result.logs[0]).toEqual(
-      expect.objectContaining({
-        action: 'submit_comments',
-      }),
-    );
-  });
-
-  it('submits review form when reviewer saves', async () => {
-    mockCheckReferences.mockResolvedValue({
-      findProblemNodes: () => [],
-    });
-    mockGetAllRefObj.mockReturnValue([]);
-    proFormValues = {
-      modellingAndValidation: {
-        validation: { review: [] },
-        complianceDeclarations: { compliance: [] },
-      },
-    };
-
-    renderComponent({ type: 'edit', tabType: 'review' });
-
-    const [openButton] = screen.getAllByRole('button');
-    fireEvent.click(openButton);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-    await waitFor(() => expect(proFormApi).not.toBeNull());
-
-    const saveButton = screen.getByRole('button', { name: 'Save' });
     await act(async () => {
-      fireEvent.click(saveButton);
+      fireEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
     });
 
-    await waitFor(() =>
-      expect(mockUpdateCommentApi).toHaveBeenCalledWith(
-        'review-1',
-        expect.objectContaining({
-          json: expect.objectContaining({
-            modellingAndValidation: expect.any(Object),
-          }),
-          state_code: 1,
-        }),
-        'review',
-      ),
-    );
-    expect(mockUpdateReviewApi).toHaveBeenCalled();
-    await waitFor(() =>
-      expect(message.success).toHaveBeenCalledWith('Review submitted successfully'),
-    );
+    expect(mockSaveReviewCommentDraftApi).toHaveBeenCalledWith('review-1', {
+      modellingAndValidation: {
+        complianceDeclarations: { compliance: [] },
+        validation: { review: [] },
+      },
+    });
+    expect(message.success).toHaveBeenCalledWith('Temporary save successfully');
+    expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
-  it('temporarily saves review comments and refreshes the parent table', async () => {
+  it('tracks tab-level form and exchange callbacks from TabsDetail', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
     proFormValues = {
-      modellingAndValidation: {
-        validation: { review: [{ '@type': 'peer-review' }] },
-        complianceDeclarations: { compliance: [{ foo: 'bar' }] },
+      processInformation: {
+        name: 'updated-name',
       },
     };
-    const { actionRef } = renderComponent({ type: 'edit', tabType: 'review' });
+
+    fireEvent.click(screen.getByText('switch-tab'));
+    fireEvent.click(screen.getByTestId('trigger-on-data'));
+
+    await waitFor(() => expect(proFormApi.getFieldsValue).toHaveBeenCalled());
+
+    proFormValues = {};
+    fireEvent.click(screen.getByTestId('trigger-on-data'));
+    fireEvent.click(screen.getByTestId('trigger-on-exchange-data'));
+    fireEvent.click(screen.getByTestId('trigger-values-change'));
+
+    expect(screen.getByTestId('tabs-detail')).toBeInTheDocument();
+  });
+
+  it('logs temporary save failures from the draft command', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockSaveReviewCommentDraftApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('draft failed'),
+    });
+
+    renderComponent();
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
@@ -427,140 +338,13 @@ describe('ReviewProcessDetail component', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
     });
 
-    await waitFor(() =>
-      expect(mockUpdateCommentApi).toHaveBeenCalledWith(
-        'review-1',
-        {
-          json: {
-            modellingAndValidation: {
-              validation: { review: [{ '@type': 'peer-review' }] },
-              complianceDeclarations: { compliance: [{ foo: 'bar' }] },
-            },
-          },
-        },
-        'review',
-      ),
-    );
-    expect(mockUpdateReviewApi).toHaveBeenCalledWith(
-      ['review-1'],
-      expect.objectContaining({
-        json: expect.objectContaining({
-          logs: expect.any(Array),
-        }),
-      }),
-    );
-    await waitFor(() =>
-      expect(message.success).toHaveBeenCalledWith('Temporary save successfully'),
-    );
-    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(message.success).not.toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    consoleSpy.mockRestore();
   });
 
-  it('logs an error when temporary save cannot update the review log', async () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    proFormValues = {
-      modellingAndValidation: {
-        validation: { review: [] },
-        complianceDeclarations: { compliance: [] },
-      },
-    };
-    mockUpdateReviewApi.mockResolvedValueOnce({ error: new Error('temporary save failed') });
-
-    renderComponent({ type: 'edit', tabType: 'review' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
-    });
-
-    await waitFor(() => expect(errorSpy).toHaveBeenCalled());
-    expect(message.success).not.toHaveBeenCalledWith('Temporary save successfully');
-    errorSpy.mockRestore();
-  });
-
-  it('rejects a review with the provided reason and reloads the parent table', async () => {
-    const { actionRef } = renderComponent({ type: 'edit', tabType: 'review' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
-    });
-
-    await waitFor(() =>
-      expect(mockUpdateCommentApi).toHaveBeenCalledWith(
-        'review-1',
-        {
-          json: expect.objectContaining({
-            modellingAndValidation: expect.any(Object),
-            comment: { message: 'Need more evidence' },
-          }),
-          state_code: -3,
-        },
-        'review',
-      ),
-    );
-    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
-    expect(actionRef.current.reload).toHaveBeenCalled();
-  });
-
-  it('does nothing when reject is triggered without an existing comment record', async () => {
-    renderComponent({ type: 'edit', tabType: 'review' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-    mockGetCommentApi.mockResolvedValueOnce({ data: null });
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
-    });
-
-    await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalledTimes(2));
-    expect(mockUpdateCommentApi).not.toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ state_code: -3 }),
-      'review',
-    );
-    expect(message.success).not.toHaveBeenCalledWith('Rejected successfully!');
-  });
-
-  it('shows an error message when reject fails unexpectedly', async () => {
-    renderComponent({ type: 'edit', tabType: 'review' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-    mockGetCommentApi.mockRejectedValueOnce(new Error('reject failed'));
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
-    });
-
-    await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith('Failed to reject, please try again!'),
-    );
-  });
-
-  it('stops submission when reference checking returns problem nodes', async () => {
-    proFormValues = {
-      modellingAndValidation: {
-        validation: { review: [] },
-        complianceDeclarations: { compliance: [] },
-      },
-    };
-    mockCheckReferences.mockResolvedValue({
-      findProblemNodes: () => [
-        {
-          '@refObjectId': 'ref-1',
-          '@version': '1.0.0',
-          ruleVerification: true,
-          nonExistent: false,
-        },
-      ],
-    });
-
-    renderComponent({ type: 'edit', tabType: 'review' });
+  it('submits review comments through the command boundary when reference checks pass', async () => {
+    const { actionRef } = renderComponent();
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
@@ -569,22 +353,86 @@ describe('ReviewProcessDetail component', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
-    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
-    expect(mockUpdateCommentApi).not.toHaveBeenCalledWith(
-      'review-1',
-      expect.objectContaining({ state_code: 1 }),
-      'review',
-    );
-    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockGetAllRefObj).toHaveBeenCalled();
+    expect(mockGetUserTeamId).toHaveBeenCalled();
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledWith('review-1', {
+      modellingAndValidation: {
+        complianceDeclarations: { compliance: [] },
+        validation: { review: [] },
+      },
+    });
+    expect(message.success).toHaveBeenCalledWith('Review submitted successfully');
+    expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
-  it('stops submission when references are already under review', async () => {
+  it('supports header close and drawer onClose dismissal paths', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-audit').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('icon-close').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('icon-audit').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('drawer-on-close'));
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+  });
+
+  it('logs submit failures when review submission throws', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockSubmitReviewCommentApi.mockRejectedValueOnce(new Error('submit failed'));
+
+    renderComponent();
+
+    fireEvent.click(screen.getByTestId('icon-audit').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error)));
+    consoleSpy.mockRestore();
+  });
+
+  it('submits reviewer rejections with the reviewer-rejected state', async () => {
+    const { actionRef } = renderComponent();
+
     proFormValues = {
       modellingAndValidation: {
-        validation: { review: [] },
-        complianceDeclarations: { compliance: [] },
+        validation: { review: [{ id: 'review-item' }] },
+        complianceDeclarations: { compliance: [{ id: 'compliance-item' }] },
       },
     };
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
+    });
+
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledWith(
+      'review-1',
+      {
+        modellingAndValidation: {
+          complianceDeclarations: { compliance: [{ id: 'compliance-item' }] },
+          validation: { review: [{ id: 'review-item' }] },
+        },
+        comment: {
+          message: 'Need more evidence',
+        },
+      },
+      -3,
+    );
+    expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('blocks submission when reference checking reports under-review dependencies', async () => {
     mockCheckReferences.mockImplementation(async (...args: any[]) => {
       args[4].push({
         '@refObjectId': 'ref-2',
@@ -595,7 +443,7 @@ describe('ReviewProcessDetail component', () => {
       };
     });
 
-    renderComponent({ type: 'edit', tabType: 'review' });
+    renderComponent();
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
@@ -604,92 +452,325 @@ describe('ReviewProcessDetail component', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
-    await waitFor(() => expect(mockCheckReferences).toHaveBeenCalled());
-    expect(mockUpdateCommentApi).not.toHaveBeenCalledWith(
-      'review-1',
-      expect.objectContaining({ state_code: 1 }),
-      'review',
-    );
-    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockSubmitReviewCommentApi).not.toHaveBeenCalled();
+    expect(screen.getByTestId('drawer')).toBeInTheDocument();
   });
 
-  it('submits review when reference checking returns no path object', async () => {
-    proFormValues = {
-      modellingAndValidation: {
-        validation: { review: [] },
-        complianceDeclarations: { compliance: [] },
-      },
-    };
-    mockCheckReferences.mockResolvedValueOnce(null);
-
-    renderComponent({ type: 'edit', tabType: 'review' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    });
-
-    await waitFor(() =>
-      expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalledWith([], 'review-1'),
-    );
-    expect(mockUpdateCommentApi).toHaveBeenCalledWith(
-      'review-1',
-      expect.objectContaining({ state_code: 1 }),
-      'review',
-    );
-  });
-
-  it('logs save errors when the review comment update throws', async () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    proFormValues = {
-      modellingAndValidation: {
-        validation: { review: [] },
-        complianceDeclarations: { compliance: [] },
-      },
-    };
-    mockCheckReferences.mockResolvedValueOnce(null);
-    mockUpdateCommentApi.mockRejectedValueOnce(new Error('save failed'));
-
-    renderComponent({ type: 'edit', tabType: 'review' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    });
-
-    await waitFor(() => expect(errorSpy).toHaveBeenCalled());
-    errorSpy.mockRestore();
-  });
-
-  it('seeds default review data for empty review comments and loads rejected comments', async () => {
-    mockGetCommentApi.mockResolvedValue({
-      data: [{ review_id: 'review-1' }],
-      error: null,
-    });
+  it('loads rejected comments for under-review processes', async () => {
     mockGetRejectedComments.mockResolvedValue([{ message: 'Needs revision' }]);
 
-    renderComponent({ type: 'edit', tabType: 'review' });
+    renderComponent();
 
     fireEvent.click(screen.getAllByRole('button')[0]);
 
     await waitFor(() => expect(mockGetRejectedComments).toHaveBeenCalledWith('process-1', '01'));
+    expect(screen.getByTestId('tabs-detail')).toHaveTextContent('Needs revision');
+  });
+
+  it('merges review defaults and saved reviewer comments before hydrating the form', async () => {
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        { json: null },
+        {
+          json: {
+            modellingAndValidation: {
+              validation: {
+                review: [{ id: 'review-comment-1' }],
+              },
+              complianceDeclarations: {
+                compliance: [{ id: 'compliance-comment-1' }],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({ tabType: 'review' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
     await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
 
-    const processData = mockGenProcessFromData.mock.calls[0][0];
-    expect(processData.modellingAndValidation.complianceDeclarations.compliance).toHaveLength(5);
-    expect(processData.modellingAndValidation.validation.review).toEqual([
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([
+      { id: 'review-comment-1' },
+    ]);
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual(
+      expect.arrayContaining([
+        { id: 'compliance-comment-1' },
+        expect.objectContaining({
+          'common:referenceToComplianceSystem': expect.any(Object),
+        }),
+      ]),
+    );
+  });
+
+  it('uses fallback review and compliance placeholders for reviewer-rejected records with sparse comments', async () => {
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [{ json: {} }],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({
+      tabType: 'reviewer-rejected',
+      type: 'edit',
+    });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([{}]);
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([
       {
         'common:scope': [{ '@name': undefined }],
       },
     ]);
-    expect(screen.getByTestId('tabs-detail')).toHaveTextContent('Needs revision');
   });
 
-  it('opens in view mode without reviewer action footer controls', async () => {
+  it('merges assigned comments into existing review arrays', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      ...baseProcessDetail,
+      data: {
+        ...baseProcessDetail.data,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: {
+                review: [{ id: 'existing-review' }],
+              },
+              complianceDeclarations: {
+                compliance: [{ id: 'existing-compliance' }],
+              },
+            },
+          },
+        },
+      },
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: {
+                review: [{ id: 'comment-review' }],
+              },
+              complianceDeclarations: {
+                compliance: [{ id: 'comment-compliance' }],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({ tabType: 'assigned' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'existing-compliance' },
+      { id: 'comment-compliance' },
+    ]);
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([
+      { id: 'existing-review' },
+      { id: 'comment-review' },
+    ]);
+  });
+
+  it('merges assigned comments into existing review objects', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      ...baseProcessDetail,
+      data: {
+        ...baseProcessDetail.data,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: {
+                review: { id: 'existing-review' },
+              },
+              complianceDeclarations: {
+                compliance: { id: 'existing-compliance' },
+              },
+            },
+          },
+        },
+      },
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: {
+                review: [{ id: 'comment-review' }],
+              },
+              complianceDeclarations: {
+                compliance: [{ id: 'comment-compliance' }],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({ tabType: 'assigned' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'existing-compliance' },
+      { id: 'comment-compliance' },
+    ]);
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([
+      { id: 'existing-review' },
+      { id: 'comment-review' },
+    ]);
+  });
+
+  it('falls back to comment arrays when assigned rows have no existing review payload', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      ...baseProcessDetail,
+      data: {
+        ...baseProcessDetail.data,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: {},
+              complianceDeclarations: {},
+            },
+          },
+        },
+      },
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: {
+                review: [{ id: 'comment-review' }],
+              },
+              complianceDeclarations: {
+                compliance: [{ id: 'comment-compliance' }],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({ tabType: 'assigned' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'comment-compliance' },
+    ]);
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([{ id: 'comment-review' }]);
+  });
+
+  it('handles sparse process detail payloads and skips rejected-comment loading for published rows', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {
+        id: 'process-1',
+        version: '01',
+        stateCode: 100,
+        json: {},
+      },
+      success: true,
+    });
+    mockGenProcessFromData.mockReturnValue({});
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalledWith({}));
+    expect(mockGetRejectedComments).not.toHaveBeenCalled();
+  });
+
+  it('submits when reference checks return no path object', async () => {
+    mockCheckReferences.mockResolvedValueOnce(undefined);
+    const { actionRef } = renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledWith('review-1', {
+      modellingAndValidation: {
+        complianceDeclarations: { compliance: [] },
+        validation: { review: [] },
+      },
+    });
+    expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('blocks submission when problem nodes are returned without under-review refs', async () => {
+    mockCheckReferences.mockResolvedValueOnce({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'ref-3',
+          '@version': '3.0.0',
+          ruleVerification: false,
+          nonExistent: true,
+        },
+      ],
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockSubmitReviewCommentApi).not.toHaveBeenCalled();
+    expect(screen.getByTestId('drawer')).toBeInTheDocument();
+  });
+
+  it('shows a reject error when reviewer rejection submission throws', async () => {
+    mockSubmitReviewCommentApi.mockRejectedValueOnce(new Error('reject failed'));
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Failed to reject, please try again!');
+  });
+
+  it('opens in view mode without review footer actions', async () => {
     renderComponent({ type: 'view', tabType: 'assigned' });
 
     fireEvent.click(screen.getAllByRole('button')[0]);
@@ -701,106 +782,82 @@ describe('ReviewProcessDetail component', () => {
     expect(screen.queryByRole('button', { name: 'Reject Stub' })).not.toBeInTheDocument();
   });
 
-  it('merges object-based assigned comments, handles tab callbacks, and supports both close paths', async () => {
+  it('merges saved review data and default compliance templates when opening review mode', async () => {
     mockGetProcessDetail.mockResolvedValueOnce({
       data: {
-        ...baseProcessDetail.data,
+        id: 'process-1',
+        version: '01',
         stateCode: 100,
         json: {
           processDataSet: {
             modellingAndValidation: {
-              complianceDeclarations: { compliance: { existingCompliance: true } },
-              validation: { review: { existingReview: true } },
+              validation: { review: [{ id: 'existing-review' }] },
+              complianceDeclarations: { compliance: [{ id: 'existing-compliance' }] },
             },
           },
         },
       },
       success: true,
     });
-    proFormValues = {
-      processInformation: { changed: true },
-      exchanges: { exchange: [{ id: 'exchange-1' }] },
-    };
-
-    renderComponent({ type: 'edit', tabType: 'assigned' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-    await waitFor(() => expect(proFormApi).not.toBeNull());
-    await waitFor(() => expect(proFormApi.setFieldsValue).toHaveBeenCalled());
-
-    const mergedData = mockGenProcessFromData.mock.calls[0][0];
-    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([
-      { existingCompliance: true },
-      ...assignedCommentData[0].json.modellingAndValidation.complianceDeclarations.compliance,
-    ]);
-    expect(mergedData.modellingAndValidation.validation.review).toEqual([
-      { existingReview: true },
-      ...assignedCommentData[0].json.modellingAndValidation.validation.review,
-    ]);
-    expect(mockGetRejectedComments).not.toHaveBeenCalled();
-    expect(screen.getByTestId('drawer-container')).toHaveTextContent('body');
-
-    fireEvent.click(screen.getByTestId('trigger-on-data'));
-    expect(proFormApi.getFieldsValue).toHaveBeenCalled();
-
-    fireEvent.click(screen.getByTestId('trigger-values-change'));
-    fireEvent.click(screen.getByRole('button', { name: 'switch-tab' }));
-    proFormValues = {};
-    fireEvent.click(screen.getByTestId('trigger-values-change'));
-    fireEvent.click(screen.getByTestId('trigger-on-data'));
-    fireEvent.click(screen.getByTestId('trigger-on-exchange-data'));
-
-    fireEvent.click(screen.getByTestId('icon-close').closest('button') as HTMLButtonElement);
-    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
-    fireEvent.click(screen.getByTestId('drawer-on-close'));
-    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
-  });
-
-  it('merges assigned comments when base review data is missing', async () => {
-    mockGetProcessDetail.mockResolvedValueOnce({
-      data: {
-        ...baseProcessDetail.data,
-        stateCode: 120,
-        json: {
-          processDataSet: {
-            modellingAndValidation: {
-              complianceDeclarations: {},
-              validation: {},
-            },
-          },
-        },
-      },
-      success: true,
-    });
-
-    renderComponent({ type: 'view', tabType: 'assigned' });
-
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
-
-    const mergedData = mockGenProcessFromData.mock.calls[0][0];
-    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual(
-      assignedCommentData[0].json.modellingAndValidation.complianceDeclarations.compliance,
-    );
-    expect(mergedData.modellingAndValidation.validation.review).toEqual(
-      assignedCommentData[0].json.modellingAndValidation.validation.review,
-    );
-  });
-
-  it('uses placeholder compliance data when reviewer comments have no compliance section', async () => {
     mockGetCommentApi.mockResolvedValueOnce({
       data: [
         {
-          review_id: 'review-1',
           json: {
             modellingAndValidation: {
-              validation: {
-                review: [],
-              },
+              validation: { review: [{ id: 'saved-review' }] },
+              complianceDeclarations: { compliance: [{ id: 'saved-compliance' }] },
+            },
+          },
+        },
+        {
+          json: null,
+        },
+      ],
+      error: null,
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const merged = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(merged.modellingAndValidation.validation.review).toEqual([{ id: 'saved-review' }]);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toHaveLength(6);
+    expect(proFormApi.resetFields).toHaveBeenCalled();
+    expect(proFormApi.setFieldsValue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'process-1',
+      }),
+    );
+    expect(mockGetRejectedComments).not.toHaveBeenCalled();
+  });
+
+  it('merges persisted review data into non-review tabs instead of replacing it', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {
+        id: 'process-1',
+        version: '01',
+        stateCode: 100,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: { review: { id: 'existing-review' } },
+              complianceDeclarations: { compliance: { id: 'existing-compliance' } },
+            },
+          },
+        },
+      },
+      success: true,
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: { review: [{ id: 'saved-review' }] },
+              complianceDeclarations: { compliance: [{ id: 'saved-compliance' }] },
             },
           },
         },
@@ -808,37 +865,341 @@ describe('ReviewProcessDetail component', () => {
       error: null,
     });
 
-    renderComponent({ type: 'edit', tabType: 'reviewer-rejected' });
+    renderComponent({ type: 'view', tabType: 'assigned' });
 
     fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
 
-    const mergedData = mockGenProcessFromData.mock.calls[0][0];
-    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([{}]);
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const merged = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(merged.modellingAndValidation.validation.review).toEqual([
+      { id: 'existing-review' },
+      { id: 'saved-review' },
+    ]);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'existing-compliance' },
+      { id: 'saved-compliance' },
+    ]);
   });
 
-  it('falls back to empty process data and exchange arrays for sparse process payloads', async () => {
+  it('falls back to default review and compliance placeholders when saved review comments are empty', async () => {
     mockGetProcessDetail.mockResolvedValueOnce({
       data: {
         id: 'process-1',
         version: '01',
-        stateCode: 120,
-        json: {},
+        stateCode: 100,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: { review: [] },
+              complianceDeclarations: { compliance: [] },
+            },
+          },
+        },
       },
       success: true,
     });
-    mockGetCommentApi.mockResolvedValueOnce({ data: [], error: null });
-    mockGenProcessFromData.mockReturnValueOnce({});
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: { review: [] },
+              complianceDeclarations: { compliance: [] },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const merged = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(merged.modellingAndValidation.validation.review).toEqual([
+      {
+        'common:scope': [{ '@name': undefined }],
+      },
+    ]);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toEqual([{}]);
+  });
+
+  it('merges persisted review arrays into existing non-review arrays', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {
+        id: 'process-1',
+        version: '01',
+        stateCode: 100,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: { review: [{ id: 'existing-review' }] },
+              complianceDeclarations: { compliance: [{ id: 'existing-compliance' }] },
+            },
+          },
+        },
+      },
+      success: true,
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: { review: [{ id: 'saved-review' }] },
+              complianceDeclarations: { compliance: [{ id: 'saved-compliance' }] },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
 
     renderComponent({ type: 'view', tabType: 'assigned' });
 
     fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalledWith({}));
-    await waitFor(() => expect(proFormApi.setFieldsValue).toHaveBeenCalled());
-    await waitFor(() =>
-      expect(proFormApi.setFieldsValue).toHaveBeenCalledWith({
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const merged = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(merged.modellingAndValidation.validation.review).toEqual([
+      { id: 'existing-review' },
+      { id: 'saved-review' },
+    ]);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'existing-compliance' },
+      { id: 'saved-compliance' },
+    ]);
+  });
+
+  it('falls back to saved review arrays when the current non-review payload is missing review data', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {
         id: 'process-1',
+        version: '01',
+        stateCode: 100,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {},
+          },
+        },
+      },
+      success: true,
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: { review: [{ id: 'saved-review' }] },
+              complianceDeclarations: { compliance: [{ id: 'saved-compliance' }] },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    renderComponent({ type: 'view', tabType: 'assigned' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const merged = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(merged.modellingAndValidation.validation.review).toEqual([{ id: 'saved-review' }]);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      { id: 'saved-compliance' },
+    ]);
+  });
+
+  it('runs tab/update hooks and supports both close actions', async () => {
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByTestId('trigger-on-data'));
+    fireEvent.click(screen.getByTestId('trigger-on-exchange-data'));
+    fireEvent.click(screen.getByRole('button', { name: 'switch-tab' }));
+    fireEvent.click(screen.getByTestId('trigger-values-change'));
+
+    fireEvent.click(screen.getByTestId('icon-close').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(screen.getByTestId('drawer')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('drawer-on-close'));
+    await waitFor(() => expect(screen.queryByTestId('drawer')).not.toBeInTheDocument());
+  });
+
+  it('falls back to empty process datasets, updates tab snapshots, and accepts missing reference paths', async () => {
+    proFormValues = {
+      processInformation: { title: 'Updated process' },
+      modellingAndValidation: {
+        validation: { review: [] },
+        complianceDeclarations: { compliance: [] },
+      },
+    };
+    mockGetProcessDetail.mockResolvedValueOnce({
+      data: {
+        id: 'process-1',
+        version: '01',
+        stateCode: 100,
+        json: {},
+      },
+      success: true,
+    });
+    mockCheckReferences.mockResolvedValueOnce(undefined);
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalledWith({}));
+    await waitFor(() =>
+      expect(proFormApi.setFieldsValue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'process-1',
+        }),
+      ),
+    );
+
+    fireEvent.click(screen.getByTestId('trigger-on-data'));
+    await waitFor(() => expect(proFormApi.getFieldsValue).toHaveBeenCalled());
+
+    proFormValues = {
+      modellingAndValidation: {
+        validation: { review: [] },
+        complianceDeclarations: { compliance: [] },
+      },
+    };
+
+    fireEvent.click(screen.getByTestId('trigger-on-data'));
+    fireEvent.click(screen.getByTestId('trigger-on-exchange-data'));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    await waitFor(() =>
+      expect(mockSubmitReviewCommentApi).toHaveBeenCalledWith('review-1', {
+        modellingAndValidation: {
+          complianceDeclarations: {
+            compliance: [],
+          },
+          validation: {
+            review: [],
+          },
+        },
       }),
     );
+  });
+
+  it('falls back to an empty exchange list when generated process data omits exchanges', async () => {
+    mockGenProcessFromData.mockReturnValueOnce({
+      processInformation: {},
+      modellingAndValidation: {
+        validation: { review: [] },
+        complianceDeclarations: { compliance: [] },
+      },
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(proFormApi.setFieldsValue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'process-1',
+        }),
+      ),
+    );
+
+    expect(screen.getByTestId('tabs-detail')).toBeInTheDocument();
+  });
+
+  it('logs temporary save failures when the draft command returns an error', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    mockSaveReviewCommentDraftApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('save failed'),
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    consoleSpy.mockRestore();
+  });
+
+  it('blocks submission when reference checking returns problem nodes', async () => {
+    mockCheckReferences.mockResolvedValueOnce({
+      findProblemNodes: () => [
+        {
+          '@refObjectId': 'problem-ref',
+          '@version': '03.00.000',
+          ruleVerification: false,
+          nonExistent: true,
+        },
+      ],
+    });
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockSubmitReviewCommentApi).not.toHaveBeenCalled();
+    expect(screen.getByTestId('drawer')).toBeInTheDocument();
+  });
+
+  it('logs submit failures after reference checks pass', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    mockSubmitReviewCommentApi.mockRejectedValueOnce(new Error('submit failed'));
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    consoleSpy.mockRestore();
+  });
+
+  it('shows an error when rejecting through the review command fails', async () => {
+    mockSubmitReviewCommentApi.mockRejectedValueOnce(new Error('reject failed'));
+
+    renderComponent();
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reject Stub' }));
+    });
+
+    expect(message.error).toHaveBeenCalledWith('Failed to reject, please try again!');
   });
 });

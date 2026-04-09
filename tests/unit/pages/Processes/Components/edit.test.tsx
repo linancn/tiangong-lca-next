@@ -130,8 +130,7 @@ const mockGetErrRefTab = jest.fn();
 const mockBuildValidationIssues = jest.fn(() => []);
 const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
-const mockUpdateReviewsAfterCheckData = jest.fn();
-const mockUpdateUnReviewToUnderReview = jest.fn();
+const mockSubmitDatasetReview = jest.fn();
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 
 jest.mock('@/pages/Utils/review', () => ({
@@ -148,8 +147,7 @@ jest.mock('@/pages/Utils/review', () => ({
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   mapValidationIssuesToRefCheckData: (...args: any[]) =>
     mockMapValidationIssuesToRefCheckData(...args),
-  updateReviewsAfterCheckData: (...args: any[]) => mockUpdateReviewsAfterCheckData(...args),
-  updateUnReviewToUnderReview: (...args: any[]) => mockUpdateUnReviewToUnderReview(...args),
+  submitDatasetReview: (...args: any[]) => mockSubmitDatasetReview(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
@@ -437,8 +435,7 @@ describe('ProcessEdit component', () => {
     mockGetAllRefObj.mockReturnValue([]);
     mockGetErrRefTab.mockReturnValue('');
     mockMapValidationIssuesToRefCheckData.mockReturnValue([]);
-    mockUpdateReviewsAfterCheckData.mockResolvedValue({});
-    mockUpdateUnReviewToUnderReview.mockResolvedValue([]);
+    mockSubmitDatasetReview.mockResolvedValue({ data: [{ review: { id: 'review-1' } }] });
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
     mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
     mockUpdateRefsData.mockImplementation((data: any) => data);
@@ -1259,10 +1256,34 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed'));
-    expect(mockUpdateReviewsAfterCheckData).not.toHaveBeenCalled();
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
-  it('does not continue review submission when the review creation call fails', async () => {
+  it('stops data-check after save when the saved process shape is incomplete', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          rule_verification: true,
+        },
+      ],
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
+    expect(mockValidateDatasetWithSdk).not.toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+  });
+
+  it('does not continue review submission when the submit-review command fails', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
         {
@@ -1274,8 +1295,8 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
-    mockUpdateReviewsAfterCheckData.mockResolvedValue({
-      error: { message: 'review creation failed' },
+    mockSubmitDatasetReview.mockResolvedValue({
+      error: { message: 'review submission failed' },
     });
 
     render(<ProcessEdit {...baseProps} />);
@@ -1285,8 +1306,60 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
-    await waitFor(() => expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalled());
-    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockSubmitDatasetReview).toHaveBeenCalled());
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('review submission failed');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('falls back to the default review-submit error when the command omits a message', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockSubmitDatasetReview.mockResolvedValue({
+      error: {},
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() => expect(mockSubmitDatasetReview).toHaveBeenCalled());
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('stops review submission when the saved process shape is incomplete', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          rule_verification: true,
+        },
+      ],
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
   });
 
@@ -1705,7 +1778,7 @@ describe('ProcessEdit component', () => {
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith('save failed before review'),
     );
-    expect(mockUpdateReviewsAfterCheckData).not.toHaveBeenCalled();
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
   it('normalizes LCIA results before saving', async () => {
@@ -1834,7 +1907,7 @@ describe('ProcessEdit component', () => {
         }),
       ),
     );
-    expect(mockUpdateUnReviewToUnderReview).not.toHaveBeenCalled();
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
   });
 
@@ -1906,17 +1979,8 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
     await waitFor(() =>
-      expect(mockUpdateReviewsAfterCheckData).toHaveBeenCalledWith(
-        'team-1',
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          name: {},
-        },
-        'review-uuid',
-      ),
+      expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0'),
     );
-    expect(mockUpdateUnReviewToUnderReview).toHaveBeenCalledWith([], 'review-uuid');
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);

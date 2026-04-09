@@ -3,11 +3,11 @@
  * Path: src/services/reviews/api.ts
  */
 
-import { FunctionRegion } from '@supabase/supabase-js';
-
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
+const mockInvokeDatasetCommand = jest.fn();
+const mockRpc = jest.fn();
 
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
@@ -19,7 +19,19 @@ jest.mock('@/services/supabase', () => ({
     functions: {
       invoke: (...args: any[]) => mockFunctionsInvoke.apply(null, args),
     },
+    rpc: (...args: any[]) => mockRpc.apply(null, args),
   },
+}));
+
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  createLegacyMutationRemovedError: (boundary: string) => ({
+    message: 'Use explicit command endpoints instead',
+    code: 'LEGACY_ENDPOINT_REMOVED',
+    details: boundary,
+    hint: '',
+  }),
+  invokeDatasetCommand: (...args: any[]) => mockInvokeDatasetCommand.apply(null, args),
 }));
 
 const mockGetLifeCyclesByIdAndVersion = jest.fn();
@@ -98,7 +110,17 @@ beforeAll(() => {
 beforeEach(() => {
   mockFrom.mockReset();
   mockAuthGetSession.mockReset();
+  mockAuthGetSession.mockResolvedValue({
+    data: {
+      session: {
+        user: { id: 'user-default' },
+        access_token: 'access-token',
+      },
+    },
+  });
   mockFunctionsInvoke.mockReset();
+  mockInvokeDatasetCommand.mockReset();
+  mockRpc.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
   mockGetPendingComment.mockReset();
@@ -134,135 +156,288 @@ afterEach(() => {
 });
 
 describe('addReviewsApi', () => {
-  it('inserts review payload with default state code', async () => {
-    const selectResult = { error: null };
-    const selectMock = jest.fn().mockResolvedValue(selectResult);
-    const insertMock = jest.fn().mockReturnValue({ select: selectMock });
-    mockFrom.mockReturnValueOnce({ insert: insertMock });
-
+  it('returns a structured deprecation error', async () => {
     const payload = { json: { foo: 'bar' } };
     const result = await reviewsApi.addReviewsApi('review-1', payload);
 
-    expect(mockFrom).toHaveBeenCalledWith('reviews');
-    expect(insertMock).toHaveBeenCalledWith({
-      id: 'review-1',
-      json: payload,
-      state_code: 0,
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'addReviewsApi',
+        hint: '',
+      },
     });
-    expect(selectMock).toHaveBeenCalled();
-    expect(result).toEqual({ error: null });
+  });
+});
+
+describe('submitDatasetReviewApi', () => {
+  it('delegates review submission to the dataset command boundary', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.submitDatasetReviewApi(
+      'processes',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_submit_review', {
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      table: 'processes',
+    });
+    expect(result).toBe(commandResult);
+  });
+});
+
+describe('review workflow command wrappers', () => {
+  it('saves reviewer assignment drafts through the admin review command', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-1' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-2' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+    const result = await reviewsApi.saveReviewAssignmentDraftApi(
+      ['review-1', 'review-2'],
+      ['user-1', 'user-2'],
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(
+      1,
+      'admin_review_save_assignment_draft',
+      {
+        reviewId: 'review-1',
+        reviewerIds: ['user-1', 'user-2'],
+      },
+    );
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(
+      2,
+      'admin_review_save_assignment_draft',
+      {
+        reviewId: 'review-2',
+        reviewerIds: ['user-1', 'user-2'],
+      },
+    );
+    expect(result).toEqual({
+      data: [{ review: { id: 'review-1' } }, { review: { id: 'review-2' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('assigns reviewers with an explicit deadline through the admin review command', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.assignReviewersApi(
+      ['review-1'],
+      ['user-3'],
+      '2026-04-10T12:00:00.000Z',
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-3'],
+      deadline: '2026-04-10T12:00:00.000Z',
+    });
+    expect(result).toEqual(commandResult);
+  });
+
+  it('assigns reviewers with a null deadline when none is provided', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    await reviewsApi.assignReviewersApi(['review-1'], ['user-3']);
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-3'],
+      deadline: null,
+    });
+  });
+
+  it('returns the first batch error while flattening null command data', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'assignment failed' },
+        count: null,
+        status: 409,
+        statusText: 'CONFLICT',
+      });
+
+    const result = await reviewsApi.saveReviewAssignmentDraftApi(
+      ['review-1', 'review-2'],
+      ['user-1'],
+    );
+
+    expect(result).toEqual({
+      data: [],
+      error: { message: 'assignment failed' },
+      count: null,
+      status: 409,
+      statusText: 'CONFLICT',
+    });
+  });
+
+  it('assigns reviewers with a null deadline and flattens empty batch payload rows', async () => {
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+      .mockResolvedValueOnce({
+        data: [{ review: { id: 'review-2' } }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+    const result = await reviewsApi.assignReviewersApi(['review-1', 'review-2'], ['user-9']);
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'admin_review_assign_reviewers', {
+      reviewId: 'review-1',
+      reviewerIds: ['user-9'],
+      deadline: null,
+    });
+    expect(result).toEqual({
+      data: [{ review: { id: 'review-2' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('revokes reviewers through the admin review command', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.revokeReviewerApi('review-1', 'user-9');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('admin_review_revoke_reviewer', {
+      reviewId: 'review-1',
+      reviewerId: 'user-9',
+    });
+    expect(result).toEqual(commandResult);
+  });
+
+  it('approves and rejects reviews through the admin review commands', async () => {
+    const approveResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    const rejectResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand
+      .mockResolvedValueOnce(approveResult)
+      .mockResolvedValueOnce(rejectResult);
+
+    const approve = await reviewsApi.approveReviewApi('review-1', 'processes');
+    const reject = await reviewsApi.rejectReviewApi('review-1', 'lifecyclemodels', 'Needs fixes');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'admin_review_approve', {
+      reviewId: 'review-1',
+      table: 'processes',
+    });
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(2, 'admin_review_reject', {
+      reviewId: 'review-1',
+      table: 'lifecyclemodels',
+      reason: 'Needs fixes',
+    });
+    expect(approve).toEqual(approveResult);
+    expect(reject).toEqual(rejectResult);
   });
 });
 
 describe('updateReviewApi', () => {
-  it('invokes edge function and adds modified_at when updating terminal states', async () => {
-    const now = new Date('2024-05-01T12:34:56.000Z');
-    jest.useFakeTimers().setSystemTime(now);
-
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'token-123',
-        },
-      },
-    });
-    const invokeResult = { data: { ok: true } };
-    mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
-
-    const data = { state_code: 1, reviewer_id: ['user-1'] };
-    const result = await reviewsApi.updateReviewApi(['review-1'], data);
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_review', {
-      headers: { Authorization: 'Bearer token-123' },
-      body: {
-        reviewIds: ['review-1'],
-        data: {
-          ...data,
-          modified_at: now.toISOString(),
-        },
-      },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(result).toEqual(invokeResult.data);
-  });
-
-  it('skips invocation when there is no active session', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
-
+  it('returns a structured deprecation error without calling legacy edge handlers', async () => {
     const result = await reviewsApi.updateReviewApi(['review-1'], { reviewer_id: ['user-1'] });
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
-  });
-
-  it('passes payload as-is when state code does not require timestamp', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'token-123',
-        },
+    expect(result).toEqual({
+      error: {
+        message: 'Use explicit command endpoints instead',
+        code: 'LEGACY_ENDPOINT_REMOVED',
+        details: 'updateReviewApi',
+        hint: '',
       },
-    });
-    const invokeResult = { data: { updated: true } };
-    mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
-
-    const updatePayload = { state_code: 5, reviewer_id: ['user-1'] };
-    await reviewsApi.updateReviewApi(['review-2'], updatePayload);
-
-    const invocation = mockFunctionsInvoke.mock.calls[0]?.[1];
-    expect(invocation?.body?.data).toEqual(updatePayload);
-  });
-
-  it('propagates invoke errors while preserving payload shape', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          access_token: 'token-456',
-        },
-      },
-    });
-    const invokeResult = {
-      data: null,
-      error: { message: 'invoke failed' },
-    };
-    mockFunctionsInvoke.mockResolvedValueOnce(invokeResult);
-
-    const response = await reviewsApi.updateReviewApi(['review-3'], { reviewer_id: ['user-9'] });
-
-    expect(response).toEqual({ error: invokeResult.error });
-  });
-
-  it('falls back to an empty bearer token when the session access token is missing', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {},
-      },
-    });
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { ok: true } });
-
-    await reviewsApi.updateReviewApi(['review-4'], { reviewer_id: ['user-1'] });
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_review', {
-      headers: { Authorization: 'Bearer ' },
-      body: { reviewIds: ['review-4'], data: { reviewer_id: ['user-1'] } },
-      region: FunctionRegion.UsEast1,
     });
   });
 });
 
 describe('getReviewerIdsApi', () => {
-  it('returns reviewer ids when supabase responds with data', async () => {
-    const supabaseResult = { data: { reviewer_id: ['user-1', 'user-2'] } };
+  it('returns deduplicated reviewer ids when supabase responds with multiple rows', async () => {
+    const supabaseResult = {
+      data: [{ reviewer_id: ['user-1', 'user-2'] }, { reviewer_id: ['user-2', 'user-3'] }],
+    };
     const builder = createQueryBuilder(supabaseResult);
     mockFrom.mockReturnValueOnce(builder);
 
-    const result = await reviewsApi.getReviewerIdsApi(['review-1']);
+    const result = await reviewsApi.getReviewerIdsApi(['review-1', 'review-2']);
 
     expect(mockFrom).toHaveBeenCalledWith('reviews');
     expect(builder.select).toHaveBeenCalledWith('reviewer_id');
-    expect(builder.in).toHaveBeenCalledWith('id', ['review-1']);
-    expect(result).toEqual(['user-1', 'user-2']);
+    expect(builder.in).toHaveBeenCalledWith('id', ['review-1', 'review-2']);
+    expect(result).toEqual(['user-1', 'user-2', 'user-3']);
   });
 
   it('returns empty array when supabase payload is missing', async () => {
@@ -274,14 +449,15 @@ describe('getReviewerIdsApi', () => {
     expect(result).toEqual([]);
   });
 
-  test.failing('supports retrieving reviewers for multiple review ids', async () => {
-    const builder = createQueryBuilder({});
-    builder.single = jest.fn().mockRejectedValue(new Error('Multiple rows found'));
+  it('ignores reviewer rows whose reviewer_id is not an array', async () => {
+    const builder = createQueryBuilder({
+      data: [{ reviewer_id: ['user-1'] }, { reviewer_id: 'user-2' }, { reviewer_id: null }, {}],
+    });
     mockFrom.mockReturnValueOnce(builder);
 
-    await expect(reviewsApi.getReviewerIdsApi(['review-1', 'review-2'])).resolves.toEqual([
-      'user-1',
-    ]);
+    const result = await reviewsApi.getReviewerIdsApi(['review-1']);
+
+    expect(result).toEqual(['user-1']);
   });
 });
 
@@ -705,7 +881,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       created_at: '2024-04-01T00:00:00.000Z',
       modified_at: '2024-04-03T00:00:00.000Z',
       deadline: null,
-      comments: [{ state_code: 1 }],
+      comments: [{ state_code: 1 }, { state_code: -3 }, { state_code: -2 }],
       json: {
         data: {
           id: 'process-2',
@@ -735,19 +911,59 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
     expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
     expect(builder.eq).toHaveBeenCalledWith('state_code', 1);
     expect(builder.select).toHaveBeenCalledWith('*, comments(state_code)');
-    expect(builder.filter).toHaveBeenCalledWith('comments.state_code', 'gte', 0);
+    expect(builder.filter).not.toHaveBeenCalled();
     expect(result.success).toBe(true);
     expect(result).toHaveProperty('page', 2);
     expect(result.total).toBe(1);
     expect(result.data[0]).toMatchObject({
       id: 'review-10',
-      comments: [{ state_code: 1 }],
+      comments: [{ state_code: 1 }, { state_code: -3 }],
       isFromLifeCycle: false,
       teamName: 'Ops Team',
       userName: 'Alice Reviewer',
       modelData: null,
     });
     expect(result.data[0].name).toContain('Review Base');
+  });
+
+  it('falls back to an empty comments array when assigned review comments are not arrays', async () => {
+    const reviewRow = {
+      id: 'review-10-no-array-comments',
+      created_at: '2024-04-01T00:00:00.000Z',
+      modified_at: '2024-04-03T00:00:00.000Z',
+      deadline: null,
+      comments: { state_code: 1 },
+      json: {
+        data: {
+          id: 'process-2',
+          version: '01.00.000',
+          name: {
+            baseName: { en: 'Review Base' },
+            treatmentStandardsRoutes: { en: 'Review Route' },
+            mixAndLocationTypes: { en: 'Review Mix' },
+            functionalUnitFlowProperties: { en: 'Review Unit' },
+          },
+        },
+        team: { name: { en: 'Ops Team' } },
+        user: { name: 'Alice Reviewer' },
+      },
+    };
+    const builder = createQueryBuilder({ data: [reviewRow], count: 1 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      'assigned',
+      'en',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: 'review-10-no-array-comments',
+      comments: [],
+      isFromLifeCycle: false,
+    });
   });
 
   it('returns default empty response when query result has no data field', async () => {
@@ -957,21 +1173,20 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
 });
 
 describe('getNotifyReviews', () => {
-  it('returns failure response when user is missing', async () => {
-    mockGetUserId.mockResolvedValueOnce(null);
+  it('returns failure response when session is missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: null,
+      },
+    });
 
     const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en');
 
     expect(result).toEqual({ data: [], success: false, total: 0 });
   });
 
-  it('returns notifications filtered by recent activity', async () => {
-    const now = new Date('2024-05-01T08:00:00.000Z');
-    jest.useFakeTimers().setSystemTime(now);
-
-    mockGetUserId.mockResolvedValueOnce('user-1');
-
-    const supabaseResult = {
+  it('loads notifications from qry_notification_get_my_data_items', async () => {
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-1',
@@ -992,23 +1207,19 @@ describe('getNotifyReviews', () => {
           },
           modified_at: '2024-04-30T12:00:00.000Z',
           state_code: -1,
+          total_count: 1,
         },
       ],
-      count: 1,
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
-
-    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+      error: null,
+    });
 
     const result = await reviewsApi.getNotifyReviews({ pageSize: 5, current: 3 }, 'en', 3);
 
-    expect(builder.filter).toHaveBeenCalledWith('json->user->>id', 'eq', 'user-1');
-    expect(builder.in).toHaveBeenCalledWith('state_code', [1, -1, 2]);
-    expect(builder.gte).toHaveBeenCalledWith(
-      'modified_at',
-      new Date('2024-04-28T08:00:00.000Z').toISOString(),
-    );
+    expect(mockRpc).toHaveBeenCalledWith('qry_notification_get_my_data_items', {
+      p_page: 3,
+      p_page_size: 5,
+      p_days: 3,
+    });
     expect(result).toEqual({
       data: [
         {
@@ -1020,7 +1231,21 @@ describe('getNotifyReviews', () => {
           userName: 'Alice',
           modifiedAt: '2024-04-30T12:00:00.000Z',
           stateCode: -1,
-          json: supabaseResult.data[0].json,
+          json: {
+            data: {
+              id: 'process-1',
+              version: '1.0',
+              name: {
+                baseName: { en: 'Process Base' },
+                treatmentStandardsRoutes: { en: 'Process Route' },
+                mixAndLocationTypes: { en: 'Process Mix' },
+                functionalUnitFlowProperties: { en: 'Process Unit' },
+              },
+            },
+            team: { name: { en: 'Team Name' } },
+            user: { name: 'Alice' },
+            comment: { message: 'Need changes' },
+          },
         },
       ],
       page: 3,
@@ -1030,20 +1255,15 @@ describe('getNotifyReviews', () => {
   });
 
   it('returns empty success response when no notifications are found', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({ data: [], count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
     const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
 
-    expect(builder.gte).not.toHaveBeenCalled();
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
-  it('returns failure response when query payload is malformed', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({ data: undefined, count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
+  it('returns failure response when rpc payload is malformed', async () => {
+    mockRpc.mockResolvedValueOnce({ data: null, error: null });
 
     const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
 
@@ -1051,8 +1271,7 @@ describe('getNotifyReviews', () => {
   });
 
   it('maps lifecycle-backed notifications with page and total fallbacks', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-notify-model',
@@ -1071,10 +1290,11 @@ describe('getNotifyReviews', () => {
           },
           modified_at: '2024-06-05T12:00:00.000Z',
           state_code: 2,
+          total_count: 1,
         },
       ],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
       data: [
         {
@@ -1100,7 +1320,6 @@ describe('getNotifyReviews', () => {
 
     const result = await reviewsApi.getNotifyReviews({} as any, 'en', 0);
 
-    expect(builder.gte).not.toHaveBeenCalled();
     expect(result).toEqual({
       data: [
         {
@@ -1129,13 +1348,12 @@ describe('getNotifyReviews', () => {
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 
   it('uses review payload fallbacks and missing-user placeholders when no model matches', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-notify-fallback',
@@ -1148,10 +1366,11 @@ describe('getNotifyReviews', () => {
           },
           modified_at: '2024-06-06T12:00:00.000Z',
           state_code: 1,
+          total_count: 1,
         },
       ],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
 
     const result = await reviewsApi.getNotifyReviews({ pageSize: 10, current: 1 }, 'en', 0);
@@ -1164,18 +1383,18 @@ describe('getNotifyReviews', () => {
   });
 
   it('falls back to "-" when a matched notification lifecycle model name resolves empty', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-notify-empty-model-name',
           json: { data: { id: 'notify-model', version: '01.00.000' }, user: { email: 'x@y.z' } },
           modified_at: '2024-06-06T12:00:00.000Z',
           state_code: 1,
+          total_count: 1,
         },
       ],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
       data: [
         {
@@ -1194,50 +1413,100 @@ describe('getNotifyReviews', () => {
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
   });
+
+  it('uses default paging and zero totals when notification rows omit total_count', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-notify-no-total',
+          json: {
+            data: {
+              id: 'process-notify-no-total',
+              version: '06.00.000',
+            },
+            user: {},
+          },
+          modified_at: '2024-06-07T12:00:00.000Z',
+          state_code: 3,
+        },
+      ],
+      error: null,
+    });
+
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getNotifyReviews({} as any, 'en', 0);
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: 'review-notify-no-total',
+          id: 'review-notify-no-total',
+          isFromLifeCycle: false,
+          name: '-',
+          teamName: '-',
+          userName: '-',
+          modifiedAt: '2024-06-07T12:00:00.000Z',
+          stateCode: 3,
+          json: {
+            data: {
+              id: 'process-notify-no-total',
+              version: '06.00.000',
+            },
+            user: {},
+          },
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
+    });
+  });
 });
 
 describe('getNotifyReviewsCount', () => {
-  it('returns failure response when user is missing', async () => {
-    mockGetUserId.mockResolvedValueOnce(null);
+  it('returns failure response when session is missing', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: null,
+      },
+    });
 
     const result = await reviewsApi.getNotifyReviewsCount();
 
     expect(result).toEqual({ success: false, total: 0 });
   });
 
-  it('uses last view time filter when provided', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({ count: 5, error: null });
-    mockFrom.mockReturnValueOnce(builder);
+  it('uses qry_notification_get_my_data_count with the last view time filter', async () => {
+    mockRpc.mockResolvedValueOnce({ data: 5, error: null });
 
     const lastViewTime = new Date('2024-05-01T00:00:00.000Z').getTime();
     const result = await reviewsApi.getNotifyReviewsCount(3, lastViewTime);
 
-    expect(builder.gt).toHaveBeenCalledWith('modified_at', new Date(lastViewTime).toISOString());
-    expect(builder.gte).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('qry_notification_get_my_data_count', {
+      p_days: 3,
+      p_last_view_at: new Date(lastViewTime).toISOString(),
+    });
     expect(result).toEqual({ success: true, total: 5 });
   });
 
-  it('uses time filter and reports failure when query has error', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({ count: null, error: { message: 'db failed' } });
-    mockFrom.mockReturnValueOnce(builder);
+  it('reports rpc errors as failed notification counts', async () => {
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'db failed' } });
 
     const result = await reviewsApi.getNotifyReviewsCount(7);
 
-    expect(builder.gte).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ success: false, total: 0 });
   });
 
-  it('returns success without time predicates when filters are disabled', async () => {
-    mockGetUserId.mockResolvedValueOnce('user-1');
-    const builder = createQueryBuilder({ count: 2, error: null });
-    mockFrom.mockReturnValueOnce(builder);
+  it('returns success without a last view timestamp when filters are disabled', async () => {
+    mockRpc.mockResolvedValueOnce({ data: 2, error: null });
 
     const result = await reviewsApi.getNotifyReviewsCount(0);
 
-    expect(builder.gt).not.toHaveBeenCalled();
-    expect(builder.gte).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('qry_notification_get_my_data_count', {
+      p_days: 0,
+      p_last_view_at: null,
+    });
     expect(result).toEqual({ success: true, total: 2 });
   });
 });

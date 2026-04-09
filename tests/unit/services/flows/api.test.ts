@@ -72,15 +72,15 @@ const { getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll } = j
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  invokeDatasetCommand: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
-  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
 }));
 
 const {
   getDataDetail: mockGetDataDetail,
   getTeamIdByUserId: mockGetTeamIdByUserId,
+  invokeDatasetCommand: mockInvokeDatasetCommand,
   normalizeLangPayloadForSave: mockNormalizeLangPayloadForSave,
-  resolveFunctionInvokeError: mockResolveFunctionInvokeError,
 } = jest.requireMock('@/services/general/api');
 
 class MockQuery<T = any> {
@@ -235,11 +235,17 @@ beforeEach(() => {
 
   mockGetDataDetail.mockResolvedValue({ data: null });
   mockGetTeamIdByUserId.mockResolvedValue(null);
+  mockInvokeDatasetCommand.mockResolvedValue({
+    data: [],
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
   mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
     payload,
     validationError: undefined,
   }));
-  mockResolveFunctionInvokeError.mockImplementation(async (error: any) => error);
 
   mockAuthGetSession.mockResolvedValue({
     data: {
@@ -256,22 +262,31 @@ beforeEach(() => {
 
 describe('createFlows', () => {
   it('stores ordered payload with rule verification result', async () => {
-    const insertResult = { data: [{ id: 'flow-id', version: '01.00.000' }], error: null };
-    const query = createQuery(insertResult);
-    mockFrom.mockReturnValue(query as any);
+    const createResult = {
+      data: [{ id: 'flow-id', version: '01.00.000' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(createResult as any);
 
     const result = await createFlows('flow-id', { name: 'Flow payload' });
 
     expect(mockGenFlowJsonOrdered).toHaveBeenCalledWith('flow-id', { name: 'Flow payload' });
-    expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.insertArgs).toEqual([
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_create',
       expect.objectContaining({
         id: 'flow-id',
-        json_ordered: expect.objectContaining({ id: 'flow-id' }),
-        rule_verification: true,
+        table: 'flows',
+        jsonOrdered: expect.objectContaining({ id: 'flow-id' }),
+        ruleVerification: true,
       }),
-    ]);
-    expect(result).toBe(insertResult);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
   });
 
   it('returns a language validation error when normalization fails', async () => {
@@ -299,49 +314,62 @@ describe('createFlows', () => {
 
 describe('updateFlows', () => {
   it('invokes supabase edge function with ordered data', async () => {
-    const updateResult = { data: [{ id: 'flow-id', rule_verification: true }] };
-    mockFunctionsInvoke.mockResolvedValue(updateResult);
+    const updateResult = {
+      data: [{ id: 'flow-id', rule_verification: true }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(updateResult);
 
     const response = await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
 
     expect(mockGenFlowJsonOrdered).toHaveBeenCalledWith('flow-id', { name: 'Updated flow' });
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('update_data', {
-      headers: {
-        Authorization: 'Bearer token',
-      },
-      body: {
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_save_draft',
+      {
         id: 'flow-id',
         version: '01.00.000',
         table: 'flows',
-        data: expect.objectContaining({
-          json_ordered: expect.objectContaining({ id: 'flow-id' }),
-          rule_verification: true,
-        }),
+        jsonOrdered: expect.objectContaining({ id: 'flow-id' }),
+        ruleVerification: true,
       },
-      region: FunctionRegion.UsEast1,
-    });
-    expect(response).toBe(updateResult.data);
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(response).toBe(updateResult);
   });
 
   it('returns undefined when no active session is found', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
+    mockInvokeDatasetCommand.mockResolvedValue(undefined);
 
     const response = await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).toHaveBeenCalled();
     expect(response).toBeUndefined();
   });
 
   it('logs edge-function errors and returns the resolved error payload', async () => {
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-    const mockError = { message: 'update failed' };
-    mockFunctionsInvoke.mockResolvedValue({ data: null, error: mockError });
+    const mockError = { message: 'update failed', code: 'FUNCTION_ERROR', details: '', hint: '' };
+    mockInvokeDatasetCommand.mockResolvedValue({
+      data: null,
+      error: mockError,
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
 
     const response = await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
 
-    expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-    expect(response).toEqual({ error: mockError });
-    consoleLogSpy.mockRestore();
+    expect(response).toEqual({
+      data: null,
+      error: mockError,
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
   });
 
   it('returns a language validation error before invoking the update edge function', async () => {
@@ -352,7 +380,7 @@ describe('updateFlows', () => {
 
     const response = await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).not.toHaveBeenCalled();
     expect(response).toEqual(
       expect.objectContaining({
         data: null,
@@ -367,21 +395,26 @@ describe('updateFlows', () => {
   });
 
   it('uses an empty bearer token when the session lacks an access token', async () => {
-    mockAuthGetSession.mockResolvedValueOnce({
-      data: {
-        session: {
-          user: { id: 'user-id' },
-        },
-      },
+    mockInvokeDatasetCommand.mockResolvedValue({
+      data: [{ id: 'flow-id', rule_verification: true }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
     });
-    mockFunctionsInvoke.mockResolvedValue({ data: [{ id: 'flow-id' }] });
 
     await updateFlows('flow-id', '01.00.000', { name: 'Updated flow' });
 
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
-      'update_data',
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith(
+      'app_dataset_save_draft',
       expect.objectContaining({
-        headers: { Authorization: 'Bearer ' },
+        id: 'flow-id',
+        version: '01.00.000',
+        table: 'flows',
+        ruleVerification: true,
+      }),
+      expect.objectContaining({
+        ruleVerification: true,
       }),
     );
   });
@@ -389,19 +422,23 @@ describe('updateFlows', () => {
 
 describe('deleteFlows', () => {
   it('removes flow by id and version', async () => {
-    const deleteResult = { data: null, error: null };
-    const query = createQuery(deleteResult);
-    mockFrom.mockReturnValue(query as any);
+    const deleteResult = { data: null, error: null, count: null, status: 200, statusText: 'OK' };
+    mockInvokeDatasetCommand.mockResolvedValue(deleteResult as any);
 
     const result = await deleteFlows('flow-id', '01.00.000');
 
-    expect(mockFrom).toHaveBeenCalledWith('flows');
-    expect(query.calls.deleteCalled).toBe(true);
-    expect(query.calls.eqArgs).toEqual([
-      { field: 'id', value: 'flow-id' },
-      { field: 'version', value: '01.00.000' },
-    ]);
-    expect(result).toBe(deleteResult);
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+      id: 'flow-id',
+      version: '01.00.000',
+      table: 'flows',
+    });
+    expect(result).toEqual({
+      data: null,
+      error: null,
+      count: null,
+      status: 204,
+      statusText: 'No Content',
+    });
   });
 });
 

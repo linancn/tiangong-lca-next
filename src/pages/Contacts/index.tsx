@@ -1,5 +1,9 @@
 import AllVersionsList from '@/components/AllVersions';
 import ContributeData from '@/components/ContributeData';
+import {
+  extractContributeDataError,
+  getContributeDataErrorMessage,
+} from '@/components/ContributeData/utils';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import TableFilter from '@/components/TableFilter';
@@ -227,9 +231,16 @@ const TableList: FC = () => {
                     name: (
                       <ContributeData
                         onOk={async () => {
-                          const { error } = await contributeSource('contacts', row.id, row.version);
-                          if (error) {
-                            console.log(error);
+                          const contributeResult = await contributeSource(
+                            'contacts',
+                            row.id,
+                            row.version,
+                          );
+                          const contributeError = extractContributeDataError(contributeResult);
+
+                          if (contributeError) {
+                            message.error(getContributeDataErrorMessage(intl, contributeError));
+                            console.log(contributeError);
                           } else {
                             message.success(
                               intl.formatMessage({

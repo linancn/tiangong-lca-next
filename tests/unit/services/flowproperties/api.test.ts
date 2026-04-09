@@ -26,7 +26,6 @@ import {
   getReferenceUnitGroups,
   updateFlowproperties,
 } from '@/services/flowproperties/api';
-import { FunctionRegion } from '@supabase/supabase-js';
 import { createMockSession, createQueryBuilder } from '../../../helpers/mockBuilders';
 import { mockILCDClassificationResponse, mockMultilingualText } from '../../../helpers/testData';
 
@@ -67,8 +66,8 @@ jest.mock('@/services/classifications/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
+  invokeDatasetCommand: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
-  resolveFunctionInvokeError: jest.fn(),
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
@@ -76,12 +75,8 @@ const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperti
 const { getLangText, classificationToString, jsonToList, genClassificationZH } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
-const {
-  getDataDetail,
-  getTeamIdByUserId,
-  normalizeLangPayloadForSave,
-  resolveFunctionInvokeError,
-} = jest.requireMock('@/services/general/api');
+const { getDataDetail, getTeamIdByUserId, invokeDatasetCommand, normalizeLangPayloadForSave } =
+  jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
@@ -90,11 +85,17 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    invokeDatasetCommand.mockResolvedValue({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
     normalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
       payload,
       validationError: undefined,
     }));
-    resolveFunctionInvokeError.mockImplementation(async (error: any) => error);
     // Setup default SDK mock behavior
     mockCreateFlowProperty.mockReturnValue({
       validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -114,28 +115,25 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         validateEnhanced: mockValidateEnhanced,
       });
 
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue(mockResult);
-
-      supabase.from.mockReturnValue({
-        insert: mockInsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue(mockResult);
 
       const result = await createFlowproperties(mockId, mockData);
 
       expect(genFlowpropertyJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
       expect(mockCreateFlowProperty).toHaveBeenCalledWith(mockOrderedData);
       expect(mockValidateEnhanced).toHaveBeenCalled();
-      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
-      expect(mockInsert).toHaveBeenCalledWith([
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
         {
           id: mockId,
-          json_ordered: mockOrderedData,
-          rule_verification: true,
+          table: 'flowproperties',
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
         },
-      ]);
+        {
+          ruleVerification: true,
+        },
+      );
       expect(result).toEqual(mockResult);
     });
 
@@ -146,23 +144,20 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         validateEnhanced: mockValidateEnhanced,
       });
 
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({ data: [], error: null });
-
-      supabase.from.mockReturnValue({
-        insert: mockInsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue({ data: [], error: null });
 
       await createFlowproperties('test-id', {});
 
-      expect(mockInsert).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            rule_verification: false,
-          }),
-        ]),
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        expect.objectContaining({
+          id: 'test-id',
+          table: 'flowproperties',
+          ruleVerification: false,
+        }),
+        expect.objectContaining({
+          ruleVerification: false,
+        }),
       );
     });
 
@@ -195,23 +190,23 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         validationError: undefined,
       });
 
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockResolvedValue({ data: [{ id: 'test-id' }], error: null });
-
-      supabase.from.mockReturnValue({
-        insert: mockInsert.mockReturnValue({
-          select: mockSelect,
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue({ data: [{ id: 'test-id' }], error: null });
 
       await createFlowproperties('test-id', {});
 
       expect(mockCreateFlowProperty).toHaveBeenCalledWith({ ordered: true, fallback: 'raw' });
-      expect(mockInsert).toHaveBeenCalledWith([
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
         expect.objectContaining({
-          json_ordered: { ordered: true, fallback: 'raw' },
+          id: 'test-id',
+          table: 'flowproperties',
+          jsonOrdered: { ordered: true, fallback: 'raw' },
+          ruleVerification: true,
         }),
-      ]);
+        expect.objectContaining({
+          ruleVerification: true,
+        }),
+      );
     });
   });
 
@@ -221,63 +216,75 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const mockVersion = '1.0.0';
       const mockData = { flowPropertiesInformation: {} };
       const mockOrderedData = { ordered: true };
-      const mockFunctionResult = { data: { success: true }, error: null };
+      const mockFunctionResult = {
+        data: [{ id: mockId, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
       const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
 
       genFlowpropertyJsonOrdered.mockReturnValue(mockOrderedData);
       mockCreateFlowProperty.mockReturnValue({
         validateEnhanced: mockValidateEnhanced,
       });
-      supabase.functions.invoke.mockResolvedValue(mockFunctionResult);
+      invokeDatasetCommand.mockResolvedValue(mockFunctionResult);
 
       const result = await updateFlowproperties(mockId, mockVersion, mockData);
 
-      expect(supabase.auth.getSession).toHaveBeenCalled();
-      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer test-token',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: mockId,
           version: mockVersion,
           table: 'flowproperties',
-          data: {
-            json_ordered: mockOrderedData,
-            rule_verification: true,
-          },
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
         },
-        region: FunctionRegion.UsEast1,
-      });
-      expect(result).toEqual({ success: true });
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual(mockFunctionResult);
     });
 
     it('should handle edge function error', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       genFlowpropertyJsonOrdered.mockReturnValue({});
       mockCreateFlowProperty.mockReturnValue({
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
 
-      const mockError = { message: 'Update failed' };
-      supabase.functions.invoke.mockResolvedValue({ data: null, error: mockError });
+      const mockError = { message: 'Update failed', code: 'FUNCTION_ERROR', details: '', hint: '' };
+      invokeDatasetCommand.mockResolvedValue({
+        data: null,
+        error: mockError,
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
 
       const result = await updateFlowproperties('id', 'version', {});
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toEqual({ error: mockError });
-      consoleLogSpy.mockRestore();
+      expect(result).toEqual({
+        data: null,
+        error: mockError,
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
     });
 
     it('should return undefined when no session is available', async () => {
-      supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
       genFlowpropertyJsonOrdered.mockReturnValue({});
       mockCreateFlowProperty.mockReturnValue({
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
+      invokeDatasetCommand.mockResolvedValue(undefined);
 
       const result = await updateFlowproperties('id', 'version', {});
 
-      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
@@ -300,31 +307,31 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         statusText: 'LANG_VALIDATION_ERROR',
         count: null,
       });
-      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).not.toHaveBeenCalled();
     });
 
     it('should invoke update_data with an empty bearer token when the session token is missing', async () => {
-      supabase.auth.getSession.mockResolvedValueOnce({
-        data: {
-          session: {
-            access_token: undefined,
-            user: {
-              id: 'user-123',
-            },
-          },
-        },
-      });
       genFlowpropertyJsonOrdered.mockReturnValue({});
-      supabase.functions.invoke.mockResolvedValue({ data: { success: true }, error: null });
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       await updateFlowproperties('id', '01.00.000', {});
 
-      expect(supabase.functions.invoke).toHaveBeenCalledWith(
-        'update_data',
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
         expect.objectContaining({
-          headers: {
-            Authorization: 'Bearer ',
-          },
+          id: 'id',
+          version: '01.00.000',
+          table: 'flowproperties',
+          ruleVerification: true,
+        }),
+        expect.objectContaining({
+          ruleVerification: true,
         }),
       );
     });
@@ -335,7 +342,13 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         payload: undefined,
         validationError: undefined,
       });
-      supabase.functions.invoke.mockResolvedValue({ data: { success: true }, error: null });
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       await updateFlowproperties('id', '01.00.000', {});
 
@@ -343,14 +356,14 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         ordered: true,
         fallback: 'raw-update',
       });
-      expect(supabase.functions.invoke).toHaveBeenCalledWith(
-        'update_data',
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
         expect.objectContaining({
-          body: expect.objectContaining({
-            data: expect.objectContaining({
-              json_ordered: { ordered: true, fallback: 'raw-update' },
-            }),
-          }),
+          jsonOrdered: { ordered: true, fallback: 'raw-update' },
+          ruleVerification: true,
+        }),
+        expect.objectContaining({
+          ruleVerification: true,
         }),
       );
     });
@@ -362,22 +375,22 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       const mockVersion = '1.0.0';
       const mockResult = { data: null, error: null };
 
-      const mockDelete = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-
-      supabase.from.mockReturnValue({
-        delete: mockDelete.mockReturnValue({
-          eq: mockEq.mockReturnValue({
-            eq: jest.fn().mockResolvedValue(mockResult),
-          }),
-        }),
-      });
+      invokeDatasetCommand.mockResolvedValue(mockResult);
 
       const result = await deleteFlowproperties(mockId, mockVersion);
 
-      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
-      expect(mockDelete).toHaveBeenCalled();
-      expect(result).toEqual(mockResult);
+      expect(invokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+        id: mockId,
+        version: mockVersion,
+        table: 'flowproperties',
+      });
+      expect(result).toEqual({
+        data: null,
+        error: null,
+        count: null,
+        status: 204,
+        statusText: 'No Content',
+      });
     });
   });
 

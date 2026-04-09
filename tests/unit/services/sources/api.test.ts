@@ -77,7 +77,7 @@ jest.mock('@/services/classifications/cache', () => ({
 jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
-  resolveFunctionInvokeError: jest.fn(async (error: any) => error),
+  invokeDatasetCommand: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -89,7 +89,7 @@ const { supabase } = jest.requireMock('@/services/supabase');
 const { classificationToString, genClassificationZH, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
-const { getDataDetail, getTeamIdByUserId, normalizeLangPayloadForSave } =
+const { getDataDetail, getTeamIdByUserId, invokeDatasetCommand, normalizeLangPayloadForSave } =
   jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
 const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
@@ -100,6 +100,13 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
+    invokeDatasetCommand.mockResolvedValue({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
     normalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
       payload,
       validationError: undefined,
@@ -115,16 +122,14 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockId = 'source-123';
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
-      const mockInsertResult = createMockSuccessResponse([{ id: mockId }]);
+      const mockCommandResult = createMockSuccessResponse([{ id: mockId }]);
       const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
       mockCreateSource.mockReturnValue({
         validateEnhanced: mockValidateEnhanced,
       });
-
-      const builder = createQueryBuilder(mockInsertResult);
-      supabase.from.mockReturnValue(builder);
+      invokeDatasetCommand.mockResolvedValue(mockCommandResult);
 
       const result = await createSource(mockId, mockData);
 
@@ -132,12 +137,19 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
       expect(mockCreateSource).toHaveBeenCalledWith(mockOrderedData);
       expect(mockValidateEnhanced).toHaveBeenCalled();
-      expect(supabase.from).toHaveBeenCalledWith('sources');
-      expect(builder.insert).toHaveBeenCalledWith([
-        { id: mockId, json_ordered: mockOrderedData, rule_verification: true },
-      ]);
-      expect(builder.select).toHaveBeenCalled();
-      expect(result).toEqual(mockInsertResult);
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        {
+          id: mockId,
+          table: 'sources',
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
+        },
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual(mockCommandResult);
     });
 
     it('should return a language validation error instead of inserting invalid source data', async () => {
@@ -167,23 +179,30 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockId = 'source-123';
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
-      const mockInsertResult = createMockSuccessResponse([{ id: mockId }]);
+      const mockCommandResult = createMockSuccessResponse([{ id: mockId }]);
       const mockValidateEnhanced = jest.fn().mockReturnValue({ success: false });
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
       mockCreateSource.mockReturnValue({
         validateEnhanced: mockValidateEnhanced,
       });
-
-      const builder = createQueryBuilder(mockInsertResult);
-      supabase.from.mockReturnValue(builder);
+      invokeDatasetCommand.mockResolvedValue(mockCommandResult);
 
       const result = await createSource(mockId, mockData);
 
-      expect(builder.insert).toHaveBeenCalledWith([
-        { id: mockId, json_ordered: mockOrderedData, rule_verification: false },
-      ]);
-      expect(result).toEqual(mockInsertResult);
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        {
+          id: mockId,
+          table: 'sources',
+          jsonOrdered: mockOrderedData,
+          ruleVerification: false,
+        },
+        {
+          ruleVerification: false,
+        },
+      );
+      expect(result).toEqual(mockCommandResult);
     });
 
     it('should handle database errors', async () => {
@@ -196,8 +215,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
 
-      const builder = createQueryBuilder(mockError);
-      supabase.from.mockReturnValue(builder);
+      invokeDatasetCommand.mockResolvedValue(mockError);
 
       const result = await createSource(mockId, mockData);
 
@@ -208,7 +226,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockId = 'source-raw-fallback';
       const mockData = { sourceDataSet: {} };
       const rawOrderedData = { ordered: 'raw' };
-      const mockInsertResult = createMockSuccessResponse([{ id: mockId }]);
+      const mockCommandResult = createMockSuccessResponse([{ id: mockId }]);
 
       genSourceJsonOrdered.mockReturnValue(rawOrderedData);
       normalizeLangPayloadForSave.mockResolvedValue({
@@ -216,15 +234,23 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
         validationError: undefined,
       });
 
-      const builder = createQueryBuilder(mockInsertResult);
-      supabase.from.mockReturnValue(builder);
+      invokeDatasetCommand.mockResolvedValue(mockCommandResult);
 
       await createSource(mockId, mockData);
 
       expect(mockCreateSource).toHaveBeenCalledWith(rawOrderedData);
-      expect(builder.insert).toHaveBeenCalledWith([
-        { id: mockId, json_ordered: rawOrderedData, rule_verification: true },
-      ]);
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        {
+          id: mockId,
+          table: 'sources',
+          jsonOrdered: rawOrderedData,
+          ruleVerification: true,
+        },
+        {
+          ruleVerification: true,
+        },
+      );
     });
   });
 
@@ -234,32 +260,38 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockVersion = '01.00.000';
       const mockData = { sourceDataSet: {} };
       const mockOrderedData = { ordered: true };
-      const mockFunctionResult = createMockEdgeFunctionResponse({ success: true });
       const mockValidateEnhanced = jest.fn().mockReturnValue({ success: true });
+      const mockFunctionResult = {
+        data: [{ id: mockId, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
 
       genSourceJsonOrdered.mockReturnValue(mockOrderedData);
       mockCreateSource.mockReturnValue({
         validateEnhanced: mockValidateEnhanced,
       });
-      supabase.functions.invoke.mockResolvedValue(mockFunctionResult);
+      invokeDatasetCommand.mockResolvedValue(mockFunctionResult);
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
       expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
-      expect(supabase.auth.getSession).toHaveBeenCalled();
-      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer test-token',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: mockId,
           version: mockVersion,
           table: 'sources',
-          data: { json_ordered: mockOrderedData, rule_verification: true },
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
         },
-        region: FunctionRegion.UsEast1,
-      });
-      expect(result).toEqual({ success: true });
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual(mockFunctionResult);
     });
 
     it('should return a language validation error instead of invoking the update edge function', async () => {
@@ -275,7 +307,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await updateSource(mockId, mockVersion, { sourceDataSet: {} });
 
-      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).not.toHaveBeenCalled();
       expect(result).toMatchObject({
         data: null,
         error: {
@@ -291,15 +323,15 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockVersion = '01.00.000';
       const mockData = { sourceDataSet: {} };
 
-      supabase.auth.getSession.mockResolvedValue({ data: { session: null } });
       genSourceJsonOrdered.mockReturnValue({});
       mockCreateSource.mockReturnValue({
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
+      invokeDatasetCommand.mockResolvedValue(undefined);
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
-      expect(supabase.functions.invoke).not.toHaveBeenCalled();
+      expect(invokeDatasetCommand).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
@@ -307,22 +339,29 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockId = 'source-123';
       const mockVersion = '01.00.000';
       const mockData = { sourceDataSet: {} };
-      const mockError = { message: 'Update failed' };
+      const mockError = { message: 'Update failed', code: 'FUNCTION_ERROR', details: '', hint: '' };
 
       genSourceJsonOrdered.mockReturnValue({});
       mockCreateSource.mockReturnValue({
         validateEnhanced: jest.fn().mockReturnValue({ success: true }),
       });
-      supabase.functions.invoke.mockResolvedValue({ data: null, error: mockError });
-
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      invokeDatasetCommand.mockResolvedValue({
+        data: null,
+        error: mockError,
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
-      expect(result).toEqual({ error: mockError });
-
-      consoleLogSpy.mockRestore();
+      expect(result).toEqual({
+        data: null,
+        error: mockError,
+        count: null,
+        status: 500,
+        statusText: 'FUNCTION_ERROR',
+      });
     });
 
     it('should fall back to raw ordered data and an empty bearer token when normalization omits the payload', async () => {
@@ -330,37 +369,35 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockVersion = '01.00.000';
       const rawOrderedData = { ordered: 'raw-update' };
 
-      supabase.auth.getSession.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
       genSourceJsonOrdered.mockReturnValue(rawOrderedData);
       normalizeLangPayloadForSave.mockResolvedValue({
         payload: undefined,
         validationError: undefined,
       });
-      supabase.functions.invoke.mockResolvedValue(
-        createMockEdgeFunctionResponse({ success: true }),
-      );
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       await updateSource(mockId, mockVersion, { sourceDataSet: {} });
 
       expect(mockCreateSource).toHaveBeenCalledWith(rawOrderedData);
-      expect(supabase.functions.invoke).toHaveBeenCalledWith('update_data', {
-        headers: {
-          Authorization: 'Bearer ',
-        },
-        body: {
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        {
           id: mockId,
           version: mockVersion,
           table: 'sources',
-          data: { json_ordered: rawOrderedData, rule_verification: true },
+          jsonOrdered: rawOrderedData,
+          ruleVerification: true,
         },
-        region: FunctionRegion.UsEast1,
-      });
+        {
+          ruleVerification: true,
+        },
+      );
     });
   });
 
@@ -369,26 +406,29 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const mockId = 'source-123';
       const mockVersion = '01.00.000';
       const mockDeleteResult = createMockSuccessResponse(null);
-
-      const builder = createQueryBuilder(mockDeleteResult);
-      supabase.from.mockReturnValue(builder);
+      invokeDatasetCommand.mockResolvedValue(mockDeleteResult);
 
       const result = await deleteSource(mockId, mockVersion);
 
-      expect(supabase.from).toHaveBeenCalledWith('sources');
-      expect(builder.delete).toHaveBeenCalled();
-      expect(builder.eq).toHaveBeenCalledWith('id', mockId);
-      expect(builder.eq).toHaveBeenCalledWith('version', mockVersion);
-      expect(result).toEqual(mockDeleteResult);
+      expect(invokeDatasetCommand).toHaveBeenCalledWith('app_dataset_delete', {
+        id: mockId,
+        version: mockVersion,
+        table: 'sources',
+      });
+      expect(result).toEqual({
+        data: null,
+        error: null,
+        count: null,
+        status: 204,
+        statusText: 'No Content',
+      });
     });
 
     it('should handle delete errors', async () => {
       const mockId = 'source-123';
       const mockVersion = '01.00.000';
       const mockError = createMockErrorResponse('Delete failed');
-
-      const builder = createQueryBuilder(mockError);
-      supabase.from.mockReturnValue(builder);
+      invokeDatasetCommand.mockResolvedValue(mockError);
 
       const result = await deleteSource(mockId, mockVersion);
 

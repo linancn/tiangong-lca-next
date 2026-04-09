@@ -1,22 +1,10 @@
-import { ConcurrencyController, getAllRefObj, getRefTableName } from '@/pages/Utils/review';
+import { getCommentApi } from '@/services/comments/api';
 import {
-  getCommentApi,
-  updateCommentApi,
-  updateCommentByreviewerApi,
-} from '@/services/comments/api';
-import { getRefData, updateStateCodeApi } from '@/services/general/api';
-import {
-  getLifeCycleModelDetail,
-  updateLifeCycleModelJsonApi,
-} from '@/services/lifeCycleModels/api';
-import { mergeCommentDataIntoProcessJson } from '@/services/lifeCycleModels/persistencePlan';
-import {
-  getProcessDetail,
-  getProcessDetailByIdAndVersion,
-  updateProcessApi,
-} from '@/services/processes/api';
-import { updateReviewApi } from '@/services/reviews/api';
-import { getUserTeamId } from '@/services/roles/api';
+  approveReviewApi,
+  revokeReviewerApi,
+  type ReviewSubmitDatasetTable,
+} from '@/services/reviews/api';
+import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DeleteOutlined, FileSyncOutlined } from '@ant-design/icons';
@@ -25,7 +13,6 @@ import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, Modal, Space, Spin, Tag, Tooltip, message, theme } from 'antd';
 import { useRef, useState } from 'react';
 import RejectReview from './RejectReview';
-import { getNewReviewJson } from './reviewProcess';
 import SelectReviewer from './SelectReviewer';
 
 type ReviewProgressProps = {
@@ -52,16 +39,15 @@ export default function ReviewProgress({
   dataId,
   dataVersion,
   actionType,
-  tabType,
   actionRef,
 }: ReviewProgressProps) {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
   const [spinning, setSpinning] = useState(false);
-  const [tableData, setTableData] = useState<ReviewerData[]>([]);
   const tableRef = useRef<any>(null);
   const intl = useIntl();
   const { token } = theme.useToken();
+  const [modal, contextHolder] = Modal.useModal();
   const fetchTableData = async () => {
     setTableLoading(true);
     try {
@@ -70,24 +56,22 @@ export default function ReviewProgress({
       if (reviewStateResult && reviewStateResult.length) {
         const reviewerIds: string[] = [];
         reviewStateResult.forEach((item: any) => {
-          // if (item.state_code >= 0) {
-          tableResult.push(item);
-          reviewerIds.push(item.reviewer_id);
-          // }
+          if (isCurrentAssignedReviewerCommentState(item.state_code)) {
+            tableResult.push(item);
+            reviewerIds.push(item.reviewer_id);
+          }
         });
         const userResult = await getUsersByIds(reviewerIds);
         tableResult.forEach((item: any) => {
           const user = userResult?.find((user: any) => user.id === item.reviewer_id);
           item.reviewer_name = user?.display_name;
         });
-        setTableData(tableResult);
         return {
           data: tableResult,
           success: true,
           total: tableResult.length,
         };
       }
-      setTableData([]);
       return {
         data: [],
         success: true,
@@ -143,10 +127,9 @@ export default function ReviewProgress({
   };
 
   const handleRemoveReviewer = async (reviewerId: string) => {
-    Modal.confirm({
+    modal.confirm({
       okButtonProps: {
         type: 'primary',
-        style: { backgroundColor: token.colorPrimary },
       },
       cancelButtonProps: {
         style: { borderColor: token.colorPrimary, color: token.colorPrimary },
@@ -162,15 +145,8 @@ export default function ReviewProgress({
       onOk: async () => {
         try {
           setTableLoading(true);
-          const result = await updateCommentByreviewerApi(reviewId, reviewerId, { state_code: -2 });
-          const reivewerIds: string[] = [];
-          tableData.forEach((item: ReviewerData) => {
-            if (item.reviewer_id !== reviewerId) {
-              reivewerIds.push(item.reviewer_id);
-            }
-          });
-          const { data } = await updateReviewApi([reviewId], { reviewer_id: reivewerIds });
-          if (!result.error && data && data.length > 0) {
+          const result = await revokeReviewerApi(reviewId, reviewerId);
+          if (!result.error && (result.data?.length ?? 0) > 0) {
             message.success(
               intl.formatMessage({
                 id: 'pages.review.progress.delete.success',
@@ -234,7 +210,7 @@ export default function ReviewProgress({
       render: (_, record) => {
         if (record.state_code !== -3) return null;
         let msg = '';
-        const { comment } = record.json;
+        const comment = record.json?.comment;
         try {
           if (!comment) {
             msg = '';
@@ -300,399 +276,12 @@ export default function ReviewProgress({
     },
   ];
 
-  const updateProcessJson = async (process: any) => {
-    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-    if (!error && commentData && commentData.length) {
-      const allReviews: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.validation?.review) {
-          allReviews.push(...item?.json?.modellingAndValidation.validation.review);
-        }
-      });
-      const allCompliance: any[] = [];
-      commentData.forEach((item: any) => {
-        if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
-          allCompliance.push(
-            ...item?.json?.modellingAndValidation.complianceDeclarations.compliance,
-          );
-        }
-      });
-
-      const json = mergeCommentDataIntoProcessJson(process.json, allReviews, allCompliance);
-      await updateProcessApi(dataId, dataVersion, { json_ordered: json });
-    }
-  };
-  const updateReviewDataToPublic = async (id: string, version: string) => {
-    const result = [];
-    const controller = new ConcurrencyController(5);
-    const { data: process, success } = await getProcessDetail(id, version);
-    if (success) {
-      await updateProcessJson(process);
-      if (process?.stateCode !== 100 && process?.stateCode !== 200) {
-        result.push({
-          '@refObjectId': process?.id,
-          '@version': process?.version,
-          '@type': 'process data set',
-        });
-      }
-
-      const refs = getAllRefObj(process?.json);
-      if (refs.length) {
-        const teamId = await getUserTeamId();
-        const getReferences = (
-          refs: any[],
-          checkedIds = new Set<string>(),
-          requestKeysSet?: Set<string>,
-        ) => {
-          const requestKeys = requestKeysSet || new Set<string>();
-          for (const ref of refs) {
-            if (checkedIds.has(ref['@refObjectId'])) continue;
-            checkedIds.add(ref['@refObjectId']);
-
-            const key = `${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`;
-            if (!requestKeys.has(key)) {
-              requestKeys.add(key);
-              controller.add(async () => {
-                const refResult = await getRefData(
-                  ref['@refObjectId'],
-                  ref['@version'],
-                  getRefTableName(ref['@type']),
-                  teamId,
-                );
-
-                if (refResult.success) {
-                  const refData = refResult?.data;
-                  if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-                    result.push(ref);
-                  }
-                  const json = refData?.json;
-                  const subRefs = getAllRefObj(json);
-                  if (subRefs.length) {
-                    getReferences(subRefs, checkedIds, requestKeys);
-                  }
-                }
-              });
-            }
-          }
-        };
-        getReferences(refs);
-        await controller.waitForAll();
-      }
-    }
-    for (const item of result) {
-      controller.add(async () => {
-        await updateStateCodeApi(
-          item['@refObjectId'] ?? '',
-          item['@version'] ?? '',
-          getRefTableName(item['@type'] ?? ''),
-          100,
-        );
-      });
-    }
-    await controller.waitForAll();
-  };
-  const approveProcessReview = async () => {
-    setSpinning(true);
-    await updateReviewDataToPublic(dataId, dataVersion);
-    const { error } = await updateCommentApi(
-      reviewId,
-      {
-        state_code: 2,
-      },
-      tabType,
-    );
-
-    const newReviewJson = await getNewReviewJson('approved', reviewId);
-    const { error: error2 } = await updateReviewApi([reviewId], {
-      state_code: 2,
-      json: newReviewJson,
-    });
-
-    if (!error && !error2) {
-      message.success(
-        intl.formatMessage({
-          id: 'pages.review.ReviewProcessDetail.assigned.success',
-          defaultMessage: 'Review approved successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      actionRef.current?.reload();
-    }
-    setSpinning(false);
-  };
-
-  // model
-  const updateLifeCycleModelJson = async (lifeCycleModel: any) => {
-    const { data: commentData, error } = await getCommentApi(reviewId, tabType);
-    if (error || !commentData || commentData.length === 0) {
-      return {
-        ok: true as const,
-        newLifeCycleModel: lifeCycleModel,
-        commentReview: [],
-        commentCompliance: [],
-      };
-    }
-
-    const allReviews: any[] = [];
-    commentData.forEach((item: any) => {
-      if (item?.json?.modellingAndValidation?.validation?.review) {
-        allReviews.push(...item?.json?.modellingAndValidation.validation.review);
-      }
-    });
-    const allCompliance: any[] = [];
-    commentData.forEach((item: any) => {
-      if (item?.json?.modellingAndValidation?.complianceDeclarations?.compliance) {
-        allCompliance.push(...item?.json?.modellingAndValidation.complianceDeclarations.compliance);
-      }
-    });
-
-    const _review =
-      lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation?.review;
-    const _compliance =
-      lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.complianceDeclarations
-        ?.compliance;
-    const json = {
-      ...lifeCycleModel?.json,
-    };
-    json.lifeCycleModelDataSet.modellingAndValidation = {
-      ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation,
-      validation: {
-        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation?.validation,
-        review: Array.isArray(_review)
-          ? [..._review, ...allReviews]
-          : _review
-            ? [_review, ...allReviews]
-            : [...allReviews],
-      },
-      complianceDeclarations: {
-        ...lifeCycleModel?.json?.lifeCycleModelDataSet?.modellingAndValidation
-          ?.complianceDeclarations,
-        compliance: Array.isArray(_compliance)
-          ? [..._compliance, ...allCompliance]
-          : _compliance
-            ? [_compliance, ...allCompliance]
-            : [...allCompliance],
-      },
-    };
-    const result = await updateLifeCycleModelJsonApi(dataId, dataVersion, json, {
-      commentReview: allReviews,
-      commentCompliance: allCompliance,
-    });
-    if (!result.ok) {
-      return {
-        ok: false as const,
-        message: result.message ?? 'Failed to update lifecycle model review data',
-      };
-    }
-
-    return {
-      ok: true as const,
-      newLifeCycleModel: result.lifecycleModel ?? lifeCycleModel,
-      commentReview: allReviews,
-      commentCompliance: allCompliance,
-    };
-  };
-
-  // Helper function: Merge commentReview and commentCompliance into process review and compliance fields
-  const updateProcessWithCommentData = async (
-    processId: string,
-    processVersion: string,
-    commentReview: any[],
-    commentCompliance: any[],
-  ) => {
-    const { data: process } = await getProcessDetail(processId, processVersion);
-    if (!process) return;
-
-    const json = mergeCommentDataIntoProcessJson(process.json, commentReview, commentCompliance);
-    await updateProcessApi(processId, processVersion, { json_ordered: json });
-  };
-
-  // Helper function: Batch update review and compliance fields for processes
-  const updateSubmodelProcessesWithCommentData = async (
-    processParams: Array<{ id: string; version: string }>,
-    commentReview: any[],
-    commentCompliance: any[],
-  ) => {
-    if (
-      processParams.length === 0 ||
-      (commentReview.length === 0 && commentCompliance.length === 0)
-    ) {
-      return;
-    }
-
-    // 1. Batch fetch process details
-    const dedupedProcessParams = Array.from(
-      new Map(processParams.map((item) => [`${item.id}:${item.version}`, item])).values(),
-    );
-    const { data: processes } = await getProcessDetailByIdAndVersion(dedupedProcessParams);
-
-    // 2. Concurrently update all processes
-    const controller = new ConcurrencyController(5);
-    for (const process of processes) {
-      controller.add(async () => {
-        await updateProcessWithCommentData(
-          process.id,
-          process.version,
-          commentReview,
-          commentCompliance,
-        );
-      });
-    }
-    await controller.waitForAll();
-  };
-
-  const updateModelReviewDataToPublic = async (modelId: string, modelVersion: string) => {
-    const result: any[] = [];
-    const teamId = await getUserTeamId();
-    const getReferences = async (refs: any[], checkedKeys = new Set<string>()) => {
-      for (const ref of refs) {
-        if (checkedKeys.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) continue;
-        checkedKeys.add(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
-
-        const refResult = await getRefData(
-          ref['@refObjectId'],
-          ref['@version'],
-          getRefTableName(ref['@type']),
-          teamId,
-        );
-
-        if (refResult.success && refResult?.data) {
-          const refData = refResult?.data;
-          if (refData?.stateCode !== 100 && refData?.stateCode !== 200) {
-            result.push(ref);
-            const json = refData?.json;
-            const subRefs = getAllRefObj(json);
-            await getReferences(subRefs, checkedKeys);
-          }
-          if (ref['@type'] === 'process data set') {
-            const { data: sameModelWithProcress } = await getLifeCycleModelDetail(
-              ref['@refObjectId'],
-              ref['@version'],
-            );
-            if (sameModelWithProcress) {
-              const modelRefs = getAllRefObj(sameModelWithProcress);
-              await getReferences(modelRefs, checkedKeys);
-            }
-          }
-        }
-      }
-    };
-
-    const { data: lifeCycleModel, success } = await getLifeCycleModelDetail(modelId, modelVersion);
-    if (!success) {
-      return {
-        ok: false as const,
-        message: 'Failed to load lifecycle model before approving review',
-      };
-    }
-
-    if (success) {
-      const updateModelRes = await updateLifeCycleModelJson(lifeCycleModel);
-      if (!updateModelRes.ok) {
-        return updateModelRes;
-      }
-      const { newLifeCycleModel, commentReview, commentCompliance } = updateModelRes;
-      const submodels = Array.isArray(lifeCycleModel?.json_tg?.submodels)
-        ? lifeCycleModel.json_tg.submodels
-        : lifeCycleModel?.json_tg?.submodels
-          ? [lifeCycleModel.json_tg.submodels]
-          : [];
-      const currentSubmodelIds = new Set(
-        submodels
-          .map((item: any) => item?.id)
-          .filter((submodelId: string | undefined): submodelId is string => Boolean(submodelId)),
-      );
-
-      if (lifeCycleModel?.stateCode !== 100 && lifeCycleModel?.stateCode !== 200) {
-        result.push({
-          '@refObjectId': modelId,
-          '@version': modelVersion,
-          '@type': 'lifeCycleModel data set',
-        });
-      }
-      const { data: sameProcressWithModel } = await getProcessDetail(modelId, modelVersion);
-      if (sameProcressWithModel) {
-        if (sameProcressWithModel?.stateCode !== 100 && sameProcressWithModel?.stateCode !== 200) {
-          result.push({
-            '@refObjectId': sameProcressWithModel?.id,
-            '@version': sameProcressWithModel?.version,
-            '@type': 'process data set',
-          });
-        }
-      }
-
-      const modelRefs = getAllRefObj(newLifeCycleModel);
-      if (modelRefs.length) {
-        await getReferences(modelRefs);
-        const procressRefs = modelRefs.filter((item) => item['@type'] === 'process data set');
-        for (const procress of procressRefs) {
-          const { data: sameModeWithProcress, success } = await getLifeCycleModelDetail(
-            procress['@refObjectId'],
-            procress['@version'],
-          );
-          if (
-            success &&
-            sameModeWithProcress?.stateCode !== 100 &&
-            sameModeWithProcress?.stateCode !== 200
-          ) {
-            result.push({
-              '@refObjectId': sameModeWithProcress?.id,
-              '@version': sameModeWithProcress?.version,
-              '@type': 'lifeCycleModel data set',
-            });
-          }
-        }
-      }
-      if (submodels.length > 0) {
-        submodels.forEach((item: any) => {
-          result.push({
-            '@refObjectId': item.id,
-            '@version': modelVersion,
-            '@type': 'process data set',
-          });
-        });
-      }
-      // Batch update the review and compliance fields of the process
-      const processParams = result
-        .filter((item) => item['@type'] === 'process data set')
-        .map((item) => ({ id: item['@refObjectId'], version: item['@version'] }))
-        .filter((item) => !currentSubmodelIds.has(item.id));
-      await updateSubmodelProcessesWithCommentData(processParams, commentReview, commentCompliance);
-    }
-    for (const item of result) {
-      await updateStateCodeApi(
-        item['@refObjectId'],
-        item['@version'],
-        getRefTableName(item['@type']),
-        100,
-      );
-    }
-
-    return {
-      ok: true as const,
-    };
-  };
-  const approveModelReview = async () => {
+  const approveReview = async (table: ReviewSubmitDatasetTable) => {
     setSpinning(true);
     try {
-      const publishResult = await updateModelReviewDataToPublic(dataId, dataVersion);
-      if (!publishResult.ok) {
-        message.error(publishResult.message);
-        return;
-      }
+      const result = await approveReviewApi(reviewId, table);
 
-      const { error } = await updateCommentApi(
-        reviewId,
-        {
-          state_code: 2,
-        },
-        tabType,
-      );
-
-      const { error: error2 } = await updateReviewApi([reviewId], {
-        state_code: 2,
-      });
-      if (!error && !error2) {
+      if (!result.error) {
         message.success(
           intl.formatMessage({
             id: 'pages.review.ReviewProcessDetail.assigned.success',
@@ -704,7 +293,7 @@ export default function ReviewProgress({
         return;
       }
 
-      message.error('Failed to approve review');
+      message.error(result.error.message || 'Failed to approve review');
     } catch (error: any) {
       message.error(error?.message ?? 'Failed to approve review');
     } finally {
@@ -714,6 +303,7 @@ export default function ReviewProgress({
 
   return (
     <>
+      {contextHolder}
       <Tooltip
         title={
           <FormattedMessage
@@ -753,7 +343,9 @@ export default function ReviewProgress({
           <Space className={styles.footer_right}>
             <Button
               type='primary'
-              onClick={actionType === 'process' ? approveProcessReview : approveModelReview}
+              onClick={() =>
+                approveReview(actionType === 'process' ? 'processes' : 'lifecyclemodels')
+              }
             >
               <FormattedMessage
                 id='pages.review.ReviewProcessDetail.assigned.save'
@@ -762,9 +354,9 @@ export default function ReviewProgress({
             </Button>
             <RejectReview
               buttonType='text'
-              isModel={false}
+              isModel={actionType === 'model'}
               dataId={dataId}
-              dataVersion={dataId}
+              dataVersion={dataVersion}
               reviewId={reviewId}
               key={0}
               actionRef={actionRef}
