@@ -55,7 +55,7 @@ alter table public.flowproperties
 
 alter table public.flowproperties
   add constraint flowproperties_state_code_check
-  check (state_code in (0, 100, 200));
+  check (state_code in (0, 20, 100, 200));
 
 alter table public.flows
   drop constraint if exists flows_state_code_check;
