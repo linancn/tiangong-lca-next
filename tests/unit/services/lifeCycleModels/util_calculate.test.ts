@@ -2257,6 +2257,42 @@ describe('genLifeCycleModelProcesses', () => {
     expect(result.lifeCycleModelProcesses).toEqual([]);
   });
 
+  it('re-applies a fallback empty connections array after rebuilding process instances', async () => {
+    const data = createLifeCycleModelData();
+    const processInstances = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
+    delete processInstances[2].connections;
+
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    await genLifeCycleModelProcesses('model-missing-connections', [], data, []);
+
+    const updatedProcessInstances = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
+
+    expect(updatedProcessInstances[0].connections.outputExchange[0]['@flowUUID']).toBe(
+      'flow-A-final',
+    );
+    expect(updatedProcessInstances[1].connections).toEqual({
+      outputExchange: [
+        {
+          '@flowUUID': 'flow-B-to-A',
+          downstreamProcess: {
+            '@id': 'nodeA',
+          },
+        },
+        {
+          '@flowUUID': 'flow-B-to-C',
+          downstreamProcess: {
+            '@id': 'nodeC',
+          },
+        },
+      ],
+    });
+    expect(updatedProcessInstances[2].connections).toEqual([]);
+  });
+
   it('marks disconnected component edges as none and keeps their single input flow as mainInputFlowUUID', async () => {
     const data = {
       lifeCycleModelDataSet: {

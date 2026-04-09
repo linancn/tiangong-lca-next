@@ -24,7 +24,6 @@ import type {
   LifeCycleModelMutationResult,
   LifeCycleModelPersistencePlan,
 } from './data';
-import { ensureFirstMissingProcessInstanceConnectionsArray } from './normalization';
 import {
   buildDeleteLifeCycleModelBundlePayload,
   buildReviewUpdateLifeCycleModelPersistencePlan,
@@ -211,21 +210,18 @@ export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMut
   if (validationError) {
     return buildLangValidationError(validationError);
   }
-  const newLifeCycleModelJsonOrdered = ensureFirstMissingProcessInstanceConnectionsArray(
-    normalizedLifeCycleModelJsonOrdered,
-  );
 
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
-    newLifeCycleModelJsonOrdered,
+    normalizedLifeCycleModelJsonOrdered,
     [],
   );
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
     mode: 'create',
     modelId: data.id,
-    lifeCycleModelJsonOrdered: newLifeCycleModelJsonOrdered,
+    lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     nodes: data?.model?.nodes ?? [],
     edges: data?.model?.edges ?? [],
     up2DownEdges,
@@ -268,14 +264,11 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   if (validationError) {
     return buildLangValidationError(validationError);
   }
-  const newLifeCycleModelJsonOrdered = ensureFirstMissingProcessInstanceConnectionsArray(
-    normalizedLifeCycleModelJsonOrdered,
-  );
 
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
     data?.model?.nodes ?? [],
-    newLifeCycleModelJsonOrdered,
+    normalizedLifeCycleModelJsonOrdered,
     oldSubmodels,
   );
 
@@ -289,7 +282,7 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
     mode: 'update',
     modelId: data.id,
     version: data.version,
-    lifeCycleModelJsonOrdered: newLifeCycleModelJsonOrdered,
+    lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     nodes: data?.model?.nodes ?? [],
     edges: data?.model?.edges ?? [],
     up2DownEdges,

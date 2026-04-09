@@ -795,34 +795,42 @@ describe('createLifeCycleModel', () => {
         },
       }),
     });
-    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
-      lifeCycleModelProcesses: [
-        {
-          option: 'update',
-          modelInfo: { id: sampleProcessId, type: 'primary', finalId: {} },
-          data: { processDataSet: buildProcessDataSet() },
-        },
-        {
-          modelInfo: { id: secondaryProcessId, type: 'secondary', finalId: {} },
-          refProcesses: {
-            id: '44444444-4444-4444-4444-444444444444',
-            version: sampleVersion,
-            'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Secondary Ref Process' }],
-          },
-          data: { processDataSet: buildProcessDataSet() },
-        },
-      ],
-      up2DownEdges: [
-        {
-          upstreamNodeId: 'node-a',
-          downstreamNodeId: 'node-b',
-          flowUUID: 'flow-1',
-          isBalanced: false,
-          unbalancedAmount: 2,
-          exchangeAmount: 5,
-        },
-      ],
-    });
+    mockGenLifeCycleModelProcesses.mockImplementationOnce(
+      async (_id: string, _nodes: any[], json) => {
+        json.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance[0].connections =
+          [];
+        return {
+          lifeCycleModelProcesses: [
+            {
+              option: 'update',
+              modelInfo: { id: sampleProcessId, type: 'primary', finalId: {} },
+              data: { processDataSet: buildProcessDataSet() },
+            },
+            {
+              modelInfo: { id: secondaryProcessId, type: 'secondary', finalId: {} },
+              refProcesses: {
+                id: '44444444-4444-4444-4444-444444444444',
+                version: sampleVersion,
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Secondary Ref Process' },
+                ],
+              },
+              data: { processDataSet: buildProcessDataSet() },
+            },
+          ],
+          up2DownEdges: [
+            {
+              upstreamNodeId: 'node-a',
+              downstreamNodeId: 'node-b',
+              flowUUID: 'flow-1',
+              isBalanced: false,
+              unbalancedAmount: 2,
+              exchangeAmount: 5,
+            },
+          ],
+        };
+      },
+    );
     const edgePayload = buildSaveResult({
       lifecycleModel: {
         id: sampleModelId,
@@ -877,10 +885,6 @@ describe('createLifeCycleModel', () => {
       { id: sampleProcessId, type: 'primary', finalId: {}, version: sampleVersion },
       { id: secondaryProcessId, type: 'secondary', finalId: {}, version: sampleVersion },
     ]);
-    expect(
-      mockGenLifeCycleModelProcesses.mock.calls[0][2].lifeCycleModelDataSet
-        .lifeCycleModelInformation.technology.processes.processInstance[0].connections,
-    ).toEqual([]);
     expect(
       body.parent.jsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
         .processInstance[0].connections,
@@ -1088,41 +1092,47 @@ describe('updateLifeCycleModel', () => {
     mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(
       buildLifecycleModelJsonOrdered(['included-primary']),
     );
-    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
-      lifeCycleModelProcesses: [
-        {
-          option: 'update',
-          modelInfo: {
-            id: 'old-secondary-keep',
-            type: 'primary',
-            finalId: oldSubmodels[0].finalId,
-          },
-          data: { processDataSet: buildProcessDataSet() },
-        },
-        {
-          option: 'create',
-          modelInfo: {
-            id: 'new-secondary-id',
-            type: 'secondary',
-            finalId: {
-              nodeId: 'node-new',
-              processId: 'proc-new',
-              allocatedExchangeDirection: 'output',
-              allocatedExchangeFlowId: 'flow-new',
-            },
-          },
-          refProcesses: [
+    mockGenLifeCycleModelProcesses.mockImplementationOnce(
+      async (_id: string, _nodes: any[], json) => {
+        json.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance[0].connections =
+          [];
+        return {
+          lifeCycleModelProcesses: [
             {
-              id: '55555555-5555-5555-5555-555555555555',
-              version: sampleVersion,
-              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Secondary Ref 2' }],
+              option: 'update',
+              modelInfo: {
+                id: 'old-secondary-keep',
+                type: 'primary',
+                finalId: oldSubmodels[0].finalId,
+              },
+              data: { processDataSet: buildProcessDataSet() },
+            },
+            {
+              option: 'create',
+              modelInfo: {
+                id: 'new-secondary-id',
+                type: 'secondary',
+                finalId: {
+                  nodeId: 'node-new',
+                  processId: 'proc-new',
+                  allocatedExchangeDirection: 'output',
+                  allocatedExchangeFlowId: 'flow-new',
+                },
+              },
+              refProcesses: [
+                {
+                  id: '55555555-5555-5555-5555-555555555555',
+                  version: sampleVersion,
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Secondary Ref 2' }],
+                },
+              ],
+              data: { processDataSet: buildProcessDataSet() },
             },
           ],
-          data: { processDataSet: buildProcessDataSet() },
-        },
-      ],
-      up2DownEdges: [],
-    });
+          up2DownEdges: [],
+        };
+      },
+    );
     mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({
       data: [
         {
@@ -1169,10 +1179,6 @@ describe('updateLifeCycleModel', () => {
     );
     expect(body.mode).toBe('update');
     expect(body.version).toBe(sampleVersion);
-    expect(
-      mockGenLifeCycleModelProcesses.mock.calls[0][2].lifeCycleModelDataSet
-        .lifeCycleModelInformation.technology.processes.processInstance[0].connections,
-    ).toEqual([]);
     expect(
       body.parent.jsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
         .processInstance[0].connections,

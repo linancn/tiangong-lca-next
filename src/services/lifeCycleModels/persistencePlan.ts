@@ -642,7 +642,7 @@ function sameFinalId(oldFinalId: any, process: RawLifeCycleModelProcess) {
 }
 
 function getLifecycleModelRuleVerification(jsonOrdered: any) {
-  const validateResult = createTidasLifeCycleModel(jsonOrdered).validateEnhanced();
+  const validateResult = createTidasLifeCycleModel(clone(jsonOrdered)).validateEnhanced();
   const issues = !validateResult.success
     ? validateResult.error.issues.filter(
         (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
@@ -652,7 +652,7 @@ function getLifecycleModelRuleVerification(jsonOrdered: any) {
 }
 
 function getProcessRuleVerification(jsonOrdered: any) {
-  const validateResult = createTidasProcess(jsonOrdered).validateEnhanced();
+  const validateResult = createTidasProcess(clone(jsonOrdered)).validateEnhanced();
   const issues = !validateResult.success
     ? validateResult.error.issues.filter(
         (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
