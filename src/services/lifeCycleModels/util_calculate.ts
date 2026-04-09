@@ -12,6 +12,7 @@ import {
 import LCIAResultCalculation from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
+import { ensureFirstMissingProcessInstanceConnectionsArray } from './normalization';
 import { allocateSupplyToDemand } from './util_allocate_supply_demand';
 
 /**
@@ -2299,8 +2300,6 @@ export async function genLifeCycleModelProcesses(
     }),
   );
 
-  console.log('sumFinalProductGroups', sumFinalProductGroups);
-
   const primaryProcess = sumFinalProductGroups.find((p) => p?.modelInfo?.type === 'primary');
 
   const refPrimaryProcessExchange = primaryProcess?.data?.processDataSet?.exchanges?.exchange?.find(
@@ -2344,6 +2343,7 @@ export async function genLifeCycleModelProcesses(
 
   lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
     listToJson(newProcessInstance);
+  ensureFirstMissingProcessInstanceConnectionsArray(lifeCycleModelJsonOrdered);
 
   return {
     lifeCycleModelProcesses: sumFinalProductGroups.filter((item) => item !== null),

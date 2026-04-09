@@ -970,6 +970,71 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
     });
   });
 
+  it('preserves persisted payloads when sdk validation mutates its input objects', async () => {
+    const lifeCycleModelJsonOrdered = buildLifecycleModelJsonOrdered();
+    (
+      lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+        .processInstance as any[]
+    )[0].connections = [];
+
+    mockCreateTidasLifeCycleModel.mockImplementation((input: any) => ({
+      validateEnhanced: jest.fn().mockImplementation(() => {
+        delete input.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+          .processInstance[0].connections;
+        return { success: true };
+      }),
+    }));
+    mockCreateTidasProcess.mockImplementation((input: any) => ({
+      validateEnhanced: jest.fn().mockImplementation(() => {
+        delete input.processDataSet.processInformation.technology.referenceToIncludedProcesses;
+        return { success: true };
+      }),
+    }));
+
+    const result = await buildSaveLifeCycleModelPersistencePlan({
+      mode: 'create',
+      modelId: sampleModelId,
+      lifeCycleModelJsonOrdered,
+      nodes: [],
+      edges: [],
+      up2DownEdges: [],
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: {
+            id: 'primary-process',
+            type: 'primary',
+            finalId: { nodeId: 'primary-node' },
+          },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error('Expected sdk-mutation preservation plan to succeed');
+    }
+    const parentJsonOrdered = result.plan.parent.jsonOrdered as any;
+
+    expect(
+      (
+        parentJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+          .processInstance as any[]
+      )[0].connections,
+    ).toEqual([]);
+
+    const processMutation = asUpsertMutation(result.plan.processMutations[0]);
+    expect(
+      processMutation.jsonOrdered.processDataSet.processInformation.technology
+        .referenceToIncludedProcesses,
+    ).toEqual([
+      {
+        '@refObjectId': 'included-primary',
+        '@version': sampleVersion,
+      },
+    ]);
+  });
+
   it('uses the dataset version when args.version is omitted and falls back to an empty version string when none exists', async () => {
     const versionlessJson = {
       lifeCycleModelDataSet: {

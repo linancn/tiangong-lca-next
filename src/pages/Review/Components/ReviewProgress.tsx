@@ -4,6 +4,7 @@ import {
   revokeReviewerApi,
   type ReviewSubmitDatasetTable,
 } from '@/services/reviews/api';
+import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { getUsersByIds } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DeleteOutlined, FileSyncOutlined } from '@ant-design/icons';
@@ -55,7 +56,7 @@ export default function ReviewProgress({
       if (reviewStateResult && reviewStateResult.length) {
         const reviewerIds: string[] = [];
         reviewStateResult.forEach((item: any) => {
-          if (item.state_code >= 0) {
+          if (isCurrentAssignedReviewerCommentState(item.state_code)) {
             tableResult.push(item);
             reviewerIds.push(item.reviewer_id);
           }
@@ -209,7 +210,7 @@ export default function ReviewProgress({
       render: (_, record) => {
         if (record.state_code !== -3) return null;
         let msg = '';
-        const { comment } = record.json;
+        const comment = record.json?.comment;
         try {
           if (!comment) {
             msg = '';

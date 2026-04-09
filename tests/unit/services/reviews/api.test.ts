@@ -881,7 +881,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       created_at: '2024-04-01T00:00:00.000Z',
       modified_at: '2024-04-03T00:00:00.000Z',
       deadline: null,
-      comments: [{ state_code: 1 }],
+      comments: [{ state_code: 1 }, { state_code: -3 }, { state_code: -2 }],
       json: {
         data: {
           id: 'process-2',
@@ -911,19 +911,59 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
     expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
     expect(builder.eq).toHaveBeenCalledWith('state_code', 1);
     expect(builder.select).toHaveBeenCalledWith('*, comments(state_code)');
-    expect(builder.filter).toHaveBeenCalledWith('comments.state_code', 'gte', 0);
+    expect(builder.filter).not.toHaveBeenCalled();
     expect(result.success).toBe(true);
     expect(result).toHaveProperty('page', 2);
     expect(result.total).toBe(1);
     expect(result.data[0]).toMatchObject({
       id: 'review-10',
-      comments: [{ state_code: 1 }],
+      comments: [{ state_code: 1 }, { state_code: -3 }],
       isFromLifeCycle: false,
       teamName: 'Ops Team',
       userName: 'Alice Reviewer',
       modelData: null,
     });
     expect(result.data[0].name).toContain('Review Base');
+  });
+
+  it('falls back to an empty comments array when assigned review comments are not arrays', async () => {
+    const reviewRow = {
+      id: 'review-10-no-array-comments',
+      created_at: '2024-04-01T00:00:00.000Z',
+      modified_at: '2024-04-03T00:00:00.000Z',
+      deadline: null,
+      comments: { state_code: 1 },
+      json: {
+        data: {
+          id: 'process-2',
+          version: '01.00.000',
+          name: {
+            baseName: { en: 'Review Base' },
+            treatmentStandardsRoutes: { en: 'Review Route' },
+            mixAndLocationTypes: { en: 'Review Mix' },
+            functionalUnitFlowProperties: { en: 'Review Unit' },
+          },
+        },
+        team: { name: { en: 'Ops Team' } },
+        user: { name: 'Alice Reviewer' },
+      },
+    };
+    const builder = createQueryBuilder({ data: [reviewRow], count: 1 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      'assigned',
+      'en',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: 'review-10-no-array-comments',
+      comments: [],
+      isFromLifeCycle: false,
+    });
   });
 
   it('returns default empty response when query result has no data field', async () => {
