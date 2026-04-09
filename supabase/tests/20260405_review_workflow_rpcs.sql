@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(34);
+select plan(42);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -470,6 +470,44 @@ values
     '[{"key":0,"id":"53000000-0000-0000-0000-000000000204"}]'::jsonb
   ),
   (
+    '32000000-0000-0000-0000-000000000205',
+    '01.00.000',
+    '{
+      "processDataSet": {
+        "processInformation": {
+          "dataSetInformation": {
+            "name": {
+              "baseName": [
+                { "@xml:lang": "en", "#text": "Sparse Approve Process" }
+              ]
+            }
+          }
+        },
+        "modellingAndValidation": {}
+      }
+    }'::jsonb,
+    '{
+      "processDataSet": {
+        "processInformation": {
+          "dataSetInformation": {
+            "name": {
+              "baseName": [
+                { "@xml:lang": "en", "#text": "Sparse Approve Process" }
+              ]
+            }
+          }
+        },
+        "modellingAndValidation": {}
+      }
+    }'::json,
+    '12000000-0000-0000-0000-000000000001',
+    20,
+    '22000000-0000-0000-0000-000000000001',
+    '42000000-0000-0000-0000-000000000205',
+    true,
+    '[{"key":0,"id":"53000000-0000-0000-0000-000000000205"}]'::jsonb
+  ),
+  (
     '32000000-0000-0000-0000-000000000301',
     '01.00.000',
     '{
@@ -586,6 +624,44 @@ values
     '42000000-0000-0000-0000-000000000302',
     true,
     '[{"key":0,"id":"53000000-0000-0000-0000-000000000301"}]'::jsonb
+  ),
+  (
+    '32000000-0000-0000-0000-000000000305',
+    '01.00.000',
+    '{
+      "processDataSet": {
+        "processInformation": {
+          "dataSetInformation": {
+            "name": {
+              "baseName": [
+                { "@xml:lang": "en", "#text": "Sparse Model Secondary Process" }
+              ]
+            }
+          }
+        },
+        "modellingAndValidation": {}
+      }
+    }'::jsonb,
+    '{
+      "processDataSet": {
+        "processInformation": {
+          "dataSetInformation": {
+            "name": {
+              "baseName": [
+                { "@xml:lang": "en", "#text": "Sparse Model Secondary Process" }
+              ]
+            }
+          }
+        },
+        "modellingAndValidation": {}
+      }
+    }'::json,
+    '12000000-0000-0000-0000-000000000001',
+    20,
+    '22000000-0000-0000-0000-000000000001',
+    '42000000-0000-0000-0000-000000000305',
+    true,
+    '[{"key":0,"id":"53000000-0000-0000-0000-000000000304"}]'::jsonb
   );
 
 insert into public.lifecyclemodels (
@@ -718,6 +794,44 @@ values
     '22000000-0000-0000-0000-000000000001',
     true,
     '[{"key":0,"id":"53000000-0000-0000-0000-000000000303"}]'::jsonb
+  ),
+  (
+    '32000000-0000-0000-0000-000000000304',
+    '01.00.000',
+    '{
+      "lifeCycleModelDataSet": {
+        "lifeCycleModelInformation": {
+          "dataSetInformation": {
+            "name": [
+              { "@xml:lang": "en", "#text": "Sparse Approve Model" }
+            ]
+          }
+        },
+        "modellingAndValidation": {}
+      }
+    }'::jsonb,
+    '{
+      "lifeCycleModelDataSet": {
+        "lifeCycleModelInformation": {
+          "dataSetInformation": {
+            "name": [
+              { "@xml:lang": "en", "#text": "Sparse Approve Model" }
+            ]
+          }
+        },
+        "modellingAndValidation": {}
+      }
+    }'::json,
+    '{
+      "submodels": [
+        { "id": "32000000-0000-0000-0000-000000000305", "type": "secondary" }
+      ]
+    }'::jsonb,
+    '12000000-0000-0000-0000-000000000001',
+    20,
+    '22000000-0000-0000-0000-000000000001',
+    true,
+    '[{"key":0,"id":"53000000-0000-0000-0000-000000000304"}]'::jsonb
   );
 
 insert into public.reviews (
@@ -786,6 +900,20 @@ values
     }'::jsonb
   ),
   (
+    '53000000-0000-0000-0000-000000000205',
+    '32000000-0000-0000-0000-000000000205',
+    '01.00.000',
+    1,
+    '["12000000-0000-0000-0000-000000000011"]'::jsonb,
+    '{
+      "data": { "id": "32000000-0000-0000-0000-000000000205", "version": "01.00.000" },
+      "team": { "id": "22000000-0000-0000-0000-000000000001", "name": "Review Team" },
+      "user": { "id": "12000000-0000-0000-0000-000000000001", "name": "Review Owner", "email": "review-owner@example.com" },
+      "comment": { "message": "" },
+      "logs": []
+    }'::jsonb
+  ),
+  (
     '53000000-0000-0000-0000-000000000301',
     '32000000-0000-0000-0000-000000000301',
     '01.00.000',
@@ -807,6 +935,20 @@ values
     '["12000000-0000-0000-0000-000000000011"]'::jsonb,
     '{
       "data": { "id": "32000000-0000-0000-0000-000000000303", "version": "01.00.000" },
+      "team": { "id": "22000000-0000-0000-0000-000000000001", "name": "Review Team" },
+      "user": { "id": "12000000-0000-0000-0000-000000000001", "name": "Review Owner", "email": "review-owner@example.com" },
+      "comment": { "message": "" },
+      "logs": []
+    }'::jsonb
+  ),
+  (
+    '53000000-0000-0000-0000-000000000304',
+    '32000000-0000-0000-0000-000000000304',
+    '01.00.000',
+    1,
+    '["12000000-0000-0000-0000-000000000011"]'::jsonb,
+    '{
+      "data": { "id": "32000000-0000-0000-0000-000000000304", "version": "01.00.000" },
       "team": { "id": "22000000-0000-0000-0000-000000000001", "name": "Review Team" },
       "user": { "id": "12000000-0000-0000-0000-000000000001", "name": "Review Owner", "email": "review-owner@example.com" },
       "comment": { "message": "" },
@@ -882,6 +1024,32 @@ values
     1
   ),
   (
+    '53000000-0000-0000-0000-000000000205',
+    '12000000-0000-0000-0000-000000000011',
+    '{
+      "modellingAndValidation": {
+        "validation": {
+          "review": [
+            {
+              "common:scope": [
+                {
+                  "@name": "Reviewer sparse process scope",
+                  "common:method": { "@name": "Reviewer sparse process method" }
+                }
+              ]
+            }
+          ]
+        },
+        "complianceDeclarations": {
+          "compliance": [
+            { "common:approvalOfOverallCompliance": "Reviewer sparse process compliance" }
+          ]
+        }
+      }
+    }'::json,
+    1
+  ),
+  (
     '53000000-0000-0000-0000-000000000301',
     '12000000-0000-0000-0000-000000000011',
     '{
@@ -929,6 +1097,32 @@ values
         "complianceDeclarations": {
           "compliance": [
             { "common:approvalOfOverallCompliance": "Broken model compliance" }
+          ]
+        }
+      }
+    }'::json,
+    1
+  ),
+  (
+    '53000000-0000-0000-0000-000000000304',
+    '12000000-0000-0000-0000-000000000011',
+    '{
+      "modellingAndValidation": {
+        "validation": {
+          "review": [
+            {
+              "common:scope": [
+                {
+                  "@name": "Reviewer sparse model scope",
+                  "common:method": { "@name": "Reviewer sparse model method" }
+                }
+              ]
+            }
+          ]
+        },
+        "complianceDeclarations": {
+          "compliance": [
+            { "common:approvalOfOverallCompliance": "Reviewer sparse model compliance" }
           ]
         }
       }
@@ -1158,6 +1352,34 @@ select is(
 );
 
 select is(
+  public.cmd_review_approve(
+    'processes',
+    '53000000-0000-0000-0000-000000000205',
+    '{"command":"review_approve"}'::jsonb
+  )->>'ok',
+  'true',
+  'review admin can approve a sparse process review when review and compliance fields are missing'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,validation,review,0,common:scope,0,@name}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000205'
+     and version = '01.00.000'),
+  'Reviewer sparse process scope',
+  'approving a sparse process review creates the missing validation.review field before merging comment content'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,complianceDeclarations,compliance,0,common:approvalOfOverallCompliance}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000205'
+     and version = '01.00.000'),
+  'Reviewer sparse process compliance',
+  'approving a sparse process review creates the missing complianceDeclarations.compliance field before merging comment content'
+);
+
+select is(
   public.cmd_review_reject(
     'processes',
     '53000000-0000-0000-0000-000000000204',
@@ -1254,6 +1476,52 @@ select is(
      and version = '01.00.000'),
   '__missing__',
   'approving a lifecycle model review does not merge complianceDeclarations-level object fields into submodel processes'
+);
+
+select is(
+  public.cmd_review_approve(
+    'lifecyclemodels',
+    '53000000-0000-0000-0000-000000000304',
+    '{"command":"review_approve"}'::jsonb
+  )->>'ok',
+  'true',
+  'review admin can approve a sparse lifecycle model review when review and compliance fields are missing'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{lifeCycleModelDataSet,modellingAndValidation,validation,review,0,common:scope,0,@name}'
+   from public.lifecyclemodels
+   where id = '32000000-0000-0000-0000-000000000304'
+     and version = '01.00.000'),
+  'Reviewer sparse model scope',
+  'approving a sparse lifecycle model review creates the missing model validation.review field before merging comment content'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{lifeCycleModelDataSet,modellingAndValidation,complianceDeclarations,compliance,0,common:approvalOfOverallCompliance}'
+   from public.lifecyclemodels
+   where id = '32000000-0000-0000-0000-000000000304'
+     and version = '01.00.000'),
+  'Reviewer sparse model compliance',
+  'approving a sparse lifecycle model review creates the missing model complianceDeclarations.compliance field before merging comment content'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,validation,review,0,common:scope,0,@name}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000305'
+     and version = '01.00.000'),
+  'Reviewer sparse model scope',
+  'approving a sparse lifecycle model review creates the missing submodel validation.review field before merging comment content'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,complianceDeclarations,compliance,0,common:approvalOfOverallCompliance}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000305'
+     and version = '01.00.000'),
+  'Reviewer sparse model compliance',
+  'approving a sparse lifecycle model review creates the missing submodel complianceDeclarations.compliance field before merging comment content'
 );
 
 select is(
