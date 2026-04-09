@@ -24,6 +24,7 @@ import type {
   LifeCycleModelMutationResult,
   LifeCycleModelPersistencePlan,
 } from './data';
+import { ensureFirstMissingProcessInstanceConnectionsArray } from './normalization';
 import {
   buildDeleteLifeCycleModelBundlePayload,
   buildReviewUpdateLifeCycleModelPersistencePlan,
@@ -204,12 +205,15 @@ async function applyReferenceAwareRuleVerification(
 export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedCreateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
-  const newLifeCycleModelJsonOrdered =
+  const normalizedLifeCycleModelJsonOrdered =
     normalizedCreateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedCreateResult?.validationError;
   if (validationError) {
     return buildLangValidationError(validationError);
   }
+  const newLifeCycleModelJsonOrdered = ensureFirstMissingProcessInstanceConnectionsArray(
+    normalizedLifeCycleModelJsonOrdered,
+  );
 
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,
@@ -258,12 +262,15 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   const oldSubmodels = jsonToList(currentModelResult.data[0].submodels);
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedUpdateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
-  const newLifeCycleModelJsonOrdered =
+  const normalizedLifeCycleModelJsonOrdered =
     normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedUpdateResult?.validationError;
   if (validationError) {
     return buildLangValidationError(validationError);
   }
+  const newLifeCycleModelJsonOrdered = ensureFirstMissingProcessInstanceConnectionsArray(
+    normalizedLifeCycleModelJsonOrdered,
+  );
 
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
     data.id,

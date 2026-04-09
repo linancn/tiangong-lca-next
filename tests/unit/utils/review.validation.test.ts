@@ -774,6 +774,63 @@ describe('review helper coverage', () => {
     });
   });
 
+  it('adds a fallback empty connections array to the first missing lifecycle-model process before sdk validation', () => {
+    const orderedJson = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': '0',
+                  connections: {
+                    outputExchange: [],
+                  },
+                  referenceToProcess: {
+                    '@refObjectId': 'process-0',
+                  },
+                },
+                {
+                  '@dataSetInternalID': '1',
+                  referenceToProcess: {
+                    '@refObjectId': 'process-1',
+                  },
+                },
+                {
+                  '@dataSetInternalID': '2',
+                  referenceToProcess: {
+                    '@refObjectId': 'process-2',
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    const processInstances = orderedJson.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
+
+    expect(validateDatasetWithSdk('lifeCycleModel data set', orderedJson)).toEqual({
+      success: true,
+      issues: [],
+    });
+    const sdkInput = mockCreateLifeCycleModel.mock.calls[0][0];
+    const sdkProcessInstances = sdkInput.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
+
+    expect(sdkProcessInstances[0].connections).toEqual({
+      outputExchange: [],
+    });
+    expect(sdkProcessInstances[1].connections).toEqual([]);
+    expect(sdkProcessInstances[2].connections).toBeUndefined();
+    expect(processInstances[0].connections).toEqual({
+      outputExchange: [],
+    });
+    expect(processInstances[1].connections).toBeUndefined();
+    expect(processInstances[2].connections).toBeUndefined();
+  });
+
   it('falls back to an empty sdk issue list when validation fails without structured issues', () => {
     mockCreateContact.mockImplementation(
       makeSdkFactory({

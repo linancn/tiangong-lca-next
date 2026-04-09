@@ -2,6 +2,7 @@ import type { RefCheckType } from '@/contexts/refCheckContext';
 import { getRejectedCommentsByReviewIds } from '@/services/comments/api';
 import { getRefData, getRefDataByIds } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import { ensureFirstMissingProcessInstanceConnectionsArray } from '@/services/lifeCycleModels/normalization';
 import { FormProcess } from '@/services/processes/data';
 import { getRejectReviewsByProcess, submitDatasetReviewApi } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
@@ -521,6 +522,7 @@ export const validateDatasetWithSdk = (
       };
     }
     case 'lifeCycleModel data set': {
+      ensureFirstMissingProcessInstanceConnectionsArray(sdkValidationInput);
       const result = normalizeSdkValidationResult(
         createTidasLifeCycleModel(sdkValidationInput).validateEnhanced(),
       );

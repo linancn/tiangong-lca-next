@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(26);
+select plan(34);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -833,6 +833,7 @@ values
     '{
       "modellingAndValidation": {
         "validation": {
+          "reviewerValidationMarker": "Reviewer process validation marker",
           "review": [
             {
               "common:scope": [
@@ -845,6 +846,7 @@ values
           ]
         },
         "complianceDeclarations": {
+          "reviewerComplianceMarker": "Reviewer process compliance marker",
           "compliance": [
             { "common:approvalOfOverallCompliance": "Reviewer process compliance" }
           ]
@@ -885,6 +887,7 @@ values
     '{
       "modellingAndValidation": {
         "validation": {
+          "reviewerValidationMarker": "Reviewer model validation marker",
           "review": [
             {
               "common:scope": [
@@ -897,6 +900,7 @@ values
           ]
         },
         "complianceDeclarations": {
+          "reviewerComplianceMarker": "Reviewer model compliance marker",
           "compliance": [
             { "common:approvalOfOverallCompliance": "Reviewer model compliance" }
           ]
@@ -1121,6 +1125,39 @@ select is(
 );
 
 select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,complianceDeclarations,compliance,1,common:approvalOfOverallCompliance}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000203'
+     and version = '01.00.000'),
+  'Reviewer process compliance',
+  'approving a process review merges reviewer compliance content into the root process'
+);
+
+select is(
+  (select coalesce(
+     json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,validation,reviewerValidationMarker}',
+     '__missing__'
+   )
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000203'
+     and version = '01.00.000'),
+  '__missing__',
+  'approving a process review does not merge validation-level object fields into the root process'
+);
+
+select is(
+  (select coalesce(
+     json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,complianceDeclarations,reviewerComplianceMarker}',
+     '__missing__'
+   )
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000203'
+     and version = '01.00.000'),
+  '__missing__',
+  'approving a process review does not merge complianceDeclarations-level object fields into the root process'
+);
+
+select is(
   public.cmd_review_reject(
     'processes',
     '53000000-0000-0000-0000-000000000204',
@@ -1166,6 +1203,57 @@ select is(
      and version = '01.00.000'),
   'Reviewer model scope',
   'approving a lifecycle model review pushes reviewer validation content into submodel processes'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,validation,review,0,common:scope,0,@name}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000302'
+     and version = '01.00.000'),
+  'Old submodel review',
+  'approving a lifecycle model review keeps existing submodel validation content before appending reviewer review content'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,complianceDeclarations,compliance,1,common:approvalOfOverallCompliance}'
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000302'
+     and version = '01.00.000'),
+  'Reviewer model compliance',
+  'approving a lifecycle model review merges reviewer compliance content into submodel processes'
+);
+
+select is(
+  (select jsonb_array_length(json_ordered::jsonb #> '{processDataSet,modellingAndValidation,validation,review}')::text
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000302'
+     and version = '01.00.000'),
+  '2',
+  'approving a lifecycle model review does not duplicate reviewer validation entries in submodel processes'
+);
+
+select is(
+  (select coalesce(
+     json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,validation,reviewerValidationMarker}',
+     '__missing__'
+   )
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000302'
+     and version = '01.00.000'),
+  '__missing__',
+  'approving a lifecycle model review does not merge validation-level object fields into submodel processes'
+);
+
+select is(
+  (select coalesce(
+     json_ordered::jsonb #>> '{processDataSet,modellingAndValidation,complianceDeclarations,reviewerComplianceMarker}',
+     '__missing__'
+   )
+   from public.processes
+   where id = '32000000-0000-0000-0000-000000000302'
+     and version = '01.00.000'),
+  '__missing__',
+  'approving a lifecycle model review does not merge complianceDeclarations-level object fields into submodel processes'
 );
 
 select is(
