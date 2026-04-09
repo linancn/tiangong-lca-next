@@ -9,6 +9,7 @@ import {
   getReviewsTableDataOfReviewMember,
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
+import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Card, Col, Input, Row, Space, Spin, Table, theme } from 'antd';
@@ -292,7 +293,10 @@ const AssignmentReview = ({
           sorter: false,
           search: false,
           render: (_: any, record: ReviewsTable) => {
-            const total = record.comments?.filter((item: any) => item.state_code >= 0).length ?? 0;
+            const total =
+              record.comments?.filter((item: any) =>
+                isCurrentAssignedReviewerCommentState(item.state_code),
+              ).length ?? 0;
             const reviewed =
               record.comments?.filter((item: any) => item.state_code === 1).length ?? 0;
             return [<Space key={0}>{`${reviewed}/${total}`}</Space>];

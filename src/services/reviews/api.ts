@@ -10,6 +10,7 @@ import { getPendingComment, getRejectedComment, getReviewedComment } from '../co
 import { getLangText } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
+import { isCurrentAssignedReviewerCommentState } from './util';
 
 export type ReviewSubmitDatasetTable = Extract<
   TidasPackageRootTable,
@@ -276,10 +277,7 @@ export async function getReviewsTableDataOfReviewAdmin(
       break;
     }
     case 'assigned': {
-      query = query
-        .eq('state_code', 1)
-        .select('*, comments(state_code)')
-        .filter('comments.state_code', 'gte', 0);
+      query = query.eq('state_code', 1).select('*, comments(state_code)');
       break;
     }
     case 'admin-rejected': {
@@ -327,7 +325,11 @@ export async function getReviewsTableDataOfReviewAdmin(
         modifiedAt: new Date(i?.modified_at).toISOString(),
         deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
         json: i?.json,
-        comments: i?.comments,
+        comments: Array.isArray(i?.comments)
+          ? i.comments.filter((comment: { state_code: number }) =>
+              isCurrentAssignedReviewerCommentState(comment.state_code),
+            )
+          : [],
         modelData: model
           ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
           : null,

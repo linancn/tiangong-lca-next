@@ -260,7 +260,8 @@ describe('SelectReviewer component', () => {
     const actionRef = { current: { reload: jest.fn() } };
     mockGetReviewerIdsByReviewId.mockResolvedValue([
       { reviewer_id: 'user-1', state_code: 0 },
-      { reviewer_id: 'user-3', state_code: -1 },
+      { reviewer_id: 'user-3', state_code: -3 },
+      { reviewer_id: 'user-4', state_code: -2 },
     ]);
     mockGetReviewsDetail.mockResolvedValue({
       deadline: '2026-03-20T10:00:00.000Z',
@@ -279,9 +280,21 @@ describe('SelectReviewer component', () => {
           display_name: 'User Two',
           role: 'review-member',
         },
+        {
+          user_id: 'user-3',
+          email: 'user3@example.com',
+          display_name: 'User Three',
+          role: 'review-member',
+        },
+        {
+          user_id: 'user-4',
+          email: 'user4@example.com',
+          display_name: 'User Four',
+          role: 'review-member',
+        },
       ],
       success: true,
-      total: 2,
+      total: 4,
     });
 
     render(<SelectReviewer reviewIds={['review-1']} tabType='assigned' actionRef={actionRef} />);
@@ -293,6 +306,8 @@ describe('SelectReviewer component', () => {
     await waitFor(() => expect(screen.getByText('user2@example.com')).toBeInTheDocument());
 
     expect(screen.queryByText('user1@example.com')).not.toBeInTheDocument();
+    expect(screen.queryByText('user3@example.com')).not.toBeInTheDocument();
+    expect(screen.getByText('user4@example.com')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Temporary Save' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText('select-row'));
@@ -303,7 +318,7 @@ describe('SelectReviewer component', () => {
 
     expect(mockAssignReviewersApi).toHaveBeenCalledWith(
       ['review-1'],
-      ['user-1', 'user-2'],
+      ['user-1', 'user-3', 'user-2'],
       '2026-03-20T10:00:00.000Z',
     );
     expect(message.success).toHaveBeenCalledWith('Save success');

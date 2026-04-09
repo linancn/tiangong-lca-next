@@ -6,6 +6,7 @@ import {
   getReviewsDetail,
   saveReviewAssignmentDraftApi,
 } from '@/services/reviews/api';
+import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { getReviewMembersApi } from '@/services/roles/api';
 import { TeamMemberTable } from '@/services/teams/data';
 import styles from '@/style/custom.less';
@@ -57,7 +58,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         case 'assigned': {
           const result = await getReviewerIdsByReviewId(reviewIds[0] as string);
           const keys = (result ?? [])
-            .filter((item: any) => item.state_code >= 0)
+            .filter((item: any) => isCurrentAssignedReviewerCommentState(item.state_code))
             .map((item: any) => item.reviewer_id);
           const riviewDetail = await getReviewsDetail(reviewIds[0] as string);
           if (riviewDetail?.deadline) {

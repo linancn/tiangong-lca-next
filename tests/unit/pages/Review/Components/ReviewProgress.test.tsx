@@ -268,7 +268,7 @@ describe('ReviewProgress component', () => {
     return { actionRef };
   };
 
-  it('loads assigned reviewers and filters out negative comment states', async () => {
+  it('loads assigned reviewers and keeps reviewer rejections visible in the drawer', async () => {
     mockGetCommentApi.mockResolvedValue({
       data: [
         {
@@ -285,7 +285,7 @@ describe('ReviewProgress component', () => {
           reviewer_name: '',
           state_code: -3,
           updated_at: '2024-01-01T00:00:00Z',
-          json: { comment: { message: 'Rejected' } },
+          json: { comment: { message: 'Detailed rejection note' } },
         },
       ],
     });
@@ -300,8 +300,10 @@ describe('ReviewProgress component', () => {
 
     await waitFor(() => expect(mockGetCommentApi).toHaveBeenCalledWith('review-1', 'assigned'));
     await waitFor(() => expect(screen.getByText('Reviewer Two')).toBeInTheDocument());
-    expect(screen.queryByText('Reviewer Three')).not.toBeInTheDocument();
+    expect(screen.getByText('Reviewer Three')).toBeInTheDocument();
     expect(screen.getByText('Pending Review')).toBeInTheDocument();
+    expect(screen.getByText('Rejected')).toBeInTheDocument();
+    expect(screen.getByText('Detailed rejection note')).toBeInTheDocument();
   });
 
   it('revokes reviewers through the review workflow command boundary', async () => {

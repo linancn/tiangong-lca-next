@@ -342,7 +342,7 @@ describe('AssignmentReview', () => {
           name: 'Assigned Model Review',
           userName: 'Owner',
           isFromLifeCycle: true,
-          comments: [{ state_code: 0 }, { state_code: 1 }, { state_code: -1 }],
+          comments: [{ state_code: 0 }, { state_code: 1 }, { state_code: -3 }, { state_code: -2 }],
           json: {
             data: { id: 'model-3', version: '3.0.0' },
             user: { id: 'user-3' },
@@ -370,7 +370,7 @@ describe('AssignmentReview', () => {
     );
 
     await waitFor(() => expect(screen.getByTestId('row-review-3')).toBeInTheDocument());
-    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByText('1/3')).toBeInTheDocument();
     expect(screen.getByTestId('review-lifecycle-detail')).toHaveTextContent(
       'view:assigned:review-3',
     );
