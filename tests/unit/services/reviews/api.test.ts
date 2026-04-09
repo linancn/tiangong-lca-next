@@ -926,6 +926,46 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
     expect(result.data[0].name).toContain('Review Base');
   });
 
+  it('falls back to an empty comments array when assigned review comments are not arrays', async () => {
+    const reviewRow = {
+      id: 'review-10-no-array-comments',
+      created_at: '2024-04-01T00:00:00.000Z',
+      modified_at: '2024-04-03T00:00:00.000Z',
+      deadline: null,
+      comments: { state_code: 1 },
+      json: {
+        data: {
+          id: 'process-2',
+          version: '01.00.000',
+          name: {
+            baseName: { en: 'Review Base' },
+            treatmentStandardsRoutes: { en: 'Review Route' },
+            mixAndLocationTypes: { en: 'Review Mix' },
+            functionalUnitFlowProperties: { en: 'Review Unit' },
+          },
+        },
+        team: { name: { en: 'Ops Team' } },
+        user: { name: 'Alice Reviewer' },
+      },
+    };
+    const builder = createQueryBuilder({ data: [reviewRow], count: 1 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      'assigned',
+      'en',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: 'review-10-no-array-comments',
+      comments: [],
+      isFromLifeCycle: false,
+    });
+  });
+
   it('returns default empty response when query result has no data field', async () => {
     const builder = createQueryBuilder({ count: 0 });
     mockFrom.mockReturnValueOnce(builder);
