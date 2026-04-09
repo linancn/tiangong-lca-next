@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = extensions, public, auth;
 
-select plan(42);
+select plan(44);
 
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
@@ -1410,6 +1410,24 @@ select is(
   )->>'ok',
   'true',
   'review admin can approve a lifecycle model review in one command'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{lifeCycleModelDataSet,modellingAndValidation,validation,review,1,common:scope,0,@name}'
+   from public.lifecyclemodels
+   where id = '32000000-0000-0000-0000-000000000301'
+     and version = '01.00.000'),
+  'Reviewer model scope',
+  'approving a lifecycle model review merges reviewer validation content into the root lifecycle model'
+);
+
+select is(
+  (select json_ordered::jsonb #>> '{lifeCycleModelDataSet,modellingAndValidation,complianceDeclarations,compliance,1,common:approvalOfOverallCompliance}'
+   from public.lifecyclemodels
+   where id = '32000000-0000-0000-0000-000000000301'
+     and version = '01.00.000'),
+  'Reviewer model compliance',
+  'approving a lifecycle model review merges reviewer compliance content into the root lifecycle model'
 );
 
 select is(
