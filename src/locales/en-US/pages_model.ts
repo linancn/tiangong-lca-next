@@ -291,9 +291,6 @@ export default {
   'pages.lifecyclemodel.validator.licenseType.required': 'Please input license type',
   'pages.lifecyclemodel.validator.nodes.required': 'Please add node',
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': 'Please select a node as reference',
-  'pages.lifecyclemodel.validator.exchanges.required': 'Please add connection line',
-  'pages.lifecyclemodel.validator.exchanges.required.length': 'Please complete the connection line',
-
   'pages.lifecyclemodel.review.submitSuccess': 'Review submitted successfully',
   'pages.lifecyclemodel.review.submitError': 'Submit review failed',
   'pages.lifecyclemodel.review.error': 'Referenced data is under review, cannot initiate another review',

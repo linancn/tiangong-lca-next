@@ -696,7 +696,12 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
       validateEnhanced: jest.fn().mockReturnValue({
         success: false,
         error: {
-          issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+          issues: [
+            { path: 'lifeCycleModelDataSet.modellingAndValidation.validation.review' },
+            {
+              path: 'lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance',
+            },
+          ],
         },
       }),
     });
@@ -705,7 +710,10 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
         validateEnhanced: jest.fn().mockReturnValue({
           success: false,
           error: {
-            issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+            issues: [
+              { path: 'processDataSet.modellingAndValidation.validation.review' },
+              { path: 'processDataSet.modellingAndValidation.complianceDeclarations.compliance' },
+            ],
           },
         }),
       })

@@ -81,6 +81,12 @@ const { getUserId: mockGetUserId, getUsersByIds: mockGetUsersByIds } = jest.requ
   getUsersByIds: jest.Mock;
 };
 
+const { getLifeCycleModelDetail: mockGetLifeCycleModelDetail } = jest.requireMock(
+  '@/services/lifeCycleModels/api',
+) as {
+  getLifeCycleModelDetail: jest.Mock;
+};
+
 const makeSdkFactory = (result: any) =>
   jest.fn(() => ({ validateEnhanced: jest.fn(() => result) }));
 
@@ -93,6 +99,7 @@ describe('review helper coverage', () => {
     mockUpdateDateToReviewState.mockReset();
     mockGetUserId.mockReset();
     mockGetUsersByIds.mockReset();
+    mockGetLifeCycleModelDetail.mockReset();
     mockGetUserId.mockResolvedValue('user-1');
 
     mockCreateContact.mockImplementation(makeSdkFactory({ success: true }));
@@ -643,8 +650,8 @@ describe('review helper coverage', () => {
     expect(mockGetUsersByIds).toHaveBeenCalledWith(['user-missing']);
   });
 
-  it('validates each dataset type through the sdk and filters process/model review issues', () => {
-    const sdkIssue = (path: PropertyKey[]) => ({ path });
+  it('validates each dataset type through the sdk and filters process/model validation and compliance issues', () => {
+    const sdkIssue = (path: PropertyKey[] | string) => ({ path });
 
     mockCreateContact.mockImplementation(
       makeSdkFactory({
@@ -681,9 +688,10 @@ describe('review helper coverage', () => {
         success: false,
         error: {
           issues: [
-            sdkIssue(['validation']),
-            sdkIssue(['compliance']),
+            sdkIssue('processDataSet.modellingAndValidation.validation.review'),
+            sdkIssue('processDataSet.modellingAndValidation.complianceDeclarations.compliance'),
             sdkIssue(['processInformation']),
+            sdkIssue(['common:reviewCompliance']),
           ],
         },
       }),
@@ -692,7 +700,14 @@ describe('review helper coverage', () => {
       makeSdkFactory({
         success: false,
         error: {
-          issues: [sdkIssue(['validation']), sdkIssue(['lifeCycleModelInformation'])],
+          issues: [
+            sdkIssue('lifeCycleModelDataSet.modellingAndValidation.validation.review'),
+            sdkIssue([
+              'lifeCycleModelDataSet',
+              'modellingAndValidation',
+              'dataSourcesTreatmentEtc',
+            ]),
+          ],
         },
       }),
     );
@@ -719,11 +734,15 @@ describe('review helper coverage', () => {
     });
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: ['processInformation'] }],
+      issues: [{ path: ['processInformation'] }, { path: ['common:reviewCompliance'] }],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
-      issues: [{ path: ['lifeCycleModelInformation'] }],
+      issues: [
+        {
+          path: ['lifeCycleModelDataSet', 'modellingAndValidation', 'dataSourcesTreatmentEtc'],
+        },
+      ],
     });
     expect(validateDatasetWithSdk('unknown data set' as any, { id: 'unknown' })).toEqual({
       success: true,
@@ -740,7 +759,10 @@ describe('review helper coverage', () => {
       makeSdkFactory({
         success: false,
         error: {
-          issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+          issues: [
+            { path: 'processDataSet.modellingAndValidation.validation.review' },
+            { path: 'processDataSet.modellingAndValidation.complianceDeclarations.compliance' },
+          ],
         },
       }),
     );
@@ -748,7 +770,12 @@ describe('review helper coverage', () => {
       makeSdkFactory({
         success: false,
         error: {
-          issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+          issues: [
+            { path: 'lifeCycleModelDataSet.modellingAndValidation.validation.review' },
+            {
+              path: 'lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance',
+            },
+          ],
         },
       }),
     );
@@ -760,6 +787,34 @@ describe('review helper coverage', () => {
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: true,
       issues: [],
+    });
+  });
+
+  it('keeps process/model sdk errors for compliance child fields when the compliance field itself is not in the path', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [{ path: ['common:approvalOfOverallCompliance'] }],
+        },
+      }),
+    );
+    mockCreateLifeCycleModel.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [{ path: ['common:reviewCompliance'] }],
+        },
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [{ path: ['common:approvalOfOverallCompliance'] }],
+    });
+    expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
+      success: false,
+      issues: [{ path: ['common:reviewCompliance'] }],
     });
   });
 
@@ -774,7 +829,7 @@ describe('review helper coverage', () => {
     });
   });
 
-  it('adds a fallback empty connections array to the first missing lifecycle-model process before sdk validation', () => {
+  it('preserves missing lifecycle-model process connections during sdk validation', () => {
     const orderedJson = {
       lifeCycleModelDataSet: {
         lifeCycleModelInformation: {
@@ -822,7 +877,7 @@ describe('review helper coverage', () => {
     expect(sdkProcessInstances[0].connections).toEqual({
       outputExchange: [],
     });
-    expect(sdkProcessInstances[1].connections).toEqual([]);
+    expect(sdkProcessInstances[1].connections).toBeUndefined();
     expect(sdkProcessInstances[2].connections).toBeUndefined();
     expect(processInstances[0].connections).toEqual({
       outputExchange: [],
@@ -925,6 +980,97 @@ describe('review helper coverage', () => {
     expect(mockGetRefData).toHaveBeenCalledWith('contact-2', '01.00.000', 'contacts', '', {
       fallbackToLatest: false,
     });
+  });
+
+  it('does not re-add the current lifecycle model to unRuleVerification through same-model process recursion', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'process-1',
+        stateCode: 10,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'model-1',
+        version: '01.00.000',
+        stateCode: 10,
+        ruleVerification: false,
+        json: {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: {
+              dataSetInformation: {
+                'common:UUID': 'model-1',
+              },
+              technology: {
+                processes: {
+                  processInstance: [
+                    {
+                      referenceToProcess: {
+                        '@type': 'process data set',
+                        '@refObjectId': 'process-1',
+                        '@version': '01.00.000',
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            administrativeInformation: {
+              publicationAndOwnership: {
+                'common:dataSetVersion': '01.00.000',
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const orderedJson = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {
+            'common:UUID': 'model-1',
+          },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  referenceToProcess: {
+                    '@type': 'process data set',
+                    '@refObjectId': 'process-1',
+                    '@version': '01.00.000',
+                  },
+                },
+              ],
+            },
+          },
+        },
+        administrativeInformation: {
+          publicationAndOwnership: {
+            'common:dataSetVersion': '01.00.000',
+          },
+        },
+      },
+    };
+
+    await expect(
+      validateDatasetRuleVerification('lifeCycleModel data set', orderedJson),
+    ).resolves.toEqual({
+      datasetSdkValid: true,
+      datasetSdkIssues: [],
+      nonExistentRef: [],
+      ruleVerification: true,
+      unRuleVerification: [],
+    });
+
+    expect(mockGetRefData).toHaveBeenCalledWith('process-1', '01.00.000', 'processes', '', {
+      fallbackToLatest: false,
+    });
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('process-1', '01.00.000');
   });
 
   it('categorises missing process/model details and can skip rule-verification flags', () => {

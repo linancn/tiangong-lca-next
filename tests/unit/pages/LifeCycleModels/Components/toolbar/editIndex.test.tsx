@@ -1072,6 +1072,20 @@ describe('ToolbarEdit', () => {
   });
 
   it('runs footer data-check through the edit info ref after saving', async () => {
+    mockUpdateLifeCycleModel.mockResolvedValueOnce({
+      ok: true,
+      modelId: 'model-1',
+      version: '1.1',
+      lifecycleModel: {
+        id: 'model-1',
+        version: '1.1',
+        json_tg: {
+          xflow: {
+            edges: [],
+          },
+        },
+      },
+    });
     render(<ToolbarEdit {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
@@ -1079,9 +1093,32 @@ describe('ToolbarEdit', () => {
     await waitFor(() =>
       expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
         'checkData',
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'node-1',
+          }),
+        ]),
         expect.any(Array),
-        expect.any(Array),
-        expect.objectContaining({ silent: false }),
+        expect.objectContaining({
+          silent: false,
+          validationSnapshot: expect.objectContaining({
+            modelId: 'model-1',
+            version: '1.1',
+            payload: expect.objectContaining({
+              model: expect.objectContaining({
+                nodes: expect.arrayContaining([
+                  expect.objectContaining({
+                    id: 'node-1',
+                    data: expect.objectContaining({
+                      index: '0',
+                    }),
+                  }),
+                ]),
+                edges: expect.any(Array),
+              }),
+            }),
+          }),
+        }),
       ),
     );
   });
@@ -1137,6 +1174,12 @@ describe('ToolbarEdit', () => {
         'review',
         expect.any(Array),
         expect.any(Array),
+        expect.objectContaining({
+          validationSnapshot: expect.objectContaining({
+            modelId: 'model-1',
+            version: '1.0',
+          }),
+        }),
       ),
     );
     expect(mockToolbarSubmitReview).toHaveBeenCalledWith([
@@ -1167,6 +1210,12 @@ describe('ToolbarEdit', () => {
         'review',
         expect.any(Array),
         expect.any(Array),
+        expect.objectContaining({
+          validationSnapshot: expect.objectContaining({
+            modelId: 'model-1',
+            version: '1.0',
+          }),
+        }),
       ),
     );
     expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]);
