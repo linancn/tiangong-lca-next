@@ -26,11 +26,13 @@ Do not infer the working trunk from GitHub default-branch UI alone.
 - Put persistent dev-only overrides in `[remotes.dev]`.
 - If the dashboard shows `dev` is not persistent, fix the branch state before relying on `[remotes.dev]`.
 - Do not create a separate `supabase/` directory per Git branch.
-- Do not add a second GitHub Actions flow that also runs `supabase db push` while the Supabase GitHub integration is managing branch sync.
+- Keep the single explicit `dev` deployment flow in `.github/workflows/supabase-dev.yml` as the only GitHub Actions job that runs `supabase db push` for the persistent Supabase `dev` branch.
+- Do not add another GitHub Actions flow that also runs `supabase db push` for the same `dev` target.
 
 ## Files to maintain
 
 - `supabase/config.toml`: shared baseline plus `[remotes.dev]`
+- `.github/workflows/supabase-dev.yml`: pushes committed migrations to the persistent Supabase `dev` branch on Git `dev`
 - `supabase/migrations/*.sql`: committed migration history, including the initial baseline that anchors `main`
 - `supabase/seed.sql`: shared seed data
 - `supabase/seeds/dev.sql`: optional persistent-dev-only seed data
@@ -38,6 +40,12 @@ Do not infer the working trunk from GitHub default-branch UI alone.
 - `.env.development`: routine frontend development target, currently pointed at the shared remote `dev` branch
 - `.env.supabase.dev.local`: local-only CLI connection info for one-off remote `dev` operations; the frontend does not read this file
 - `.env.supabase.main.local`: local-only CLI connection info for one-off remote `main` operations; the frontend does not read this file
+
+## GitHub Actions variables and secrets
+
+- Set repository variable `SUPABASE_DEV_PROJECT_ID` to the persistent Supabase `dev` branch ref.
+- Set repository secret `SUPABASE_ACCESS_TOKEN` to a Supabase personal access token that can link and deploy.
+- Set repository secret `SUPABASE_DEV_DB_PASSWORD` to the database password for the persistent Supabase `dev` branch.
 
 ## Values still to fill
 
