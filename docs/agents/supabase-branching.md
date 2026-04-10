@@ -231,6 +231,8 @@ Use this flow when a task requires the frontend or CLI to connect to `main`, inc
 ## Recovery checklist
 
 - If local and remote migration histories diverge, inspect them with `npx supabase migration list` before changing anything else.
+- If `main` was changed manually on the remote database, stop making more remote schema edits, branch from Git `main`, link to the `main` project, and run `npx supabase db pull -f <name>` to capture the remote drift as a reconciliation migration instead of hand-writing a second destructive migration.
+- Review the pulled SQL so it contains only the intended remote-only changes, merge that hotfix back to Git `main`, and then back-merge `main` into `dev` so both branches inherit the repaired migration history.
 - If history is wrong on the remote side, use `npx supabase migration repair` intentionally, then re-check the result.
 - If `dev` or a preview branch reaches `MIGRATIONS_FAILED`, inspect the branch logs, fix the migration in Git, and prefer recreating the failed branch instead of hand-editing branch state.
 - If `dev` is recreated, refresh any local branch credentials files and confirm `[remotes.dev].project_id` again.

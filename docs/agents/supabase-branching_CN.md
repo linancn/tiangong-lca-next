@@ -231,6 +231,8 @@ npm start
 ## 恢复检查清单
 
 - 如果本地和远端 migration history 不一致，先用 `npx supabase migration list` 看清楚差异，再做下一步。
+- 如果远端 `main` 数据库被手工改过 schema，先停止继续手改远端，从 Git `main` 拉 hotfix 分支，连接 `main` 对应项目后执行 `npx supabase db pull -f <name>`，把这次远端漂移回收到一个“对账型 migration”里，而不是再手写一份二次破坏性 migration。
+- 检查 `db pull` 生成的 SQL，确认里面只有预期的远端独有改动；随后先合回 Git `main`，再把 `main` 反向合并到 `dev`，让两条分支共享修复后的 migration 历史。
 - 如果远端 history 记录错了，再有意识地执行 `npx supabase migration repair`，执行后重新核对结果。
 - 如果 `dev` 或 preview branch 进入 `MIGRATIONS_FAILED`，先看 branch logs，在 Git 中修正 migration，然后优先重建失败分支，而不是手工硬改 branch 状态。
 - 如果重建了 `dev`，记得刷新本地 branch 凭据文件，并再次确认 `[remotes.dev].project_id`。
