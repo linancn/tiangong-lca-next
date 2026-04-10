@@ -38,7 +38,8 @@
 - 当前有序清零队列已经清空。
 - 仓库现在处于维护态。
 - 任何代码修改都必须作为硬约束维持全仓 `100%` statements / branches / functions / lines。
-- 本地 push 会被 `.husky/pre-push` 强制门禁；当前门禁命令是 `npm run prepush:gate`。
+- 本地 `main` push 会被 `.husky/pre-push` 强制门禁；当前门禁命令是 `npm run prepush:gate`。
+- 目标为 `dev` 或 `main` 的 PR，在合并前必须通过 GitHub Actions 中同一条完整门禁。
 
 ## 集成测试扩展计划（独立于覆盖率清零队列）
 
@@ -99,7 +100,7 @@
 - 共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避 macOS 全量本地运行和 pre-push 中出现的 Jest worker 偶发 `SIGSEGV` 崩溃。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 都已内置所需堆内存，全量覆盖率直接用脚本即可。
 - `npm run test:coverage:assert-full` 会对最新 coverage 产物做严格断言，只要任一 tracked source file 不是 `100/100/100/100` 就失败。
-- `npm run prepush:gate` 是精确等同于 push 前门禁的本地命令：`lint + 全量 coverage + 严格全仓 100% 断言`。
+- `npm run prepush:gate` 是完整门禁的精确命令：`lint + 全量 coverage + 严格全仓 100% 断言`。
 - `npm run test:coverage:report` 是默认 review 产物，默认输出：
   - 全局摘要，
   - 分类摘要，

@@ -422,7 +422,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # Keep this project ref synchronized with the actual persistent `dev` branch returned by
 # `npx supabase --experimental branches list --project-ref qgzvkongdjqiiamzbbts`.
 [remotes.dev]
-project_id = "culgbbvzltdodcpykupc"
+project_id = "fotofiyqnuyvgtotswie"
 
 [remotes.dev.auth]
 site_url = "http://localhost:8000"

@@ -38,7 +38,8 @@ Latest verified full run (`npm run test:coverage:report`, followed by `npm run t
 - The ordered closure queue is empty.
 - The repo is in maintenance mode.
 - Any code change is a hard requirement to preserve repo-wide `100%` statements / branches / functions / lines.
-- Local push is blocked unless the repo passes `.husky/pre-push`, which now runs `npm run prepush:gate`.
+- Local `main` pushes are blocked unless the repo passes `.husky/pre-push`, which runs `npm run prepush:gate`.
+- PRs targeting `dev` or `main` must pass the same full gate in GitHub Actions before merge.
 
 ## Integration Expansion Program (Separate from Coverage Queue)
 
@@ -99,7 +100,7 @@ Current repo-wide status from the same run:
 - The shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker `SIGSEGV` crashes seen during full local and pre-push runs on macOS.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use those scripts directly for full coverage work.
 - `npm run test:coverage:assert-full` fails unless the latest coverage artifact still reports full closure for every tracked source file.
-- `npm run prepush:gate` is the exact local push gate: `lint + full coverage + strict full-coverage assertion`.
+- `npm run prepush:gate` is the exact full gate command: `lint + full coverage + strict full-coverage assertion`.
 - `npm run test:coverage:report` is the default review artifact. It prints:
   - global summary,
   - category summary,

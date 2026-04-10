@@ -77,7 +77,9 @@ npm run lint
   - Branch 分桶：`<50 = 0`、`50-70 = 0`、`70-90 = 0`、`90-<100 = 0`
   - `line=100` 但 `branch<100` 的文件：`0`
 - 当前有序清零队列已经清空。仓库现在处于维护态：所有触达或新增的 `src/**` 文件都要保持 `100/100/100/100`，只有覆盖率报告重新出现缺口时，才恢复队列执行。
-- Push 门禁：`.husky/pre-push` 现在执行 `npm run prepush:gate`，也就是 `lint + npm run test:coverage + npm run test:coverage:assert-full`。只要覆盖率不是全仓 100%，本地 push 就会被直接拦下。
+- 完整门禁命令：`npm run prepush:gate`，也就是 `lint + npm run test:coverage + npm run test:coverage:assert-full`。
+- 本地自动触发：`.husky/pre-push` 只会在本地 `main` push 时执行这条重门禁。
+- 必过 CI 触发：所有目标为 `dev` 或 `main` 的 PR，都必须在 GitHub Actions 中执行同一条完整门禁后才能合并。
 - 当前执行 backlog 以 `docs/agents/test_todo_list.md` 为准；`docs/agents/test_improvement_plan.md` 提供长期策略背景。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已经内置所需堆内存；只有在脱离 package scripts 排查时，才手动加 `NODE_OPTIONS=...`。
 - 报告粒度规则：
@@ -93,7 +95,7 @@ npm run lint
   - 允许的例外很少：相邻文件共享同一套 mock/fixture/test harness 时可成批推进；当前文件或紧邻文件被共享测试基础设施问题卡住时，可先修 blocker。
   - 如果当前队列分支被证明不可达或业务上无效，优先删除死分支且不改变行为，而不是为了抬覆盖率去硬造测试。
 - 现在还不要上调覆盖率阈值；下一阶段的质量提升应来自把全仓满覆盖稳定保持住，而不是把门槛继续抬高。
-- 需要在正式 push 前本地预演时，直接运行 `npm run prepush:gate`。
+- 需要在正式推送前预演受保护分支上的完整门禁时，直接运行 `npm run prepush:gate`。
 
 ## 集成测试完成度标准
 
