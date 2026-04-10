@@ -70,7 +70,7 @@
     "@antv/x6-react-shape": "^3.0.1",
     "@dagrejs/dagre": "^3.0.0",
     "@supabase/supabase-js": "^2.101.1",
-    "@tiangong-lca/tidas-sdk": "^0.1.32",
+    "@tiangong-lca/tidas-sdk": "^0.1.33",
     "antd": "^5.29.1",
     "bignumber.js": "^10.0.2",
     "dayjs": "^1.11.20",
