@@ -1140,6 +1140,29 @@ describe('ToolbarEdit', () => {
     unmount();
   });
 
+  it('reuses the current validation snapshot when the toolbar action is blank', async () => {
+    render(<ToolbarEdit {...baseProps} action='' />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'check-icon' }));
+
+    await waitFor(() =>
+      expect(mockToolbarHandleCheckData).toHaveBeenCalledWith(
+        'checkData',
+        expect.any(Array),
+        expect.any(Array),
+        expect.objectContaining({
+          silent: false,
+          validationSnapshot: expect.objectContaining({
+            modelId: 'model-1',
+            version: '1.0',
+          }),
+        }),
+      ),
+    );
+    expect(mockCreateLifeCycleModel).not.toHaveBeenCalled();
+    expect(mockUpdateLifeCycleModel).not.toHaveBeenCalled();
+  });
+
   it('skips the silent auto-check when imported lifecycle model info resolves to undefined', async () => {
     mockGenLifeCycleModelInfoFromData.mockReturnValueOnce(undefined);
 

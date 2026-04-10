@@ -98,9 +98,7 @@ const getLifecycleModelDatasetVersion = (jsonOrdered: any, fallbackVersion: stri
   return (
     jsonOrdered?.lifeCycleModelDataSet?.administrativeInformation?.publicationAndOwnership?.[
       'common:dataSetVersion'
-    ] ??
-    fallbackVersion ??
-    ''
+    ] ?? fallbackVersion
   );
 };
 

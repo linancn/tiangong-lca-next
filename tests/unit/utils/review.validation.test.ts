@@ -1,5 +1,6 @@
 import {
   buildValidationIssues,
+  checkReferences,
   dealModel,
   dealProcress,
   enrichValidationIssuesWithOwner,
@@ -760,8 +761,13 @@ describe('review helper coverage', () => {
         success: false,
         error: {
           issues: [
-            { path: 'processDataSet.modellingAndValidation.validation.review' },
-            { path: 'processDataSet.modellingAndValidation.complianceDeclarations.compliance' },
+            { path: [0, 'processDataSet.modellingAndValidation.validation.review'] },
+            {
+              path: [
+                { ignored: true },
+                'processDataSet.modellingAndValidation.complianceDeclarations.compliance',
+              ],
+            },
           ],
         },
       }),
@@ -771,9 +777,12 @@ describe('review helper coverage', () => {
         success: false,
         error: {
           issues: [
-            { path: 'lifeCycleModelDataSet.modellingAndValidation.validation.review' },
+            { path: [0, 'lifeCycleModelDataSet.modellingAndValidation.validation.review'] },
             {
-              path: 'lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance',
+              path: [
+                { ignored: true },
+                'lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance',
+              ],
             },
           ],
         },
@@ -815,6 +824,34 @@ describe('review helper coverage', () => {
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
       issues: [{ path: ['common:reviewCompliance'] }],
+    });
+  });
+
+  it('keeps process/model sdk issues when their path is undefined', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [{ path: undefined }],
+        },
+      }),
+    );
+    mockCreateLifeCycleModel.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [{ path: undefined }],
+        },
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [{ path: undefined }],
+    });
+    expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
+      success: false,
+      issues: [{ path: undefined }],
     });
   });
 
@@ -980,6 +1017,55 @@ describe('review helper coverage', () => {
     expect(mockGetRefData).toHaveBeenCalledWith('contact-2', '01.00.000', 'contacts', '', {
       fallbackToLatest: false,
     });
+  });
+
+  it('skips refs that directly match rootRef before querying details in checkReferences', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'contact-2',
+        stateCode: 100,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+
+    const rootRef = {
+      '@type': 'contact data set',
+      '@refObjectId': 'contact-1',
+      '@version': '01.00.000',
+    } as const;
+
+    await expect(
+      checkReferences(
+        [
+          rootRef,
+          {
+            '@type': 'contact data set',
+            '@refObjectId': 'contact-2',
+            '@version': '01.00.000',
+          },
+        ],
+        new Map<string, any>(),
+        '',
+        [],
+        [],
+        [],
+        [],
+        undefined,
+        undefined,
+        {
+          exactVersion: true,
+          rootRef,
+        },
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(mockGetRefData).toHaveBeenCalledTimes(1);
+    expect(mockGetRefData).toHaveBeenCalledWith('contact-2', '01.00.000', 'contacts', '', {
+      fallbackToLatest: false,
+    });
+    expect(mockGetLifeCycleModelDetail).not.toHaveBeenCalled();
   });
 
   it('does not re-add the current lifecycle model to unRuleVerification through same-model process recursion', async () => {

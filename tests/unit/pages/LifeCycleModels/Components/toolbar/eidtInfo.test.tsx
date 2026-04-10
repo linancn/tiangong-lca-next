@@ -1004,6 +1004,80 @@ describe('ToolbarEditInfo', () => {
     );
   });
 
+  it('uses structuredClone while falling back to raw sdk validation payloads and empty model nodes', async () => {
+    const ref = React.createRef<any>();
+    const originalStructuredClone = global.structuredClone;
+    const structuredCloneSpy = jest.fn((value) => JSON.parse(JSON.stringify(value)));
+    global.structuredClone = structuredCloneSpy as typeof structuredClone;
+
+    try {
+      const rawOrderedJson = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            dataSetInformation: {
+              name: {
+                baseName: { en: 'raw-model' },
+              },
+            },
+          },
+        },
+      };
+
+      mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail({ json_tg: undefined }));
+      mockGetProcessDetail.mockResolvedValue({});
+      mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+      mockGenLifeCycleModelJsonOrdered.mockReturnValue(rawOrderedJson);
+      mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+
+      render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+      const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+      await act(async () => {
+        await ref.current?.handleCheckData('checkData', nodes, [{}]);
+      });
+
+      expect(structuredCloneSpy).toHaveBeenCalledWith(rawOrderedJson);
+      expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+        'model-1',
+        [],
+        rawOrderedJson,
+        [],
+      );
+      expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], '1.0', rawOrderedJson);
+    } finally {
+      global.structuredClone = originalStructuredClone;
+    }
+  });
+
+  it('returns an undefined sdk validation dataset directly when ordered payload generation is empty', async () => {
+    const ref = React.createRef<any>();
+    const originalStructuredClone = global.structuredClone;
+    // @ts-expect-error exercising the JSON-clone undefined fast path
+    delete global.structuredClone;
+
+    try {
+      mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail({ json_tg: undefined }));
+      mockGetProcessDetail.mockResolvedValue({});
+      mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+      mockGenLifeCycleModelJsonOrdered.mockReturnValue(undefined);
+      mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+
+      render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+      const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+      let result;
+      await act(async () => {
+        result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+      });
+
+      expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], '1.0', undefined);
+      expect(mockValidateDatasetWithSdk).toHaveBeenCalledWith('lifeCycleModel data set', undefined);
+      expect(result.checkResult).toBe(true);
+    } finally {
+      global.structuredClone = originalStructuredClone;
+    }
+  });
+
   it('blocks data check when the lifecycle model itself is already under review', async () => {
     const ref = React.createRef<any>();
     mockGetLifeCycleModelDetail.mockResolvedValue({

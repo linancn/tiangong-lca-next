@@ -811,8 +811,7 @@ const ToolbarEdit: FC<Props> = ({
           | string
           | undefined) ??
         newData.version ??
-        thisVersion ??
-        '';
+        thisVersion;
       const buildSaveResult = ({
         modelId,
         version,
@@ -866,9 +865,8 @@ const ToolbarEdit: FC<Props> = ({
         const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
-          const savedModelId = savedLifeCycleModel?.id ?? result.modelId ?? thisId ?? '';
-          const savedVersion =
-            savedLifeCycleModel?.version ?? result.version ?? fallbackValidationVersion;
+          const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
+          const savedVersion = savedLifeCycleModel?.version ?? result.version;
           setInfoData({ ...newData, id: savedModelId, version: savedVersion });
           if (!silent) {
             message.success(
@@ -904,8 +902,8 @@ const ToolbarEdit: FC<Props> = ({
             showMutationError(result);
           }
           return buildSaveResult({
-            modelId: thisId ?? '',
-            version: thisVersion ?? fallbackValidationVersion,
+            modelId: thisId,
+            version: thisVersion,
           });
         }
       } else if (thisAction === 'create') {
@@ -913,9 +911,8 @@ const ToolbarEdit: FC<Props> = ({
         const result = await createLifeCycleModel({ ...newData, id: newId });
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
-          const savedModelId = savedLifeCycleModel?.id ?? result.modelId ?? newId ?? '';
-          const savedVersion =
-            savedLifeCycleModel?.version ?? result.version ?? fallbackValidationVersion;
+          const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
+          const savedVersion = savedLifeCycleModel?.version ?? result.version;
           if (!silent) {
             message.success(
               intl.formatMessage({
@@ -952,14 +949,14 @@ const ToolbarEdit: FC<Props> = ({
             showMutationError(result);
           }
           return buildSaveResult({
-            modelId: newId ?? '',
+            modelId: newId,
             version: fallbackValidationVersion,
           });
         }
       }
       return buildSaveResult({
-        modelId: thisId ?? id ?? '',
-        version: thisVersion ?? version ?? fallbackValidationVersion,
+        modelId: thisId,
+        version: thisVersion,
       });
     } finally {
       if (setLoadingData) setSpinning(false);
