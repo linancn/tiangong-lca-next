@@ -57,7 +57,8 @@ npm run build
 - 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已内置 `NODE_OPTIONS=--max-old-space-size=8192`，全量覆盖率直接用脚本即可。
 - `npm run test:coverage:assert-full` 会读取最新 coverage 产物，只要全仓不是 `100%` statements / branches / functions / lines，或者队列不为空，就直接失败。
-- `npm run prepush:gate` 是本地 push 门禁：`lint + 全量 coverage + 严格 100% 断言`。
+- `npm run prepush:gate` 是完整门禁的权威命令：`lint + 全量 coverage + 严格 100% 断言`。
+- `.husky/pre-push` 只会在本地 `main` push 时自动执行这条重门禁；目标为 `dev` 或 `main` 的 PR，必须在 GitHub Actions 中执行同一命令。
 - `npm run test:coverage:report` 是默认的覆盖率 review 产物。它会输出全局摘要、分类摘要、清零队列摘要、共享夹具批次，以及下一个 25 个未完成文件，并使用完整的项目相对路径（文件/批次标签不再用 `...` 截断）。
 - `node scripts/test-coverage-report.js --full` 会输出完整的有序未完成文件队列。它用于查看完整逐文件状态或刷新队列快照，而不是主观按“收益”重新排序。
 - 需要带筛选条件或额外 flag 时，优先使用 `npm run test:ci -- <jest-args>`，不要把多层 flag 嵌在 `npm test` 后面。
@@ -121,7 +122,9 @@ npm run build
 - `npm run lint` 必须通过。
 - 运行与变更相关的聚焦 Jest 套件。
 - 需要只校验硬门禁时，运行 `npm run test:coverage:assert-full`。
-- push 前必须通过 `npm run prepush:gate`；除非人工明确要求，否则不要绕过本地全仓 100% 覆盖率门禁。
+- 从本地 `main` push 前，必须通过 `npm run prepush:gate`。
+- 对目标为 `dev` 或 `main` 的 PR，合并前必须在 GitHub Actions 中通过同一条完整门禁。
+- 在非 `main` 工作分支上，如果需要在开 PR 或更新 PR 前预演受保护分支的完整门禁，手工运行 `npm run prepush:gate`。
 - 如果 `npm run test:coverage:report` 重新出现缺口，就按 `docs/agents/test_todo_list.md` 的有序清零队列逐文件推进；如果没有缺口，就保持维护态，继续维持全仓满覆盖。
 - 允许的队列例外只有两类：相邻文件共享同一套 mock/fixture/test harness 时可成批处理；当前文件或紧邻文件被测试基础设施问题卡住时，可先修 blocker。
 - 如果当前队列文件里存在可证明不可达或业务上无效的分支，优先在不改变行为的前提下删除死分支，而不是为了抬覆盖率去编造测试，然后再继续队列顺序。

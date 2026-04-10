@@ -26,11 +26,13 @@
 - 持久化 dev 专属覆盖放在 `[remotes.dev]`。
 - 如果 dashboard 显示 `dev` 不是 persistent branch，就先修正分支状态，再依赖 `[remotes.dev]`。
 - 不要为不同 Git 分支再复制一套 `supabase/` 目录。
-- 当 Supabase GitHub integration 负责分支同步时，不要再额外加一个会执行 `supabase db push` 的 GitHub Actions 流程。
+- 将 `.github/workflows/supabase-dev.yml` 中显式面向持久化 Supabase `dev` 分支的部署流程，作为唯一会执行 `supabase db push` 的 GitHub Actions 任务。
+- 不要再为同一个 `dev` 目标额外叠加第二套会执行 `supabase db push` 的 GitHub Actions 流程。
 
 ## 需要维护的文件
 
 - `supabase/config.toml`：共享基线加 `[remotes.dev]`
+- `.github/workflows/supabase-dev.yml`：在 Git `dev` 更新时，把已提交 migration 推送到持久化 Supabase `dev` 分支
 - `supabase/migrations/*.sql`：已提交的 migration 历史，包括锚定 `main` 的初始 baseline
 - `supabase/seed.sql`：共享 seed 数据
 - `supabase/seeds/dev.sql`：可选的持久化 dev 专属 seed 数据
@@ -38,6 +40,12 @@
 - `.env.development`：日常前端开发默认使用的环境，当前指向共享远端 `dev` 分支
 - `.env.supabase.dev.local`：仅供 CLI 一次性访问远端 `dev` 的本地连接信息；前端不会读取它
 - `.env.supabase.main.local`：仅供 CLI 一次性访问远端 `main` 的本地连接信息；前端不会读取它
+
+## GitHub Actions 变量与密钥
+
+- 将仓库变量 `SUPABASE_DEV_PROJECT_ID` 设为持久化 Supabase `dev` 分支的 ref。
+- 将仓库密钥 `SUPABASE_ACCESS_TOKEN` 设为具备 link 与部署能力的 Supabase personal access token。
+- 将仓库密钥 `SUPABASE_DEV_DB_PASSWORD` 设为持久化 Supabase `dev` 分支对应的数据库密码。
 
 ## 仍需填写的值
 

@@ -57,7 +57,8 @@ Notes:
 - The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
 - `npm run test:coverage` and `npm run test:coverage:report` already include `NODE_OPTIONS=--max-old-space-size=8192`; use the scripts directly for full coverage work.
 - `npm run test:coverage:assert-full` reads the latest coverage artifact and fails unless the repo is still at `100%` statements / branches / functions / lines with zero remaining queue files.
-- `npm run prepush:gate` is the local push gate: `lint + full coverage + strict 100% assertion`.
+- `npm run prepush:gate` is the authoritative full gate command: `lint + full coverage + strict 100% assertion`.
+- `.husky/pre-push` only auto-runs that heavy gate on local `main` pushes. PRs targeting `dev` or `main` must enforce the same command in GitHub Actions.
 - `npm run test:coverage:report` is the default coverage review artifact. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files using full project-relative paths (no `...` truncation for file/cluster labels).
 - `node scripts/test-coverage-report.js --full` prints the full ordered incomplete-file queue. Use it to inspect the full file-by-file state or refresh the queue snapshot, not to subjectively re-rank by ROI.
 - For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
@@ -121,7 +122,9 @@ Clarification:
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to the change.
 - Run `npm run test:coverage:assert-full` whenever you need to verify the hard gate without rerunning coverage.
-- Before push, the repo must pass `npm run prepush:gate`; do not bypass the local full-coverage gate unless a human explicitly instructs you to.
+- Before push from local `main`, the repo must pass `npm run prepush:gate`.
+- For PRs targeting `dev` or `main`, the same full gate must pass in GitHub Actions before merge.
+- On non-`main` working branches, use `npm run prepush:gate` manually when you need to preflight the exact protected-branch gate before opening or updating a PR.
 - If `npm run test:coverage:report` shows gaps, follow the ordered closure queue in `docs/agents/test_todo_list.md` one file at a time. If it shows no gaps, stay in maintenance mode and keep the repo at full closure.
 - Allowed queue exceptions: batch adjacent files that share the same mock/fixture/test harness, and fix blocking test-infrastructure issues first when they block the current file or its immediate neighbors.
 - If a queued file contains a provably unreachable or business-invalid branch, remove the dead branch without changing behavior instead of inventing synthetic tests, then continue queue order.
