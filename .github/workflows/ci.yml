@@ -10,6 +10,7 @@ on:
 
 jobs:
   lint-and-test:
+    if: github.event_name != 'pull_request' || (github.base_ref != 'dev' && github.base_ref != 'main')
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -36,6 +37,33 @@ jobs:
 
       - name: Test (unit parallel, integration serial)
         run: npm run test:ci
+
+  full-gate:
+    name: Full Gate
+    if: github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Full Push Gate
+        run: npm run prepush:gate
 
   build-and-deploy:
     name: Build and Deploy

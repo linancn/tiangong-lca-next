@@ -77,7 +77,9 @@ npm run lint
   - Branch buckets: `<50 = 0`, `50-70 = 0`, `70-90 = 0`, `90-<100 = 0`
   - `line=100` but `branch<100`: `0`
 - The closure queue is empty. The repo is now in maintenance mode: keep every touched or newly added `src/**` file at `100/100/100/100`, and only reopen queue execution when a future regression appears in the coverage report.
-- Push gate: `.husky/pre-push` now runs `npm run prepush:gate`, which means `lint + npm run test:coverage + npm run test:coverage:assert-full`. If coverage drops below full closure, push is blocked locally.
+- Full gate command: `npm run prepush:gate`, which means `lint + npm run test:coverage + npm run test:coverage:assert-full`.
+- Local auto-trigger: `.husky/pre-push` only runs that heavy gate on local `main` pushes.
+- Required CI trigger: pull requests targeting `dev` or `main` must run the same full gate in GitHub Actions before merge.
 - Active execution backlog lives in `docs/agents/test_todo_list.md`; `docs/agents/test_improvement_plan.md` is the strategic companion doc.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use manual `NODE_OPTIONS=...` prefixes only when debugging outside package scripts.
 - Report detail policy:
@@ -93,7 +95,7 @@ npm run lint
   - Allowed queue exceptions are narrow: batch adjacent files that share the same mock/fixture/test harness, or fix a shared test-infrastructure blocker first if it blocks the current file or its immediate neighbors.
   - If a queued branch is provably unreachable or business-invalid, remove the dead branch without changing behavior instead of inventing synthetic tests just to satisfy coverage.
 - Do not raise coverage thresholds yet; the next quality gain should come from keeping full closure intact, not from moving the gate.
-- Use `npm run prepush:gate` when you want to emulate the exact local push gate before an actual push.
+- Use `npm run prepush:gate` when you want to emulate the exact full gate enforced on protected merge boundaries.
 
 ## Integration Completion Standard
 

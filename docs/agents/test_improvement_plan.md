@@ -62,7 +62,7 @@
 - [ ] Keep the repo in maintenance mode by preserving `100/100/100/100` on every touched or newly added `src/**` file.
 - [ ] Treat any newly uncovered branch as an immediate regression, not as future backlog.
 - [ ] Re-run `npm run test:coverage:report` after meaningful test-engineering changes to confirm the queue remains empty.
-- [ ] Keep the local push gate aligned with the docs and scripts (`npm run prepush:gate` must remain the authoritative local enforcement command).
+- [ ] Keep the protected-branch gate aligned with the docs, hook, and CI (`npm run prepush:gate` remains the authoritative full gate command).
 - [ ] When humans request broader workflow-confidence work, execute the phased integration rollout from `docs/agents/test_todo_list.md` instead of adding ad hoc one-off scenarios.
 - [ ] Keep any future E2E investment intentionally thin and browser-real only.
 
