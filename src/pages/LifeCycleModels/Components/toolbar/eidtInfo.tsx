@@ -38,8 +38,10 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { normalizeLangPayloadForSave } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import type {
+  LifeCycleModelCheckDataOptions,
   LifeCycleModelDetailData,
   LifeCycleModelDetailResponse,
   LifeCycleModelFormState,
@@ -49,7 +51,11 @@ import type {
   LifeCycleModelToolbarEditInfoHandle,
   LifeCycleModelValidationIssue,
 } from '@/services/lifeCycleModels/data';
-import { genLifeCycleModelJsonOrdered } from '@/services/lifeCycleModels/util';
+import {
+  genLifeCycleModelJsonOrdered,
+  genReferenceToResultingProcess,
+} from '@/services/lifeCycleModels/util';
+import { genLifeCycleModelProcesses } from '@/services/lifeCycleModels/util_calculate';
 import { getProcessDetail } from '@/services/processes/api';
 import { getUserTeamId } from '@/services/roles/api';
 
@@ -68,6 +74,64 @@ type Props = {
   action: string;
   actionType?: 'create' | 'copy' | 'createVersion';
 };
+
+type ValidationPayload = LifeCycleModelFormState & {
+  model?: {
+    nodes?: LifeCycleModelGraphNode[];
+    edges?: LifeCycleModelGraphEdge[];
+  };
+};
+
+const cloneValidationValue = <T,>(value: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+
+  if (value === undefined) {
+    return value;
+  }
+
+  return JSON.parse(JSON.stringify(value)) as T;
+};
+
+const getLifecycleModelDatasetVersion = (jsonOrdered: any, fallbackVersion: string): string => {
+  return (
+    jsonOrdered?.lifeCycleModelDataSet?.administrativeInformation?.publicationAndOwnership?.[
+      'common:dataSetVersion'
+    ] ?? fallbackVersion
+  );
+};
+
+const buildSdkValidationDataset = async ({
+  modelId,
+  version,
+  payload,
+  oldSubmodels,
+}: {
+  modelId: string;
+  version: string;
+  payload: ValidationPayload;
+  oldSubmodels: LifeCycleModelSubModel[];
+}) => {
+  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(modelId, payload);
+  const normalizedResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
+  const normalizedLifeCycleModelJsonOrdered =
+    normalizedResult?.payload ?? rawLifeCycleModelJsonOrdered;
+
+  const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+    modelId,
+    payload?.model?.nodes ?? [],
+    normalizedLifeCycleModelJsonOrdered,
+    oldSubmodels,
+  );
+
+  return genReferenceToResultingProcess(
+    lifeCycleModelProcesses,
+    getLifecycleModelDatasetVersion(normalizedLifeCycleModelJsonOrdered, version),
+    cloneValidationValue(normalizedLifeCycleModelJsonOrdered),
+  );
+};
+
 const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
   ({ lang, data, onData, action, actionType }, ref) => {
     const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
@@ -191,13 +255,16 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       from: 'review' | 'checkData',
       nodes: LifeCycleModelGraphNode[],
       edges: LifeCycleModelGraphEdge[],
-      options?: { silent?: boolean },
+      options?: LifeCycleModelCheckDataOptions,
     ): Promise<{
       checkResult: boolean;
       unReview: refDataType[];
       problemNodes?: refDataType[];
     }> => {
       const silent = options?.silent ?? false;
+      const validationSnapshot = options?.validationSnapshot;
+      const validationModelId = validationSnapshot?.modelId ?? data.id ?? '';
+      const validationVersion = validationSnapshot?.version ?? data.version ?? '';
       setSpinning(true);
       if (nodes?.length) {
         const quantitativeReferenceProcress = nodes.find(
@@ -227,19 +294,6 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         setSpinning(false);
         return { checkResult: false, unReview: [] };
       }
-      if (!edges?.length) {
-        if (!silent) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.lifecyclemodel.validator.exchanges.required',
-              defaultMessage: 'Please add connection line',
-            }),
-          );
-        }
-        setSpinning(false);
-        return { checkResult: false, unReview: [] };
-      }
-
       setShowRules(true);
 
       const userTeamId = await getUserTeamId();
@@ -251,8 +305,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       const allRefs = new Set<string>();
 
       const modelDetailResp: LifeCycleModelDetailResponse = await getLifeCycleModelDetail(
-        data.id ?? '',
-        data.version ?? '',
+        validationModelId,
+        validationVersion,
       );
       const currentModelDetail = modelDetailResp.success ? modelDetailResp.data : undefined;
       modelDetailRef.current = currentModelDetail;
@@ -286,16 +340,23 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       }
 
       const rootRef = {
-        '@refObjectId': data.id ?? '',
-        '@version': data.version ?? '',
+        '@refObjectId': validationModelId,
+        '@version': validationVersion,
         '@type': 'lifeCycleModel data set',
       } satisfies refDataType;
+      const sdkValidationSource = validationSnapshot?.payload ?? {
+        ...currentModelDetail.json.lifeCycleModelDataSet,
+        model: { ...currentModelDetail.json_tg?.xflow },
+      };
+      const orderedValidationDataset = await buildSdkValidationDataset({
+        modelId: validationModelId,
+        version: validationVersion,
+        payload: sdkValidationSource,
+        oldSubmodels: currentModelDetail?.json_tg?.submodels ?? [],
+      });
       const sdkValidation = validateDatasetWithSdk(
         'lifeCycleModel data set',
-        genLifeCycleModelJsonOrdered(data.id ?? '', {
-          ...currentModelDetail.json.lifeCycleModelDataSet,
-          model: { ...currentModelDetail.json_tg?.xflow },
-        }),
+        orderedValidationDataset,
       );
       const issues: LifeCycleModelValidationIssue[] = sdkValidation.issues;
       let currentDatasetValid = sdkValidation.success;
@@ -324,8 +385,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       dealModel(currentModelDetail, unReview, underReview, unRuleVerification, nonExistentRef);
 
       const { data: sameProcressWithModel } = await getProcessDetail(
-        data.id ?? '',
-        data.version ?? '',
+        validationModelId,
+        validationVersion,
       );
       if (sameProcressWithModel) {
         dealProcress(
@@ -337,7 +398,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         );
       }
 
-      const refObjs = getAllRefObj(currentModelDetail);
+      const refObjs = getAllRefObj(orderedValidationDataset);
       const path = await checkReferences(
         refObjs,
         new Map<string, unknown>(),
@@ -348,9 +409,14 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         nonExistentRef,
         new ReffPath(rootRef, currentModelDetail.ruleVerification, false),
         allRefs,
+        {
+          rootRef,
+        },
       );
-      allRefs.add(`${data.id}:${data.version}:lifeCycleModel data set`);
-      if (sameProcressWithModel) allRefs.add(`${data.id}:${data.version}:process data set`);
+      allRefs.add(`${validationModelId}:${validationVersion}:lifeCycleModel data set`);
+      if (sameProcressWithModel) {
+        allRefs.add(`${validationModelId}:${validationVersion}:process data set`);
+      }
       await checkVersions(allRefs, path);
 
       const problemNodes = (path?.findProblemNodes(from) ?? []) as ReviewProblemNode[];
@@ -400,7 +466,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         return { checkResult: true, unReview, problemNodes };
       }
 
-      const modelDataset = currentModelDetail?.json?.lifeCycleModelDataSet;
+      const modelDataset = orderedValidationDataset?.lifeCycleModelDataSet;
       nonExistentRef.forEach((item) => {
         const tabName = getErrRefTab(item, modelDataset);
         if (tabName && !errTabNames.includes(tabName)) {

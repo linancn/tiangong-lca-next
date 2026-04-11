@@ -696,7 +696,15 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
       validateEnhanced: jest.fn().mockReturnValue({
         success: false,
         error: {
-          issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+          issues: [
+            { path: [0, 'lifeCycleModelDataSet.modellingAndValidation.validation.review'] },
+            {
+              path: [
+                { ignored: true },
+                'lifeCycleModelDataSet.modellingAndValidation.complianceDeclarations.compliance',
+              ],
+            },
+          ],
         },
       }),
     });
@@ -705,7 +713,15 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
         validateEnhanced: jest.fn().mockReturnValue({
           success: false,
           error: {
-            issues: [{ path: ['validation'] }, { path: ['compliance'] }],
+            issues: [
+              { path: [0, 'processDataSet.modellingAndValidation.validation.review'] },
+              {
+                path: [
+                  { ignored: true },
+                  'processDataSet.modellingAndValidation.complianceDeclarations.compliance',
+                ],
+              },
+            ],
           },
         }),
       })
@@ -1175,6 +1191,121 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
         },
       }),
     ]);
+  });
+
+  it('treats missing process issue arrays and string-only validation paths as passing', async () => {
+    mockCreateTidasProcess
+      .mockReturnValueOnce({
+        validateEnhanced: jest.fn().mockReturnValue({
+          success: false,
+          error: {},
+        }),
+      })
+      .mockReturnValueOnce({
+        validateEnhanced: jest.fn().mockReturnValue({
+          success: false,
+          error: {
+            issues: [
+              {
+                path: 'processDataSet.modellingAndValidation.validation.review',
+              },
+              {
+                path: 'processDataSet.modellingAndValidation.complianceDeclarations.compliance',
+              },
+            ],
+          },
+        }),
+      });
+
+    const result = await buildSaveLifeCycleModelPersistencePlan({
+      mode: 'create',
+      modelId: sampleModelId,
+      lifeCycleModelJsonOrdered: buildLifecycleModelJsonOrdered(),
+      nodes: [],
+      edges: [],
+      up2DownEdges: [],
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: {
+            id: 'secondary-missing-process-issues',
+            type: 'secondary',
+            finalId: { nodeId: 'node-secondary-missing-process-issues' },
+          },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+        {
+          modelInfo: {
+            id: 'secondary-string-validation-paths',
+            type: 'secondary',
+            finalId: { nodeId: 'node-secondary-string-validation-paths' },
+          },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error('Expected a successful plan when process issues are filtered or absent');
+    }
+
+    const mutationsById = new Map(
+      result.plan.processMutations
+        .filter((mutation) => mutation && 'jsonOrdered' in mutation)
+        .map((mutation: any) => [mutation.id, mutation]),
+    );
+
+    expect(
+      asUpsertMutation(mutationsById.get('secondary-missing-process-issues')).ruleVerification,
+    ).toBe(true);
+    expect(
+      asUpsertMutation(mutationsById.get('secondary-string-validation-paths')).ruleVerification,
+    ).toBe(true);
+  });
+
+  it('keeps undefined-path sdk issues on processes while treating missing sdk issue arrays as valid', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockCreateTidasLifeCycleModel.mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {},
+      }),
+    });
+    mockCreateTidasProcess.mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {
+          issues: [{ path: undefined }],
+        },
+      }),
+    });
+
+    const result = await buildSaveLifeCycleModelPersistencePlan({
+      mode: 'create',
+      modelId: sampleModelId,
+      lifeCycleModelJsonOrdered: buildLifecycleModelJsonOrdered(),
+      nodes: [],
+      edges: [],
+      up2DownEdges: [],
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: {
+            id: 'secondary-undefined-sdk-path',
+            type: 'secondary',
+            finalId: { nodeId: 'node-secondary-undefined-sdk-path' },
+          },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error('Expected a successful plan when sdk issue arrays are sparse');
+    }
+
+    expect(result.plan.parent.ruleVerification).toBe(true);
+    expect(asUpsertMutation(result.plan.processMutations[0]).ruleVerification).toBe(false);
   });
 
   it('creates missing technology and modelling containers before copying legacy process fields', async () => {

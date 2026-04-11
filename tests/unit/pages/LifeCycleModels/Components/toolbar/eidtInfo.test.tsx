@@ -409,6 +409,12 @@ jest.mock('@/services/processes/api', () => ({
   getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
 }));
 
+const mockNormalizeLangPayloadForSave = jest.fn();
+jest.mock('@/services/general/api', () => ({
+  __esModule: true,
+  normalizeLangPayloadForSave: (...args: any[]) => mockNormalizeLangPayloadForSave(...args),
+}));
+
 const mockGetUserTeamId = jest.fn().mockResolvedValue('team-1');
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
@@ -437,9 +443,17 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 const mockGenLifeCycleModelJsonOrdered = jest.fn().mockReturnValue({});
+const mockGenReferenceToResultingProcess = jest.fn();
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelJsonOrdered: (...args: any[]) => mockGenLifeCycleModelJsonOrdered(...args),
+  genReferenceToResultingProcess: (...args: any[]) => mockGenReferenceToResultingProcess(...args),
+}));
+
+const mockGenLifeCycleModelProcesses = jest.fn();
+jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
+  __esModule: true,
+  genLifeCycleModelProcesses: (...args: any[]) => mockGenLifeCycleModelProcesses(...args),
 }));
 
 jest.mock('uuid', () => ({
@@ -478,8 +492,18 @@ beforeEach(() => {
   mockValidateDatasetWithSdk.mockReset().mockReturnValue({ success: true, issues: [] });
   mockGetLifeCycleModelDetail.mockReset();
   mockGetProcessDetail.mockReset();
+  mockNormalizeLangPayloadForSave.mockReset().mockImplementation(async (payload: any) => ({
+    payload,
+  }));
   mockGetUserTeamId.mockReset().mockResolvedValue('team-1');
   mockGenLifeCycleModelJsonOrdered.mockReset().mockReturnValue({});
+  mockGenReferenceToResultingProcess
+    .mockReset()
+    .mockImplementation((_processes: any, _version: string, payload: any) => payload);
+  mockGenLifeCycleModelProcesses.mockReset().mockResolvedValue({
+    lifeCycleModelProcesses: [],
+    up2DownEdges: [],
+  });
   mockGetRefsOfCurrentVersion.mockReset().mockResolvedValue({ oldRefs: [] });
   mockGetRefsOfNewVersion.mockReset().mockResolvedValue({ newRefs: [], oldRefs: [] });
   mockUpdateRefsData.mockReset().mockImplementation((data: any) => data);
@@ -527,8 +551,11 @@ describe('ToolbarEditInfo', () => {
     expect(mockGetLifeCycleModelDetail).not.toHaveBeenCalled();
   });
 
-  it('validates missing edges when nodes provided', async () => {
+  it('allows validation to continue when nodes are provided without edges', async () => {
     const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
@@ -537,8 +564,8 @@ describe('ToolbarEditInfo', () => {
       result = await ref.current?.handleCheckData('checkData', nodes, []);
     });
 
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('Please add connection line');
-    expect(result).toEqual({ checkResult: false, unReview: [] });
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0');
+    expect(result?.checkResult).toBe(true);
   });
 
   it('validates that one node must be selected as the quantitative reference', async () => {
@@ -890,6 +917,165 @@ describe('ToolbarEditInfo', () => {
     expect(mockGetProcessDetail).toHaveBeenCalledWith('', '');
     expect(mockCheckReferences).toHaveBeenCalledTimes(1);
     expect(result.checkResult).toBe(true);
+  });
+
+  it('prefers the saved validation snapshot when building sdk validation input', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(
+      createModelDetail({
+        json_tg: {
+          xflow: { nodes: [], edges: [] },
+          submodels: [{ id: 'sub-1', type: 'secondary' }],
+        },
+      }),
+    );
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+    const normalizedOrderedJson = {
+      lifeCycleModelDataSet: {
+        normalized: true,
+      },
+    };
+    const finalOrderedJson = {
+      lifeCycleModelDataSet: {
+        finalized: true,
+      },
+    };
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    const validationSnapshot = {
+      modelId: 'model-saved',
+      version: '2.0',
+      payload: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {
+            name: {
+              baseName: { en: 'saved-model' },
+            },
+          },
+        },
+        model: {
+          nodes: [{ id: 'snapshot-node' }],
+          edges: [{ id: 'snapshot-edge' }],
+        },
+      },
+    };
+    const rawOrderedJson = {
+      lifeCycleModelDataSet: validationSnapshot.payload,
+    };
+    mockGenLifeCycleModelJsonOrdered.mockReturnValue(rawOrderedJson);
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: normalizedOrderedJson,
+    });
+    mockGenLifeCycleModelProcesses.mockResolvedValue({
+      lifeCycleModelProcesses: [{ modelInfo: { id: 'primary-process' } }],
+      up2DownEdges: [],
+    });
+    mockGenReferenceToResultingProcess.mockReturnValue(finalOrderedJson);
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    await act(async () => {
+      await ref.current?.handleCheckData('checkData', nodes, [], {
+        validationSnapshot,
+      });
+    });
+
+    expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-saved', '2.0');
+    expect(mockGetProcessDetail).toHaveBeenCalledWith('model-saved', '2.0');
+    expect(mockGenLifeCycleModelJsonOrdered).toHaveBeenCalledWith(
+      'model-saved',
+      validationSnapshot.payload,
+    );
+    expect(mockNormalizeLangPayloadForSave).toHaveBeenCalledWith(rawOrderedJson);
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+      'model-saved',
+      validationSnapshot.payload.model.nodes,
+      normalizedOrderedJson,
+      [{ id: 'sub-1', type: 'secondary' }],
+    );
+    expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith(
+      [{ modelInfo: { id: 'primary-process' } }],
+      '2.0',
+      normalizedOrderedJson,
+    );
+    expect(mockValidateDatasetWithSdk).toHaveBeenCalledWith(
+      'lifeCycleModel data set',
+      finalOrderedJson,
+    );
+  });
+
+  it('uses structuredClone while falling back to raw sdk validation payloads and empty model nodes', async () => {
+    const ref = React.createRef<any>();
+    const originalStructuredClone = global.structuredClone;
+    const structuredCloneSpy = jest.fn((value) => JSON.parse(JSON.stringify(value)));
+    global.structuredClone = structuredCloneSpy as typeof structuredClone;
+
+    try {
+      const rawOrderedJson = {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            dataSetInformation: {
+              name: {
+                baseName: { en: 'raw-model' },
+              },
+            },
+          },
+        },
+      };
+
+      mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail({ json_tg: undefined }));
+      mockGetProcessDetail.mockResolvedValue({});
+      mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+      mockGenLifeCycleModelJsonOrdered.mockReturnValue(rawOrderedJson);
+      mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+
+      render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+      const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+      await act(async () => {
+        await ref.current?.handleCheckData('checkData', nodes, [{}]);
+      });
+
+      expect(structuredCloneSpy).toHaveBeenCalledWith(rawOrderedJson);
+      expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+        'model-1',
+        [],
+        rawOrderedJson,
+        [],
+      );
+      expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], '1.0', rawOrderedJson);
+    } finally {
+      global.structuredClone = originalStructuredClone;
+    }
+  });
+
+  it('returns an undefined sdk validation dataset directly when ordered payload generation is empty', async () => {
+    const ref = React.createRef<any>();
+    const originalStructuredClone = global.structuredClone;
+    // @ts-expect-error exercising the JSON-clone undefined fast path
+    delete global.structuredClone;
+
+    try {
+      mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail({ json_tg: undefined }));
+      mockGetProcessDetail.mockResolvedValue({});
+      mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+      mockGenLifeCycleModelJsonOrdered.mockReturnValue(undefined);
+      mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+
+      render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+      const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+      let result;
+      await act(async () => {
+        result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+      });
+
+      expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith([], '1.0', undefined);
+      expect(mockValidateDatasetWithSdk).toHaveBeenCalledWith('lifeCycleModel data set', undefined);
+      expect(result.checkResult).toBe(true);
+    } finally {
+      global.structuredClone = originalStructuredClone;
+    }
   });
 
   it('blocks data check when the lifecycle model itself is already under review', async () => {

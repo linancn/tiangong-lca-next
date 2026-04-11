@@ -287,8 +287,6 @@ export default {
   'pages.lifecyclemodel.validator.licenseType.required': '请输入许可类型',
   'pages.lifecyclemodel.validator.nodes.required': '请添加节点',
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': '请选择一个节点作为参考',
-  'pages.lifecyclemodel.validator.exchanges.required': '请添加连接线',
-  'pages.lifecyclemodel.validator.exchanges.required.length': '请将连接线补充完整',
 
   'pages.lifecyclemodel.review.submitSuccess': '提交审核成功',
   'pages.lifecyclemodel.review.submitError': '提交审核失败',

@@ -199,13 +199,24 @@ export type LifeCycleModelCheckResult<TRefData = unknown> = {
   problemNodes?: TRefData[];
 };
 
+export type LifeCycleModelValidationSnapshot = {
+  modelId: string;
+  version: string;
+  payload: LifeCycleModelEditorFormState;
+};
+
+export type LifeCycleModelCheckDataOptions = {
+  silent?: boolean;
+  validationSnapshot?: LifeCycleModelValidationSnapshot;
+};
+
 export type LifeCycleModelToolbarEditInfoHandle<TRefData = unknown> = {
   submitReview: (unReview: TRefData[]) => Promise<void>;
   handleCheckData: (
     from: LifeCycleModelCheckContext,
     nodes: LifeCycleModelGraphNode[],
     edges: LifeCycleModelGraphEdge[],
-    options?: { silent?: boolean },
+    options?: LifeCycleModelCheckDataOptions,
   ) => Promise<LifeCycleModelCheckResult<TRefData>>;
   updateReferenceDescription: (formData: LifeCycleModelFormState) => Promise<void>;
 };
