@@ -2257,7 +2257,7 @@ describe('genLifeCycleModelProcesses', () => {
     expect(result.lifeCycleModelProcesses).toEqual([]);
   });
 
-  it('re-applies a fallback empty connections array after rebuilding process instances', async () => {
+  it('keeps missing connections undefined after rebuilding process instances', async () => {
     const data = createLifeCycleModelData();
     const processInstances = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
       .processes.processInstance as any[];
@@ -2290,7 +2290,7 @@ describe('genLifeCycleModelProcesses', () => {
         },
       ],
     });
-    expect(updatedProcessInstances[2].connections).toEqual([]);
+    expect(updatedProcessInstances[2].connections).toBeUndefined();
   });
 
   it('marks disconnected component edges as none and keeps their single input flow as mainInputFlowUUID', async () => {

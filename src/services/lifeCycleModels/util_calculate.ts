@@ -12,7 +12,6 @@ import {
 import LCIAResultCalculation from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
-import { ensureFirstMissingProcessInstanceConnectionsArray } from './normalization';
 import { allocateSupplyToDemand } from './util_allocate_supply_demand';
 
 /**
@@ -2343,7 +2342,6 @@ export async function genLifeCycleModelProcesses(
 
   lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
     listToJson(newProcessInstance);
-  ensureFirstMissingProcessInstanceConnectionsArray(lifeCycleModelJsonOrdered);
 
   return {
     lifeCycleModelProcesses: sumFinalProductGroups.filter((item) => item !== null),

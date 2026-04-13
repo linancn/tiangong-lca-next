@@ -608,6 +608,9 @@ const ProcessEdit: FC<Props> = ({
       nonExistentRef,
       new ReffPath(rootRef, processDetail?.ruleVerification, false),
       allRefs,
+      {
+        rootRef,
+      },
     );
     allRefs.add(`${id}:${version}:process data set`);
     await checkVersions(allRefs, path);

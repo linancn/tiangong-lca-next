@@ -2,7 +2,6 @@ import type { RefCheckType } from '@/contexts/refCheckContext';
 import { getRejectedCommentsByReviewIds } from '@/services/comments/api';
 import { getRefData, getRefDataByIds } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
-import { ensureFirstMissingProcessInstanceConnectionsArray } from '@/services/lifeCycleModels/normalization';
 import { FormProcess } from '@/services/processes/data';
 import { getRejectReviewsByProcess, submitDatasetReviewApi } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
@@ -476,6 +475,38 @@ const cloneSdkValidationInput = <T,>(orderedJson: T): T => {
   return JSON.parse(JSON.stringify(orderedJson)) as T;
 };
 
+const normalizeSdkIssuePathSegments = (path: PropertyKey[] | string | undefined): string[] => {
+  const rawSegments = Array.isArray(path) ? path : typeof path === 'string' ? [path] : [];
+
+  return rawSegments
+    .flatMap((segment) => {
+      if (typeof segment !== 'string') {
+        return [];
+      }
+
+      return segment
+        .split(/[.[\]/]+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+    })
+    .map((segment) => segment.toLowerCase().replace(/[^a-z0-9]/g, ''))
+    .filter(Boolean);
+};
+
+const isValidationOrComplianceSdkIssue = (issue: SdkValidationIssue): boolean => {
+  return normalizeSdkIssuePathSegments(issue?.path as PropertyKey[] | string | undefined).some(
+    (segment) => {
+      return segment === 'validation' || segment === 'compliance';
+    },
+  );
+};
+
+const filterValidationOrComplianceSdkIssues = (
+  issues: SdkValidationIssue[],
+): SdkValidationIssue[] => {
+  return issues.filter((issue) => !isValidationOrComplianceSdkIssue(issue));
+};
+
 export const validateDatasetWithSdk = (
   datasetType: refDataType['@type'],
   orderedJson: any,
@@ -513,25 +544,20 @@ export const validateDatasetWithSdk = (
       if (result.success) {
         return result;
       }
-      const filteredIssues = result.issues.filter(
-        (issue) => !issue.path.includes('validation') && !issue.path.includes('compliance'),
-      );
+      const filteredIssues = filterValidationOrComplianceSdkIssues(result.issues);
       return {
         success: filteredIssues.length === 0,
         issues: filteredIssues,
       };
     }
     case 'lifeCycleModel data set': {
-      ensureFirstMissingProcessInstanceConnectionsArray(sdkValidationInput);
       const result = normalizeSdkValidationResult(
         createTidasLifeCycleModel(sdkValidationInput).validateEnhanced(),
       );
       if (result.success) {
         return result;
       }
-      const filteredIssues = result.issues.filter(
-        (issue) => !issue.path.includes('validation') && !issue.path.includes('compliance'),
-      );
+      const filteredIssues = filterValidationOrComplianceSdkIssues(result.issues);
       return {
         success: filteredIssues.length === 0,
         issues: filteredIssues,
@@ -970,6 +996,7 @@ export const checkReferences = async (
   requestKeysSet?: Set<string>,
   options: {
     exactVersion?: boolean;
+    rootRef?: refDataType | null;
   } = {},
 ): Promise<ReffPath | undefined> => {
   let currentPath: ReffPath | undefined;
@@ -981,8 +1008,19 @@ export const checkReferences = async (
         ref['@version'],
       );
       if (sameModelWithProcress && success) {
+        const sameModelRef: refDataType = {
+          '@type': 'lifeCycleModel data set',
+          '@refObjectId': sameModelWithProcress.id,
+          '@version': sameModelWithProcress.version,
+        };
+        if (isSameRef(sameModelRef, options.rootRef)) {
+          return;
+        }
         dealModel(sameModelWithProcress, unReview, underReview, unRuleVerification, nonExistentRef);
-        const modelRefs = getAllRefObj(sameModelWithProcress);
+        const modelRefs = filterOutRootSelfReferences(
+          getAllRefObj(sameModelWithProcress),
+          options.rootRef,
+        );
         await checkReferences(
           modelRefs,
           refMaps,
@@ -1000,6 +1038,9 @@ export const checkReferences = async (
   };
 
   const processRef = async (ref: any) => {
+    if (isSameRef(ref, options.rootRef)) {
+      return;
+    }
     if (refMaps.has(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`)) {
       const refData = refMaps.get(`${ref['@refObjectId']}:${ref['@version']}:${ref['@type']}`);
 
@@ -1068,7 +1109,7 @@ export const checkReferences = async (
           unReview.push(ref);
         }
 
-        const subRefs = getAllRefObj(json);
+        const subRefs = filterOutRootSelfReferences(getAllRefObj(json), options.rootRef);
         await checkReferences(
           subRefs,
           refMaps,
@@ -1142,6 +1183,7 @@ export const checkData = async (
       undefined,
       {
         exactVersion: true,
+        rootRef: data,
       },
     );
   }
@@ -1155,10 +1197,8 @@ export const validateDatasetRuleVerification = async (
   const sdkValidation = validateDatasetWithSdk(datasetType, orderedJson);
   const unRuleVerification: refDataType[] = [];
   const nonExistentRef: refDataType[] = [];
-  const refs = filterOutRootSelfReferences(
-    getAllRefObj(orderedJson),
-    getDatasetRootRef(datasetType, orderedJson),
-  );
+  const rootRef = getDatasetRootRef(datasetType, orderedJson);
+  const refs = filterOutRootSelfReferences(getAllRefObj(orderedJson), rootRef);
 
   if (refs.length > 0) {
     await checkReferences(
@@ -1173,6 +1213,7 @@ export const validateDatasetRuleVerification = async (
       undefined,
       {
         exactVersion: true,
+        rootRef,
       },
     );
   }

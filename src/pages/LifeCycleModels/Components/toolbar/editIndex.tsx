@@ -12,6 +12,7 @@ import {
   updateLifeCycleModel,
 } from '@/services/lifeCycleModels/api';
 import type {
+  LifeCycleModelCheckDataOptions,
   LifeCycleModelDetailResponse,
   LifeCycleModelEditorFormState,
   LifeCycleModelGraphEdge,
@@ -23,6 +24,7 @@ import type {
   LifeCycleModelProcessInstance,
   LifeCycleModelSelectedPortPayload,
   LifeCycleModelTargetAmount,
+  LifeCycleModelValidationSnapshot,
 } from '@/services/lifeCycleModels/data';
 import {
   genLifeCycleModelData,
@@ -99,6 +101,12 @@ type Props = {
   updateNodeCb?: (ref: refDataType) => Promise<void>;
   newVersion?: string;
   onSubmitReviewSuccess?: () => void;
+};
+
+type SaveDataResult = {
+  currentNodes: LifeCycleModelGraphNode[];
+  currentEdges: LifeCycleModelGraphEdge[];
+  validationSnapshot: LifeCycleModelValidationSnapshot;
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
@@ -798,6 +806,27 @@ const ToolbarEdit: FC<Props> = ({
         : (edges as LifeCycleModelGraphEdge[]);
 
       const newData = buildSavePayload(infoData, currentNodes, currentEdges);
+      const fallbackValidationVersion =
+        (newData?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] as
+          | string
+          | undefined) ??
+        newData.version ??
+        thisVersion;
+      const buildSaveResult = ({
+        modelId,
+        version,
+      }: {
+        modelId: string;
+        version: string;
+      }): SaveDataResult => ({
+        currentNodes,
+        currentEdges,
+        validationSnapshot: {
+          modelId,
+          version,
+          payload: newData,
+        },
+      });
       const showMutationError = (result: Extract<LifeCycleModelMutationResult, { ok: false }>) => {
         if (result.code === 'VERSION_CONFLICT') {
           message.error(
@@ -836,7 +865,9 @@ const ToolbarEdit: FC<Props> = ({
         const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
-          setInfoData({ ...newData, id: thisId, version: thisVersion });
+          const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
+          const savedVersion = savedLifeCycleModel?.version ?? result.version;
+          setInfoData({ ...newData, id: savedModelId, version: savedVersion });
           if (!silent) {
             message.success(
               intl.formatMessage({
@@ -845,8 +876,8 @@ const ToolbarEdit: FC<Props> = ({
               }),
             );
           }
-          setThisId(savedLifeCycleModel?.id ?? result.modelId);
-          setThisVersion(savedLifeCycleModel?.version ?? result.version);
+          setThisId(savedModelId);
+          setThisVersion(savedVersion);
           setJsonTg(savedLifeCycleModel?.json_tg ?? {});
 
           const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
@@ -862,16 +893,26 @@ const ToolbarEdit: FC<Props> = ({
           });
 
           saveCallback();
+          return buildSaveResult({
+            modelId: savedModelId,
+            version: savedVersion,
+          });
         } else {
           if (!silent) {
             showMutationError(result);
           }
+          return buildSaveResult({
+            modelId: thisId,
+            version: thisVersion,
+          });
         }
       } else if (thisAction === 'create') {
         const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
         const result = await createLifeCycleModel({ ...newData, id: newId });
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
+          const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
+          const savedVersion = savedLifeCycleModel?.version ?? result.version;
           if (!silent) {
             message.success(
               intl.formatMessage({
@@ -881,8 +922,9 @@ const ToolbarEdit: FC<Props> = ({
             );
           }
           setThisAction('edit');
-          setThisId(savedLifeCycleModel?.id ?? result.modelId);
-          setThisVersion(savedLifeCycleModel?.version ?? result.version);
+          setThisId(savedModelId);
+          setThisVersion(savedVersion);
+          setInfoData({ ...newData, id: savedModelId, version: savedVersion });
           setJsonTg(savedLifeCycleModel?.json_tg ?? {});
 
           const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
@@ -898,13 +940,24 @@ const ToolbarEdit: FC<Props> = ({
           });
 
           saveCallback();
+          return buildSaveResult({
+            modelId: savedModelId,
+            version: savedVersion,
+          });
         } else {
           if (!silent) {
             showMutationError(result);
           }
+          return buildSaveResult({
+            modelId: newId,
+            version: fallbackValidationVersion,
+          });
         }
       }
-      return true;
+      return buildSaveResult({
+        modelId: thisId,
+        version: thisVersion,
+      });
     } finally {
       if (setLoadingData) setSpinning(false);
     }
@@ -1373,6 +1426,14 @@ const ToolbarEdit: FC<Props> = ({
           procressDetail?.ruleVerification,
           false,
         ),
+        undefined,
+        {
+          rootRef: {
+            '@refObjectId': selectedNode.data.id,
+            '@version': selectedNode.data.version,
+            '@type': 'process data set',
+          },
+        },
       );
       const problemNodesofSelectedNode = path?.findProblemNodes();
       if (!problemNodesofSelectedNode?.length) {
@@ -1391,12 +1452,16 @@ const ToolbarEdit: FC<Props> = ({
   const handleCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     setSpinning(true);
-    await saveData(false, { silent });
+    const saveResult = await saveData(false, { silent });
+    const checkOptions: LifeCycleModelCheckDataOptions = {
+      silent,
+      validationSnapshot: saveResult.validationSnapshot,
+    };
     const checkDataResult = await editInfoRef.current?.handleCheckData(
       'checkData',
-      nodes as LifeCycleModelGraphNode[],
-      edges as LifeCycleModelGraphEdge[],
-      { silent },
+      saveResult.currentNodes,
+      saveResult.currentEdges,
+      checkOptions,
     );
     setProblemNodes(checkDataResult?.problemNodes ?? []);
     setSpinning(false);
@@ -1417,11 +1482,14 @@ const ToolbarEdit: FC<Props> = ({
 
   const handelSubmitReview = async () => {
     setSpinning(true);
-    await saveData(false);
+    const saveResult = await saveData(false);
     const reviewResult = await editInfoRef.current?.handleCheckData(
       'review',
-      nodes as LifeCycleModelGraphNode[],
-      edges as LifeCycleModelGraphEdge[],
+      saveResult.currentNodes,
+      saveResult.currentEdges,
+      {
+        validationSnapshot: saveResult.validationSnapshot,
+      },
     );
     const checkResult = reviewResult?.checkResult;
     const unReview = reviewResult?.unReview ?? [];

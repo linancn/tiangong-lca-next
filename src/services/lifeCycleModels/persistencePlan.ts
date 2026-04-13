@@ -644,9 +644,7 @@ function sameFinalId(oldFinalId: any, process: RawLifeCycleModelProcess) {
 function getLifecycleModelRuleVerification(jsonOrdered: any) {
   const validateResult = createTidasLifeCycleModel(clone(jsonOrdered)).validateEnhanced();
   const issues = !validateResult.success
-    ? validateResult.error.issues.filter(
-        (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-      )
+    ? filterValidationOrComplianceIssues(validateResult.error.issues ?? [])
     : [];
   return issues.length === 0;
 }
@@ -654,11 +652,34 @@ function getLifecycleModelRuleVerification(jsonOrdered: any) {
 function getProcessRuleVerification(jsonOrdered: any) {
   const validateResult = createTidasProcess(clone(jsonOrdered)).validateEnhanced();
   const issues = !validateResult.success
-    ? validateResult.error.issues.filter(
-        (item) => !item.path.includes('validation') && !item.path.includes('compliance'),
-      )
+    ? filterValidationOrComplianceIssues(validateResult.error.issues ?? [])
     : [];
   return issues.length === 0;
+}
+
+function filterValidationOrComplianceIssues<T extends { path?: PropertyKey[] | string }>(
+  issues: T[],
+): T[] {
+  return issues.filter((issue) => !isValidationOrComplianceIssuePath(issue?.path));
+}
+
+function isValidationOrComplianceIssuePath(path: PropertyKey[] | string | undefined): boolean {
+  const rawSegments = Array.isArray(path) ? path : typeof path === 'string' ? [path] : [];
+
+  return rawSegments.some((segment) => {
+    if (typeof segment !== 'string') {
+      return false;
+    }
+
+    return segment
+      .split(/[.[\]/]+/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => part.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      .some((normalizedSegment) => {
+        return normalizedSegment === 'validation' || normalizedSegment === 'compliance';
+      });
+  });
 }
 
 function getLifecycleModelVersion(jsonOrdered: any) {
