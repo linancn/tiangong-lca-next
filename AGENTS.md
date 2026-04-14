@@ -15,7 +15,7 @@ Use this file as the single entry point for coding agents.
 - Stack: React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript.
 - Supabase frontend env keys are prewired via committed runtime env files such as `.env` and `.env.development`: use `npm start` as the default entry point for the persistent Supabase `dev` branch, keep `npm run start:dev` as the equivalent explicit dev alias, and use `npm run start:main` only when a task explicitly needs the `main` database. Do not create ad-hoc Supabase clients outside `src/services/**`.
 - Database-side Edge Function SQL must read branch-specific Vault secrets. Standard webhook auth uses `project_url` and `project_secret_key`; legacy `generate_flow_embedding()` compatibility additionally uses `project_x_key`. Never hardcode branch URLs or service keys in SQL, migrations, or baseline dumps.
-- The Supabase schema source of truth now lives in `tiangong-lca/database-engine`. This repo is a consumer of that database. Do not author schema/config/migration changes here. If a legacy local `supabase/` copy is still present, treat it as read-only until a dedicated cleanup change removes it.
+- The Supabase schema source of truth now lives in `tiangong-lca/database-engine`. This repo is a consumer of that database. Do not author schema/config/migration changes here.
 - Do not add npm dependencies without explicit human approval.
 
 ## Development Workflow Summary
@@ -87,7 +87,7 @@ Read only what matches the current task:
 ## Repo Landmarks
 
 - `config/routes.ts`: mirrored route branches (`/tgdata`, `/codata`, `/mydata`, `/tedata`).
-- `supabase/config.toml`: legacy cutover copy of the former Supabase config-as-code baseline. Do not edit it here; the source of truth is `tiangong-lca/database-engine/supabase/config.toml`.
+- `tiangong-lca/database-engine/supabase/**`: the database schema/config source of truth for the workspace. This repo no longer keeps a local `supabase/` source-of-truth tree.
 - `.env.supabase.*.local(.example)`: database-maintenance env files moved to `tiangong-lca/database-engine`; do not reintroduce or maintain them here.
 - `src/services/**`: only allowed boundary for Supabase calls.
 - `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.

@@ -43,10 +43,6 @@ screenshot
 build
 .env.local
 
-# supabase
-supabase/.branches/
-supabase/.temp/
-
 dev_docs/*
 
 # docker

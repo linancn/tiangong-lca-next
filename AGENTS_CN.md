@@ -15,7 +15,7 @@
 - 技术栈：React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript。
 - Supabase 前端环境变量已通过 `.env`、`.env.development` 等运行时文件预置：`npm start` 是连接持久化 Supabase `dev` 分支的默认入口，`npm run start:dev` 保留为等价的显式 dev 别名，只有任务明确需要 `main` 数据库时才使用 `npm run start:main`；禁止在 `src/services/**` 之外创建临时 Supabase client。
 - 数据库侧的 Edge Function SQL 必须通过分支级 Vault secret 读取配置：标准 webhook 鉴权使用 `project_url` 和 `project_secret_key`，兼容旧 `generate_flow_embedding()` 路径时还需要 `project_x_key`；不要把 branch URL 或 service key 硬编码进 SQL、migration 或 baseline dump。
-- Supabase schema 真相源已迁到 `tiangong-lca/database-engine`。本仓是该数据库的消费者，不要在这里编写 schema/config/migration 变更。若本地仍临时保留旧 `supabase/` 目录，也应视为只读，直到后续专门的清理变更移除它。
+- Supabase schema 真相源已迁到 `tiangong-lca/database-engine`。本仓是该数据库的消费者，不要在这里编写 schema/config/migration 变更。
 - 未经人工明确批准，不得新增 npm 依赖。
 
 ## 开发流程摘要
@@ -87,7 +87,7 @@ npm run build
 ## 仓库关键位置
 
 - `config/routes.ts`：`/tgdata`、`/codata`、`/mydata`、`/tedata` 路由镜像。
-- `supabase/config.toml`：迁移窗口内保留的旧配置副本，不要在本仓编辑；真相源位于 `tiangong-lca/database-engine/supabase/config.toml`。
+- `tiangong-lca/database-engine/supabase/**`：workspace 中数据库 schema/config 的真相源；本仓不再保留本地 `supabase/` 真相源目录。
 - `.env.supabase.*.local(.example)`：数据库维护环境文件已迁到 `tiangong-lca/database-engine`，不要在本仓重新引入或维护。
 - `src/services/**`：唯一允许访问 Supabase 的边界层。
 - `src/pages/<Feature>/`：页面入口与 `Components/` 抽屉/弹窗。

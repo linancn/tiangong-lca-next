@@ -25,8 +25,6 @@ Do **not** use this repo for:
 - adding or editing the authoritative `supabase db push` automation
 - keeping `.env.supabase.*.local(.example)` branch-binding files
 
-A legacy local `supabase/` copy may still exist in this repo temporarily for rollback or reference. Treat it as read-only until a dedicated cleanup change removes it.
-
 ## Environment contract
 
 - `npm start` -> shared persistent Supabase `dev`

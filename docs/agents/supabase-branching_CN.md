@@ -25,8 +25,6 @@
 - 增删权威的 `supabase db push` 自动化流程
 - 维护 `.env.supabase.*.local(.example)` 这组分支绑定文件
 
-本仓可能仍暂时保留一份旧的本地 `supabase/` 副本，供回滚或参考使用。该目录应视为只读，直到后续专门的清理变更移除它。
-
 ## 环境契约
 
 - `npm start` -> 共享且持久化的 Supabase `dev`

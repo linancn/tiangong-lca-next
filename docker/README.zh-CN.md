@@ -29,12 +29,6 @@ cd /path/to/tiangong-lca-next
 ./docker/pull-edge-functions.sh
 ```
 
-可选：同时同步到本地 `../supabase/functions`
-
-```bash
-SYNC_LOCAL_SUPABASE_FUNCTIONS=true ./docker/pull-edge-functions.sh
-```
-
 ## 2) 同步 data.sql（远程 Supabase）
 
 脚本：`docker/scripts/sync-migrations-to-data-sql.sh`
