@@ -13,9 +13,9 @@ Use this file as the single entry point for coding agents.
 
 - Node.js **>= 24** (`nvm use 24`; `.nvmrc` is `24`).
 - Stack: React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript.
-- Supabase env keys are prewired via committed env files: use `npm start` as the default entry point for the persistent Supabase `dev` branch, keep `npm run start:dev` as the equivalent explicit dev alias, and use `npm run start:main` only when a task explicitly needs the `main` database. Do not create ad-hoc Supabase clients outside `src/services/**`.
+- Supabase frontend env keys are prewired via committed runtime env files such as `.env` and `.env.development`: use `npm start` as the default entry point for the persistent Supabase `dev` branch, keep `npm run start:dev` as the equivalent explicit dev alias, and use `npm run start:main` only when a task explicitly needs the `main` database. Do not create ad-hoc Supabase clients outside `src/services/**`.
 - Database-side Edge Function SQL must read branch-specific Vault secrets. Standard webhook auth uses `project_url` and `project_secret_key`; legacy `generate_flow_embedding()` compatibility additionally uses `project_x_key`. Never hardcode branch URLs or service keys in SQL, migrations, or baseline dumps.
-- Supabase Branching uses one shared `supabase/` directory: root config is the production baseline inherited by preview branches, while `[remotes.dev]` stores persistent-dev overrides. Do not clone per-branch `supabase/` directories or add a parallel `supabase db push` GitHub Action on top of Supabase GitHub integration.
+- The Supabase schema source of truth now lives in `tiangong-lca/database-engine`. This repo is a consumer of that database. Do not author schema/config/migration changes here. If a legacy local `supabase/` copy is still present during cutover, treat it as read-only.
 - Do not add npm dependencies without explicit human approval.
 
 ## Development Workflow Summary
@@ -25,13 +25,13 @@ Use this file as the single entry point for coding agents.
 - Start normal work from the latest Git `dev`, then create a feature branch from `dev`.
 - Open routine feature and fix PRs into Git `dev`, not directly into Git `main`.
 - Use `npm start` for routine frontend work against the shared persistent Supabase `dev` branch; `npm run start:dev` remains the equivalent explicit alias.
-- Create schema changes locally with the Supabase CLI and committed migration files. Do not use the shared remote `dev` database as the first place to author schema changes.
+- Author schema changes in `tiangong-lca/database-engine`, then validate this frontend against the relevant local, preview, `dev`, or `main` environment. Do not use the shared remote `dev` database as the first place to invent schema changes from this repo.
 - After a PR merges into Git `dev`, verify the integrated result in the shared Supabase `dev` branch.
 - Promote validated changes by opening a PR from Git `dev` into Git `main`.
 - Use `main` only through the explicit `npm run start:main` workflow for task-specific verification, production investigation, or hotfix work.
 - Branch from Git `main` only when the work must start from production, such as a hotfix. After that work merges to `main`, back-merge `main` into `dev`.
 - Do not infer the daily trunk from GitHub default-branch UI alone; in this repository, routine work still starts from `dev`.
-- `docs/agents/supabase-branching.md` is the canonical detailed procedure for branch and database workflow.
+- `docs/agents/supabase-branching.md` is the canonical detailed procedure for app-side environment selection in this repo and points to `database-engine` for database ownership.
 
 ## Core Commands
 
@@ -87,7 +87,8 @@ Read only what matches the current task:
 ## Repo Landmarks
 
 - `config/routes.ts`: mirrored route branches (`/tgdata`, `/codata`, `/mydata`, `/tedata`).
-- `supabase/config.toml`: Supabase config-as-code baseline. Root settings apply to production and preview branches; `[remotes.dev]` holds the persistent dev branch overrides.
+- `supabase/config.toml`: legacy cutover copy of the former Supabase config-as-code baseline. Do not edit it here; the source of truth is `tiangong-lca/database-engine/supabase/config.toml`.
+- `.env.supabase.*.local(.example)`: database-maintenance env files moved to `tiangong-lca/database-engine`; do not reintroduce or maintain them here.
 - `src/services/**`: only allowed boundary for Supabase calls.
 - `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.
 - `src/components/**`, `src/contexts/**`, `types/**`: shared UI/context/types.
