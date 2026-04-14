@@ -5,8 +5,6 @@ set -e
 
 echo "Starting Edge Functions update..."
 
-SYNC_LOCAL_SUPABASE_FUNCTIONS="${SYNC_LOCAL_SUPABASE_FUNCTIONS:-false}"
-
 # Create temporary directory
 mkdir -p temp_repo
 
@@ -14,11 +12,6 @@ mkdir -p temp_repo
 if [ -d "volumes/functions" ]; then
     echo "Backing up existing Docker functions..."
     cp -r volumes/functions volumes/functions.backup.$(date +%Y%m%d_%H%M%S)
-fi
-
-if [ "$SYNC_LOCAL_SUPABASE_FUNCTIONS" = "true" ] && [ -d "../supabase/functions" ]; then
-    echo "Backing up existing Supabase functions..."
-    cp -r ../supabase/functions ../supabase/functions.backup.$(date +%Y%m%d_%H%M%S)
 fi
 
 # Clone Edge Functions repository
@@ -34,19 +27,10 @@ fi
 
 # Ensure target directories exist
 mkdir -p volumes/functions
-if [ "$SYNC_LOCAL_SUPABASE_FUNCTIONS" = "true" ]; then
-    mkdir -p ../supabase/functions
-fi
 
 # Copy Edge Functions to Docker volumes directory
 echo "Updating Docker functions..."
 cp -r temp_repo/supabase/functions/* volumes/functions/
-
-if [ "$SYNC_LOCAL_SUPABASE_FUNCTIONS" = "true" ]; then
-    # Copy Edge Functions to local Supabase directory
-    echo "Updating Supabase functions..."
-    cp -r temp_repo/supabase/functions/* ../supabase/functions/
-fi
 
 # Clean up temporary directory
 echo "Cleaning up temporary files..."
@@ -54,6 +38,3 @@ rm -rf temp_repo
 
 echo "Edge Functions update completed!"
 echo "Note: Original Docker functions have been backed up to the .backup directory"
-if [ "$SYNC_LOCAL_SUPABASE_FUNCTIONS" = "true" ]; then
-    echo "Note: Local Supabase functions were also synchronized."
-fi
