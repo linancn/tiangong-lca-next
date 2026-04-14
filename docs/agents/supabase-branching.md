@@ -25,7 +25,7 @@ Do **not** use this repo for:
 - adding or editing the authoritative `supabase db push` automation
 - keeping `.env.supabase.*.local(.example)` branch-binding files
 
-During the migration window, a legacy local `supabase/` copy may still exist in this repo. Treat it as read-only until the cutover is fully complete.
+A legacy local `supabase/` copy may still exist in this repo temporarily for rollback or reference. Treat it as read-only until a dedicated cleanup change removes it.
 
 ## Environment contract
 

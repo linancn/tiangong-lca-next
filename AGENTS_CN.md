@@ -15,7 +15,7 @@
 - 技术栈：React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript。
 - Supabase 前端环境变量已通过 `.env`、`.env.development` 等运行时文件预置：`npm start` 是连接持久化 Supabase `dev` 分支的默认入口，`npm run start:dev` 保留为等价的显式 dev 别名，只有任务明确需要 `main` 数据库时才使用 `npm run start:main`；禁止在 `src/services/**` 之外创建临时 Supabase client。
 - 数据库侧的 Edge Function SQL 必须通过分支级 Vault secret 读取配置：标准 webhook 鉴权使用 `project_url` 和 `project_secret_key`，兼容旧 `generate_flow_embedding()` 路径时还需要 `project_x_key`；不要把 branch URL 或 service key 硬编码进 SQL、migration 或 baseline dump。
-- Supabase schema 真相源已迁到 `tiangong-lca/database-engine`。本仓是该数据库的消费者，不要在这里编写 schema/config/migration 变更。若迁移窗口内仍临时保留本地 `supabase/` 目录，也应视为只读。
+- Supabase schema 真相源已迁到 `tiangong-lca/database-engine`。本仓是该数据库的消费者，不要在这里编写 schema/config/migration 变更。若本地仍临时保留旧 `supabase/` 目录，也应视为只读，直到后续专门的清理变更移除它。
 - 未经人工明确批准，不得新增 npm 依赖。
 
 ## 开发流程摘要
