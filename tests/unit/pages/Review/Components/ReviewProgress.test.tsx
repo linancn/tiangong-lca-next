@@ -587,6 +587,7 @@ describe('ReviewProgress component', () => {
     renderComponent();
 
     fireEvent.click(screen.getByTestId('icon-sync').closest('button') as HTMLButtonElement);
+    await screen.findByTestId('remove-user-2');
     await waitFor(() => expect(latestColumns).toHaveLength(6));
 
     const statusColumn = latestColumns.find((column) => column.dataIndex === 'state_code');
