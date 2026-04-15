@@ -1,3 +1,4 @@
+import AccessDenied from '@/components/AccessDenied';
 import { getReviewUserRoleApi } from '@/services/roles/api';
 import { PageContainer } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
@@ -7,8 +8,9 @@ import AssignmentReview from './Components/AssignmentReview';
 import ReviewMember from './Components/ReviewMember';
 
 const Review = () => {
-  const [activeTabKey, setActiveTabKey] = useState('unassigned');
+  const [activeTabKey, setActiveTabKey] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authResolved, setAuthResolved] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
   const actionRef = useRef<any>();
   const unassignedTableRef = useRef<any>();
@@ -22,10 +24,10 @@ const Review = () => {
     try {
       const userData = await getReviewUserRoleApi();
       setUserData(userData);
-      unassignedTableRef.current?.reload();
     } catch (error) {
       console.error(error);
     } finally {
+      setAuthResolved(true);
       setLoading(false);
     }
   };
@@ -58,97 +60,100 @@ const Review = () => {
     }
   };
 
-  const tabs =
-    userData?.role === 'review-admin'
-      ? [
-          {
-            key: 'unassigned',
-            label: <FormattedMessage id='pages.review.tabs.unassigned' />,
-            children: (
-              <AssignmentReview
-                actionRef={unassignedTableRef}
-                tableType='unassigned'
-                userData={userData}
-              />
-            ),
-          },
-          {
-            key: 'assigned',
-            label: <FormattedMessage id='pages.review.tabs.assigned' />,
-            children: (
-              <AssignmentReview
-                actionRef={assignedTableRef}
-                tableType='assigned'
-                userData={userData}
-              />
-            ),
-          },
-          {
-            key: 'rejected',
-            label: <FormattedMessage id='pages.review.tabs.rejectedTask' />,
-            children: (
-              <AssignmentReview
-                actionRef={rejectedTableRef}
-                tableType='admin-rejected'
-                userData={userData}
-              />
-            ),
-          },
-          {
-            key: 'members',
-            label: <FormattedMessage id='pages.review.tabs.members' />,
-            children: <ReviewMember userData={userData} />,
-          },
-        ]
-      : [
-          {
-            key: 'reviewed',
-            label: <FormattedMessage id='pages.review.tabs.reviewed' />,
-            children: (
-              <AssignmentReview
-                actionRef={reviewedTableRef}
-                tableType='reviewed'
-                userData={userData}
-              />
-            ),
-          },
-          {
-            key: 'pending',
-            label: <FormattedMessage id='pages.review.tabs.pending' />,
-            children: (
-              <AssignmentReview
-                actionRef={pendingTableRef}
-                tableType='pending'
-                userData={userData}
-              />
-            ),
-          },
-          {
-            key: 'rejected',
-            label: <FormattedMessage id='pages.review.tabs.rejected' />,
-            children: (
-              <AssignmentReview
-                actionRef={rejectedTableRef}
-                tableType='reviewer-rejected'
-                userData={userData}
-              />
-            ),
-          },
-        ];
+  const isReviewAdmin = userData?.role === 'review-admin';
+  const isReviewMember = userData?.role === 'review-member';
+  const isAuthorized = isReviewAdmin || isReviewMember;
+
+  const tabs = isReviewAdmin
+    ? [
+        {
+          key: 'unassigned',
+          label: <FormattedMessage id='pages.review.tabs.unassigned' />,
+          children: (
+            <AssignmentReview
+              actionRef={unassignedTableRef}
+              tableType='unassigned'
+              userData={userData}
+            />
+          ),
+        },
+        {
+          key: 'assigned',
+          label: <FormattedMessage id='pages.review.tabs.assigned' />,
+          children: (
+            <AssignmentReview
+              actionRef={assignedTableRef}
+              tableType='assigned'
+              userData={userData}
+            />
+          ),
+        },
+        {
+          key: 'rejected',
+          label: <FormattedMessage id='pages.review.tabs.rejectedTask' />,
+          children: (
+            <AssignmentReview
+              actionRef={rejectedTableRef}
+              tableType='admin-rejected'
+              userData={userData}
+            />
+          ),
+        },
+        {
+          key: 'members',
+          label: <FormattedMessage id='pages.review.tabs.members' />,
+          children: <ReviewMember userData={userData} />,
+        },
+      ]
+    : [
+        {
+          key: 'reviewed',
+          label: <FormattedMessage id='pages.review.tabs.reviewed' />,
+          children: (
+            <AssignmentReview
+              actionRef={reviewedTableRef}
+              tableType='reviewed'
+              userData={userData}
+            />
+          ),
+        },
+        {
+          key: 'pending',
+          label: <FormattedMessage id='pages.review.tabs.pending' />,
+          children: (
+            <AssignmentReview actionRef={pendingTableRef} tableType='pending' userData={userData} />
+          ),
+        },
+        {
+          key: 'rejected',
+          label: <FormattedMessage id='pages.review.tabs.rejected' />,
+          children: (
+            <AssignmentReview
+              actionRef={rejectedTableRef}
+              tableType='reviewer-rejected'
+              userData={userData}
+            />
+          ),
+        },
+      ];
 
   useEffect(() => {
-    if (userData?.role === 'review-member' && activeTabKey !== 'reviewed') {
-      setActiveTabKey('reviewed');
-      if (reviewedTableRef.current) {
-        reviewedTableRef.current.reload();
-      }
+    if (!isAuthorized) {
+      setActiveTabKey('');
+      return;
     }
-  }, [userData]);
+
+    setActiveTabKey(isReviewAdmin ? 'unassigned' : 'reviewed');
+  }, [isAuthorized, isReviewAdmin]);
 
   return (
     <PageContainer title={<FormattedMessage id='pages.review.title' />}>
       <Spin spinning={loading}>
-        <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+        {!authResolved ? null : !isAuthorized ? (
+          <AccessDenied />
+        ) : (
+          <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+        )}
       </Spin>
     </PageContainer>
   );

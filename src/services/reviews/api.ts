@@ -6,7 +6,6 @@ import {
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
-import { getPendingComment, getRejectedComment, getReviewedComment } from '../comments/api';
 import { getLangText } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
@@ -28,6 +27,40 @@ type DataNotificationRpcRow = {
   state_code: number;
   json: any;
   modified_at: string;
+  total_count?: number | string | null;
+};
+
+type ReviewItemRpcRow = {
+  id: string;
+  data_id?: string;
+  data_version?: string;
+  state_code?: number;
+  reviewer_id?: string[] | null;
+  json: any;
+  deadline?: string | null;
+  created_at?: string;
+  modified_at?: string;
+};
+
+type ReviewAdminQueueRpcRow = ReviewItemRpcRow & {
+  comment_state_codes?: number[] | null;
+  total_count?: number | string | null;
+};
+
+type ReviewMemberQueueRpcRow = {
+  id: string;
+  data_id?: string;
+  data_version?: string;
+  review_state_code?: number;
+  reviewer_id?: string[] | null;
+  json: any;
+  deadline?: string | null;
+  created_at?: string;
+  modified_at?: string;
+  comment_state_code?: number;
+  comment_json?: any;
+  comment_created_at?: string;
+  comment_modified_at?: string;
   total_count?: number | string | null;
 };
 
@@ -60,6 +93,63 @@ async function invokeReviewWorkflowCommandBatch<Row extends Record<string, unkno
     count: null,
     status: firstError?.status ?? 200,
     statusText: firstError?.statusText ?? 'OK',
+  };
+}
+
+function normalizeTotalCount(value: number | string | null | undefined) {
+  return Number(value ?? 0) || 0;
+}
+
+function mapReviewRowToTableData(
+  row: ReviewItemRpcRow,
+  lang: string,
+  lifecycleModels: any[],
+  comments: { state_code: number }[] = [],
+) {
+  const model = lifecycleModels?.find(
+    (candidate) =>
+      candidate.id === row?.json?.data?.id && candidate.version === row?.json?.data?.version,
+  );
+  const modelName =
+    model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
+
+  return {
+    key: row.id,
+    id: row.id,
+    isFromLifeCycle: Boolean(model),
+    name:
+      (model
+        ? genProcessName(modelName ?? {}, lang)
+        : genProcessName(row?.json?.data?.name ?? {}, lang)) || '-',
+    teamName: getLangText(row?.json?.team?.name ?? {}, lang),
+    userName: row?.json?.user?.name ?? row?.json?.user?.email ?? '-',
+    createAt: row.created_at ? new Date(row.created_at).toISOString() : undefined,
+    modifiedAt: row.modified_at ? new Date(row.modified_at).toISOString() : undefined,
+    deadline: row.deadline ? new Date(row.deadline).toISOString() : row.deadline,
+    json: row?.json,
+    comments,
+    modelData: model
+      ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
+      : null,
+  };
+}
+
+async function getReviewItemsRpc(params: {
+  reviewIds?: string[];
+  dataId?: string | null;
+  dataVersion?: string | null;
+  stateCodes?: number[];
+}) {
+  const { data, error } = await supabase.rpc('qry_review_get_items', {
+    p_review_ids: params.reviewIds?.length ? params.reviewIds : null,
+    p_data_id: params.dataId ?? null,
+    p_data_version: params.dataVersion ?? null,
+    p_state_codes: params.stateCodes?.length ? params.stateCodes : null,
+  });
+
+  return {
+    data: (data ?? []) as ReviewItemRpcRow[],
+    error,
   };
 }
 
@@ -143,24 +233,28 @@ export async function updateReviewApi(reviewIds: React.Key[], data: any) {
 }
 
 export async function getReviewerIdsApi(reviewIds: React.Key[]) {
-  const { data } = await supabase.from('reviews').select('reviewer_id').in('id', reviewIds);
+  const { data } = await getReviewItemsRpc({
+    reviewIds: reviewIds.map(String),
+  });
 
   return Array.from(
     new Set(
-      (data ?? []).flatMap((item: any) =>
-        Array.isArray(item?.reviewer_id) ? item.reviewer_id : [],
-      ),
+      data.flatMap((item: any) => (Array.isArray(item?.reviewer_id) ? item.reviewer_id : [])),
     ),
   );
 }
 
 export async function getReviewsDetail(id: string) {
-  const { data } = await supabase.from('reviews').select('*').eq('id', id).single();
-  return data;
+  const { data } = await getReviewItemsRpc({
+    reviewIds: [id],
+  });
+  return data.length > 0 ? data[0] : null;
 }
 
 export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
-  const { data } = await supabase.from('reviews').select('*').in('id', reviewIds);
+  const { data } = await getReviewItemsRpc({
+    reviewIds: reviewIds.map(String),
+  });
   return data;
 }
 
@@ -171,88 +265,51 @@ export async function getReviewsTableDataOfReviewMember(
   lang: string,
   userData?: { user_id: string | undefined },
 ) {
-  let commentResult: any = [];
-
-  switch (type) {
-    case 'reviewed': {
-      const userId = userData?.user_id ?? (await getUserId());
-      if (userId) {
-        commentResult = await getReviewedComment(params, sort, userId);
-      }
-      break;
-    }
-    case 'pending': {
-      const userId = userData?.user_id ?? (await getUserId());
-      if (userId) {
-        commentResult = await getPendingComment(params, sort, userId);
-      }
-      break;
-    }
-    case 'reviewer-rejected': {
-      const userId = userData?.user_id ?? (await getUserId());
-      if (userId) {
-        commentResult = await getRejectedComment(params, sort, userId);
-      }
-      break;
-    }
-  }
-  if (commentResult.error || !commentResult.data || !commentResult.data.length) {
+  const userId = userData?.user_id ?? (await getUserId());
+  if (!userId) {
     return Promise.resolve({
       data: [],
       success: true,
       total: 0,
     });
-  } else {
-    const reviews: any[] = [];
-    commentResult.data.forEach((c: any) => {
-      if (c.reviews) {
-        reviews.push({ ...c.reviews });
-      }
-    });
+  }
 
-    const processes: { id: string; version: string }[] = [];
-    reviews.forEach((i) => {
-      const id = i?.json?.data?.id;
-      const version = i?.json?.data?.version;
-      if (id) {
-        processes.push({ id, version });
-      }
-    });
-    const modelResult = await getLifeCyclesByIdAndVersion(processes);
-    let data = reviews.map((i: any) => {
-      const model = modelResult?.data?.find(
-        (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
-      );
-      const modelName =
-        model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
-      return {
-        key: i.id,
-        id: i.id,
-        isFromLifeCycle: model ? true : false,
-        name:
-          (model
-            ? genProcessName(modelName ?? {}, lang)
-            : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
-        teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
-        createAt: new Date(i.created_at).toISOString(),
-        modifiedAt: new Date(i?.modified_at).toISOString(),
-        deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
-        json: i?.json,
-        // Store complete model data for subtable preloading
-        modelData: model
-          ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
-          : null,
-      };
-    });
+  const normalizedSort = sort ?? {};
+  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
+  const orderBy = normalizedSort[sortBy] ?? 'descend';
 
+  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items', {
+    p_status: type,
+    p_page: params.current ?? 1,
+    p_page_size: params.pageSize ?? 10,
+    p_sort_by: sortBy,
+    p_sort_order: orderBy,
+  });
+
+  const rows = (data ?? []) as ReviewMemberQueueRpcRow[];
+  if (error || rows.length === 0) {
     return Promise.resolve({
-      data: data,
-      page: params?.current ?? 1,
+      data: [],
       success: true,
-      total: commentResult?.count ?? 0,
+      total: 0,
     });
   }
+
+  const processes = rows
+    .map((row) => ({
+      id: row?.json?.data?.id,
+      version: row?.json?.data?.version,
+    }))
+    .filter((item) => item.id);
+  const modelResult = await getLifeCyclesByIdAndVersion(processes);
+  const lifecycleModels = Array.isArray(modelResult?.data) ? modelResult.data : [];
+
+  return Promise.resolve({
+    data: rows.map((row) => mapReviewRowToTableData(row, lang, lifecycleModels)),
+    page: params?.current ?? 1,
+    success: true,
+    total: normalizeTotalCount(rows[0]?.total_count),
+  });
 }
 
 export async function getReviewsTableDataOfReviewAdmin(
@@ -261,112 +318,68 @@ export async function getReviewsTableDataOfReviewAdmin(
   type: 'unassigned' | 'assigned' | 'admin-rejected',
   lang: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
-  let query = supabase
-    .from('reviews')
-    .select('*', { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-  switch (type) {
-    case 'unassigned': {
-      query = query.eq('state_code', 0);
-      break;
-    }
-    case 'assigned': {
-      query = query.eq('state_code', 1).select('*, comments(state_code)');
-      break;
-    }
-    case 'admin-rejected': {
-      query = query.eq('state_code', -1);
-      break;
-    }
-  }
+  const normalizedSort = sort ?? {};
+  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
+  const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const result = await query;
+  const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items', {
+    p_status: type,
+    p_page: params.current ?? 1,
+    p_page_size: params.pageSize ?? 10,
+    p_sort_by: sortBy,
+    p_sort_order: orderBy,
+  });
 
-  if (result?.data) {
-    if (result?.data.length === 0) {
-      return Promise.resolve({
-        data: [],
-        success: true,
-        total: 0,
-      });
-    }
-    const processes: { id: string; version: string }[] = [];
-    result?.data.forEach((i) => {
-      const id = i?.json?.data?.id;
-      const version = i?.json?.data?.version;
-      if (id) {
-        processes.push({ id, version });
-      }
-    });
-    const modelResult = await getLifeCyclesByIdAndVersion(processes);
-    let data = result?.data.map((i: any) => {
-      const model = modelResult?.data?.find(
-        (j) => j.id === i?.json?.data?.id && j.version === i?.json?.data?.version,
-      );
-      const modelName =
-        model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
-      return {
-        key: i.id,
-        id: i.id,
-        isFromLifeCycle: model ? true : false,
-        name:
-          (model
-            ? genProcessName(modelName ?? {}, lang)
-            : genProcessName(i?.json?.data?.name ?? {}, lang)) || '-',
-        teamName: getLangText(i?.json?.team?.name ?? {}, lang),
-        userName: i?.json?.user?.name ?? i?.json?.user?.email ?? '-',
-        createAt: new Date(i.created_at).toISOString(),
-        modifiedAt: new Date(i?.modified_at).toISOString(),
-        deadline: i?.deadline ? new Date(i?.deadline).toISOString() : i?.deadline,
-        json: i?.json,
-        comments: Array.isArray(i?.comments)
-          ? i.comments.filter((comment: { state_code: number }) =>
-              isCurrentAssignedReviewerCommentState(comment.state_code),
-            )
-          : [],
-        modelData: model
-          ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
-          : null,
-      };
-    });
-
+  const rows = (data ?? []) as ReviewAdminQueueRpcRow[];
+  if (error || rows.length === 0) {
     return Promise.resolve({
-      data: data,
-      page: params?.current ?? 1,
+      data: [],
       success: true,
-      total: result?.count ?? 0,
+      total: 0,
     });
   }
+
+  const processes = rows
+    .map((row) => ({
+      id: row?.json?.data?.id,
+      version: row?.json?.data?.version,
+    }))
+    .filter((item) => item.id);
+  const modelResult = await getLifeCyclesByIdAndVersion(processes);
+  const lifecycleModels = Array.isArray(modelResult?.data) ? modelResult.data : [];
+
   return Promise.resolve({
-    data: [],
+    data: rows.map((row) =>
+      mapReviewRowToTableData(
+        row,
+        lang,
+        lifecycleModels,
+        Array.isArray(row.comment_state_codes)
+          ? row.comment_state_codes
+              .map((stateCode) => ({ state_code: Number(stateCode) }))
+              .filter((comment) => isCurrentAssignedReviewerCommentState(comment.state_code))
+          : [],
+      ),
+    ),
+    page: params?.current ?? 1,
     success: true,
-    total: 0,
+    total: normalizeTotalCount(rows[0]?.total_count),
   });
 }
 
 export async function getReviewsByProcess(processId: string, processVersion: string) {
-  const result = await supabase
-    .from('reviews')
-    .select('*')
-    .filter('json->data->>id', 'eq', processId)
-    .filter('json->data->>version', 'eq', processVersion);
-  return result;
+  return getReviewItemsRpc({
+    dataId: processId,
+    dataVersion: processVersion,
+  });
 }
 
 export async function getRejectReviewsByProcess(processId: string, processVersion: string) {
-  const result = await supabase
-    .from('reviews')
-    .select('id')
-    .filter('json->data->>id', 'eq', processId)
-    .filter('json->data->>version', 'eq', processVersion)
-    .eq('state_code', -1);
-  return result;
+  return getReviewItemsRpc({
+    dataId: processId,
+    dataVersion: processVersion,
+    stateCodes: [-1],
+  });
 }
 
 export async function getNotifyReviews(

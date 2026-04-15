@@ -676,4 +676,18 @@ describe('ManageSystem workflows', () => {
       expect(mockGetSystemMembersApi).toHaveBeenCalled();
     });
   });
+
+  it('renders access denied and does not mount system tables for users without a system role', async () => {
+    mockGetSystemUserRoleApi.mockResolvedValue(null);
+
+    renderWithProviders(<ManageSystem />);
+
+    await waitFor(() => {
+      expect(mockGetSystemUserRoleApi).toHaveBeenCalled();
+    });
+
+    expect(screen.getByTestId('access-denied')).toBeInTheDocument();
+    expect(screen.queryByTestId('all-teams')).not.toBeInTheDocument();
+    expect(mockGetSystemMembersApi).not.toHaveBeenCalled();
+  });
 });
