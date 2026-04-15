@@ -216,6 +216,20 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       });
     });
 
+    it('falls back to an empty comment list when the rpc payload is not an array', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      const result = await getCommentApi('review-123', 'assigned');
+
+      expect(result).toEqual({
+        data: [],
+        error: null,
+      });
+    });
+
     it('fetches admin-rejected comments without reviewer narrowing', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [{ review_id: 'review-123', reviewer_id: 'user-2', json: { reason: 'reject' } }],
@@ -349,6 +363,28 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
       expect(result.count).toBe(0);
     });
 
+    it('uses wrapper defaults and falls back to an empty pending queue when rpc data is missing', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      const result = await getPendingComment(undefined, undefined, 'user-1');
+
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'pending',
+        p_page: 1,
+        p_page_size: 10,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'descend',
+      });
+      expect(result).toEqual({
+        data: [],
+        error: null,
+        count: 0,
+      });
+    });
+
     it('fetches rejected comments with explicit paging and sort', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [{ id: 'review-rejected', total_count: 1 }],
@@ -369,6 +405,25 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         p_sort_order: 'ascend',
       });
       expect(result.count).toBe(1);
+      expect(result.data[0].reviewer_id).toBe('specific-user-id');
+    });
+
+    it('uses wrapper defaults for rejected comments when params and sort are omitted', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [{ id: 'review-rejected-defaults', total_count: 0 }],
+        error: null,
+      });
+
+      const result = await getRejectedComment(undefined, undefined, 'specific-user-id');
+
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'reviewer-rejected',
+        p_page: 1,
+        p_page_size: 10,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'descend',
+      });
+      expect(result.count).toBe(0);
       expect(result.data[0].reviewer_id).toBe('specific-user-id');
     });
   });

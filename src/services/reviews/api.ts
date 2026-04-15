@@ -239,9 +239,7 @@ export async function getReviewerIdsApi(reviewIds: React.Key[]) {
 
   return Array.from(
     new Set(
-      (data ?? []).flatMap((item: any) =>
-        Array.isArray(item?.reviewer_id) ? item.reviewer_id : [],
-      ),
+      data.flatMap((item: any) => (Array.isArray(item?.reviewer_id) ? item.reviewer_id : [])),
     ),
   );
 }
@@ -250,7 +248,7 @@ export async function getReviewsDetail(id: string) {
   const { data } = await getReviewItemsRpc({
     reviewIds: [id],
   });
-  return data?.[0] ?? null;
+  return data.length > 0 ? data[0] : null;
 }
 
 export async function getReviewsDetailByReviewIds(reviewIds: React.Key[]) {
@@ -304,9 +302,10 @@ export async function getReviewsTableDataOfReviewMember(
     }))
     .filter((item) => item.id);
   const modelResult = await getLifeCyclesByIdAndVersion(processes);
+  const lifecycleModels = Array.isArray(modelResult?.data) ? modelResult.data : [];
 
   return Promise.resolve({
-    data: rows.map((row) => mapReviewRowToTableData(row, lang, modelResult?.data ?? [])),
+    data: rows.map((row) => mapReviewRowToTableData(row, lang, lifecycleModels)),
     page: params?.current ?? 1,
     success: true,
     total: normalizeTotalCount(rows[0]?.total_count),
@@ -347,13 +346,14 @@ export async function getReviewsTableDataOfReviewAdmin(
     }))
     .filter((item) => item.id);
   const modelResult = await getLifeCyclesByIdAndVersion(processes);
+  const lifecycleModels = Array.isArray(modelResult?.data) ? modelResult.data : [];
 
   return Promise.resolve({
     data: rows.map((row) =>
       mapReviewRowToTableData(
         row,
         lang,
-        modelResult?.data ?? [],
+        lifecycleModels,
         Array.isArray(row.comment_state_codes)
           ? row.comment_state_codes
               .map((stateCode) => ({ state_code: Number(stateCode) }))

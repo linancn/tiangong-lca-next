@@ -254,13 +254,6 @@ const ManageSystem = () => {
             sort,
           ) => {
             try {
-              if (!userData?.role) {
-                return {
-                  data: [],
-                  success: true,
-                  total: 0,
-                };
-              }
               setMembersLoading(true);
               return await getSystemMembersApi(params, sort);
             } catch (error) {

@@ -476,6 +476,14 @@ describe('getReviewsDetail', () => {
     });
     expect(result).toEqual({ id: 'review-1' });
   });
+
+  it('returns null when the review id cannot be found', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsDetail('missing-review');
+
+    expect(result).toBeNull();
+  });
 });
 
 describe('getReviewsDetailByReviewIds', () => {
@@ -874,6 +882,50 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
   });
+
+  it('uses default sorting, lifecycle fallbacks, and undefined timestamps when optional inputs are missing', async () => {
+    mockGetUserId.mockResolvedValueOnce('reviewer-default-sort');
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-member-default-sort',
+          reviewer_id: ['reviewer-default-sort'],
+          json: {
+            data: {
+              id: 'plain-process-default-sort',
+              version: '01.00.000',
+            },
+            user: {},
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce(undefined);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      undefined,
+      'reviewed',
+      'en',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+      p_status: 'reviewed',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
+    expect(result.data[0]).toMatchObject({
+      id: 'review-member-default-sort',
+      createAt: undefined,
+      modifiedAt: undefined,
+      deadline: undefined,
+      name: '-',
+      userName: '-',
+    });
+  });
 });
 
 describe('getReviewsTableDataOfReviewAdmin', () => {
@@ -1206,6 +1258,49 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
 
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
+  });
+
+  it('uses default sorting and lifecycle fallbacks when optional admin queue inputs are missing', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-admin-default-sort',
+          comment_state_codes: [0],
+          json: {
+            data: {
+              id: 'plain-admin-default-sort',
+              version: '01.00.000',
+            },
+            user: {},
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce(undefined);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      undefined,
+      'assigned',
+      'en',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+      p_status: 'assigned',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
+    expect(result.data[0]).toMatchObject({
+      id: 'review-admin-default-sort',
+      createAt: undefined,
+      modifiedAt: undefined,
+      comments: [{ state_code: 0 }],
+      name: '-',
+      userName: '-',
+    });
   });
 });
 

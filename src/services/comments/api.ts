@@ -60,11 +60,11 @@ function normalizeQueueResult(row: ReviewMemberQueueRpcRow, reviewerId: string) 
 
 async function getReviewMemberQueueComments(
   status: 'reviewed' | 'pending' | 'reviewer-rejected',
-  params: {
+  params?: {
     current?: number;
     pageSize?: number;
-  } = {},
-  sort: Record<string, SortOrder> = {},
+  },
+  sort?: Record<string, SortOrder>,
   user_id?: string,
 ) {
   const normalizedSort = sort ?? {};
@@ -78,13 +78,13 @@ async function getReviewMemberQueueComments(
 
   const { data, error } = await supabase.rpc('qry_review_get_member_queue_items', {
     p_status: status,
-    p_page: params.current ?? 1,
-    p_page_size: params.pageSize ?? 10,
+    p_page: params?.current ?? 1,
+    p_page_size: params?.pageSize ?? 10,
     p_sort_by: sortBy,
     p_sort_order: orderBy,
   });
 
-  const rows = (data ?? []) as ReviewMemberQueueRpcRow[];
+  const rows = (Array.isArray(data) ? data : []) as ReviewMemberQueueRpcRow[];
 
   return {
     data: rows.map((row) => normalizeQueueResult(row, userId)),
@@ -155,9 +155,10 @@ export async function getCommentApi(
       p_review_id: reviewId,
       p_scope: scope,
     });
+    const rows = (Array.isArray(data) ? data : []) as ReviewCommentRpcRow[];
 
     return {
-      data: ((data ?? []) as ReviewCommentRpcRow[]).map((row) => ({
+      data: rows.map((row) => ({
         ...row,
         json: row?.json ?? {},
       })),
@@ -216,7 +217,7 @@ export async function getReviewerIdsByReviewId(reviewId: string) {
     return [];
   }
 
-  return (data ?? []).map((comment) => ({
+  return data.map((comment) => ({
     state_code: comment.state_code,
     reviewer_id: comment.reviewer_id,
   }));
@@ -228,7 +229,7 @@ export async function getRejectedCommentsByReviewIds(reviewIds: string[]) {
   );
   const firstError = results.find((result) => result.error)?.error ?? null;
   const data = results.flatMap((result) =>
-    (result.data ?? [])
+    result.data
       .filter((comment) => comment.state_code === -1)
       .map((comment) => ({ json: comment.json })),
   );
