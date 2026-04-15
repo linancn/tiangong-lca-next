@@ -5,7 +5,7 @@ import { parseEnv } from 'node:util';
 const SUPABASE_FRONTEND_KEYS = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY'] as const;
 
 const SUPABASE_ENV_FILE_ORDER = {
-  dev: ['.env', '.env.development', '.env.local', '.env.development.local'],
+  dev: ['.env.development', '.env.local', '.env.development.local'],
   main: ['.env', '.env.local'],
 } as const;
 
@@ -58,14 +58,17 @@ export const applySupabaseFrontendEnv = (
   appEnv: FrontendRuntimeEnv,
 ): SupabaseFrontendEnv => {
   const fileEnv = getSupabaseFrontendEnv(rootDir, appEnv);
+  console.info('Supabase frontend environment variables:', fileEnv);
 
   return SUPABASE_FRONTEND_KEYS.reduce<SupabaseFrontendEnv>((merged, key) => {
     const runtimeValue = process.env[key];
-    const value = hasEnvValue(runtimeValue) ? runtimeValue : fileEnv[key];
+    // const value = hasEnvValue(runtimeValue) ? runtimeValue : fileEnv[key];
+    const value = hasEnvValue(fileEnv[key]) ? fileEnv[key] : runtimeValue;
 
     if (hasEnvValue(value)) {
       process.env[key] = value;
     }
+    console.info(`Set process.env.${key} to:`, process.env[key]);
 
     merged[key] = value;
     return merged;

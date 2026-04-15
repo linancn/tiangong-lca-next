@@ -65,7 +65,7 @@ describe('supabase frontend env resolution (config/supabaseEnv.ts)', () => {
     });
   });
 
-  it('applies the selected frontend Supabase keys onto process.env', () => {
+  it('overrides existing runtime Supabase keys with the selected frontend env files', () => {
     fs.writeFileSync(
       path.join(tempDir, '.env'),
       'SUPABASE_URL=https://main.supabase.co\nSUPABASE_PUBLISHABLE_KEY=main-key\n',
@@ -79,6 +79,41 @@ describe('supabase frontend env resolution (config/supabaseEnv.ts)', () => {
 
     process.env.SUPABASE_URL = 'https://unexpected.supabase.co';
     process.env.SUPABASE_PUBLISHABLE_KEY = 'unexpected-key';
+
+    applySupabaseFrontendEnv(tempDir, 'dev');
+
+    expect(process.env.SUPABASE_URL).toBe('https://dev.supabase.co');
+    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('dev-key');
+  });
+
+  it('falls back to existing runtime Supabase keys when the selected env files omit them', () => {
+    fs.writeFileSync(path.join(tempDir, '.env.development'), '');
+
+    const { applySupabaseFrontendEnv } = require('../../../config/supabaseEnv');
+
+    process.env.SUPABASE_URL = 'https://runtime.supabase.co';
+    process.env.SUPABASE_PUBLISHABLE_KEY = 'runtime-key';
+
+    applySupabaseFrontendEnv(tempDir, 'dev');
+
+    expect(process.env.SUPABASE_URL).toBe('https://runtime.supabase.co');
+    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('runtime-key');
+  });
+
+  it('fills missing or blank runtime Supabase keys from the selected frontend env files', () => {
+    fs.writeFileSync(
+      path.join(tempDir, '.env'),
+      'SUPABASE_URL=https://main.supabase.co\nSUPABASE_PUBLISHABLE_KEY=main-key\n',
+    );
+    fs.writeFileSync(
+      path.join(tempDir, '.env.development'),
+      'SUPABASE_URL=https://dev.supabase.co\nSUPABASE_PUBLISHABLE_KEY=dev-key\n',
+    );
+
+    const { applySupabaseFrontendEnv } = require('../../../config/supabaseEnv');
+
+    process.env.SUPABASE_URL = '';
+    process.env.SUPABASE_PUBLISHABLE_KEY = '';
 
     applySupabaseFrontendEnv(tempDir, 'dev');
 

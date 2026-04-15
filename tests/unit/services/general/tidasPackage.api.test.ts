@@ -1072,6 +1072,108 @@ describe('general/api TIDAS package helpers', () => {
     });
   });
 
+  it('falls back to a null artifact hash when Web Crypto digest is unavailable', async () => {
+    const file = createZipFile();
+    Object.defineProperty(global, 'crypto', {
+      configurable: true,
+      value: {
+        subtle: {},
+      },
+      writable: true,
+    });
+
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          action: 'prepare_upload',
+          job_id: 'job-null-hash',
+          source_artifact_id: 'artifact-null-hash',
+          artifact_url: 'https://example.com/source',
+          upload: {
+            bucket: 'tidas',
+            object_path: 'exports/package.zip',
+            token: 'signed-token',
+            path: 'exports/package.zip',
+            signed_url: 'https://example.com/upload',
+            expires_in_seconds: 300,
+            filename: 'package.zip',
+            byte_size: 8,
+            content_type: 'application/zip',
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { ok: false, message: 'enqueue failed' },
+        error: null,
+      });
+
+    const result = await importTidasPackageApi(file);
+
+    expect(result.error).toEqual(new Error('enqueue failed'));
+    expect(mockFunctionsInvoke).toHaveBeenNthCalledWith(2, 'import_tidas_package', {
+      body: expect.objectContaining({
+        action: 'enqueue',
+        artifact_sha256: null,
+        job_id: 'job-null-hash',
+        source_artifact_id: 'artifact-null-hash',
+      }),
+      headers: {
+        Authorization: 'Bearer token-123',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+  });
+
+  it('falls back to a null artifact hash when digest computation throws', async () => {
+    const file = createZipFile();
+    mockDigest.mockRejectedValueOnce(new Error('digest failed'));
+
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          action: 'prepare_upload',
+          job_id: 'job-digest-error',
+          source_artifact_id: 'artifact-digest-error',
+          artifact_url: 'https://example.com/source',
+          upload: {
+            bucket: 'tidas',
+            object_path: 'exports/package.zip',
+            token: 'signed-token',
+            path: 'exports/package.zip',
+            signed_url: 'https://example.com/upload',
+            expires_in_seconds: 300,
+            filename: 'package.zip',
+            byte_size: 8,
+            content_type: 'application/zip',
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { ok: false, message: 'enqueue failed' },
+        error: null,
+      });
+
+    const result = await importTidasPackageApi(file);
+
+    expect(result.error).toEqual(new Error('enqueue failed'));
+    expect(mockFunctionsInvoke).toHaveBeenNthCalledWith(2, 'import_tidas_package', {
+      body: expect.objectContaining({
+        action: 'enqueue',
+        artifact_sha256: null,
+        job_id: 'job-digest-error',
+        source_artifact_id: 'artifact-digest-error',
+      }),
+      headers: {
+        Authorization: 'Bearer token-123',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+  });
+
   it('rewrites docker-internal import report URLs to the browser-accessible Supabase origin', async () => {
     process.env.SUPABASE_URL = 'http://localhost:54321';
     mockDigest.mockResolvedValueOnce(new Uint8Array([0x0a]).buffer);
