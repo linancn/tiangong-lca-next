@@ -1,3 +1,4 @@
+import AccessDenied from '@/components/AccessDenied';
 import AllTeams from '@/components/AllTeams';
 import { ListPagination } from '@/services/general/data';
 import {
@@ -17,6 +18,7 @@ import AddMemberModal from './Components/AddMemberModal';
 const ManageSystem = () => {
   const [activeTabKey, setActiveTabKey] = useState('teams');
   const [loading, setLoading] = useState(false);
+  const [authResolved, setAuthResolved] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
   const actionRef = useRef<any>();
@@ -32,6 +34,7 @@ const ManageSystem = () => {
     } catch (error) {
       console.error(error);
     } finally {
+      setAuthResolved(true);
       setLoading(false);
     }
   };
@@ -39,6 +42,9 @@ const ManageSystem = () => {
   useEffect(() => {
     checkUserAuth();
   }, []);
+
+  const isAuthorized =
+    userData?.role === 'admin' || userData?.role === 'owner' || userData?.role === 'member';
 
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -296,7 +302,13 @@ const ManageSystem = () => {
 
   return (
     <PageContainer title={<FormattedMessage id='menu.manageSystem' />}>
-      <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+      {!authResolved ? (
+        <Spin spinning={loading} />
+      ) : !isAuthorized ? (
+        <AccessDenied />
+      ) : (
+        <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+      )}
     </PageContainer>
   );
 };
