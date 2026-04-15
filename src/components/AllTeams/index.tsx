@@ -337,7 +337,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
             pageSize: 10,
           }}
           request={async (params: { pageSize: number; current: number }) => {
-            if (tableType === 'manageSystem' && !systemUserRole) {
+            if (!systemUserRole) {
               return {
                 data: [],
                 success: true,
