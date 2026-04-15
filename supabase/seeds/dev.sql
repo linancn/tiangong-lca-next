@@ -1,2 +1,0 @@
--- Dev-only seed data for the persistent `dev` Supabase branch.
--- Keep non-production fixtures here, or disable [remotes.dev.db.seed] if this branch should not seed data.
