@@ -58,7 +58,6 @@ export const applySupabaseFrontendEnv = (
   appEnv: FrontendRuntimeEnv,
 ): SupabaseFrontendEnv => {
   const fileEnv = getSupabaseFrontendEnv(rootDir, appEnv);
-  console.info('Supabase frontend environment variables:', fileEnv);
 
   return SUPABASE_FRONTEND_KEYS.reduce<SupabaseFrontendEnv>((merged, key) => {
     const runtimeValue = process.env[key];
