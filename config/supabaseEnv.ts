@@ -14,6 +14,8 @@ type FrontendRuntimeEnv = string | false | undefined;
 
 type SupabaseFrontendEnv = Record<(typeof SUPABASE_FRONTEND_KEYS)[number], string | undefined>;
 
+const hasEnvValue = (value: string | undefined): value is string => Boolean(value);
+
 const readMergedEnvFiles = (
   rootDir: string,
   files: readonly string[],
@@ -55,15 +57,17 @@ export const applySupabaseFrontendEnv = (
   rootDir: string,
   appEnv: FrontendRuntimeEnv,
 ): SupabaseFrontendEnv => {
-  const env = getSupabaseFrontendEnv(rootDir, appEnv);
+  const fileEnv = getSupabaseFrontendEnv(rootDir, appEnv);
 
-  SUPABASE_FRONTEND_KEYS.forEach((key) => {
-    const value = env[key];
+  return SUPABASE_FRONTEND_KEYS.reduce<SupabaseFrontendEnv>((merged, key) => {
+    const runtimeValue = process.env[key];
+    const value = hasEnvValue(runtimeValue) ? runtimeValue : fileEnv[key];
 
-    if (value) {
+    if (hasEnvValue(value)) {
       process.env[key] = value;
     }
-  });
 
-  return env;
+    merged[key] = value;
+    return merged;
+  }, {} as SupabaseFrontendEnv);
 };
