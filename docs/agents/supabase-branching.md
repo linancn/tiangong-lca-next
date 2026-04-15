@@ -9,7 +9,7 @@ Database ownership now lives in `tiangong-lca/database-engine`, which owns:
 - `supabase/seed.sql`
 - `supabase/seeds/*`
 - `supabase/tests/*.sql`
-- `.github/workflows/supabase-dev.yml`
+- the authoritative `database-engine/.github/workflows/supabase-dev.yml` workflow
 - the canonical Supabase branching procedure
 
 Use this repo for:
@@ -22,7 +22,7 @@ Do **not** use this repo for:
 
 - authoring schema migrations
 - changing Supabase branch config
-- adding or editing the authoritative `supabase db push` automation
+- owning or editing the authoritative `database-engine` `supabase db push` automation
 - keeping `.env.supabase.*.local(.example)` branch-binding files
 
 ## Environment contract
@@ -41,7 +41,7 @@ Rules:
 ## Which repo owns what?
 
 - `tiangong-lca/database-engine`
-  - schema, policy, SQL function, trigger, seed, config, preview-branch DB behavior, and `.env.supabase.*.local(.example)` maintenance files
+  - schema, policy, SQL function, trigger, seed, config, preview-branch DB behavior, `.env.supabase.*.local(.example)` maintenance files, and the authoritative `supabase db push` workflow
 - `tiangong-lca-next`
   - frontend runtime env files such as `.env` or `.env.development`, app-side Supabase clients, frontend validation
 - `linancn/tiangong-lca-edge-functions`

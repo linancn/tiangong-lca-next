@@ -9,7 +9,7 @@
 - `supabase/seed.sql`
 - `supabase/seeds/*`
 - `supabase/tests/*.sql`
-- `.github/workflows/supabase-dev.yml`
+- `database-engine/.github/workflows/supabase-dev.yml` 这条权威 workflow
 - Supabase branching 的权威流程文档
 
 本仓负责：
@@ -22,7 +22,7 @@
 
 - 编写 schema migration
 - 修改 Supabase branch 配置
-- 增删权威的 `supabase db push` 自动化流程
+- 持有或修改 `database-engine` 中权威的 `supabase db push` 自动化流程
 - 维护 `.env.supabase.*.local(.example)` 这组分支绑定文件
 
 ## 环境契约
@@ -41,7 +41,7 @@
 ## 哪个仓负责什么？
 
 - `tiangong-lca/database-engine`
-  - schema、policy、SQL function、trigger、seed、config、preview branch 数据库行为，以及 `.env.supabase.*.local(.example)` 维护文件
+  - schema、policy、SQL function、trigger、seed、config、preview branch 数据库行为、`.env.supabase.*.local(.example)` 维护文件，以及权威的 `supabase db push` workflow
 - `tiangong-lca-next`
   - `.env`、`.env.development` 等前端运行时 env 文件、应用侧 Supabase client、前端验证
 - `linancn/tiangong-lca-edge-functions`
