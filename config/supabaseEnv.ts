@@ -67,7 +67,6 @@ export const applySupabaseFrontendEnv = (
     if (hasEnvValue(value)) {
       process.env[key] = value;
     }
-    console.info(`Set process.env.${key} to:`, process.env[key]);
 
     merged[key] = value;
     return merged;
