@@ -721,6 +721,54 @@ describe('ReviewProcessDetail component', () => {
     expect(mergedData.modellingAndValidation.validation.review).toEqual([{ id: 'comment-review' }]);
   });
 
+  it('treats legacy compliance comment arrays with null and primitive entries as meaningful', async () => {
+    mockGetProcessDetail.mockResolvedValueOnce({
+      ...baseProcessDetail,
+      data: {
+        ...baseProcessDetail.data,
+        json: {
+          processDataSet: {
+            modellingAndValidation: {
+              validation: {},
+              complianceDeclarations: {},
+            },
+          },
+        },
+      },
+    });
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [
+        {
+          json: {
+            modellingAndValidation: {
+              validation: {
+                review: [{ id: 'comment-review' }],
+              },
+              complianceDeclarations: {
+                compliance: [null, 'legacy compliance note'],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({ tabType: 'assigned' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual([
+      null,
+      'legacy compliance note',
+    ]);
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([{ id: 'comment-review' }]);
+  });
+
   it('handles sparse process detail payloads and skips rejected-comment loading for published rows', async () => {
     mockGetProcessDetail.mockResolvedValueOnce({
       data: {
