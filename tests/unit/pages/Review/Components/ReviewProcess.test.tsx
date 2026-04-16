@@ -470,7 +470,7 @@ describe('ReviewProcessDetail component', () => {
   it('merges review defaults and saved reviewer comments before hydrating the form', async () => {
     mockGetCommentApi.mockResolvedValueOnce({
       data: [
-        { json: null },
+        { json: {} },
         {
           json: {
             modellingAndValidation: {
@@ -503,6 +503,37 @@ describe('ReviewProcessDetail component', () => {
         { id: 'compliance-comment-1' },
         expect.objectContaining({
           'common:referenceToComplianceSystem': expect.any(Object),
+        }),
+      ]),
+    );
+  });
+
+  it('hydrates default compliance templates for normalized empty reviewer comments', async () => {
+    mockGetCommentApi.mockResolvedValueOnce({
+      data: [{ json: {} }],
+      error: null,
+    });
+    mockGenProcessFromData.mockImplementation((data: any) => data);
+
+    renderComponent({ tabType: 'review', type: 'edit' });
+
+    fireEvent.click(screen.getAllByRole('button')[0]);
+
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalled());
+
+    const mergedData = mockGenProcessFromData.mock.calls.at(-1)?.[0];
+    expect(mergedData.modellingAndValidation.validation.review).toEqual([
+      {
+        'common:scope': [{ '@name': undefined }],
+      },
+    ]);
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toHaveLength(5);
+    expect(mergedData.modellingAndValidation.complianceDeclarations.compliance).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          'common:referenceToComplianceSystem': expect.objectContaining({
+            '@refObjectId': '1ea48531-e397-4ca7-ac08-056e4fa11826',
+          }),
         }),
       ]),
     );
@@ -882,7 +913,7 @@ describe('ReviewProcessDetail component', () => {
     ]);
   });
 
-  it('falls back to default review and compliance placeholders when saved review comments are empty', async () => {
+  it('restores default compliance templates when saved review comments are empty', async () => {
     mockGetProcessDetail.mockResolvedValueOnce({
       data: {
         id: 'process-1',
@@ -925,7 +956,16 @@ describe('ReviewProcessDetail component', () => {
         'common:scope': [{ '@name': undefined }],
       },
     ]);
-    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toEqual([{}]);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toHaveLength(5);
+    expect(merged.modellingAndValidation.complianceDeclarations.compliance).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          'common:referenceToComplianceSystem': expect.objectContaining({
+            '@refObjectId': '1ea48531-e397-4ca7-ac08-056e4fa11826',
+          }),
+        }),
+      ]),
+    );
   });
 
   it('merges persisted review arrays into existing non-review arrays', async () => {
