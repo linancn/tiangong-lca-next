@@ -386,7 +386,7 @@ export async function prepareImportTidasPackageUploadApi(file: {
 export async function enqueueImportTidasPackageApi(request: {
   job_id: string;
   source_artifact_id: string;
-  artifact_sha256: string;
+  artifact_sha256: string | null;
   artifact_byte_size: number;
   filename: string;
   content_type: string;
@@ -519,12 +519,21 @@ async function fetchPackageReport<T>(artifact: TidasPackageArtifact): Promise<T>
   return ((parsed as TidasPackageReportEnvelope<T>).payload ?? parsed) as T;
 }
 
-async function computeSha256Hex(file: Blob) {
-  const buffer = await file.arrayBuffer();
-  const digest = await crypto.subtle.digest('SHA-256', buffer);
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+async function computeSha256Hex(file: Blob): Promise<string | null> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle?.digest) {
+    return null;
+  }
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const digest = await subtle.digest('SHA-256', buffer);
+    return Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+  } catch (_error) {
+    return null;
+  }
 }
 
 async function uploadTidasPackageToSignedUrl(

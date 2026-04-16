@@ -103,6 +103,7 @@ export default {
   'pages.reviewDetail.submit_review': '提交审核',
   'pages.reviewDetail.assign_reviewers_temporary': '临时分配审核员',
   'pages.reviewDetail.assign_reviewers': '分配审核员',
+  'pages.reviewDetail.reviewer_rejected': '审核员驳回处理',
   'pages.reviewDetail.revoke_reviewer': '移除审核员',
   'pages.reviewDetail.submit_comments_temporary': '暂存评审数据',
   'pages.reviewDetail.submit_comments': '提交评审数据',

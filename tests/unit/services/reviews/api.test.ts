@@ -426,23 +426,24 @@ describe('updateReviewApi', () => {
 
 describe('getReviewerIdsApi', () => {
   it('returns deduplicated reviewer ids when supabase responds with multiple rows', async () => {
-    const supabaseResult = {
+    mockRpc.mockResolvedValueOnce({
       data: [{ reviewer_id: ['user-1', 'user-2'] }, { reviewer_id: ['user-2', 'user-3'] }],
-    };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+      error: null,
+    });
 
     const result = await reviewsApi.getReviewerIdsApi(['review-1', 'review-2']);
 
-    expect(mockFrom).toHaveBeenCalledWith('reviews');
-    expect(builder.select).toHaveBeenCalledWith('reviewer_id');
-    expect(builder.in).toHaveBeenCalledWith('id', ['review-1', 'review-2']);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_review_ids: ['review-1', 'review-2'],
+      p_data_id: null,
+      p_data_version: null,
+      p_state_codes: null,
+    });
     expect(result).toEqual(['user-1', 'user-2', 'user-3']);
   });
 
   it('returns empty array when supabase payload is missing', async () => {
-    const builder = createQueryBuilder({ data: null });
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ data: null, error: null });
 
     const result = await reviewsApi.getReviewerIdsApi(['review-1']);
 
@@ -450,10 +451,10 @@ describe('getReviewerIdsApi', () => {
   });
 
   it('ignores reviewer rows whose reviewer_id is not an array', async () => {
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [{ reviewer_id: ['user-1'] }, { reviewer_id: 'user-2' }, { reviewer_id: null }, {}],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
 
     const result = await reviewsApi.getReviewerIdsApi(['review-1']);
 
@@ -463,58 +464,76 @@ describe('getReviewerIdsApi', () => {
 
 describe('getReviewsDetail', () => {
   it('returns review detail for given id', async () => {
-    const supabaseResult = { data: { id: 'review-1' } };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ data: [{ id: 'review-1' }], error: null });
 
     const result = await reviewsApi.getReviewsDetail('review-1');
 
-    expect(builder.select).toHaveBeenCalledWith('*');
-    expect(builder.eq).toHaveBeenCalledWith('id', 'review-1');
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_review_ids: ['review-1'],
+      p_data_id: null,
+      p_data_version: null,
+      p_state_codes: null,
+    });
     expect(result).toEqual({ id: 'review-1' });
+  });
+
+  it('returns null when the review id cannot be found', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsDetail('missing-review');
+
+    expect(result).toBeNull();
   });
 });
 
 describe('getReviewsDetailByReviewIds', () => {
   it('returns review list for ids', async () => {
-    const supabaseResult = { data: [{ id: 'review-1' }, { id: 'review-2' }] };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({
+      data: [{ id: 'review-1' }, { id: 'review-2' }],
+      error: null,
+    });
 
     const result = await reviewsApi.getReviewsDetailByReviewIds(['review-1', 'review-2']);
 
-    expect(builder.in).toHaveBeenCalledWith('id', ['review-1', 'review-2']);
-    expect(result).toEqual(supabaseResult.data);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_review_ids: ['review-1', 'review-2'],
+      p_data_id: null,
+      p_data_version: null,
+      p_state_codes: null,
+    });
+    expect(result).toEqual([{ id: 'review-1' }, { id: 'review-2' }]);
   });
 });
 
 describe('getReviewsByProcess', () => {
   it('queries reviews by process id and version', async () => {
-    const supabaseResult = { data: [{ id: 'review-1' }], error: null };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ data: [{ id: 'review-1' }], error: null });
 
     const result = await reviewsApi.getReviewsByProcess('process-1', '1.0');
 
-    expect(builder.filter).toHaveBeenCalledWith('json->data->>id', 'eq', 'process-1');
-    expect(builder.filter).toHaveBeenCalledWith('json->data->>version', 'eq', '1.0');
-    expect(result).toEqual(supabaseResult);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_review_ids: null,
+      p_data_id: 'process-1',
+      p_data_version: '1.0',
+      p_state_codes: null,
+    });
+    expect(result).toEqual({ data: [{ id: 'review-1' }], error: null });
   });
 });
 
 describe('getRejectReviewsByProcess', () => {
   it('queries rejected reviews by process id and version', async () => {
-    const supabaseResult = { data: [{ id: 'review-1' }], error: null };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ data: [{ id: 'review-1' }], error: null });
 
     const result = await reviewsApi.getRejectReviewsByProcess('process-1', '1.0');
 
-    expect(builder.select).toHaveBeenCalledWith('id');
-    expect(builder.filter).toHaveBeenCalledWith('json->data->>id', 'eq', 'process-1');
-    expect(builder.filter).toHaveBeenCalledWith('json->data->>version', 'eq', '1.0');
-    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
-    expect(result).toEqual(supabaseResult);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_review_ids: null,
+      p_data_id: 'process-1',
+      p_data_version: '1.0',
+      p_state_codes: [-1],
+    });
+    expect(result).toEqual({ data: [{ id: 'review-1' }], error: null });
   });
 });
 
@@ -529,12 +548,12 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockGetReviewedComment).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
   it('returns empty table when pending comment query returns error', async () => {
-    mockGetPendingComment.mockResolvedValueOnce({ error: { message: 'db failed' }, data: null });
+    mockRpc.mockResolvedValueOnce({ error: { message: 'db failed' }, data: null });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewMember(
       { pageSize: 10, current: 1 },
@@ -544,17 +563,19 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockGetPendingComment).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
-      {},
-      'reviewer-1',
-    );
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+      p_status: 'pending',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
   it('resolves pending comments with getUserId when userData is omitted', async () => {
     mockGetUserId.mockResolvedValueOnce('pending-reviewer');
-    mockGetPendingComment.mockResolvedValueOnce({ data: [], error: null });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewMember(
       { pageSize: 10, current: 1 },
@@ -563,44 +584,47 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockGetPendingComment).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
-      {},
-      'pending-reviewer',
-    );
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+      p_status: 'pending',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
   it('maps reviewer-rejected comments with lifecycle model enrichment', async () => {
-    const commentPayload = {
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
-          reviews: {
-            id: 'review-1',
-            created_at: '2024-04-01T00:00:00.000Z',
-            modified_at: '2024-04-02T00:00:00.000Z',
-            deadline: '2024-04-20T00:00:00.000Z',
-            json: {
-              data: {
-                id: 'process-1',
-                version: '01.00.000',
-                name: {
-                  baseName: { en: 'Fallback Base' },
-                  treatmentStandardsRoutes: { en: 'Fallback Route' },
-                  mixAndLocationTypes: { en: 'Fallback Mix' },
-                  functionalUnitFlowProperties: { en: 'Fallback Unit' },
-                },
+          id: 'review-1',
+          created_at: '2024-04-01T00:00:00.000Z',
+          modified_at: '2024-04-02T00:00:00.000Z',
+          deadline: '2024-04-20T00:00:00.000Z',
+          review_state_code: -1,
+          reviewer_id: ['reviewer-1'],
+          comment_state_code: -1,
+          json: {
+            data: {
+              id: 'process-1',
+              version: '01.00.000',
+              name: {
+                baseName: { en: 'Fallback Base' },
+                treatmentStandardsRoutes: { en: 'Fallback Route' },
+                mixAndLocationTypes: { en: 'Fallback Mix' },
+                functionalUnitFlowProperties: { en: 'Fallback Unit' },
               },
-              team: { name: { en: 'Team A' } },
-              user: { email: 'reviewer@example.com' },
             },
+            team: { name: { en: 'Team A' } },
+            user: { email: 'reviewer@example.com' },
           },
+          comment_json: { comment: { message: 'reject' } },
+          total_count: 1,
         },
       ],
-      count: 1,
       error: null,
-    };
-    mockGetRejectedComment.mockResolvedValueOnce(commentPayload);
+    });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
       data: [
         {
@@ -633,11 +657,13 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockGetRejectedComment).toHaveBeenCalledWith(
-      { pageSize: 10, current: 2 },
-      { modified_at: 'descend' },
-      'reviewer-1',
-    );
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+      p_status: 'reviewer-rejected',
+      p_page: 2,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
     expect(mockGetLifeCyclesByIdAndVersion).toHaveBeenCalledWith([
       { id: 'process-1', version: '01.00.000' },
     ]);
@@ -661,26 +687,26 @@ describe('getReviewsTableDataOfReviewMember', () => {
 
   it('falls back to review payload fields when no lifecycle model matches', async () => {
     mockGetUserId.mockResolvedValueOnce('reviewer-fallback');
-    mockGetReviewedComment.mockResolvedValueOnce({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
-          reviews: {
-            id: 'review-fallback',
-            created_at: '2024-06-01T00:00:00.000Z',
-            modified_at: '2024-06-02T00:00:00.000Z',
-            json: {
-              data: {
-                id: 'process-fallback',
-                version: '02.00.000',
-                name: {
-                  baseName: { en: 'Fallback Base' },
-                  treatmentStandardsRoutes: { en: 'Fallback Route' },
-                  mixAndLocationTypes: { en: 'Fallback Mix' },
-                  functionalUnitFlowProperties: { en: 'Fallback Unit' },
-                },
+          id: 'review-fallback',
+          created_at: '2024-06-01T00:00:00.000Z',
+          modified_at: '2024-06-02T00:00:00.000Z',
+          reviewer_id: ['reviewer-fallback'],
+          comment_state_code: 1,
+          json: {
+            data: {
+              id: 'process-fallback',
+              version: '02.00.000',
+              name: {
+                baseName: { en: 'Fallback Base' },
+                treatmentStandardsRoutes: { en: 'Fallback Route' },
+                mixAndLocationTypes: { en: 'Fallback Mix' },
+                functionalUnitFlowProperties: { en: 'Fallback Unit' },
               },
-              user: { email: 'fallback@example.com' },
             },
+            user: { email: 'fallback@example.com' },
           },
         },
       ],
@@ -695,7 +721,13 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockGetReviewedComment).toHaveBeenCalledWith({} as any, {}, 'reviewer-fallback');
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+      p_status: 'reviewed',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
     expect(result).toEqual({
       data: [
         {
@@ -721,6 +753,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
             },
             user: { email: 'fallback@example.com' },
           },
+          comments: [],
           modelData: null,
         },
       ],
@@ -732,24 +765,23 @@ describe('getReviewsTableDataOfReviewMember', () => {
 
   it('uses lifecycle fallbacks and missing-user placeholders for reviewer-rejected rows', async () => {
     mockGetUserId.mockResolvedValueOnce('reviewer-fallback');
-    mockGetRejectedComment.mockResolvedValueOnce({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
-          reviews: {
-            id: 'review-rejected-fallback',
-            created_at: '2024-07-01T00:00:00.000Z',
-            modified_at: '2024-07-02T00:00:00.000Z',
-            json: {
-              data: {
-                id: 'process-model-fallback',
-                version: '01.00.000',
-              },
-              user: {},
+          id: 'review-rejected-fallback',
+          created_at: '2024-07-01T00:00:00.000Z',
+          modified_at: '2024-07-02T00:00:00.000Z',
+          reviewer_id: ['reviewer-fallback'],
+          comment_state_code: -1,
+          json: {
+            data: {
+              id: 'process-model-fallback',
+              version: '01.00.000',
             },
+            user: {},
           },
         },
       ],
-      count: 1,
       error: null,
     });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
@@ -776,11 +808,6 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockGetRejectedComment).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
-      {},
-      'reviewer-fallback',
-    );
     expect(result.data[0]).toMatchObject({
       isFromLifeCycle: true,
       name: '-',
@@ -789,18 +816,17 @@ describe('getReviewsTableDataOfReviewMember', () => {
   });
 
   it('falls back to "-" when a matched lifecycle model name resolves to an empty process name', async () => {
-    mockGetReviewedComment.mockResolvedValueOnce({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
-          reviews: {
-            id: 'review-member-empty-model-name',
-            created_at: '2024-07-01T00:00:00.000Z',
-            modified_at: '2024-07-02T00:00:00.000Z',
-            json: { data: { id: 'model-process', version: '01.00.000' }, user: { email: 'x@y.z' } },
-          },
+          id: 'review-member-empty-model-name',
+          created_at: '2024-07-01T00:00:00.000Z',
+          modified_at: '2024-07-02T00:00:00.000Z',
+          reviewer_id: ['reviewer-1'],
+          comment_state_code: 1,
+          json: { data: { id: 'model-process', version: '01.00.000' }, user: { email: 'x@y.z' } },
         },
       ],
-      count: 1,
       error: null,
     });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
@@ -829,18 +855,17 @@ describe('getReviewsTableDataOfReviewMember', () => {
   });
 
   it('falls back to "-" when a non-lifecycle review row has no process name payload', async () => {
-    mockGetReviewedComment.mockResolvedValueOnce({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
-          reviews: {
-            id: 'review-member-empty-review-name',
-            created_at: '2024-07-01T00:00:00.000Z',
-            modified_at: '2024-07-02T00:00:00.000Z',
-            json: { data: { id: 'plain-process', version: '01.00.000' }, user: { email: 'x@y.z' } },
-          },
+          id: 'review-member-empty-review-name',
+          created_at: '2024-07-01T00:00:00.000Z',
+          modified_at: '2024-07-02T00:00:00.000Z',
+          reviewer_id: ['reviewer-1'],
+          comment_state_code: 1,
+          json: { data: { id: 'plain-process', version: '01.00.000' }, user: { email: 'x@y.z' } },
         },
       ],
-      count: 1,
       error: null,
     });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
@@ -857,12 +882,55 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
   });
+
+  it('uses default sorting, lifecycle fallbacks, and undefined timestamps when optional inputs are missing', async () => {
+    mockGetUserId.mockResolvedValueOnce('reviewer-default-sort');
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-member-default-sort',
+          reviewer_id: ['reviewer-default-sort'],
+          json: {
+            data: {
+              id: 'plain-process-default-sort',
+              version: '01.00.000',
+            },
+            user: {},
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce(undefined);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      undefined,
+      'reviewed',
+      'en',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+      p_status: 'reviewed',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
+    expect(result.data[0]).toMatchObject({
+      id: 'review-member-default-sort',
+      createAt: undefined,
+      modifiedAt: undefined,
+      deadline: undefined,
+      name: '-',
+      userName: '-',
+    });
+  });
 });
 
 describe('getReviewsTableDataOfReviewAdmin', () => {
   it('returns empty table for unassigned type when no rows exist', async () => {
-    const builder = createQueryBuilder({ data: [], count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
       { pageSize: 10, current: 1 },
@@ -871,34 +939,44 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(builder.eq).toHaveBeenCalledWith('state_code', 0);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+      p_status: 'unassigned',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
   it('applies assigned query filters and maps table data', async () => {
-    const reviewRow = {
-      id: 'review-10',
-      created_at: '2024-04-01T00:00:00.000Z',
-      modified_at: '2024-04-03T00:00:00.000Z',
-      deadline: null,
-      comments: [{ state_code: 1 }, { state_code: -3 }, { state_code: -2 }],
-      json: {
-        data: {
-          id: 'process-2',
-          version: '01.00.000',
-          name: {
-            baseName: { en: 'Review Base' },
-            treatmentStandardsRoutes: { en: 'Review Route' },
-            mixAndLocationTypes: { en: 'Review Mix' },
-            functionalUnitFlowProperties: { en: 'Review Unit' },
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-10',
+          created_at: '2024-04-01T00:00:00.000Z',
+          modified_at: '2024-04-03T00:00:00.000Z',
+          deadline: null,
+          comment_state_codes: [1, -3, -2],
+          total_count: 1,
+          json: {
+            data: {
+              id: 'process-2',
+              version: '01.00.000',
+              name: {
+                baseName: { en: 'Review Base' },
+                treatmentStandardsRoutes: { en: 'Review Route' },
+                mixAndLocationTypes: { en: 'Review Mix' },
+                functionalUnitFlowProperties: { en: 'Review Unit' },
+              },
+            },
+            team: { name: { en: 'Ops Team' } },
+            user: { name: 'Alice Reviewer' },
           },
         },
-        team: { name: { en: 'Ops Team' } },
-        user: { name: 'Alice Reviewer' },
-      },
-    };
-    const builder = createQueryBuilder({ data: [reviewRow], count: 1 });
-    mockFrom.mockReturnValueOnce(builder);
+      ],
+      error: null,
+    });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
@@ -908,10 +986,13 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-    expect(builder.eq).toHaveBeenCalledWith('state_code', 1);
-    expect(builder.select).toHaveBeenCalledWith('*, comments(state_code)');
-    expect(builder.filter).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+      p_status: 'assigned',
+      p_page: 2,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
     expect(result.success).toBe(true);
     expect(result).toHaveProperty('page', 2);
     expect(result.total).toBe(1);
@@ -927,29 +1008,33 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
   });
 
   it('falls back to an empty comments array when assigned review comments are not arrays', async () => {
-    const reviewRow = {
-      id: 'review-10-no-array-comments',
-      created_at: '2024-04-01T00:00:00.000Z',
-      modified_at: '2024-04-03T00:00:00.000Z',
-      deadline: null,
-      comments: { state_code: 1 },
-      json: {
-        data: {
-          id: 'process-2',
-          version: '01.00.000',
-          name: {
-            baseName: { en: 'Review Base' },
-            treatmentStandardsRoutes: { en: 'Review Route' },
-            mixAndLocationTypes: { en: 'Review Mix' },
-            functionalUnitFlowProperties: { en: 'Review Unit' },
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-10-no-array-comments',
+          created_at: '2024-04-01T00:00:00.000Z',
+          modified_at: '2024-04-03T00:00:00.000Z',
+          deadline: null,
+          comment_state_codes: null,
+          total_count: 1,
+          json: {
+            data: {
+              id: 'process-2',
+              version: '01.00.000',
+              name: {
+                baseName: { en: 'Review Base' },
+                treatmentStandardsRoutes: { en: 'Review Route' },
+                mixAndLocationTypes: { en: 'Review Mix' },
+                functionalUnitFlowProperties: { en: 'Review Unit' },
+              },
+            },
+            team: { name: { en: 'Ops Team' } },
+            user: { name: 'Alice Reviewer' },
           },
         },
-        team: { name: { en: 'Ops Team' } },
-        user: { name: 'Alice Reviewer' },
-      },
-    };
-    const builder = createQueryBuilder({ data: [reviewRow], count: 1 });
-    mockFrom.mockReturnValueOnce(builder);
+      ],
+      error: null,
+    });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
@@ -967,8 +1052,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
   });
 
   it('returns default empty response when query result has no data field', async () => {
-    const builder = createQueryBuilder({ count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({ count: 0, error: null });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
       { pageSize: 10, current: 1 },
@@ -977,12 +1061,18 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+      p_status: 'admin-rejected',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'ascend',
+    });
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
   it('maps admin-rejected rows with lifecycle model metadata and fallbacks', async () => {
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-admin-model',
@@ -1005,8 +1095,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
           },
         },
       ],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
       data: [
         {
@@ -1038,7 +1128,6 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
     expect(result).toEqual({
       data: [
         {
@@ -1093,7 +1182,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
   });
 
   it('uses lifecycle and user fallbacks for admin rows when names are missing', async () => {
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-admin-fallback',
@@ -1109,8 +1198,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
           comments: [],
         },
       ],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
       data: [
         {
@@ -1142,7 +1231,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
   });
 
   it('falls back to "-" when a non-lifecycle admin row has no process name payload', async () => {
-    const builder = createQueryBuilder({
+    mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-admin-empty-review-name',
@@ -1155,8 +1244,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
           comments: [],
         },
       ],
+      error: null,
     });
-    mockFrom.mockReturnValueOnce(builder);
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
     mockGenProcessName.mockReturnValueOnce('');
 
@@ -1169,6 +1258,49 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
 
     expect(mockGenProcessName).toHaveBeenCalledWith({}, 'en');
     expect(result.data[0].name).toBe('-');
+  });
+
+  it('uses default sorting and lifecycle fallbacks when optional admin queue inputs are missing', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-admin-default-sort',
+          comment_state_codes: [0],
+          json: {
+            data: {
+              id: 'plain-admin-default-sort',
+              version: '01.00.000',
+            },
+            user: {},
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce(undefined);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      undefined,
+      'assigned',
+      'en',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+      p_status: 'assigned',
+      p_page: 1,
+      p_page_size: 10,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+    });
+    expect(result.data[0]).toMatchObject({
+      id: 'review-admin-default-sort',
+      createAt: undefined,
+      modifiedAt: undefined,
+      comments: [{ state_code: 0 }],
+      name: '-',
+      userName: '-',
+    });
   });
 });
 

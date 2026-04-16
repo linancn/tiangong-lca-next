@@ -246,6 +246,13 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
             }}
             dataSource={tableData}
             request={async (params: { pageSize: number; current: number }) => {
+              if (!systemUserRole) {
+                return {
+                  data: [],
+                  success: true,
+                  total: 0,
+                };
+              }
               if (keyWord.length > 0) {
                 const result = await getTeamsByKeyword(keyWord);
                 setTableData(result.data || []);
@@ -330,6 +337,13 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
             pageSize: 10,
           }}
           request={async (params: { pageSize: number; current: number }) => {
+            if (!systemUserRole) {
+              return {
+                data: [],
+                success: true,
+                total: 0,
+              };
+            }
             if (keyWord.length > 0) {
               return getTeamsByKeyword(keyWord);
             }

@@ -157,7 +157,24 @@ describe('Review page authentication workflow', () => {
     );
     expect(consoleSpy).toHaveBeenCalledWith(error);
     expect(assignmentReloads.unassigned).toBeUndefined();
+    expect(screen.getByTestId('access-denied')).toBeInTheDocument();
 
     consoleSpy.mockRestore();
+  });
+
+  it('renders access denied instead of reviewer tabs for users without a review role', async () => {
+    mockGetReviewUserRoleApi.mockResolvedValue(null);
+
+    renderWithProviders(<Review />);
+
+    await waitFor(() => expect(mockGetReviewUserRoleApi).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false'),
+    );
+
+    expect(screen.getByTestId('access-denied')).toBeInTheDocument();
+    expect(screen.queryByTestId('tabs')).not.toBeInTheDocument();
+    expect(assignmentReloads.unassigned).toBeUndefined();
+    expect(assignmentReloads.reviewed).toBeUndefined();
   });
 });
