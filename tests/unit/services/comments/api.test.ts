@@ -1,12 +1,6 @@
 /**
  * Tests for comments service API functions
  * Path: src/services/comments/api.ts
- *
- * Coverage focuses on:
- * - Comment CRUD operations (used in review workflow)
- * - Reviewer-specific comment updates (used in review progress tracking)
- * - Comment retrieval by review type (used in assigned/review tabs)
- * - Review state queries (used in comment filtering)
  */
 
 import {
@@ -27,6 +21,7 @@ import {
 jest.mock('@/services/supabase', () => ({
   supabase: {
     from: jest.fn(),
+    rpc: jest.fn(),
     auth: {
       getSession: jest.fn(),
     },
@@ -53,6 +48,7 @@ jest.mock('@/services/general/api', () => ({
 const {
   supabase: {
     from: mockFrom,
+    rpc: mockRpc,
     auth: { getSession: mockAuthGetSession },
     functions: { invoke: mockFunctionsInvoke },
   },
@@ -62,21 +58,10 @@ const { getUserId: mockGetUserId } = jest.requireMock('@/services/users/api');
 const { invokeDatasetCommand: mockInvokeDatasetCommand } =
   jest.requireMock('@/services/general/api');
 
-const createPagedCommentsQueryBuilder = (resolvedValue: any) => {
-  const builder: any = {
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    filter: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockResolvedValue(resolvedValue),
-  };
-  return builder;
-};
-
 describe('Comments API service (src/services/comments/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetUserId.mockResolvedValue('current-user-id');
   });
 
   describe('review workflow comment command wrappers', () => {
@@ -132,15 +117,13 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
     });
   });
 
-  describe('addCommentApi', () => {
-    it('returns a structured deprecation error', async () => {
-      const mockData = {
+  describe('legacy mutations', () => {
+    it('returns a structured deprecation error from addCommentApi', async () => {
+      const result = await addCommentApi({
         review_id: 'review-123',
         reviewer_id: 'user-123',
         content: 'Test comment',
-      };
-
-      const result = await addCommentApi(mockData);
+      });
 
       expect(mockFrom).not.toHaveBeenCalled();
       expect(result).toEqual({
@@ -152,10 +135,8 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         },
       });
     });
-  });
 
-  describe('updateCommentByreviewerApi', () => {
-    it('returns a structured deprecation error', async () => {
+    it('returns a structured deprecation error from updateCommentByreviewerApi', async () => {
       const result = await updateCommentByreviewerApi('review-123', 'user-123', {
         content: 'Updated',
       });
@@ -170,10 +151,8 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         },
       });
     });
-  });
 
-  describe('updateCommentApi', () => {
-    it('returns a structured deprecation error without touching legacy edge handlers', async () => {
+    it('returns a structured deprecation error from updateCommentApi', async () => {
       const result = await updateCommentApi('review-123', { content: 'Updated' }, 'assigned');
 
       expect(mockAuthGetSession).not.toHaveBeenCalled();
@@ -190,156 +169,150 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
   });
 
   describe('getCommentApi', () => {
-    it('fetches comments for review action type with current user as reviewer', async () => {
-      mockGetUserId.mockResolvedValue('current-user-id');
-
-      const mockData = [{ id: 'comment-1', content: 'Comment 1', reviewer_id: 'current-user-id' }];
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEqReviewId = jest.fn().mockReturnThis();
-      const mockEqReviewerId = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEqReviewId.mockReturnValue({
-            eq: mockEqReviewerId,
-          }),
-        }),
+    it('fetches reviewer-scoped comments for review action type', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [{ review_id: 'review-123', reviewer_id: 'current-user-id', json: null }],
+        error: null,
       });
 
       const result = await getCommentApi('review-123', 'review');
 
       expect(mockGetUserId).toHaveBeenCalledTimes(1);
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockSelect).toHaveBeenCalledWith('*');
-      expect(mockEqReviewId).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
-      expect(result).toEqual({ data: mockData, error: null });
-    });
-
-    it('returns error when user ID is not available for review action', async () => {
-      mockGetUserId.mockResolvedValue('');
-
-      const result = await getCommentApi('review-123', 'review');
-
-      expect(result).toEqual({ error: true, data: [] });
-    });
-
-    it('fetches admin-rejected comments without narrowing to the current reviewer', async () => {
-      mockGetUserId.mockResolvedValue('current-user-id');
-
-      const mockData = [{ id: 'comment-1', content: 'Admin rejected' }];
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEqReviewId = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEqReviewId,
-        }),
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_comment_items', {
+        p_review_id: 'review-123',
+        p_scope: 'mine',
       });
-
-      const result = await getCommentApi('review-123', 'admin-rejected');
-
-      expect(mockGetUserId).toHaveBeenCalledTimes(1);
-      expect(mockEqReviewId).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(result).toEqual({ data: mockData, error: null });
+      expect(result).toEqual({
+        data: [{ review_id: 'review-123', reviewer_id: 'current-user-id', json: {} }],
+        error: null,
+      });
     });
 
-    it('treats reviewer-rejected comments the same as review comments for reviewer filtering', async () => {
-      mockGetUserId.mockResolvedValue('current-user-id');
-
-      const mockData = [{ id: 'comment-2', content: 'Rejected by reviewer' }];
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEqReviewId = jest.fn().mockReturnThis();
-      const mockEqReviewerId = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEqReviewId.mockReturnValue({
-            eq: mockEqReviewerId,
-          }),
-        }),
-      });
+    it('returns error when user ID is not available for reviewer-scoped actions', async () => {
+      mockGetUserId.mockResolvedValueOnce('');
 
       const result = await getCommentApi('review-123', 'reviewer-rejected');
 
-      expect(mockEqReviewerId).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
-      expect(result).toEqual({ data: mockData, error: null });
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(result).toEqual({ error: true, data: [] });
     });
 
     it('fetches all comments for assigned action type', async () => {
-      const mockData = [
-        { id: 'comment-1', content: 'Comment 1' },
-        { id: 'comment-2', content: 'Comment 2' },
-      ];
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEqReviewId = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEqReviewId,
-        }),
+      mockRpc.mockResolvedValueOnce({
+        data: [{ review_id: 'review-123', reviewer_id: 'user-1', json: { note: 1 } }],
+        error: null,
       });
 
       const result = await getCommentApi('review-123', 'assigned');
 
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockSelect).toHaveBeenCalledWith('*');
-      expect(mockEqReviewId).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(result).toEqual({ data: mockData, error: null });
+      expect(mockGetUserId).not.toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_comment_items', {
+        p_review_id: 'review-123',
+        p_scope: 'all',
+      });
+      expect(result).toEqual({
+        data: [{ review_id: 'review-123', reviewer_id: 'user-1', json: { note: 1 } }],
+        error: null,
+      });
+    });
+
+    it('falls back to an empty comment list when the rpc payload is not an array', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      const result = await getCommentApi('review-123', 'assigned');
+
+      expect(result).toEqual({
+        data: [],
+        error: null,
+      });
+    });
+
+    it('fetches admin-rejected comments without reviewer narrowing', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [{ review_id: 'review-123', reviewer_id: 'user-2', json: { reason: 'reject' } }],
+        error: null,
+      });
+
+      const result = await getCommentApi('review-123', 'admin-rejected');
+
+      expect(mockGetUserId).not.toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_comment_items', {
+        p_review_id: 'review-123',
+        p_scope: 'all',
+      });
+      expect(result.error).toBeNull();
     });
 
     it('returns error for invalid action type', async () => {
       const result = await getCommentApi('review-123', 'invalid' as any);
 
+      expect(mockRpc).not.toHaveBeenCalled();
       expect(result).toEqual({ data: [], error: true });
     });
   });
 
-  describe('getReviewedComment', () => {
-    it('fetches reviewed comments for current user', async () => {
-      mockGetUserId.mockResolvedValue('current-user-id');
-
-      const mockData = [{ review_id: 'review-1' }, { review_id: 'review-2' }];
-
-      const supabaseResult = { data: mockData, error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+  describe('review member queue queries', () => {
+    it('fetches reviewed comments for current user with default paging', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: 'review-1',
+            review_state_code: 2,
+            reviewer_id: ['current-user-id'],
+            json: { data: { id: 'process-1' } },
+            comment_state_code: 1,
+            comment_json: { summary: 'ok' },
+            comment_created_at: '2024-04-01T00:00:00.000Z',
+            comment_modified_at: '2024-04-02T00:00:00.000Z',
+            total_count: 2,
+          },
+        ],
+        error: null,
+      });
 
       const result = await getReviewedComment();
 
       expect(mockGetUserId).toHaveBeenCalledTimes(1);
-      expect(builder.select).toHaveBeenCalledWith('review_id, reviews!inner(*)', {
-        count: 'exact',
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'reviewed',
+        p_page: 1,
+        p_page_size: 10,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'descend',
       });
-      expect(builder.eq).toHaveBeenCalledWith('reviewer_id', 'current-user-id');
-      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2, -3]);
-      expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(result).toEqual(supabaseResult);
-    });
-
-    it('fetches reviewed comments for specific user ID', async () => {
-      const supabaseResult = { data: [], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
-
-      await getReviewedComment(undefined, undefined, 'specific-user-id');
-
-      expect(mockGetUserId).not.toHaveBeenCalled();
-      expect(builder.eq).toHaveBeenCalledWith('reviewer_id', 'specific-user-id');
-      expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2, -3]);
-      expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
+      expect(result).toEqual({
+        data: [
+          {
+            review_id: 'review-1',
+            reviewer_id: 'current-user-id',
+            state_code: 1,
+            json: { summary: 'ok' },
+            created_at: '2024-04-01T00:00:00.000Z',
+            modified_at: '2024-04-02T00:00:00.000Z',
+            reviews: {
+              id: 'review-1',
+              state_code: 2,
+              reviewer_id: ['current-user-id'],
+              json: { data: { id: 'process-1' } },
+              deadline: undefined,
+              created_at: undefined,
+              modified_at: undefined,
+            },
+          },
+        ],
+        error: null,
+        count: 2,
+      });
     });
 
     it('supports explicit paging and ascending sorting for reviewed comments', async () => {
-      const supabaseResult = { data: [{ review_id: 'review-3' }], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+      mockRpc.mockResolvedValueOnce({
+        data: [{ id: 'review-2', total_count: '1' }],
+        error: null,
+      });
 
       const result = await getReviewedComment(
         { current: 2, pageSize: 5 },
@@ -347,98 +320,76 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         'specific-user-id',
       );
 
-      expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: true });
-      expect(builder.range).toHaveBeenCalledWith(5, 9);
-      expect(result).toEqual(supabaseResult);
+      expect(mockGetUserId).not.toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'reviewed',
+        p_page: 2,
+        p_page_size: 5,
+        p_sort_by: 'created_at',
+        p_sort_order: 'ascend',
+      });
+      expect(result.count).toBe(1);
+      expect(result.data[0].reviewer_id).toBe('specific-user-id');
     });
 
-    it('returns error when user ID is not available', async () => {
-      mockGetUserId.mockResolvedValue('');
+    it('returns error when user ID is not available for reviewed queue', async () => {
+      mockGetUserId.mockResolvedValueOnce('');
 
       const result = await getReviewedComment();
 
+      expect(mockRpc).not.toHaveBeenCalled();
       expect(result).toEqual({ error: true, data: [] });
     });
 
-    it('falls back to default sort and paging when params or sort contain nullish values', async () => {
-      const supabaseResult = { data: [{ review_id: 'review-nullish' }], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
-
-      const result = await getReviewedComment(
-        { current: null as any, pageSize: null as any },
-        null as any,
-        'specific-user-id',
-      );
-
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(result).toEqual(supabaseResult);
-    });
-  });
-
-  describe('getPendingComment', () => {
-    it('fetches pending comments for current user', async () => {
-      mockGetUserId.mockResolvedValue('current-user-id');
-
-      const mockData = [{ review_id: 'review-1' }];
-
-      const supabaseResult = { data: mockData, error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
-
-      const result = await getPendingComment();
-
-      expect(builder.eq).toHaveBeenNthCalledWith(1, 'reviewer_id', 'current-user-id');
-      expect(builder.eq).toHaveBeenNthCalledWith(2, 'state_code', 0);
-      expect(builder.filter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(result).toEqual(supabaseResult);
-    });
-
-    it('returns error when user ID is not available', async () => {
-      mockGetUserId.mockResolvedValue('');
-
-      const result = await getPendingComment();
-
-      expect(result).toEqual({ error: true, data: [] });
-    });
-
-    it('supports explicit paging and ascending sorting for pending comments', async () => {
-      const supabaseResult = { data: [{ review_id: 'review-pending' }], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+    it('fetches pending comments with default fallbacks when params are nullish', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [{ id: 'review-pending-defaults', total_count: null }],
+        error: null,
+      });
 
       const result = await getPendingComment(
-        { current: 3, pageSize: 2 },
-        { created_at: 'ascend' } as any,
-        'specific-user-id',
+        { current: null as any, pageSize: null as any },
+        null as any,
+        'user-1',
       );
 
-      expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: true });
-      expect(builder.range).toHaveBeenCalledWith(4, 5);
-      expect(result).toEqual(supabaseResult);
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'pending',
+        p_page: 1,
+        p_page_size: 10,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'descend',
+      });
+      expect(result.count).toBe(0);
     });
 
-    it('falls back to default sort when the pending-comments sort input is null', async () => {
-      const supabaseResult = { data: [{ review_id: 'review-pending-defaults' }], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+    it('uses wrapper defaults and falls back to an empty pending queue when rpc data is missing', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
 
-      const result = await getPendingComment({ current: 1, pageSize: 1 }, null as any, 'user-1');
+      const result = await getPendingComment(undefined, undefined, 'user-1');
 
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 0);
-      expect(result).toEqual(supabaseResult);
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'pending',
+        p_page: 1,
+        p_page_size: 10,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'descend',
+      });
+      expect(result).toEqual({
+        data: [],
+        error: null,
+        count: 0,
+      });
     });
-  });
 
-  describe('getRejectedComment', () => {
-    it('fetches rejected comments for the reviewer with paging and sort applied', async () => {
-      const supabaseResult = { data: [{ review_id: 'review-rejected' }], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+    it('fetches rejected comments with explicit paging and sort', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [{ id: 'review-rejected', total_count: 1 }],
+        error: null,
+      });
 
       const result = await getRejectedComment(
         { current: 2, pageSize: 4 },
@@ -446,36 +397,34 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         'specific-user-id',
       );
 
-      expect(builder.eq).toHaveBeenNthCalledWith(1, 'reviewer_id', 'specific-user-id');
-      expect(builder.eq).toHaveBeenNthCalledWith(2, 'state_code', -1);
-      expect(builder.eq).toHaveBeenNthCalledWith(3, 'reviews.state_code', -1);
-      expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: true });
-      expect(builder.range).toHaveBeenCalledWith(4, 7);
-      expect(result).toEqual(supabaseResult);
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'reviewer-rejected',
+        p_page: 2,
+        p_page_size: 4,
+        p_sort_by: 'created_at',
+        p_sort_order: 'ascend',
+      });
+      expect(result.count).toBe(1);
+      expect(result.data[0].reviewer_id).toBe('specific-user-id');
     });
 
-    it('returns error when user ID is not available for rejected comments', async () => {
-      mockGetUserId.mockResolvedValue('');
+    it('uses wrapper defaults for rejected comments when params and sort are omitted', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [{ id: 'review-rejected-defaults', total_count: 0 }],
+        error: null,
+      });
 
-      const result = await getRejectedComment();
+      const result = await getRejectedComment(undefined, undefined, 'specific-user-id');
 
-      expect(result).toEqual({ error: true, data: [] });
-    });
-
-    it('falls back to default sort and paging for rejected comments when inputs are nullish', async () => {
-      const supabaseResult = { data: [{ review_id: 'review-rejected-defaults' }], error: null };
-      const builder = createPagedCommentsQueryBuilder(supabaseResult);
-      (mockFrom as jest.Mock).mockReturnValue(builder);
-
-      const result = await getRejectedComment(
-        { current: null as any, pageSize: null as any },
-        null as any,
-        'specific-user-id',
-      );
-
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(result).toEqual(supabaseResult);
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+        p_status: 'reviewer-rejected',
+        p_page: 1,
+        p_page_size: 10,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'descend',
+      });
+      expect(result.count).toBe(0);
+      expect(result.data[0].reviewer_id).toBe('specific-user-id');
     });
   });
 
@@ -493,7 +442,7 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
         filter: mockFilter,
       };
 
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+      mockFrom.mockReturnValue(builder);
 
       const result = await getUserManageComments();
 
@@ -507,70 +456,83 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
     });
   });
 
-  describe('getReviewerIdsByReviewId', () => {
-    it('fetches reviewer IDs and state codes for a review', async () => {
-      const mockData = [
+  describe('aggregation helpers', () => {
+    it('maps reviewer ids and state codes from assigned-scope comments', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          { reviewer_id: 'user-1', state_code: 0, json: {} },
+          { reviewer_id: 'user-2', state_code: 1, json: {} },
+        ],
+        error: null,
+      });
+
+      const result = await getReviewerIdsByReviewId('review-123');
+
+      expect(mockRpc).toHaveBeenCalledWith('qry_review_get_comment_items', {
+        p_review_id: 'review-123',
+        p_scope: 'all',
+      });
+      expect(result).toEqual([
         { reviewer_id: 'user-1', state_code: 0 },
         { reviewer_id: 'user-2', state_code: 1 },
-      ];
+      ]);
+    });
 
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({ data: mockData, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEq,
-        }),
-      });
+    it('returns empty array when reviewer id lookup fails', async () => {
+      mockRpc.mockResolvedValueOnce({ data: [], error: { message: 'db failed' } });
 
       const result = await getReviewerIdsByReviewId('review-123');
 
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockSelect).toHaveBeenCalledWith('state_code,reviewer_id');
-      expect(mockEq).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(result).toEqual(mockData);
+      expect(result).toEqual([]);
     });
 
-    it('returns null when data is null', async () => {
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({ data: null, error: null });
-
-      (mockFrom as jest.Mock).mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          eq: mockEq,
-        }),
-      });
-
-      const result = await getReviewerIdsByReviewId('review-123');
-
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(mockSelect).toHaveBeenCalledWith('state_code,reviewer_id');
-      expect(mockEq).toHaveBeenCalledWith('review_id', 'review-123');
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('getRejectedCommentsByReviewIds', () => {
-    it('fetches rejected comment payloads for the provided review ids', async () => {
-      const mockResult = {
-        data: [{ json: { reason: 'Rejected' } }],
-        error: null,
-      };
-      const builder: any = {
-        select: jest.fn().mockReturnThis(),
-        in: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue(mockResult),
-      };
-
-      (mockFrom as jest.Mock).mockReturnValue(builder);
+    it('aggregates admin-rejected comments per review id and filters rejected rows only', async () => {
+      mockRpc
+        .mockResolvedValueOnce({
+          data: [
+            { state_code: -1, json: { reason: 'Rejected A' } },
+            { state_code: 1, json: { reason: 'Approved' } },
+          ],
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: [{ state_code: -1, json: { reason: 'Rejected B' } }],
+          error: null,
+        });
 
       const result = await getRejectedCommentsByReviewIds(['review-1', 'review-2']);
 
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(builder.select).toHaveBeenCalledWith('json');
-      expect(builder.in).toHaveBeenCalledWith('review_id', ['review-1', 'review-2']);
-      expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
-      expect(result).toEqual(mockResult);
+      expect(mockRpc).toHaveBeenNthCalledWith(1, 'qry_review_get_comment_items', {
+        p_review_id: 'review-1',
+        p_scope: 'all',
+      });
+      expect(mockRpc).toHaveBeenNthCalledWith(2, 'qry_review_get_comment_items', {
+        p_review_id: 'review-2',
+        p_scope: 'all',
+      });
+      expect(result).toEqual({
+        data: [{ json: { reason: 'Rejected A' } }, { json: { reason: 'Rejected B' } }],
+        error: null,
+      });
+    });
+
+    it('surfaces the first aggregation error while keeping successful rejected rows', async () => {
+      mockRpc
+        .mockResolvedValueOnce({
+          data: [{ state_code: -1, json: { reason: 'Rejected A' } }],
+          error: { message: 'partial failure' },
+        })
+        .mockResolvedValueOnce({
+          data: [{ state_code: -1, json: { reason: 'Rejected B' } }],
+          error: null,
+        });
+
+      const result = await getRejectedCommentsByReviewIds(['review-1', 'review-2']);
+
+      expect(result).toEqual({
+        data: [{ json: { reason: 'Rejected A' } }, { json: { reason: 'Rejected B' } }],
+        error: { message: 'partial failure' },
+      });
     });
   });
 });

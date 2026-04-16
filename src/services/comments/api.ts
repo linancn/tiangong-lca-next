@@ -7,11 +7,90 @@ type ReviewCommentCommandFunctionName =
   | 'app_review_save_comment_draft'
   | 'app_review_submit_comment';
 
+type ReviewCommentRpcRow = {
+  review_id: string;
+  reviewer_id: string;
+  state_code: number;
+  json: any;
+  created_at?: string;
+  modified_at?: string;
+};
+
+type ReviewMemberQueueRpcRow = {
+  id: string;
+  review_state_code?: number;
+  reviewer_id?: string[] | null;
+  json: any;
+  deadline?: string | null;
+  created_at?: string;
+  modified_at?: string;
+  comment_state_code?: number;
+  comment_json?: any;
+  comment_created_at?: string;
+  comment_modified_at?: string;
+  total_count?: number | string | null;
+};
+
 async function invokeReviewCommentCommand<Row extends Record<string, unknown>>(
   functionName: ReviewCommentCommandFunctionName,
   body: Record<string, unknown>,
 ) {
   return invokeDatasetCommand<Row>(functionName as never, body);
+}
+
+function normalizeQueueResult(row: ReviewMemberQueueRpcRow, reviewerId: string) {
+  return {
+    review_id: row.id,
+    reviewer_id: reviewerId,
+    state_code: row.comment_state_code,
+    json: row.comment_json,
+    created_at: row.comment_created_at,
+    modified_at: row.comment_modified_at,
+    reviews: {
+      id: row.id,
+      state_code: row.review_state_code,
+      reviewer_id: row.reviewer_id,
+      json: row.json,
+      deadline: row.deadline,
+      created_at: row.created_at,
+      modified_at: row.modified_at,
+    },
+  };
+}
+
+async function getReviewMemberQueueComments(
+  status: 'reviewed' | 'pending' | 'reviewer-rejected',
+  params?: {
+    current?: number;
+    pageSize?: number;
+  },
+  sort?: Record<string, SortOrder>,
+  user_id?: string,
+) {
+  const normalizedSort = sort ?? {};
+  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
+  const orderBy = normalizedSort[sortBy] ?? 'descend';
+  const userId = user_id ?? (await getUserId());
+
+  if (!userId) {
+    return { error: true, data: [] };
+  }
+
+  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items', {
+    p_status: status,
+    p_page: params?.current ?? 1,
+    p_page_size: params?.pageSize ?? 10,
+    p_sort_by: sortBy,
+    p_sort_order: orderBy,
+  });
+
+  const rows = (Array.isArray(data) ? data : []) as ReviewMemberQueueRpcRow[];
+
+  return {
+    data: rows.map((row) => normalizeQueueResult(row, userId)),
+    error,
+    count: Number(rows?.[0]?.total_count ?? 0) || 0,
+  };
 }
 
 export async function addCommentApi(data: any) {
@@ -62,27 +141,29 @@ export async function getCommentApi(
   reviewId: string,
   actionType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected',
 ) {
-  if (['review', 'reviewer-rejected', 'admin-rejected'].includes(actionType)) {
-    const userId = await getUserId();
-
-    if (!userId) {
-      return { error: true, data: [] };
-    }
-    let query = supabase.from('comments').select('*').eq('review_id', reviewId);
-
-    if (actionType === 'admin-rejected') {
-      const { data, error } = await query;
-      return { data, error };
-    }
+  if (['assigned', 'review', 'reviewer-rejected', 'admin-rejected'].includes(actionType)) {
     if (actionType === 'review' || actionType === 'reviewer-rejected') {
-      query = query.eq('reviewer_id', userId);
-      const { data, error } = await query;
-      return { data, error };
+      const userId = await getUserId();
+
+      if (!userId) {
+        return { error: true, data: [] };
+      }
     }
-  }
-  if (actionType === 'assigned') {
-    const { data, error } = await supabase.from('comments').select('*').eq('review_id', reviewId);
-    return { data, error };
+
+    const scope = actionType === 'assigned' || actionType === 'admin-rejected' ? 'all' : 'mine';
+    const { data, error } = await supabase.rpc('qry_review_get_comment_items', {
+      p_review_id: reviewId,
+      p_scope: scope,
+    });
+    const rows = (Array.isArray(data) ? data : []) as ReviewCommentRpcRow[];
+
+    return {
+      data: rows.map((row) => ({
+        ...row,
+        json: row?.json ?? {},
+      })),
+      error,
+    };
   }
   return { data: [], error: true };
 }
@@ -95,28 +176,7 @@ export async function getReviewedComment(
   sort: Record<string, SortOrder> = {},
   user_id?: string,
 ) {
-  const normalizedSort = sort ?? {};
-  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
-  const orderBy = normalizedSort[sortBy] ?? 'descend';
-
-  const userId = user_id ?? (await getUserId());
-
-  if (!userId) {
-    return { error: true, data: [] };
-  }
-
-  const pageSize = params.pageSize ?? 10;
-  const currentPage = params.current ?? 1;
-
-  const result = await supabase
-    .from('comments')
-    .select('review_id, reviews!inner(*)', { count: 'exact' })
-    .eq('reviewer_id', userId)
-    .in('state_code', [1, 2, -3])
-    .filter('reviews.state_code', 'gt', 0)
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
-  return result;
+  return getReviewMemberQueueComments('reviewed', params, sort, user_id);
 }
 
 export async function getPendingComment(
@@ -127,27 +187,7 @@ export async function getPendingComment(
   sort: Record<string, SortOrder> = {},
   user_id?: string,
 ) {
-  const normalizedSort = sort ?? {};
-  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
-  const orderBy = normalizedSort[sortBy] ?? 'descend';
-  const userId = user_id ?? (await getUserId());
-
-  if (!userId) {
-    return { error: true, data: [] };
-  }
-
-  const pageSize = params.pageSize ?? 10;
-  const currentPage = params.current ?? 1;
-
-  const result = await supabase
-    .from('comments')
-    .select('review_id, reviews!inner(*)', { count: 'exact' })
-    .eq('reviewer_id', userId)
-    .eq('state_code', 0)
-    .filter('reviews.state_code', 'gt', 0)
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
-  return result;
+  return getReviewMemberQueueComments('pending', params, sort, user_id);
 }
 
 export async function getRejectedComment(
@@ -158,27 +198,7 @@ export async function getRejectedComment(
   sort: Record<string, SortOrder> = {},
   user_id?: string,
 ) {
-  const normalizedSort = sort ?? {};
-  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
-  const orderBy = normalizedSort[sortBy] ?? 'descend';
-  const userId = user_id ?? (await getUserId());
-
-  if (!userId) {
-    return { error: true, data: [] };
-  }
-
-  const pageSize = params.pageSize ?? 10;
-  const currentPage = params.current ?? 1;
-
-  const result = await supabase
-    .from('comments')
-    .select('review_id, reviews!inner(*)', { count: 'exact' })
-    .eq('reviewer_id', userId)
-    .eq('state_code', -1)
-    .eq('reviews.state_code', -1)
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
-  return result;
+  return getReviewMemberQueueComments('reviewer-rejected', params, sort, user_id);
 }
 
 export async function getUserManageComments() {
@@ -191,18 +211,31 @@ export async function getUserManageComments() {
 }
 
 export async function getReviewerIdsByReviewId(reviewId: string) {
-  const { data } = await supabase
-    .from('comments')
-    .select('state_code,reviewer_id')
-    .eq('review_id', reviewId);
-  return data;
+  const { data, error } = await getCommentApi(reviewId, 'assigned');
+
+  if (error) {
+    return [];
+  }
+
+  return data.map((comment) => ({
+    state_code: comment.state_code,
+    reviewer_id: comment.reviewer_id,
+  }));
 }
 
 export async function getRejectedCommentsByReviewIds(reviewIds: string[]) {
-  const result = await supabase
-    .from('comments')
-    .select('json')
-    .in('review_id', reviewIds)
-    .eq('state_code', -1);
-  return result;
+  const results = await Promise.all(
+    reviewIds.map((reviewId) => getCommentApi(reviewId, 'admin-rejected')),
+  );
+  const firstError = results.find((result) => result.error)?.error ?? null;
+  const data = results.flatMap((result) =>
+    result.data
+      .filter((comment) => comment.state_code === -1)
+      .map((comment) => ({ json: comment.json })),
+  );
+
+  return {
+    data,
+    error: firstError,
+  };
 }

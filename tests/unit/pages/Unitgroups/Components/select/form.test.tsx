@@ -498,7 +498,7 @@ describe('UnitgroupsSelectForm', () => {
     );
 
     await waitFor(() => expect(mockGetRefData).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /update err ref/i }));
 
     mockRefCheckContextValue = {

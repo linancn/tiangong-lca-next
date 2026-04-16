@@ -355,6 +355,15 @@ describe('AllTeams component', () => {
     expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'joinTeam');
   });
 
+  it('returns an empty join-team table when the system role is missing', async () => {
+    renderAllTeams({ tableType: 'joinTeam', systemUserRole: undefined });
+
+    await waitFor(() => {
+      expect(mockGetAllTableTeams).not.toHaveBeenCalled();
+    });
+    expect(screen.queryByTestId('row-t1')).not.toBeInTheDocument();
+  });
+
   it('searches by keyword in join-team view', async () => {
     renderAllTeams({ tableType: 'joinTeam' });
 

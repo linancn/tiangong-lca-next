@@ -122,7 +122,7 @@ describe('Review page', () => {
     });
   });
 
-  it('forces review members onto the reviewed tab and reloads that table', async () => {
+  it('forces review members onto the reviewed tab without requiring an initial reload', async () => {
     mockGetReviewUserRoleApi.mockResolvedValueOnce({ user_id: 'user-2', role: 'review-member' });
 
     render(<ReviewPage />);
@@ -130,9 +130,7 @@ describe('Review page', () => {
     await waitFor(() => {
       expect(screen.getByTestId('assignment-reviewed')).toHaveTextContent('reviewed:review-member');
     });
-    await waitFor(() => {
-      expect(assignmentReloads.reviewed).toHaveBeenCalled();
-    });
+    expect(assignmentReloads.reviewed).not.toHaveBeenCalled();
 
     expect(
       screen.queryByRole('button', { name: 'pages.review.tabs.unassigned' }),
@@ -157,11 +155,11 @@ describe('Review page', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('assignment-reviewed')).toHaveTextContent('reviewed:review-member');
-      expect(assignmentReloads.reviewed).toHaveBeenCalledTimes(2);
+      expect(assignmentReloads.reviewed).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('logs errors from role loading and still clears the spinner wrapper', async () => {
+  it('logs errors from role loading and falls back to access denied', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockGetReviewUserRoleApi.mockRejectedValueOnce(new Error('load failed'));
 
@@ -171,6 +169,9 @@ describe('Review page', () => {
       expect(consoleErrorSpy).toHaveBeenCalled();
     });
     expect(screen.getByTestId('spin')).toBeInTheDocument();
+    expect(screen.getByTestId('access-denied')).toHaveTextContent(
+      'You do not have permission to access this page.',
+    );
 
     consoleErrorSpy.mockRestore();
   });

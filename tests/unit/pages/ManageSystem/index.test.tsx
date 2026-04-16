@@ -378,13 +378,13 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
-
     await waitFor(() => {
-      expect(screen.getByTestId('pro-table')).toBeInTheDocument();
+      expect(screen.getByTestId('access-denied')).toBeInTheDocument();
     });
     expect(mockGetSystemMembersApi).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+    expect(
+      screen.queryByRole('button', { name: 'pages.manageSystem.tabs.members' }),
+    ).not.toBeInTheDocument();
   });
 
   it('logs member-loading failures and falls back to an empty table', async () => {
@@ -404,7 +404,7 @@ describe('ManageSystem page', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('logs auth-loading failures and keeps rendering the teams tab', async () => {
+  it('logs auth-loading failures and falls back to access denied', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockGetSystemUserRoleApi.mockRejectedValueOnce(new Error('auth failed'));
 
@@ -414,7 +414,9 @@ describe('ManageSystem page', () => {
       expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
-    expect(screen.getByTestId('all-teams')).toHaveTextContent('manageSystem:none');
+    expect(screen.getByTestId('access-denied')).toHaveTextContent(
+      'You do not have permission to access this page.',
+    );
     consoleErrorSpy.mockRestore();
   });
 
