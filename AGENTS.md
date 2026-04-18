@@ -111,6 +111,7 @@ Do not infer the daily trunk from GitHub UI defaults.
 
 ## Runtime Facts
 
+- Repo-local AI-doc maintenance is enforced by `.github/workflows/ai-doc-lint.yml` using the vendored `.github/scripts/ai-doc-lint.*` files.
 - Package manager: `npm`
 - Node baseline: `>=24`
 - Default local app target: `npm start` or `npm run start:dev` against the shared `dev` environment

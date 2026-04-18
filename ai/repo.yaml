@@ -184,7 +184,7 @@
       "notes": [
         "Use npm run test:ci -- <jest-args> for focused suites with extra flags.",
         "Use npm run test:coverage and npm run test:coverage:assert-full when validating coverage-sensitive changes.",
-        "AI-doc changes should still run the root warning-only ai-doc-lint."
+        "AI-doc changes should still run the repo-local ai-doc-lint workflow or the equivalent local node command."
       ]
     }
   }

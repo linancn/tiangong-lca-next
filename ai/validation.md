@@ -60,7 +60,7 @@ npm run prepush:gate
 | `public/**` static resource bundles | `npm run lint`; `npm run build` | run focused tests or one nearby feature suite if the asset change affects parsing or cache behavior | Review both assets and consuming services together. |
 | `docker/**` sync helpers or mirrors | `npm run lint`; `npm run build` | run the specific sync helper only when the task explicitly includes it; never hand-edit mirrors | `docker/volumes/functions/**` is a synced mirror, not an edit surface. |
 | tests, coverage, or gate scripts | `npm run lint`; `npm test`; `npm run test:coverage`; `npm run test:coverage:assert-full` | run `npm run prepush:gate` when the protected-branch gate changed directly | Coverage remains `100%` for `src/**/*.ts`. |
-| AI docs only | run the root warning-only `ai-doc-lint` against touched files | do one scenario-based routing check from root into this repo | Refresh review metadata even when prose-only docs change. |
+| AI docs only | run repo-local `ai-doc-lint` against touched files or the equivalent local PR check | do one scenario-based routing check from root into this repo | Refresh review metadata even when prose-only docs change. |
 
 ## Minimum PR Note Quality
 
