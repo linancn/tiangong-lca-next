@@ -40,6 +40,7 @@
 - 任何代码修改都必须作为硬约束维持全仓 `100%` statements / branches / functions / lines。
 - 本地 `main` push 会被 `.husky/pre-push` 强制门禁；当前门禁命令是 `npm run prepush:gate`。
 - 目标为 `dev` 或 `main` 的 PR，在合并前必须通过 GitHub Actions 中同一条完整门禁。
+- 若测试工作流或 backlog 文档发生变化，还必须通过 `.github/workflows/ai-doc-lint.yml` 中的仓库内 AI 文档维护门禁；提交前可运行 `node .github/scripts/ai-doc-lint.mjs --mode enforce --files "<逗号分隔的变更文件列表>"` 自检。
 
 ## 集成测试扩展计划（独立于覆盖率清零队列）
 

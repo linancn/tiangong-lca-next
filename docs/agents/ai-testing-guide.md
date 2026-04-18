@@ -57,7 +57,12 @@ npx jest tests/unit/services/processes/ --watch
 
 # Lint gate
 npm run lint
+
+# Repo-local AI-doc maintenance gate
+node .github/scripts/ai-doc-lint.mjs --mode enforce --files "<comma-separated touched files>"
 ```
+
+GitHub PRs now run the same AI-doc maintenance gate through `.github/workflows/ai-doc-lint.yml`.
 
 ## Coverage Expectations
 

@@ -57,7 +57,12 @@ npx jest tests/unit/services/processes/ --watch
 
 # 代码门禁
 npm run lint
+
+# 仓库内 AI 文档维护门禁
+node .github/scripts/ai-doc-lint.mjs --mode enforce --files "<逗号分隔的变更文件列表>"
 ```
+
+GitHub PR 也会通过 `.github/workflows/ai-doc-lint.yml` 执行同一条 AI 文档维护门禁。
 
 ## 覆盖率预期
 
