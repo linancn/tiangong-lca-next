@@ -40,6 +40,7 @@ Latest verified full run (`npm run test:coverage:report`, followed by `npm run t
 - Any code change is a hard requirement to preserve repo-wide `100%` statements / branches / functions / lines.
 - Local `main` pushes are blocked unless the repo passes `.husky/pre-push`, which runs `npm run prepush:gate`.
 - PRs targeting `dev` or `main` must pass the same full gate in GitHub Actions before merge.
+- Test workflow or backlog doc changes must also pass the repo-local AI-doc maintenance gate in `.github/workflows/ai-doc-lint.yml`; run `node .github/scripts/ai-doc-lint.mjs --mode enforce --files "<comma-separated touched files>"` before push when those docs changed.
 
 ## Integration Expansion Program (Separate from Coverage Queue)
 

@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "lastReviewedAt": "2026-04-18",
+  "lastReviewedCommit": "002be46cbcb8a650c30a0b8962defa50a4c8be93",
+  "repo": {
+    "id": "next",
+    "path": "tiangong-lca-next",
+    "canonicalRepo": "linancn/tiangong-lca-next",
+    "purpose": "Shipped frontend and product UI repository for TianGong LCA.",
+    "entryDoc": "AGENTS.md",
+    "taskRouterDoc": "ai/task-router.md",
+    "validationDoc": "ai/validation.md",
+    "architectureDoc": "ai/architecture.md",
+    "readmeDoc": "README.md",
+    "defaultBranch": "main",
+    "dailyTrunk": "dev",
+    "routinePrBase": "dev",
+    "branchModel": "M2",
+    "promotePath": "dev -> main",
+    "hotfixPath": "branch from main, merge into main, then back-merge main -> dev",
+    "workspaceIntegrationRequired": true,
+    "rootIntegrationRule": "lca-workspace/main should normally bump only commits already promoted onto tiangong-lca-next/main.",
+    "trackedBy": {
+      "workspaceParentIssue": "https://github.com/tiangong-lca/workspace/issues/73",
+      "repoIssue": "https://github.com/linancn/tiangong-lca-next/issues/346"
+    },
+    "runtime": {
+      "packageManager": "npm",
+      "nodeVersion": ">=24",
+      "framework": "React 18 + @umijs/max 4 + Ant Design Pro 5 + TypeScript",
+      "defaultDevCommand": "npm start",
+      "defaultDevAlias": "npm run start:dev",
+      "mainEnvCommand": "npm run start:main",
+      "baselineValidationCommands": [
+        "npm run lint",
+        "npm test",
+        "npm run build"
+      ],
+      "fullGateCommand": "npm run prepush:gate",
+      "deployFacts": [
+        "main pushes deploy the web app build",
+        "v* tags build draft Electron releases"
+      ]
+    },
+    "sourceOfTruth": {
+      "stableManualEditPaths": [
+        {
+          "path": "config/routes.ts",
+          "role": "route tree and route-family entrypoints"
+        },
+        {
+          "path": "config/config.ts",
+          "role": "Umi runtime config"
+        },
+        {
+          "path": "config/supabaseEnv.ts",
+          "role": "frontend env selection for shared dev versus main"
+        },
+        {
+          "path": "src/app.tsx",
+          "role": "app runtime setup, auth redirect, dark mode, and cache monitors"
+        },
+        {
+          "path": "src/pages/**",
+          "role": "feature pages and route-level UI behavior"
+        },
+        {
+          "path": "src/services/**",
+          "role": "app-side Supabase and API access plus service logic"
+        },
+        {
+          "path": "src/components/**",
+          "role": "shared UI components and modal or task-center behavior"
+        },
+        {
+          "path": "src/locales/**",
+          "role": "UI strings"
+        },
+        {
+          "path": "public/**",
+          "role": "static resource bundles consumed by the app"
+        },
+        {
+          "path": "docker/**",
+          "role": "self-hosted mirrors and sync helpers"
+        },
+        {
+          "path": "electron/**",
+          "role": "desktop packaging surface"
+        }
+      ],
+      "nonOwnerBoundaries": [
+        {
+          "repo": "database-engine",
+          "doesNotOwn": [
+            "schema truth",
+            "migrations",
+            "Supabase branch governance"
+          ]
+        },
+        {
+          "repo": "edge-functions",
+          "doesNotOwn": [
+            "Edge runtime behavior",
+            "API orchestration"
+          ]
+        },
+        {
+          "repo": "next-docs",
+          "doesNotOwn": [
+            "public docs-site content"
+          ]
+        },
+        {
+          "repo": "calculator",
+          "doesNotOwn": [
+            "solver runtime and compute internals"
+          ]
+        },
+        {
+          "repo": "lca-workspace",
+          "doesNotOwn": [
+            "root integration state",
+            "submodule pointer updates"
+          ]
+        }
+      ]
+    },
+    "taskHotspots": [
+      {
+        "topic": "route, page, and shared UI behavior",
+        "paths": [
+          "config/routes.ts",
+          "src/app.tsx",
+          "src/pages/**",
+          "src/components/**",
+          "src/locales/**"
+        ]
+      },
+      {
+        "topic": "app-side data boundaries and environment selection",
+        "paths": [
+          "config/supabaseEnv.ts",
+          "src/services/**",
+          "docker/pull-edge-functions.sh",
+          "docker/scripts/sync-migrations-to-data-sql.sh",
+          "docker/volumes/functions/**",
+          "docker/volumes/db/init/**"
+        ]
+      },
+      {
+        "topic": "static resource caches and analysis workflows",
+        "paths": [
+          "public/classifications/**",
+          "public/locations/**",
+          "public/lciamethods/**",
+          "src/services/lifeCycleModels/**",
+          "src/services/lca/**",
+          "src/components/LcaTaskCenter/**",
+          "src/pages/Processes/Analysis/**"
+        ]
+      },
+      {
+        "topic": "test, coverage, and protected-branch gates",
+        "paths": [
+          "package.json",
+          ".nvmrc",
+          "jest.config.cjs",
+          ".husky/pre-push",
+          ".github/workflows/**",
+          "scripts/test-runner.cjs",
+          "scripts/test-coverage-report.js",
+          "tests/**"
+        ]
+      }
+    ],
+    "validation": {
+      "baselineLocalCommands": [
+        "npm run lint",
+        "npm test",
+        "npm run build"
+      ],
+      "fullGateCommand": "npm run prepush:gate",
+      "notes": [
+        "Use npm run test:ci -- <jest-args> for focused suites with extra flags.",
+        "Use npm run test:coverage and npm run test:coverage:assert-full when validating coverage-sensitive changes.",
+        "AI-doc changes should still run the repo-local ai-doc-lint workflow or the equivalent local node command."
+      ]
+    }
+  }
+}
