@@ -1,93 +1,46 @@
-# Testing Troubleshooting – Tiangong LCA Next
+# Testing Troubleshooting
 
-> Use this file when tests fail, timeout, or hang. Read order: `AGENTS.md` -> `ai-testing-guide.md` -> this file.
+> Purpose: shortest recovery path when tests fail, hang, timeout, or reopen coverage gaps.
 
-## Command Matrix
+## Command Shortlist
 
-```bash
-# Full gate
-npm test
-
-# Focused integration
-npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
-
-# Focused unit/component
-npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
-
-# Detect open handles
-npm run test:ci -- tests/integration/<feature>/<file>.test.tsx \
-  --runInBand --testTimeout=20000 --detectOpenHandles
-
-# Coverage
-npm run test:coverage
-npm run test:coverage:report
-
-# Lint
-npm run lint
-```
+| Task | Command |
+| --- | --- |
+| full gate | `npm test` |
+| focused integration | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
+| focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
+| detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
+| full coverage | `npm run test:coverage` |
+| lint | `npm run lint` |
 
 ## Failure Diagnosis
 
-### 1) Infinite loop / timeout / Maximum update depth exceeded
+| Symptom | Likely cause | First action |
+| --- | --- | --- |
+| timeout or maximum update depth | loop in effect, stale mock, unresolved async state | narrow to one file, then inspect effect triggers and mocked promises |
+| auth or session flow failing | missing provider, missing auth mock, stale route state | reuse existing auth wrapper and compare against nearby passing tests |
+| element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
+| mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
+| provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 
-Check first:
+## Open-Handle Playbook
 
-- Were all service calls mocked before render?
-- Are you returning stable values (`mockResolvedValue`) instead of unstable per-call object construction?
-- Are async assertions properly awaited?
-
-Fix pattern:
-
-```ts
-beforeEach(() => {
-  jest.clearAllMocks();
-  mockApi.list.mockResolvedValue({ data: [], error: null });
-  mockApi.create.mockResolvedValue({ data: { id: '1' }, error: null });
-});
-```
-
-### 2) Auth/session-dependent behavior failing
-
-- Mock `supabase.auth.getSession()` consistently.
-- If page depends on initial state model, mock `@@initialState` provider path used by that page.
-
-### 3) Element not found / flaky query
-
-- Prefer semantic queries: `getByRole`, `getByLabelText`, `findByText`.
-- Switch to async query (`findBy*`) when content renders after effects.
-- Verify expected i18n text/key exists in locale files.
-
-### 4) Mock not being hit
-
-- Ensure `jest.mock('@/services/...')` path exactly matches the import path in the source file.
-- Clear stale mocks/modules in `beforeEach`.
-
-### 5) Context/provider errors
-
-- Render with `renderWithProviders` from `tests/helpers/testUtils.tsx` when providers are needed.
-- If custom render is required, add only the minimum provider stack needed by the component.
-
-## Open Handle Playbook
-
-When Jest does not exit:
-
-1. Rerun with `--detectOpenHandles`.
-2. Check unawaited async flows and unresolved timers.
-3. Ensure fake timers are restored (`jest.useRealTimers()`).
-4. Verify global side effects are cleaned in `afterEach`.
+1. rerun the narrowest failing file with `--detectOpenHandles`
+2. inspect unresolved timers, intervals, subscriptions, or pending promises
+3. confirm cleanup runs in `afterEach`, `useEffect`, or helper teardown
+4. rerun the file without watch mode
 
 ## Coverage Gap Playbook
 
-- Add unit tests for pure helpers/branches unreachable from integration tests.
-- Add component tests for feature-flag/prop-gated UI branches.
-- Use targeted `collectCoverageFrom` runs during gap closure.
-- Keep `docs/agents/test_todo_list.md` updated when a gap is closed or reprioritized; update `docs/agents/test_improvement_plan.md` too if the strategic summary changed.
+1. identify the touched file or reopened queue head
+2. prefer a real test for the missing branch
+3. if the branch is dead, remove it without changing behavior
+4. rerun focused proof
+5. rerun coverage proof only after the gap is actually closed
 
 ## Final Verification
 
-Before concluding a fix:
-
-1. Re-run the focused failing suite.
-2. Re-run neighboring impacted suite if behavior changed.
-3. Run `npm run lint`.
-4. If workflow/backlog changed, sync `test_todo_list.md` and related English docs; sync `test_improvement_plan.md` too when long-term context changed.
+- rerun the narrow failing scope
+- rerun neighboring suites if shared behavior changed
+- run `npm run lint`
+- update the owning testing docs only if workflow or state changed
