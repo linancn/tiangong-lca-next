@@ -1,6 +1,6 @@
 # AI Testing Guide – Tiangong LCA Next
 
-> Read this first for any test task. Start from `AGENTS.md`, then use this file as the short execution checklist. Mirror requirement: update `docs/agents/ai-testing-guide_CN.md` together with this file.
+> Read this first for any test task. Start from `AGENTS.md`, then use this file as the short execution checklist.
 
 ## Environment
 
@@ -143,4 +143,4 @@ GitHub PRs now run the same AI-doc maintenance gate through `.github/workflows/a
 - `npm run lint` passes.
 - Focused Jest commands pass.
 - No leaked handles in stubborn suites (`--detectOpenHandles` when needed).
-- If test workflow/backlog or baseline changed, sync `test_todo_list.md`; if long-term plan or baseline summary changed, sync `test_improvement_plan.md` too, plus `_CN` mirrors.
+- If test workflow/backlog or baseline changed, sync `test_todo_list.md`; if long-term plan or baseline summary changed, sync `test_improvement_plan.md` too.

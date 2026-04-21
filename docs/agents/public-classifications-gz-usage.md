@@ -1,7 +1,5 @@
 # `public/classifications` `.gz` Data Usage Guide
 
-Chinese mirror: `docs/public-classifications-gz-usage_CN.md`
-
 ## Quick Summary
 
 There are 8 `.gz` files under `public/classifications`. In the app, they are used at two layers:

@@ -1,6 +1,6 @@
 # Test Improvement Plan
 
-> Snapshot date: March 24, 2026. This file keeps long-term testing context and strategy. For the actionable day-to-day backlog, use `docs/agents/test_todo_list.md`. Mirror requirement: sync `docs/agents/test_improvement_plan_CN.md` with every change.
+> Snapshot date: March 24, 2026. This file keeps long-term testing context and strategy. For the actionable day-to-day backlog, use `docs/agents/test_todo_list.md`.
 
 ## Current Baseline
 

@@ -1,6 +1,6 @@
-# util_calculate (en-US)
+# util_calculate Reference
 
-> Agents: This English reference is canonical. Human readers can review `docs/agents/util_calculate_CN.md`; update both files together whenever logic or docs change.
+> Canonical reference for `genLifeCycleModelProcesses`, its helper pipeline, and the main data, edge cases, and side effects involved in life-cycle-model submodel generation.
 
 This document organizes the business logic and data flow of `genLifeCycleModelProcesses`, to help understand the overall process of generating/updating submodels for a life cycle model.
 
@@ -170,6 +170,49 @@ Notes:
   2. The allocated/non-allocated split in `allocatedProcess`;
   3. Whether the aggregation key (direction×flowId) in `sumProcessExchange` needs extension.
 
+## Key helper roles
+
+- `buildEdgesAndIndices(mdProcesses, dbProcessMap)`: build upstream→downstream edges plus the `edgesByDownstreamInput` and `edgesByUpstreamOutput` indices.
+- `assignEdgeDependence(up2DownEdges, edgesByDownstreamInput, edgesByUpstreamOutput, refProcessNodeId)`: start at the reference process and mark each edge with `dependence`, using `mainDependence` as the fallback when an edge is demoted to `none`.
+- `calculateScalingFactor(...)`: traverse both directions along `dependence` and propagate scaling by shared `flowUUID`.
+- `sumAmountByNodeId(processScalingFactors)`: aggregate scaling and exchanges per node, split into `main`, `secondary`, and `none` connection buckets.
+- `allocateSupplyToDemand(supplies, demands, edges, initialAllocations?, options?)`: solve same-flow supply/demand matching with optional `prioritizeBalance` and tolerance controls.
+- `normalizeRatio(num, den, eps)`: compute ratios while snapping near-0 and near-1 values to reduce floating noise.
+- `calculateProcess(process)`: scale grouped child-process exchanges by `childAllocatedFraction × childScalingPercentage`, except for the allocated reference exchange.
+- `sumProcessExchange(processExchanges)`: aggregate grouped exchanges and mark the quantitative reference.
+- `LCIAResultCalculation(newExchanges)`: compute LCIA on the final grouped exchange list.
+
+## Major data structures
+
+- Edge (`Up2DownEdge`, excerpt)
+  - `upstreamId`, `downstreamId`, `flowUUID`, `dependence`, `mainDependence`, `exchangeAmount`, `isBalanced`, `unbalancedAmount`
+- Node aggregation entry (`sumAmountNode`)
+  - `nodeId`, `scalingFactor`, `mainConnectExchanges`, `secondaryConnectExchanges`, `noneConnectExchanges`, `remainingExchanges`
+- Database process map entry (`DbProcessMapValue`, excerpt)
+  - `id`, `version`, `exchanges`
+  - `refExchangeMap.exchangeId`, `refExchangeMap.flowId`, `refExchangeMap.direction`, `refExchangeMap.refExchange`
+  - `exIndex.inputByFlowId`, `exIndex.outputByFlowId`
+- Allocation result
+  - `allocations[upKey][downKey] = amount`
+  - `remaining_supply`, `remaining_demand`, `total_delivered`
+  - tolerance comes from `max(tolerance, relTolerance * scale)`
+
+## Decision points and edge cases
+
+- Missing `referenceToReferenceProcess`: throw immediately and stop the pipeline.
+- Missing reference process in the database: throw `Reference process not found in database`.
+- Zero target amount or zero reference amount: the reference scaling factor falls back to `1`, and later stages handle zero amounts.
+- Tolerance selection matters:
+  - a tolerance that is too large can collapse valid tiny flows into zero allocation
+  - `relTolerance` helps preserve legitimate low-magnitude flows
+- Edge balancing depends on both delivered allocation and remaining supply/demand after write-back.
+- `dependence === 'none'` routes an edge into the secondary allocation channel.
+- Old submodels are reused only when `nodeId`, `processId`, `allocatedExchangeFlowId`, and `allocatedExchangeDirection` all match.
+
+## Output side effects
+
+- The function overwrites `lifeCycleModelInformation.technology.processes.processInstance[*].@multiplicationFactor` in `lifeCycleModelJsonOrdered`.
+
 ## Detailed method documentation (key helpers)
 
 The following methods are directly or indirectly used along the main pipeline of "graph → dependence → scaling → allocation → aggregation → LCIA", grouped by appearance and call relations.
@@ -276,6 +319,22 @@ graph TD
   J -->|yes| A
   J -->|no| K[Output collectedProcesses]
 ```
+
+### nextScaling(targetAmount, baseAmount, curSF)
+
+- Location: same as above
+- Purpose: compute the current edge amount and the next scaling factor: `exchangeAmount = targetAmount × curSF`, `nextScalingFactor = exchangeAmount / baseAmount`.
+- Returns: `{ exchangeAmount, nextScalingFactor }`
+- Numerical behavior:
+  - if `baseAmount` is `0`, return `{ 0, 0 }`
+  - if `targetAmount` or `curSF` is missing/zero, return `{ 0, 0 }`
+  - use `BigNumber` math to avoid precision drift during chained scaling
+
+### mergeExchangesById(prevList?, nextList?)
+
+- Location: same as above
+- Purpose: merge two exchange lists by `@dataSetInternalID` and sum `meanAmount` / `resultingAmount` without mutating the inputs.
+- Main caller: `sumAmountByNodeId`, when one node is reached multiple times and the exchange buckets must be coalesced.
 
 ### sumAmountByNodeId(processScalingFactors)
 
@@ -454,6 +513,38 @@ graph TD
   J --> K[Return]
 ```
 
+### LCIAResultCalculation(exchangeDataSource)
+
+- Location: `src/services/lciaMethods/util.ts`
+- Purpose: compute LCIA results from the grouped exchange list.
+- Runtime behavior:
+  1. load `list.json` and `flow_factors.json.gz` from the browser cache when available
+  2. if missing, fetch them from `/lciamethods/`, decompress `.json.gz`, and cache the parsed JSON
+  3. build a lookup keyed by `${flowId}:${direction}`
+  4. multiply `meanAmount` by the matching factor and aggregate by LCIA method
+  5. enrich the result rows with metadata from `list.json` and drop zero rows
+- Browser requirements:
+  - relies on IndexedDB through `browserResourceCache`
+  - relies on native `DecompressionStream` support when reading gzip payloads
+
+Flowchart:
+
+```mermaid
+graph TD
+  A[Input: newExchanges] --> B[Load list.json and flow_factors.json.gz from cache]
+  B --> C{Cache miss?}
+  C -->|yes| D[Fetch, decompress, parse, and cache]
+  C -->|no| E[Use cached JSON]
+  D --> F[Build factor lookup key=flowId:direction]
+  E --> F
+  A --> G[Match each exchange and compute amount x factor]
+  G --> H[Aggregate by LCIA method key]
+  B --> I[Fill method metadata from list.json]
+  H --> J[Build LCIAResultTable rows]
+  I --> J
+  J --> K[Return LCIAResults]
+```
+
 ### Common utilities (general/util)
 
 - `jsonToList(x)` / `listToJson(arr)`: convert between single-item and array structures (ILCD style compatible);
@@ -488,4 +579,9 @@ graph TD
   - `normalizeRatio` snaps ratios close to 0/1 to reduce floating noise propagation;
   - `allocateSupplyToDemand` returns zero allocation when total supply or demand does not exceed tolerance and keeps original amounts as remaining;
 - Competing connections: `assignEdgeDependence` keeps the main flow and sets others to `none` into the "secondary" allocation channel;
-- Primary reference alignment: when generating the primary submodel, set the exchange with the reference flow/direction to `modelTargetAmount` to ensure consistency with the model target.
+- Primary reference alignment:
+  - when generating the primary submodel, set the exchange with the reference flow/direction to `modelTargetAmount`
+  - if the primary reference exchange ends with `remainingRate` in `(0, 1)`, non-reference exchanges and LCIA rows are rescaled by `1 / remainingRate` after the reference exchange is pinned, so the primary group still matches the model target
+- Performance/stability choices:
+  - the implementation uses `Set` and `Map` heavily to avoid repeated graph scans
+  - `BigNumber` is used in scaling, remaining-rate, and amount calculations where precision drift would be hard to debug

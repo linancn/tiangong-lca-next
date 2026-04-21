@@ -1,6 +1,6 @@
 # Test Todo List
 
-> Source of truth for current testing execution status. While the repo stays at full closure, this file operates in maintenance mode rather than as an active backlog. Keep long-term context in `docs/agents/test_improvement_plan.md`. Mirror requirement: update `docs/agents/test_todo_list_CN.md` in the same change.
+> Source of truth for current testing execution status. While the repo stays at full closure, this file operates in maintenance mode rather than as an active backlog. Keep long-term context in `docs/agents/test_improvement_plan.md`.
 
 ## Scope (from AGENTS test requirements)
 
@@ -10,7 +10,7 @@ This backlog is aligned to `AGENTS.md` delivery rules:
 - run focused Jest suites,
 - ensure `npm run lint` passes,
 - keep docs in sync when workflow expectations change.
-- when testing workflow/baseline/backlog changes, sync `docs/agents/ai-testing-guide.md` and this file; if strategic context changes too, sync `docs/agents/test_improvement_plan.md` and `_CN` mirrors in the same diff.
+- when testing workflow/baseline/backlog changes, sync `docs/agents/ai-testing-guide.md` and this file; if strategic context changes too, sync `docs/agents/test_improvement_plan.md` in the same diff.
 
 ## Snapshot Baseline (March 24, 2026)
 

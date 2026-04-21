@@ -12,6 +12,18 @@
     "validationDoc": "ai/validation.md",
     "architectureDoc": "ai/architecture.md",
     "readmeDoc": "README.md",
+    "docLanguagePolicy": {
+      "defaultLanguage": "en",
+      "englishOnlyDocs": [
+        "AGENTS.md",
+        "ai/**",
+        "docs/agents/**"
+      ],
+      "readmeMirrors": [
+        "README_CN.md",
+        "docker/README.zh-CN.md"
+      ]
+    },
     "defaultBranch": "main",
     "dailyTrunk": "dev",
     "routinePrBase": "dev",

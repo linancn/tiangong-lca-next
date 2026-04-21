@@ -1,6 +1,6 @@
 # Testing Troubleshooting – Tiangong LCA Next
 
-> Use this file when tests fail, timeout, or hang. Read order: `AGENTS.md` -> `ai-testing-guide.md` -> this file. Mirror requirement: keep `docs/agents/testing-troubleshooting_CN.md` synchronized.
+> Use this file when tests fail, timeout, or hang. Read order: `AGENTS.md` -> `ai-testing-guide.md` -> this file.
 
 ## Command Matrix
 
@@ -90,4 +90,4 @@ Before concluding a fix:
 1. Re-run the focused failing suite.
 2. Re-run neighboring impacted suite if behavior changed.
 3. Run `npm run lint`.
-4. If workflow/backlog changed, sync `test_todo_list.md` and related docs (English + `_CN`); sync `test_improvement_plan.md` too when long-term context changed.
+4. If workflow/backlog changed, sync `test_todo_list.md` and related English docs; sync `test_improvement_plan.md` too when long-term context changed.

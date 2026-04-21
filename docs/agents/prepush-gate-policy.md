@@ -1,6 +1,6 @@
 # Pre-Push Gate Policy – Tiangong LCA Next
 
-> This file defines the intended `prepush:gate` trigger policy for this repository. Until the hook and CI changes land, `AGENTS.md` and the existing testing docs remain the runtime source of truth for the current behavior. Mirror requirement: update `docs/agents/prepush-gate-policy_CN.md` together with this file.
+> This file defines the intended `prepush:gate` trigger policy for this repository. Until the hook and CI changes land, `AGENTS.md` and the existing testing docs remain the runtime source of truth for the current behavior.
 
 ## Goal
 

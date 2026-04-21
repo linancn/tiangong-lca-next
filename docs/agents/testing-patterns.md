@@ -1,6 +1,6 @@
 # Testing Patterns Reference – Tiangong LCA Next
 
-> Use this file only when you are actively writing/refactoring tests. Read order: `AGENTS.md` -> `ai-testing-guide.md` -> this file. Mirror requirement: keep `docs/agents/testing-patterns_CN.md` synchronized.
+> Use this file only when you are actively writing/refactoring tests. Read order: `AGENTS.md` -> `ai-testing-guide.md` -> this file.
 
 ## Purpose
 
@@ -307,4 +307,4 @@ No silent skipped tests.
 - `npm run lint` passed.
 - Focused Jest suite(s) passed.
 - Async leaks investigated when needed (`--detectOpenHandles`).
-- English + `_CN` docs synchronized if testing workflow changed.
+- Relevant testing docs updated if the testing workflow changed.

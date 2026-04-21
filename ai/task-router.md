@@ -47,6 +47,8 @@ When working inside `tiangong-lca-next`, load docs in this order:
 4. `ai/validation.md` or `ai/architecture.md`
 5. the narrow deep doc that matches the task
 
+Use the English doc set under `AGENTS.md`, `ai/**`, and `docs/agents/**`. Chinese mirrors are retained only for `README_CN.md` and `docker/README.zh-CN.md`.
+
 ## High-Frequency Task Routing
 
 | Task intent | First code paths to inspect | Next docs to load | Notes |
@@ -61,7 +63,7 @@ When working inside `tiangong-lca-next`, load docs in this order:
 | Change public documentation only | `tiangong-lca-next-docs`, not this repo | root `ai/task-router.md` | Product docs-site content lives in `next-docs`. |
 | Change schema, migration, or Supabase branch truth | `database-engine`, not this repo | root `ai/task-router.md`, `database-engine/AGENTS.md` | This repo consumes that truth. |
 | Change Edge Function runtime or API orchestration | `edge-functions`, not this repo | root `ai/task-router.md`, `tiangong-lca-edge-functions/AGENTS.md` | Do not paper over runtime issues only in the frontend. |
-| Change repo-local AI-doc maintenance only | `AGENTS.md`, `ai/**`, `.github/workflows/ai-doc-lint.yml`, `.github/scripts/ai-doc-lint.*` | `ai/validation.md` when present, otherwise `ai/repo.yaml` | Keep the repo-local maintenance gate aligned with root `ai/ci-lint-spec.md` and `ai/review-matrix.md`. |
+| Change repo-local AI-doc maintenance only | `AGENTS.md`, `ai/**`, `docs/agents/**`, `.github/workflows/ai-doc-lint.yml`, `.github/scripts/ai-doc-lint.*` | `ai/validation.md` when present, otherwise `ai/repo.yaml` | Keep the repo-local maintenance gate aligned with root `ai/ci-lint-spec.md` and `ai/review-matrix.md`; only README surfaces keep Chinese mirrors. |
 | Decide whether work is delivery-complete after merge | root workspace docs, not repo code paths | root `AGENTS.md`, `_docs/workspace-branch-policy-contract.md` | Root integration remains a separate phase. |
 
 ## Wrong Turns To Avoid

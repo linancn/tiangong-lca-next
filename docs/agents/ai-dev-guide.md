@@ -1,6 +1,6 @@
 # AI Development Spec – Tiangong LCA Next
 
-> Canonical execution doc for development tasks. Start from `AGENTS.md`, then open this file only when implementing or refactoring product code. Mirror requirement: keep `docs/agents/ai-dev-guide_CN.md` in sync whenever this file changes.
+> Canonical execution doc for development tasks. Start from `AGENTS.md`, then open this file only when implementing or refactoring product code.
 
 ## Environment & Guardrails
 
@@ -79,11 +79,11 @@ Keep behavior aligned with existing feature implementations.
 - `npm run lint` must pass.
 - Run focused Jest suites relevant to changed files.
 - Supabase edge-function payload shape changes must include unit tests in `tests/unit/services/**`.
-- When test engineering changes, sync `docs/agents/test_todo_list.md`; if the long-term testing plan or baseline summary changes too, sync `docs/agents/test_improvement_plan.md` and the related testing docs plus `_CN` mirrors.
+- When test engineering changes, sync `docs/agents/test_todo_list.md`; if the long-term testing plan or baseline summary changes too, sync `docs/agents/test_improvement_plan.md` and the related testing docs in the same diff.
 
 ## Delivery Rules
 
 - Keep diffs focused on the target feature.
 - Routine feature and fix PRs target `dev`; use `main` only for promotion, production verification, or hotfix work.
 - Update docs when behavior/workflow/commands change.
-- If the changed behavior affects other teams, update both English and `_CN` docs in the same commit.
+- If the changed behavior affects other teams, update the affected docs in the same commit.
