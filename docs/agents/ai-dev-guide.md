@@ -1,89 +1,76 @@
-# AI Development Spec – Tiangong LCA Next
+# Development Execution Guide
 
-> Canonical execution doc for development tasks. Start from `AGENTS.md`, then open this file only when implementing or refactoring product code. Mirror requirement: keep `docs/agents/ai-dev-guide_CN.md` in sync whenever this file changes.
+> Purpose: shortest reliable execution path for implementation and refactor work in this repo.
 
-## Environment & Guardrails
+## Use When
 
-- Node.js **>= 24** (`nvm use 24`) before install/build/test.
-- Frontend Supabase envs are provided through `.env` and `.env.development`; use `npm start` as the default shared-`dev` entry point, keep `npm run start:dev` as the equivalent explicit dev alias, and use `npm run start:main` only when the task explicitly requires `main`. Read them only through `src/services/supabase`.
-- Database-triggered Edge Function calls do not read those frontend env files. Standard webhook auth depends on the branch's Vault secrets `project_url` and `project_secret_key`; legacy `generate_flow_embedding()` compatibility additionally depends on `project_x_key`. See `docs/agents/supabase-branching.md`.
-- For branch selection, local-vs-remote database usage, and schema workflow, follow `docs/agents/supabase-branching.md`.
-- This repository keeps GitHub default branch `main` as a platform exception, but routine feature and fix work starts from Git `dev`, PRs target `dev`, and `dev -> main` is the promotion path.
-- No new npm dependencies without human approval.
-- Service-first architecture: extend `src/services/<feature>/{data,api,util}.ts` first, then page/UI.
+- changing shipped frontend behavior
+- refactoring app-side service logic
+- updating route, page, component, locale, or static-resource consumers
 
-## Minimal Dev Commands
+## Do Not Use For
+
+- deciding repo ownership or branch facts
+- deciding minimum proof for a finished change
+- deep domain references such as calculation internals
+
+## Required Inputs
+
+- changed behavior
+- owning paths
+- affected data source or upstream repo boundary
+- affected test surface
+
+## Guardrails
+
+- use Node `24`
+- use `npm`
+- no new npm dependencies without approval
+- app-side data access belongs in `src/services/**`
+- routine work starts from `dev` and targets `dev`
+- update locale keys in both `src/locales/en-US.ts` and `src/locales/zh-CN.ts` when UI copy changes
+
+## Execution Order
+
+1. inspect nearby code and tests with `rg`
+2. confirm the owning layer and owning repo
+3. implement service or utility changes before page wiring when both are involved
+4. keep React components focused on orchestration
+5. add or update tests with the change
+6. update the owning document if behavior, commands, or rules changed
+7. run focused proof, then run repo-level proof as required
+
+## Command Shortlist
 
 ```bash
 npm install
 npm start
-npm run start:dev
-npm run start:main
 npm run lint
-npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+npm run test:ci -- <jest-args>
 npm run build
+npm run prepush:gate
 ```
 
-## Read-on-Demand Sections
+## UI And Data Rules
 
-1. Routing/menu changes
-   - `config/routes.ts`
-2. Shared table/drawer page patterns
-   - `src/pages/Processes/**`
-3. Complex lifecycle-model math
-   - `docs/agents/util_calculate.md`
-4. Testing and verification details
-   - `docs/agents/ai-testing-guide.md`
+- reuse existing shared components before creating new abstractions
+- prefer Ant Design components, tokens, and existing project patterns over one-off styling
+- keep environment selection in config and service layers, not in page logic
+- do not create ad-hoc Supabase clients outside `src/services/**`
 
-## Architecture Contract
+## Required Doc Updates
 
-- Runtime: React 18 + `@umijs/max` 4 + Ant Design Pro + TypeScript.
-- Entry points:
-  - `src/app.tsx` for runtime/layout config.
-  - `config/routes.ts` for routing/menu.
-- Data boundary:
-  - Supabase access only in `src/services/**`.
-  - Page/components consume typed service APIs.
+- runtime fact or hard boundary changed: update `AGENTS.md` and `ai/repo.yaml`
+- task routing changed: update `ai/task-router.md`
+- proof rule changed: update `ai/validation.md`
+- development workflow changed: update this file
+- narrow domain rule changed: update the domain reference that owns it
 
-## Feature Implementation Workflow
+## Done
 
-1. Investigate first (`rg`, similar feature, existing tests).
-2. Add/update types in `data.ts`.
-3. Add/update queries and orchestration in `api.ts`.
-4. Keep pure transforms/calculation in `util.ts`.
-5. Wire UI in `src/pages/<Feature>/index.tsx` + `Components/`.
-6. Reuse shared components from `src/components/**`.
-7. Add/adjust tests and run verification gates.
-
-## UI & i18n Rules
-
-- Use React function components.
-- Keep table/list workflow consistent: table -> toolbar -> drawer/modal form.
-- All user-visible strings must use i18n (`FormattedMessage`, `intl.formatMessage`).
-- Add locale keys in both `src/locales/en-US.ts` and `src/locales/zh-CN.ts`.
-
-## Data-Source Behavior (Important)
-
-Common data-source branches in list APIs:
-
-- `tg`: default public/published path.
-- `co`: contributed/shared path.
-- `my`: current-user scoped path (requires session).
-- `te`: team-scoped path (resolve team context first).
-
-Keep behavior aligned with existing feature implementations.
-
-## Quality Gates
-
-- Add tests covering changed behavior.
-- `npm run lint` must pass.
-- Run focused Jest suites relevant to changed files.
-- Supabase edge-function payload shape changes must include unit tests in `tests/unit/services/**`.
-- When test engineering changes, sync `docs/agents/test_todo_list.md`; if the long-term testing plan or baseline summary changes too, sync `docs/agents/test_improvement_plan.md` and the related testing docs plus `_CN` mirrors.
-
-## Delivery Rules
-
-- Keep diffs focused on the target feature.
-- Routine feature and fix PRs target `dev`; use `main` only for promotion, production verification, or hotfix work.
-- Update docs when behavior/workflow/commands change.
-- If the changed behavior affects other teams, update both English and `_CN` docs in the same commit.
+- changed behavior implemented in the correct layer
+- affected tests updated
+- `npm run lint` passed
+- focused proof passed
+- `npm run build` passed when shipped behavior or assets changed
+- docs updated only in their owning locations
