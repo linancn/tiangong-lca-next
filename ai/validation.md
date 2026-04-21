@@ -7,11 +7,11 @@ authoritative: false
 owner: next
 language: en
 whenToUse:
-  - when a tiangong-lca-next change is ready for local validation
-  - when deciding the minimum proof required for page, service, test, or asset changes
-  - when writing PR validation notes for tiangong-lca-next work
+  - when a change is ready for local proof
+  - when deciding the minimum evidence required for a PR
+  - when writing validation notes for this repo
 whenToUpdate:
-  - when the repo gains new canonical commands or gate expectations
+  - when canonical commands or quality gates change
   - when change categories require different proof
   - when coverage or deploy policy changes
 checkPaths:
@@ -21,12 +21,8 @@ checkPaths:
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-  - config/**
-  - src/**
-  - public/**
-  - docker/**
-lastReviewedAt: 2026-04-18
-lastReviewedCommit: 002be46cbcb8a650c30a0b8962defa50a4c8be93
+lastReviewedAt: 2026-04-21
+lastReviewedCommit: 25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8
 related:
   - ../AGENTS.md
   - ./repo.yaml
@@ -35,9 +31,16 @@ related:
   - ../docs/agents/ai-testing-guide.md
 ---
 
+## Validation Order
+
+1. identify the change type
+2. run the minimum proof for that change type
+3. add stronger proof only when the risk actually increases
+4. record exact commands and environments in the PR
+
 ## Default Baseline
 
-Unless the change is doc-only AI-contract work, the minimum local baseline is:
+Unless the change is doc-only repo-maintenance work, the minimum local baseline is:
 
 ```bash
 npm run lint
@@ -45,28 +48,29 @@ npm test
 npm run build
 ```
 
-For protected-branch parity, the authoritative full gate is:
+The authoritative protected-branch gate is:
 
 ```bash
 npm run prepush:gate
 ```
 
-## Validation Matrix
+## Proof Matrix
 
-| Change type | Minimum local proof | Additional proof when risk is higher | Notes |
+| Change type | Minimum local proof | Stronger proof when risk is higher | Notes |
 | --- | --- | --- | --- |
-| `config/routes.ts`, `src/app.tsx`, `src/pages/**`, or `src/components/**` | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | run `npm run prepush:gate` before PR or when the change affects shared UX flows broadly | Route and shared UI changes usually affect multiple entrypoints. |
-| `src/services/**` or `config/supabaseEnv.ts` | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | run `npm run prepush:gate` when the change affects shared data access or auth flow | If the issue depends on schema or Edge runtime truth, record the companion repo proof separately. |
-| `public/**` static resource bundles | `npm run lint`; `npm run build` | run focused tests or one nearby feature suite if the asset change affects parsing or cache behavior | Review both assets and consuming services together. |
-| `docker/**` sync helpers or mirrors | `npm run lint`; `npm run build` | run the specific sync helper only when the task explicitly includes it; never hand-edit mirrors | `docker/volumes/functions/**` is a synced mirror, not an edit surface. |
-| tests, coverage, or gate scripts | `npm run lint`; `npm test`; `npm run test:coverage`; `npm run test:coverage:assert-full` | run `npm run prepush:gate` when the protected-branch gate changed directly | Coverage remains `100%` for `src/**/*.ts`. |
-| AI docs only | run repo-local `ai-doc-lint` against touched files or the equivalent local PR check | do one scenario-based routing check from root into this repo | Refresh review metadata even when prose-only docs change. |
+| routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints |
+| services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
+| static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |
+| sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
+| tests, coverage, or gate scripts | `npm run lint`; `npm test`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
+| repo docs only | repo-local `ai-doc-lint` against touched files | one routing sanity check through the updated docs | still update review metadata and ownership as needed |
 
-## Minimum PR Note Quality
+## Minimum PR Validation Note
 
-A good PR note for this repo should say:
+Every PR note for this repo must state:
 
-1. which commands ran
-2. which focused suites covered the touched feature area
-3. whether the full protected-branch gate ran or was intentionally deferred
-4. whether any required database-engine or edge-functions proof lives elsewhere
+1. exact commands run
+2. exact focused suites, if any
+3. exact environments checked
+4. whether `npm run prepush:gate` ran
+5. whether any required proof lives in another repo

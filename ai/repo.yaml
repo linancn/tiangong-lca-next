@@ -1,17 +1,32 @@
 {
   "version": 1,
-  "lastReviewedAt": "2026-04-18",
-  "lastReviewedCommit": "002be46cbcb8a650c30a0b8962defa50a4c8be93",
+  "lastReviewedAt": "2026-04-21",
+  "lastReviewedCommit": "25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8",
   "repo": {
     "id": "next",
     "path": "tiangong-lca-next",
     "canonicalRepo": "linancn/tiangong-lca-next",
     "purpose": "Shipped frontend and product UI repository for TianGong LCA.",
     "entryDoc": "AGENTS.md",
+    "bootstrapDoc": "DEV.md",
     "taskRouterDoc": "ai/task-router.md",
     "validationDoc": "ai/validation.md",
     "architectureDoc": "ai/architecture.md",
     "readmeDoc": "README.md",
+    "docLanguagePolicy": {
+      "defaultLanguage": "en",
+      "englishOnlyDocs": [
+        "AGENTS.md",
+        "DEV.md",
+        "ai/**",
+        "docs/agents/**",
+        ".github/PULL_REQUEST_TEMPLATE/*.md"
+      ],
+      "readmeMirrors": [
+        "README_CN.md",
+        "docker/README.zh-CN.md"
+      ]
+    },
     "defaultBranch": "main",
     "dailyTrunk": "dev",
     "routinePrBase": "dev",
@@ -40,6 +55,48 @@
       "deployFacts": [
         "main pushes deploy the web app build",
         "v* tags build draft Electron releases"
+      ]
+    },
+    "documentationSystem": {
+      "goal": "Low-entropy, single-source, executable documentation.",
+      "principles": [
+        "one rule has one owning document",
+        "one document has one primary job",
+        "put purpose, rules, steps, and boundaries before explanation",
+        "remove redundant or non-operational prose",
+        "prefer exact conditions and exact actions",
+        "document only commands that run as written",
+        "make rules and results verifiable"
+      ],
+      "owners": [
+        {
+          "path": "AGENTS.md",
+          "role": "repo contract and documentation principles"
+        },
+        {
+          "path": "DEV.md",
+          "role": "local bootstrap and shortest work loop"
+        },
+        {
+          "path": "ai/task-router.md",
+          "role": "task routing"
+        },
+        {
+          "path": "ai/validation.md",
+          "role": "proof matrix"
+        },
+        {
+          "path": "ai/architecture.md",
+          "role": "repo mental model"
+        },
+        {
+          "path": "docs/agents/ai-dev-guide.md",
+          "role": "development execution guide"
+        },
+        {
+          "path": "docs/agents/ai-testing-guide.md",
+          "role": "testing execution guide"
+        }
       ]
     },
     "sourceOfTruth": {

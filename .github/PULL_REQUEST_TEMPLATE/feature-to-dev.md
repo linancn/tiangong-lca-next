@@ -1,26 +1,25 @@
 ## Branch Contract
 
-- Base branch: `dev`
-- Validated environment: `dev` / `main` / `local Supabase`
-- Back-merge required after merge?: `No` / `Yes (explain)`
-- Root workspace integration expected?: `No` / `Yes (explain)`
+- base branch: `dev`
+- validated environment: `dev` / `main` / `local Supabase`
+- back-merge required after merge: `No` / `Yes (explain)`
+- root workspace integration expected: `No` / `Yes (explain)`
 
-- [ ] This PR targets `dev`.
-- [ ] I confirm this repo's GitHub default branch may still appear as `main`, but routine feature and fix PRs must target `dev`.
-- [ ] If this change actually started from `main`, I documented why this is a hotfix or production-only exception.
+- [ ] this PR targets `dev`
+- [ ] if the work started from `main`, this PR documents why it is a hotfix or production-only exception
 
 ## Linked Issue
 
 Closes #
 
-## Summary
+## Change Facts
 
-<!-- What changed and why? -->
+<!-- Changed paths, behavior change, and reason. Keep this factual and short. -->
 
-## Validation
+## Validation Facts
 
-<!-- Commands run, environments checked, screenshots, preview links, or notes. -->
+<!-- Exact commands, exact environment, exact evidence. -->
 
-## Risks / Follow-up
+## Risks And Follow-Up
 
 <!-- Rollback notes, back-merge notes, root integration notes, or follow-up issues. -->
