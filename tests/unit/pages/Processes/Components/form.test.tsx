@@ -477,12 +477,21 @@ describe('ProcessForm component', () => {
       fieldPath: 'exchange[#row-0].generalComment.0.#text',
       reasonMessage: 'Text length 520 exceeds maximum 500',
     };
+    const sdkValidationDetailSameExchange = {
+      key: 'sdk-row-0-mean',
+      tabName: 'exchanges',
+      exchangeInternalId: 'row-0',
+      fieldKey: 'meanAmount',
+      fieldLabel: 'Mean amount',
+      fieldPath: 'exchange[#row-0].meanAmount',
+      reasonMessage: 'Expected string but found undefined',
+    };
 
     render(
       <ProcessForm
         {...defaultProps}
         activeTabKey='exchanges'
-        sdkValidationDetails={[sdkValidationDetail]}
+        sdkValidationDetails={[sdkValidationDetail, sdkValidationDetailSameExchange]}
         sdkValidationFocus={sdkValidationDetail}
       />,
     );
@@ -492,11 +501,14 @@ describe('ProcessForm component', () => {
     await waitFor(() => {
       expect(mockProcessExchangeEdit).toHaveBeenCalledWith(
         expect.objectContaining({
-          autoOpen: true,
-          sdkHighlights: [expect.objectContaining({ key: 'sdk-row-0' })],
+          sdkHighlights: [
+            expect.objectContaining({ key: 'sdk-row-0' }),
+            expect.objectContaining({ key: 'sdk-row-0-mean' }),
+          ],
         }),
       );
     });
+    expect(mockProcessExchangeEdit.mock.calls.at(-1)?.[0]?.autoOpen).toBeUndefined();
 
     const [inputTable] = await getLatestExchangeTables();
     const rowClassName = inputTable.rowClassName;

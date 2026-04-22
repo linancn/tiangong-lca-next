@@ -137,13 +137,25 @@ export const ProcessForm: FC<Props> = ({
 
   const { token } = theme.useToken();
 
-  const sdkValidationCountsByTab = sdkValidationDetails.reduce<Record<string, number>>(
+  const sdkValidationCountsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
     (accumulator, detail) => {
       if (!detail.tabName) {
         return accumulator;
       }
 
-      accumulator[detail.tabName] = (accumulator[detail.tabName] ?? 0) + 1;
+      const uniqueCountKey = detail.exchangeInternalId
+        ? `exchange:${detail.exchangeInternalId}`
+        : detail.fieldPath
+          ? `field:${detail.fieldPath}`
+          : detail.fieldKey
+            ? `fieldKey:${detail.fieldKey}`
+            : `detail:${detail.key}`;
+
+      if (!accumulator[detail.tabName]) {
+        accumulator[detail.tabName] = new Set<string>();
+      }
+
+      accumulator[detail.tabName].add(uniqueCountKey);
       return accumulator;
     },
     {},
@@ -164,7 +176,7 @@ export const ProcessForm: FC<Props> = ({
   }, {});
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const issueCount = sdkValidationCountsByTab[key] ?? 0;
+    const issueCount = sdkValidationCountsByTab[key]?.size ?? 0;
     const hasIssue = issueCount > 0;
 
     return (
@@ -257,10 +269,6 @@ export const ProcessForm: FC<Props> = ({
               setViewDrawerVisible={() => {}}
               showRules={showRules}
               sdkHighlights={rowSdkHighlights}
-              autoOpen={
-                activeTabKey === 'exchanges' &&
-                sdkValidationFocus?.exchangeInternalId === row.dataSetInternalID
-              }
               disabled={actionFrom === 'modelResult'}
             />
             <ProcessExchangeDelete
