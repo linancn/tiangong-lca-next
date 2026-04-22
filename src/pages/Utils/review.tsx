@@ -105,6 +105,16 @@ type ReffPathNode = {
 export type ProblemNode = ReffPathNode;
 
 type SdkValidationIssue = {
+  code?: string;
+  errors?: unknown;
+  exact?: boolean;
+  expected?: string;
+  format?: string;
+  input?: unknown;
+  maximum?: number;
+  message?: string;
+  minimum?: number;
+  origin?: string;
   path: PropertyKey[];
 };
 
@@ -131,6 +141,24 @@ export type ValidationIssue = {
   tabName?: string | null;
   tabNames?: string[];
   underReviewVersion?: string;
+  sdkDetails?: ValidationIssueSdkDetail[];
+};
+
+export type ValidationIssueSdkDetail = {
+  actual?: number | string;
+  exchangeDirection?: string;
+  exchangeFlowId?: string;
+  exchangeFlowLabel?: string;
+  exchangeIndex?: number;
+  exchangeInternalId?: string;
+  fieldKey?: string;
+  fieldLabel: string;
+  fieldPath: string;
+  key: string;
+  limit?: number | string;
+  reasonMessage: string;
+  suggestedFix?: string;
+  tabName?: string;
 };
 
 const getValidationIssueRefKey = (ref: refDataType) =>
@@ -467,7 +495,18 @@ const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
 
   return {
     success: false,
-    issues: result.error?.issues ?? [],
+    issues: Array.isArray(result.error?.issues)
+      ? result.error.issues.map(
+          (issue: Partial<SdkValidationIssue> & { path?: PropertyKey[] | string }) => ({
+            ...issue,
+            path: Array.isArray(issue.path)
+              ? issue.path
+              : typeof issue.path === 'string'
+                ? [issue.path]
+                : [],
+          }),
+        )
+      : [],
   };
 };
 
@@ -575,6 +614,7 @@ export const buildValidationIssues = ({
   rootRef,
   datasetSdkValid,
   sdkInvalidTabNames = [],
+  sdkInvalidDetails = [],
   nonExistentRef = [],
   problemNodes = [],
   actionFrom = 'checkData',
@@ -582,6 +622,7 @@ export const buildValidationIssues = ({
 }: {
   actionFrom?: 'checkData' | 'review';
   datasetSdkValid: boolean;
+  sdkInvalidDetails?: ValidationIssueSdkDetail[];
   sdkInvalidTabNames?: string[];
   nonExistentRef?: refDataType[];
   problemNodes?: Array<
@@ -602,6 +643,7 @@ export const buildValidationIssues = ({
       code: 'sdkInvalid',
       link: getDatasetDetailUrl(rootRef),
       ref: rootRef,
+      sdkDetails: sdkInvalidDetails,
       tabNames: sdkInvalidTabNames.filter(
         (tabName, index) => sdkInvalidTabNames.indexOf(tabName) === index,
       ),

@@ -242,6 +242,16 @@ describe('review helper coverage', () => {
     const issues = buildValidationIssues({
       actionFrom: 'review',
       datasetSdkValid: false,
+      sdkInvalidDetails: [
+        {
+          key: 'sdk-detail-1',
+          tabName: 'validation',
+          fieldKey: 'generalComment',
+          fieldLabel: 'Comment',
+          fieldPath: 'process.validation.generalComment',
+          reasonMessage: 'Text length 520 exceeds maximum 500',
+        },
+      ],
       sdkInvalidTabNames: ['validation', 'validation', 'compliance'],
       nonExistentRef: [
         {
@@ -298,6 +308,16 @@ describe('review helper coverage', () => {
         code: 'sdkInvalid',
         link: 'http://localhost:8000/#/mydata/models?id=model-1&version=01.00.000&required=1',
         ref: rootRef,
+        sdkDetails: [
+          {
+            key: 'sdk-detail-1',
+            tabName: 'validation',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'process.validation.generalComment',
+            reasonMessage: 'Text length 520 exceeds maximum 500',
+          },
+        ],
         tabNames: ['validation', 'compliance'],
       },
       {
@@ -847,11 +867,11 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: undefined }],
+      issues: [{ path: [] }],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
-      issues: [{ path: undefined }],
+      issues: [{ path: [] }],
     });
   });
 

@@ -567,4 +567,43 @@ describe('ProcessExchangeEdit', () => {
       expect(onData).toHaveBeenCalledWith([{}, defaultProps.data[1]]);
     });
   });
+
+  it('auto opens and renders sdk field highlights for the targeted exchange issue', async () => {
+    const scrollIntoView = jest.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-highlight-1',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'exchange[#0].generalComment.0.#text',
+            reasonMessage: 'Text length 520 exceeds maximum 500',
+            suggestedFix: 'Shorten this comment to 500 characters or fewer.',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('sdk-highlight-generalComment')).toBeInTheDocument();
+    expect(screen.getByText(/Text length 520 exceeds maximum 500/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Shorten this comment to 500 characters or fewer\./),
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(scrollIntoView).toHaveBeenCalled();
+    });
+  });
 });

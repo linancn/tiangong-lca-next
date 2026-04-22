@@ -1,7 +1,11 @@
 import AISuggestion from '@/components/AISuggestion';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
-import type { ProblemNode, refDataType } from '@/pages/Utils/review';
+import {
+  getProcessSdkIssueTabName,
+  normalizeProcessSdkValidationDetails,
+} from '@/pages/Processes/sdkValidation';
+import type { ProblemNode, ValidationIssueSdkDetail, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   buildValidationIssues,
@@ -70,20 +74,6 @@ const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSe
   return Array.isArray(reference) ? reference[0] : reference;
 };
 
-type SdkValidationIssueLike = {
-  path: PropertyKey[];
-};
-
-const getProcessSdkIssueTabName = (issue: SdkValidationIssueLike) => {
-  const section = typeof issue.path?.[1] === 'string' ? issue.path[1] : undefined;
-
-  if (section === 'processInformation' && issue.path?.[2] === 'quantitativeReference') {
-    return 'exchanges';
-  }
-
-  return section;
-};
-
 const cloneProcessData = (data?: FormProcessWithDatas) => {
   if (!data) {
     return undefined;
@@ -133,6 +123,10 @@ const ProcessEdit: FC<Props> = ({
   const [originJson, setOriginJson] = useState<ProcessDetailData['json']>({});
   const aiSuggestionDataRef = useRef<ProcessDetailData['json']>();
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
+  const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
+  const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
+    null,
+  );
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
@@ -511,6 +505,23 @@ const ProcessEdit: FC<Props> = ({
     return undefined;
   };
 
+  const handleValidationIssueNavigate = (target: {
+    detail?: ValidationIssueSdkDetail;
+    tabName?: string;
+  }) => {
+    if (target.detail?.tabName) {
+      setActiveTabKey(target.detail.tabName as TabKeysType);
+      setSdkValidationFocus(target.detail);
+      return;
+    }
+
+    if (target.tabName) {
+      setActiveTabKey(target.tabName as TabKeysType);
+    }
+
+    setSdkValidationFocus(null);
+  };
+
   const handleCheckData = async (
     from: 'review' | 'checkData',
     processDetail: ProcessCheckTarget,
@@ -539,13 +550,19 @@ const ProcessEdit: FC<Props> = ({
     const orderedJson = genProcessJsonOrdered(id, processDetail);
     const sdkValidation = validateDatasetWithSdk('process data set', orderedJson);
     const sdkIssues = sdkValidation.issues;
+    const sdkIssueDetails = normalizeProcessSdkValidationDetails(sdkIssues, orderedJson);
     let currentDatasetValid = sdkValidation.success;
     const errTabNames: string[] = [];
     const currentDatasetTabNames: string[] = [];
     let datasetValidationMessage: string | null = null;
 
+    setSdkValidationDetails(sdkIssueDetails);
+    if (sdkIssueDetails.length === 0) {
+      setSdkValidationFocus(null);
+    }
+
     sdkIssues.forEach((item) => {
-      const tabName = getProcessSdkIssueTabName(item as SdkValidationIssueLike);
+      const tabName = getProcessSdkIssueTabName(item);
       if (tabName && !errTabNames.includes(tabName)) {
         errTabNames.push(tabName);
       }
@@ -621,6 +638,7 @@ const ProcessEdit: FC<Props> = ({
       nonExistentRef,
       problemNodes,
       rootRef,
+      sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
@@ -694,6 +712,7 @@ const ProcessEdit: FC<Props> = ({
       showValidationIssueModal({
         intl,
         issues: validationIssuesWithOwner,
+        onNavigate: handleValidationIssueNavigate,
         title: intl.formatMessage({
           id:
             from === 'review'
@@ -821,6 +840,7 @@ const ProcessEdit: FC<Props> = ({
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
+    setSdkValidationFocus(null);
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
@@ -844,6 +864,8 @@ const ProcessEdit: FC<Props> = ({
     if (!drawerVisible) {
       setShowRules(false);
       setRefCheckData([]);
+      setSdkValidationDetails([]);
+      setSdkValidationFocus(null);
       setAutoCheckTriggered(false);
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
@@ -1068,16 +1090,18 @@ const ProcessEdit: FC<Props> = ({
               <ProcessForm
                 lang={lang}
                 activeTabKey={activeTabKey}
+                actionFrom={actionFrom}
+                exchangeDataSource={exchangeDataSource}
                 formRef={formRefEdit}
+                lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
                 onData={handletFromData}
                 onExchangeData={handletExchangeData}
                 onExchangeDataCreate={handletExchangeDataCreate}
-                onTabChange={(key) => onTabChange(key as TabKeysType)}
-                exchangeDataSource={exchangeDataSource}
-                actionFrom={actionFrom}
-                showRules={showRules}
-                lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
                 onLciaResults={handleLciaResults}
+                onTabChange={(key) => onTabChange(key as TabKeysType)}
+                sdkValidationDetails={sdkValidationDetails}
+                sdkValidationFocus={sdkValidationFocus}
+                showRules={showRules}
               />
               <Form.Item name='id' hidden>
                 <Input />

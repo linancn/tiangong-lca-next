@@ -467,6 +467,52 @@ describe('ProcessForm component', () => {
     ).toBe('');
   });
 
+  it('shows sdk tab counts and marks focused exchange rows for sdk validation findings', async () => {
+    const sdkValidationDetail = {
+      key: 'sdk-row-0',
+      tabName: 'exchanges',
+      exchangeInternalId: 'row-0',
+      fieldKey: 'generalComment',
+      fieldLabel: 'Comment',
+      fieldPath: 'exchange[#row-0].generalComment.0.#text',
+      reasonMessage: 'Text length 520 exceeds maximum 500',
+    };
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='exchanges'
+        sdkValidationDetails={[sdkValidationDetail]}
+        sdkValidationFocus={sdkValidationDetail}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Exchanges (1)' })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockProcessExchangeEdit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          autoOpen: true,
+          sdkHighlights: [expect.objectContaining({ key: 'sdk-row-0' })],
+        }),
+      );
+    });
+
+    const [inputTable] = await getLatestExchangeTables();
+    const rowClassName = inputTable.rowClassName;
+
+    expect(
+      rowClassName({
+        dataSetInternalID: 'row-0',
+        referenceToFlowDataSetId: 'flow-2',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: 1,
+        dataDerivationTypeStatus: 'ok',
+      }),
+    ).toBe('sdk-error-row sdk-focus-row');
+  });
+
   it('disables exchange actions when actionFrom is modelResult', async () => {
     render(
       <ProcessForm

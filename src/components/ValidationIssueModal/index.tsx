@@ -1,4 +1,4 @@
-import { ValidationIssue } from '@/pages/Utils/review';
+import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -45,30 +45,37 @@ const getDatasetTabMessageId = (type: string, tabName: string) => {
   }
 };
 
+const getValidationIssueTabLabel = (
+  intl: IntlShapeLike,
+  issue: Pick<ValidationIssue, 'ref'>,
+  tabName: string,
+) => {
+  const messageId = getDatasetTabMessageId(issue.ref['@type'], tabName);
+
+  return intl.formatMessage({
+    id: messageId || tabName,
+    defaultMessage: tabName,
+  });
+};
+
 const getValidationIssueTabLabels = (intl: IntlShapeLike, issue: ValidationIssue) => {
   const tabNames = (issue.tabNames ?? []).filter(
     (tabName, index, allTabNames) => tabName && allTabNames.indexOf(tabName) === index,
   );
 
-  return tabNames
-    .map((tabName) => {
-      const messageId = getDatasetTabMessageId(issue.ref['@type'], tabName);
-
-      return intl.formatMessage({
-        id: messageId || tabName,
-        defaultMessage: tabName,
-      });
-    })
-    .join('，');
+  return tabNames.map((tabName) => getValidationIssueTabLabel(intl, issue, tabName)).join('，');
 };
+
+const getSdkInvalidIssueLabel = (intl: IntlShapeLike) =>
+  intl.formatMessage({
+    id: 'pages.validationIssues.issue.sdkInvalid',
+    defaultMessage: 'Current dataset validation failed',
+  });
 
 const getIssueDescription = (intl: IntlShapeLike, issue: ValidationIssue) => {
   switch (issue.code) {
     case 'sdkInvalid': {
-      const description = intl.formatMessage({
-        id: 'pages.validationIssues.issue.sdkInvalid',
-        defaultMessage: 'Current dataset validation failed',
-      });
+      const description = getSdkInvalidIssueLabel(intl);
       const tabLabels = getValidationIssueTabLabels(intl, issue);
 
       return tabLabels ? `${description}(${tabLabels})` : description;
@@ -107,6 +114,71 @@ const getIssueDescription = (intl: IntlShapeLike, issue: ValidationIssue) => {
     default:
       return issue.code;
   }
+};
+
+export type ValidationIssueNavigationTarget = {
+  detail?: ValidationIssueSdkDetail;
+  tabName?: string;
+};
+
+type ValidationIssueNavigateHandler = (target: ValidationIssueNavigationTarget) => void;
+
+const getValidationIssueInteractiveTabNames = (issue: ValidationIssue) => {
+  const tabNames = [
+    ...((issue.sdkDetails ?? []).map((detail) => detail.tabName).filter(Boolean) as string[]),
+    ...(issue.tabNames ?? []),
+    ...(issue.tabName ? [issue.tabName] : []),
+  ];
+
+  return tabNames.filter(
+    (tabName, index, allTabNames) => tabName && allTabNames.indexOf(tabName) === index,
+  );
+};
+
+const getValidationIssueInteractiveDetails = (issue: ValidationIssue) => {
+  return (issue.sdkDetails ?? []).filter(
+    (detail, index, allDetails) =>
+      detail?.key && allDetails.findIndex((item) => item.key === detail.key) === index,
+  );
+};
+
+const getSdkNavigationHint = (intl: IntlShapeLike, detail?: ValidationIssueSdkDetail) => {
+  const baseHint = intl.formatMessage({
+    id: 'pages.validationIssues.issue.sdkInvalid.navigateHint',
+    defaultMessage: '对应 tab 下的问题数据会标红，请补充后重试。',
+  });
+
+  if (!detail?.reasonMessage) {
+    return baseHint;
+  }
+
+  return detail.suggestedFix
+    ? `${baseHint} ${detail.reasonMessage} ${detail.suggestedFix}`
+    : `${baseHint} ${detail.reasonMessage}`;
+};
+
+const getSdkDetailLabel = (
+  intl: IntlShapeLike,
+  issue: Pick<ValidationIssue, 'ref'>,
+  detail: ValidationIssueSdkDetail,
+) => {
+  const parts = [];
+
+  if (detail.tabName) {
+    parts.push(getValidationIssueTabLabel(intl, issue, detail.tabName));
+  }
+
+  if (detail.exchangeFlowLabel) {
+    parts.push(detail.exchangeFlowLabel);
+  } else if (detail.exchangeFlowId) {
+    parts.push(detail.exchangeFlowId);
+  } else if (detail.exchangeInternalId) {
+    parts.push(`Exchange #${detail.exchangeInternalId}`);
+  }
+
+  parts.push(detail.fieldLabel);
+
+  return parts.filter(Boolean).join(' / ');
 };
 
 type GroupedValidationIssue = {
@@ -493,13 +565,148 @@ const ValidationIssueFooter = ({
 type ValidationIssueModalContentProps = {
   intl: IntlShapeLike;
   issues: ValidationIssue[];
+  onNavigate?: ValidationIssueNavigateHandler;
 };
 
-const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalContentProps) => {
+const ValidationIssueModalContent = ({
+  intl,
+  issues,
+  onNavigate,
+}: ValidationIssueModalContentProps) => {
   const { token } = theme.useToken();
   const groupedIssues = useMemo(() => groupValidationIssues(issues), [issues]);
   const [loadingIssueKey, setLoadingIssueKey] = useState<string | null>(null);
   const [notifiedIssueKeys, setNotifiedIssueKeys] = useState<Record<string, boolean>>({});
+
+  const renderInteractiveTabs = (issue: ValidationIssue) => {
+    const interactiveTabNames = getValidationIssueInteractiveTabNames(issue);
+
+    if (interactiveTabNames.length === 0 || !onNavigate) {
+      return null;
+    }
+
+    return (
+      <span>
+        {interactiveTabNames.map((tabName, index) => {
+          const tabLabel = getValidationIssueTabLabel(intl, issue, tabName);
+
+          return (
+            <span key={tabName}>
+              <span title={getSdkNavigationHint(intl)}>
+                <Button
+                  type='link'
+                  style={{
+                    color: token.colorPrimary,
+                    fontWeight: token.fontWeightStrong,
+                    height: 'auto',
+                    padding: 0,
+                  }}
+                  onClick={() => onNavigate({ tabName })}
+                >
+                  {tabLabel}
+                </Button>
+              </span>
+              {index < interactiveTabNames.length - 1 ? '，' : null}
+            </span>
+          );
+        })}
+      </span>
+    );
+  };
+
+  const renderInteractiveDetails = (issue: ValidationIssue) => {
+    const interactiveDetails = getValidationIssueInteractiveDetails(issue);
+
+    if (interactiveDetails.length === 0 || !onNavigate) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          display: 'grid',
+          gap: 8,
+          marginTop: 8,
+        }}
+      >
+        {interactiveDetails.map((detail) => {
+          const detailSummary = detail.suggestedFix
+            ? `${detail.reasonMessage} ${detail.suggestedFix}`
+            : detail.reasonMessage;
+
+          return (
+            <div
+              key={detail.key}
+              style={{
+                background: '#fff7e6',
+                border: `1px solid ${token.colorBorderSecondary}`,
+                borderRadius: token.borderRadiusLG,
+                padding: '8px 12px',
+              }}
+            >
+              <span title={getSdkNavigationHint(intl, detail)}>
+                <Button
+                  type='link'
+                  style={{
+                    color: token.colorPrimary,
+                    fontWeight: token.fontWeightStrong,
+                    height: 'auto',
+                    padding: 0,
+                  }}
+                  onClick={() => onNavigate({ detail, tabName: detail.tabName })}
+                >
+                  {getSdkDetailLabel(intl, issue, detail)}
+                </Button>
+              </span>
+              <div
+                style={{
+                  color: token.colorTextSecondary,
+                  lineHeight: token.lineHeight,
+                  marginTop: 4,
+                }}
+              >
+                {detailSummary}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderIssueCell = (issue: ValidationIssue) => {
+    if (issue.code !== 'sdkInvalid' || !onNavigate) {
+      return getIssueDescription(intl, issue) ?? '-';
+    }
+
+    const interactiveTabs = renderInteractiveTabs(issue);
+    const interactiveDetails = renderInteractiveDetails(issue);
+
+    if (!interactiveTabs && !interactiveDetails) {
+      return getIssueDescription(intl, issue) ?? '-';
+    }
+
+    return (
+      <div>
+        <div
+          style={{
+            color: token.colorText,
+            lineHeight: token.lineHeight,
+          }}
+        >
+          <span>{getSdkInvalidIssueLabel(intl)}</span>
+          {interactiveTabs ? (
+            <>
+              <span>(</span>
+              {interactiveTabs}
+              <span>)</span>
+            </>
+          ) : null}
+        </div>
+        {interactiveDetails}
+      </div>
+    );
+  };
 
   const handleNotifyDataOwner = async (groupedIssue: GroupedValidationIssue) => {
     const issueKey = getValidationIssueGroupKey(groupedIssue);
@@ -591,21 +798,19 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
       }),
       key: 'issue',
       render: (_, groupedIssue) => {
-        const descriptions = getGroupedIssueDescriptions(intl, groupedIssue);
-
-        if (descriptions.length <= 1) {
-          return descriptions[0] ?? '-';
+        if (groupedIssue.issues.length <= 1) {
+          return renderIssueCell(groupedIssue.issues[0]);
         }
 
-        return descriptions.map((description) => (
+        return groupedIssue.issues.map((issue, index) => (
           <div
-            key={description}
+            key={`${issue.code ?? 'unknown'}:${issue.underReviewVersion ?? '-'}:${index}`}
             style={{
               color: token.colorText,
               lineHeight: token.lineHeight,
             }}
           >
-            {description}
+            {renderIssueCell(issue)}
           </div>
         ));
       },
@@ -685,11 +890,13 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
 const ValidationIssueModalRenderer = ({
   intl,
   issues,
+  onNavigate,
   onDestroy,
   title,
 }: {
   intl: IntlShapeLike;
   issues: ValidationIssue[];
+  onNavigate?: ValidationIssueNavigateHandler;
   onDestroy: () => void;
   title: string;
 }) => {
@@ -711,6 +918,11 @@ const ValidationIssueModalRenderer = ({
       };
     }
   }, [onDestroy, open]);
+
+  const handleNavigate = (target: ValidationIssueNavigationTarget) => {
+    onNavigate?.(target);
+    setOpen(false);
+  };
 
   return (
     <ConfigProvider
@@ -739,7 +951,11 @@ const ValidationIssueModalRenderer = ({
         zIndex={modalZIndex}
         onCancel={() => setOpen(false)}
       >
-        <ValidationIssueModalContent intl={intl} issues={issues} />
+        <ValidationIssueModalContent
+          intl={intl}
+          issues={issues}
+          onNavigate={onNavigate ? handleNavigate : undefined}
+        />
       </Modal>
     </ConfigProvider>
   );
@@ -748,10 +964,12 @@ const ValidationIssueModalRenderer = ({
 export const showValidationIssueModal = ({
   intl,
   issues,
+  onNavigate,
   title,
 }: {
   intl: IntlShapeLike;
   issues: ValidationIssue[];
+  onNavigate?: ValidationIssueNavigateHandler;
   title?: string;
 }) => {
   if (!issues.length) {
@@ -785,6 +1003,7 @@ export const showValidationIssueModal = ({
     <ValidationIssueModalRenderer
       intl={intl}
       issues={issues}
+      onNavigate={onNavigate}
       onDestroy={destroy}
       title={resolvedTitle}
     />,

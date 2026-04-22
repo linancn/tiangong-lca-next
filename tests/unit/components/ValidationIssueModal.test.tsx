@@ -547,6 +547,73 @@ describe('ValidationIssueModal', () => {
     });
   });
 
+  it('renders clickable sdk navigation targets and closes the modal after jumping', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/processes?id=process-nav&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-nav',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-nav-1',
+                tabName: 'exchanges',
+                exchangeInternalId: '0',
+                exchangeFlowLabel: 'Electricity, medium voltage',
+                fieldLabel: 'Comment',
+                fieldPath: 'exchange[#0].generalComment.0.#text',
+                reasonMessage: 'Text length 520 exceeds maximum 500',
+                suggestedFix: 'Shorten this comment to 500 characters or fewer.',
+              },
+            ],
+            tabNames: ['exchanges'],
+          },
+        ],
+        onNavigate,
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    const tabButton = screen.getByRole('button', { name: '输入/输出' });
+    expect(tabButton).toBeInTheDocument();
+    expect(tabButton.parentElement).toHaveAttribute(
+      'title',
+      '对应 tab 下的问题数据会标红，请补充后重试。',
+    );
+
+    const detailButton = screen.getByRole('button', {
+      name: '输入/输出 / Electricity, medium voltage / Comment',
+    });
+    expect(screen.getByText(/Text length 520 exceeds maximum 500/)).toBeInTheDocument();
+
+    fireEvent.click(detailButton);
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: expect.objectContaining({
+        key: 'sdk-nav-1',
+        tabName: 'exchanges',
+      }),
+      tabName: 'exchanges',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
   it('hydrates grouped owner metadata from later issues when the first row is sparse', async () => {
     let modalHandle: { destroy: () => void } | null = null;
 

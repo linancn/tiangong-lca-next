@@ -9,6 +9,7 @@ import RequiredMark from '@/components/RequiredMark';
 import ToolBarButton from '@/components/ToolBarButton';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
@@ -69,6 +70,8 @@ type Props = {
   formType?: string;
   showRules?: boolean;
   actionFrom?: 'modelResult';
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 
 type FlowStateCodeItem = {
@@ -108,6 +111,8 @@ export const ProcessForm: FC<Props> = ({
   showRules = false,
   lciaResults,
   actionFrom,
+  sdkValidationDetails = [],
+  sdkValidationFocus,
 }) => {
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
@@ -132,53 +137,96 @@ export const ProcessForm: FC<Props> = ({
 
   const { token } = theme.useToken();
 
+  const sdkValidationCountsByTab = sdkValidationDetails.reduce<Record<string, number>>(
+    (accumulator, detail) => {
+      if (!detail.tabName) {
+        return accumulator;
+      }
+
+      accumulator[detail.tabName] = (accumulator[detail.tabName] ?? 0) + 1;
+      return accumulator;
+    },
+    {},
+  );
+  const sdkValidationDetailsByExchangeId = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    if (!detail.exchangeInternalId) {
+      return accumulator;
+    }
+
+    if (!accumulator[detail.exchangeInternalId]) {
+      accumulator[detail.exchangeInternalId] = [];
+    }
+
+    accumulator[detail.exchangeInternalId].push(detail);
+    return accumulator;
+  }, {});
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const issueCount = sdkValidationCountsByTab[key] ?? 0;
+    const hasIssue = issueCount > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {hasIssue ? ` (${issueCount})` : null}
+      </span>
+    );
+  };
+
   const tabList = [
     {
       key: 'processInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.process.view.processInformation'
-          defaultMessage='Process information'
-        />
+      tab: renderTabLabel(
+        'processInformation',
+        'pages.process.view.processInformation',
+        'Process information',
       ),
     },
     {
       key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id='pages.process.view.modellingAndValidation'
-          defaultMessage='Modelling and validation'
-        />
+      tab: renderTabLabel(
+        'modellingAndValidation',
+        'pages.process.view.modellingAndValidation',
+        'Modelling and validation',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.process.view.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.process.view.administrativeInformation',
+        'Administrative information',
       ),
     },
     {
       key: 'exchanges',
-      tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+      tab: renderTabLabel('exchanges', 'pages.process.view.exchanges', 'Exchanges'),
     },
     {
       key: 'lciaResults',
-      tab: <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />,
+      tab: renderTabLabel('lciaResults', 'pages.process.view.lciaresults', 'LCIA Results'),
     },
     {
       key: 'validation',
-      tab: <FormattedMessage id='pages.process.validation' defaultMessage='Validation' />,
+      tab: renderTabLabel('validation', 'pages.process.validation', 'Validation'),
     },
     {
       key: 'complianceDeclarations',
-      tab: (
-        <FormattedMessage
-          id='pages.process.complianceDeclarations'
-          defaultMessage='Compliance declarations'
-        />
+      tab: renderTabLabel(
+        'complianceDeclarations',
+        'pages.process.complianceDeclarations',
+        'Compliance declarations',
       ),
     },
   ];
@@ -190,6 +238,8 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const rowSdkHighlights = sdkValidationDetailsByExchangeId[row.dataSetInternalID] ?? [];
+
         return [
           <Space size={'small'} key={0}>
             <ProcessExchangeView
@@ -206,6 +256,11 @@ export const ProcessForm: FC<Props> = ({
               onData={onExchangeData}
               setViewDrawerVisible={() => {}}
               showRules={showRules}
+              sdkHighlights={rowSdkHighlights}
+              autoOpen={
+                activeTabKey === 'exchanges' &&
+                sdkValidationFocus?.exchangeInternalId === row.dataSetInternalID
+              }
               disabled={actionFrom === 'modelResult'}
             />
             <ProcessExchangeDelete
@@ -2044,8 +2099,26 @@ export const ProcessForm: FC<Props> = ({
                       record.resultingAmount !== '-' &&
                       record.dataDerivationTypeStatus &&
                       record.dataDerivationTypeStatus !== '-';
+                    const rowClasses = [];
 
-                    return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
+                    if (showRules && (isInRefCheck || !isFormComplete)) {
+                      rowClasses.push('error-row');
+                    }
+
+                    if (
+                      (sdkValidationDetailsByExchangeId[record.dataSetInternalID] ?? []).length > 0
+                    ) {
+                      rowClasses.push('sdk-error-row');
+                    }
+
+                    if (
+                      sdkValidationFocus?.exchangeInternalId &&
+                      sdkValidationFocus.exchangeInternalId === record.dataSetInternalID
+                    ) {
+                      rowClasses.push('sdk-focus-row');
+                    }
+
+                    return rowClasses.join(' ').trim();
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {
@@ -2135,7 +2208,26 @@ export const ProcessForm: FC<Props> = ({
                       record.resultingAmount !== '-' &&
                       record.dataDerivationTypeStatus &&
                       record.dataDerivationTypeStatus !== '-';
-                    return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
+                    const rowClasses = [];
+
+                    if (showRules && (isInRefCheck || !isFormComplete)) {
+                      rowClasses.push('error-row');
+                    }
+
+                    if (
+                      (sdkValidationDetailsByExchangeId[record.dataSetInternalID] ?? []).length > 0
+                    ) {
+                      rowClasses.push('sdk-error-row');
+                    }
+
+                    if (
+                      sdkValidationFocus?.exchangeInternalId &&
+                      sdkValidationFocus.exchangeInternalId === record.dataSetInternalID
+                    ) {
+                      rowClasses.push('sdk-focus-row');
+                    }
+
+                    return rowClasses.join(' ').trim();
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {
