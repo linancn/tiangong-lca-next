@@ -157,30 +157,6 @@ const getSdkNavigationHint = (intl: IntlShapeLike, detail?: ValidationIssueSdkDe
     : `${baseHint} ${detail.reasonMessage}`;
 };
 
-const getSdkDetailLabel = (
-  intl: IntlShapeLike,
-  issue: Pick<ValidationIssue, 'ref'>,
-  detail: ValidationIssueSdkDetail,
-) => {
-  const parts = [];
-
-  if (detail.tabName) {
-    parts.push(getValidationIssueTabLabel(intl, issue, detail.tabName));
-  }
-
-  if (detail.exchangeFlowLabel) {
-    parts.push(detail.exchangeFlowLabel);
-  } else if (detail.exchangeFlowId) {
-    parts.push(detail.exchangeFlowId);
-  } else if (detail.exchangeInternalId) {
-    parts.push(`Exchange #${detail.exchangeInternalId}`);
-  }
-
-  parts.push(detail.fieldLabel);
-
-  return parts.filter(Boolean).join(' / ');
-};
-
 type GroupedValidationIssue = {
   ref: ValidationIssue['ref'];
   link: string;
@@ -580,6 +556,7 @@ const ValidationIssueModalContent = ({
 
   const renderInteractiveTabs = (issue: ValidationIssue) => {
     const interactiveTabNames = getValidationIssueInteractiveTabNames(issue);
+    const interactiveDetails = getValidationIssueInteractiveDetails(issue);
 
     if (interactiveTabNames.length === 0 || !onNavigate) {
       return null;
@@ -589,6 +566,9 @@ const ValidationIssueModalContent = ({
       <span>
         {interactiveTabNames.map((tabName, index) => {
           const tabLabel = getValidationIssueTabLabel(intl, issue, tabName);
+          const matchedDetail =
+            interactiveDetails.find((detail) => detail.tabName === tabName) ??
+            interactiveDetails[0];
 
           return (
             <span key={tabName}>
@@ -601,7 +581,7 @@ const ValidationIssueModalContent = ({
                     height: 'auto',
                     padding: 0,
                   }}
-                  onClick={() => onNavigate({ tabName })}
+                  onClick={() => onNavigate({ detail: matchedDetail, tabName })}
                 >
                   {tabLabel}
                 </Button>
@@ -614,75 +594,14 @@ const ValidationIssueModalContent = ({
     );
   };
 
-  const renderInteractiveDetails = (issue: ValidationIssue) => {
-    const interactiveDetails = getValidationIssueInteractiveDetails(issue);
-
-    if (interactiveDetails.length === 0 || !onNavigate) {
-      return null;
-    }
-
-    return (
-      <div
-        style={{
-          display: 'grid',
-          gap: 8,
-          marginTop: 8,
-        }}
-      >
-        {interactiveDetails.map((detail) => {
-          const detailSummary = detail.suggestedFix
-            ? `${detail.reasonMessage} ${detail.suggestedFix}`
-            : detail.reasonMessage;
-
-          return (
-            <div
-              key={detail.key}
-              style={{
-                background: '#fff7e6',
-                border: `1px solid ${token.colorBorderSecondary}`,
-                borderRadius: token.borderRadiusLG,
-                padding: '8px 12px',
-              }}
-            >
-              <span title={getSdkNavigationHint(intl, detail)}>
-                <Button
-                  type='link'
-                  style={{
-                    color: token.colorPrimary,
-                    fontWeight: token.fontWeightStrong,
-                    height: 'auto',
-                    padding: 0,
-                  }}
-                  onClick={() => onNavigate({ detail, tabName: detail.tabName })}
-                >
-                  {getSdkDetailLabel(intl, issue, detail)}
-                </Button>
-              </span>
-              <div
-                style={{
-                  color: token.colorTextSecondary,
-                  lineHeight: token.lineHeight,
-                  marginTop: 4,
-                }}
-              >
-                {detailSummary}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const renderIssueCell = (issue: ValidationIssue) => {
     if (issue.code !== 'sdkInvalid' || !onNavigate) {
       return getIssueDescription(intl, issue) ?? '-';
     }
 
     const interactiveTabs = renderInteractiveTabs(issue);
-    const interactiveDetails = renderInteractiveDetails(issue);
 
-    if (!interactiveTabs && !interactiveDetails) {
+    if (!interactiveTabs) {
       return getIssueDescription(intl, issue) ?? '-';
     }
 
@@ -703,7 +622,6 @@ const ValidationIssueModalContent = ({
             </>
           ) : null}
         </div>
-        {interactiveDetails}
       </div>
     );
   };

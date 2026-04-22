@@ -589,13 +589,9 @@ describe('ValidationIssueModal', () => {
       'title',
       '对应 tab 下的问题数据会标红，请补充后重试。',
     );
+    expect(screen.queryByText(/Text length 520 exceeds maximum 500/)).not.toBeInTheDocument();
 
-    const detailButton = screen.getByRole('button', {
-      name: '输入/输出 / Electricity, medium voltage / Comment',
-    });
-    expect(screen.getByText(/Text length 520 exceeds maximum 500/)).toBeInTheDocument();
-
-    fireEvent.click(detailButton);
+    fireEvent.click(tabButton);
 
     expect(onNavigate).toHaveBeenCalledWith({
       detail: expect.objectContaining({
