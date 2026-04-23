@@ -1,5 +1,5 @@
 ---
-title: next Validation Guide
+title: next Repo Validation Guide
 docType: guide
 scope: repo
 status: active
@@ -15,20 +15,18 @@ whenToUpdate:
   - when change categories require different proof
   - when coverage or deploy policy changes
 checkPaths:
-  - ai/validation.md
-  - ai/task-router.md
+  - docs/agents/repo-validation.md
+  - .docpact/config.yaml
   - package.json
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-04-21
-lastReviewedCommit: 25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
   - ../AGENTS.md
-  - ./repo.yaml
-  - ./task-router.md
-  - ./architecture.md
-  - ../docs/agents/ai-testing-guide.md
+  - ../.docpact/config.yaml
+  - ./repo-architecture.md
 ---
 
 ## Validation Order
@@ -63,7 +61,7 @@ npm run prepush:gate
 | static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
 | tests, coverage, or gate scripts | `npm run lint`; `npm test`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
-| repo docs only | repo-local `ai-doc-lint` against touched files | one routing sanity check through the updated docs | still update review metadata and ownership as needed |
+| repo docs only | `docpact lint --root . --files "<csv>" --mode enforce` | `docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
 
 ## Minimum PR Validation Note
 

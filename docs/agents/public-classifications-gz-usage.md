@@ -1,3 +1,29 @@
+---
+title: next Classification Bundle Reference
+docType: reference
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when changing classification cache behavior
+  - when changing classification file names or bundle contents
+  - when changing services that resolve classification trees
+whenToUpdate:
+  - when classification bundle paths or file-selection rules change
+  - when the cache read path changes
+  - when the consuming services move
+checkPaths:
+  - docs/agents/public-classifications-gz-usage.md
+  - public/classifications/**
+  - src/services/classifications/**
+  - src/components/ClassificationCacheMonitor/**
+  - src/app.tsx
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Classification Bundle Reference
 
 > Purpose: exact read path and file selection rules for `public/classifications/*.gz`.

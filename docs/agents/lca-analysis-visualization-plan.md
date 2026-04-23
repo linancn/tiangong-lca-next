@@ -1,3 +1,29 @@
+---
+title: next LCA Analysis And Visualization Plan
+docType: design
+scope: repo
+status: proposed
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when evaluating planned LCA analysis UI work in this repo
+  - when checking intended charting and traceability rules for analysis features
+  - when deciding whether analysis work is current runtime truth or proposal-only
+whenToUpdate:
+  - when the proposed analysis and visualization plan changes
+  - when phase scope or acceptance assumptions change
+  - when the proposal is superseded or retired
+checkPaths:
+  - docs/agents/lca-analysis-visualization-plan.md
+  - docs/agents/contribution-path-analysis-design.md
+  - docs/agents/util_calculate.md
+  - src/pages/Processes/Analysis/**
+  - src/components/LcaTaskCenter/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+---
+
 # LCA Analysis And Visualization Plan
 
 > Status: proposed product and implementation plan. This document is not runtime truth.

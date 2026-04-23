@@ -17,20 +17,21 @@ whenToUpdate:
 checkPaths:
   - AGENTS.md
   - DEV.md
-  - ai/**/*.md
-  - ai/**/*.yaml
+  - README.md
+  - README_CN.md
+  - .docpact/**/*.yaml
   - docs/agents/**
+  - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-04-21
-lastReviewedCommit: 25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
-  - ai/repo.yaml
-  - ai/task-router.md
-  - ai/validation.md
-  - ai/architecture.md
+  - .docpact/config.yaml
+  - docs/agents/repo-validation.md
+  - docs/agents/repo-architecture.md
   - DEV.md
 ---
 
@@ -57,68 +58,71 @@ Required principles:
 - stable structure: same document type uses the same section order where practical
 - reference instead of duplication: when a rule already has an owner, link to it instead of restating it
 
-## Documentation Ownership
+## Documentation Roles
 
 | Document | Owns | Does not own |
 | --- | --- | --- |
-| `AGENTS.md` | repo contract, documentation principles, runtime facts, branch facts, hard boundaries | deep implementation details, large reference material |
-| `DEV.md` | local bootstrap and shortest repeatable work loop | repo contract, branch policy, proof matrix |
-| `ai/repo.yaml` | machine-readable repo facts and document registry | prose explanations |
-| `ai/task-router.md` | task-to-path and task-to-doc routing | runtime facts, proof rules |
-| `ai/validation.md` | minimum proof by change type | bootstrap, business logic details |
-| `ai/architecture.md` | compact repo mental model and stable path map | execution checklists |
-| `docs/agents/ai-dev-guide.md` | development execution workflow | repo facts already owned by `AGENTS.md` |
-| `docs/agents/ai-testing-guide.md` | testing execution workflow | deep test patterns and troubleshooting detail |
-| `docs/agents/testing-patterns.md` | reusable testing patterns and templates | operational test state |
-| `docs/agents/testing-troubleshooting.md` | failure diagnosis and recovery steps | strategy or backlog state |
+| `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, hard boundaries | deep implementation details, large reference material |
+| `DEV.md` | local bootstrap and the shortest repeatable work loop | repo contract, branch policy, proof matrix |
+| `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, governed-doc inventory | prose explanations and narrative summaries |
+| `docs/agents/repo-validation.md` | minimum proof by change type and PR validation note shape | bootstrap, business logic details |
+| `docs/agents/repo-architecture.md` | compact repo mental model and stable path map | execution checklists and present-state testing facts |
 | `docs/agents/test_todo_list.md` | current testing execution state | long-term testing strategy |
-| `docs/agents/test_improvement_plan.md` | long-term testing strategy | current operational queue state |
-| `docs/agents/prepush-gate-policy.md` | proposed gate policy and rollout contract | current runtime truth unless explicitly stated |
 | `docs/agents/supabase-branching.md` | frontend environment selection and database ownership workflow | schema truth |
-| `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | general app architecture |
-| `docs/agents/util_calculate.md` | life-cycle-model calculation reference | repo-wide workflow rules |
-| `docs/agents/team_management.md` | team-management business reference | frontend execution workflow |
-| `docs/agents/data_audit_instruction.md` | audit status and transition reference | testing or branch workflow |
-| `docs/agents/contribution-path-analysis-design.md` | proposed contribution-path design | runtime contract |
-| `docs/agents/lca-analysis-visualization-plan.md` | proposed analysis UI plan | runtime contract |
-| `.github/PULL_REQUEST_TEMPLATE/*.md` | required PR facts and proof fields | repo policy explanation |
+| `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
+| `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
+
+Additional governed source docs, not part of the default first-load surface:
+
+| Document | Owns | Does not own |
+| --- | --- | --- |
+| `README.md` and `README_CN.md` | repo landing context and high-level product overview | repo contract, proof bar, or branch policy truth |
+| `docs/agents/testing-patterns.md` | reusable test-selection and test-structure patterns | minimum proof bar or current queue state |
+| `docs/agents/testing-troubleshooting.md` | shortest recovery path for failing or hanging tests | strategy or canonical proof requirements |
+| `docs/agents/prepush-gate-policy.md` | intended protected-branch and pre-push rollout contract | live hook/runtime truth |
+| `docs/agents/test_improvement_plan.md` | long-term testing strategy and reopen conditions | current operational queue or proof baseline |
+| `docs/agents/contribution-path-analysis-design.md` and `docs/agents/lca-analysis-visualization-plan.md` | scoped design references for analysis features | current runtime truth or active delivery state |
+| `.github/PULL_REQUEST_TEMPLATE/feature-to-dev.md` and `.github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md` | branch-specific PR note shape and handoff prompts | canonical proof rules or repo branch policy truth |
 
 ## Load Order
 
 Read in this order:
 
 1. `AGENTS.md`
-2. `ai/repo.yaml`
-3. `ai/task-router.md`
-4. `ai/validation.md` or `ai/architecture.md`
-5. the narrow document that owns the current subject
+2. `.docpact/config.yaml`
+3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
+4. the narrow source doc that owns the current subject
 
-Do not start from a deep reference or design doc unless the task is already scoped to that subject.
+Do not start from additional governed source docs, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
 
-## Runtime Facts
+## Operational Pointers
+
+- local bootstrap and canonical day-to-day commands live in `DEV.md`
+- minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
+- path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
+- app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
+- repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
+- new npm dependencies require human approval
+
+## Minimal Execution Facts
+
+Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
 
 - package manager: `npm`
-- Node baseline: `>=24` (`nvm use 24`; `.nvmrc` is pinned to `24`)
-- default dev command: `npm start`
-- explicit dev alias: `npm run start:dev`
-- explicit main-env command: `npm run start:main`
-- full protected-branch gate: `npm run prepush:gate`
-- app-side Supabase access belongs only in `src/services/**`
-- new npm dependencies require human approval
-- repo-local AI doc maintenance is enforced by `.github/workflows/ai-doc-lint.yml`
+- Node baseline: `24` via `.nvmrc` and `nvm use 24`
+- shared dev environment: `npm start` (`npm run start:dev` is equivalent)
+- explicit main-environment run: `npm run start:main`
+- default lint gate: `npm run lint`
+- default CI-style test entry: `npm test`
+- build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
+- protected-branch parity gate: `npm run prepush:gate`
+- app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries
 
-This repo owns:
+The authoritative path-level ownership map lives in `.docpact/config.yaml`.
 
-- shipped product behavior under `src/**`
-- route wiring under `config/routes.ts`
-- app runtime setup under `config/**` and `src/app.tsx`
-- app-side Supabase and API access under `src/services/**`
-- shared UI and locale surfaces under `src/components/**` and `src/locales/**`
-- static assets consumed by the app under `public/**`
-- self-hosted sync helpers under `docker/**`
-- desktop packaging under `electron/**`, `electron-builder.json`, and `icons/**`
+At a human-readable level, this repo owns shipped frontend/runtime behavior plus repo-local governance and bootstrap docs.
 
 This repo does not own:
 
@@ -148,34 +152,14 @@ Route those tasks to:
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 
-## Authoritative Commands
-
-Use these as the canonical repo commands:
-
-```bash
-npm install
-npm start
-npm run start:dev
-npm run start:main
-npm run lint
-npm test
-npm run test:coverage
-npm run test:coverage:assert-full
-npm run test:coverage:report
-npm run build
-npm run prepush:gate
-```
-
 ## Documentation Update Rules
 
-- if a repo fact changes, update `AGENTS.md` and `ai/repo.yaml`
-- if task routing changes, update `ai/task-router.md`
-- if proof requirements change, update `ai/validation.md`
-- if local bootstrap changes, update `DEV.md`
-- if dev workflow changes, update `docs/agents/ai-dev-guide.md`
-- if testing workflow changes, update `docs/agents/ai-testing-guide.md` and `docs/agents/test_todo_list.md`
-- if testing strategy changes, update `docs/agents/test_improvement_plan.md`
-- if a narrow domain rule changes, update only the domain reference that owns it
+Use the role table in this file as the update map.
+
+- if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
+- if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
+- if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
+- if a document is governed but not in the default first-load surface, route to it on demand instead of duplicating its rules into `AGENTS.md` or `DEV.md`
 - do not copy the same rule into multiple docs just to make it easier to find
 
 ## Hard Boundaries

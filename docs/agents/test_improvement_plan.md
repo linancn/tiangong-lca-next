@@ -1,3 +1,29 @@
+---
+title: next Testing Strategy
+docType: design
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when deciding whether this repo needs new testing strategy work
+  - when evaluating long-term testing direction beyond the current queue state
+  - when strategy assumptions for repo tests change
+whenToUpdate:
+  - when the long-term testing strategy changes
+  - when reopen conditions for strategy work change
+  - when this strategy no longer matches the maintained testing model
+checkPaths:
+  - docs/agents/test_improvement_plan.md
+  - docs/agents/test_todo_list.md
+  - docs/agents/repo-validation.md
+  - tests/**
+  - package.json
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+---
+
 # Testing Strategy
 
 > Long-term testing strategy. Use `docs/agents/test_todo_list.md` for current operational state.
