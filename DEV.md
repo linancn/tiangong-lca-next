@@ -91,6 +91,6 @@ npm install
 
 - repo rules and document ownership: `AGENTS.md`
 - path and doc routing: `.docpact/config.yaml`
-- minimum proof: `.docpact/validation.md`
-- frontend mental model: `.docpact/architecture.md`
+- minimum proof: `docs/agents/repo-validation.md`
+- frontend mental model: `docs/agents/repo-architecture.md`
 - narrow execution guides: `docs/agents/**`

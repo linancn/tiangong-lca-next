@@ -1,5 +1,5 @@
 ---
-title: next Validation Guide
+title: next Repo Validation Guide
 docType: guide
 scope: repo
 status: active
@@ -15,7 +15,7 @@ whenToUpdate:
   - when change categories require different proof
   - when coverage or deploy policy changes
 checkPaths:
-  - .docpact/validation.md
+  - docs/agents/repo-validation.md
   - .docpact/config.yaml
   - package.json
   - jest.config.cjs
@@ -25,9 +25,9 @@ lastReviewedAt: 2026-04-23
 lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
   - ../AGENTS.md
-  - ./config.yaml
-  - ./architecture.md
-  - ../docs/agents/ai-testing-guide.md
+  - ../.docpact/config.yaml
+  - ./repo-architecture.md
+  - ./ai-testing-guide.md
 ---
 
 ## Validation Order

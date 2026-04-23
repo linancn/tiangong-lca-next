@@ -129,7 +129,7 @@ routing:
         - .github/workflows/ci.yml
         - .github/workflows/build.yml
         - tests/**
-        - .docpact/validation.md
+        - docs/agents/repo-validation.md
         - docs/agents/ai-testing-guide.md
         - docs/agents/test_todo_list.md
         - docs/agents/prepush-gate-policy.md
@@ -140,7 +140,7 @@ routing:
         - public/**
         - docker/**
         - electron/**
-        - .docpact/architecture.md
+        - docs/agents/repo-architecture.md
     lifecycle-model-ui:
       paths:
         - src/services/lifeCycleModels/**
@@ -196,6 +196,10 @@ rules:
         kind: deep-doc
       - path: docs/agents/prepush-gate-policy.md
         kind: deep-doc
+      - path: docs/agents/repo-validation.md
+        kind: deep-doc
+      - path: docs/agents/repo-architecture.md
+        kind: deep-doc
     requiredDocs:
       - path: AGENTS.md
         mode: review_or_update
@@ -225,9 +229,9 @@ rules:
         mode: review_or_update
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
-      - path: .docpact/architecture.md
+      - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/ai-dev-guide.md
         mode: review_or_update
@@ -255,9 +259,9 @@ rules:
         mode: review_or_update
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
-      - path: .docpact/architecture.md
+      - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/supabase-branching.md
         mode: review_or_update
@@ -291,7 +295,7 @@ rules:
         mode: review_or_update
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
       - path: docs/agents/ai-testing-guide.md
         mode: review_or_update
@@ -315,9 +319,9 @@ rules:
     requiredDocs:
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
-      - path: .docpact/architecture.md
+      - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/public-classifications-gz-usage.md
         mode: review_or_update
@@ -339,9 +343,9 @@ rules:
     requiredDocs:
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
-      - path: .docpact/architecture.md
+      - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/util_calculate.md
         mode: review_or_update
@@ -363,9 +367,9 @@ rules:
     requiredDocs:
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
-      - path: .docpact/architecture.md
+      - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/team_management.md
         mode: review_or_update
@@ -383,7 +387,7 @@ rules:
         mode: review_or_update
       - path: .docpact/config.yaml
         mode: review_or_update
-      - path: .docpact/validation.md
+      - path: docs/agents/repo-validation.md
         mode: review_or_update
       - path: docs/agents/ai-testing-guide.md
         mode: review_or_update

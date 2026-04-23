@@ -28,8 +28,8 @@ lastReviewedAt: 2026-04-23
 lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
   - .docpact/config.yaml
-  - .docpact/validation.md
-  - .docpact/architecture.md
+  - docs/agents/repo-validation.md
+  - docs/agents/repo-architecture.md
   - DEV.md
 ---
 
@@ -63,8 +63,8 @@ Required principles:
 | `AGENTS.md` | repo contract, documentation principles, runtime facts, branch facts, hard boundaries | deep implementation details, large reference material |
 | `DEV.md` | local bootstrap and shortest repeatable work loop | repo contract, branch policy, proof matrix |
 | `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, and governed-doc inventory | prose explanations |
-| `.docpact/validation.md` | minimum proof by change type | bootstrap, business logic details |
-| `.docpact/architecture.md` | compact repo mental model and stable path map | execution checklists |
+| `docs/agents/repo-validation.md` | minimum proof by change type | bootstrap, business logic details |
+| `docs/agents/repo-architecture.md` | compact repo mental model and stable path map | execution checklists |
 | `docs/agents/ai-dev-guide.md` | development execution workflow | repo facts already owned by `AGENTS.md` |
 | `docs/agents/ai-testing-guide.md` | testing execution workflow | deep test patterns and troubleshooting detail |
 | `docs/agents/testing-patterns.md` | reusable testing patterns and templates | operational test state |
@@ -87,7 +87,7 @@ Read in this order:
 
 1. `AGENTS.md`
 2. `.docpact/config.yaml`
-3. `.docpact/validation.md` or `.docpact/architecture.md`
+3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
 4. the narrow document that owns the current subject
 
 Do not start from a deep reference or design doc unless the task is already scoped to that subject.
@@ -166,8 +166,8 @@ npm run prepush:gate
 ## Documentation Update Rules
 
 - if a repo fact, routing rule, or governed-doc rule changes, update `AGENTS.md` and `.docpact/config.yaml`
-- if proof requirements change, update `.docpact/validation.md`
-- if the repo mental model changes, update `.docpact/architecture.md`
+- if proof requirements change, update `docs/agents/repo-validation.md`
+- if the repo mental model changes, update `docs/agents/repo-architecture.md`
 - if local bootstrap changes, update `DEV.md`
 - if dev workflow changes, update `docs/agents/ai-dev-guide.md`
 - if testing workflow changes, update `docs/agents/ai-testing-guide.md` and `docs/agents/test_todo_list.md`

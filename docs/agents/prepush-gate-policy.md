@@ -16,7 +16,7 @@ whenToUpdate:
   - when the rollout contract becomes inaccurate
 checkPaths:
   - docs/agents/prepush-gate-policy.md
-  - .docpact/validation.md
+  - docs/agents/repo-validation.md
   - .husky/pre-push
   - package.json
   - .github/workflows/**
@@ -26,7 +26,7 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 
 # Pre-Push Gate Policy
 
-> Status: design and rollout contract. Current runtime truth still lives in `AGENTS.md`, `.docpact/validation.md`, and the active repo scripts.
+> Status: design and rollout contract. Current runtime truth still lives in `AGENTS.md`, `docs/agents/repo-validation.md`, and the active repo scripts.
 
 ## Purpose
 

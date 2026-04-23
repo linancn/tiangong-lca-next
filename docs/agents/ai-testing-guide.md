@@ -16,7 +16,7 @@ whenToUpdate:
   - when coverage or gate expectations change
 checkPaths:
   - docs/agents/ai-testing-guide.md
-  - .docpact/validation.md
+  - docs/agents/repo-validation.md
   - package.json
   - jest.config.cjs
   - .github/workflows/**

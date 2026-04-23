@@ -1,5 +1,5 @@
 ---
-title: next Architecture Notes
+title: next Repo Architecture Notes
 docType: guide
 scope: repo
 status: active
@@ -15,7 +15,7 @@ whenToUpdate:
   - when stable path ownership changes
   - when the current map becomes misleading
 checkPaths:
-  - .docpact/architecture.md
+  - docs/agents/repo-architecture.md
   - .docpact/config.yaml
   - config/**
   - src/**
@@ -25,8 +25,8 @@ lastReviewedAt: 2026-04-23
 lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
   - ../AGENTS.md
-  - ./config.yaml
-  - ./validation.md
+  - ../.docpact/config.yaml
+  - ./repo-validation.md
 ---
 
 ## Repo Shape

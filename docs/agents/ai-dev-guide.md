@@ -18,7 +18,7 @@ checkPaths:
   - docs/agents/ai-dev-guide.md
   - AGENTS.md
   - .docpact/config.yaml
-  - .docpact/validation.md
+  - docs/agents/repo-validation.md
 lastReviewedAt: 2026-04-23
 lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 ---
@@ -86,8 +86,8 @@ npm run prepush:gate
 ## Required Doc Updates
 
 - runtime fact, routing rule, or hard boundary changed: update `AGENTS.md` and `.docpact/config.yaml`
-- proof rule changed: update `.docpact/validation.md`
-- repo mental model changed: update `.docpact/architecture.md`
+- proof rule changed: update `docs/agents/repo-validation.md`
+- repo mental model changed: update `docs/agents/repo-architecture.md`
 - development workflow changed: update this file
 - narrow domain rule changed: update the domain reference that owns it
 
