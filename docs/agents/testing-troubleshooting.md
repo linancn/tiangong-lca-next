@@ -1,3 +1,29 @@
+---
+title: next Testing Troubleshooting
+docType: runbook
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when Jest tests fail, hang, timeout, or reopen coverage gaps
+  - when narrowing a failing suite to the shortest recovery path
+  - when troubleshooting guidance for repo tests changes
+whenToUpdate:
+  - when the shortest supported recovery commands change
+  - when common failure modes or first actions change
+  - when the troubleshooting playbook becomes stale
+checkPaths:
+  - docs/agents/testing-troubleshooting.md
+  - docs/agents/testing-patterns.md
+  - docs/agents/repo-validation.md
+  - scripts/test-runner.cjs
+  - package.json
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+---
+
 # Testing Troubleshooting
 
 > Purpose: shortest recovery path when tests fail, hang, timeout, or reopen coverage gaps.

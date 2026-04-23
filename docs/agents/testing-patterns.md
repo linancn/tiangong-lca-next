@@ -1,3 +1,29 @@
+---
+title: next Testing Patterns Reference
+docType: reference
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when choosing between unit, component, and integration tests in this repo
+  - when shaping new Jest tests or reusing existing helpers
+  - when a testing workflow change may affect reusable patterns
+whenToUpdate:
+  - when repo-standard test patterns change
+  - when helper ownership or recommended commands change
+  - when the current pattern guidance becomes misleading
+checkPaths:
+  - docs/agents/testing-patterns.md
+  - docs/agents/repo-validation.md
+  - docs/agents/testing-troubleshooting.md
+  - tests/helpers/**
+  - package.json
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+---
+
 # Testing Patterns Reference
 
 > Purpose: reusable test-selection rules, structure rules, and template patterns for this repo.
