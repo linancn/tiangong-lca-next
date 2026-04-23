@@ -1,3 +1,29 @@
+---
+title: next Contribution Path Analysis Design
+docType: design
+scope: repo
+status: proposed
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when evaluating contribution-path analysis work that touches this repo
+  - when checking the intended frontend contract for contribution-path results
+  - when deciding whether current analysis work is proposal-only or runtime truth
+whenToUpdate:
+  - when the proposed contribution-path contract for next changes
+  - when cross-repo responsibilities for contribution-path analysis change
+  - when this proposal becomes obsolete or superseded
+checkPaths:
+  - docs/agents/contribution-path-analysis-design.md
+  - docs/agents/lca-analysis-visualization-plan.md
+  - docs/agents/util_calculate.md
+  - src/pages/Processes/Analysis/**
+  - src/components/LcaTaskCenter/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+---
+
 # Contribution Path Analysis Design
 
 > Status: proposed design. This document is not runtime truth.

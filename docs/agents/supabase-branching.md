@@ -1,3 +1,28 @@
+---
+title: next Supabase Environment And Database Workflow
+docType: guide
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when choosing the correct environment for frontend validation
+  - when deciding whether a change belongs here, in `database-engine`, or in `edge-functions`
+  - when checking webhook secret rules
+whenToUpdate:
+  - when frontend environment-selection rules change
+  - when repo ownership boundaries around Supabase behavior change
+  - when the workflow for shared dev versus main validation changes
+checkPaths:
+  - docs/agents/supabase-branching.md
+  - config/supabaseEnv.ts
+  - src/services/**
+  - docker/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Supabase Environment And Database Workflow
 
 > Purpose: exact ownership and environment rules for frontend work that touches Supabase-related behavior.

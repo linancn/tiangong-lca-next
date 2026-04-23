@@ -1,5 +1,5 @@
 ---
-title: next Architecture Notes
+title: next Repo Architecture Notes
 docType: guide
 scope: repo
 status: active
@@ -15,19 +15,18 @@ whenToUpdate:
   - when stable path ownership changes
   - when the current map becomes misleading
 checkPaths:
-  - ai/architecture.md
-  - ai/repo.yaml
+  - docs/agents/repo-architecture.md
+  - .docpact/config.yaml
   - config/**
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-04-21
-lastReviewedCommit: 25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
   - ../AGENTS.md
-  - ./repo.yaml
-  - ./task-router.md
-  - ./validation.md
+  - ../.docpact/config.yaml
+  - ./repo-validation.md
 ---
 
 ## Repo Shape
@@ -36,19 +35,23 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 
 ## Stable Path Map
 
-| Path group              | Role                                                          |
-| ----------------------- | ------------------------------------------------------------- |
-| `config/routes.ts`      | route tree and route-family entrypoints                       |
-| `config/config.ts`      | Umi runtime config                                            |
-| `config/supabaseEnv.ts` | frontend env selection                                        |
-| `src/app.tsx`           | runtime layout, auth redirect, cache monitors, theme behavior |
-| `src/pages/**`          | route-level product pages                                     |
-| `src/components/**`     | shared UI and reusable flows                                  |
-| `src/services/**`       | app-side Supabase/API access and service logic                |
-| `src/locales/**`        | UI strings                                                    |
-| `public/**`             | static resource bundles consumed by the app                   |
-| `docker/**`             | self-hosted sync helpers and mirrors                          |
-| `electron/**`           | desktop packaging surface                                     |
+| Path group | Role |
+| --- | --- |
+| `config/routes.ts` | route tree and route-family entrypoints |
+| `config/config.ts` | Umi runtime config |
+| `config/defaultSettings.ts`, `config/branding.ts`, `config/proxy.ts`, `config/oneapi.json` | app-shell defaults, branding, dev proxy, and support config |
+| `config/supabaseEnv.ts` | frontend env selection |
+| `src/app.tsx` | runtime layout, auth redirect, cache monitors, theme behavior |
+| `src/access.ts`, `src/global.tsx`, `src/requestErrorConfig.ts`, `src/contexts/**` | app-shell access control, request behavior, and shared runtime state |
+| `src/pages/**` | route-level product pages |
+| `src/components/**` | shared UI and reusable flows |
+| `src/services/**` | app-side Supabase/API access and service logic |
+| `src/locales/**` | UI strings |
+| `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
+| `public/**` | static resource bundles consumed by the app |
+| `icons/**` | packaged app icons and release assets |
+| `docker/**` | self-hosted sync helpers and mirrors |
+| `electron/**` | desktop packaging surface |
 
 ## Runtime Model
 

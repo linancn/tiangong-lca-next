@@ -1,3 +1,27 @@
+---
+title: next Audit Status Reference
+docType: reference
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when checking audit-state meaning
+  - when validating allowed workflow transitions
+  - when changing review or audit-management screens
+whenToUpdate:
+  - when audit-state codes change
+  - when workflow transitions change
+  - when the owning review-management UI paths move
+checkPaths:
+  - docs/agents/data_audit_instruction.md
+  - src/pages/Review/**
+  - src/pages/ManageSystem/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Audit Status Reference
 
 > Purpose: exact state-code meaning and transition rules for the audit workflow.
