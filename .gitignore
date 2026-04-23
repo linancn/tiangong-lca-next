@@ -60,3 +60,6 @@ __pycache__/
 docker/.env.deploy.local
 
 .env.supabase*.local
+
+# docpact local reports
+.docpact/runs/
