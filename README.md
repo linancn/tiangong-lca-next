@@ -1,3 +1,25 @@
+---
+title: TianGong LCA Data Platform Landing
+docType: landing
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when you need the public-facing repo landing summary
+  - when checking whether the high-level product overview still matches the current repo contract
+whenToUpdate:
+  - when the public repo landing summary changes
+  - when linked docs-site entrypoints or deployment references change
+checkPaths:
+  - README.md
+  - README_CN.md
+  - AGENTS.md
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+---
+
 # TianGong LCA Data Platform
 
 [English](https://github.com/linancn/tiangong-lca-next/blob/main/README.md) | [中文](https://github.com/linancn/tiangong-lca-next/blob/main/README_CN.md)

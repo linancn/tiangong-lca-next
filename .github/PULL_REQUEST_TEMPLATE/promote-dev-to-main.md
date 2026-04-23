@@ -1,3 +1,25 @@
+---
+title: next Promote Dev To Main PR Template
+docType: template
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when opening a promotion PR from dev into main
+  - when checking the expected validation and follow-up note shape for a promote PR
+whenToUpdate:
+  - when promotion handoff expectations change
+  - when validation or back-merge note shape for promote PRs changes
+checkPaths:
+  - .github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md
+  - AGENTS.md
+  - docs/agents/repo-validation.md
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+---
+
 ## Promotion Contract
 
 - base branch: `main`
