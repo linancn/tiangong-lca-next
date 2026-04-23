@@ -1,3 +1,28 @@
+---
+title: next Development Execution Guide
+docType: guide
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when changing shipped frontend behavior
+  - when refactoring app-side service logic
+  - when updating route, page, component, locale, or static-resource consumers
+whenToUpdate:
+  - when development workflow or canonical commands change
+  - when doc ownership references change
+  - when the required execution order becomes inaccurate
+checkPaths:
+  - docs/agents/ai-dev-guide.md
+  - AGENTS.md
+  - .docpact/config.yaml
+  - .docpact/validation.md
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Development Execution Guide
 
 > Purpose: shortest reliable execution path for implementation and refactor work in this repo.
@@ -60,9 +85,9 @@ npm run prepush:gate
 
 ## Required Doc Updates
 
-- runtime fact or hard boundary changed: update `AGENTS.md` and `ai/repo.yaml`
-- task routing changed: update `ai/task-router.md`
-- proof rule changed: update `ai/validation.md`
+- runtime fact, routing rule, or hard boundary changed: update `AGENTS.md` and `.docpact/config.yaml`
+- proof rule changed: update `.docpact/validation.md`
+- repo mental model changed: update `.docpact/architecture.md`
 - development workflow changed: update this file
 - narrow domain rule changed: update the domain reference that owns it
 

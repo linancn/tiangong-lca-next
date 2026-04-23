@@ -1,3 +1,29 @@
+---
+title: next Testing Execution Guide
+docType: guide
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when adding tests for a code change
+  - when fixing failing tests
+  - when deciding the minimum testing workflow for a scoped change
+whenToUpdate:
+  - when testing workflow or canonical commands change
+  - when repo-local doc maintenance commands change
+  - when coverage or gate expectations change
+checkPaths:
+  - docs/agents/ai-testing-guide.md
+  - .docpact/validation.md
+  - package.json
+  - jest.config.cjs
+  - .github/workflows/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Testing Execution Guide
 
 > Purpose: shortest reliable execution path for adding, updating, and validating tests in this repo.
@@ -42,7 +68,7 @@
 | full coverage run | `npm run test:coverage` |
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | protected-branch parity gate | `npm run prepush:gate` |
-| repo-local doc maintenance check | `node .github/scripts/ai-doc-lint.mjs --mode enforce --files "<csv>"` |
+| repo-local doc maintenance check | `docpact lint --root . --files "<csv>" --mode enforce` |
 
 ## Coverage Rules
 

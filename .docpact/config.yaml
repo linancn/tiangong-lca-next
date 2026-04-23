@@ -1,0 +1,390 @@
+version: 1
+layout: repo
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+
+catalog:
+  repos:
+    - id: next
+      path: .
+      canonicalRepo: linancn/tiangong-lca-next
+      entryDoc: AGENTS.md
+      workflowDocs:
+        - DEV.md
+        - docs/agents/ai-dev-guide.md
+        - docs/agents/ai-testing-guide.md
+      workspaceIntegrationRequired: true
+
+ownership:
+  domains:
+    - id: frontend-product-ui-and-runtime
+      paths:
+        include:
+          - config/**
+          - src/**
+          - public/**
+          - docker/**
+          - electron/**
+          - electron-builder.json
+          - icons/**
+      ownerRepo: next
+    - id: repo-governance-and-bootstrap-docs
+      paths:
+        include:
+          - AGENTS.md
+          - DEV.md
+          - .docpact/**
+          - docs/agents/**
+          - .github/workflows/ai-doc-lint.yml
+      ownerRepo: next
+    - id: repo-testing-and-quality-gates
+      paths:
+        include:
+          - tests/**
+          - package.json
+          - .nvmrc
+          - jest.config.cjs
+          - .husky/pre-push
+          - .github/workflows/ci.yml
+          - .github/workflows/build.yml
+          - .github/workflows/ai-doc-lint.yml
+          - scripts/test-runner.cjs
+          - scripts/test-coverage-report.js
+      ownerRepo: next
+
+coverage:
+  include:
+    - AGENTS.md
+    - DEV.md
+    - README.md
+    - README_CN.md
+    - .docpact/**
+    - docs/agents/**
+    - config/**
+    - src/**
+    - public/**
+    - docker/**
+    - electron/**
+    - icons/**
+    - tests/**
+    - package.json
+    - .nvmrc
+    - jest.config.cjs
+    - .husky/pre-push
+    - .github/workflows/**
+    - scripts/**
+  exclude:
+    - node_modules/**
+    - dist/**
+    - coverage/**
+    - build/**
+
+freshness:
+  warn_after_commits: 40
+  warn_after_days: 60
+  critical_after_days: 120
+
+routing:
+  intents:
+    page-ui:
+      paths:
+        - config/routes.ts
+        - src/app.tsx
+        - src/pages/**
+        - src/components/**
+        - src/locales/**
+    service-env:
+      paths:
+        - config/supabaseEnv.ts
+        - src/services/**
+        - docker/pull-edge-functions.sh
+        - docker/scripts/sync-migrations-to-data-sql.sh
+        - docker/volumes/functions/**
+        - docker/volumes/db/init/**
+    testing-gates:
+      paths:
+        - package.json
+        - .nvmrc
+        - jest.config.cjs
+        - .husky/pre-push
+        - .github/workflows/ci.yml
+        - .github/workflows/build.yml
+        - .github/workflows/ai-doc-lint.yml
+        - scripts/test-runner.cjs
+        - scripts/test-coverage-report.js
+        - tests/**
+    repo-docs:
+      paths:
+        - AGENTS.md
+        - DEV.md
+        - .docpact/**
+        - docs/agents/**
+        - .github/workflows/ai-doc-lint.yml
+    proof:
+      paths:
+        - package.json
+        - .nvmrc
+        - jest.config.cjs
+        - .husky/pre-push
+        - .github/workflows/ci.yml
+        - .github/workflows/build.yml
+        - tests/**
+        - .docpact/validation.md
+        - docs/agents/ai-testing-guide.md
+        - docs/agents/test_todo_list.md
+        - docs/agents/prepush-gate-policy.md
+    repo-shape:
+      paths:
+        - config/**
+        - src/**
+        - public/**
+        - docker/**
+        - electron/**
+        - .docpact/architecture.md
+    lifecycle-model-ui:
+      paths:
+        - src/services/lifeCycleModels/**
+        - src/services/lca/**
+        - src/components/LcaTaskCenter/**
+        - src/pages/Processes/Analysis/**
+    team-and-review-management:
+      paths:
+        - src/pages/Review/**
+        - src/pages/ManageSystem/**
+        - src/pages/Teams/**
+    classification-assets:
+      paths:
+        - public/classifications/**
+        - public/locations/**
+        - public/lciamethods/**
+
+docInventory:
+  include:
+    - AGENTS.md
+    - DEV.md
+    - README.md
+    - README_CN.md
+    - .docpact/**/*.md
+    - .docpact/**/*.yaml
+    - docs/agents/**/*.md
+    - .github/workflows/ai-doc-lint.yml
+  exclude:
+    - docs/agents/contribution-path-analysis-design.md
+    - docs/agents/lca-analysis-visualization-plan.md
+
+repo:
+  id: next
+  owner: next
+  runtime: node
+
+rules:
+  - id: next-bootstrap-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: AGENTS.md
+        kind: doc-contract
+      - path: DEV.md
+        kind: doc-entry
+      - path: README.md
+        kind: doc-entry
+      - path: .docpact/**
+        kind: doc-ai-layer
+      - path: docs/agents/ai-dev-guide.md
+        kind: deep-doc
+      - path: docs/agents/ai-testing-guide.md
+        kind: deep-doc
+      - path: docs/agents/prepush-gate-policy.md
+        kind: deep-doc
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: DEV.md
+        mode: review_or_update
+    reason: Repo entry guidance, machine-readable routing, and bootstrap docs must stay aligned.
+  - id: next-frontend-runtime-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: config/routes.ts
+        kind: route-tree
+      - path: config/config.ts
+        kind: app-config
+      - path: src/app.tsx
+        kind: app-runtime
+      - path: src/pages/**
+        kind: page-ui
+      - path: src/components/**
+        kind: shared-ui
+      - path: src/locales/**
+        kind: ui-locale
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: .docpact/architecture.md
+        mode: review_or_update
+      - path: docs/agents/ai-dev-guide.md
+        mode: review_or_update
+    reason: Frontend runtime changes alter the shipped product surface and should refresh the repo contract, proof rules, architecture map, and primary dev guide.
+  - id: next-data-boundary-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: config/supabaseEnv.ts
+        kind: env-selection
+      - path: src/services/**
+        kind: service-logic
+      - path: docs/agents/supabase-branching.md
+        kind: domain-doc
+      - path: docker/pull-edge-functions.sh
+        kind: sync-helper
+      - path: docker/scripts/sync-migrations-to-data-sql.sh
+        kind: sync-helper
+      - path: docker/volumes/functions/**
+        kind: mirrored-runtime
+      - path: docker/volumes/db/init/**
+        kind: mirrored-runtime
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: .docpact/architecture.md
+        mode: review_or_update
+      - path: docs/agents/supabase-branching.md
+        mode: review_or_update
+    reason: App-side service and environment changes alter the frontend data boundary and should refresh both the repo contract and the Supabase branching guide.
+  - id: next-testing-and-gate-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: package.json
+        kind: runtime-config
+      - path: .nvmrc
+        kind: runtime-config
+      - path: docs/agents/test_todo_list.md
+        kind: domain-doc
+      - path: jest.config.cjs
+        kind: test-gate
+      - path: .husky/pre-push
+        kind: test-gate
+      - path: .github/workflows/ci.yml
+        kind: ci
+      - path: .github/workflows/build.yml
+        kind: ci
+      - path: scripts/test-runner.cjs
+        kind: test-gate
+      - path: scripts/test-coverage-report.js
+        kind: test-gate
+      - path: tests/**
+        kind: repo-test
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: docs/agents/ai-testing-guide.md
+        mode: review_or_update
+      - path: docs/agents/test_todo_list.md
+        mode: review_or_update
+      - path: docs/agents/prepush-gate-policy.md
+        mode: review_or_update
+    reason: Coverage and protected-branch gate changes alter how future frontend work is validated and should refresh both the repo contract and testing guides.
+  - id: next-static-resource-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: public/classifications/**
+        kind: static-resource
+      - path: public/locations/**
+        kind: static-resource
+      - path: public/lciamethods/**
+        kind: static-resource
+      - path: docs/agents/public-classifications-gz-usage.md
+        kind: domain-doc
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: .docpact/architecture.md
+        mode: review_or_update
+      - path: docs/agents/public-classifications-gz-usage.md
+        mode: review_or_update
+    reason: Static resource changes can invalidate both the repo routing layer and the detailed cache or usage guidance.
+  - id: next-analysis-and-calculation-adjacent-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: src/services/lifeCycleModels/**
+        kind: domain-ui
+      - path: src/services/lca/**
+        kind: domain-ui
+      - path: src/components/LcaTaskCenter/**
+        kind: domain-ui
+      - path: src/pages/Processes/Analysis/**
+        kind: domain-ui
+      - path: docs/agents/util_calculate.md
+        kind: domain-doc
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: .docpact/architecture.md
+        mode: review_or_update
+      - path: docs/agents/util_calculate.md
+        mode: review_or_update
+    reason: Calculation-adjacent UI flows depend on a narrow domain guide as well as the repo-wide architecture and proof rules.
+  - id: next-team-and-review-management-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: src/pages/Review/**
+        kind: domain-ui
+      - path: src/pages/ManageSystem/**
+        kind: domain-ui
+      - path: src/pages/Teams/**
+        kind: domain-ui
+      - path: docs/agents/team_management.md
+        kind: domain-doc
+      - path: docs/agents/data_audit_instruction.md
+        kind: domain-doc
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: .docpact/architecture.md
+        mode: review_or_update
+      - path: docs/agents/team_management.md
+        mode: review_or_update
+      - path: docs/agents/data_audit_instruction.md
+        mode: review_or_update
+    reason: Team, review, and system-management flows rely on narrow business references in addition to the repo-wide architecture and proof docs.
+  - id: next-doc-governance-automation-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: .github/workflows/ai-doc-lint.yml
+        kind: automation
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: .docpact/validation.md
+        mode: review_or_update
+      - path: docs/agents/ai-testing-guide.md
+        mode: review_or_update
+    reason: Repo-local documentation-governance automation changes alter the maintenance gate and should refresh the repo contract and testing workflow docs.

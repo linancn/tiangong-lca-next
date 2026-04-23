@@ -1,3 +1,28 @@
+---
+title: next Team Management Reference
+docType: reference
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when changing team-management flows
+  - when checking role-based permissions
+  - when validating entry or exit behavior in team-management screens
+whenToUpdate:
+  - when role permissions change
+  - when team-management flow rules change
+  - when the owning UI paths move
+checkPaths:
+  - docs/agents/team_management.md
+  - src/pages/Teams/**
+  - src/pages/Review/**
+  - src/pages/ManageSystem/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Team Management Reference
 
 > Purpose: exact role and flow rules for the team-management domain.

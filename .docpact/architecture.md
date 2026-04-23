@@ -15,18 +15,17 @@ whenToUpdate:
   - when stable path ownership changes
   - when the current map becomes misleading
 checkPaths:
-  - ai/architecture.md
-  - ai/repo.yaml
+  - .docpact/architecture.md
+  - .docpact/config.yaml
   - config/**
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-04-21
-lastReviewedCommit: 25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
   - ../AGENTS.md
-  - ./repo.yaml
-  - ./task-router.md
+  - ./config.yaml
   - ./validation.md
 ---
 

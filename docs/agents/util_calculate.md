@@ -1,3 +1,29 @@
+---
+title: next Lifecycle Model Calculation Reference
+docType: reference
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when changing `src/services/lifeCycleModels/util_calculate.ts`
+  - when changing `src/services/lifeCycleModels/util_allocate_supply_demand.ts`
+  - when debugging submodel generation, allocation, scaling, or LCIA output
+whenToUpdate:
+  - when the frontend-side calculation pipeline changes
+  - when helper responsibilities move between modules
+  - when generation or allocation rules become inaccurate
+checkPaths:
+  - docs/agents/util_calculate.md
+  - src/services/lifeCycleModels/**
+  - src/services/lca/**
+  - src/components/LcaTaskCenter/**
+  - src/pages/Processes/Analysis/**
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Lifecycle Model Calculation Reference
 
 > Purpose: exact reference for `genLifeCycleModelProcesses` and the helper pipeline that generates or updates life-cycle-model submodels.

@@ -17,20 +17,19 @@ whenToUpdate:
 checkPaths:
   - AGENTS.md
   - DEV.md
-  - ai/**/*.md
-  - ai/**/*.yaml
+  - .docpact/**/*.md
+  - .docpact/**/*.yaml
   - docs/agents/**
   - package.json
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-04-21
-lastReviewedCommit: 25d9c1e2799929b4fb3f8a524b2a47931a7b0dc8
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 related:
-  - ai/repo.yaml
-  - ai/task-router.md
-  - ai/validation.md
-  - ai/architecture.md
+  - .docpact/config.yaml
+  - .docpact/validation.md
+  - .docpact/architecture.md
   - DEV.md
 ---
 
@@ -63,10 +62,9 @@ Required principles:
 | --- | --- | --- |
 | `AGENTS.md` | repo contract, documentation principles, runtime facts, branch facts, hard boundaries | deep implementation details, large reference material |
 | `DEV.md` | local bootstrap and shortest repeatable work loop | repo contract, branch policy, proof matrix |
-| `ai/repo.yaml` | machine-readable repo facts and document registry | prose explanations |
-| `ai/task-router.md` | task-to-path and task-to-doc routing | runtime facts, proof rules |
-| `ai/validation.md` | minimum proof by change type | bootstrap, business logic details |
-| `ai/architecture.md` | compact repo mental model and stable path map | execution checklists |
+| `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, and governed-doc inventory | prose explanations |
+| `.docpact/validation.md` | minimum proof by change type | bootstrap, business logic details |
+| `.docpact/architecture.md` | compact repo mental model and stable path map | execution checklists |
 | `docs/agents/ai-dev-guide.md` | development execution workflow | repo facts already owned by `AGENTS.md` |
 | `docs/agents/ai-testing-guide.md` | testing execution workflow | deep test patterns and troubleshooting detail |
 | `docs/agents/testing-patterns.md` | reusable testing patterns and templates | operational test state |
@@ -88,10 +86,9 @@ Required principles:
 Read in this order:
 
 1. `AGENTS.md`
-2. `ai/repo.yaml`
-3. `ai/task-router.md`
-4. `ai/validation.md` or `ai/architecture.md`
-5. the narrow document that owns the current subject
+2. `.docpact/config.yaml`
+3. `.docpact/validation.md` or `.docpact/architecture.md`
+4. the narrow document that owns the current subject
 
 Do not start from a deep reference or design doc unless the task is already scoped to that subject.
 
@@ -105,7 +102,7 @@ Do not start from a deep reference or design doc unless the task is already scop
 - full protected-branch gate: `npm run prepush:gate`
 - app-side Supabase access belongs only in `src/services/**`
 - new npm dependencies require human approval
-- repo-local AI doc maintenance is enforced by `.github/workflows/ai-doc-lint.yml`
+- repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
 
 ## Ownership Boundaries
 
@@ -168,9 +165,9 @@ npm run prepush:gate
 
 ## Documentation Update Rules
 
-- if a repo fact changes, update `AGENTS.md` and `ai/repo.yaml`
-- if task routing changes, update `ai/task-router.md`
-- if proof requirements change, update `ai/validation.md`
+- if a repo fact, routing rule, or governed-doc rule changes, update `AGENTS.md` and `.docpact/config.yaml`
+- if proof requirements change, update `.docpact/validation.md`
+- if the repo mental model changes, update `.docpact/architecture.md`
 - if local bootstrap changes, update `DEV.md`
 - if dev workflow changes, update `docs/agents/ai-dev-guide.md`
 - if testing workflow changes, update `docs/agents/ai-testing-guide.md` and `docs/agents/test_todo_list.md`

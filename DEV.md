@@ -1,3 +1,29 @@
+---
+title: next Development Bootstrap
+docType: guide
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when setting up the repo locally
+  - when checking the canonical local commands
+  - when resetting the shortest safe work loop after time away
+whenToUpdate:
+  - when bootstrap commands change
+  - when the default local work loop changes
+  - when the owning doc pointers become stale
+checkPaths:
+  - DEV.md
+  - AGENTS.md
+  - .docpact/config.yaml
+  - package.json
+  - .nvmrc
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Development Bootstrap
 
 > Purpose: local setup and the shortest safe work loop for this repo. Repo policy, proof rules, and document ownership live in `AGENTS.md`.
@@ -64,7 +90,7 @@ npm install
 ## If You Need More Than This File
 
 - repo rules and document ownership: `AGENTS.md`
-- path and doc routing: `ai/task-router.md`
-- minimum proof: `ai/validation.md`
-- frontend mental model: `ai/architecture.md`
+- path and doc routing: `.docpact/config.yaml`
+- minimum proof: `.docpact/validation.md`
+- frontend mental model: `.docpact/architecture.md`
 - narrow execution guides: `docs/agents/**`

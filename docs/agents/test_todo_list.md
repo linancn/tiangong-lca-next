@@ -1,3 +1,29 @@
+---
+title: next Testing Execution State
+docType: guide
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when checking the current operational testing state
+  - when deciding whether a coverage queue is active
+  - when validating the latest known full-coverage baseline
+whenToUpdate:
+  - when the verified baseline run changes
+  - when the active queue state changes
+  - when present-state testing facts become stale
+checkPaths:
+  - docs/agents/test_todo_list.md
+  - package.json
+  - tests/**
+  - scripts/test-runner.cjs
+  - scripts/test-coverage-report.js
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+---
+
 # Testing Execution State
 
 > Source of truth for the current operational testing state. Use this file for present-state execution facts, not for long-term strategy.
