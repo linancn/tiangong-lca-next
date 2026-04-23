@@ -93,4 +93,5 @@ npm install
 - path and doc routing: `.docpact/config.yaml`
 - minimum proof: `docs/agents/repo-validation.md`
 - frontend mental model: `docs/agents/repo-architecture.md`
-- narrow execution guides: `docs/agents/**`
+- narrow source docs: the owning file under `docs/agents/**`
+- secondary context only after the core contract surface is insufficient: `README*`, testing references, rollout notes, and proposal docs

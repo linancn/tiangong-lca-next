@@ -27,7 +27,6 @@ related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
   - ./repo-architecture.md
-  - ./ai-testing-guide.md
 ---
 
 ## Validation Order

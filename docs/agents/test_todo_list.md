@@ -66,6 +66,6 @@ Reopen an execution queue only when at least one of these becomes true:
 
 ## Update Rules
 
-- workflow or baseline changed: update this file and `docs/agents/ai-testing-guide.md`
+- workflow or baseline changed: update this file and `docs/agents/repo-validation.md`
 - long-term strategy changed: update `docs/agents/test_improvement_plan.md`
 - keep current-state facts here; move rationale and long-term goals elsewhere

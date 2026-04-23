@@ -55,30 +55,30 @@ Required principles:
 - stable structure: same document type uses the same section order where practical
 - reference instead of duplication: when a rule already has an owner, link to it instead of restating it
 
-## Documentation Ownership
+## Documentation Roles
 
 | Document | Owns | Does not own |
 | --- | --- | --- |
-| `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, human-readable boundaries | deep implementation details, large reference material |
-| `DEV.md` | local bootstrap and shortest repeatable work loop | repo contract, branch policy, proof matrix |
-| `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, and governed-doc inventory | prose explanations |
-| `docs/agents/repo-validation.md` | minimum proof by change type | bootstrap, business logic details |
-| `docs/agents/repo-architecture.md` | compact repo mental model and stable path map | execution checklists |
-| `docs/agents/ai-dev-guide.md` | development execution workflow | repo facts already owned by `AGENTS.md` |
-| `docs/agents/ai-testing-guide.md` | testing execution workflow | deep test patterns and troubleshooting detail |
-| `docs/agents/testing-patterns.md` | reusable testing patterns and templates | operational test state |
-| `docs/agents/testing-troubleshooting.md` | failure diagnosis and recovery steps | strategy or backlog state |
+| `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, hard boundaries | deep implementation details, large reference material |
+| `DEV.md` | local bootstrap and the shortest repeatable work loop | repo contract, branch policy, proof matrix |
+| `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, governed-doc inventory | prose explanations and narrative summaries |
+| `docs/agents/repo-validation.md` | minimum proof by change type and PR validation note shape | bootstrap, business logic details |
+| `docs/agents/repo-architecture.md` | compact repo mental model and stable path map | execution checklists and present-state testing facts |
 | `docs/agents/test_todo_list.md` | current testing execution state | long-term testing strategy |
-| `docs/agents/test_improvement_plan.md` | long-term testing strategy | current operational queue state |
-| `docs/agents/prepush-gate-policy.md` | proposed gate policy and rollout contract | current runtime truth unless explicitly stated |
 | `docs/agents/supabase-branching.md` | frontend environment selection and database ownership workflow | schema truth |
-| `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | general app architecture |
-| `docs/agents/util_calculate.md` | life-cycle-model calculation reference | repo-wide workflow rules |
-| `docs/agents/team_management.md` | team-management business reference | frontend execution workflow |
-| `docs/agents/data_audit_instruction.md` | audit status and transition reference | testing or branch workflow |
-| `docs/agents/contribution-path-analysis-design.md` | proposed contribution-path design | runtime contract |
-| `docs/agents/lca-analysis-visualization-plan.md` | proposed analysis UI plan | runtime contract |
-| `.github/PULL_REQUEST_TEMPLATE/*.md` | required PR facts and proof fields | repo policy explanation |
+| `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
+| `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
+
+Secondary context, not part of the default AI contract surface:
+
+- `README.md` and `README_CN.md`
+- `docs/agents/testing-patterns.md`
+- `docs/agents/testing-troubleshooting.md`
+- `docs/agents/prepush-gate-policy.md`
+- `docs/agents/test_improvement_plan.md`
+- `docs/agents/contribution-path-analysis-design.md`
+- `docs/agents/lca-analysis-visualization-plan.md`
+- `.github/PULL_REQUEST_TEMPLATE/*.md`
 
 ## Load Order
 
@@ -87,9 +87,9 @@ Read in this order:
 1. `AGENTS.md`
 2. `.docpact/config.yaml`
 3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
-4. the narrow document that owns the current subject
+4. the narrow source doc that owns the current subject
 
-Do not start from a deep reference or design doc unless the task is already scoped to that subject.
+Do not start from secondary context, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
 
 ## Operational Pointers
 
@@ -135,11 +135,12 @@ Do not infer daily workflow from GitHub default-branch UI alone.
 
 ## Documentation Update Rules
 
-Use the ownership table in this file as the update map.
+Use the role table in this file as the update map.
 
 - if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
 - if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
 - if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
+- if a document is only secondary context or a proposal, do not promote it into the default governed surface without a clear routing or review need
 - do not copy the same rule into multiple docs just to make it easier to find
 
 ## Hard Boundaries
