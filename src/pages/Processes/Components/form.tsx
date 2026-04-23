@@ -489,13 +489,11 @@ export const ProcessForm: FC<Props> = ({
 
       const previousEntry = previousEntries.get(key);
       const nextEntry = nextEntries.get(key);
-      const fieldName = nextEntry?.name ?? previousEntry?.name;
+      const fieldName = (nextEntry?.name ?? previousEntry?.name)!;
 
-      if (!fieldName) {
-        return;
-      }
-
-      const existingErrors = formInstance.getFieldError(fieldName) ?? [];
+      const existingErrors = [formInstance.getFieldError(fieldName)]
+        .flat()
+        .filter((errorMessage): errorMessage is string => typeof errorMessage === 'string');
       const previousSdkMessages = previousEntry?.entries.map((entry) => entry.text) ?? [];
       const retainedErrors = existingErrors.filter(
         (errorMessage: string) => !previousSdkMessages.includes(errorMessage),

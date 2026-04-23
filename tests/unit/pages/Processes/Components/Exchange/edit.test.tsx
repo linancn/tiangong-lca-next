@@ -1,6 +1,7 @@
 // @ts-nocheck
 import ProcessExchangeEdit from '@/pages/Processes/Components/Exchange/edit';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -211,10 +212,11 @@ jest.mock('antd', () => {
     const React = require('react');
     const nameKey = Array.isArray(name) ? name.join('.') : name;
     const currentFormApi = (globalThis as any).__TEST_PROCESS_EXCHANGE_FORM_API__;
-    const errors =
+    const rawErrors =
       name && typeof currentFormApi?.getFieldError === 'function'
         ? currentFormApi.getFieldError(name)
         : [];
+    const errors = Array.isArray(rawErrors) ? rawErrors : [];
     return (
       <div data-testid={nameKey ? `form-item-${nameKey}` : undefined}>
         {React.Children.map(children, (child: any) => {
@@ -684,6 +686,235 @@ describe('ProcessExchangeEdit', () => {
       expect(mockProFormApi?.scrollToField).toHaveBeenCalledWith(['meanAmount'], {
         focus: true,
       });
+    });
+  });
+
+  it('keeps auto-open idempotent when strict-mode replays mount effects', async () => {
+    render(
+      <React.StrictMode>
+        <ProcessExchangeEdit {...defaultProps} autoOpen />
+      </React.StrictMode>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'close' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('deduplicates repeated sdk field messages and ignores unmappable highlights', async () => {
+    const props = {
+      ...defaultProps,
+      autoOpen: true,
+      sdkHighlights: [
+        {
+          key: 'sdk-ignored-no-path',
+          suggestedFix: 'Ignored because no field can be resolved.',
+        },
+        {
+          key: 'sdk-ignored-empty-path',
+          fieldPath: 'exchange[#0].',
+          suggestedFix: 'Ignored because no field can be resolved.',
+        },
+        {
+          key: 'sdk-duplicate-1',
+          fieldKey: 'meanAmount',
+          fieldLabel: 'Mean amount',
+          fieldPath: 'exchange[#0].meanAmount',
+          formName: ['meanAmount'],
+          suggestedFix: 'Duplicate sdk warning',
+          validationCode: 'invalid_type',
+        },
+        {
+          key: 'sdk-duplicate-2',
+          fieldKey: 'meanAmount',
+          fieldLabel: 'Mean amount',
+          fieldPath: 'exchange[#0].meanAmount',
+          formName: ['meanAmount'],
+          suggestedFix: 'Duplicate sdk warning',
+          validationCode: 'invalid_type',
+        },
+      ],
+    };
+
+    const { rerender } = render(<ProcessExchangeEdit {...props} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText('Duplicate sdk warning')).toHaveLength(1);
+
+    const setFieldsSpy = jest.spyOn(mockProFormApi, 'setFields');
+    setFieldsSpy.mockClear();
+
+    rerender(<ProcessExchangeEdit {...props} />);
+
+    await act(async () => {});
+    expect(setFieldsSpy).not.toHaveBeenCalled();
+  });
+
+  it('suppresses local required sdk copy for exchange selectors', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        showRules
+        sdkHighlights={[
+          {
+            key: 'sdk-reference-required',
+            fieldKey: 'referenceToFlowDataSet',
+            fieldLabel: 'Flow',
+            fieldPath: 'exchange[#0].referenceToFlowDataSet.@refObjectId',
+            formName: ['referenceToFlowDataSet', '@refObjectId'],
+            suggestedFix: 'Fill in the required value for this field.',
+            validationCode: 'required_missing',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Fill in this field')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Fill in the required value for this field.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('skips auto-scrolling when the first sdk highlight cannot be mapped to a form field', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-invalid-focus',
+            fieldPath: 'exchange[#0].',
+            suggestedFix: 'Ignored because no field can be resolved.',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
+  });
+
+  it('parses field-path-only sdk highlights, appends distinct messages, and clears removed entries', async () => {
+    const props = {
+      ...defaultProps,
+      autoOpen: true,
+      sdkHighlights: [
+        {
+          key: 'sdk-fieldkey-only',
+          fieldKey: 'meanAmount',
+          suggestedFix: 'Need an amount',
+          validationCode: 'invalid_type',
+        },
+        {
+          key: 'sdk-source-reference-1',
+          fieldPath: 'exchange[#0].referencesToDataSource.referenceToDataSource.1.@refObjectId',
+          suggestedFix: 'Choose a source reference',
+          validationCode: 'required_missing',
+        },
+        {
+          key: 'sdk-source-reference-2',
+          fieldPath: 'exchange[#0].referencesToDataSource.referenceToDataSource.1.@refObjectId',
+          suggestedFix: 'Use a valid source reference',
+          validationCode: 'invalid_type',
+        },
+      ],
+    };
+
+    const { rerender } = render(<ProcessExchangeEdit {...props} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(mockProFormApi?.scrollToField).toHaveBeenCalledWith(['meanAmount'], { focus: true });
+    expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Need an amount']);
+    expect(
+      mockProFormApi?.getFieldError([
+        'referencesToDataSource',
+        'referenceToDataSource',
+        1,
+        '@refObjectId',
+      ]),
+    ).toEqual(['Fill in this field', 'Use a valid source reference']);
+
+    rerender(<ProcessExchangeEdit {...props} sdkHighlights={[]} />);
+
+    await waitFor(() => {
+      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual([]);
+    });
+
+    expect(
+      mockProFormApi?.getFieldError([
+        'referencesToDataSource',
+        'referenceToDataSource',
+        1,
+        '@refObjectId',
+      ]),
+    ).toEqual([]);
+  });
+
+  it('falls back to an empty error list when the form api returns undefined field errors', async () => {
+    const props = {
+      ...defaultProps,
+      autoOpen: true,
+    };
+
+    const { rerender } = render(<ProcessExchangeEdit {...props} sdkHighlights={[]} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    const originalGetFieldError = mockProFormApi.getFieldError;
+    const originalSetFields = mockProFormApi.setFields;
+    let returnUndefinedForMeanAmount = true;
+    mockProFormApi.getFieldError = jest.fn((name: any) => {
+      if (
+        returnUndefinedForMeanAmount &&
+        mockNormalizeFieldName(name) === mockNormalizeFieldName(['meanAmount'])
+      ) {
+        return undefined;
+      }
+      return originalGetFieldError(name);
+    });
+    mockProFormApi.setFields = jest.fn((fields: any) => {
+      returnUndefinedForMeanAmount = false;
+      return originalSetFields(fields);
+    });
+
+    rerender(
+      <ProcessExchangeEdit
+        {...props}
+        sdkHighlights={[
+          {
+            key: 'sdk-mean-amount-required',
+            fieldPath: 'exchange[#0].meanAmount',
+            suggestedFix: 'Need an amount',
+            validationCode: 'invalid_type',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Need an amount']);
     });
   });
 });

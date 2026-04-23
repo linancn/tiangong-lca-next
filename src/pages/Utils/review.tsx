@@ -500,15 +500,11 @@ export const enrichValidationIssuesWithOwner = async (issues: ValidationIssue[])
   });
 };
 
-const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
+export const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
   const normalizePath = (path?: PropertyKey[] | string) =>
     Array.isArray(path) ? path : typeof path === 'string' ? [path] : [];
 
   const getSdkInputType = (input: unknown) => {
-    if (input === undefined) {
-      return 'undefined';
-    }
-
     if (input === null) {
       return 'null';
     }
@@ -724,7 +720,7 @@ const cloneSdkValidationInput = <T,>(orderedJson: T): T => {
 };
 
 const normalizeSdkIssuePathSegments = (path: PropertyKey[] | string | undefined): string[] => {
-  const rawSegments = Array.isArray(path) ? path : typeof path === 'string' ? [path] : [];
+  const rawSegments = ([] as PropertyKey[]).concat(path as any);
 
   return rawSegments
     .flatMap((segment) => {

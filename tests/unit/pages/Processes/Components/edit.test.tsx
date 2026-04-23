@@ -1,5 +1,7 @@
 // @ts-nocheck
-import ProcessEdit from '@/pages/Processes/Components/edit';
+import ProcessEdit, {
+  normalizeQuantitativeReferenceSelection,
+} from '@/pages/Processes/Components/edit';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
@@ -2042,6 +2044,145 @@ describe('ProcessEdit component', () => {
     );
     await waitFor(() => expect(mockValidateFields).toHaveBeenCalled());
     expect(latestProcessFormProps.sdkValidationFocus).toEqual(sdkDetail);
+  });
+
+  it('revalidates tab-only modal navigation targets without focusing a specific field', async () => {
+    const sdkDetail = {
+      key: 'sdk-nav-admin-section',
+      tabName: 'administrativeInformation',
+      fieldKey: 'common:referenceToCommissioner',
+      fieldLabel: 'Commissioner of data set',
+      fieldPath:
+        'administrativeInformation.common:commissionerAndGoal.common:referenceToCommissioner.@refObjectId',
+      formName: [
+        'administrativeInformation',
+        'common:commissionerAndGoal',
+        'common:referenceToCommissioner',
+        '@refObjectId',
+      ],
+      presentation: 'field',
+      reasonMessage: 'Invalid input: expected object, received undefined',
+      validationCode: 'required_missing',
+    };
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        { path: ['processDataSet', 'administrativeInformation', 'common:commissionerAndGoal'] },
+      ],
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0&required=1',
+        ref: {
+          '@refObjectId': 'process-1',
+          '@type': 'process data set',
+          '@version': '1.0.0',
+        },
+        sdkDetails: [sdkDetail],
+        tabNames: ['administrativeInformation'],
+      },
+    ]);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ key: 'sdk-issue' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
+
+    jest.useFakeTimers();
+    mockValidateFields.mockClear();
+
+    const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
+
+    await act(async () => {
+      navigate({
+        detail: {
+          ...sdkDetail,
+          presentation: 'section',
+          tabName: undefined,
+        },
+        tabName: 'administrativeInformation',
+      });
+      jest.advanceTimersByTime(250);
+    });
+
+    await waitFor(() =>
+      expect(latestProcessFormProps.activeTabKey).toBe('administrativeInformation'),
+    );
+    await waitFor(() => expect(mockValidateFields).toHaveBeenCalled());
+    expect(latestProcessFormProps.sdkValidationFocus).toBeNull();
+  });
+
+  it('drops field focus when sdk navigation targets a tab-level section detail directly', async () => {
+    const sdkDetail = {
+      key: 'sdk-nav-admin-section-direct',
+      tabName: 'administrativeInformation',
+      fieldKey: 'common:referenceToCommissioner',
+      fieldLabel: 'Commissioner of data set',
+      fieldPath:
+        'administrativeInformation.common:commissionerAndGoal.common:referenceToCommissioner.@refObjectId',
+      formName: [
+        'administrativeInformation',
+        'common:commissionerAndGoal',
+        'common:referenceToCommissioner',
+        '@refObjectId',
+      ],
+      presentation: 'section',
+      reasonMessage: 'Invalid input: expected object, received undefined',
+      validationCode: 'required_missing',
+    };
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        { path: ['processDataSet', 'administrativeInformation', 'common:commissionerAndGoal'] },
+      ],
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0&required=1',
+        ref: {
+          '@refObjectId': 'process-1',
+          '@type': 'process data set',
+          '@version': '1.0.0',
+        },
+        sdkDetails: [sdkDetail],
+        tabNames: ['administrativeInformation'],
+      },
+    ]);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ key: 'sdk-issue' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
+
+    const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
+
+    await act(async () => {
+      navigate({ detail: sdkDetail, tabName: 'administrativeInformation' });
+    });
+
+    await waitFor(() =>
+      expect(latestProcessFormProps.activeTabKey).toBe('administrativeInformation'),
+    );
+    expect(latestProcessFormProps.sdkValidationFocus).toBeNull();
+  });
+
+  it('leaves exchange selections unchanged when no quantitative-reference target is provided', () => {
+    const source = [
+      { '@dataSetInternalID': 'input-1', quantitativeReference: true },
+      { '@dataSetInternalID': 'output-1', quantitativeReference: false },
+    ];
+
+    expect(normalizeQuantitativeReferenceSelection(source, undefined)).toEqual(source);
   });
 
   it('runs the initial data check automatically once when autoCheckRequired is enabled', async () => {

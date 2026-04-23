@@ -27,6 +27,8 @@ jest.mock('antd', () => ({
 }));
 
 describe('RequiredMark Component', () => {
+  const defaultErrorMessage = 'English is a required language!';
+
   const renderComponent = (props: Partial<RequiredMarkProps> = {}) => {
     const defaultProps: RequiredMarkProps = {
       label: 'Dataset Name',
@@ -42,14 +44,14 @@ describe('RequiredMark Component', () => {
 
     expect(screen.getByTestId('form-item')).toBeInTheDocument();
     expect(screen.getByText('Dataset Name')).toBeInTheDocument();
-    expect(screen.queryByText('Please complete this field.')).not.toBeInTheDocument();
+    expect(screen.queryByText(defaultErrorMessage)).not.toBeInTheDocument();
   });
 
   it('defaults showError to false when the prop is omitted', () => {
     render(<RequiredMark label='Dataset Name' {...({} as any)} />);
 
     expect(screen.getByText('Dataset Name')).toBeInTheDocument();
-    expect(screen.queryByText('Please complete this field.')).not.toBeInTheDocument();
+    expect(screen.queryByText(defaultErrorMessage)).not.toBeInTheDocument();
   });
 
   it('displays the provided error label when showError is true', () => {
@@ -61,13 +63,13 @@ describe('RequiredMark Component', () => {
   it('falls back to the default error message when no error label is provided', () => {
     renderComponent({ showError: true });
 
-    expect(screen.getByText('Please complete this field.')).toBeInTheDocument();
+    expect(screen.getByText(defaultErrorMessage)).toBeInTheDocument();
   });
 
   it('applies inline error spacing styles when showing the default error', () => {
     renderComponent({ showError: true });
 
-    expect(screen.getByText('Please complete this field.').parentElement).toHaveStyle({
+    expect(screen.getByText(defaultErrorMessage).parentElement).toHaveStyle({
       fontWeight: 'normal',
       marginLeft: '5px',
     });

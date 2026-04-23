@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { ProcessForm } from '@/pages/Processes/Components/form';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -320,10 +320,11 @@ jest.mock('antd', () => {
   const FormComponent = ({ children }: any) => <form>{children}</form>;
   FormComponent.Item = ({ children, name }: any) => {
     const activeFormInstance = (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__;
-    const errors =
+    const rawErrors =
       name && typeof activeFormInstance?.getFieldError === 'function'
         ? activeFormInstance.getFieldError(name)
         : [];
+    const errors = Array.isArray(rawErrors) ? rawErrors : [];
 
     return (
       <div
@@ -1476,5 +1477,256 @@ describe('ProcessForm component', () => {
       'en',
     );
     expect(result.data).toEqual([]);
+  });
+
+  it('derives validation visibility from form names when sdk field paths are missing', async () => {
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='validation'
+        sdkValidationDetails={[
+          {
+            key: 'sdk-validation-form-name-only',
+            formName: ['modellingAndValidation', 'validation', 'review'],
+            fieldLabel: 'Review',
+            presentation: 'field',
+            suggestedFix: 'Validation review is required',
+            validationCode: 'required_missing',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Fill in this field')).toBeInTheDocument();
+    });
+  });
+
+  it('ignores malformed sdk details and exits field-sync effects when the form instance is missing', async () => {
+    await act(async () => {
+      render(
+        <ProcessForm
+          {...defaultProps}
+          formRef={{ current: null }}
+          sdkValidationDetails={[
+            {
+              key: 'sdk-broken-root',
+              fieldLabel: 'Broken root detail',
+              presentation: 'field',
+            },
+            {
+              key: 'sdk-broken-exchange',
+              exchangeInternalId: 'row-0',
+              fieldPath: 'exchange[#row-0].',
+              suggestedFix: 'This should be ignored',
+              tabName: 'exchanges',
+            },
+            {
+              key: 'sdk-empty-root-message',
+              formName: ['processInformation', 'time', 'common:referenceYear'],
+              fieldLabel: 'Reference year',
+              presentation: 'field',
+              tabName: 'processInformation',
+            },
+            {
+              key: 'sdk-empty-section-message',
+              fieldPath: 'processInformation.dataSetInformation',
+              presentation: 'section',
+              tabName: 'processInformation',
+            },
+            {
+              key: 'sdk-empty-validation-message',
+              formName: ['modellingAndValidation', 'validation', 'review'],
+              fieldLabel: 'Review',
+              presentation: 'field',
+              tabName: 'modellingAndValidation',
+            },
+          ]}
+          sdkValidationFocus={{
+            key: 'sdk-broken-focus',
+            fieldLabel: 'Broken focus',
+            presentation: 'field',
+            tabName: 'processInformation',
+          }}
+        />,
+      );
+    });
+
+    expect(screen.getAllByTestId('card').length).toBeGreaterThan(0);
+    expect(screen.queryByText('This should be ignored')).not.toBeInTheDocument();
+  });
+
+  it('deduplicates root sdk field messages and marks focused output rows', async () => {
+    const rootDetail = {
+      key: 'sdk-root-reference-year-1',
+      fieldKey: 'common:referenceYear',
+      fieldLabel: 'Reference year',
+      fieldPath: 'processInformation.time.common:referenceYear',
+      formName: ['processInformation', 'time', 'common:referenceYear'],
+      suggestedFix: 'Fill in the required value for this field.',
+      tabName: 'processInformation',
+      validationCode: 'required_missing',
+    };
+    const exchangeDetail = {
+      key: 'sdk-output-row-focus',
+      exchangeInternalId: '0',
+      fieldKey: 'meanAmount',
+      fieldLabel: 'Mean amount',
+      fieldPath: 'exchange[#0].meanAmount',
+      reasonMessage: 'Expected string but found undefined',
+      tabName: 'exchanges',
+      validationCode: 'required_missing',
+    };
+
+    const { rerender } = render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[rootDetail, { ...rootDetail, key: 'sdk-root-reference-year-2' }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Please input reference year')).toHaveLength(1);
+    });
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='exchanges'
+        sdkValidationDetails={[exchangeDetail]}
+        sdkValidationFocus={exchangeDetail}
+      />,
+    );
+
+    const [, outputTable] = await getLatestExchangeTables();
+    const outputRowClassName = outputTable.rowClassName;
+
+    expect(
+      outputRowClassName({
+        dataSetInternalID: '0',
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '1.0',
+        meanAmount: 1,
+        resultingAmount: 1,
+        dataDerivationTypeStatus: 'provided',
+      }),
+    ).toBe('sdk-error-row sdk-focus-row');
+  });
+
+  it('falls back to an empty root error list when the form api returns undefined field errors', async () => {
+    const sdkValidationDetail = {
+      key: 'sdk-root-reference-year-invalid-type',
+      fieldKey: 'common:referenceYear',
+      fieldLabel: 'Reference year',
+      fieldPath: 'processInformation.time.common:referenceYear',
+      formName: ['processInformation', 'time', 'common:referenceYear'],
+      suggestedFix: 'Enter this in the correct format.',
+      tabName: 'processInformation',
+      validationCode: 'invalid_type',
+    };
+
+    const { rerender } = render(
+      <ProcessForm {...defaultProps} activeTabKey='processInformation' sdkValidationDetails={[]} />,
+    );
+
+    const originalGetFieldError = defaultProps.formRef.current.getFieldError;
+    defaultProps.formRef.current.getFieldError = jest
+      .fn()
+      .mockReturnValueOnce(undefined)
+      .mockImplementation(originalGetFieldError);
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='validation'
+        sdkValidationDetails={[sdkValidationDetail]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        defaultProps.formRef.current.getFieldError([
+          'processInformation',
+          'time',
+          'common:referenceYear',
+        ]),
+      ).toEqual(['Enter this in the correct format']);
+    });
+  });
+
+  it('appends distinct root sdk messages and joins repeated section warnings with spaces', async () => {
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='validation'
+        sdkValidationDetails={[
+          {
+            key: 'sdk-root-reference-year-invalid-type',
+            fieldKey: 'common:referenceYear',
+            fieldLabel: 'Reference year',
+            fieldPath: 'processInformation.time.common:referenceYear',
+            formName: ['processInformation', 'time', 'common:referenceYear'],
+            suggestedFix: 'Enter this in the correct format.',
+            tabName: 'processInformation',
+            validationCode: 'invalid_type',
+          },
+          {
+            key: 'sdk-root-reference-year-invalid-union',
+            fieldKey: 'common:referenceYear',
+            fieldLabel: 'Reference year',
+            fieldPath: 'processInformation.time.common:referenceYear',
+            formName: ['processInformation', 'time', 'common:referenceYear'],
+            suggestedFix: 'Complete this field as required.',
+            tabName: 'processInformation',
+            validationCode: 'invalid_union',
+          },
+          {
+            key: 'sdk-validation-review-invalid-type',
+            fieldKey: 'review',
+            fieldLabel: 'Review',
+            fieldPath: 'modellingAndValidation.validation.review',
+            presentation: 'section',
+            suggestedFix: 'Enter this in the correct format.',
+            tabName: 'modellingAndValidation',
+            validationCode: 'invalid_type',
+          },
+          {
+            key: 'sdk-validation-review-invalid-union',
+            fieldKey: 'review',
+            fieldLabel: 'Review',
+            fieldPath: 'modellingAndValidation.validation.review',
+            presentation: 'section',
+            suggestedFix: 'Complete this field as required.',
+            tabName: 'modellingAndValidation',
+            validationCode: 'invalid_union',
+          },
+          {
+            key: 'sdk-empty-section-anchor',
+            fieldKey: 'ignored',
+            fieldPath: '',
+            presentation: 'section',
+            suggestedFix: 'Ignored section anchor fallback.',
+            tabName: 'processInformation',
+            validationCode: 'invalid_type',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        defaultProps.formRef.current.getFieldError([
+          'processInformation',
+          'time',
+          'common:referenceYear',
+        ]),
+      ).toEqual(['Enter this in the correct format', 'Complete this field as required']);
+    });
+
+    expect(document.body.textContent).toContain(
+      'Enter this in the correct format Complete this field as required',
+    );
   });
 });

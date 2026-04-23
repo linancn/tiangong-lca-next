@@ -241,9 +241,8 @@ const getSchemaRequiredRule = ({
       ? ['processDataSet', ...fieldName]
       : ['processDataSet', 'exchanges', 'exchange', 0, ...fieldName];
   const schemaNode = getSchemaNodeAtPath(schemaRoot, schemaPath);
-  const rules = Array.isArray((schemaNode as { rules?: unknown[] } | undefined)?.rules)
-    ? ((schemaNode as { rules?: unknown[] }).rules ?? [])
-    : [];
+  const schemaRules = (schemaNode as { rules?: unknown[] } | undefined)?.rules;
+  const rules = Array.isArray(schemaRules) ? schemaRules : [];
 
   return rules.find(isRequiredRule);
 };
@@ -372,4 +371,12 @@ export const getSdkSuggestedFixMessage = (
     : detail.suggestedFix;
 
   return normalizeValidationMessageText(localizedMessage ?? detail.suggestedFix ?? '');
+};
+
+export const sdkValidationUiTestUtils = {
+  formatRequiredRuleMessage,
+  getFrontendRequiredMessage,
+  getSchemaNodeAtPath,
+  getSchemaRequiredRule,
+  getSdkDetailFieldPath,
 };

@@ -1314,4 +1314,175 @@ describe('ValidationIssueModal', () => {
     });
     windowOpenSpy.mockRestore();
   });
+
+  it('falls back to the plain sdk issue description when no interactive tabs can be rendered', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: '',
+            ref: {
+              '@refObjectId': 'sdk-no-tabs',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [],
+            tabNames: [],
+          },
+        ],
+        onNavigate,
+        title: 'sdk fallback',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByText('当前数据集校验失败')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '过程信息' })).not.toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('uses null sdkDetails safely when sdk navigation falls back to a single tab name', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: '',
+            ref: {
+              '@refObjectId': 'sdk-null-details',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: null as any,
+            tabName: 'processInformation',
+          },
+        ],
+        onNavigate,
+        title: 'sdk null details',
+      }) as { destroy: () => void };
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '过程信息' }));
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: undefined,
+      tabName: 'processInformation',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('renders grouped unknown issue codes as a dash without breaking multi-issue rows', async () => {
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: undefined as any,
+            link: 'http://localhost:8000/mydata/processes?id=unknown-issue&version=01.00.000',
+            ref: {
+              '@refObjectId': 'unknown-issue',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=unknown-issue&version=01.00.000',
+            ref: {
+              '@refObjectId': 'unknown-issue',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: 'unknown issue row',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('数据校验不通过')).toBeInTheDocument();
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('uses issue.tabName as an interactive fallback and reuses the first sdk detail when needed', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/processes?id=sdk-tab-fallback&version=01.00.000',
+            ref: {
+              '@refObjectId': 'sdk-tab-fallback',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-process-detail',
+                tabName: 'processInformation',
+                fieldLabel: 'Reference year',
+                fieldPath: 'processInformation.time.common:referenceYear',
+                reasonMessage: 'Reference year is required',
+                suggestedFix: 'Please input reference year',
+              },
+            ],
+            tabName: 'exchanges',
+          },
+        ],
+        onNavigate,
+        title: 'sdk tab fallback',
+      }) as { destroy: () => void };
+    });
+
+    expect(screen.getByRole('button', { name: '过程信息' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '输入/输出' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog').textContent).toContain(
+      '当前数据集校验失败(过程信息，输入/输出)',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '输入/输出' }));
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: expect.objectContaining({
+        key: 'sdk-process-detail',
+        tabName: 'processInformation',
+      }),
+      tabName: 'exchanges',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
 });

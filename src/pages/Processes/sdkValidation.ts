@@ -942,8 +942,8 @@ const toProcessSdkValidationDetail = (
       getProcessSdkIssueTabName(resolvedIssue) ?? 'unknown',
       exchangeContext?.exchangeInternalId ?? exchangeIndex ?? 'root',
       fieldPath,
-      validationCode ?? resolvedIssue.code ?? 'unknown',
-      JSON.stringify(validationParams ?? {}),
+      validationCode,
+      JSON.stringify(validationParams),
     ].join(':'),
     limit,
     presentation: 'field',
@@ -974,4 +974,19 @@ export const normalizeProcessSdkValidationDetails = (
   });
 
   return Array.from(detailMap.values());
+};
+
+export const processSdkValidationTestUtils = {
+  collectLeafUnionIssues,
+  getExchangeContext,
+  getListItemIndex,
+  getProcessSdkIssueExchangeFormName,
+  getProcessSdkIssueFieldKey,
+  getProcessSdkIssueFieldLabel,
+  getProcessSdkIssueFieldPath,
+  getProcessSdkIssueReason,
+  getProcessSdkIssueRootFormName,
+  getProcessSdkValidationCode,
+  isLangTextValue,
+  stringifyProcessSdkFormName,
 };

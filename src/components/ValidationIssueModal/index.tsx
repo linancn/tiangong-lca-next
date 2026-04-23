@@ -587,13 +587,13 @@ const ValidationIssueModalContent = ({
 
   const renderIssueCell = (issue: ValidationIssue) => {
     if (issue.code !== 'sdkInvalid' || !onNavigate) {
-      return getIssueDescription(intl, issue) ?? '-';
+      return getIssueDescription(intl, issue);
     }
 
     const interactiveTabs = renderInteractiveTabs(issue);
 
     if (!interactiveTabs) {
-      return getIssueDescription(intl, issue) ?? '-';
+      return getIssueDescription(intl, issue);
     }
 
     return (
@@ -605,13 +605,11 @@ const ValidationIssueModalContent = ({
           }}
         >
           <span>{getSdkInvalidIssueLabel(intl)}</span>
-          {interactiveTabs ? (
-            <>
-              <span>(</span>
-              {interactiveTabs}
-              <span>)</span>
-            </>
-          ) : null}
+          <>
+            <span>(</span>
+            {interactiveTabs}
+            <span>)</span>
+          </>
         </div>
       </div>
     );

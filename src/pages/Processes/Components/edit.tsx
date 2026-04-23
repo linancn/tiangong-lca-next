@@ -84,7 +84,7 @@ const cloneProcessData = (data?: FormProcessWithDatas) => {
   return JSON.parse(JSON.stringify(data)) as FormProcessWithDatas;
 };
 
-const normalizeQuantitativeReferenceSelection = (
+export const normalizeQuantitativeReferenceSelection = (
   exchangeData: ProcessExchangeData[],
   selectedExchangeInternalId?: string,
 ) => {
