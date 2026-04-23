@@ -26,7 +26,7 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 
 # Pre-Push Gate Policy
 
-> Status: design and rollout contract. Current runtime truth still lives in `AGENTS.md`, `docs/agents/repo-validation.md`, and the active repo scripts.
+> Status: design and rollout contract. Current runtime truth is intentionally not duplicated here; read `docs/agents/repo-validation.md`, `.husky/pre-push`, and the active workflows for the live behavior.
 
 ## Purpose
 
@@ -38,11 +38,15 @@ Define the intended trigger policy for the existing `npm run prepush:gate` comma
 npm run prepush:gate
 ```
 
-## Current Runtime Truth
+## Scope
 
-- the command above is the authoritative full gate
-- local `.husky/pre-push` currently auto-runs it only for local `main` pushes
-- protected-branch parity still expects the same gate in CI for `dev` and `main`
+This document owns the intended trigger policy only.
+
+It does not own:
+
+- the canonical proof bar
+- the current live hook behavior
+- the current CI implementation details
 
 ## Target Trigger Rules
 

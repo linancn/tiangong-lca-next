@@ -48,11 +48,7 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 
 ## Guardrails
 
-- use Node `24`
-- use `npm`
-- no new npm dependencies without approval
-- app-side data access belongs in `src/services/**`
-- routine work starts from `dev` and targets `dev`
+- follow repo-level guardrails, branch facts, and hard boundaries from `AGENTS.md`
 - update locale keys in both `src/locales/en-US.ts` and `src/locales/zh-CN.ts` when UI copy changes
 
 ## Execution Order
@@ -68,12 +64,10 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 ## Command Shortlist
 
 ```bash
-npm install
 npm start
 npm run lint
 npm run test:ci -- <jest-args>
 npm run build
-npm run prepush:gate
 ```
 
 ## UI And Data Rules
@@ -81,15 +75,13 @@ npm run prepush:gate
 - reuse existing shared components before creating new abstractions
 - prefer Ant Design components, tokens, and existing project patterns over one-off styling
 - keep environment selection in config and service layers, not in page logic
-- do not create ad-hoc Supabase clients outside `src/services/**`
 
 ## Required Doc Updates
 
-- runtime fact, routing rule, or hard boundary changed: update `AGENTS.md` and `.docpact/config.yaml`
-- proof rule changed: update `docs/agents/repo-validation.md`
-- repo mental model changed: update `docs/agents/repo-architecture.md`
-- development workflow changed: update this file
-- narrow domain rule changed: update the domain reference that owns it
+- use the ownership map in `AGENTS.md` rather than restating repo facts here
+- if a machine-readable fact changes, update `.docpact/config.yaml` in the same change
+- if this execution workflow changes, update this file
+- if a narrow domain rule changes, update the domain reference that owns it
 
 ## Done
 

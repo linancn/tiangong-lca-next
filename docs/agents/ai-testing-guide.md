@@ -42,10 +42,9 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 
 ## Guardrails
 
-- use Node `24`
 - reuse existing helpers and mocks under `tests/helpers/**` and `tests/mocks/**`
 - do not add test-only dependencies without approval
-- keep coverage at `100%` for the enforced repo surfaces
+- use `docs/agents/repo-validation.md` as the source of truth for proof thresholds and full-gate expectations
 
 ## Fast Workflow
 
@@ -67,8 +66,6 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 | single-file debug with open-handle detection | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | full coverage run | `npm run test:coverage` |
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
-| protected-branch parity gate | `npm run prepush:gate` |
-| repo-local doc maintenance check | `docpact lint --root . --files "<csv>" --mode enforce` |
 
 ## Coverage Rules
 
@@ -89,5 +86,5 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 - tests match the real behavior change
 - focused suites passed
 - `npm run lint` passed
-- full gate status is explicit
+- full gate status is explicit through `docs/agents/repo-validation.md`
 - any testing-workflow change is reflected in the owning docs

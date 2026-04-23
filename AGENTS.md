@@ -17,7 +17,6 @@ whenToUpdate:
 checkPaths:
   - AGENTS.md
   - DEV.md
-  - .docpact/**/*.md
   - .docpact/**/*.yaml
   - docs/agents/**
   - package.json
@@ -60,7 +59,7 @@ Required principles:
 
 | Document | Owns | Does not own |
 | --- | --- | --- |
-| `AGENTS.md` | repo contract, documentation principles, runtime facts, branch facts, hard boundaries | deep implementation details, large reference material |
+| `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, human-readable boundaries | deep implementation details, large reference material |
 | `DEV.md` | local bootstrap and shortest repeatable work loop | repo contract, branch policy, proof matrix |
 | `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, and governed-doc inventory | prose explanations |
 | `docs/agents/repo-validation.md` | minimum proof by change type | bootstrap, business logic details |
@@ -92,30 +91,19 @@ Read in this order:
 
 Do not start from a deep reference or design doc unless the task is already scoped to that subject.
 
-## Runtime Facts
+## Operational Pointers
 
-- package manager: `npm`
-- Node baseline: `>=24` (`nvm use 24`; `.nvmrc` is pinned to `24`)
-- default dev command: `npm start`
-- explicit dev alias: `npm run start:dev`
-- explicit main-env command: `npm run start:main`
-- full protected-branch gate: `npm run prepush:gate`
-- app-side Supabase access belongs only in `src/services/**`
-- new npm dependencies require human approval
+- local bootstrap and canonical day-to-day commands live in `DEV.md`
+- minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
+- path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
+- new npm dependencies require human approval
 
 ## Ownership Boundaries
 
-This repo owns:
+The authoritative path-level ownership map lives in `.docpact/config.yaml`.
 
-- shipped product behavior under `src/**`
-- route wiring under `config/routes.ts`
-- app runtime setup under `config/**` and `src/app.tsx`
-- app-side Supabase and API access under `src/services/**`
-- shared UI and locale surfaces under `src/components/**` and `src/locales/**`
-- static assets consumed by the app under `public/**`
-- self-hosted sync helpers under `docker/**`
-- desktop packaging under `electron/**`, `electron-builder.json`, and `icons/**`
+At a human-readable level, this repo owns shipped frontend/runtime behavior plus repo-local governance and bootstrap docs.
 
 This repo does not own:
 
@@ -145,34 +133,13 @@ Route those tasks to:
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 
-## Authoritative Commands
-
-Use these as the canonical repo commands:
-
-```bash
-npm install
-npm start
-npm run start:dev
-npm run start:main
-npm run lint
-npm test
-npm run test:coverage
-npm run test:coverage:assert-full
-npm run test:coverage:report
-npm run build
-npm run prepush:gate
-```
-
 ## Documentation Update Rules
 
-- if a repo fact, routing rule, or governed-doc rule changes, update `AGENTS.md` and `.docpact/config.yaml`
-- if proof requirements change, update `docs/agents/repo-validation.md`
-- if the repo mental model changes, update `docs/agents/repo-architecture.md`
-- if local bootstrap changes, update `DEV.md`
-- if dev workflow changes, update `docs/agents/ai-dev-guide.md`
-- if testing workflow changes, update `docs/agents/ai-testing-guide.md` and `docs/agents/test_todo_list.md`
-- if testing strategy changes, update `docs/agents/test_improvement_plan.md`
-- if a narrow domain rule changes, update only the domain reference that owns it
+Use the ownership table in this file as the update map.
+
+- if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
+- if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
+- if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
 - do not copy the same rule into multiple docs just to make it easier to find
 
 ## Hard Boundaries

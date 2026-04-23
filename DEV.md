@@ -26,7 +26,7 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 
 # Development Bootstrap
 
-> Purpose: local setup and the shortest safe work loop for this repo. Repo policy, proof rules, and document ownership live in `AGENTS.md`.
+> Purpose: local setup and the shortest safe work loop for this repo. Repo contract and document ownership live in `AGENTS.md`; minimum proof lives in `docs/agents/repo-validation.md`.
 
 ## Use When
 
