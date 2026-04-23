@@ -184,7 +184,7 @@ describe('ValidationIssueModal', () => {
   const intl = {
     formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => {
       const messages: Record<string, string> = {
-        'pages.validationIssues.downloadHtml': '下载 HTML',
+        'pages.validationIssues.downloadHtml': '下载数据校验报告',
         'pages.validationIssues.datasetType.contact': '联系人',
         'pages.validationIssues.datasetType.source': '来源',
         'pages.validationIssues.datasetType.unitgroup': '单位组',
@@ -198,6 +198,8 @@ describe('ValidationIssueModal', () => {
         'pages.validationIssues.issue.nonExistentRef': '数据不存在',
         'pages.validationIssues.issue.ruleVerificationFailed': '数据校验不通过',
         'pages.validationIssues.issue.sdkInvalid': '当前数据集校验失败',
+        'pages.validationIssues.issue.sdkInvalid.navigateHint':
+          '对应 tab 下的问题数据会标红，请补充后重试。',
         'pages.validationIssues.confirm': '知道了',
         'pages.process.view.processInformation': '过程信息',
         'pages.process.view.modellingAndValidation': '建模信息',
@@ -813,7 +815,7 @@ describe('ValidationIssueModal', () => {
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: '下载 HTML' }));
+      fireEvent.click(screen.getByRole('button', { name: '下载数据校验报告' }));
     });
 
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
@@ -884,7 +886,7 @@ describe('ValidationIssueModal', () => {
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: '下载 HTML' }));
+      fireEvent.click(screen.getByRole('button', { name: '下载数据校验报告' }));
     });
 
     expect(anchorClickSpy).toHaveBeenCalledTimes(1);
@@ -1169,7 +1171,7 @@ describe('ValidationIssueModal', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: '下载 HTML' }));
+      fireEvent.click(screen.getByRole('button', { name: '下载数据校验报告' }));
     });
 
     const blob = createObjectURLSpy.mock.calls[0][0] as Blob;

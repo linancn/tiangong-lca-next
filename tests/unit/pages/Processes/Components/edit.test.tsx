@@ -668,6 +668,35 @@ describe('ProcessEdit component', () => {
     );
   });
 
+  it('normalizes newly created quantitative-reference exchanges so only one row remains selected', async () => {
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    await act(async () => {
+      latestProcessFormProps.onExchangeDataCreate({
+        exchangeDirection: 'INPUT',
+        quantitativeReference: true,
+      });
+    });
+
+    await waitFor(() =>
+      expect(latestProcessFormProps.exchangeDataSource).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            '@dataSetInternalID': '0',
+            quantitativeReference: false,
+          }),
+          expect.objectContaining({
+            '@dataSetInternalID': '1',
+            quantitativeReference: true,
+          }),
+        ]),
+      ),
+    );
+  });
+
   it('blocks submission when allocated fractions exceed 100%', async () => {
     render(<ProcessEdit {...baseProps} />);
 
@@ -1505,7 +1534,19 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith('Please select exchanges'),
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Add at least one exchange'),
+    );
+
+    expect(latestProcessFormProps.sdkValidationDetails).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          fieldPath: 'exchanges.requiredSummary',
+          key: 'exchanges:required:section',
+          presentation: 'section',
+          tabName: 'exchanges',
+          validationCode: 'exchanges_required',
+        }),
+      ]),
     );
   });
 
@@ -1540,6 +1581,9 @@ describe('ProcessEdit component', () => {
         ],
       },
     }));
+    mockGenProcessJsonOrdered.mockImplementation((_id, processDetail) => ({
+      processDataSet: processDetail,
+    }));
 
     render(<ProcessEdit {...baseProps} />);
 
@@ -1549,8 +1593,35 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Exchange needs to have exactly one quantitative reference open',
+        'The following data must contain exactly one reference flow',
       ),
+    );
+
+    expect(latestProcessFormProps.sdkValidationDetails).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          fieldPath: 'exchanges.quantitativeReferenceSummary',
+          key: 'exchanges:quantitative-reference-count:section',
+          presentation: 'section',
+          tabName: 'exchanges',
+          validationCode: 'quantitative_reference_count_invalid',
+        }),
+      ]),
+    );
+
+    const highlightOnlyDetails = latestProcessFormProps.sdkValidationDetails.filter(
+      (detail: any) => detail.presentation === 'highlight-only',
+    );
+    expect(highlightOnlyDetails).toHaveLength(2);
+    expect(highlightOnlyDetails).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          exchangeInternalId: expect.any(String),
+          fieldPath: expect.stringMatching(/^exchange\[#.+\]\.quantitativeReference$/),
+          tabName: 'exchanges',
+          validationCode: 'quantitative_reference_count_invalid',
+        }),
+      ]),
     );
   });
 
@@ -1909,6 +1980,68 @@ describe('ProcessEdit component', () => {
     );
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('revalidates the target tab after navigating from the sdk issue modal', async () => {
+    const sdkDetail = {
+      key: 'sdk-nav-commissioner',
+      tabName: 'administrativeInformation',
+      fieldKey: 'common:referenceToCommissioner',
+      fieldLabel: 'Commissioner of data set',
+      fieldPath:
+        'administrativeInformation.common:commissionerAndGoal.common:referenceToCommissioner.@refObjectId',
+      formName: [
+        'administrativeInformation',
+        'common:commissionerAndGoal',
+        'common:referenceToCommissioner',
+        '@refObjectId',
+      ],
+      presentation: 'field',
+      reasonMessage: 'Invalid input: expected object, received undefined',
+      validationCode: 'required_missing',
+    };
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        { path: ['processDataSet', 'administrativeInformation', 'common:commissionerAndGoal'] },
+      ],
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0&required=1',
+        ref: {
+          '@refObjectId': 'process-1',
+          '@type': 'process data set',
+          '@version': '1.0.0',
+        },
+        sdkDetails: [sdkDetail],
+        tabNames: ['administrativeInformation'],
+      },
+    ]);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ key: 'sdk-issue' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
+
+    mockValidateFields.mockClear();
+
+    const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
+
+    await act(async () => {
+      navigate({ detail: sdkDetail, tabName: 'administrativeInformation' });
+    });
+
+    await waitFor(() =>
+      expect(latestProcessFormProps.activeTabKey).toBe('administrativeInformation'),
+    );
+    await waitFor(() => expect(mockValidateFields).toHaveBeenCalled());
+    expect(latestProcessFormProps.sdkValidationFocus).toEqual(sdkDetail);
   });
 
   it('runs the initial data check automatically once when autoCheckRequired is enabled', async () => {

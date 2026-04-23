@@ -25,13 +25,19 @@ import {
 } from 'antd';
 import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import schema from '../../processes_schema.json';
+import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../../sdkValidationUi';
 import {
   DataDerivationTypeStatusOptions,
   dataSourceTypeOptions,
   functionTypeOptions,
 } from '../optiondata';
+
+type SdkFieldMessageEntry = {
+  text: string;
+  validationCode?: string;
+};
 
 type Props = {
   id: string;
@@ -61,6 +67,39 @@ const normalizeExchangeFormData = (exchangeData: ProcessExchangeData): ProcessEx
   resultingAmount: normalizeExchangeAmountValue(exchangeData?.resultingAmount),
 });
 
+const normalizeQuantitativeReferenceSelection = (
+  exchangeData: ProcessExchangeData[],
+  selectedExchangeInternalId: string,
+) => {
+  const selectedExchange = exchangeData.find(
+    (item) => item['@dataSetInternalID'] === selectedExchangeInternalId,
+  );
+
+  if (selectedExchange?.quantitativeReference !== true) {
+    return exchangeData;
+  }
+
+  return exchangeData.map((item) => ({
+    ...item,
+    quantitativeReference: item['@dataSetInternalID'] === selectedExchangeInternalId,
+  }));
+};
+
+const parseSdkFieldPathToFormName = (fieldPath?: string) => {
+  if (!fieldPath) {
+    return undefined;
+  }
+
+  const normalizedPath = fieldPath.replace(/^exchange\[#.+?\]\.?/, '');
+  const segments = normalizedPath.split('.').filter(Boolean);
+
+  if (segments.length === 0) {
+    return undefined;
+  }
+
+  return segments.map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
+};
+
 const ProcessExchangeEdit: FC<Props> = ({
   id,
   data,
@@ -74,6 +113,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   sdkHighlights = [],
   autoOpen = false,
 }) => {
+  const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<ProcessExchangeData>({});
@@ -85,89 +125,56 @@ const ProcessExchangeEdit: FC<Props> = ({
   const [unitConvertName, setUnitConvertName] = useState('');
   const [targetUnit, setTargetUnit] = useState('');
   const autoOpenConsumedRef = useRef(false);
+  const sdkFieldMessagesRef = useRef<
+    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+  >(new Map());
   useEffect(() => {
     if (!unitConvertVisible) {
       setUnitConvertName('');
     }
   }, [unitConvertVisible]);
 
-  const sdkHighlightGroups = sdkHighlights.reduce<Record<string, ValidationIssueSdkDetail[]>>(
-    (accumulator, detail) => {
-      const fieldKey = detail.fieldKey ?? 'unknown';
+  const sdkFieldMessages = sdkHighlights.reduce<
+    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+  >((accumulator, detail) => {
+    const formName =
+      (Array.isArray(detail.formName) && detail.formName.length > 0
+        ? detail.formName
+        : parseSdkFieldPathToFormName(detail.fieldPath)) ??
+      (detail.fieldKey ? [detail.fieldKey] : undefined);
+    const fieldKey = formName ? formName.map(String).join('.') : '';
+    const messageText = getSdkSuggestedFixMessage(intl, detail);
 
-      if (!accumulator[fieldKey]) {
-        accumulator[fieldKey] = [];
-      }
-
-      accumulator[fieldKey].push(detail);
+    if (!formName || !fieldKey || !messageText) {
       return accumulator;
-    },
-    {},
-  );
-
-  const getSdkHighlightMessages = (fieldKey: string) => {
-    return (sdkHighlightGroups[fieldKey] ?? []).map((detail) =>
-      detail.suggestedFix ? `${detail.reasonMessage} ${detail.suggestedFix}` : detail.reasonMessage,
-    );
-  };
-
-  const renderSdkHighlightHint = (fieldKey: string) => {
-    const messages = getSdkHighlightMessages(fieldKey);
-    if (messages.length === 0) {
-      return null;
     }
-
-    return (
-      <div
-        style={{
-          background: '#fff2f0',
-          border: '1px solid #ffccc7',
-          borderRadius: 8,
-          color: '#cf1322',
-          marginBottom: 12,
-          padding: '8px 12px',
-        }}
-      >
-        {messages.map((messageText, index) => (
-          <div key={`${fieldKey}-${index}`}>{messageText}</div>
-        ))}
-      </div>
-    );
-  };
-
-  const getSdkHighlightWrapperProps = (fieldKey: string) => {
-    const messages = getSdkHighlightMessages(fieldKey);
-    if (messages.length === 0) {
-      return {};
-    }
-
-    return {
-      'data-testid': `sdk-highlight-${fieldKey}`,
-      style: {
-        border: '1px solid #ff4d4f',
-        borderRadius: 8,
-        marginBottom: 12,
-        padding: 12,
-        scrollMarginTop: 24,
-      } as const,
+    const messageEntry: SdkFieldMessageEntry = {
+      text: messageText,
+      validationCode: detail.validationCode,
     };
-  };
 
-  const renderSdkHighlightedField = (fieldKey: string, content: ReactNode) => {
-    const highlightHint = renderSdkHighlightHint(fieldKey);
-    const wrapperProps = getSdkHighlightWrapperProps(fieldKey);
-
-    if (!highlightHint && Object.keys(wrapperProps).length === 0) {
-      return content;
+    const currentEntry = accumulator.get(fieldKey);
+    if (currentEntry) {
+      if (
+        !currentEntry.entries.some(
+          (entry) =>
+            entry.text === messageEntry.text &&
+            entry.validationCode === messageEntry.validationCode,
+        )
+      ) {
+        currentEntry.entries.push(messageEntry);
+      }
+      return accumulator;
     }
 
-    return (
-      <div {...wrapperProps}>
-        {highlightHint}
-        {content}
-      </div>
-    );
-  };
+    accumulator.set(fieldKey, {
+      entries: [messageEntry],
+      name: formName,
+    });
+    return accumulator;
+  }, new Map());
+
+  const renderSdkHighlightedField = (_fieldKey: string, content: ReactNode) => content;
 
   useEffect(() => {
     if (!autoOpen) {
@@ -211,32 +218,129 @@ const ProcessExchangeEdit: FC<Props> = ({
   }, [drawerVisible]);
 
   useEffect(() => {
+    const formInstance = formRefEdit.current;
+    if (
+      !drawerVisible ||
+      !formInstance ||
+      typeof formInstance.setFields !== 'function' ||
+      typeof formInstance.getFieldError !== 'function'
+    ) {
+      return;
+    }
+
+    const previousEntries = sdkFieldMessagesRef.current;
+    const nextEntries = sdkFieldMessages;
+    const changedFieldData = new Set<string>();
+    const fieldStates: Array<{ errors: string[]; name: Array<string | number> }> = [];
+    const appliedEntries = new Map<
+      string,
+      { entries: SdkFieldMessageEntry[]; name: Array<string | number> }
+    >();
+
+    [...previousEntries.keys(), ...nextEntries.keys()].forEach((key) => {
+      if (changedFieldData.has(key)) {
+        return;
+      }
+
+      changedFieldData.add(key);
+
+      const previousEntry = previousEntries.get(key);
+      const nextEntry = nextEntries.get(key);
+      const fieldName = nextEntry?.name ?? previousEntry?.name;
+
+      if (!fieldName) {
+        return;
+      }
+
+      const existingErrors = formInstance.getFieldError(fieldName) ?? [];
+      const previousSdkMessages = previousEntry?.entries.map((entry) => entry.text) ?? [];
+      const retainedErrors = existingErrors.filter(
+        (errorMessage: string) => !previousSdkMessages.includes(errorMessage),
+      );
+      const nextErrors = [...retainedErrors];
+      const nextAppliedFieldEntries: SdkFieldMessageEntry[] = [];
+
+      (nextEntry?.entries ?? []).forEach((entry) => {
+        const requiredResolution = resolveRequiredValidationMessage({
+          context: 'exchange',
+          fieldName,
+          frontendRulesEnabled: showRules,
+          intl,
+          retainedErrors,
+          schemaRoot: schema,
+          validationCode: entry.validationCode,
+        });
+
+        if (requiredResolution.suppressSdkMessage) {
+          return;
+        }
+
+        const resolvedEntry = {
+          ...entry,
+          text: requiredResolution.replacementMessage ?? entry.text,
+        };
+
+        if (!nextErrors.includes(resolvedEntry.text)) {
+          nextErrors.push(resolvedEntry.text);
+        }
+
+        nextAppliedFieldEntries.push(resolvedEntry);
+      });
+
+      if (nextAppliedFieldEntries.length > 0) {
+        appliedEntries.set(key, {
+          entries: nextAppliedFieldEntries,
+          name: fieldName,
+        });
+      }
+
+      if (
+        existingErrors.length === nextErrors.length &&
+        existingErrors.every(
+          (errorMessage: string, index: number) => errorMessage === nextErrors[index],
+        )
+      ) {
+        return;
+      }
+
+      fieldStates.push({
+        errors: nextErrors,
+        name: fieldName,
+      });
+    });
+
+    if (fieldStates.length > 0) {
+      formInstance.setFields(fieldStates);
+    }
+
+    sdkFieldMessagesRef.current = appliedEntries;
+  }, [drawerVisible, intl, showRules, sdkFieldMessages]);
+
+  useEffect(() => {
     if (!drawerVisible || sdkHighlights.length === 0) {
       return;
     }
 
-    const highlightedFieldKey = sdkHighlights[0]?.fieldKey;
-    if (!highlightedFieldKey) {
+    const highlightedField = sdkHighlights[0];
+    const fieldName =
+      (Array.isArray(highlightedField?.formName) && highlightedField.formName.length > 0
+        ? highlightedField.formName
+        : parseSdkFieldPathToFormName(highlightedField?.fieldPath)) ??
+      (highlightedField?.fieldKey ? [highlightedField.fieldKey] : undefined);
+    const formInstance = formRefEdit.current;
+
+    if (!fieldName || !formInstance || typeof formInstance.scrollToField !== 'function') {
       return;
     }
 
     const timer = window.setTimeout(() => {
-      const highlightedElement = document.querySelector(
-        `[data-testid="sdk-highlight-${highlightedFieldKey}"]`,
-      );
-
-      if (highlightedElement && 'scrollIntoView' in highlightedElement) {
-        highlightedElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        });
-      }
+      formInstance.scrollToField(fieldName, { focus: true });
     }, 0);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [drawerVisible, sdkHighlights]);
+  }, [drawerVisible, fromData, sdkHighlights]);
 
   return (
     <>
@@ -311,14 +415,16 @@ const ProcessExchangeEdit: FC<Props> = ({
             },
           }}
           onFinish={async () => {
-            onData(
+            const nextExchangeData = normalizeQuantitativeReferenceSelection(
               data.map((item) => {
                 if (item['@dataSetInternalID'] === id) {
                   return fromData;
                 }
                 return item;
               }),
+              id,
             );
+            onData(nextExchangeData);
             formRefEdit.current?.resetFields();
             setDrawerVisible(false);
             // actionRef.current?.reload();

@@ -192,11 +192,6 @@
               "required": true,
               "messageKey": "pages.process.validator.referenceYear.required",
               "defaultMessage": "Please input reference year"
-            },
-            {
-              "pattern": "year",
-              "messageKey": "validator.Year.pattern",
-              "defaultMessage": "Please enter a valid year (e.g., 2023)"
             }
           ]
         },

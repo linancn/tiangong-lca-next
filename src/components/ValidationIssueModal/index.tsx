@@ -142,20 +142,11 @@ const getValidationIssueInteractiveDetails = (issue: ValidationIssue) => {
   );
 };
 
-const getSdkNavigationHint = (intl: IntlShapeLike, detail?: ValidationIssueSdkDetail) => {
-  const baseHint = intl.formatMessage({
+const getSdkNavigationHint = (intl: IntlShapeLike) =>
+  intl.formatMessage({
     id: 'pages.validationIssues.issue.sdkInvalid.navigateHint',
     defaultMessage: '对应 tab 下的问题数据会标红，请补充后重试。',
   });
-
-  if (!detail?.reasonMessage) {
-    return baseHint;
-  }
-
-  return detail.suggestedFix
-    ? `${baseHint} ${detail.reasonMessage} ${detail.suggestedFix}`
-    : `${baseHint} ${detail.reasonMessage}`;
-};
 
 type GroupedValidationIssue = {
   ref: ValidationIssue['ref'];
@@ -525,7 +516,7 @@ const ValidationIssueFooter = ({
       <Button onClick={() => downloadValidationIssueHtml(intl, issues, title)}>
         {intl.formatMessage({
           id: 'pages.validationIssues.downloadHtml',
-          defaultMessage: 'Download HTML',
+          defaultMessage: 'Download Data Validation Report',
         })}
       </Button>
       <Button type='primary' onClick={onConfirm}>

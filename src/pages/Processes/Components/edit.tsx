@@ -2,6 +2,8 @@ import AISuggestion from '@/components/AISuggestion';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
 import {
+  buildProcessExchangesRequiredValidationDetails,
+  buildProcessQuantitativeReferenceValidationDetails,
   getProcessSdkIssueTabName,
   normalizeProcessSdkValidationDetails,
 } from '@/pages/Processes/sdkValidation';
@@ -82,6 +84,28 @@ const cloneProcessData = (data?: FormProcessWithDatas) => {
   return JSON.parse(JSON.stringify(data)) as FormProcessWithDatas;
 };
 
+const normalizeQuantitativeReferenceSelection = (
+  exchangeData: ProcessExchangeData[],
+  selectedExchangeInternalId?: string,
+) => {
+  if (!selectedExchangeInternalId) {
+    return exchangeData;
+  }
+
+  const selectedExchange = exchangeData.find(
+    (item) => item['@dataSetInternalID'] === selectedExchangeInternalId,
+  );
+
+  if (selectedExchange?.quantitativeReference !== true) {
+    return exchangeData;
+  }
+
+  return exchangeData.map((item) => ({
+    ...item,
+    quantitativeReference: item['@dataSetInternalID'] === selectedExchangeInternalId,
+  }));
+};
+
 const toProcessExchanges = (exchangeData: ProcessExchangeData[]) =>
   ({
     exchange: exchangeData as FormProcessWithDatas['exchanges']['exchange'],
@@ -127,6 +151,7 @@ const ProcessEdit: FC<Props> = ({
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
     null,
   );
+  const [pendingTabValidationKey, setPendingTabValidationKey] = useState<TabKeysType | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
@@ -252,15 +277,20 @@ const ProcessEdit: FC<Props> = ({
 
   const handletExchangeDataCreate = (data: ProcessExchangeData) => {
     if (fromData?.id) {
-      const nextExchangeDataSource = [
-        ...exchangeDataSource,
-        { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
-      ];
-      setExchangeDataSource(nextExchangeDataSource);
+      const createdExchange = {
+        ...data,
+        '@dataSetInternalID': exchangeDataSource.length.toString(),
+      };
+      const nextExchangeDataSource = [...exchangeDataSource, createdExchange];
+      const normalizedExchangeDataSource = normalizeQuantitativeReferenceSelection(
+        nextExchangeDataSource,
+        createdExchange['@dataSetInternalID'],
+      );
+      setExchangeDataSource(normalizedExchangeDataSource);
       setFromData({
         ...fromData,
         exchanges: {
-          exchange: nextExchangeDataSource,
+          exchange: normalizedExchangeDataSource,
         },
       } as FormProcessWithDatas);
     }
@@ -505,22 +535,28 @@ const ProcessEdit: FC<Props> = ({
     return undefined;
   };
 
-  const handleValidationIssueNavigate = (target: {
-    detail?: ValidationIssueSdkDetail;
-    tabName?: string;
-  }) => {
-    if (target.detail?.tabName) {
-      setActiveTabKey(target.detail.tabName as TabKeysType);
-      setSdkValidationFocus(target.detail);
-      return;
-    }
+  const handleValidationIssueNavigate = useCallback(
+    (target: { detail?: ValidationIssueSdkDetail; tabName?: string }) => {
+      if (target.detail?.tabName) {
+        setPendingTabValidationKey(target.detail.tabName as TabKeysType);
+        setActiveTabKey(target.detail.tabName as TabKeysType);
+        setSdkValidationFocus(
+          target.detail.presentation && target.detail.presentation !== 'field'
+            ? null
+            : target.detail,
+        );
+        return;
+      }
 
-    if (target.tabName) {
-      setActiveTabKey(target.tabName as TabKeysType);
-    }
+      if (target.tabName) {
+        setPendingTabValidationKey(target.tabName as TabKeysType);
+        setActiveTabKey(target.tabName as TabKeysType);
+      }
 
-    setSdkValidationFocus(null);
-  };
+      setSdkValidationFocus(null);
+    },
+    [],
+  );
 
   const handleCheckData = async (
     from: 'review' | 'checkData',
@@ -551,13 +587,25 @@ const ProcessEdit: FC<Props> = ({
     const sdkValidation = validateDatasetWithSdk('process data set', orderedJson);
     const sdkIssues = sdkValidation.issues;
     const sdkIssueDetails = normalizeProcessSdkValidationDetails(sdkIssues, orderedJson);
+    const exchangesRequiredValidationDetails =
+      buildProcessExchangesRequiredValidationDetails(processDetail);
+    const quantitativeReferenceValidationDetails =
+      buildProcessQuantitativeReferenceValidationDetails(processDetail);
+    const mergedSdkIssueDetails = [
+      ...exchangesRequiredValidationDetails,
+      ...quantitativeReferenceValidationDetails,
+      ...sdkIssueDetails,
+    ].filter(
+      (detail, index, allDetails) =>
+        allDetails.findIndex((item) => item.key === detail.key) === index,
+    );
     let currentDatasetValid = sdkValidation.success;
     const errTabNames: string[] = [];
     const currentDatasetTabNames: string[] = [];
     let datasetValidationMessage: string | null = null;
 
-    setSdkValidationDetails(sdkIssueDetails);
-    if (sdkIssueDetails.length === 0) {
+    setSdkValidationDetails(mergedSdkIssueDetails);
+    if (mergedSdkIssueDetails.length === 0) {
       setSdkValidationFocus(null);
     }
 
@@ -576,13 +624,11 @@ const ProcessEdit: FC<Props> = ({
       }, 200);
     }
 
-    const exchanges = processDetail?.exchanges;
-    const exchangeList = (exchanges?.exchange ?? []) as ProcessExchangeData[];
-    if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+    if (exchangesRequiredValidationDetails.length > 0) {
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
         id: 'pages.process.validator.exchanges.required',
-        defaultMessage: 'Please select exchanges',
+        defaultMessage: 'Add at least one exchange',
       });
       if (!errTabNames.includes('exchanges')) {
         errTabNames.push('exchanges');
@@ -590,11 +636,11 @@ const ProcessEdit: FC<Props> = ({
       if (!currentDatasetTabNames.includes('exchanges')) {
         currentDatasetTabNames.push('exchanges');
       }
-    } else if (exchangeList.filter((item) => item?.quantitativeReference).length !== 1) {
+    } else if (quantitativeReferenceValidationDetails.length > 0) {
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
         id: 'pages.process.validator.exchanges.quantitativeReference.required',
-        defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
+        defaultMessage: 'The following data must contain exactly one reference flow',
       });
       if (!errTabNames.includes('exchanges')) {
         errTabNames.push('exchanges');
@@ -638,7 +684,7 @@ const ProcessEdit: FC<Props> = ({
       nonExistentRef,
       problemNodes,
       rootRef,
-      sdkInvalidDetails: sdkIssueDetails,
+      sdkInvalidDetails: mergedSdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
@@ -829,12 +875,16 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const onTabChange = (key: TabKeysType) => {
+    setPendingTabValidationKey(null);
     setActiveTabKey(key);
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      }, 200);
+
+    if (!showRules) {
+      return;
     }
+
+    window.setTimeout(() => {
+      void formRefEdit.current?.validateFields();
+    }, 200);
   };
 
   const onEdit = useCallback(() => {
@@ -866,6 +916,7 @@ const ProcessEdit: FC<Props> = ({
       setRefCheckData([]);
       setSdkValidationDetails([]);
       setSdkValidationFocus(null);
+      setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
@@ -873,6 +924,21 @@ const ProcessEdit: FC<Props> = ({
     }
     onReset();
   }, [drawerVisible]);
+
+  useEffect(() => {
+    if (!showRules || !drawerVisible || pendingTabValidationKey !== activeTabKey) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void formRefEdit.current?.validateFields();
+      setPendingTabValidationKey(null);
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [activeTabKey, drawerVisible, pendingTabValidationKey, showRules]);
 
   useEffect(() => {
     if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {

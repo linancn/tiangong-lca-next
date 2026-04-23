@@ -42,14 +42,14 @@ describe('RequiredMark Component', () => {
 
     expect(screen.getByTestId('form-item')).toBeInTheDocument();
     expect(screen.getByText('Dataset Name')).toBeInTheDocument();
-    expect(screen.queryByText('English is a required language!')).not.toBeInTheDocument();
+    expect(screen.queryByText('Please complete this field.')).not.toBeInTheDocument();
   });
 
   it('defaults showError to false when the prop is omitted', () => {
     render(<RequiredMark label='Dataset Name' {...({} as any)} />);
 
     expect(screen.getByText('Dataset Name')).toBeInTheDocument();
-    expect(screen.queryByText('English is a required language!')).not.toBeInTheDocument();
+    expect(screen.queryByText('Please complete this field.')).not.toBeInTheDocument();
   });
 
   it('displays the provided error label when showError is true', () => {
@@ -61,13 +61,13 @@ describe('RequiredMark Component', () => {
   it('falls back to the default error message when no error label is provided', () => {
     renderComponent({ showError: true });
 
-    expect(screen.getByText('English is a required language!')).toBeInTheDocument();
+    expect(screen.getByText('Please complete this field.')).toBeInTheDocument();
   });
 
   it('applies inline error spacing styles when showing the default error', () => {
     renderComponent({ showError: true });
 
-    expect(screen.getByText('English is a required language!').parentElement).toHaveStyle({
+    expect(screen.getByText('Please complete this field.').parentElement).toHaveStyle({
       fontWeight: 'normal',
       marginLeft: '5px',
     });

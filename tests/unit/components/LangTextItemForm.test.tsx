@@ -13,8 +13,13 @@ jest.mock('umi', () => ({
     <span>{defaultMessage ?? id}</span>
   ),
   useIntl: () => ({
-    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
-      defaultMessage ?? id,
+    formatMessage: (
+      { id, defaultMessage }: { id: string; defaultMessage?: string },
+      values?: Record<string, string | number>,
+    ) =>
+      Object.entries(values ?? {}).reduce((message, [key, value]) => {
+        return message.split(`{${key}}`).join(String(value));
+      }, defaultMessage ?? id),
   }),
 }));
 
@@ -499,6 +504,30 @@ describe('LangTextItemForm', () => {
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('English is a required language!');
     });
+  });
+
+  it('keeps grouped required state clear when blank translations should rely on child field validation', async () => {
+    const setRuleErrorState = jest.fn();
+    const { formRef } = renderLangTextItemForm({
+      label: 'Treatment, standards, routes',
+      rules: [{ required: true }],
+      initialValues: { translations: [] },
+      setRuleErrorState,
+    });
+
+    await act(async () => {
+      formRef.current.setFieldValue(['translations'], [{}]);
+    });
+
+    await waitFor(() => {
+      expect(setRuleErrorState).toHaveBeenLastCalledWith(false);
+    });
+
+    expect(setRuleErrorState).not.toHaveBeenCalledWith(true);
+    expect(
+      screen.queryByText('Please complete Treatment, standards, routes.'),
+    ).not.toBeInTheDocument();
+    expect(message.error).not.toHaveBeenCalled();
   });
 
   it('falls back to the surrounding form context and empty language selections when formRef is omitted', async () => {

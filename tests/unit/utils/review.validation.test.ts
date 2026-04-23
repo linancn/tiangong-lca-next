@@ -383,6 +383,47 @@ describe('review helper coverage', () => {
     ).toEqual([]);
   });
 
+  it('suppresses the root rule-verification issue when sdk invalid already covers the same dataset', () => {
+    const rootRef = {
+      '@type': 'process data set',
+      '@refObjectId': 'process-root',
+      '@version': '01.00.000',
+    } as const;
+
+    expect(
+      buildValidationIssues({
+        datasetSdkValid: false,
+        rootRef,
+        sdkInvalidTabNames: ['processInformation'],
+        unRuleVerification: [
+          rootRef,
+          {
+            '@type': 'process data set',
+            '@refObjectId': 'process-child',
+            '@version': '02.00.000',
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-root&version=01.00.000&required=1',
+        ref: rootRef,
+        sdkDetails: [],
+        tabNames: ['processInformation'],
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-child&version=02.00.000&required=1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-child',
+          '@version': '02.00.000',
+        },
+      },
+    ]);
+  });
+
   it('returns the same empty issue list when owner enrichment receives no issues', async () => {
     const issues: any[] = [];
 
@@ -735,34 +776,37 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('contact data set', { id: 'contact' })).toEqual({
       success: false,
-      issues: [{ path: ['contact'] }],
+      issues: [expect.objectContaining({ path: ['contact'] })],
     });
     expect(validateDatasetWithSdk('source data set', { id: 'source' })).toEqual({
       success: false,
-      issues: [{ path: ['source'] }],
+      issues: [expect.objectContaining({ path: ['source'] })],
     });
     expect(validateDatasetWithSdk('unit group data set', { id: 'unitgroup' })).toEqual({
       success: false,
-      issues: [{ path: ['unitgroup'] }],
+      issues: [expect.objectContaining({ path: ['unitgroup'] })],
     });
     expect(validateDatasetWithSdk('flow property data set', { id: 'flowproperty' })).toEqual({
       success: false,
-      issues: [{ path: ['flowProperty'] }],
+      issues: [expect.objectContaining({ path: ['flowProperty'] })],
     });
     expect(validateDatasetWithSdk('flow data set', { id: 'flow' })).toEqual({
       success: false,
-      issues: [{ path: ['flow'] }],
+      issues: [expect.objectContaining({ path: ['flow'] })],
     });
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: ['processInformation'] }, { path: ['common:reviewCompliance'] }],
+      issues: [
+        expect.objectContaining({ path: ['processInformation'] }),
+        expect.objectContaining({ path: ['common:reviewCompliance'] }),
+      ],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
       issues: [
-        {
+        expect.objectContaining({
           path: ['lifeCycleModelDataSet', 'modellingAndValidation', 'dataSourcesTreatmentEtc'],
-        },
+        }),
       ],
     });
     expect(validateDatasetWithSdk('unknown data set' as any, { id: 'unknown' })).toEqual({
@@ -839,11 +883,11 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: ['common:approvalOfOverallCompliance'] }],
+      issues: [expect.objectContaining({ path: ['common:approvalOfOverallCompliance'] })],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
-      issues: [{ path: ['common:reviewCompliance'] }],
+      issues: [expect.objectContaining({ path: ['common:reviewCompliance'] })],
     });
   });
 
@@ -867,11 +911,11 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: [] }],
+      issues: [expect.objectContaining({ path: [] })],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
-      issues: [{ path: [] }],
+      issues: [expect.objectContaining({ path: [] })],
     });
   });
 
@@ -953,6 +997,59 @@ describe('review helper coverage', () => {
     expect(validateDatasetWithSdk('contact data set', { id: 'contact' })).toEqual({
       success: false,
       issues: [],
+    });
+  });
+
+  it('prefers normalized sdk validation issues over raw zod issues when available', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'custom',
+              message:
+                "@xml:lang values starting with 'zh' must include at least one Chinese character",
+              path: [
+                'processDataSet',
+                'processInformation',
+                'time',
+                'common:timeRepresentativenessDescription',
+                1,
+                '#text',
+              ],
+            },
+          ],
+        },
+        validationIssues: [
+          {
+            code: 'localized_text_zh_must_include_chinese_character',
+            message:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            path: [
+              'processDataSet',
+              'processInformation',
+              'time',
+              'common:timeRepresentativenessDescription',
+              1,
+              '#text',
+            ],
+            rawCode: 'custom',
+            severity: 'error',
+          },
+        ],
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'localized_text_zh_must_include_chinese_character',
+          rawCode: 'custom',
+          severity: 'error',
+        }),
+      ],
     });
   });
 
