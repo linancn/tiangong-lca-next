@@ -96,6 +96,7 @@ Do not start from secondary context, proposal docs, or README-level material unl
 - local bootstrap and canonical day-to-day commands live in `DEV.md`
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
+- app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
 - new npm dependencies require human approval
 

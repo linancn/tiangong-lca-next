@@ -86,6 +86,8 @@ coverage:
     - dist/**
     - coverage/**
     - build/**
+    - docker/README.md
+    - docker/README.zh-CN.md
 
 freshness:
   warn_after_commits: 40
@@ -105,10 +107,7 @@ routing:
       paths:
         - config/supabaseEnv.ts
         - src/services/**
-        - docker/pull-edge-functions.sh
-        - docker/scripts/sync-migrations-to-data-sql.sh
-        - docker/volumes/functions/**
-        - docker/volumes/db/init/**
+        - docker/**
     testing-gates:
       paths:
         - package.json
@@ -219,7 +218,23 @@ rules:
         kind: route-tree
       - path: config/config.ts
         kind: app-config
+      - path: config/defaultSettings.ts
+        kind: app-config
+      - path: config/oneapi.json
+        kind: app-config
+      - path: config/proxy.ts
+        kind: app-config
       - path: src/app.tsx
+        kind: app-runtime
+      - path: src/access.ts
+        kind: app-runtime
+      - path: src/contexts/**
+        kind: app-runtime
+      - path: src/global.less
+        kind: app-runtime
+      - path: src/global.tsx
+        kind: app-runtime
+      - path: src/manifest.json
         kind: app-runtime
       - path: src/pages/**
         kind: page-ui
@@ -227,6 +242,18 @@ rules:
         kind: shared-ui
       - path: src/locales/**
         kind: ui-locale
+      - path: src/requestErrorConfig.ts
+        kind: app-runtime
+      - path: src/service-worker.js
+        kind: app-runtime
+      - path: src/style/**
+        kind: app-runtime
+      - path: src/typings.d.ts
+        kind: app-runtime
+      - path: src/utils/appUrl.ts
+        kind: app-runtime
+      - path: src/utils/ruleVerification.ts
+        kind: app-runtime
     requiredDocs:
       - path: AGENTS.md
         mode: review_or_update
@@ -236,7 +263,7 @@ rules:
         mode: review_or_update
       - path: docs/agents/repo-architecture.md
         mode: review_or_update
-    reason: Frontend runtime changes alter the shipped product surface and should refresh the repo routing, proof rules, and architecture map.
+    reason: Frontend runtime and app-shell support changes alter the shipped product surface and should refresh the repo routing, proof rules, and architecture map.
   - id: next-data-boundary-contract
     scope: repo
     repo: next
@@ -247,14 +274,8 @@ rules:
         kind: service-logic
       - path: docs/agents/supabase-branching.md
         kind: domain-doc
-      - path: docker/pull-edge-functions.sh
-        kind: sync-helper
-      - path: docker/scripts/sync-migrations-to-data-sql.sh
-        kind: sync-helper
-      - path: docker/volumes/functions/**
-        kind: mirrored-runtime
-      - path: docker/volumes/db/init/**
-        kind: mirrored-runtime
+      - path: docker/**
+        kind: local-stack
     requiredDocs:
       - path: .docpact/config.yaml
         mode: review_or_update
@@ -264,7 +285,43 @@ rules:
         mode: review_or_update
       - path: docs/agents/supabase-branching.md
         mode: review_or_update
-    reason: App-side service and environment changes alter the frontend data boundary and should refresh both the repo routing layer and the Supabase branching guide.
+    reason: App-side service, environment, and local stack changes alter the frontend data boundary and should refresh both the repo routing layer and the Supabase branching guide.
+  - id: next-branding-and-packaging-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: config/branding.ts
+        kind: app-branding
+      - path: electron/**
+        kind: packaging
+      - path: icons/**
+        kind: packaging
+      - path: public/CNAME
+        kind: app-branding
+      - path: public/favicon.ico
+        kind: app-branding
+      - path: public/icons/**
+        kind: app-branding
+      - path: public/images/tidas/**
+        kind: app-branding
+      - path: public/logo.svg
+        kind: app-branding
+      - path: public/logo_dark.svg
+        kind: app-branding
+      - path: public/privacy_notice.html
+        kind: packaging
+      - path: public/scripts/loading.js
+        kind: packaging
+      - path: public/terms_of_use.html
+        kind: packaging
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+    reason: Branding assets, packaged-app surfaces, and public shell assets should stay aligned with the repo architecture and proof baseline.
   - id: next-testing-and-gate-contract
     scope: repo
     repo: next
