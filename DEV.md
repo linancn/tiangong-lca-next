@@ -95,4 +95,4 @@ npm install
 - frontend mental model: `docs/agents/repo-architecture.md`
 - branding, packaging, and local-stack surfaces: `docs/agents/repo-architecture.md`
 - narrow source docs: the owning file under `docs/agents/**`
-- secondary context only after the core contract surface is insufficient: `README*`, testing references, rollout notes, and proposal docs
+- additional governed source docs only after the core contract surface is insufficient: `README*`, testing references, rollout notes, PR templates, and proposal docs

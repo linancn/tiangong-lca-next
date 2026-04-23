@@ -35,8 +35,11 @@ ownership:
         include:
           - AGENTS.md
           - DEV.md
+          - README.md
+          - README_CN.md
           - .docpact/**
           - docs/agents/**
+          - .github/PULL_REQUEST_TEMPLATE/*.md
       ownerRepo: next
     - id: repo-testing-and-quality-gates
       paths:
@@ -57,15 +60,24 @@ coverage:
   include:
     - AGENTS.md
     - DEV.md
+    - README.md
+    - README_CN.md
     - .docpact/**
     - docs/agents/repo-validation.md
     - docs/agents/repo-architecture.md
     - docs/agents/supabase-branching.md
     - docs/agents/test_todo_list.md
+    - docs/agents/testing-patterns.md
+    - docs/agents/testing-troubleshooting.md
+    - docs/agents/prepush-gate-policy.md
+    - docs/agents/test_improvement_plan.md
+    - docs/agents/contribution-path-analysis-design.md
+    - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
+    - .github/PULL_REQUEST_TEMPLATE/*.md
     - config/**
     - src/**
     - public/**
@@ -125,15 +137,24 @@ routing:
       paths:
         - AGENTS.md
         - DEV.md
+        - README.md
+        - README_CN.md
         - .docpact/**
         - docs/agents/repo-validation.md
         - docs/agents/repo-architecture.md
         - docs/agents/supabase-branching.md
         - docs/agents/test_todo_list.md
+        - docs/agents/testing-patterns.md
+        - docs/agents/testing-troubleshooting.md
+        - docs/agents/prepush-gate-policy.md
+        - docs/agents/test_improvement_plan.md
+        - docs/agents/contribution-path-analysis-design.md
+        - docs/agents/lca-analysis-visualization-plan.md
         - docs/agents/public-classifications-gz-usage.md
         - docs/agents/util_calculate.md
         - docs/agents/team_management.md
         - docs/agents/data_audit_instruction.md
+        - .github/PULL_REQUEST_TEMPLATE/*.md
     proof:
       paths:
         - package.json
@@ -144,6 +165,10 @@ routing:
         - .github/workflows/build.yml
         - tests/**
         - docs/agents/test_todo_list.md
+        - docs/agents/testing-patterns.md
+        - docs/agents/testing-troubleshooting.md
+        - docs/agents/prepush-gate-policy.md
+        - docs/agents/test_improvement_plan.md
     repo-shape:
       paths:
         - config/**
@@ -158,6 +183,8 @@ routing:
         - src/services/lca/**
         - src/components/LcaTaskCenter/**
         - src/pages/Processes/Analysis/**
+        - docs/agents/contribution-path-analysis-design.md
+        - docs/agents/lca-analysis-visualization-plan.md
     team-and-review-management:
       paths:
         - src/pages/Review/**
@@ -173,15 +200,25 @@ docInventory:
   include:
     - AGENTS.md
     - DEV.md
+    - README.md
+    - README_CN.md
     - .docpact/config.yaml
     - docs/agents/repo-validation.md
     - docs/agents/repo-architecture.md
     - docs/agents/supabase-branching.md
     - docs/agents/test_todo_list.md
+    - docs/agents/testing-patterns.md
+    - docs/agents/testing-troubleshooting.md
+    - docs/agents/prepush-gate-policy.md
+    - docs/agents/test_improvement_plan.md
+    - docs/agents/contribution-path-analysis-design.md
+    - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
+    - .github/PULL_REQUEST_TEMPLATE/feature-to-dev.md
+    - .github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md
 
 repo:
   id: next
@@ -211,6 +248,40 @@ rules:
       - path: DEV.md
         mode: review_or_update
     reason: Repo entry guidance, machine-readable routing, and bootstrap docs must stay aligned.
+  - id: next-readme-and-landing-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: README.md
+        kind: repo-landing
+      - path: README_CN.md
+        kind: repo-landing
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: README.md
+        mode: review_or_update
+      - path: README_CN.md
+        mode: review_or_update
+    reason: Repo landing docs should stay aligned with the repo contract and current entry guidance.
+  - id: next-pr-handoff-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: .github/PULL_REQUEST_TEMPLATE/feature-to-dev.md
+        kind: pr-template
+      - path: .github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md
+        kind: pr-template
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: .github/PULL_REQUEST_TEMPLATE/feature-to-dev.md
+        mode: review_or_update
+      - path: .github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md
+        mode: review_or_update
+    reason: Repo handoff templates should stay aligned with the repo contract and the validation note shape.
   - id: next-frontend-runtime-contract
     scope: repo
     repo: next
@@ -333,6 +404,14 @@ rules:
         kind: runtime-config
       - path: docs/agents/test_todo_list.md
         kind: domain-doc
+      - path: docs/agents/testing-patterns.md
+        kind: testing-reference
+      - path: docs/agents/testing-troubleshooting.md
+        kind: testing-reference
+      - path: docs/agents/prepush-gate-policy.md
+        kind: gate-policy
+      - path: docs/agents/test_improvement_plan.md
+        kind: testing-strategy
       - path: jest.config.cjs
         kind: test-gate
       - path: .husky/pre-push
@@ -354,7 +433,15 @@ rules:
         mode: review_or_update
       - path: docs/agents/test_todo_list.md
         mode: review_or_update
-    reason: Coverage and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline plus the current testing-state record.
+      - path: docs/agents/testing-patterns.md
+        mode: review_or_update
+      - path: docs/agents/testing-troubleshooting.md
+        mode: review_or_update
+      - path: docs/agents/prepush-gate-policy.md
+        mode: review_or_update
+      - path: docs/agents/test_improvement_plan.md
+        mode: review_or_update
+    reason: Coverage, testing workflow, and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline, testing references, and current strategy/state docs.
   - id: next-static-resource-contract
     scope: repo
     repo: next
@@ -391,6 +478,10 @@ rules:
         kind: domain-ui
       - path: docs/agents/util_calculate.md
         kind: domain-doc
+      - path: docs/agents/contribution-path-analysis-design.md
+        kind: design-reference
+      - path: docs/agents/lca-analysis-visualization-plan.md
+        kind: design-reference
     requiredDocs:
       - path: .docpact/config.yaml
         mode: review_or_update
@@ -400,7 +491,11 @@ rules:
         mode: review_or_update
       - path: docs/agents/util_calculate.md
         mode: review_or_update
-    reason: Calculation-adjacent UI flows depend on a narrow domain guide as well as the repo-wide architecture and proof rules.
+      - path: docs/agents/contribution-path-analysis-design.md
+        mode: review_or_update
+      - path: docs/agents/lca-analysis-visualization-plan.md
+        mode: review_or_update
+    reason: Calculation-adjacent UI flows depend on narrow domain and design references as well as the repo-wide architecture and proof rules.
   - id: next-team-and-review-management-contract
     scope: repo
     repo: next

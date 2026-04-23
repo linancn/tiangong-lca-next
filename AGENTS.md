@@ -17,8 +17,11 @@ whenToUpdate:
 checkPaths:
   - AGENTS.md
   - DEV.md
+  - README.md
+  - README_CN.md
   - .docpact/**/*.yaml
   - docs/agents/**
+  - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
   - .nvmrc
   - .husky/pre-push
@@ -69,16 +72,17 @@ Required principles:
 | `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
 | `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
 
-Secondary context, not part of the default AI contract surface:
+Additional governed source docs, not part of the default first-load surface:
 
-- `README.md` and `README_CN.md`
-- `docs/agents/testing-patterns.md`
-- `docs/agents/testing-troubleshooting.md`
-- `docs/agents/prepush-gate-policy.md`
-- `docs/agents/test_improvement_plan.md`
-- `docs/agents/contribution-path-analysis-design.md`
-- `docs/agents/lca-analysis-visualization-plan.md`
-- `.github/PULL_REQUEST_TEMPLATE/*.md`
+| Document | Owns | Does not own |
+| --- | --- | --- |
+| `README.md` and `README_CN.md` | repo landing context and high-level product overview | repo contract, proof bar, or branch policy truth |
+| `docs/agents/testing-patterns.md` | reusable test-selection and test-structure patterns | minimum proof bar or current queue state |
+| `docs/agents/testing-troubleshooting.md` | shortest recovery path for failing or hanging tests | strategy or canonical proof requirements |
+| `docs/agents/prepush-gate-policy.md` | intended protected-branch and pre-push rollout contract | live hook/runtime truth |
+| `docs/agents/test_improvement_plan.md` | long-term testing strategy and reopen conditions | current operational queue or proof baseline |
+| `docs/agents/contribution-path-analysis-design.md` and `docs/agents/lca-analysis-visualization-plan.md` | scoped design references for analysis features | current runtime truth or active delivery state |
+| `.github/PULL_REQUEST_TEMPLATE/feature-to-dev.md` and `.github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md` | branch-specific PR note shape and handoff prompts | canonical proof rules or repo branch policy truth |
 
 ## Load Order
 
@@ -89,7 +93,7 @@ Read in this order:
 3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
 4. the narrow source doc that owns the current subject
 
-Do not start from secondary context, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
+Do not start from additional governed source docs, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
 
 ## Operational Pointers
 
@@ -155,7 +159,7 @@ Use the role table in this file as the update map.
 - if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
 - if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
 - if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
-- if a document is only secondary context or a proposal, do not promote it into the default governed surface without a clear routing or review need
+- if a document is governed but not in the default first-load surface, route to it on demand instead of duplicating its rules into `AGENTS.md` or `DEV.md`
 - do not copy the same rule into multiple docs just to make it easier to find
 
 ## Hard Boundaries
