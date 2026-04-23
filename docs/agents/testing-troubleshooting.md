@@ -21,7 +21,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Testing Troubleshooting
@@ -47,6 +47,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
+| one gate fails only while another heavy gate is running locally | shared `.umi-test` regeneration from concurrent commands | rerun `npm run test:ci` and `npm run prepush:gate` serially |
 
 ## Open-Handle Playbook
 
@@ -68,4 +69,5 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 - rerun the narrow failing scope
 - rerun neighboring suites if shared behavior changed
 - rerun the baseline proof from `docs/agents/repo-validation.md` when the failure affected shipped behavior or repo gates
+- rerun CI-lane reproductions serially before escalating a failure that only appears during local parallel gate runs
 - update the owning testing docs only if workflow or state changed

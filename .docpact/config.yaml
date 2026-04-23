@@ -198,6 +198,8 @@ routing:
         - public/locations/**
         - public/lciamethods/**
 
+# Reviewed 2026-04-23 for process SDK validation guidance, lifecycle-model
+# ordered-dataset shaping, and local CI gate reproduction updates.
 docInventory:
   include:
     - AGENTS.md

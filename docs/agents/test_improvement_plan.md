@@ -21,7 +21,7 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Testing Strategy
@@ -33,6 +33,7 @@ lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
 - add integration-test expansion only when it reduces real product risk
+- validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 
 ## Operating Principles
 
