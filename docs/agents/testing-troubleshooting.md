@@ -28,16 +28,15 @@ lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
 
 > Purpose: shortest recovery path when tests fail, hang, timeout, or reopen coverage gaps.
 
-## Command Shortlist
+## Focused Recovery Commands
 
-| Task | Command |
+Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo-validation.md`. Use this shortlist only for the narrow recovery command that matches the failure mode.
+
+| Need | Command shape |
 | --- | --- |
-| full gate | `npm test` |
 | focused integration | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
-| full coverage | `npm run test:coverage` |
-| lint | `npm run lint` |
 
 ## Failure Diagnosis
 
@@ -62,11 +61,11 @@ lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
 2. prefer a real test for the missing branch
 3. if the branch is dead, remove it without changing behavior
 4. rerun focused proof
-5. rerun coverage proof only after the gap is actually closed
+5. rerun the coverage proof defined in `docs/agents/repo-validation.md` only after the gap is actually closed
 
 ## Final Verification
 
 - rerun the narrow failing scope
 - rerun neighboring suites if shared behavior changed
-- run `npm run lint`
+- rerun the baseline proof from `docs/agents/repo-validation.md` when the failure affected shipped behavior or repo gates
 - update the owning testing docs only if workflow or state changed

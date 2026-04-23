@@ -119,7 +119,9 @@ routing:
     service-env:
       paths:
         - config/supabaseEnv.ts
-        - src/services/**
+        - src/services/auth/**
+        - src/services/general/api.ts
+        - src/services/supabase/**
         - docker/**
     testing-gates:
       paths:

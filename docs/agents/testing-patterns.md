@@ -78,15 +78,15 @@ Special cases:
 2. keep providers minimal but sufficient
 3. assert the contract the parent relies on
 
-## Command Patterns
+## Focused Command Shapes
 
-| Task | Command |
+Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo-validation.md`. Use this file only for focused command shapes that support the test pattern you already chose.
+
+| Need | Command shape |
 | --- | --- |
-| full gate | `npm test` |
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
-| lint gate | `npm run lint` |
 
 ## Skip And TODO Policy
 
