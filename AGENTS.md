@@ -100,6 +100,20 @@ Do not start from secondary context, proposal docs, or README-level material unl
 - repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
 - new npm dependencies require human approval
 
+## Minimal Execution Facts
+
+Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
+
+- package manager: `npm`
+- Node baseline: `24` via `.nvmrc` and `nvm use 24`
+- shared dev environment: `npm start` (`npm run start:dev` is equivalent)
+- explicit main-environment run: `npm run start:main`
+- default lint gate: `npm run lint`
+- default CI-style test entry: `npm test`
+- build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
+- protected-branch parity gate: `npm run prepush:gate`
+- app-side Supabase and API access belongs only in `src/services/**`
+
 ## Ownership Boundaries
 
 The authoritative path-level ownership map lives in `.docpact/config.yaml`.

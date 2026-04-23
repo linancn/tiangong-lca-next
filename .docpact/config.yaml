@@ -4,7 +4,8 @@ lastReviewedAt: 2026-04-23
 lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
-# AGENTS.md is the human summary, not a second copy of this structure.
+# AGENTS.md keeps the entry-level repo contract and minimal execution summary.
+# DEV.md and repo-validation own the full command and proof details.
 catalog:
   repos:
     - id: next
