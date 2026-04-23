@@ -46,7 +46,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/**` | route-level product pages |
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access and service logic |
-| `src/locales/**` | UI strings |
+| `src/locales/**` | UI strings; keep `src/locales/en-US.ts` and `src/locales/zh-CN.ts` aligned when shared user-facing copy changes |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | static resource bundles consumed by the app |
 | `icons/**` | packaged app icons and release assets |
@@ -63,6 +63,7 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
+- UI copy changes must update both `src/locales/en-US.ts` and `src/locales/zh-CN.ts` when the same user-facing text ships in both languages
 - static bundles are read through consuming services, not directly by pages
 - cache monitors live near runtime setup, not inside feature pages
 
