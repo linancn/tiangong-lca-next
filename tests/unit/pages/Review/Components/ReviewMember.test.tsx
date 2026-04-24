@@ -1,7 +1,7 @@
 // @ts-nocheck
 import ReviewMember from '@/pages/Review/Components/ReviewMember';
 import userEvent from '@testing-library/user-event';
-import { act, render, screen, waitFor } from '../../../../helpers/testUtils';
+import { act, fireEvent, render, screen, waitFor } from '../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -276,16 +276,24 @@ describe('ReviewMember', () => {
 
     await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
 
-    await userEvent.click(screen.getByRole('button', { name: 'plus' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'plus' }));
+    });
     expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
+    });
     expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByText('2'));
+    await act(async () => {
+      fireEvent.click(screen.getByText('2'));
+    });
     expect(screen.getByTestId('drawer')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'close' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'close' }));
+    });
     expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
   });
 

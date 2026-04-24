@@ -21,7 +21,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Testing Execution State
@@ -30,10 +30,10 @@ lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
 
 ## Current Baseline
 
-- latest verified full run: `npm run test:coverage:report`, then `npm run test:coverage:assert-full`
-- suites: `309`
-- tests: `3687`
-- tracked source files: `334`
+- latest verified full run: `npm run prepush:gate`
+- suites: `316`
+- tests: `3801`
+- tracked source files: `341`
 - coverage: `100%` statements, branches, functions, and lines
 
 ## Current State
@@ -41,6 +41,7 @@ lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
+- process SDK validation, localized field guidance, and validation-report navigation now ride on the maintained full-closure baseline
 
 ## Reopen Conditions
 

@@ -20,8 +20,8 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+lastReviewedAt: 2026-04-24
+lastReviewedCommit: 4098b71a5e33e3be3fa8fbea49777c881507ae81
 ---
 
 # Development Bootstrap
@@ -86,6 +86,7 @@ npm install
 - use `npm run start:main` only when the task explicitly requires the `main` environment
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - treat `npm run prepush:gate` as the authoritative local parity check
+- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 
 ## If You Need More Than This File
 

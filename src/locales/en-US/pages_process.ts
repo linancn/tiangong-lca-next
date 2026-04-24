@@ -669,8 +669,8 @@ export default {
   'pages.process.validator.meanAmount.required': 'Please input mean amount',
   'pages.process.validator.resultingAmount.required': 'Please input resulting amount',
   'pages.process.validator.dataDerivationTypeStatus.required': 'Please input data derivation type/status',
-  'pages.process.validator.exchanges.required': 'Please select exchanges',
-  'pages.process.validator.exchanges.quantitativeReference.required': 'Exchange needs to have exactly one quantitative reference open',
+  'pages.process.validator.exchanges.required': 'Add at least one exchange',
+  'pages.process.validator.exchanges.quantitativeReference.required': 'The following data must contain exactly one reference flow',
 
   'pages.process.review.submitSuccess': 'Review submitted successfully',
   'pages.process.review.submitError': 'Submit review failed',

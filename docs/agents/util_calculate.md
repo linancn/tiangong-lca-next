@@ -21,7 +21,7 @@ checkPaths:
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Lifecycle Model Calculation Reference
@@ -45,6 +45,7 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 - main pipeline: `src/services/lifeCycleModels/util_calculate.ts`
 - allocation helper: `src/services/lifeCycleModels/util_allocate_supply_demand.ts`
 - LCIA helper: `src/services/lciaMethods/util.ts`
+- ordered-dataset shaping adjacent to calculation and review flows: `src/services/lifeCycleModels/persistencePlan.ts`
 
 ## Entry Function
 
@@ -107,6 +108,7 @@ lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
 - primary-group reference exchange is aligned to `modelTargetAmount`
 - root `refScalingFactor` falls back to `1` when the model target amount or reference mean amount is zero or missing
 - old submodels are reused only when `nodeId`, `processId`, `allocatedExchangeFlowId`, and `allocatedExchangeDirection` all match
+- persistence-plan helpers that prepare ordered datasets for validation or review must stay schema-compatible with these calculation-facing structures even when they do not execute allocation logic
 
 ## Helper Contract Table
 

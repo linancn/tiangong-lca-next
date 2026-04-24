@@ -14,10 +14,13 @@ export default {
 
   'validator.pages.contact.email.pattern': 'The input is not valid E-mail!',
 
+  'validator.Year.pattern': 'Please enter a valid year (e.g., 2023)',
   'validator.NullableString.pattern': 'Length cannot exceed 500 characters characters and may be empty!',
 
   'validator.lang.select': 'Please select a language',
+  'validator.lang.required': 'Please complete this field',
   'validator.lang.mustBeEnglish': 'English is a required language',
+  'validator.lang.text.required': 'Please input this field',
   'validator.lang.mustNotContainSemicolon': 'Must not contain semicolon',
   'validator.langValidation.missingEnglish': 'The following fields are missing English: {fields}.',
   'validator.langValidation.missingEnglishMore': 'The following fields are missing English: {fields} and {count} more field(s).',

@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+lastReviewedAt: "2026-04-24"
+lastReviewedCommit: "4affbbd020fdc02e6898e721ed99992f94b91bdd"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -198,6 +198,8 @@ routing:
         - public/locations/**
         - public/lciamethods/**
 
+# Reviewed 2026-04-23 for process SDK validation guidance, lifecycle-model
+# ordered-dataset shaping, and local CI gate reproduction updates.
 docInventory:
   include:
     - AGENTS.md

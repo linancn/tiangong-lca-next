@@ -105,7 +105,23 @@ type ReffPathNode = {
 export type ProblemNode = ReffPathNode;
 
 type SdkValidationIssue = {
+  code?: string;
+  errors?: unknown;
+  exact?: boolean;
+  expected?: string;
+  format?: string;
+  input?: unknown;
+  inclusive?: boolean;
+  keys?: string[];
+  maximum?: number;
+  message?: string;
+  minimum?: number;
+  origin?: string;
+  params?: ValidationIssueMessageValues;
   path: PropertyKey[];
+  rawCode?: string;
+  severity?: 'error' | 'warning' | 'info';
+  values?: unknown[];
 };
 
 type SdkValidationResult = {
@@ -131,6 +147,33 @@ export type ValidationIssue = {
   tabName?: string | null;
   tabNames?: string[];
   underReviewVersion?: string;
+  sdkDetails?: ValidationIssueSdkDetail[];
+};
+
+export type ValidationIssueMessageValue = string | number | boolean | null | undefined;
+
+export type ValidationIssueMessageValues = Record<string, ValidationIssueMessageValue>;
+
+export type ValidationIssueSdkDetail = {
+  actual?: number | string;
+  exchangeDirection?: string;
+  exchangeFlowId?: string;
+  exchangeFlowLabel?: string;
+  exchangeIndex?: number;
+  exchangeInternalId?: string;
+  fieldKey?: string;
+  fieldLabel: string;
+  fieldPath: string;
+  formName?: Array<string | number>;
+  key: string;
+  limit?: number | string;
+  presentation?: 'field' | 'section' | 'highlight-only';
+  rawCode?: string;
+  reasonMessage: string;
+  suggestedFix?: string;
+  tabName?: string;
+  validationCode?: string;
+  validationParams?: ValidationIssueMessageValues;
 };
 
 const getValidationIssueRefKey = (ref: refDataType) =>
@@ -457,7 +500,175 @@ export const enrichValidationIssuesWithOwner = async (issues: ValidationIssue[])
   });
 };
 
-const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
+export const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
+  const normalizePath = (path?: PropertyKey[] | string) =>
+    Array.isArray(path) ? path : typeof path === 'string' ? [path] : [];
+
+  const getSdkInputType = (input: unknown) => {
+    if (input === null) {
+      return 'null';
+    }
+
+    if (Array.isArray(input)) {
+      return 'array';
+    }
+
+    return typeof input;
+  };
+
+  const getLegacyTooBigCode = (issue: Partial<SdkValidationIssue>) => {
+    if (issue.origin === 'string') {
+      return 'string_too_long';
+    }
+
+    if (issue.origin === 'array') {
+      return 'array_too_large';
+    }
+
+    if (issue.origin === 'number' || issue.origin === 'bigint') {
+      return 'number_too_large';
+    }
+
+    return 'unknown';
+  };
+
+  const getLegacyTooSmallCode = (issue: Partial<SdkValidationIssue>) => {
+    if (issue.origin === 'string') {
+      return 'string_too_short';
+    }
+
+    if (issue.origin === 'array') {
+      return 'array_too_small';
+    }
+
+    if (issue.origin === 'number' || issue.origin === 'bigint') {
+      return 'number_too_small';
+    }
+
+    return 'unknown';
+  };
+
+  const getLegacyIssueCode = (issue: Partial<SdkValidationIssue>) => {
+    switch (issue.code) {
+      case 'invalid_type':
+        return issue.input === undefined ? 'required_missing' : 'invalid_type';
+      case 'too_big':
+        return getLegacyTooBigCode(issue);
+      case 'too_small':
+        return getLegacyTooSmallCode(issue);
+      case 'invalid_format':
+        return 'invalid_format';
+      case 'invalid_value':
+        return 'invalid_value';
+      case 'unrecognized_keys':
+        return 'unrecognized_keys';
+      case 'invalid_union':
+        return issue.input === undefined ? 'required_missing' : 'invalid_union';
+      case 'custom':
+        return 'custom';
+      default:
+        return 'unknown';
+    }
+  };
+
+  const getLegacyIssueParams = (issue: Partial<SdkValidationIssue>, code: string) => {
+    switch (code) {
+      case 'required_missing':
+        return issue.expected
+          ? {
+              expected: issue.expected,
+            }
+          : undefined;
+      case 'invalid_type':
+        return {
+          expected: issue.expected,
+          received: getSdkInputType(issue.input),
+        };
+      case 'string_too_long':
+      case 'array_too_large':
+      case 'number_too_large': {
+        const params: ValidationIssueMessageValues = {
+          exact: issue.exact,
+          inclusive: issue.inclusive,
+          maximum: issue.maximum,
+          origin: issue.origin,
+        };
+
+        if (issue.origin === 'string' && typeof issue.input === 'string') {
+          params.actualLength = issue.input.length;
+        } else if (issue.origin === 'array' && Array.isArray(issue.input)) {
+          params.actualLength = issue.input.length;
+        } else if (
+          (issue.origin === 'number' || issue.origin === 'bigint') &&
+          (typeof issue.input === 'number' || typeof issue.input === 'bigint')
+        ) {
+          params.actual = Number(issue.input);
+        }
+
+        return params;
+      }
+      case 'string_too_short':
+      case 'array_too_small':
+      case 'number_too_small': {
+        const params: ValidationIssueMessageValues = {
+          exact: issue.exact,
+          inclusive: issue.inclusive,
+          minimum: issue.minimum,
+          origin: issue.origin,
+        };
+
+        if (issue.origin === 'string' && typeof issue.input === 'string') {
+          params.actualLength = issue.input.length;
+        } else if (issue.origin === 'array' && Array.isArray(issue.input)) {
+          params.actualLength = issue.input.length;
+        } else if (
+          (issue.origin === 'number' || issue.origin === 'bigint') &&
+          (typeof issue.input === 'number' || typeof issue.input === 'bigint')
+        ) {
+          params.actual = Number(issue.input);
+        }
+
+        return params;
+      }
+      case 'invalid_format':
+        return issue.format
+          ? {
+              format: issue.format,
+            }
+          : undefined;
+      case 'invalid_value':
+        return Array.isArray(issue.values)
+          ? {
+              allowedValues: issue.values.join(', '),
+            }
+          : undefined;
+      case 'unrecognized_keys':
+        return Array.isArray(issue.keys) && issue.keys.length > 0
+          ? {
+              keys: issue.keys.join(', '),
+            }
+          : undefined;
+      default:
+        return undefined;
+    }
+  };
+
+  const normalizeLegacyIssue = (
+    issue: Partial<SdkValidationIssue> & { path?: PropertyKey[] | string },
+  ): SdkValidationIssue => {
+    const code = getLegacyIssueCode(issue);
+
+    return {
+      ...issue,
+      code,
+      message: issue.message,
+      params: getLegacyIssueParams(issue, code),
+      path: normalizePath(issue.path),
+      rawCode: issue.code,
+      severity: 'error',
+    };
+  };
+
   if (result.success) {
     return {
       success: true,
@@ -465,9 +676,42 @@ const normalizeSdkValidationResult = (result: any): SdkValidationResult => {
     };
   }
 
+  const rawIssues = Array.isArray(result.error?.issues) ? result.error.issues : [];
+
   return {
     success: false,
-    issues: result.error?.issues ?? [],
+    issues: Array.isArray(result.validationIssues)
+      ? result.validationIssues.map(
+          (
+            issue: Partial<SdkValidationIssue> & { path?: PropertyKey[] | string },
+            index: number,
+          ) => {
+            const rawIssue = rawIssues[index] as Partial<SdkValidationIssue> | undefined;
+
+            return {
+              ...rawIssue,
+              ...issue,
+              code: issue.code ?? rawIssue?.code,
+              errors: issue.errors ?? rawIssue?.errors,
+              exact: issue.exact ?? rawIssue?.exact,
+              expected: issue.expected ?? rawIssue?.expected,
+              format: issue.format ?? rawIssue?.format,
+              inclusive: issue.inclusive ?? rawIssue?.inclusive,
+              input: issue.input ?? rawIssue?.input,
+              keys: issue.keys ?? rawIssue?.keys,
+              maximum: issue.maximum ?? rawIssue?.maximum,
+              minimum: issue.minimum ?? rawIssue?.minimum,
+              origin: issue.origin ?? rawIssue?.origin,
+              path: normalizePath(issue.path ?? rawIssue?.path),
+              rawCode: issue.rawCode ?? rawIssue?.code,
+              severity: issue.severity ?? 'error',
+              values: issue.values ?? rawIssue?.values,
+            };
+          },
+        )
+      : Array.isArray(result.error?.issues)
+        ? result.error.issues.map(normalizeLegacyIssue)
+        : [],
   };
 };
 
@@ -476,7 +720,7 @@ const cloneSdkValidationInput = <T,>(orderedJson: T): T => {
 };
 
 const normalizeSdkIssuePathSegments = (path: PropertyKey[] | string | undefined): string[] => {
-  const rawSegments = Array.isArray(path) ? path : typeof path === 'string' ? [path] : [];
+  const rawSegments = ([] as PropertyKey[]).concat(path as any);
 
   return rawSegments
     .flatMap((segment) => {
@@ -544,6 +788,7 @@ export const validateDatasetWithSdk = (
       if (result.success) {
         return result;
       }
+
       const filteredIssues = filterValidationOrComplianceSdkIssues(result.issues);
       return {
         success: filteredIssues.length === 0,
@@ -575,6 +820,7 @@ export const buildValidationIssues = ({
   rootRef,
   datasetSdkValid,
   sdkInvalidTabNames = [],
+  sdkInvalidDetails = [],
   nonExistentRef = [],
   problemNodes = [],
   actionFrom = 'checkData',
@@ -582,6 +828,7 @@ export const buildValidationIssues = ({
 }: {
   actionFrom?: 'checkData' | 'review';
   datasetSdkValid: boolean;
+  sdkInvalidDetails?: ValidationIssueSdkDetail[];
   sdkInvalidTabNames?: string[];
   nonExistentRef?: refDataType[];
   problemNodes?: Array<
@@ -602,6 +849,7 @@ export const buildValidationIssues = ({
       code: 'sdkInvalid',
       link: getDatasetDetailUrl(rootRef),
       ref: rootRef,
+      sdkDetails: sdkInvalidDetails,
       tabNames: sdkInvalidTabNames.filter(
         (tabName, index) => sdkInvalidTabNames.indexOf(tabName) === index,
       ),
@@ -609,6 +857,10 @@ export const buildValidationIssues = ({
   }
 
   unRuleVerification.forEach((ref) => {
+    if (!datasetSdkValid && isSameRef(ref, rootRef)) {
+      return;
+    }
+
     pushValidationIssue(issues, issueKeys, {
       code: 'ruleVerificationFailed',
       link: getDatasetDetailUrl(ref),

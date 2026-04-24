@@ -21,7 +21,7 @@ checkPaths:
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # LCA Analysis And Visualization Plan
@@ -54,6 +54,7 @@ The repo already exposes solver-backed LCIA results, but it still needs a stable
 - preserve existing page rhythm before adding a heavyweight dashboard
 - prefer robust analytical charts over decorative charts
 - make normalization explicit whenever values across categories are compared on one canvas
+- editor-side validation and correction affordances should not mutate the analysis result contract; keep those concerns outside the analysis surfaces
 
 ## Phase Scope
 
