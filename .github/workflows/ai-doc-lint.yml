@@ -20,7 +20,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install docpact
-        run: cargo install docpact --version 0.1.2 --force
+        run: cargo install docpact --version 0.1.4 --force
 
       - name: Validate docpact config
         run: docpact validate-config --root . --strict
