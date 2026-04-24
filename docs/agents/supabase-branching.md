@@ -20,7 +20,7 @@ checkPaths:
   - src/services/**
   - docker/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Supabase Environment And Database Workflow
@@ -60,12 +60,14 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 
 ## Common Scenarios
 
 | Scenario | Correct workflow |
 | --- | --- |
 | app-only change | work in this repo, use `dev`, validate here |
+| ordered-dataset shaping or validation normalization under `src/services/**` | keep the change in this repo, validate here, and escalate only if schema truth or Edge runtime behavior must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
 

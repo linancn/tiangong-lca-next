@@ -21,7 +21,7 @@ checkPaths:
   - tests/helpers/**
   - package.json
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Testing Patterns Reference
@@ -87,6 +87,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
+
+- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 
 ## Skip And TODO Policy
 

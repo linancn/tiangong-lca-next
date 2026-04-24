@@ -641,10 +641,35 @@ function sameFinalId(oldFinalId: any, process: RawLifeCycleModelProcess) {
   );
 }
 
+type ValidationIssuePathLike = {
+  path?: PropertyKey[] | string;
+};
+
+function getSdkValidationIssues(
+  validateResult:
+    | {
+        validationIssues?: ValidationIssuePathLike[];
+        error?: {
+          issues?: ValidationIssuePathLike[];
+        };
+      }
+    | undefined,
+): ValidationIssuePathLike[] {
+  if (Array.isArray(validateResult?.validationIssues)) {
+    return validateResult.validationIssues;
+  }
+
+  if (Array.isArray(validateResult?.error?.issues)) {
+    return validateResult.error.issues;
+  }
+
+  return [];
+}
+
 function getLifecycleModelRuleVerification(jsonOrdered: any) {
   const validateResult = createTidasLifeCycleModel(clone(jsonOrdered)).validateEnhanced();
   const issues = !validateResult.success
-    ? filterValidationOrComplianceIssues(validateResult.error.issues ?? [])
+    ? filterValidationOrComplianceIssues(getSdkValidationIssues(validateResult))
     : [];
   return issues.length === 0;
 }
@@ -652,7 +677,7 @@ function getLifecycleModelRuleVerification(jsonOrdered: any) {
 function getProcessRuleVerification(jsonOrdered: any) {
   const validateResult = createTidasProcess(clone(jsonOrdered)).validateEnhanced();
   const issues = !validateResult.success
-    ? filterValidationOrComplianceIssues(validateResult.error.issues ?? [])
+    ? filterValidationOrComplianceIssues(getSdkValidationIssues(validateResult))
     : [];
   return issues.length === 0;
 }

@@ -22,7 +22,7 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: f3256848c44466801a61316127c6fe19368f63ef
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -45,7 +45,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/access.ts`, `src/global.tsx`, `src/requestErrorConfig.ts`, `src/contexts/**` | app-shell access control, request behavior, and shared runtime state |
 | `src/pages/**` | route-level product pages |
 | `src/components/**` | shared UI and reusable flows |
-| `src/services/**` | app-side Supabase/API access and service logic |
+| `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, and service logic |
 | `src/locales/**` | UI strings; keep `src/locales/en-US.ts` and `src/locales/zh-CN.ts` aligned when shared user-facing copy changes |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | static resource bundles consumed by the app |
@@ -70,6 +70,7 @@ Rules:
 ## Current Hotspots
 
 - lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/components/LcaTaskCenter/**`, `src/pages/Processes/Analysis/**`
+- process validation, localized field guidance, and review jump targets: `src/pages/Processes/sdkValidation.ts`, `src/pages/Processes/sdkValidationUi.ts`, `src/pages/Processes/Components/**`, `src/components/ValidationIssueModal/index.tsx`, `src/components/LangTextItem/form.tsx`, `src/pages/Utils/review.tsx`
 - review, team, and system-management flows: `src/pages/Review/**`, `src/pages/ManageSystem/**`, `src/pages/Teams/**`
 - cache-backed static resources: `public/classifications/**`, `public/locations/**`, `public/lciamethods/**`
 

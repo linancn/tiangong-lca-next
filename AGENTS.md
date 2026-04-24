@@ -27,7 +27,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -102,6 +102,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
+- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
 - new npm dependencies require human approval
 
 ## Minimal Execution Facts

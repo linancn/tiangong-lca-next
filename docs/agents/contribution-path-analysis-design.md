@@ -21,7 +21,7 @@ checkPaths:
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: b3a3fa77c43ef16d97959690a536805b4b379fb6
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Contribution Path Analysis Design
@@ -50,6 +50,7 @@ V1 needs to answer, for one process and one impact:
 - current query sidecars are sufficient for hotspots and comparisons, not for traversal-based path analysis
 - do not put HDF5 traversal logic in edge functions
 - current snapshot index metadata is too thin for rich path display
+- process-editor validation and report-navigation changes do not alter this proposed async path-analysis contract
 
 ## Design Decisions
 

@@ -88,6 +88,23 @@ ol {
   .error-row {
     color: @error-color !important;
   }
+
+  .sdk-error-row,
+  .sdk-focus-row {
+    color: @error-color !important;
+  }
+
+  .sdk-error-row > td {
+    background: #fff2f0 !important;
+  }
+
+  .sdk-focus-row > td {
+    background: #fff2f0 !important;
+  }
+
+  .sdk-error-row.sdk-focus-row > td {
+    background: #fff2f0 !important;
+  }
 }
 
 .ant-pro-sider-links {

@@ -9,6 +9,7 @@ import RequiredMark from '@/components/RequiredMark';
 import ToolBarButton from '@/components/ToolBarButton';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
 import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
@@ -33,8 +34,9 @@ import {
   Tooltip,
 } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import schema from '../processes_schema.json';
+import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../sdkValidationUi';
 import ComplianceItemForm from './Compliance/form';
 import { getExchangeColumns } from './Exchange/column';
 import ProcessExchangeCreate from './Exchange/create';
@@ -69,6 +71,8 @@ type Props = {
   formType?: string;
   showRules?: boolean;
   actionFrom?: 'modelResult';
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 
 type FlowStateCodeItem = {
@@ -90,8 +94,127 @@ type ProcessExchangeResponse = {
   total?: number;
 };
 
+type SdkFieldMessageEntry = {
+  text: string;
+  validationCode?: string;
+};
+
+const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
+  !detail.presentation || detail.presentation === 'field';
+
+const isSdkSectionDetail = (detail: ValidationIssueSdkDetail) => detail.presentation === 'section';
+
+const isSdkHighlightOnlyDetail = (detail: ValidationIssueSdkDetail) =>
+  detail.presentation === 'highlight-only';
+
 const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
   return Array.isArray(reference) ? reference[0] : reference;
+};
+
+const parseSdkDetailFormName = (detail: ValidationIssueSdkDetail) => {
+  if (Array.isArray(detail.formName) && detail.formName.length > 0) {
+    return detail.formName;
+  }
+
+  if (!detail.fieldPath) {
+    return undefined;
+  }
+
+  const fieldPath = detail.exchangeInternalId
+    ? detail.fieldPath.replace(/^exchange\[#.+?\]\.?/, '')
+    : detail.fieldPath;
+  const segments = fieldPath.split('.').filter(Boolean);
+
+  if (segments.length === 0) {
+    return undefined;
+  }
+
+  return segments.map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
+};
+
+const stringifySdkFormName = (name?: Array<string | number>) => {
+  if (!name || name.length === 0) {
+    return '';
+  }
+
+  return name.map(String).join('.');
+};
+
+const PROCESS_VALIDATION_REVIEW_FIELD_PATH = 'modellingAndValidation.validation.review';
+const PROCESS_COMPLIANCE_DECLARATIONS_FIELD_PATH =
+  'modellingAndValidation.complianceDeclarations.compliance';
+
+const normalizeSdkFieldPath = (fieldPath?: string) =>
+  typeof fieldPath === 'string' ? fieldPath.replace(/^processDataSet\./, '').trim() : '';
+
+const getSdkVisibleTabNameFromFieldPath = (fieldPath?: string) => {
+  const normalizedFieldPath = normalizeSdkFieldPath(fieldPath);
+
+  if (!normalizedFieldPath) {
+    return undefined;
+  }
+
+  if (
+    normalizedFieldPath === PROCESS_VALIDATION_REVIEW_FIELD_PATH ||
+    normalizedFieldPath.startsWith(`${PROCESS_VALIDATION_REVIEW_FIELD_PATH}.`)
+  ) {
+    return 'validation';
+  }
+
+  if (
+    normalizedFieldPath === PROCESS_COMPLIANCE_DECLARATIONS_FIELD_PATH ||
+    normalizedFieldPath.startsWith(`${PROCESS_COMPLIANCE_DECLARATIONS_FIELD_PATH}.`)
+  ) {
+    return 'complianceDeclarations';
+  }
+
+  return undefined;
+};
+
+const getSdkVisibleTabName = (detail: ValidationIssueSdkDetail) => {
+  const visibleTabNameFromFieldPath = getSdkVisibleTabNameFromFieldPath(detail.fieldPath);
+
+  if (visibleTabNameFromFieldPath) {
+    return visibleTabNameFromFieldPath;
+  }
+
+  const serializedFormName = stringifySdkFormName(parseSdkDetailFormName(detail));
+  const visibleTabNameFromFormName = getSdkVisibleTabNameFromFieldPath(serializedFormName);
+
+  if (visibleTabNameFromFormName) {
+    return visibleTabNameFromFormName;
+  }
+
+  return detail.tabName;
+};
+
+const getSdkSectionAnchorPath = (detail: ValidationIssueSdkDetail) => {
+  if (detail.exchangeInternalId || isSdkHighlightOnlyDetail(detail)) {
+    return undefined;
+  }
+
+  if (isSdkSectionDetail(detail)) {
+    return normalizeSdkFieldPath(detail.fieldPath) || detail.key;
+  }
+
+  const serializedFormName = stringifySdkFormName(parseSdkDetailFormName(detail));
+
+  if (
+    serializedFormName === PROCESS_VALIDATION_REVIEW_FIELD_PATH ||
+    serializedFormName === PROCESS_COMPLIANCE_DECLARATIONS_FIELD_PATH
+  ) {
+    return serializedFormName;
+  }
+
+  return undefined;
+};
+
+const getOrCreateTabKeySet = (collection: Record<string, Set<string>>, tabName: string) => {
+  if (!collection[tabName]) {
+    collection[tabName] = new Set<string>();
+  }
+
+  return collection[tabName];
 };
 
 export const ProcessForm: FC<Props> = ({
@@ -108,11 +231,17 @@ export const ProcessForm: FC<Props> = ({
   showRules = false,
   lciaResults,
   actionFrom,
+  sdkValidationDetails = [],
+  sdkValidationFocus,
 }) => {
+  const intl = useIntl();
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
   const actionRefLciaResultTable = useRef<ActionType>();
+  const rootSdkFieldMessagesRef = useRef<
+    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+  >(new Map());
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
@@ -132,53 +261,431 @@ export const ProcessForm: FC<Props> = ({
 
   const { token } = theme.useToken();
 
+  const formatSdkDetailMessage = (detail: ValidationIssueSdkDetail) =>
+    getSdkSuggestedFixMessage(intl, detail);
+
+  const sdkVisibleSectionAnchorsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
+    (accumulator, detail) => {
+      const tabName = getSdkVisibleTabName(detail);
+      const sectionAnchorPath = getSdkSectionAnchorPath(detail);
+
+      if (!tabName || !sectionAnchorPath || !formatSdkDetailMessage(detail)) {
+        return accumulator;
+      }
+
+      getOrCreateTabKeySet(accumulator, tabName).add(sectionAnchorPath);
+      return accumulator;
+    },
+    {},
+  );
+  const sdkVisibleRootFieldAnchorsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
+    (accumulator, detail) => {
+      if (
+        detail.exchangeInternalId ||
+        !isSdkFieldDetail(detail) ||
+        getSdkSectionAnchorPath(detail)
+      ) {
+        return accumulator;
+      }
+
+      const tabName = getSdkVisibleTabName(detail);
+      const formName = parseSdkDetailFormName(detail);
+      const serializedFormName = stringifySdkFormName(formName);
+      const rootFieldAnchorPath = serializedFormName || normalizeSdkFieldPath(detail.fieldPath);
+
+      if (!tabName || !rootFieldAnchorPath || !formatSdkDetailMessage(detail)) {
+        return accumulator;
+      }
+
+      getOrCreateTabKeySet(accumulator, tabName).add(rootFieldAnchorPath);
+      return accumulator;
+    },
+    {},
+  );
+  const sdkExchangeRowHighlightsByExchangeId = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    if (!detail.exchangeInternalId || isSdkSectionDetail(detail)) {
+      return accumulator;
+    }
+
+    if (!accumulator[detail.exchangeInternalId]) {
+      accumulator[detail.exchangeInternalId] = [];
+    }
+
+    accumulator[detail.exchangeInternalId].push(detail);
+    return accumulator;
+  }, {});
+  const sdkVisibleExchangeRowsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
+    (accumulator, detail) => {
+      const tabName = getSdkVisibleTabName(detail);
+
+      if (!tabName || !detail.exchangeInternalId || isSdkSectionDetail(detail)) {
+        return accumulator;
+      }
+
+      getOrCreateTabKeySet(accumulator, tabName).add(detail.exchangeInternalId);
+      return accumulator;
+    },
+    {},
+  );
+  const sdkExchangeFieldDetailsByExchangeId = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    if (
+      !detail.exchangeInternalId ||
+      !isSdkFieldDetail(detail) ||
+      isSdkSectionDetail(detail) ||
+      isSdkHighlightOnlyDetail(detail)
+    ) {
+      return accumulator;
+    }
+
+    if (!accumulator[detail.exchangeInternalId]) {
+      accumulator[detail.exchangeInternalId] = [];
+    }
+
+    accumulator[detail.exchangeInternalId].push(detail);
+    return accumulator;
+  }, {});
+  const sdkRootFieldMessages = sdkValidationDetails.reduce<
+    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+  >((accumulator, detail) => {
+    if (detail.exchangeInternalId || !isSdkFieldDetail(detail)) {
+      return accumulator;
+    }
+
+    const formName = parseSdkDetailFormName(detail);
+    const serializedFormName = stringifySdkFormName(formName);
+
+    if (
+      !formName ||
+      !serializedFormName ||
+      serializedFormName === 'modellingAndValidation.validation.review' ||
+      serializedFormName === 'modellingAndValidation.complianceDeclarations.compliance'
+    ) {
+      return accumulator;
+    }
+
+    const formattedMessage = formatSdkDetailMessage(detail);
+    if (!formattedMessage) {
+      return accumulator;
+    }
+    const messageEntry: SdkFieldMessageEntry = {
+      text: formattedMessage,
+      validationCode: detail.validationCode,
+    };
+
+    const currentEntry = accumulator.get(serializedFormName);
+    if (currentEntry) {
+      if (
+        !currentEntry.entries.some(
+          (entry) =>
+            entry.text === messageEntry.text &&
+            entry.validationCode === messageEntry.validationCode,
+        )
+      ) {
+        currentEntry.entries.push(messageEntry);
+      }
+      return accumulator;
+    }
+
+    accumulator.set(serializedFormName, {
+      entries: [messageEntry],
+      name: formName,
+    });
+    return accumulator;
+  }, new Map());
+  const sdkValidationSectionMessages = sdkValidationDetails.reduce<Record<string, string[]>>(
+    (accumulator, detail) => {
+      if (detail.exchangeInternalId || isSdkHighlightOnlyDetail(detail)) {
+        return accumulator;
+      }
+
+      if (isSdkSectionDetail(detail)) {
+        const formattedMessage = formatSdkDetailMessage(detail);
+        if (!formattedMessage) {
+          return accumulator;
+        }
+
+        if (!accumulator[detail.fieldPath]) {
+          accumulator[detail.fieldPath] = [];
+        }
+
+        if (!accumulator[detail.fieldPath].includes(formattedMessage)) {
+          accumulator[detail.fieldPath].push(formattedMessage);
+        }
+
+        return accumulator;
+      }
+
+      const formName = parseSdkDetailFormName(detail);
+      const serializedFormName = stringifySdkFormName(formName);
+
+      if (
+        serializedFormName !== 'modellingAndValidation.validation.review' &&
+        serializedFormName !== 'modellingAndValidation.complianceDeclarations.compliance'
+      ) {
+        return accumulator;
+      }
+
+      const formattedMessage = formatSdkDetailMessage(detail);
+      if (!formattedMessage) {
+        return accumulator;
+      }
+
+      if (!accumulator[serializedFormName]) {
+        accumulator[serializedFormName] = [];
+      }
+
+      if (!accumulator[serializedFormName].includes(formattedMessage)) {
+        accumulator[serializedFormName].push(formattedMessage);
+      }
+
+      return accumulator;
+    },
+    {},
+  );
+  const sdkValidationCountsByTab = [
+    ...new Set([
+      ...Object.keys(sdkVisibleSectionAnchorsByTab),
+      ...Object.keys(sdkVisibleRootFieldAnchorsByTab),
+      ...Object.keys(sdkVisibleExchangeRowsByTab),
+    ]),
+  ].reduce<Record<string, number>>((accumulator, tabName) => {
+    accumulator[tabName] =
+      (sdkVisibleSectionAnchorsByTab[tabName]?.size ?? 0) +
+      (sdkVisibleRootFieldAnchorsByTab[tabName]?.size ?? 0) +
+      (sdkVisibleExchangeRowsByTab[tabName]?.size ?? 0);
+
+    return accumulator;
+  }, {});
+
+  useEffect(() => {
+    const formInstance = formRef.current;
+    if (
+      !formInstance ||
+      typeof formInstance.setFields !== 'function' ||
+      typeof formInstance.getFieldError !== 'function'
+    ) {
+      return;
+    }
+
+    const previousEntries = rootSdkFieldMessagesRef.current;
+    const nextEntries = sdkRootFieldMessages;
+    const changedFieldData = new Set<string>();
+    const fieldStates: Array<{ errors: string[]; name: Array<string | number> }> = [];
+    const appliedEntries = new Map<
+      string,
+      { entries: SdkFieldMessageEntry[]; name: Array<string | number> }
+    >();
+
+    [...previousEntries.keys(), ...nextEntries.keys()].forEach((key) => {
+      if (changedFieldData.has(key)) {
+        return;
+      }
+
+      changedFieldData.add(key);
+
+      const previousEntry = previousEntries.get(key);
+      const nextEntry = nextEntries.get(key);
+      const fieldName = (nextEntry?.name ?? previousEntry?.name)!;
+
+      const existingErrors = [formInstance.getFieldError(fieldName)]
+        .flat()
+        .filter((errorMessage): errorMessage is string => typeof errorMessage === 'string');
+      const previousSdkMessages = previousEntry?.entries.map((entry) => entry.text) ?? [];
+      const retainedErrors = existingErrors.filter(
+        (errorMessage: string) => !previousSdkMessages.includes(errorMessage),
+      );
+      const nextErrors = [...retainedErrors];
+      const nextAppliedFieldEntries: SdkFieldMessageEntry[] = [];
+
+      (nextEntry?.entries ?? []).forEach((entry) => {
+        const requiredResolution = resolveRequiredValidationMessage({
+          context: 'process',
+          fieldName,
+          frontendRulesEnabled: showRules,
+          intl,
+          retainedErrors,
+          schemaRoot: schema,
+          validationCode: entry.validationCode,
+        });
+
+        if (requiredResolution.suppressSdkMessage) {
+          return;
+        }
+
+        const resolvedEntry = {
+          ...entry,
+          text: requiredResolution.replacementMessage ?? entry.text,
+        };
+
+        if (!nextErrors.includes(resolvedEntry.text)) {
+          nextErrors.push(resolvedEntry.text);
+        }
+
+        nextAppliedFieldEntries.push(resolvedEntry);
+      });
+
+      if (nextAppliedFieldEntries.length > 0) {
+        appliedEntries.set(key, {
+          entries: nextAppliedFieldEntries,
+          name: fieldName,
+        });
+      }
+
+      if (
+        existingErrors.length === nextErrors.length &&
+        existingErrors.every(
+          (errorMessage: string, index: number) => errorMessage === nextErrors[index],
+        )
+      ) {
+        return;
+      }
+
+      fieldStates.push({
+        errors: nextErrors,
+        name: fieldName,
+      });
+    });
+
+    if (fieldStates.length > 0) {
+      formInstance.setFields(fieldStates);
+    }
+
+    rootSdkFieldMessagesRef.current = appliedEntries;
+  }, [formRef, intl, showRules, sdkRootFieldMessages]);
+
+  useEffect(() => {
+    if (
+      !sdkValidationFocus ||
+      sdkValidationFocus.exchangeInternalId ||
+      !isSdkFieldDetail(sdkValidationFocus) ||
+      sdkValidationFocus.tabName !== activeTabKey
+    ) {
+      return;
+    }
+
+    const fieldName = parseSdkDetailFormName(sdkValidationFocus);
+    const formInstance = formRef.current;
+
+    if (!fieldName || !formInstance || typeof formInstance.scrollToField !== 'function') {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      formInstance.scrollToField(fieldName, { focus: true });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [activeTabKey, formRef, sdkValidationFocus]);
+
+  const renderSdkSectionMessages = (fieldPath: string) => {
+    const messages = sdkValidationSectionMessages[fieldPath] ?? [];
+
+    if (messages.length === 0) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          alignItems: 'flex-start',
+          columnGap: 8,
+          display: 'flex',
+          flexWrap: 'wrap',
+          marginBottom: 12,
+        }}
+      >
+        {/* <span
+          style={{
+            fontWeight: token.fontWeightStrong ?? 600,
+          }}
+        >
+          {label}
+        </span> */}
+        <span
+          style={{
+            color: token.colorError,
+          }}
+        >
+          {messages.map((messageText, index) => (
+            <span key={`${fieldPath}-${index}`}>
+              {index > 0 ? ' ' : null}
+              {messageText}
+            </span>
+          ))}
+        </span>
+      </div>
+    );
+  };
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const issueCount = sdkValidationCountsByTab[key] ?? 0;
+    const hasIssue = issueCount > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
+
   const tabList = [
     {
       key: 'processInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.process.view.processInformation'
-          defaultMessage='Process information'
-        />
+      tab: renderTabLabel(
+        'processInformation',
+        'pages.process.view.processInformation',
+        'Process information',
       ),
     },
     {
       key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id='pages.process.view.modellingAndValidation'
-          defaultMessage='Modelling and validation'
-        />
+      tab: renderTabLabel(
+        'modellingAndValidation',
+        'pages.process.view.modellingAndValidation',
+        'Modelling and validation',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.process.view.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.process.view.administrativeInformation',
+        'Administrative information',
       ),
     },
     {
       key: 'exchanges',
-      tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+      tab: renderTabLabel('exchanges', 'pages.process.view.exchanges', 'Exchanges'),
     },
     {
       key: 'lciaResults',
-      tab: <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />,
+      tab: renderTabLabel('lciaResults', 'pages.process.view.lciaresults', 'LCIA Results'),
     },
     {
       key: 'validation',
-      tab: <FormattedMessage id='pages.process.validation' defaultMessage='Validation' />,
+      tab: renderTabLabel('validation', 'pages.process.validation', 'Validation'),
     },
     {
       key: 'complianceDeclarations',
-      tab: (
-        <FormattedMessage
-          id='pages.process.complianceDeclarations'
-          defaultMessage='Compliance declarations'
-        />
+      tab: renderTabLabel(
+        'complianceDeclarations',
+        'pages.process.complianceDeclarations',
+        'Compliance declarations',
       ),
     },
   ];
@@ -190,6 +697,8 @@ export const ProcessForm: FC<Props> = ({
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
+        const rowSdkHighlights = sdkExchangeFieldDetailsByExchangeId[row.dataSetInternalID] ?? [];
+
         return [
           <Space size={'small'} key={0}>
             <ProcessExchangeView
@@ -206,6 +715,7 @@ export const ProcessForm: FC<Props> = ({
               onData={onExchangeData}
               setViewDrawerVisible={() => {}}
               showRules={showRules}
+              sdkHighlights={rowSdkHighlights}
               disabled={actionFrom === 'modelResult'}
             />
             <ProcessExchangeDelete
@@ -2017,6 +2527,8 @@ export const ProcessForm: FC<Props> = ({
     ),
     exchanges: (
       <>
+        {renderSdkSectionMessages('exchanges.requiredSummary')}
+        {renderSdkSectionMessages('exchanges.quantitativeReferenceSummary')}
         <Collapse
           defaultActiveKey={['1']}
           items={[
@@ -2044,8 +2556,27 @@ export const ProcessForm: FC<Props> = ({
                       record.resultingAmount !== '-' &&
                       record.dataDerivationTypeStatus &&
                       record.dataDerivationTypeStatus !== '-';
+                    const rowClasses = [];
 
-                    return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
+                    if (showRules && (isInRefCheck || !isFormComplete)) {
+                      rowClasses.push('error-row');
+                    }
+
+                    if (
+                      (sdkExchangeRowHighlightsByExchangeId[record.dataSetInternalID] ?? [])
+                        .length > 0
+                    ) {
+                      rowClasses.push('sdk-error-row');
+                    }
+
+                    if (
+                      sdkValidationFocus?.exchangeInternalId &&
+                      sdkValidationFocus.exchangeInternalId === record.dataSetInternalID
+                    ) {
+                      rowClasses.push('sdk-focus-row');
+                    }
+
+                    return rowClasses.join(' ').trim();
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {
@@ -2135,7 +2666,27 @@ export const ProcessForm: FC<Props> = ({
                       record.resultingAmount !== '-' &&
                       record.dataDerivationTypeStatus &&
                       record.dataDerivationTypeStatus !== '-';
-                    return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
+                    const rowClasses = [];
+
+                    if (showRules && (isInRefCheck || !isFormComplete)) {
+                      rowClasses.push('error-row');
+                    }
+
+                    if (
+                      (sdkExchangeRowHighlightsByExchangeId[record.dataSetInternalID] ?? [])
+                        .length > 0
+                    ) {
+                      rowClasses.push('sdk-error-row');
+                    }
+
+                    if (
+                      sdkValidationFocus?.exchangeInternalId &&
+                      sdkValidationFocus.exchangeInternalId === record.dataSetInternalID
+                    ) {
+                      rowClasses.push('sdk-focus-row');
+                    }
+
+                    return rowClasses.join(' ').trim();
                   }}
                   className='process-exchange-table'
                   toolBarRender={() => {
@@ -2222,23 +2773,29 @@ export const ProcessForm: FC<Props> = ({
       />
     ),
     validation: (
-      <ReveiwItemForm
-        type='reviewReport'
-        showRules={showRules}
-        name={['modellingAndValidation', 'validation', 'review']}
-        lang={lang}
-        formRef={formRef}
-        onData={onData}
-      />
+      <>
+        {renderSdkSectionMessages('modellingAndValidation.validation.review')}
+        <ReveiwItemForm
+          type='reviewReport'
+          showRules={showRules}
+          name={['modellingAndValidation', 'validation', 'review']}
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
+      </>
     ),
     complianceDeclarations: (
-      <ComplianceItemForm
-        showRules={showRules}
-        name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
-        lang={lang}
-        formRef={formRef}
-        onData={onData}
-      />
+      <>
+        {renderSdkSectionMessages('modellingAndValidation.complianceDeclarations.compliance')}
+        <ComplianceItemForm
+          showRules={showRules}
+          name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
+          lang={lang}
+          formRef={formRef}
+          onData={onData}
+        />
+      </>
     ),
   };
 

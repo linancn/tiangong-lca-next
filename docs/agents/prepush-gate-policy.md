@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .github/workflows/**
 lastReviewedAt: 2026-04-23
-lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ---
 
 # Pre-Push Gate Policy
@@ -69,3 +69,4 @@ It does not own:
 - keep one authoritative full gate
 - protect the actual merge points
 - avoid forcing the heaviest gate on every local feature push
+- reproduce `lint-and-test` and `Full Gate` serially on one workstation; GitHub runs them in isolated jobs
