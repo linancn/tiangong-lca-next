@@ -9,10 +9,12 @@ import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { theme } from 'antd';
 import { RcFile } from 'antd/es/upload';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import schema from '../sources_schema.json';
 import { publicationTypeOptions } from './optiondata';
 
@@ -28,6 +30,8 @@ type Props = {
   setFileList: React.Dispatch<React.SetStateAction<UploadFile[]>>;
   formType?: string;
   showRules?: boolean;
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 
 export const SourceForm: FC<Props> = ({
@@ -42,11 +46,22 @@ export const SourceForm: FC<Props> = ({
   setFileList,
   formType,
   showRules = false,
+  sdkValidationDetails = [],
+  sdkValidationFocus = null,
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [showShortNameError, setShowShortNameError] = useState(false);
   const { token } = theme.useToken();
+  const intl = useIntl();
+  const { sdkValidationCountsByTab } = useDatasetSdkValidationFormSupport({
+    activeTabKey,
+    formRef,
+    intl,
+    sdkValidationDetails,
+    sdkValidationFocus,
+    showRules,
+  });
   const handlePreview = async (file: UploadFile) => {
     if (isImage(file)) {
       if (!file.url && !file.preview) {
@@ -65,23 +80,40 @@ export const SourceForm: FC<Props> = ({
     }
   };
 
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError ?? token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
+
   const tabList = [
     {
       key: 'sourceInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.source.edit.sourceInformation'
-          defaultMessage='Source information'
-        />
+      tab: renderTabLabel(
+        'sourceInformation',
+        'pages.source.edit.sourceInformation',
+        'Source information',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.source.edit.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.source.edit.administrativeInformation',
+        'Administrative information',
       ),
     },
   ];

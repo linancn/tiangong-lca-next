@@ -396,24 +396,31 @@ jest.mock('@ant-design/pro-components', () => {
 
   const ProForm = ({
     formRef,
-    initialValues = {},
+    initialValues,
     onFinish,
     onValuesChange,
     submitter,
     children,
   }: any) => {
-    const [values, setValues] = React.useState<any>(initialValues ?? {});
+    const normalizedInitialValues = React.useMemo(() => initialValues ?? {}, [initialValues]);
+    const [values, setValues] = React.useState<any>(normalizedInitialValues);
+    const errorMapRef = React.useRef<Map<string, string[]>>(new Map());
+    const valuesRef = React.useRef<any>(normalizedInitialValues);
+    const initialValuesRef = React.useRef<any>(normalizedInitialValues);
+    const onFinishRef = React.useRef(onFinish);
+    const onValuesChangeRef = React.useRef(onValuesChange);
 
-    const updateValues = React.useCallback(
-      (updater: (prev: any) => any) => {
-        setValues((prev: any) => {
-          const next = updater(prev);
-          onValuesChange?.({}, next);
-          return next;
-        });
-      },
-      [onValuesChange],
-    );
+    const serializeName = (name: any) =>
+      Array.isArray(name) ? name.map(String).join('.') : String(name ?? '');
+
+    const updateValues = React.useCallback((updater: (prev: any) => any) => {
+      setValues((prev: any) => {
+        const next = updater(prev);
+        valuesRef.current = next;
+        onValuesChangeRef.current?.({}, next);
+        return next;
+      });
+    }, []);
 
     const setFieldValue = React.useCallback(
       (path: any[], value: any) => {
@@ -423,27 +430,71 @@ jest.mock('@ant-design/pro-components', () => {
     );
 
     React.useEffect(() => {
-      if (!formRef) return;
-      formRef.current = {
+      initialValuesRef.current = normalizedInitialValues;
+      valuesRef.current = normalizedInitialValues;
+      setValues(normalizedInitialValues);
+    }, [normalizedInitialValues]);
+
+    React.useEffect(() => {
+      valuesRef.current = values;
+    }, [values]);
+
+    React.useEffect(() => {
+      onFinishRef.current = onFinish;
+    }, [onFinish]);
+
+    React.useEffect(() => {
+      onValuesChangeRef.current = onValuesChange;
+    }, [onValuesChange]);
+
+    const getFieldErrorMockRef = React.useRef(
+      jest.fn((name: any) => errorMapRef.current.get(serializeName(name)) ?? []),
+    );
+    const setFieldsMockRef = React.useRef(
+      jest.fn((fields: Array<{ errors?: string[]; name: Array<string | number> }>) => {
+        fields.forEach((field) => {
+          errorMapRef.current.set(serializeName(field.name), [...(field.errors ?? [])]);
+        });
+      }),
+    );
+    const scrollToFieldMockRef = React.useRef(jest.fn());
+    const formApiRef = React.useRef<any>();
+
+    if (!formApiRef.current) {
+      formApiRef.current = {
         submit: async () => {
-          await onFinish?.();
+          await onFinishRef.current?.();
           return true;
         },
         setFieldsValue: (next: any) => {
           if (next === undefined) {
-            onValuesChange?.({}, undefined);
+            onValuesChangeRef.current?.({}, undefined);
             return;
           }
-          setValues((prev: any) => ({ ...prev, ...next }));
+          setValues((prev: any) => {
+            const merged = { ...prev, ...next };
+            valuesRef.current = merged;
+            return merged;
+          });
         },
         resetFields: () => {
-          setValues(initialValues ?? {});
+          const nextInitialValues = initialValuesRef.current ?? {};
+          valuesRef.current = nextInitialValues;
+          setValues(nextInitialValues);
         },
-        getFieldsValue: () => ({ ...values }),
+        getFieldsValue: () => ({ ...valuesRef.current }),
+        getFieldError: getFieldErrorMockRef.current,
+        setFields: setFieldsMockRef.current,
         setFieldValue,
+        scrollToField: scrollToFieldMockRef.current,
       };
-      lastUnitEditFormApi = formRef.current;
-    }, [formRef, initialValues, onFinish, setFieldValue, values]);
+    }
+
+    React.useEffect(() => {
+      if (!formRef) return;
+      formRef.current = formApiRef.current;
+      lastUnitEditFormApi = formApiRef.current;
+    }, [formRef]);
 
     return (
       <form
@@ -1280,6 +1331,183 @@ describe('Unitgroups unit components', () => {
     await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
 
     expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+  });
+
+  it('auto-opens unit edit, applies sdk highlights, dedupes repeated messages, and scrolls to the field', async () => {
+    jest.useFakeTimers();
+    const actionRef = { current: { reload: jest.fn() } };
+    const sdkHighlights = [
+      {
+        fieldPath: 'unit[#0].name',
+        key: 'unit-highlight-1',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Fix the unit name.',
+        tabName: 'units',
+        validationCode: 'custom',
+      },
+      {
+        fieldPath: 'unit[#0].name',
+        key: 'unit-highlight-2',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Fix the unit name.',
+        tabName: 'units',
+        validationCode: 'custom',
+      },
+      {
+        fieldPath: 'unit[#0].name',
+        key: 'unit-highlight-3',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Use a longer unit name.',
+        tabName: 'units',
+        validationCode: 'string_too_short',
+      },
+    ];
+
+    const { rerender } = renderWithProviders(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={sdkHighlights as any}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /unit edit/i });
+    rerender(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={[...sdkHighlights] as any}
+      />,
+    );
+    await waitFor(() =>
+      expect(lastUnitEditFormApi.setFields).toHaveBeenCalledWith([
+        {
+          errors: ['Fix the unit name', 'Use a longer unit name'],
+          name: ['name'],
+        },
+      ]),
+    );
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(lastUnitEditFormApi.scrollToField).toHaveBeenCalledWith(['name'], { focus: true });
+
+    lastUnitEditFormApi.setFields.mockClear();
+    rerender(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={[...sdkHighlights] as any}
+      />,
+    );
+
+    expect(lastUnitEditFormApi.setFields).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it('keeps existing local errors when a required sdk highlight targets the same unit field', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    const { rerender } = renderWithProviders(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /unit edit/i });
+
+    lastUnitEditFormApi.setFields([
+      {
+        errors: ['Local unit-name error'],
+        name: ['name'],
+      },
+    ]);
+    lastUnitEditFormApi.setFields.mockClear();
+
+    rerender(
+      <UnitEdit
+        id='0'
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            name: 'Kilogram',
+            meanValue: '1',
+            quantitativeReference: true,
+          },
+        ]}
+        buttonType='text'
+        actionRef={actionRef}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={
+          [
+            {
+              fieldPath: 'unit[#0].name',
+              key: 'unit-required-highlight',
+              reasonMessage: 'Validation failed',
+              suggestedFix: 'Fill in the required value for this field.',
+              tabName: 'units',
+              validationCode: 'required_missing',
+            },
+          ] as any
+        }
+      />,
+    );
+
+    expect(lastUnitEditFormApi.setFields).not.toHaveBeenCalled();
+    expect(lastUnitEditFormApi.getFieldError(['name'])).toEqual(['Local unit-name error']);
   });
 
   it('deletes a unit and reindexes remaining entries', async () => {

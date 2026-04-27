@@ -20,8 +20,14 @@ jest.mock('@/services/contacts/util');
 
 describe('Contacts API Service', () => {
   const { supabase } = jest.requireMock('@/services/supabase');
-  const { getTeamIdByUserId, getDataDetail, invokeDatasetCommand, normalizeLangPayloadForSave } =
-    jest.requireMock('@/services/general/api');
+  const {
+    attachLangNormalizationMetadata,
+    buildLangNormalizationMetadata,
+    getTeamIdByUserId,
+    getDataDetail,
+    invokeDatasetCommand,
+    normalizeLangPayloadForSave,
+  } = jest.requireMock('@/services/general/api');
   const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
   const { getLangText, jsonToList, genClassificationZH, classificationToString } =
     jest.requireMock('@/services/general/util');
@@ -63,6 +69,12 @@ describe('Contacts API Service', () => {
       payload: value,
       validationError: undefined,
     }));
+    buildLangNormalizationMetadata.mockImplementation((normalizedResult: any, rawPayload: any) => ({
+      normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+      langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+      langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+    }));
+    attachLangNormalizationMetadata.mockImplementation((result: any) => result);
     getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] || '');
     jsonToList.mockImplementation((value: any) => (Array.isArray(value) ? value : [value]));
     genClassificationZH.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);

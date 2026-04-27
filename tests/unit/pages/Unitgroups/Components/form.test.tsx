@@ -15,10 +15,14 @@ const toText = (node: any): string => {
 };
 
 const mockGenUnitTableData = jest.fn();
+let mockUnitEditProps: any = null;
 
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
 }));
 
 jest.mock('@/pages/Utils', () => ({
@@ -121,14 +125,17 @@ jest.mock('@/pages/Unitgroups/Components/Unit/view', () => ({
 
 jest.mock('@/pages/Unitgroups/Components/Unit/edit', () => ({
   __esModule: true,
-  default: ({ id, setViewDrawerVisible }: any) => (
-    <div data-testid='unit-edit'>
-      {`edit:${id}`}
-      <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
-        close-unit-edit
-      </button>
-    </div>
-  ),
+  default: (props: any) => {
+    mockUnitEditProps = props;
+    return (
+      <div data-testid='unit-edit'>
+        {`edit:${props.id}`}
+        <button type='button' onClick={() => props.setViewDrawerVisible?.(false)}>
+          close-unit-edit
+        </button>
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Unitgroups/Components/Unit/delete', () => ({
@@ -226,7 +233,14 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ dataSource = [], columns = [], toolBarRender, actionRef, rowKey }: any) => {
+  const ProTable = ({
+    dataSource = [],
+    columns = [],
+    toolBarRender,
+    actionRef,
+    rowKey,
+    rowClassName,
+  }: any) => {
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
@@ -237,7 +251,10 @@ jest.mock('@ant-design/pro-components', () => {
     }, [actionRef]);
 
     return (
-      <section data-testid='pro-table'>
+      <section
+        data-testid='pro-table'
+        data-row-class={rowClassName ? rowClassName(dataSource[0] ?? {}) : ''}
+      >
         <div>{toolBarRender?.()}</div>
         {dataSource.map((row: any, rowIndex: number) => (
           <div key={rowKey ? rowKey(row) : `${row.dataSetInternalID}-${rowIndex}`}>
@@ -279,6 +296,7 @@ describe('UnitGroupForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUnitEditProps = null;
     mockGenUnitTableData.mockImplementation((data: any[]) =>
       (data ?? []).map((item) => ({
         dataSetInternalID: item['@dataSetInternalID'],
@@ -462,6 +480,35 @@ describe('UnitGroupForm', () => {
       meanValue: '1',
       quantitativeReference: true,
     });
+  });
+
+  it('passes sdk row highlights to unit drawers and marks the focused row', () => {
+    const focusedDetail = {
+      fieldLabel: 'Mean value (of unit)',
+      fieldPath: 'unit[#0].meanValue',
+      formName: ['meanValue'],
+      key: 'unit-0:meanValue',
+      reasonMessage: 'Required value is missing',
+      suggestedFix: 'Fill in the required value for this field.',
+      tabName: 'units',
+      validationCode: 'required_missing',
+    };
+
+    renderWithProviders(
+      <UnitGroupForm
+        {...baseProps}
+        activeTabKey='units'
+        sdkValidationDetails={[focusedDetail]}
+        sdkValidationFocus={focusedDetail}
+      />,
+    );
+
+    expect(screen.getByTestId('pro-table')).toHaveAttribute(
+      'data-row-class',
+      'sdk-error-row sdk-focus-row',
+    );
+    expect(mockUnitEditProps?.sdkHighlights).toEqual([focusedDetail]);
+    expect(mockUnitEditProps?.autoOpen).toBe(true);
   });
 
   it('switches tabs through the card callback', async () => {

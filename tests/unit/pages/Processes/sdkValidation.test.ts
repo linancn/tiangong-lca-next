@@ -536,6 +536,96 @@ describe('process sdk validation mapping', () => {
     ]);
   });
 
+  it('maps single-entry root localized-text leaf issues to the indexed process form leaf', () => {
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'localized_text_en_must_not_contain_chinese_character',
+          message: "@xml:lang values starting with 'en' must not contain Chinese characters",
+          path: [
+            'processDataSet',
+            'processInformation',
+            'time',
+            'common:timeRepresentativenessDescription',
+            '#text',
+          ],
+          rawCode: 'custom',
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          processInformation: {
+            time: {
+              'common:timeRepresentativenessDescription': {
+                '@xml:lang': 'en',
+                '#text': '中文',
+              },
+            },
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath: 'processInformation.time.common:timeRepresentativenessDescription.0.#text',
+        formName: [
+          'processInformation',
+          'time',
+          'common:timeRepresentativenessDescription',
+          0,
+          '#text',
+        ],
+        tabName: 'processInformation',
+        validationCode: 'localized_text_en_must_not_contain_chinese_character',
+      }),
+    ]);
+  });
+
+  it('maps single-entry exchange localized-text leaf issues to the indexed exchange form leaf', () => {
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'localized_text_en_must_not_contain_chinese_character',
+          message: "@xml:lang values starting with 'en' must not contain Chinese characters",
+          path: ['processDataSet', 'exchanges', 'exchange', 0, 'generalComment', '#text'],
+          rawCode: 'custom',
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          exchanges: {
+            exchange: [
+              {
+                '@dataSetInternalID': 'exchange-1',
+                exchangeDirection: 'Input',
+                generalComment: {
+                  '@xml:lang': 'en',
+                  '#text': '中文',
+                },
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-1',
+                },
+              },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        exchangeInternalId: 'exchange-1',
+        fieldPath: 'exchange[#exchange-1].generalComment.0.#text',
+        formName: ['generalComment', 0, '#text'],
+        tabName: 'exchanges',
+        validationCode: 'localized_text_en_must_not_contain_chinese_character',
+      }),
+    ]);
+  });
+
   it('maps reference selectors and lang-text roots onto concrete form targets', () => {
     const details = normalizeProcessSdkValidationDetails(
       [
@@ -1210,26 +1300,26 @@ describe('process sdk validation mapping', () => {
       getListItemIndex(['referenceToDataSource', 3, '@refObjectId'], 'referenceToDataSource'),
     ).toBe(3);
     expect(
-      getProcessSdkIssueExchangeFormName([
-        'processDataSet',
-        'exchanges',
-        'exchange',
-        0,
-        'referencesToDataSource',
-      ]),
+      getProcessSdkIssueExchangeFormName(
+        ['processDataSet', 'exchanges', 'exchange', 0, 'referencesToDataSource'],
+        {},
+      ),
     ).toEqual(['referencesToDataSource', 'referenceToDataSource', 0, '@refObjectId']);
     expect(
-      getProcessSdkIssueExchangeFormName(['processDataSet', 'processInformation']),
+      getProcessSdkIssueExchangeFormName(['processDataSet', 'processInformation'], {}),
     ).toBeUndefined();
     expect(
-      getProcessSdkIssueExchangeFormName([
-        'processDataSet',
-        'exchanges',
-        'exchange',
-        0,
-        'quantitativeReference',
-      ]),
+      getProcessSdkIssueExchangeFormName(
+        ['processDataSet', 'exchanges', 'exchange', 0, 'quantitativeReference'],
+        {},
+      ),
     ).toEqual(['quantitativeReference']);
+    expect(
+      getProcessSdkIssueExchangeFormName(
+        ['processDataSet', 'exchanges', 'exchange', '0', 'meanAmount'],
+        {},
+      ),
+    ).toBeUndefined();
 
     expect(
       getProcessSdkIssueFieldPath(['processDataSet', 'exchanges', 'exchange', 0], undefined),

@@ -64,6 +64,8 @@ jest.mock('@/services/classifications/cache', () => ({
 }));
 
 jest.mock('@/services/general/api', () => ({
+  attachLangNormalizationMetadata: jest.fn(),
+  buildLangNormalizationMetadata: jest.fn(),
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
@@ -75,8 +77,14 @@ const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperti
 const { getLangText, classificationToString, jsonToList, genClassificationZH } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
-const { getDataDetail, getTeamIdByUserId, invokeDatasetCommand, normalizeLangPayloadForSave } =
-  jest.requireMock('@/services/general/api');
+const {
+  attachLangNormalizationMetadata,
+  buildLangNormalizationMetadata,
+  getDataDetail,
+  getTeamIdByUserId,
+  invokeDatasetCommand,
+  normalizeLangPayloadForSave,
+} = jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
@@ -96,6 +104,12 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       payload,
       validationError: undefined,
     }));
+    buildLangNormalizationMetadata.mockImplementation((normalizedResult: any, rawPayload: any) => ({
+      normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+      langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+      langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+    }));
+    attachLangNormalizationMetadata.mockImplementation((result: any) => result);
     // Setup default SDK mock behavior
     mockCreateFlowProperty.mockReturnValue({
       validateEnhanced: jest.fn().mockReturnValue({ success: true }),

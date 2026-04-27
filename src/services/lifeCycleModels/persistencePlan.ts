@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-import { normalizeLangPayloadForSave } from '@/services/general/api';
+import {
+  normalizeLangPayloadForSave,
+  type NormalizeLangPayloadForSaveOptions,
+} from '@/services/general/api';
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
 import { jsonToList } from '@/services/general/util';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
@@ -67,6 +70,7 @@ type BuildSavePlanArgs = {
   mode: 'create' | 'update';
   modelId: string;
   version?: string;
+  langIntent?: NormalizeLangPayloadForSaveOptions['intent'];
   lifeCycleModelJsonOrdered: any;
   nodes: LifeCycleModelGraphNode[];
   edges: LifeCycleModelGraphEdge[];
@@ -79,6 +83,7 @@ type BuildSavePlanArgs = {
 type BuildReviewUpdatePlanArgs = {
   modelId: string;
   version: string;
+  langIntent?: NormalizeLangPayloadForSaveOptions['intent'];
   lifeCycleModelJsonOrdered: any;
   currentJsonTg: LifeCycleModelJsonTg;
   currentRuleVerification: boolean;
@@ -121,6 +126,7 @@ export async function buildSaveLifeCycleModelPersistencePlan(
 
   const parentRuleVerification = getLifecycleModelRuleVerification(parentJsonOrdered);
   const processMutationsResult = await buildProcessMutations({
+    langIntent: args.langIntent,
     modelId: args.modelId,
     version: args.version,
     lifeCycleModelJsonOrdered: parentJsonOrdered,
@@ -189,7 +195,9 @@ export async function buildReviewUpdateLifeCycleModelPersistencePlan(
       );
     }
 
-    const normalizedResult = await normalizeLangPayloadForSave(nextJsonOrdered);
+    const normalizedResult = await normalizeLangPayloadForSave(nextJsonOrdered, {
+      intent: args.langIntent,
+    });
     const normalizedJson = normalizedResult?.payload ?? nextJsonOrdered;
     const validationError = normalizedResult?.validationError;
     if (validationError) {
@@ -292,6 +300,7 @@ function decorateEdges(edges: LifeCycleModelGraphEdge[], up2DownEdges: Up2DownEd
 }
 
 async function buildProcessMutations(args: {
+  langIntent?: NormalizeLangPayloadForSaveOptions['intent'];
   modelId: string;
   version?: string;
   lifeCycleModelJsonOrdered: any;
@@ -320,6 +329,7 @@ async function buildProcessMutations(args: {
 
   for (const process of args.lifeCycleModelProcesses) {
     const mutation = await buildProcessMutation({
+      langIntent: args.langIntent,
       modelId: args.modelId,
       version: args.version,
       lifeCycleModelJsonOrdered: args.lifeCycleModelJsonOrdered,
@@ -341,6 +351,7 @@ async function buildProcessMutations(args: {
 }
 
 async function buildProcessMutation(args: {
+  langIntent?: NormalizeLangPayloadForSaveOptions['intent'];
   modelId: string;
   version?: string;
   lifeCycleModelJsonOrdered: any;
@@ -379,7 +390,9 @@ async function buildProcessMutation(args: {
   }
 
   const rawProcessJsonOrdered = genProcessJsonOrdered(args.process.modelInfo.id, processDataSet);
-  const normalizedResult = await normalizeLangPayloadForSave(rawProcessJsonOrdered);
+  const normalizedResult = await normalizeLangPayloadForSave(rawProcessJsonOrdered, {
+    intent: args.langIntent,
+  });
   const normalizedJson = normalizedResult?.payload ?? rawProcessJsonOrdered;
   const validationError = normalizedResult?.validationError;
   if (validationError) {

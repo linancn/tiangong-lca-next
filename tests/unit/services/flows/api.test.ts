@@ -70,6 +70,8 @@ const { getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll } = j
 );
 
 jest.mock('@/services/general/api', () => ({
+  attachLangNormalizationMetadata: jest.fn(),
+  buildLangNormalizationMetadata: jest.fn(),
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
@@ -77,6 +79,8 @@ jest.mock('@/services/general/api', () => ({
 }));
 
 const {
+  attachLangNormalizationMetadata: mockAttachLangNormalizationMetadata,
+  buildLangNormalizationMetadata: mockBuildLangNormalizationMetadata,
   getDataDetail: mockGetDataDetail,
   getTeamIdByUserId: mockGetTeamIdByUserId,
   invokeDatasetCommand: mockInvokeDatasetCommand,
@@ -246,6 +250,14 @@ beforeEach(() => {
     payload,
     validationError: undefined,
   }));
+  mockBuildLangNormalizationMetadata.mockImplementation(
+    (normalizedResult: any, rawPayload: any) => ({
+      normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+      langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+      langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+    }),
+  );
+  mockAttachLangNormalizationMetadata.mockImplementation((result: any) => result);
 
   mockAuthGetSession.mockResolvedValue({
     data: {

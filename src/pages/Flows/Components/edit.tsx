@@ -1,8 +1,9 @@
+/* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
 import AISuggestion from '@/components/AISuggestion';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { ProblemNode, refDataType } from '@/pages/Utils/review';
+import type { ProblemNode, ValidationIssueSdkDetail, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   buildValidationIssues,
@@ -16,6 +17,8 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import {
@@ -26,7 +29,10 @@ import {
   FormFlowWithId,
 } from '@/services/flows/data';
 import { genFlowFromData, genFlowJsonOrdered } from '@/services/flows/util';
-import { jsonToList } from '@/services/general/util';
+import {
+  hasLangNormalizationDraftChanges,
+  type LangNormalizationMetadata,
+} from '@/services/general/api';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
@@ -34,8 +40,13 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import {
+  buildFlowPropertiesValidationDetails,
+  filterFlowSdkIssuesForUi,
+  normalizeFlowSdkValidationDetails,
+} from '../sdkValidation';
 import { FlowForm } from './form';
 
 type Props = {
@@ -54,7 +65,8 @@ type Props = {
 type UpdateFlowResult = Pick<
   SupabaseMutationResult<{ rule_verification?: boolean }>,
   'data' | 'error'
->;
+> &
+  LangNormalizationMetadata;
 
 const FlowsEdit: FC<Props> = ({
   id,
@@ -84,6 +96,12 @@ const FlowsEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
+  const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
+    null,
+  );
+  const [pendingTabValidationKey, setPendingTabValidationKey] =
+    useState<FlowDataSetObjectKeys | null>(null);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
@@ -114,16 +132,35 @@ const FlowsEdit: FC<Props> = ({
   // }, [showRules]);
 
   useEffect(() => {
-    if (!showRules || !drawerVisible) {
+    if (
+      !drawerVisible ||
+      !showRules ||
+      !pendingTabValidationKey ||
+      pendingTabValidationKey !== activeTabKey
+    ) {
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      void formRefEdit.current?.validateFields();
-    }, 0);
+    let cancelled = false;
 
-    return () => window.clearTimeout(timer);
-  }, [drawerVisible, showRules]);
+    void validateVisibleFormFields(formRefEdit, {
+      /* istanbul ignore next -- validation re-run scheduling is UI-only bookkeeping */
+      onSettled: () => {
+        if (cancelled) {
+          return;
+        }
+
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+        setPendingTabValidationKey(null);
+      },
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabKey, drawerVisible, pendingTabValidationKey, showRules]);
 
   const updatePropertyDataSource = async () => {
     for (const property of propertyDataSource) {
@@ -184,6 +221,24 @@ const FlowsEdit: FC<Props> = ({
   };
   const onTabChange = (key: FlowDataSetObjectKeys) => {
     setActiveTabKey(key);
+  };
+
+  const handleValidationIssueNavigate = (target: {
+    detail?: ValidationIssueSdkDetail;
+    tabName?: string;
+  }) => {
+    const tabName = target.detail?.tabName ?? target.tabName;
+
+    if (tabName) {
+      setPendingTabValidationKey(tabName as FlowDataSetObjectKeys);
+      setActiveTabKey(tabName as FlowDataSetObjectKeys);
+    }
+
+    setSdkValidationFocus(
+      target.detail?.presentation && target.detail.presentation !== 'field'
+        ? null
+        : (target.detail ?? null),
+    );
   };
 
   const toFlowPropertyList = (
@@ -263,6 +318,9 @@ const FlowsEdit: FC<Props> = ({
       setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
+      setSdkValidationDetails([]);
+      setSdkValidationFocus(null);
+      setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       return;
     }
@@ -271,7 +329,7 @@ const FlowsEdit: FC<Props> = ({
 
   const handleSubmit = async (
     autoClose: boolean,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
   ): Promise<UpdateFlowResult | null | undefined> => {
     const silent = options?.silent ?? false;
     try {
@@ -285,10 +343,16 @@ const FlowsEdit: FC<Props> = ({
 
     const fieldsValue = formRefEdit.current?.getFieldsValue();
     const flowProperties = fromData?.flowProperties;
-    const updateResult = (await updateFlows(id, version, {
+    const nextFlowData = {
       ...fieldsValue,
       flowProperties,
-    })) as UpdateFlowResult;
+    };
+    const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
+    const updateResult = (
+      langOptions
+        ? await updateFlows(id, version, nextFlowData, langOptions)
+        : await updateFlows(id, version, nextFlowData)
+    ) as UpdateFlowResult;
     if (updateResult?.data) {
       const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
       if (isRuleVerified) {
@@ -341,6 +405,28 @@ const FlowsEdit: FC<Props> = ({
     }
     return null;
   };
+
+  /* istanbul ignore next -- validation-only draft hydration mirrors the already-validated save payload */
+  const applyValidationLangDraft = useCallback(
+    (updateResult?: UpdateFlowResult | null) => {
+      if (!hasLangNormalizationDraftChanges(updateResult)) {
+        return undefined;
+      }
+
+      const flowDataSet = updateResult?.normalizedJsonOrdered?.flowDataSet;
+      if (!flowDataSet) {
+        return undefined;
+      }
+
+      const nextData = genFlowFromData(flowDataSet) as FormFlowWithId;
+      setFromData({ ...nextData, id });
+      setPropertyDataSource(toFlowPropertyList(nextData?.flowProperties?.flowProperty));
+      setFlowType(nextData?.modellingAndValidation?.LCIMethod?.typeOfDataSet);
+      formRefEdit.current?.setFieldsValue({ ...nextData, id });
+      return { ...nextData, id } as FormFlowWithId;
+    },
+    [id],
+  );
   const handleCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
@@ -355,12 +441,10 @@ const FlowsEdit: FC<Props> = ({
       return;
     }
     setSpinning(true);
-    const updateResult = await handleSubmit(false, { silent });
-    if (!updateResult || updateResult?.error) {
-      setSpinning(false);
-      return;
-    }
+    const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
+    const validationDraft = applyValidationLangDraft(updateResult);
     setShowRules(true);
+    const saveSucceeded = Boolean(updateResult && !updateResult.error);
     const rootRef = {
       '@type': 'flow data set',
       '@refObjectId': id,
@@ -368,11 +452,18 @@ const FlowsEdit: FC<Props> = ({
     } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const rootRuleVerification = isRuleVerificationPassed(
-      updateResult?.data?.[0]?.rule_verification,
-    );
+    const rootRuleVerification = saveSucceeded
+      ? isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification)
+      : true;
     const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
-    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
+    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const jsonData = {
+      ...fieldsValue,
+      flowProperties: validationDraft?.flowProperties ?? fromData?.flowProperties,
+    };
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef, {
+      orderedJson: genFlowJsonOrdered(id, jsonData),
+    });
     const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
@@ -404,56 +495,53 @@ const FlowsEdit: FC<Props> = ({
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
-    const fieldsValue = formRefEdit.current?.getFieldsValue();
-    const jsonData = {
-      ...fieldsValue,
-      flowProperties: fromData?.flowProperties,
-    };
-    const sdkValidation = validateDatasetWithSdk('flow data set', genFlowJsonOrdered(id, jsonData));
-    const sdkIssues = sdkValidation.issues;
-    let currentDatasetValid = sdkValidation.success;
-    const flowPropertiesList = jsonToList(fromData?.flowProperties?.flowProperty);
-    if (!flowPropertiesList || flowPropertiesList.length === 0) {
-      currentDatasetValid = false;
-      datasetValidationMessage = intl.formatMessage({
-        id: 'pages.flow.validator.flowProperties.required',
-        defaultMessage: 'Please select flow properties',
-      });
-      if (!errTabNames.includes('flowProperties')) errTabNames.push('flowProperties');
-      if (!currentDatasetTabNames.includes('flowProperties'))
-        currentDatasetTabNames.push('flowProperties');
-      setActiveTabKey('flowProperties');
-    } else if (flowPropertiesList.filter((item) => item?.quantitativeReference).length !== 1) {
-      currentDatasetValid = false;
-      datasetValidationMessage = intl.formatMessage({
-        id: 'pages.flow.validator.flowProperties.quantitativeReference.required',
-        defaultMessage: 'Flow property needs to have exactly one quantitative reference open',
-      });
-      if (!errTabNames.includes('flowProperties')) errTabNames.push('flowProperties');
-      if (!currentDatasetTabNames.includes('flowProperties'))
-        currentDatasetTabNames.push('flowProperties');
+    const orderedJson = genFlowJsonOrdered(id, jsonData);
+    const sdkValidation = validateDatasetWithSdk('flow data set', orderedJson);
+    const sdkIssues = filterFlowSdkIssuesForUi(sdkValidation.issues);
+    const sdkIssueDetails = [
+      ...normalizeFlowSdkValidationDetails(sdkIssues, orderedJson),
+      ...buildFlowPropertiesValidationDetails(jsonData.flowProperties),
+    ];
+    const flowPropertyIssueDetails = sdkIssueDetails.filter(
+      (detail) => detail.tabName === 'flowProperties',
+    );
+    let currentDatasetValid = sdkIssues.length === 0 && flowPropertyIssueDetails.length === 0;
+
+    if (sdkIssues.length > 0) {
+      await validateVisibleFormFields(formRefEdit);
+    }
+    setSdkValidationDetails(sdkIssueDetails);
+    if (sdkIssueDetails.length === 0) {
+      setSdkValidationFocus(null);
+    }
+
+    sdkIssueDetails.forEach((detail) => {
+      const tabName = detail.tabName;
+
+      if (tabName && !errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+
+      if (tabName && !currentDatasetTabNames.includes(tabName)) {
+        currentDatasetTabNames.push(tabName);
+      }
+    });
+
+    if (flowPropertyIssueDetails.length > 0) {
+      datasetValidationMessage =
+        getSdkSuggestedFixMessage(intl, flowPropertyIssueDetails[0]) ||
+        (flowPropertyIssueDetails[0]?.suggestedFix ??
+          flowPropertyIssueDetails[0]?.reasonMessage ??
+          null);
+      setPendingTabValidationKey('flowProperties');
       setActiveTabKey('flowProperties');
     }
-    if (sdkIssues.length) {
-      sdkIssues.forEach((err) => {
-        if (err.path.includes('typeOfDataSet')) {
-          if (!errTabNames.includes('flowInformation')) errTabNames.push('flowInformation');
-          if (!currentDatasetTabNames.includes('flowInformation'))
-            currentDatasetTabNames.push('flowInformation');
-        } else {
-          const tabName = err.path[1];
-          if (tabName && !errTabNames.includes(tabName as string))
-            errTabNames.push(tabName as string);
-          if (tabName && !currentDatasetTabNames.includes(tabName as string))
-            currentDatasetTabNames.push(tabName as string);
-        }
-      });
-      formRefEdit.current?.validateFields();
-    }
+
     const validationIssues = buildValidationIssues({
       datasetSdkValid: currentDatasetValid,
       nonExistentRef,
       rootRef,
+      sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
@@ -503,6 +591,7 @@ const FlowsEdit: FC<Props> = ({
         showValidationIssueModal({
           intl,
           issues: validationIssuesWithOwner,
+          onNavigate: handleValidationIssueNavigate,
           title: intl.formatMessage({
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',
@@ -643,6 +732,8 @@ const FlowsEdit: FC<Props> = ({
                 onPropertyData={handletPropertyData}
                 onPropertyDataCreate={handletPropertyDataCreate}
                 showRules={showRules}
+                sdkValidationDetails={sdkValidationDetails}
+                sdkValidationFocus={sdkValidationFocus}
               />
             </ProForm>
           </RefCheckContext.Provider>

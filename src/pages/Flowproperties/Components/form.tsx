@@ -3,13 +3,15 @@ import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import UnitGroupSelectFrom from '@/pages/Unitgroups/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import { ProFormInstance } from '@ant-design/pro-components';
 import schema from '../flowproperties_schema.json';
 import { complianceOptions } from './optiondata';
@@ -24,6 +26,8 @@ type Props = {
   onTabChange: (key: string) => void;
   formType?: string;
   showRules?: boolean;
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 export const FlowpropertyForm: FC<Props> = ({
   lang,
@@ -34,35 +38,62 @@ export const FlowpropertyForm: FC<Props> = ({
   onTabChange,
   formType,
   showRules = false,
+  sdkValidationDetails = [],
+  sdkValidationFocus = null,
 }) => {
   const { token } = theme.useToken();
+  const intl = useIntl();
   const [nameErrorState, setNameErrorState] = useState(false);
+  const { sdkValidationCountsByTab } = useDatasetSdkValidationFormSupport({
+    activeTabKey,
+    formRef,
+    intl,
+    sdkValidationDetails,
+    sdkValidationFocus,
+    showRules,
+  });
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError ?? token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
   const tabList = [
     {
       key: 'flowPropertiesInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.FlowProperties.view.flowPropertiesInformation'
-          defaultMessage='Flow property information'
-        />
+      tab: renderTabLabel(
+        'flowPropertiesInformation',
+        'pages.FlowProperties.view.flowPropertiesInformation',
+        'Flow property information',
       ),
     },
     {
       key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id='pages.FlowProperties.view.modellingAndValidation'
-          defaultMessage='Modelling and validation'
-        />
+      tab: renderTabLabel(
+        'modellingAndValidation',
+        'pages.FlowProperties.view.modellingAndValidation',
+        'Modelling and validation',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.FlowProperties.view.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.FlowProperties.view.administrativeInformation',
+        'Administrative information',
       ),
     },
   ];

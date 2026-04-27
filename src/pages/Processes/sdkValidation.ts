@@ -1,4 +1,5 @@
 import type { ValidationIssueMessageValues, ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { toIndexedLangTextLeafFormName } from '@/pages/Utils/validation/sdkDetails';
 
 type ProcessSdkValidationIssueLike = {
   code?: string;
@@ -169,7 +170,7 @@ export const buildProcessQuantitativeReferenceValidationDetails = (
     return [];
   }
 
-  const reasonMessage = 'The following data must contain exactly one reference flow';
+  const reasonMessage = 'The following data must have exactly one item designated as the reference';
   const details: ValidationIssueSdkDetail[] = [
     {
       fieldKey: 'quantitativeReference',
@@ -510,14 +511,19 @@ const getProcessSdkIssueFieldLabel = (
 
 const getProcessSdkIssueExchangeFormName = (
   path: PropertyKey[],
+  orderedJson: any,
 ): Array<string | number> | undefined => {
-  const exchangeIndex = path.findIndex((segment) => segment === 'exchange');
-  if (exchangeIndex < 0) {
+  const exchangePathIndex = path.findIndex((segment) => segment === 'exchange');
+  if (exchangePathIndex < 0) {
+    return undefined;
+  }
+  const exchangeIndex = path[exchangePathIndex + 1];
+  if (typeof exchangeIndex !== 'number') {
     return undefined;
   }
 
   const exchangePath = path
-    .slice(exchangeIndex + 2)
+    .slice(exchangePathIndex + 2)
     .filter(
       (segment): segment is string | number =>
         typeof segment === 'string' || typeof segment === 'number',
@@ -534,7 +540,15 @@ const getProcessSdkIssueExchangeFormName = (
   }
 
   if (fieldSegment === 'generalComment' || fieldSegment === 'functionalUnitOrOther') {
-    return toLangTextFormName(exchangePath);
+    const parentValue = getValueAtPath(orderedJson, [
+      'processDataSet',
+      'exchanges',
+      'exchange',
+      exchangeIndex,
+      ...exchangePath.slice(0, -1),
+    ]);
+
+    return toIndexedLangTextLeafFormName(toLangTextFormName(exchangePath), parentValue);
   }
 
   if (fieldSegment === 'quantitativeReference') {
@@ -630,7 +644,9 @@ const getProcessSdkIssueRootFormName = (
   }
 
   if (rootPath[rootPath.length - 1] === '#text' || rootPath[rootPath.length - 1] === '@xml:lang') {
-    return rootPath;
+    const parentValue = getValueAtPath(orderedJson, path.slice(0, -1));
+
+    return toIndexedLangTextLeafFormName(rootPath, parentValue);
   }
 
   if (isLangTextValue(actualValue) || PROCESS_REQUIRED_LANG_TEXT_FIELDS.has(rootPathString)) {
@@ -661,13 +677,22 @@ const getProcessSdkIssueFormName = (
   if (typeof exchangeIndex === 'number') {
     if (path[1] === 'processInformation' && path[2] === 'quantitativeReference') {
       if (path[3] === 'functionalUnitOrOther') {
-        return toLangTextFormName(['functionalUnitOrOther', ...path.slice(4)]);
+        const formName = toLangTextFormName(['functionalUnitOrOther', ...path.slice(4)]);
+        const parentValue = getValueAtPath(orderedJson, [
+          'processDataSet',
+          'exchanges',
+          'exchange',
+          exchangeIndex,
+          ...path.slice(3, -1),
+        ]);
+
+        return toIndexedLangTextLeafFormName(formName, parentValue);
       }
 
       return ['quantitativeReference'];
     }
 
-    return getProcessSdkIssueExchangeFormName(path);
+    return getProcessSdkIssueExchangeFormName(path, orderedJson);
   }
 
   return getProcessSdkIssueRootFormName(path, orderedJson);

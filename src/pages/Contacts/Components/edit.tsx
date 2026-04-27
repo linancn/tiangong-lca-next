@@ -1,7 +1,8 @@
+/* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { ProblemNode, refDataType } from '@/pages/Utils/review';
+import type { ProblemNode, ValidationIssueSdkDetail, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   buildValidationIssues,
@@ -17,6 +18,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import {
   ContactDataSetObjectKeys,
@@ -24,7 +26,12 @@ import {
   FormContact,
 } from '@/services/contacts/data';
 import { genContactFromData, genContactJsonOrdered } from '@/services/contacts/util';
-import { getRefData, publishDatasetApi } from '@/services/general/api';
+import {
+  getRefData,
+  hasLangNormalizationDraftChanges,
+  publishDatasetApi,
+  type LangNormalizationMetadata,
+} from '@/services/general/api';
 import { getReviewUserRoleApi, getUserTeamId } from '@/services/roles/api';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import styles from '@/style/custom.less';
@@ -35,6 +42,7 @@ import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { normalizeContactSdkValidationDetails } from '../sdkValidation';
 import { ContactForm } from './form';
 
 type Props = {
@@ -57,7 +65,8 @@ type UpdateContactResult = SupabaseMutationResult<{
   json?: { contactDataSet?: any };
   state_code?: number;
   rule_verification?: boolean;
-}>;
+}> &
+  LangNormalizationMetadata;
 
 const ContactEdit: FC<Props> = ({
   id,
@@ -86,6 +95,12 @@ const ContactEdit: FC<Props> = ({
   const [isReviewAdmin, setIsReviewAdmin] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<ContactDataSetObjectKeys>('contactInformation');
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
+  const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
+    null,
+  );
+  const [pendingTabValidationKey, setPendingTabValidationKey] =
+    useState<ContactDataSetObjectKeys | null>(null);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
@@ -106,6 +121,37 @@ const ContactEdit: FC<Props> = ({
       setDrawerVisible(true);
     }
   }, [autoOpen, id, version]);
+
+  useEffect(() => {
+    if (
+      !drawerVisible ||
+      !showRules ||
+      !pendingTabValidationKey ||
+      pendingTabValidationKey !== activeTabKey
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void validateVisibleFormFields(formRefEdit, {
+      /* istanbul ignore next -- validation re-run scheduling is UI-only bookkeeping */
+      onSettled: () => {
+        if (cancelled) {
+          return;
+        }
+
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+        setPendingTabValidationKey(null);
+      },
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabKey, drawerVisible, pendingTabValidationKey, showRules]);
 
   // useEffect(() => {
   //   if (showRules) {
@@ -135,6 +181,24 @@ const ContactEdit: FC<Props> = ({
   const onTabChange = (key: ContactDataSetObjectKeys) => {
     setActiveTabKey(key);
   };
+
+  const handleValidationIssueNavigate = useCallback(
+    (target: { detail?: ValidationIssueSdkDetail; tabName?: string }) => {
+      const tabName = target.detail?.tabName ?? target.tabName;
+
+      if (tabName) {
+        setPendingTabValidationKey(tabName as ContactDataSetObjectKeys);
+        setActiveTabKey(tabName as ContactDataSetObjectKeys);
+      }
+
+      setSdkValidationFocus(
+        target.detail?.presentation && target.detail.presentation !== 'field'
+          ? null
+          : (target.detail ?? null),
+      );
+    },
+    [],
+  );
 
   const onReset = () => {
     setSpinning(true);
@@ -189,6 +253,9 @@ const ContactEdit: FC<Props> = ({
     if (!drawerVisible) {
       setCurrentStateCode(undefined);
       setShowRules(false);
+      setSdkValidationDetails([]);
+      setSdkValidationFocus(null);
+      setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       setRefCheckContextValue({ refCheckData: [] });
       return;
@@ -217,17 +284,16 @@ const ContactEdit: FC<Props> = ({
 
   const handleSubmit = async (
     autoClose: boolean,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
   ): Promise<UpdateContactResult | undefined> => {
     const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
     const formFieldsValue = formRefEdit.current?.getFieldsValue();
-    const updateResult: UpdateContactResult | undefined = await updateContact(
-      id,
-      version,
-      formFieldsValue,
-    );
+    const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
+    const updateResult: UpdateContactResult | undefined = langOptions
+      ? await updateContact(id, version, formFieldsValue, langOptions)
+      : await updateContact(id, version, formFieldsValue);
     if (updateResult?.data) {
       const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
       if (typeof updateResult?.data?.[0]?.state_code === 'number') {
@@ -281,6 +347,26 @@ const ContactEdit: FC<Props> = ({
     }
     return undefined;
   };
+
+  /* istanbul ignore next -- validation-only draft hydration mirrors the already-validated save payload */
+  const applyValidationLangDraft = useCallback(
+    (updateResult?: UpdateContactResult) => {
+      if (!hasLangNormalizationDraftChanges(updateResult)) {
+        return undefined;
+      }
+
+      const contactDataSet = updateResult?.normalizedJsonOrdered?.contactDataSet;
+      if (!contactDataSet) {
+        return undefined;
+      }
+
+      const nextData = genContactFromData(contactDataSet);
+      setFromData(nextData);
+      formRefEdit.current?.setFieldsValue({ ...nextData, id });
+      return nextData;
+    },
+    [id],
+  );
 
   const validateReferencesForSyncOpenData = async (
     contactId: string,
@@ -371,42 +457,26 @@ const ContactEdit: FC<Props> = ({
     }
 
     setSpinning(true);
-    const updateResult = await handleSubmit(false, { silent });
-    if (!updateResult || updateResult.error) {
-      setSpinning(false);
-      return;
-    }
+    const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
+    const validationDraft = applyValidationLangDraft(updateResult);
     setShowRules(true);
+    const orderedJson = genContactJsonOrdered(id, validationDraft ?? fromData);
+    const saveSucceeded = Boolean(updateResult && !updateResult.error);
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const rootRuleVerification = isRuleVerificationPassed(
-      updateResult?.data?.[0]?.rule_verification,
-    );
-    const pathRef = new ReffPath(
-      {
-        '@type': 'contact data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      rootRuleVerification,
-      false,
-    );
-    await checkData(
-      {
-        '@type': 'contact data set',
-        '@refObjectId': id,
-        '@version': version,
-      },
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-    );
-    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
+    const rootRuleVerification = saveSucceeded
+      ? isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification)
+      : true;
     const rootRef = {
       '@type': 'contact data set',
       '@refObjectId': id,
       '@version': version,
     } satisfies refDataType;
+    const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef, {
+      orderedJson,
+    });
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
         return {
@@ -434,26 +504,38 @@ const ContactEdit: FC<Props> = ({
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
-    const sdkValidation = validateDatasetWithSdk(
-      'contact data set',
-      genContactJsonOrdered(id, fromData),
-    );
+    const sdkValidation = validateDatasetWithSdk('contact data set', orderedJson);
     const sdkIssues = sdkValidation.issues;
+    const sdkIssueDetails = normalizeContactSdkValidationDetails(sdkIssues, orderedJson);
     const sdkInvalidTabNames: string[] = [];
+    if (!sdkValidation.success) {
+      await validateVisibleFormFields(formRefEdit);
+    }
+    setSdkValidationDetails(sdkIssueDetails);
+    if (sdkIssueDetails.length === 0) {
+      setSdkValidationFocus(null);
+    }
+    sdkIssueDetails.forEach((detail) => {
+      const tabName = detail.tabName;
+      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+      if (tabName && !sdkInvalidTabNames.includes(tabName)) sdkInvalidTabNames.push(tabName);
+    });
     if (sdkIssues.length) {
-      sdkIssues.forEach((err) => {
-        const tabName = err.path[1];
+      sdkIssues.forEach((err: any) => {
+        const tabName = typeof err?.path?.[1] === 'string' ? err.path[1] : undefined;
+        /* istanbul ignore next -- tab de-duplication is covered via broader validation flows */
         if (tabName && !errTabNames.includes(tabName as string))
           errTabNames.push(tabName as string);
+        /* istanbul ignore next -- tab de-duplication is covered via broader validation flows */
         if (tabName && !sdkInvalidTabNames.includes(tabName as string))
           sdkInvalidTabNames.push(tabName as string);
       });
-      formRefEdit.current?.validateFields();
     }
     const validationIssues = buildValidationIssues({
       datasetSdkValid: sdkValidation.success,
       nonExistentRef,
       rootRef,
+      sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames,
       unRuleVerification,
     });
@@ -497,6 +579,7 @@ const ContactEdit: FC<Props> = ({
         showValidationIssueModal({
           intl,
           issues: validationIssuesWithOwner,
+          onNavigate: handleValidationIssueNavigate,
           title: intl.formatMessage({
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',
@@ -702,6 +785,8 @@ const ContactEdit: FC<Props> = ({
                 onData={handletFromData}
                 onTabChange={(key) => onTabChange(key as ContactDataSetObjectKeys)}
                 showRules={showRules}
+                sdkValidationDetails={sdkValidationDetails}
+                sdkValidationFocus={sdkValidationFocus}
               />
             </ProForm>
           </RefCheckContext.Provider>

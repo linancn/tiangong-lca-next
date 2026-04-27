@@ -5,10 +5,12 @@ import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import schema from '@/pages/Contacts/contacts_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space, theme } from 'antd';
 import { FC, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -17,6 +19,8 @@ type Props = {
   onTabChange: (key: string) => void;
   formType?: string;
   showRules?: boolean;
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 
 export const ContactForm: FC<Props> = ({
@@ -27,28 +31,56 @@ export const ContactForm: FC<Props> = ({
   onTabChange,
   formType,
   showRules = false,
+  sdkValidationDetails = [],
+  sdkValidationFocus = null,
 }) => {
   const { token } = theme.useToken();
+  const intl = useIntl();
   const [showShortNameError, setShowShortNameError] = useState(false);
   const [showNameError, setShowNameError] = useState(false);
+  const { sdkValidationCountsByTab } = useDatasetSdkValidationFormSupport({
+    activeTabKey,
+    formRef,
+    intl,
+    sdkValidationDetails,
+    sdkValidationFocus,
+    showRules,
+  });
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError ?? token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
 
   const tabList = [
     {
       key: 'contactInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.contact.contactInformation'
-          defaultMessage='Contact information'
-        />
+      tab: renderTabLabel(
+        'contactInformation',
+        'pages.contact.contactInformation',
+        'Contact information',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.contact.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.contact.administrativeInformation',
+        'Administrative information',
       ),
     },
   ];

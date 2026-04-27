@@ -108,7 +108,7 @@ describe('process sdk validation ui helpers', () => {
           'pages.validationIssues.sdkDetail.suggestedFix.exchanges_required':
             'Add at least one exchange',
           'pages.validationIssues.sdkDetail.suggestedFix.quantitative_reference_count_invalid':
-            'The following data must contain exactly one reference flow',
+            'The following data must have exactly one item designated as the reference',
           'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
             'Chinese text must include at least one Chinese character',
           'pages.validationIssues.sdkDetail.suggestedFix.localized_text_en_must_not_contain_chinese_character':
@@ -200,7 +200,7 @@ describe('process sdk validation ui helpers', () => {
         suggestedFix: 'Select exactly one reference flow.',
         validationCode: 'quantitative_reference_count_invalid',
       }),
-    ).toBe('The following data must contain exactly one reference flow');
+    ).toBe('The following data must have exactly one item designated as the reference');
 
     expect(getSdkSuggestedFixMessage(intl)).toBe('');
 

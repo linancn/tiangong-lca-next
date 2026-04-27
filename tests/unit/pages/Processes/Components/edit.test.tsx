@@ -1276,8 +1276,10 @@ describe('ProcessEdit component', () => {
     );
   });
 
-  it('stops review submission when the refreshed process detail is missing', async () => {
-    mockGetProcessDetail.mockResolvedValue({});
+  it('continues review validation when the background save fails', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      error: { message: 'save failed before review' },
+    });
 
     render(<ProcessEdit {...baseProps} />);
 
@@ -1286,11 +1288,14 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed'));
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('save failed before review'),
+    );
+    expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
-  it('stops data-check after save when the saved process shape is incomplete', async () => {
+  it('continues data-check when the saved process shape is incomplete', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
         {
@@ -1310,8 +1315,8 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
-    expect(mockValidateDatasetWithSdk).not.toHaveBeenCalled();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('does not continue review submission when the submit-review command fails', async () => {
@@ -1494,7 +1499,7 @@ describe('ProcessEdit component', () => {
     );
   });
 
-  it('stops data-check after save when the intermediate save result has an error', async () => {
+  it('continues data-check after save when the intermediate save result has an error', async () => {
     mockUpdateProcess.mockResolvedValue({
       error: { message: 'save before check failed' },
     });
@@ -1509,7 +1514,8 @@ describe('ProcessEdit component', () => {
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith('save before check failed'),
     );
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('shows a validation error when data check runs without exchanges', async () => {
@@ -1595,7 +1601,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'The following data must contain exactly one reference flow',
+        'The following data must have exactly one item designated as the reference',
       ),
     );
 
@@ -2093,7 +2099,6 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
 
-    jest.useFakeTimers();
     mockValidateFields.mockClear();
 
     const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
@@ -2107,7 +2112,7 @@ describe('ProcessEdit component', () => {
         },
         tabName: 'administrativeInformation',
       });
-      jest.advanceTimersByTime(250);
+      await Promise.resolve();
     });
 
     await waitFor(() =>

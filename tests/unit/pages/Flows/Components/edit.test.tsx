@@ -35,6 +35,19 @@ const mockJsonToList = jest.fn((value: any) => {
 });
 let latestFlowFormProps: any = null;
 
+const flowTypeOfDatasetIssuePath = [
+  'flowDataSet',
+  'modellingAndValidation',
+  'LCIMethod',
+  'typeOfDataSet',
+];
+const flowReferenceToReferenceFlowPropertyIssuePath = [
+  'flowDataSet',
+  'flowInformation',
+  'quantitativeReference',
+  'referenceToReferenceFlowProperty',
+];
+
 jest.mock(
   'umi',
   () => ({
@@ -361,12 +374,16 @@ jest.mock('@/style/custom.less', () => ({
   },
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createFlow: jest.fn(() => ({
-    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
-  })),
-}));
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createFlow: jest.fn(() => ({
+      validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+    })),
+  }),
+  { virtual: true },
+);
 
 jest.mock('@/pages/Flows/Components/form', () => ({
   __esModule: true,
@@ -755,7 +772,7 @@ describe('FlowsEdit', () => {
     expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
   });
 
-  it('stops flow data checks when the background save fails', async () => {
+  it('keeps flow data checks running when the background save fails', async () => {
     mockUpdateFlows.mockResolvedValueOnce({
       data: undefined,
       error: {
@@ -778,7 +795,7 @@ describe('FlowsEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
-    expect(mockCheckData).not.toHaveBeenCalled();
+    expect(mockCheckData).toHaveBeenCalled();
   });
 
   it('reports flow data-check errors from refs and validation issues', async () => {
@@ -798,7 +815,7 @@ describe('FlowsEdit', () => {
     mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
       issues: [
-        { path: ['flowDataSet', 'typeOfDataSet'] },
+        { path: flowTypeOfDatasetIssuePath },
         { path: ['flowDataSet', 'modellingAndValidation'] },
       ],
     });
@@ -889,6 +906,54 @@ describe('FlowsEdit', () => {
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
         'Flow property needs to have exactly one quantitative reference open',
       ),
+    );
+  });
+
+  it('keeps derived reference-flow-property issues on flowProperties only', async () => {
+    mockValidateDatasetWithSdk.mockReturnValue({
+      success: false,
+      issues: [{ path: flowReferenceToReferenceFlowPropertyIssuePath }],
+    });
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /set-non-quant-properties/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Flow property needs to have exactly one quantitative reference open',
+      ),
+    );
+
+    const latestBuildValidationIssuesArgs =
+      mockBuildValidationIssues.mock.calls[mockBuildValidationIssues.mock.calls.length - 1]?.[0];
+
+    expect(latestBuildValidationIssuesArgs.sdkInvalidTabNames).toEqual(['flowProperties']);
+    expect(latestBuildValidationIssuesArgs.sdkInvalidDetails).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          fieldPath: 'flowProperties.quantitativeReferenceSummary',
+          tabName: 'flowProperties',
+        }),
+      ]),
+    );
+    expect(latestBuildValidationIssuesArgs.sdkInvalidDetails).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          fieldPath: 'flowInformation.quantitativeReference.referenceToReferenceFlowProperty',
+        }),
+      ]),
     );
   });
 
@@ -1115,7 +1180,7 @@ describe('FlowsEdit', () => {
     mockGetErrRefTab.mockReturnValue('flowInformation');
     mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
+      issues: [{ path: flowTypeOfDatasetIssuePath }],
     });
 
     renderWithProviders(
@@ -1158,7 +1223,7 @@ describe('FlowsEdit', () => {
       .mockImplementationOnce(() => 'administrativeInformation');
     mockValidateDatasetWithSdk.mockReturnValue({
       success: false,
-      issues: [{ path: ['flowDataSet', 'typeOfDataSet'] }],
+      issues: [{ path: flowTypeOfDatasetIssuePath }],
     });
 
     renderWithProviders(<FlowsEdit id='flow-1' version='1.0.0' buttonType='text' lang='en' />);
@@ -1173,6 +1238,17 @@ describe('FlowsEdit', () => {
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalledTimes(2);
+    expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sdkInvalidDetails: expect.arrayContaining([
+          expect.objectContaining({
+            fieldPath: 'modellingAndValidation.LCIMethod.typeOfDataSet',
+            tabName: 'flowInformation',
+          }),
+        ]),
+        sdkInvalidTabNames: ['flowInformation'],
+      }),
+    );
   });
 
   it('supports icon triggers and closes AI suggestions without dataset payloads', async () => {

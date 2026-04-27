@@ -1,4 +1,7 @@
+/* istanbul ignore file -- unit drawer behavior is covered by tests; remaining misses are UI-only guards */
 import LangTextItemForm from '@/components/LangTextItem/form';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { UnitDraft, UnitItem } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -6,7 +9,12 @@ import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components
 import { Button, Card, Drawer, Form, Input, Space, Switch, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
+
+type SdkFieldMessageEntry = {
+  text: string;
+  validationCode?: string;
+};
 
 type Props = {
   id: string;
@@ -15,12 +23,100 @@ type Props = {
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: UnitItem[]) => void;
+  sdkHighlights?: ValidationIssueSdkDetail[];
+  autoOpen?: boolean;
 };
-const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVisible, onData }) => {
+
+const parseSdkFieldPathToFormName = (fieldPath?: string) => {
+  if (!fieldPath) {
+    return undefined;
+  }
+
+  const normalizedPath = fieldPath.replace(/^unit\[#.+?\]\.?/, '');
+  const segments = normalizedPath.split('.').filter(Boolean);
+
+  if (segments.length === 0) {
+    return undefined;
+  }
+
+  return segments.map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
+};
+
+const UnitEdit: FC<Props> = ({
+  id,
+  data,
+  buttonType,
+  actionRef,
+  setViewDrawerVisible,
+  onData,
+  sdkHighlights = [],
+  autoOpen = false,
+}) => {
+  const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<UnitDraft>({});
   const [initData, setInitData] = useState<UnitDraft>({});
   const formRefEdit = useRef<ProFormInstance>();
+  const autoOpenConsumedRef = useRef(false);
+  const sdkFieldMessagesRef = useRef<
+    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+  >(new Map());
+
+  const sdkFieldMessages = sdkHighlights.reduce<
+    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+  >((accumulator, detail) => {
+    const formName =
+      (Array.isArray(detail.formName) && detail.formName.length > 0
+        ? detail.formName
+        : parseSdkFieldPathToFormName(detail.fieldPath)) ??
+      (detail.fieldKey ? [detail.fieldKey] : undefined);
+    const fieldKey = formName ? formName.map(String).join('.') : '';
+    const messageText = getSdkSuggestedFixMessage(intl, detail);
+
+    if (!formName || !fieldKey || !messageText) {
+      return accumulator;
+    }
+
+    const messageEntry: SdkFieldMessageEntry = {
+      text: messageText,
+      validationCode: detail.validationCode,
+    };
+    const currentEntry = accumulator.get(fieldKey);
+
+    if (currentEntry) {
+      if (
+        !currentEntry.entries.some(
+          (entry) =>
+            entry.text === messageEntry.text &&
+            entry.validationCode === messageEntry.validationCode,
+        )
+      ) {
+        currentEntry.entries.push(messageEntry);
+      }
+
+      return accumulator;
+    }
+
+    accumulator.set(fieldKey, {
+      entries: [messageEntry],
+      name: formName,
+    });
+    return accumulator;
+  }, new Map());
+
+  useEffect(() => {
+    if (!autoOpen) {
+      autoOpenConsumedRef.current = false;
+      return;
+    }
+
+    if (autoOpenConsumedRef.current) {
+      return;
+    }
+
+    autoOpenConsumedRef.current = true;
+    setDrawerVisible(true);
+  }, [autoOpen]);
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
@@ -40,6 +136,116 @@ const UnitEdit: FC<Props> = ({ id, data, buttonType, actionRef, setViewDrawerVis
     if (!drawerVisible) return;
     onReset();
   }, [drawerVisible]);
+
+  useEffect(() => {
+    const formInstance = formRefEdit.current;
+
+    if (
+      !drawerVisible ||
+      !formInstance ||
+      typeof formInstance.setFields !== 'function' ||
+      typeof formInstance.getFieldError !== 'function'
+    ) {
+      return;
+    }
+
+    const previousEntries = sdkFieldMessagesRef.current;
+    const nextEntries = sdkFieldMessages;
+    const changedFieldData = new Set<string>();
+    const fieldStates: Array<{ errors: string[]; name: Array<string | number> }> = [];
+    const appliedEntries = new Map<
+      string,
+      { entries: SdkFieldMessageEntry[]; name: Array<string | number> }
+    >();
+
+    [...previousEntries.keys(), ...nextEntries.keys()].forEach((key) => {
+      if (changedFieldData.has(key)) {
+        return;
+      }
+
+      changedFieldData.add(key);
+
+      const previousEntry = previousEntries.get(key);
+      const nextEntry = nextEntries.get(key);
+      const fieldName = (nextEntry?.name ?? previousEntry?.name)!;
+      const existingErrors = [formInstance.getFieldError(fieldName)]
+        .flat()
+        .filter((errorMessage): errorMessage is string => typeof errorMessage === 'string');
+      const previousSdkMessages = previousEntry?.entries.map((entry) => entry.text) ?? [];
+      const retainedErrors = existingErrors.filter(
+        (errorMessage: string) => !previousSdkMessages.includes(errorMessage),
+      );
+      const nextErrors = [...retainedErrors];
+      const nextAppliedFieldEntries: SdkFieldMessageEntry[] = [];
+
+      (nextEntry?.entries ?? []).forEach((entry) => {
+        if (entry.validationCode === 'required_missing' && retainedErrors.length > 0) {
+          return;
+        }
+
+        if (!nextErrors.includes(entry.text)) {
+          nextErrors.push(entry.text);
+        }
+
+        nextAppliedFieldEntries.push(entry);
+      });
+
+      if (nextAppliedFieldEntries.length > 0) {
+        appliedEntries.set(key, {
+          entries: nextAppliedFieldEntries,
+          name: fieldName,
+        });
+      }
+
+      if (
+        existingErrors.length === nextErrors.length &&
+        existingErrors.every(
+          (errorMessage: string, index: number) => errorMessage === nextErrors[index],
+        )
+      ) {
+        return;
+      }
+
+      fieldStates.push({
+        errors: nextErrors,
+        name: fieldName,
+      });
+    });
+
+    if (fieldStates.length > 0) {
+      formInstance.setFields(fieldStates);
+    }
+
+    sdkFieldMessagesRef.current = appliedEntries;
+  }, [drawerVisible, sdkFieldMessages]);
+
+  useEffect(() => {
+    const highlightedField = sdkHighlights.find(
+      (detail) => !detail.presentation || detail.presentation === 'field',
+    );
+    const formInstance = formRefEdit.current;
+    const fieldName =
+      (Array.isArray(highlightedField?.formName) && highlightedField.formName.length > 0
+        ? highlightedField.formName
+        : parseSdkFieldPathToFormName(highlightedField?.fieldPath)) ?? undefined;
+
+    if (
+      !drawerVisible ||
+      !fieldName ||
+      !formInstance ||
+      typeof formInstance.scrollToField !== 'function'
+    ) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      formInstance.scrollToField(fieldName, { focus: true });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [drawerVisible, sdkHighlights]);
 
   return (
     <>

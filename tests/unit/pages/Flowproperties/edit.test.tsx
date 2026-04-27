@@ -25,6 +25,7 @@ const mockIntl = {
   formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
 };
 let latestRefsDrawerProps: any = null;
+let latestFlowpropertyFormProps: any = null;
 const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
 const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
 const mockUpdateRefsData = jest.fn((data: any) => data);
@@ -221,13 +222,9 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
 
   return {
     __esModule: true,
-    FlowpropertyForm: ({
-      formRef,
-      onData,
-      onTabChange,
-      showRules,
-      activeTabKey: mockActiveTabKey,
-    }: any) => {
+    FlowpropertyForm: (props: any) => {
+      latestFlowpropertyFormProps = props;
+      const { formRef, onData, onTabChange, showRules, activeTabKey: mockActiveTabKey } = props;
       const [name, setName] = React.useState('');
 
       React.useEffect(() => {
@@ -359,16 +356,21 @@ jest.mock('@/pages/Utils/updateReference', () => ({
   updateRefsData: (...args: any[]) => mockUpdateRefsData(...args),
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createFlowProperty: jest.fn(() => ({
-    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
-  })),
-}));
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createFlowProperty: jest.fn(() => ({
+      validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+    })),
+  }),
+  { virtual: true },
+);
 
 describe('FlowpropertiesEdit', () => {
   beforeEach(() => {
     latestRefsDrawerProps = null;
+    latestFlowpropertyFormProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
     mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
@@ -550,7 +552,7 @@ describe('FlowpropertiesEdit', () => {
     expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
   });
 
-  it('stops data checks when the background save fails', async () => {
+  it('keeps data checks running when the background save fails', async () => {
     mockUpdateFlowproperties.mockResolvedValueOnce({
       data: null,
       error: { message: 'check blocked' },
@@ -565,8 +567,8 @@ describe('FlowpropertiesEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
-    expect(mockCheckData).not.toHaveBeenCalled();
-    expect(screen.queryByText('rules-visible')).not.toBeInTheDocument();
+    expect(mockCheckData).toHaveBeenCalled();
+    expect(screen.getByText('rules-visible')).toBeInTheDocument();
   });
 
   it('opens the refs drawer and lets the user update or keep versions', async () => {
@@ -980,5 +982,80 @@ describe('FlowpropertiesEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
     await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
+  });
+
+  it('normalizes flowproperty sdk details and supports modal navigation to the target tab', async () => {
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Invalid input: expected string, received undefined',
+          path: [
+            'flowPropertyDataSet',
+            'modellingAndValidation',
+            'complianceDeclarations',
+            'compliance',
+            'common:referenceToComplianceSystem',
+          ],
+          severity: 'error',
+        },
+      ],
+    });
+    mockBuildValidationIssues.mockImplementationOnce(
+      ({ rootRef, sdkInvalidDetails, sdkInvalidTabNames }) => [
+        {
+          code: 'sdkInvalid',
+          link: '/mydata/flowproperties?id=fp-1&version=1.0.0',
+          ref: rootRef,
+          sdkDetails: sdkInvalidDetails,
+          tabNames: sdkInvalidTabNames,
+        },
+      ],
+    );
+
+    renderWithProviders(
+      <FlowpropertiesEdit id='fp-1' version='1.0.0' buttonType='text' lang='en' />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await userEvent.click(screen.getByRole('button', { name: /data check/i }));
+
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sdkInvalidDetails: [
+            expect.objectContaining({
+              fieldPath:
+                'modellingAndValidation.complianceDeclarations.compliance.common:referenceToComplianceSystem.@refObjectId',
+              tabName: 'modellingAndValidation',
+              validationCode: 'required_missing',
+            }),
+          ],
+        }),
+      ),
+    );
+
+    expect(latestFlowpropertyFormProps.sdkValidationDetails).toEqual([
+      expect.objectContaining({
+        fieldPath:
+          'modellingAndValidation.complianceDeclarations.compliance.common:referenceToComplianceSystem.@refObjectId',
+        tabName: 'modellingAndValidation',
+      }),
+    ]);
+
+    const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
+    const sdkDetail = latestFlowpropertyFormProps.sdkValidationDetails[0];
+
+    act(() => {
+      navigate({ detail: sdkDetail, tabName: sdkDetail.tabName });
+    });
+
+    await waitFor(() => {
+      expect(latestFlowpropertyFormProps.activeTabKey).toBe('modellingAndValidation');
+      expect(latestFlowpropertyFormProps.sdkValidationFocus).toEqual(sdkDetail);
+    });
   });
 });

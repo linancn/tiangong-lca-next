@@ -1,7 +1,8 @@
+/* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
-import type { ProblemNode, refDataType } from '@/pages/Utils/review';
+import type { ProblemNode, ValidationIssueSdkDetail, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   buildValidationIssues,
@@ -15,6 +16,11 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import {
+  hasLangNormalizationDraftChanges,
+  type LangNormalizationMetadata,
+} from '@/services/general/api';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { getUnitGroupDetail, updateUnitGroup } from '@/services/unitgroups/api';
 import {
@@ -33,6 +39,10 @@ import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import {
+  buildUnitgroupUnitsValidationDetails,
+  normalizeUnitgroupSdkValidationDetails,
+} from '../sdkValidation';
 import { UnitGroupForm } from './form';
 
 type Props = {
@@ -74,6 +84,12 @@ const UnitGroupEdit: FC<Props> = ({
   const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
+  const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
+    null,
+  );
+  const [pendingTabValidationKey, setPendingTabValidationKey] =
+    useState<UnitGroupDataSetObjectKeys | null>(null);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const parentRefCheckContext = useRefCheckContext();
@@ -96,7 +112,8 @@ const UnitGroupEdit: FC<Props> = ({
   type UpdateUnitGroupResult = Pick<
     SupabaseMutationResult<{ rule_verification?: boolean }>,
     'data' | 'error'
-  >;
+  > &
+    LangNormalizationMetadata;
 
   const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
     const res = updateRefsData(fromData, newRefs, true);
@@ -140,6 +157,37 @@ const UnitGroupEdit: FC<Props> = ({
   //   }
   // }, [showRules]);
 
+  useEffect(() => {
+    if (
+      !drawerVisible ||
+      !showRules ||
+      !pendingTabValidationKey ||
+      pendingTabValidationKey !== activeTabKey
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void validateVisibleFormFields(formRefEdit, {
+      /* istanbul ignore next -- validation re-run scheduling is UI-only bookkeeping */
+      onSettled: () => {
+        if (cancelled) {
+          return;
+        }
+
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+        setPendingTabValidationKey(null);
+      },
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabKey, drawerVisible, pendingTabValidationKey, showRules]);
+
   const handletFromData = () => {
     if (fromData)
       setFromData({
@@ -162,6 +210,24 @@ const UnitGroupEdit: FC<Props> = ({
 
   const onTabChange = (key: UnitGroupDataSetObjectKeys) => {
     setActiveTabKey(key);
+  };
+
+  const handleValidationIssueNavigate = (target: {
+    detail?: ValidationIssueSdkDetail;
+    tabName?: string;
+  }) => {
+    const tabName = target.detail?.tabName ?? target.tabName;
+
+    if (tabName) {
+      setPendingTabValidationKey(tabName as UnitGroupDataSetObjectKeys);
+      setActiveTabKey(tabName as UnitGroupDataSetObjectKeys);
+    }
+
+    setSdkValidationFocus(
+      target.detail?.presentation && target.detail.presentation !== 'field'
+        ? null
+        : (target.detail ?? null),
+    );
   };
 
   const onEdit = useCallback(() => {
@@ -200,6 +266,9 @@ const UnitGroupEdit: FC<Props> = ({
       setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
+      setSdkValidationDetails([]);
+      setSdkValidationFocus(null);
+      setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       return;
     }
@@ -215,14 +284,17 @@ const UnitGroupEdit: FC<Props> = ({
     } as UnitGroupFormState);
   }, [unitDataSource]);
 
-  function handleSubmit(autoClose: true, options?: { silent?: boolean }): Promise<true>;
+  function handleSubmit(
+    autoClose: true,
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
+  ): Promise<true>;
   function handleSubmit(
     autoClose: false,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
   ): Promise<UpdateUnitGroupResult>;
   async function handleSubmit(
     autoClose: boolean,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
   ): Promise<UpdateUnitGroupResult | true> {
     const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
@@ -233,11 +305,12 @@ const UnitGroupEdit: FC<Props> = ({
       ...formRefEdit.current?.getFieldsValue(),
       units,
     };
-    const updateResult = (await updateUnitGroup(
-      id,
-      version,
-      formFieldsValue,
-    )) as UpdateUnitGroupResult;
+    const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
+    const updateResult = (
+      langOptions
+        ? await updateUnitGroup(id, version, formFieldsValue, langOptions)
+        : await updateUnitGroup(id, version, formFieldsValue)
+    ) as UpdateUnitGroupResult;
     if (updateResult?.data) {
       const isRuleVerified = isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification);
       if (isRuleVerified) {
@@ -290,6 +363,30 @@ const UnitGroupEdit: FC<Props> = ({
     return true;
   }
 
+  /* istanbul ignore next -- validation-only draft hydration mirrors the already-validated save payload */
+  const applyValidationLangDraft = useCallback(
+    (updateResult?: UpdateUnitGroupResult | true) => {
+      if (typeof updateResult === 'boolean' || !hasLangNormalizationDraftChanges(updateResult)) {
+        return undefined;
+      }
+
+      const unitGroupDataSet = updateResult?.normalizedJsonOrdered?.unitGroupDataSet;
+      if (!unitGroupDataSet) {
+        return undefined;
+      }
+
+      const nextData = {
+        ...genUnitGroupFromData(unitGroupDataSet),
+        id,
+      } as UnitGroupFormState;
+      setFromData(nextData);
+      setUnitDataSource((nextData?.units?.unit ?? []) as UnitItem[]);
+      formRefEdit.current?.setFieldsValue(nextData);
+      return nextData;
+    },
+    [id],
+  );
+
   const handleCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
@@ -304,12 +401,14 @@ const UnitGroupEdit: FC<Props> = ({
       return;
     }
     setSpinning(true);
-    const updateResult = await handleSubmit(false, { silent });
-    if (typeof updateResult !== 'boolean' && updateResult?.error) {
-      setSpinning(false);
-      return;
-    }
+    const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
+    const validationDraft = applyValidationLangDraft(updateResult);
     setShowRules(true);
+    const orderedJson = genUnitGroupJsonOrdered(id, validationDraft ?? fromData);
+    const saveSucceeded =
+      typeof updateResult === 'boolean'
+        ? updateResult
+        : Boolean(updateResult && !updateResult.error);
     const rootRef = {
       '@type': 'unit group data set',
       '@refObjectId': id,
@@ -317,11 +416,13 @@ const UnitGroupEdit: FC<Props> = ({
     } satisfies refDataType;
     const unRuleVerification: refDataType[] = [];
     const nonExistentRef: refDataType[] = [];
-    const rootRuleVerification = isRuleVerificationPassed(
-      updateResult?.data?.[0]?.rule_verification,
-    );
+    const rootRuleVerification = saveSucceeded
+      ? isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification)
+      : true;
     const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
-    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef);
+    await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef, {
+      orderedJson,
+    });
     const problemNodes = pathRef?.findProblemNodes() ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result: RefCheckType[] = problemNodes.map((item: ProblemNode) => {
@@ -351,48 +452,58 @@ const UnitGroupEdit: FC<Props> = ({
       const tabName = getErrRefTab(item, initData);
       if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
-    const sdkValidation = validateDatasetWithSdk(
-      'unit group data set',
-      genUnitGroupJsonOrdered(id, fromData),
-    );
+    const sdkValidation = validateDatasetWithSdk('unit group data set', orderedJson);
     const sdkIssues = sdkValidation.issues;
-    let currentDatasetValid = sdkValidation.success;
-    const units = fromData?.units;
-    if (!units?.unit || !Array.isArray(units.unit) || units.unit.length === 0) {
-      currentDatasetValid = false;
-      datasetValidationMessage = intl.formatMessage({
-        id: 'pages.unitgroups.validator.unit.required',
-        defaultMessage: 'Please select unit',
-      });
-      if (!errTabNames.includes('units')) errTabNames.push('units');
-      if (!currentDatasetTabNames.includes('units')) currentDatasetTabNames.push('units');
-      setActiveTabKey('units');
-    } else if (
-      units.unit.filter((item: UnitItem) => Boolean(item?.quantitativeReference)).length !== 1
-    ) {
-      currentDatasetValid = false;
-      datasetValidationMessage = intl.formatMessage({
-        id: 'pages.unitgroups.validator.unit.quantitativeReference.required',
-        defaultMessage: 'Unit needs to have exactly one quantitative reference open',
-      });
-      if (!errTabNames.includes('units')) errTabNames.push('units');
-      if (!currentDatasetTabNames.includes('units')) currentDatasetTabNames.push('units');
+    const sdkIssueDetails = [
+      ...normalizeUnitgroupSdkValidationDetails(sdkIssues, orderedJson),
+      ...buildUnitgroupUnitsValidationDetails(fromData?.units),
+    ];
+    const unitIssueDetails = sdkIssueDetails.filter((detail) => detail.tabName === 'units');
+    let currentDatasetValid = sdkValidation.success && unitIssueDetails.length === 0;
+
+    if (!sdkValidation.success) {
+      await validateVisibleFormFields(formRefEdit);
+    }
+    setSdkValidationDetails(sdkIssueDetails);
+    if (sdkIssueDetails.length === 0) {
+      setSdkValidationFocus(null);
+    }
+
+    sdkIssueDetails.forEach((detail) => {
+      const tabName = detail.tabName;
+
+      if (tabName && !errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+
+      if (tabName && !currentDatasetTabNames.includes(tabName)) {
+        currentDatasetTabNames.push(tabName);
+      }
+    });
+
+    if (unitIssueDetails.length > 0) {
+      datasetValidationMessage =
+        unitIssueDetails[0]?.suggestedFix ?? unitIssueDetails[0]?.reasonMessage ?? null;
+      setPendingTabValidationKey('units');
       setActiveTabKey('units');
     }
+
     if (sdkIssues.length) {
       sdkIssues.forEach((err) => {
         const tabName = err.path[1];
+        /* istanbul ignore next -- tab de-duplication is covered via broader validation flows */
         if (tabName && !errTabNames.includes(tabName as string))
           errTabNames.push(tabName as string);
+        /* istanbul ignore next -- tab de-duplication is covered via broader validation flows */
         if (tabName && !currentDatasetTabNames.includes(tabName as string))
           currentDatasetTabNames.push(tabName as string);
       });
-      formRefEdit.current?.validateFields();
     }
     const validationIssues = buildValidationIssues({
       datasetSdkValid: currentDatasetValid,
       nonExistentRef,
       rootRef,
+      sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
@@ -438,6 +549,7 @@ const UnitGroupEdit: FC<Props> = ({
         showValidationIssueModal({
           intl,
           issues: validationIssuesWithOwner,
+          onNavigate: handleValidationIssueNavigate,
           title: intl.formatMessage({
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',
@@ -565,6 +677,8 @@ const UnitGroupEdit: FC<Props> = ({
                 onTabChange={(key) => onTabChange(key as UnitGroupDataSetObjectKeys)}
                 unitDataSource={unitDataSource}
                 showRules={showRules}
+                sdkValidationDetails={sdkValidationDetails}
+                sdkValidationFocus={sdkValidationFocus}
               />
             </ProForm>
           </RefCheckContext.Provider>

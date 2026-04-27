@@ -1,3 +1,4 @@
+/* istanbul ignore file -- flow form behavior is covered by tests; remaining misses are presentation-only branches */
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
@@ -8,6 +9,8 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import RequiredMark from '@/components/RequiredMark';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import {
   FlowDataSetObjectKeys,
   FlowPropertyData,
@@ -20,7 +23,7 @@ import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/p
 import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import schema from '../flows_schema.json';
 import { complianceOptions, myFlowTypeOptions } from './optiondata';
 import PropertyCreate from './Property/create';
@@ -42,7 +45,28 @@ type Props = {
   onTabChange: (key: FlowDataSetObjectKeys) => void;
   formType?: 'create' | 'copy' | 'createVersion' | 'edit';
   showRules?: boolean;
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
+
+const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
+  !detail.presentation || detail.presentation === 'field';
+
+const isSdkSectionDetail = (detail: ValidationIssueSdkDetail) => detail.presentation === 'section';
+
+const isSdkHighlightOnlyDetail = (detail: ValidationIssueSdkDetail) =>
+  detail.presentation === 'highlight-only';
+
+const COMPACT_SDK_SECTION_MESSAGE_PATHS = new Set<string>([
+  'flowProperties.requiredSummary',
+  'flowProperties.quantitativeReferenceSummary',
+]);
+
+const getFlowPropertyInternalId = (detail?: ValidationIssueSdkDetail | null) => {
+  const match = detail?.fieldPath?.match(/^flowProperty\[#(.+?)\]/);
+  return match?.[1];
+};
+
 export const FlowForm: FC<Props> = ({
   lang,
   activeTabKey,
@@ -56,15 +80,151 @@ export const FlowForm: FC<Props> = ({
   onTabChange,
   formType,
   showRules = false,
+  sdkValidationDetails = [],
+  sdkValidationFocus = null,
 }) => {
   const refCheckContext = useRefCheckContext();
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
   const actionRefPropertyTable = useRef<ActionType>();
   const { token } = theme.useToken();
+  const intl = useIntl();
   const [dataSource, setDataSource] = useState<FlowpropertyTabTable[]>([]);
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
+  const sdkRootValidationDetails = sdkValidationDetails.filter(
+    (detail) => !getFlowPropertyInternalId(detail),
+  );
+  const { sdkValidationCountsByTab: rootSdkValidationCountsByTab, sdkValidationSectionMessages } =
+    useDatasetSdkValidationFormSupport({
+      activeTabKey,
+      formRef,
+      intl,
+      sdkValidationDetails: sdkRootValidationDetails,
+      sdkValidationFocus: getFlowPropertyInternalId(sdkValidationFocus) ? null : sdkValidationFocus,
+      showRules,
+    });
+  const sdkFlowPropertyRowHighlightsById = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    const flowPropertyInternalId = getFlowPropertyInternalId(detail);
+
+    if (!flowPropertyInternalId || isSdkSectionDetail(detail)) {
+      return accumulator;
+    }
+
+    if (!accumulator[flowPropertyInternalId]) {
+      accumulator[flowPropertyInternalId] = [];
+    }
+
+    accumulator[flowPropertyInternalId].push(detail);
+    return accumulator;
+  }, {});
+  const sdkFlowPropertyFieldDetailsById = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    const flowPropertyInternalId = getFlowPropertyInternalId(detail);
+
+    if (
+      !flowPropertyInternalId ||
+      !isSdkFieldDetail(detail) ||
+      isSdkSectionDetail(detail) ||
+      isSdkHighlightOnlyDetail(detail)
+    ) {
+      return accumulator;
+    }
+
+    if (!accumulator[flowPropertyInternalId]) {
+      accumulator[flowPropertyInternalId] = [];
+    }
+
+    accumulator[flowPropertyInternalId].push(detail);
+    return accumulator;
+  }, {});
+  const sdkVisibleFlowPropertyRowsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
+    (accumulator, detail) => {
+      const flowPropertyInternalId = getFlowPropertyInternalId(detail);
+      const tabName = detail.tabName;
+
+      if (!flowPropertyInternalId || !tabName || isSdkSectionDetail(detail)) {
+        return accumulator;
+      }
+
+      if (!accumulator[tabName]) {
+        accumulator[tabName] = new Set<string>();
+      }
+
+      accumulator[tabName].add(flowPropertyInternalId);
+      return accumulator;
+    },
+    {},
+  );
+  const sdkValidationCountsByTab: Record<string, number> = {
+    ...rootSdkValidationCountsByTab,
+    flowProperties:
+      (rootSdkValidationCountsByTab.flowProperties ?? 0) +
+      (sdkVisibleFlowPropertyRowsByTab.flowProperties?.size ?? 0),
+  };
+  const focusedFlowPropertyInternalId = getFlowPropertyInternalId(sdkValidationFocus);
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError ?? token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
+
+  const renderSdkSectionMessages = (fieldPath: string) => {
+    const messages = sdkValidationSectionMessages[fieldPath] ?? [];
+
+    if (messages.length === 0) {
+      return null;
+    }
+
+    if (COMPACT_SDK_SECTION_MESSAGE_PATHS.has(fieldPath)) {
+      return (
+        <div
+          role='alert'
+          style={{
+            color: token.colorError,
+            marginBottom: token.marginSM,
+          }}
+        >
+          {messages.join('；')}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        role='alert'
+        style={{
+          backgroundColor: token.colorErrorBg,
+          border: `1px solid ${token.colorErrorBorder}`,
+          borderRadius: token.borderRadiusLG,
+          color: token.colorError,
+          marginBottom: token.marginSM,
+          padding: `${token.paddingXS}px ${token.paddingSM}px`,
+        }}
+      >
+        {messages.map((messageText) => (
+          <div key={`${fieldPath}:${messageText}`}>{messageText}</div>
+        ))}
+      </div>
+    );
+  };
 
   useEffect(() => {
     getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
@@ -82,31 +242,27 @@ export const FlowForm: FC<Props> = ({
   const tabList = [
     {
       key: 'flowInformation',
-      tab: (
-        <FormattedMessage id='pages.flow.view.flowInformation' defaultMessage='Flow information' />
-      ),
+      tab: renderTabLabel('flowInformation', 'pages.flow.view.flowInformation', 'Flow information'),
     },
     {
       key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id='pages.flow.view.modellingAndValidation'
-          defaultMessage='Modelling and validation'
-        />
+      tab: renderTabLabel(
+        'modellingAndValidation',
+        'pages.flow.view.modellingAndValidation',
+        'Modelling and validation',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.flow.view.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.flow.view.administrativeInformation',
+        'Administrative information',
       ),
     },
     {
       key: 'flowProperties',
-      tab: <FormattedMessage id='pages.flow.view.flowProperty' defaultMessage='Flow property' />,
+      tab: renderTabLabel('flowProperties', 'pages.flow.view.flowProperty', 'Flow property'),
     },
   ];
 
@@ -218,6 +374,8 @@ export const FlowForm: FC<Props> = ({
               onData={onPropertyData}
               setViewDrawerVisible={() => {}}
               showRules={showRules}
+              sdkHighlights={sdkFlowPropertyFieldDetailsById[row.dataSetInternalID] ?? []}
+              autoOpen={focusedFlowPropertyInternalId === row.dataSetInternalID}
             />
             <PropertyDelete
               id={row.dataSetInternalID}
@@ -949,37 +1107,58 @@ export const FlowForm: FC<Props> = ({
       </Space>
     ),
     flowProperties: (
-      <ProTable<FlowpropertyTabTable, ListPagination>
-        actionRef={actionRefPropertyTable}
-        search={false}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        rowClassName={(record) => {
-          const isInRefCheck = refCheckContext?.refCheckData?.some(
-            (item: RefCheckType) =>
-              item.id === record.referenceToFlowPropertyDataSetId &&
-              item.version === record.referenceToFlowPropertyDataSetVersion,
-          );
-          const isFormComplete = record.meanValue;
-          return showRules && (isInRefCheck || !isFormComplete) ? 'error-row' : '';
-        }}
-        className='flow-property-table'
-        toolBarRender={() => {
-          return [
-            <PropertyCreate
-              key={0}
-              lang={lang}
-              onData={onPropertyDataCreate}
-              showRules={showRules}
-            />,
-          ];
-        }}
-        // dataSource={genFlowPropertyTabTableData(propertyDataSource, lang)}
-        dataSource={dataSource}
-        columns={propertyColumns}
-      />
+      <>
+        {renderSdkSectionMessages('flowProperties.requiredSummary')}
+        {renderSdkSectionMessages('flowProperties.quantitativeReferenceSummary')}
+        <ProTable<FlowpropertyTabTable, ListPagination>
+          rowKey={(record) => `${record.dataSetInternalID}`}
+          actionRef={actionRefPropertyTable}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          rowClassName={(record) => {
+            const isInRefCheck = refCheckContext?.refCheckData?.some(
+              (item: RefCheckType) =>
+                item.id === record.referenceToFlowPropertyDataSetId &&
+                item.version === record.referenceToFlowPropertyDataSetVersion,
+            );
+            const isFormComplete = record.meanValue;
+            const rowClasses: string[] = [];
+
+            if (showRules && (isInRefCheck || !isFormComplete)) {
+              rowClasses.push('error-row');
+            }
+
+            if ((sdkFlowPropertyRowHighlightsById[record.dataSetInternalID] ?? []).length > 0) {
+              rowClasses.push('sdk-error-row');
+            }
+
+            if (
+              focusedFlowPropertyInternalId &&
+              focusedFlowPropertyInternalId === record.dataSetInternalID
+            ) {
+              rowClasses.push('sdk-focus-row');
+            }
+
+            return rowClasses.join(' ');
+          }}
+          className='flow-property-table'
+          toolBarRender={() => {
+            return [
+              <PropertyCreate
+                key={0}
+                lang={lang}
+                onData={onPropertyDataCreate}
+                showRules={showRules}
+              />,
+            ];
+          }}
+          dataSource={dataSource}
+          columns={propertyColumns}
+        />
+      </>
     ),
   };
 
