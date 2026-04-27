@@ -20,8 +20,8 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-04-24
-lastReviewedCommit: 4098b71a5e33e3be3fa8fbea49777c881507ae81
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 810e80463fd0fc5fc970e1e677e9b9eaeeef87a2
 ---
 
 # Development Bootstrap
@@ -66,19 +66,20 @@ npm install
 
 ## Canonical Commands
 
-| Task                            | Command                             |
-| ------------------------------- | ----------------------------------- |
-| start shared `dev` env          | `npm start`                         |
-| explicit shared `dev` env       | `npm run start:dev`                 |
-| explicit `main` env             | `npm run start:main`                |
-| lint + typecheck                | `npm run lint`                      |
-| shared CI-style test runner     | `npm test`                          |
-| focused Jest suite              | `npm run test:ci -- <jest-args>`    |
-| full coverage                   | `npm run test:coverage`             |
-| strict full-coverage assertion  | `npm run test:coverage:assert-full` |
-| coverage report + queue summary | `npm run test:coverage:report`      |
-| build                           | `npm run build`                     |
-| protected-branch parity gate    | `npm run prepush:gate`              |
+| Task | Command |
+| --- | --- |
+| start shared `dev` env | `npm start` |
+| explicit shared `dev` env | `npm run start:dev` |
+| explicit `main` env | `npm run start:main` |
+| lint + typecheck | `npm run lint` |
+| shared CI-style test runner | `npm test` |
+| focused Jest suite | `npm run test:ci -- <jest-args>` |
+| full coverage | `npm run test:coverage` |
+| strict full-coverage assertion | `npm run test:coverage:assert-full` |
+| coverage report + queue summary | `npm run test:coverage:report` |
+| build | `npm run build` |
+| protected-branch parity gate | `npm run prepush:gate` |
+| repo AI-doc lint | `~/.cargo/bin/docpact validate-config --root . --strict && ~/.cargo/bin/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
 ## Command Rules
 
