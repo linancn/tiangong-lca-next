@@ -20,8 +20,8 @@ checkPaths:
   - .husky/pre-push
   - package.json
   - .github/workflows/**
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 ---
 
 # Pre-Push Gate Policy
@@ -63,6 +63,7 @@ It does not own:
 - hook behavior and CI behavior must match the documented policy
 - no protected merge path may bypass the full gate
 - branch policy must stay aligned with `dev -> main`
+- any coverage collection exclusions must be explicit, reviewed, and backed by focused behavior tests for the excluded wrappers
 
 ## Short Rule Summary
 
@@ -70,3 +71,4 @@ It does not own:
 - protect the actual merge points
 - avoid forcing the heaviest gate on every local feature push
 - reproduce `lint-and-test` and `Full Gate` serially on one workstation; GitHub runs them in isolated jobs
+- keep `100%` coverage on every tracked file even when framework-heavy orchestration wrappers are excluded from direct collection

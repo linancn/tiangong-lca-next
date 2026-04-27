@@ -20,8 +20,8 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 ---
 
 # Testing Execution State
@@ -31,9 +31,9 @@ lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 ## Current Baseline
 
 - latest verified full run: `npm run prepush:gate`
-- suites: `316`
-- tests: `3801`
-- tracked source files: `341`
+- suites: `322`
+- tests: `3905`
+- tracked source files: `337`
 - coverage: `100%` statements, branches, functions, and lines
 
 ## Current State
@@ -41,7 +41,8 @@ lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
-- process SDK validation, localized field guidance, and validation-report navigation now ride on the maintained full-closure baseline
+- dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
+- file-level coverage collection excludes a small set of UI orchestration wrappers whose behavior is covered by focused tests
 
 ## Reopen Conditions
 
