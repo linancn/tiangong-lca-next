@@ -8,8 +8,8 @@ import {
 import { getNotificationsCount } from '@/services/notifications/api';
 import { getNotifyReviewsCount } from '@/services/reviews/api';
 import { getTeamInvitationCountApi } from '@/services/roles/api';
-import { MessageOutlined } from '@ant-design/icons';
-import { Alert, Badge, Modal, Select, Space, Tabs, theme } from 'antd';
+import { InfoCircleOutlined, MessageOutlined } from '@ant-design/icons';
+import { Badge, Modal, Select, Space, Tabs, theme } from 'antd';
 import type { ReactNode } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
@@ -50,12 +50,29 @@ type NotificationTabKey = 'team' | 'data' | 'issue';
 const NotificationTabContent: React.FC<{ message: ReactNode; children: ReactNode }> = ({
   message,
   children,
-}) => (
-  <Space direction='vertical' size='middle' style={{ width: '100%' }}>
-    <Alert type='info' showIcon message={message} />
-    {children}
-  </Space>
-);
+}) => {
+  const { token } = theme.useToken();
+
+  return (
+    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '0 0 4px',
+          color: token.colorTextSecondary,
+          fontSize: token.fontSizeSM,
+          lineHeight: token.lineHeight,
+        }}
+      >
+        <InfoCircleOutlined style={{ color: token.colorPrimary, flexShrink: 0 }} />
+        <span>{message}</span>
+      </div>
+      {children}
+    </Space>
+  );
+};
 
 const Notification: React.FC = () => {
   const [unreadCounts, setUnreadCounts] = useState<{
