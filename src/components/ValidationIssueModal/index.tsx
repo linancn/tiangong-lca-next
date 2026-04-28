@@ -160,6 +160,7 @@ const getValidationIssueListSeparator = (intl: IntlShapeLike) =>
   });
 
 const MULTIPLICATION_FACTOR_FIELD_TOKEN = '@multiplicationFactor';
+const PROCESS_INSTANCE_FIELD_PATH_PREFIX = 'processInstance[#';
 
 /* istanbul ignore next -- process-instance detail text fallbacks are UI-only formatting branches */
 const getSdkDetailFieldToken = (detail?: ValidationIssueSdkDetail) => {
@@ -183,6 +184,12 @@ const isMultiplicationFactorMissingDetail = (detail?: ValidationIssueSdkDetail) 
   detail?.presentation === 'highlight-only' &&
   detail.validationCode === 'required_missing' &&
   getSdkDetailFieldToken(detail) === MULTIPLICATION_FACTOR_FIELD_TOKEN;
+
+const isLifecycleModelProcessInstanceDetail = (detail?: ValidationIssueSdkDetail) =>
+  detail?.presentation === 'highlight-only' &&
+  (detail.fieldPath?.startsWith(PROCESS_INSTANCE_FIELD_PATH_PREFIX) ||
+    !!detail.processInstanceInternalId?.trim() ||
+    !!detail.processInstanceLabel?.trim());
 
 const getSdkInvalidIsolatedNodeHintText = (
   intl: IntlShapeLike,
@@ -256,8 +263,12 @@ const getSdkInvalidProcessInstanceDetailActionItems = (
   intl: IntlShapeLike,
   issue: ValidationIssue,
 ) => {
+  if (issue.ref['@type'] !== 'lifeCycleModel data set') {
+    return [];
+  }
+
   const interactiveDetails = getValidationIssueInteractiveDetails(issue).filter(
-    (detail) => detail.presentation === 'highlight-only' && !!detail.fieldPath,
+    (detail) => isLifecycleModelProcessInstanceDetail(detail) && !!detail.fieldPath,
   );
   const multiplicationFactorDetails = interactiveDetails.filter(
     isMultiplicationFactorMissingDetail,
