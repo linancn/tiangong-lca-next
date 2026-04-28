@@ -9,7 +9,8 @@ import { getNotificationsCount } from '@/services/notifications/api';
 import { getNotifyReviewsCount } from '@/services/reviews/api';
 import { getTeamInvitationCountApi } from '@/services/roles/api';
 import { MessageOutlined } from '@ant-design/icons';
-import { Badge, Modal, Select, Space, Tabs, theme } from 'antd';
+import { Alert, Badge, Modal, Select, Space, Tabs, theme } from 'antd';
+import type { ReactNode } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
 import DataNotification from './DataNotification';
@@ -44,6 +45,18 @@ const TIME_FILTER_OPTIONS = (intl: any) => [
   },
 ];
 
+type NotificationTabKey = 'team' | 'data' | 'issue';
+
+const NotificationTabContent: React.FC<{ message: ReactNode; children: ReactNode }> = ({
+  message,
+  children,
+}) => (
+  <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+    <Alert type='info' showIcon message={message} />
+    {children}
+  </Space>
+);
+
 const Notification: React.FC = () => {
   const [unreadCounts, setUnreadCounts] = useState<{
     total: number;
@@ -58,6 +71,7 @@ const Notification: React.FC = () => {
   });
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [timeFilter, setTimeFilter] = useState<number>(3);
+  const [activeTabKey, setActiveTabKey] = useState<NotificationTabKey>('team');
   // Track which tabs have had their notification time updated (to avoid duplicate updates)
   const [tabsViewed, setTabsViewed] = useState<{ team: boolean; data: boolean; issue: boolean }>({
     team: false,
@@ -100,6 +114,7 @@ const Notification: React.FC = () => {
 
   const handleIconClick = () => {
     setModalVisible(true);
+    setActiveTabKey('team');
     // Reset viewed state when opening modal
     setTabsViewed({ team: false, data: false, issue: false });
   };
@@ -150,6 +165,10 @@ const Notification: React.FC = () => {
     setTimeFilter(value);
   };
 
+  const handleTabChange = (key: string) => {
+    setActiveTabKey(key as NotificationTabKey);
+  };
+
   const badgeStyles = {
     backgroundColor: token.colorError,
     borderRadius: '7px',
@@ -179,7 +198,16 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: <TeamNotification timeFilter={timeFilter} onDataLoaded={handleTeamDataLoaded} />,
+      children: (
+        <NotificationTabContent
+          message={intl.formatMessage({
+            id: 'notification.source.team',
+            defaultMessage: 'Notifications from team invitations.',
+          })}
+        >
+          <TeamNotification timeFilter={timeFilter} onDataLoaded={handleTeamDataLoaded} />
+        </NotificationTabContent>
+      ),
     },
     {
       key: 'data',
@@ -199,7 +227,16 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: <DataNotification timeFilter={timeFilter} onDataLoaded={handleDataDataLoaded} />,
+      children: (
+        <NotificationTabContent
+          message={intl.formatMessage({
+            id: 'notification.source.data',
+            defaultMessage: 'Status changes from review workflows for data you submitted.',
+          })}
+        >
+          <DataNotification timeFilter={timeFilter} onDataLoaded={handleDataDataLoaded} />
+        </NotificationTabContent>
+      ),
     },
     {
       key: 'issue',
@@ -219,7 +256,16 @@ const Notification: React.FC = () => {
           </span>
         </Badge>
       ),
-      children: <IssueNotification timeFilter={timeFilter} onDataLoaded={handleIssueDataLoaded} />,
+      children: (
+        <NotificationTabContent
+          message={intl.formatMessage({
+            id: 'notification.source.issue',
+            defaultMessage: 'Validation issue notifications reported by other users.',
+          })}
+        >
+          <IssueNotification timeFilter={timeFilter} onDataLoaded={handleIssueDataLoaded} />
+        </NotificationTabContent>
+      ),
     },
   ];
 
@@ -268,7 +314,7 @@ const Notification: React.FC = () => {
               size='middle'
             />
           </div>
-          <Tabs items={items} defaultActiveKey='team' />
+          <Tabs items={items} activeKey={activeTabKey} onChange={handleTabChange} />
         </div>
       </Modal>
     </>
