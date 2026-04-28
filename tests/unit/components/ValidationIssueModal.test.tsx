@@ -703,6 +703,67 @@ describe('ValidationIssueModal', () => {
     });
   });
 
+  it('does not render process-instance detail copy for flow-property highlight issues', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/flows?id=flow-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'flow-1',
+              '@type': 'flow data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-flow-property-quantitative-reference-1',
+                fieldLabel: 'Quantitative reference',
+                fieldPath: 'flowProperty[#prop-1].quantitativeReference',
+                presentation: 'highlight-only',
+                reasonMessage: 'Only one quantitative reference is allowed',
+                suggestedFix: '以下数据必须有且仅有一条数据作为基准',
+                tabName: 'flowProperties',
+                validationCode: 'quantitative_reference_count_invalid',
+              },
+            ],
+            tabNames: ['flowProperties'],
+          },
+        ],
+        onNavigate,
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    const tabButton = screen.getByRole('button', { name: 'flowProperties' });
+    expect(tabButton).toBeInTheDocument();
+    expect(screen.queryByText(/未知过程/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/quantitativeReference/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/以下数据必须有且仅有一条数据作为基准/)).not.toBeInTheDocument();
+
+    fireEvent.click(tabButton);
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: expect.objectContaining({
+        key: 'sdk-flow-property-quantitative-reference-1',
+        tabName: 'flowProperties',
+      }),
+      tabName: 'flowProperties',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
   it('aggregates multiplication-factor lifecycle model sdk issues into one isolated-node hint', async () => {
     const onNavigate = jest.fn();
     let modalHandle: { destroy: () => void } | null = null;
