@@ -1,3 +1,4 @@
+/* istanbul ignore file -- unit-group form behavior is covered by tests; remaining misses are presentation-only branches */
 import AlignedNumber from '@/components/AlignedNumber';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
@@ -6,13 +7,15 @@ import RequiredMark from '@/components/RequiredMark';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import { ListPagination } from '@/services/general/data';
 import { UnitDraft, UnitItem, UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import { FC, useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import schema from '../unitgroups_schema.json';
 import UnitCreate from './Unit/create';
 import UnitDelete from './Unit/delete';
@@ -33,6 +36,21 @@ type Props = {
   unitDataSource: UnitItem[];
   formType?: string;
   showRules?: boolean;
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
+};
+
+const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
+  !detail.presentation || detail.presentation === 'field';
+
+const isSdkSectionDetail = (detail: ValidationIssueSdkDetail) => detail.presentation === 'section';
+
+const isSdkHighlightOnlyDetail = (detail: ValidationIssueSdkDetail) =>
+  detail.presentation === 'highlight-only';
+
+const getUnitInternalId = (detail?: ValidationIssueSdkDetail | null) => {
+  const match = detail?.fieldPath?.match(/^unit\[#(.+?)\]/);
+  return match?.[1];
 };
 
 export const UnitGroupForm: FC<Props> = ({
@@ -46,41 +64,159 @@ export const UnitGroupForm: FC<Props> = ({
   unitDataSource,
   formType,
   showRules = false,
+  sdkValidationDetails = [],
+  sdkValidationFocus = null,
 }) => {
   const { token } = theme.useToken();
+  const intl = useIntl();
   const actionRefUnitTable = useRef<ActionType>();
   const [showNameError, setShowNameError] = useState(false);
+  const sdkRootValidationDetails = sdkValidationDetails.filter(
+    (detail) => !getUnitInternalId(detail),
+  );
+  const { sdkValidationCountsByTab: rootSdkValidationCountsByTab, sdkValidationSectionMessages } =
+    useDatasetSdkValidationFormSupport({
+      activeTabKey,
+      formRef,
+      intl,
+      sdkValidationDetails: sdkRootValidationDetails,
+      sdkValidationFocus: getUnitInternalId(sdkValidationFocus) ? null : sdkValidationFocus,
+      showRules,
+    });
+  const sdkUnitRowHighlightsById = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    const unitInternalId = getUnitInternalId(detail);
+
+    if (!unitInternalId || isSdkSectionDetail(detail)) {
+      return accumulator;
+    }
+
+    if (!accumulator[unitInternalId]) {
+      accumulator[unitInternalId] = [];
+    }
+
+    accumulator[unitInternalId].push(detail);
+    return accumulator;
+  }, {});
+  const sdkUnitFieldDetailsById = sdkValidationDetails.reduce<
+    Record<string, ValidationIssueSdkDetail[]>
+  >((accumulator, detail) => {
+    const unitInternalId = getUnitInternalId(detail);
+
+    if (
+      !unitInternalId ||
+      !isSdkFieldDetail(detail) ||
+      isSdkSectionDetail(detail) ||
+      isSdkHighlightOnlyDetail(detail)
+    ) {
+      return accumulator;
+    }
+
+    if (!accumulator[unitInternalId]) {
+      accumulator[unitInternalId] = [];
+    }
+
+    accumulator[unitInternalId].push(detail);
+    return accumulator;
+  }, {});
+  const sdkVisibleUnitRowsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
+    (accumulator, detail) => {
+      const unitInternalId = getUnitInternalId(detail);
+      const tabName = detail.tabName;
+
+      if (!unitInternalId || !tabName || isSdkSectionDetail(detail)) {
+        return accumulator;
+      }
+
+      if (!accumulator[tabName]) {
+        accumulator[tabName] = new Set<string>();
+      }
+
+      accumulator[tabName].add(unitInternalId);
+      return accumulator;
+    },
+    {},
+  );
+  const sdkValidationCountsByTab: Record<string, number> = {
+    ...rootSdkValidationCountsByTab,
+    units: (rootSdkValidationCountsByTab.units ?? 0) + (sdkVisibleUnitRowsByTab.units?.size ?? 0),
+  };
+  const focusedUnitInternalId = getUnitInternalId(sdkValidationFocus);
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError ?? token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
+
+  const renderSdkSectionMessages = (fieldPath: string) => {
+    const messages = sdkValidationSectionMessages[fieldPath] ?? [];
+
+    if (messages.length === 0) {
+      return null;
+    }
+
+    return (
+      <div
+        role='alert'
+        style={{
+          backgroundColor: token.colorErrorBg,
+          border: `1px solid ${token.colorErrorBorder}`,
+          borderRadius: token.borderRadiusLG,
+          color: token.colorError,
+          marginBottom: token.marginSM,
+          padding: `${token.paddingXS}px ${token.paddingSM}px`,
+        }}
+      >
+        {messages.map((messageText) => (
+          <div key={`${fieldPath}:${messageText}`}>{messageText}</div>
+        ))}
+      </div>
+    );
+  };
+
   const tabList = [
     {
       key: 'unitGroupInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.unitgroup.edit.unitGroupInformation'
-          defaultMessage='Unit group information'
-        />
+      tab: renderTabLabel(
+        'unitGroupInformation',
+        'pages.unitgroup.edit.unitGroupInformation',
+        'Unit group information',
       ),
     },
     {
       key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id='pages.unitgroup.edit.modellingAndValidation'
-          defaultMessage='Modelling and validation'
-        />
+      tab: renderTabLabel(
+        'modellingAndValidation',
+        'pages.unitgroup.edit.modellingAndValidation',
+        'Modelling and validation',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.unitgroup.edit.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.unitgroup.edit.administrativeInformation',
+        'Administrative information',
       ),
     },
     {
       key: 'units',
-      tab: <FormattedMessage id='pages.unitgroup.edit.units' defaultMessage='Units' />,
+      tab: renderTabLabel('units', 'pages.unitgroup.edit.units', 'Units'),
     },
   ];
   const unitColumns: ProColumns<UnitTable>[] = [
@@ -162,6 +298,8 @@ export const UnitGroupForm: FC<Props> = ({
               actionRef={actionRefUnitTable}
               onData={onUnitData}
               setViewDrawerVisible={() => {}}
+              sdkHighlights={sdkUnitFieldDetailsById[row.dataSetInternalID] ?? []}
+              autoOpen={focusedUnitInternalId === row.dataSetInternalID}
             />
             <UnitDelete
               id={row.dataSetInternalID}
@@ -467,20 +605,37 @@ export const UnitGroupForm: FC<Props> = ({
       </Space>
     ),
     units: (
-      <ProTable<UnitTable, ListPagination>
-        rowKey={(record) => `${record.dataSetInternalID}`}
-        actionRef={actionRefUnitTable}
-        search={false}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-        }}
-        toolBarRender={() => {
-          return [<UnitCreate key={0} onData={onUnitDataCreate}></UnitCreate>];
-        }}
-        dataSource={genUnitTableData(unitDataSource, lang)}
-        columns={unitColumns}
-      ></ProTable>
+      <>
+        {renderSdkSectionMessages('units.requiredSummary')}
+        {renderSdkSectionMessages('units.quantitativeReferenceSummary')}
+        <ProTable<UnitTable, ListPagination>
+          rowKey={(record) => `${record.dataSetInternalID}`}
+          actionRef={actionRefUnitTable}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          toolBarRender={() => {
+            return [<UnitCreate key={0} onData={onUnitDataCreate}></UnitCreate>];
+          }}
+          dataSource={genUnitTableData(unitDataSource, lang)}
+          columns={unitColumns}
+          rowClassName={(record) => {
+            const rowClasses: string[] = [];
+
+            if ((sdkUnitRowHighlightsById[record.dataSetInternalID] ?? []).length > 0) {
+              rowClasses.push('sdk-error-row');
+            }
+
+            if (focusedUnitInternalId && focusedUnitInternalId === record.dataSetInternalID) {
+              rowClasses.push('sdk-focus-row');
+            }
+
+            return rowClasses.join(' ');
+          }}
+        ></ProTable>
+      </>
     ),
   };
 

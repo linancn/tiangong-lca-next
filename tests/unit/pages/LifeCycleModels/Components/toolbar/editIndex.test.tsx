@@ -25,6 +25,7 @@ const mockGetUserId = jest.fn().mockResolvedValue('user-1');
 const mockCheckReferences = jest.fn();
 const mockGetAllRefObj = jest.fn().mockReturnValue([]);
 const mockGetRefTableName = jest.fn().mockReturnValue('process');
+const mockHasLangNormalizationDraftChanges = jest.fn();
 
 let mockGraphStoreState: any = { nodes: [], edges: [] };
 let lastControlProps: any;
@@ -194,6 +195,38 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/eidtInfo', () => {
             }
           >
             emit-info-data
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              props.onProcessInstanceValidationChange?.([
+                {
+                  fieldLabel: 'Reference identifier',
+                  fieldPath: 'processInstance[#pi-2].referenceToProcess.@refObjectId',
+                  key: 'sdk-process-instance-issue',
+                  presentation: 'highlight-only',
+                  reasonMessage: 'Required value is missing',
+                  tabName: 'lifeCycleModelInformation',
+                },
+              ])
+            }
+          >
+            emit-process-instance-issues
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              props.onNavigateProcessInstance?.({
+                fieldLabel: 'Reference identifier',
+                fieldPath: 'processInstance[#pi-2].referenceToProcess.@refObjectId',
+                key: 'sdk-process-instance-issue',
+                presentation: 'highlight-only',
+                reasonMessage: 'Required value is missing',
+                tabName: 'lifeCycleModelInformation',
+              })
+            }
+          >
+            navigate-process-instance-issue
           </button>
         </div>
       );
@@ -367,6 +400,8 @@ jest.mock('@/services/processes/util', () => ({
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getRefData: (...args: any[]) => mockGetRefData(...args),
+  hasLangNormalizationDraftChanges: (...args: any[]) =>
+    mockHasLangNormalizationDraftChanges(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -422,6 +457,14 @@ beforeEach(() => {
   mockUpdateNodeCb.mockReset().mockResolvedValue(undefined);
   mockSyncGraphData.mockReset();
   mockGetRefData.mockReset().mockResolvedValue({ data: { ruleVerification: true } });
+  mockHasLangNormalizationDraftChanges
+    .mockReset()
+    .mockImplementation((value: any) =>
+      Boolean(
+        (value?.langSupplementedPlaceholderPaths?.length ?? 0) > 0 ||
+        (value?.langTranslatedPaths?.length ?? 0) > 0,
+      ),
+    );
   mockGetProcessesByIdAndVersion.mockReset().mockResolvedValue({ data: [] });
   mockGetImportedId.mockReset().mockReturnValue(undefined);
   mockIsSupabaseDuplicateKeyError.mockReset().mockReturnValue(false);
@@ -480,30 +523,32 @@ beforeEach(() => {
     },
   });
   mockUpdateLifeCycleModel.mockReset().mockResolvedValue({
-    data: [
-      {
-        id: 'model-1',
-        version: '1.1',
-        json_tg: {
-          xflow: {
-            edges: [],
-          },
+    ok: true,
+    modelId: 'model-1',
+    version: '1.1',
+    lifecycleModel: {
+      id: 'model-1',
+      version: '1.1',
+      json_tg: {
+        xflow: {
+          edges: [],
         },
       },
-    ],
+    },
   });
   mockCreateLifeCycleModel.mockReset().mockResolvedValue({
-    data: [
-      {
-        id: 'created-model',
-        version: '1.1',
-        json_tg: {
-          xflow: {
-            edges: [],
-          },
+    ok: true,
+    modelId: 'created-model',
+    version: '1.1',
+    lifecycleModel: {
+      id: 'created-model',
+      version: '1.1',
+      json_tg: {
+        xflow: {
+          edges: [],
         },
       },
-    ],
+    },
   });
   const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
   antMessage.success.mockReset();
@@ -518,7 +563,9 @@ beforeEach(() => {
     cleanHistory: jest.fn(),
     cleanSelection: jest.fn(),
     copy: jest.fn(),
+    centerCell: jest.fn(),
     getEdges: jest.fn(() => mockGraphStoreState.edges),
+    getCellById: jest.fn((id: string) => ({ id })),
     getNodes: jest.fn(() => mockGraphStoreState.nodes),
     getSelectedCells: jest.fn(() => []),
     isClipboardEmpty: jest.fn(() => true),
@@ -543,6 +590,7 @@ beforeEach(() => {
         size: { width: 350 },
         data: {
           id: 'proc-1',
+          index: 'pi-1',
           version: '1.0',
           label: 'Node 1',
           quantitativeReference: '1',
@@ -557,6 +605,7 @@ beforeEach(() => {
         size: { width: 350 },
         data: {
           id: 'proc-2',
+          index: 'pi-2',
           version: '1.0',
           label: 'Node 2',
           quantitativeReference: '0',
@@ -608,6 +657,39 @@ describe('ToolbarEdit', () => {
     await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0'));
     await waitFor(() => expect(screen.queryByTestId('spin')).not.toBeInTheDocument());
   };
+
+  it('highlights graph nodes that have sdk process-instance validation issues', async () => {
+    await renderVisibleToolbarEdit();
+
+    await userEvent.click(screen.getByRole('button', { name: 'emit-process-instance-issues' }));
+
+    await waitFor(() =>
+      expect(
+        mockUpdateNode.mock.calls.some(
+          ([id, payload]: [string, any]) =>
+            id === 'node-2' && payload?.attrs?.body?.stroke === '#ff4d4f',
+        ),
+      ).toBe(true),
+    );
+  });
+
+  it('navigates to the sdk-invalid process-instance node from toolbar callbacks', async () => {
+    mockGraphStoreState.nodes = mockGraphStoreState.nodes.map((node: any, index: number) => ({
+      ...node,
+      selected: index === 0,
+    }));
+    mockGraphStoreState.edges = [{ id: 'edge-1', selected: true }];
+
+    await renderVisibleToolbarEdit();
+
+    await userEvent.click(screen.getByRole('button', { name: 'navigate-process-instance-issue' }));
+
+    expect(mockUpdateEdge).toHaveBeenCalledWith('edge-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: false });
+    expect(mockUpdateNode).toHaveBeenCalledWith('node-2', { selected: true });
+    expect(mockGraph.cleanSelection).toHaveBeenCalled();
+    expect(mockGraph.centerCell).toHaveBeenCalledWith({ id: 'node-2' });
+  });
 
   it('updates reference node target amounts via TargetAmount callback', async () => {
     render(<ToolbarEdit {...baseProps} />);
@@ -1200,7 +1282,7 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           validationSnapshot: expect.objectContaining({
             modelId: 'model-1',
-            version: '1.0',
+            version: '1.1',
           }),
         }),
       ),
@@ -1236,7 +1318,7 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           validationSnapshot: expect.objectContaining({
             modelId: 'model-1',
-            version: '1.0',
+            version: '1.1',
           }),
         }),
       ),

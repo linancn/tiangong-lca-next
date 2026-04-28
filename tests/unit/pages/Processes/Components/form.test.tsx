@@ -56,7 +56,7 @@ jest.mock('umi', () => ({
         'pages.validationIssues.sdkDetail.suggestedFix.exchanges_required':
           'Add at least one exchange',
         'pages.validationIssues.sdkDetail.suggestedFix.quantitative_reference_count_invalid':
-          'The following data must contain exactly one reference flow',
+          'The following data must have exactly one item designated as the reference',
       };
       const template = messages[id] ?? defaultMessage ?? id ?? '';
 
@@ -613,7 +613,8 @@ describe('ProcessForm component', () => {
             fieldLabel: 'Reference flow(s)',
             fieldPath: 'exchanges.quantitativeReferenceSummary',
             presentation: 'section',
-            reasonMessage: 'The following data must contain exactly one reference flow',
+            reasonMessage:
+              'The following data must have exactly one item designated as the reference',
             validationCode: 'quantitative_reference_count_invalid',
           },
           {
@@ -624,7 +625,8 @@ describe('ProcessForm component', () => {
             fieldLabel: 'Reference flow(s)',
             fieldPath: 'exchange[#row-0].quantitativeReference',
             presentation: 'highlight-only',
-            reasonMessage: 'The following data must contain exactly one reference flow',
+            reasonMessage:
+              'The following data must have exactly one item designated as the reference',
             validationCode: 'quantitative_reference_count_invalid',
           },
           {
@@ -635,7 +637,8 @@ describe('ProcessForm component', () => {
             fieldLabel: 'Reference flow(s)',
             fieldPath: 'exchange[#row-1].quantitativeReference',
             presentation: 'highlight-only',
-            reasonMessage: 'The following data must contain exactly one reference flow',
+            reasonMessage:
+              'The following data must have exactly one item designated as the reference',
             validationCode: 'quantitative_reference_count_invalid',
           },
         ]}
@@ -649,7 +652,7 @@ describe('ProcessForm component', () => {
     await waitFor(() => {
       expect(
         within(screen.getByTestId('card')).getByText(
-          'The following data must contain exactly one reference flow',
+          'The following data must have exactly one item designated as the reference',
         ),
       ).toBeInTheDocument();
     });

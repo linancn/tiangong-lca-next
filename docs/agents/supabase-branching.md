@@ -19,8 +19,8 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 ---
 
 # Supabase Environment And Database Workflow
@@ -68,6 +68,7 @@ Rules:
 | --- | --- |
 | app-only change | work in this repo, use `dev`, validate here |
 | ordered-dataset shaping or validation normalization under `src/services/**` | keep the change in this repo, validate here, and escalate only if schema truth or Edge runtime behavior must change |
+| translation-backed validation save flow such as `translate_text` retries, English supplementation, or save-while-checking continuity | keep the frontend control flow in this repo; escalate only if the Edge runtime contract itself must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
 

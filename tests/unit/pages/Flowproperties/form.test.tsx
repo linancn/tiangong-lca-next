@@ -16,10 +16,26 @@ const mockGetRules = jest.fn(() => []);
 const sourceSelectCalls: any[] = [];
 const contactSelectCalls: any[] = [];
 const unitGroupSelectCalls: any[] = [];
+let mockSdkValidationCountsByTab: Record<string, number> = {};
+let mockThemeToken = {
+  colorError: '#ff4d4f',
+  colorPrimary: '#1677ff',
+  fontWeightStrong: 600,
+};
 
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
+}));
+
+jest.mock('@/pages/Utils/validation/formSupport', () => ({
+  __esModule: true,
+  useDatasetSdkValidationFormSupport: () => ({
+    sdkValidationCountsByTab: mockSdkValidationCountsByTab,
+  }),
 }));
 
 jest.mock('antd', () => {
@@ -32,7 +48,7 @@ jest.mock('antd', () => {
       <div role='tablist'>
         {tabList.map((tab: any) => (
           <button key={tab.key} type='button' onClick={() => onTabChange?.(tab.key)}>
-            {toText(tab.tab)}
+            {tab.tab}
           </button>
         ))}
       </div>
@@ -69,9 +85,7 @@ jest.mock('antd', () => {
   const Space = ({ children }: any) => <div>{children}</div>;
   const theme = {
     useToken: () => ({
-      token: {
-        colorError: '#ff4d4f',
-      },
+      token: mockThemeToken,
     }),
   };
 
@@ -170,6 +184,12 @@ describe('FlowpropertyForm', () => {
     sourceSelectCalls.length = 0;
     contactSelectCalls.length = 0;
     unitGroupSelectCalls.length = 0;
+    mockSdkValidationCountsByTab = {};
+    mockThemeToken = {
+      colorError: '#ff4d4f',
+      colorPrimary: '#1677ff',
+      fontWeightStrong: 600,
+    };
   });
 
   it('renders tabs and forwards tab changes and data callbacks', async () => {
@@ -379,5 +399,71 @@ describe('FlowpropertyForm', () => {
     expect(contactSelectCalls[contactSelectCalls.length - 1].rules).toEqual(
       expect.arrayContaining([expect.objectContaining({ source: expect.anything() })]),
     );
+  });
+
+  it('highlights tabs with sdk validation issues using the error color token', () => {
+    mockSdkValidationCountsByTab = {
+      modellingAndValidation: 1,
+    };
+
+    const formRef = {
+      current: {
+        setFieldsValue: jest.fn(),
+        setFieldValue: jest.fn(),
+        getFieldsValue: jest.fn(() => ({})),
+      },
+    };
+
+    renderWithProviders(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='flowPropertiesInformation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+      />,
+    );
+
+    expect(screen.getByText('Modelling and validation')).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
+  });
+
+  it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
+    mockSdkValidationCountsByTab = {
+      administrativeInformation: 1,
+    };
+    mockThemeToken = {
+      ...mockThemeToken,
+      colorError: undefined,
+    } as any;
+
+    const formRef = {
+      current: {
+        setFieldsValue: jest.fn(),
+        setFieldValue: jest.fn(),
+        getFieldsValue: jest.fn(() => ({})),
+      },
+    };
+
+    renderWithProviders(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='flowPropertiesInformation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+      />,
+    );
+
+    expect(screen.getByText('Administrative information')).toHaveStyle({
+      color: '#1677ff',
+      fontWeight: '600',
+    });
   });
 });

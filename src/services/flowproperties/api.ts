@@ -12,32 +12,44 @@ import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
+  attachLangNormalizationMetadata,
+  buildLangNormalizationMetadata,
   getDataDetail,
   getTeamIdByUserId,
   invokeDatasetCommand,
   normalizeLangPayloadForSave,
+  type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
-export async function createFlowproperties(id: string, data: any) {
+export async function createFlowproperties(
+  id: string,
+  data: any,
+  options?: NormalizeLangPayloadForSaveOptions,
+) {
   const rawData = genFlowpropertyJsonOrdered(id, data);
-  const normalizedResult = await normalizeLangPayloadForSave(rawData);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData, options);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(normalizedResult, rawData);
   if (validationError) {
-    return {
-      data: null,
-      error: {
-        message: validationError,
-        code: 'LANG_VALIDATION_ERROR',
-        details: '',
-        hint: '',
-        name: 'LangValidationError',
+    return attachLangNormalizationMetadata(
+      {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
       },
-      status: 400,
-      statusText: 'LANG_VALIDATION_ERROR',
-      count: null,
-    };
+      langMetadata,
+      options,
+    );
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
@@ -45,7 +57,7 @@ export async function createFlowproperties(id: string, data: any) {
     newData,
     userTeamId,
   );
-  return invokeDatasetCommand(
+  const result = await invokeDatasetCommand(
     'app_dataset_create',
     {
       id,
@@ -57,27 +69,38 @@ export async function createFlowproperties(id: string, data: any) {
       ruleVerification: rule_verification,
     },
   );
+  return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 
-export async function updateFlowproperties(id: string, version: string, data: any) {
+export async function updateFlowproperties(
+  id: string,
+  version: string,
+  data: any,
+  options?: NormalizeLangPayloadForSaveOptions,
+) {
   const rawData = genFlowpropertyJsonOrdered(id, data);
-  const normalizedResult = await normalizeLangPayloadForSave(rawData);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData, options);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(normalizedResult, rawData);
   if (validationError) {
-    return {
-      data: null,
-      error: {
-        message: validationError,
-        code: 'LANG_VALIDATION_ERROR',
-        details: '',
-        hint: '',
-        name: 'LangValidationError',
+    return attachLangNormalizationMetadata(
+      {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
       },
-      status: 400,
-      statusText: 'LANG_VALIDATION_ERROR',
-      count: null,
-    };
+      langMetadata,
+      options,
+    );
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
@@ -86,7 +109,7 @@ export async function updateFlowproperties(id: string, version: string, data: an
     userTeamId,
   );
 
-  return invokeDatasetCommand(
+  const result = await invokeDatasetCommand(
     'app_dataset_save_draft',
     {
       id,
@@ -99,6 +122,7 @@ export async function updateFlowproperties(id: string, version: string, data: an
       ruleVerification: rule_verification,
     },
   );
+  return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 
 export async function deleteFlowproperties(id: string, version: string) {

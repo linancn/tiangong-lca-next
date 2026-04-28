@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 ---
 
 # Contribution Path Analysis Design
@@ -51,6 +51,7 @@ V1 needs to answer, for one process and one impact:
 - do not put HDF5 traversal logic in edge functions
 - current snapshot index metadata is too thin for rich path display
 - process-editor validation and report-navigation changes do not alter this proposed async path-analysis contract
+- the current cross-dataset SDK validation refactor does not change this proposal's worker/result boundary
 
 ## Design Decisions
 

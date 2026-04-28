@@ -670,7 +670,7 @@ export default {
   'pages.process.validator.resultingAmount.required': 'Please input resulting amount',
   'pages.process.validator.dataDerivationTypeStatus.required': 'Please input data derivation type/status',
   'pages.process.validator.exchanges.required': 'Add at least one exchange',
-  'pages.process.validator.exchanges.quantitativeReference.required': 'The following data must contain exactly one reference flow',
+  'pages.process.validator.exchanges.quantitativeReference.required': 'The following data must have exactly one item designated as the reference',
 
   'pages.process.review.submitSuccess': 'Review submitted successfully',
   'pages.process.review.submitError': 'Submit review failed',

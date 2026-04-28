@@ -8,11 +8,13 @@ import ReveiwItemForm from '@/pages/Processes/Components/Review/form';
 import processSchema from '@/pages/Processes/processes_schema.json';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
+import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 import schema from '../lifecyclemodels.json';
 import { licenseTypeOptions } from './optiondata';
 
@@ -25,6 +27,8 @@ type Props = {
   formType?: string;
   showRules?: boolean;
   actionType?: 'create' | 'copy' | 'createVersion';
+  sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -35,53 +39,79 @@ export const LifeCycleModelForm: FC<Props> = ({
   formType,
   showRules = false,
   actionType,
+  sdkValidationDetails = [],
+  sdkValidationFocus = null,
 }) => {
   const { token } = theme.useToken();
+  const intl = useIntl();
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
+  const { sdkValidationCountsByTab } = useDatasetSdkValidationFormSupport({
+    activeTabKey,
+    formRef,
+    intl,
+    sdkValidationDetails,
+    sdkValidationFocus,
+    showRules,
+  });
+
+  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+
+    return (
+      <span
+        style={
+          hasIssue
+            ? {
+                color: token.colorError ?? token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+              }
+            : undefined
+        }
+      >
+        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+      </span>
+    );
+  };
 
   const tabList = [
     {
       key: 'lifeCycleModelInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.lifeCycleModel.view.lifeCycleModelInformation'
-          defaultMessage='Life cycle model information'
-        />
+      tab: renderTabLabel(
+        'lifeCycleModelInformation',
+        'pages.lifeCycleModel.view.lifeCycleModelInformation',
+        'Life cycle model information',
       ),
     },
     {
       key: 'modellingAndValidation',
-      tab: (
-        <FormattedMessage
-          id='pages.lifeCycleModel.view.modellingAndValidation'
-          defaultMessage='Modelling and validation'
-        />
+      tab: renderTabLabel(
+        'modellingAndValidation',
+        'pages.lifeCycleModel.view.modellingAndValidation',
+        'Modelling and validation',
       ),
     },
     {
       key: 'administrativeInformation',
-      tab: (
-        <FormattedMessage
-          id='pages.lifeCycleModel.view.administrativeInformation'
-          defaultMessage='Administrative information'
-        />
+      tab: renderTabLabel(
+        'administrativeInformation',
+        'pages.lifeCycleModel.view.administrativeInformation',
+        'Administrative information',
       ),
     },
     {
       key: 'validation',
-      tab: <FormattedMessage id='pages.lifeCycleModel.validation' defaultMessage='Validation' />,
+      tab: renderTabLabel('validation', 'pages.lifeCycleModel.validation', 'Validation'),
     },
     {
       key: 'complianceDeclarations',
-      tab: (
-        <FormattedMessage
-          id='pages.lifeCycleModel.complianceDeclarations'
-          defaultMessage='Compliance declarations'
-        />
+      tab: renderTabLabel(
+        'complianceDeclarations',
+        'pages.lifeCycleModel.complianceDeclarations',
+        'Compliance declarations',
       ),
     },
   ];

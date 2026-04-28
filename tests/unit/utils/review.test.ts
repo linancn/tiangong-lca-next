@@ -672,6 +672,93 @@ describe('review utilities', () => {
     });
   });
 
+  it('checks nested references directly from orderedJson without reloading the root detail', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'flow-nested',
+        stateCode: 10,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+
+    const parentPath = new ReffPath({
+      '@refObjectId': 'root-flow',
+      '@version': '01',
+      '@type': 'flow data set',
+    });
+    const unRuleVerification: any[] = [];
+    const nonExistent: any[] = [];
+
+    await checkData(
+      {
+        '@refObjectId': 'root-flow',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      unRuleVerification,
+      nonExistent,
+      parentPath,
+      {
+        orderedJson: {
+          flowDataSet: {
+            administrativeInformation: {
+              dataEntryBy: {
+                'common:referenceToDataSetFormat': {
+                  '@refObjectId': 'flow-nested',
+                  '@version': '01',
+                  '@type': 'flow data set',
+                },
+              },
+            },
+          },
+        },
+        userTeamId: 'team-1',
+      },
+    );
+
+    expect(mockGetRefData).toHaveBeenCalledWith('flow-nested', '01', 'flows', 'team-1', {
+      fallbackToLatest: false,
+    });
+    expect(mockGetRefData).not.toHaveBeenCalledWith('root-flow', '01', 'flows', 'team-1', {
+      fallbackToLatest: false,
+    });
+  });
+
+  it('returns early when orderedJson contains no additional references', async () => {
+    const parentPath = new ReffPath({
+      '@refObjectId': 'root-flow',
+      '@version': '01',
+      '@type': 'flow data set',
+    });
+
+    await checkData(
+      {
+        '@refObjectId': 'root-flow',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      [],
+      [],
+      parentPath,
+      {
+        orderedJson: {
+          flowDataSet: {
+            flowInformation: {
+              dataSetInformation: {
+                'common:UUID': 'root-flow',
+              },
+            },
+          },
+        },
+      },
+    );
+
+    expect(mockGetRefData).not.toHaveBeenCalled();
+    expect(parentPath.children).toEqual([]);
+  });
+
   it('expands same-model process references and reuses existing classification buckets', async () => {
     const unReview: any[] = [
       { '@refObjectId': 'proc-same', '@version': '01', '@type': 'process data set' },

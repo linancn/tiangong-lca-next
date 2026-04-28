@@ -24,6 +24,9 @@ let lastFormApi: any = null;
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
 }));
 
 jest.mock('@ant-design/icons', () => ({
@@ -83,38 +86,86 @@ jest.mock('@ant-design/pro-components', () => {
 
   const ProForm = ({
     formRef,
-    initialValues = {},
+    initialValues,
     onValuesChange,
     onFinish,
     submitter,
     children,
   }: any) => {
-    const [values, setValues] = React.useState<any>(initialValues ?? {});
+    const normalizedInitialValues = React.useMemo(() => initialValues ?? {}, [initialValues]);
+    const [values, setValues] = React.useState<any>(normalizedInitialValues);
+    const errorMapRef = React.useRef<Map<string, string[]>>(new Map());
+    const valuesRef = React.useRef<any>(normalizedInitialValues);
+    const initialValuesRef = React.useRef<any>(normalizedInitialValues);
+    const onValuesChangeRef = React.useRef(onValuesChange);
+    const onFinishRef = React.useRef(onFinish);
+
+    const serializeName = (name: any) =>
+      Array.isArray(name) ? name.map(String).join('.') : String(name ?? '');
 
     React.useEffect(() => {
-      setValues(initialValues ?? {});
-    }, [initialValues]);
+      initialValuesRef.current = normalizedInitialValues;
+      valuesRef.current = normalizedInitialValues;
+      setValues(normalizedInitialValues);
+    }, [normalizedInitialValues]);
 
     React.useEffect(() => {
-      if (!formRef) return;
-      formRef.current = {
-        submit: async () => onFinish?.(),
-        resetFields: () => setValues(initialValues ?? {}),
-        getFieldsValue: () => values,
+      valuesRef.current = values;
+    }, [values]);
+
+    React.useEffect(() => {
+      onValuesChangeRef.current = onValuesChange;
+    }, [onValuesChange]);
+
+    React.useEffect(() => {
+      onFinishRef.current = onFinish;
+    }, [onFinish]);
+
+    const getFieldErrorMockRef = React.useRef(
+      jest.fn((name: any) => errorMapRef.current.get(serializeName(name)) ?? []),
+    );
+    const setFieldsMockRef = React.useRef(
+      jest.fn((fields: Array<{ errors?: string[]; name: Array<string | number> }>) => {
+        fields.forEach((field) => {
+          errorMapRef.current.set(serializeName(field.name), [...(field.errors ?? [])]);
+        });
+      }),
+    );
+    const scrollToFieldMockRef = React.useRef(jest.fn());
+    const formApiRef = React.useRef<any>();
+
+    if (!formApiRef.current) {
+      formApiRef.current = {
+        submit: async () => onFinishRef.current?.(),
+        resetFields: () => {
+          const nextInitialValues = initialValuesRef.current ?? {};
+          valuesRef.current = nextInitialValues;
+          setValues(nextInitialValues);
+        },
+        getFieldsValue: () => valuesRef.current,
+        getFieldError: getFieldErrorMockRef.current,
+        setFields: setFieldsMockRef.current,
         setFieldsValue: (next: any) => {
           if (next === undefined) {
-            onValuesChange?.({}, undefined);
+            onValuesChangeRef.current?.({}, undefined);
             return;
           }
           setValues((prev: any) => {
             const merged = mergeDeep(prev, next);
-            onValuesChange?.({}, merged);
+            valuesRef.current = merged;
+            onValuesChangeRef.current?.({}, merged);
             return merged;
           });
         },
+        scrollToField: scrollToFieldMockRef.current,
       };
-      lastFormApi = formRef.current;
-    }, [formRef, initialValues, onValuesChange, onFinish, values]);
+    }
+
+    React.useEffect(() => {
+      if (!formRef) return;
+      formRef.current = formApiRef.current;
+      lastFormApi = formApiRef.current;
+    }, [formRef]);
 
     return (
       <form>
@@ -355,5 +406,153 @@ describe('FlowPropertyEdit', () => {
     await userEvent.click(within(drawer).getAllByRole('button', { name: /close/i })[1]);
 
     expect(screen.queryByRole('dialog', { name: /edit flow property/i })).not.toBeInTheDocument();
+  });
+
+  it('auto-opens, applies sdk highlights, dedupes repeated field messages, and scrolls to the field', async () => {
+    jest.useFakeTimers();
+    const actionRef = { current: { reload: jest.fn() } };
+    const sdkHighlights = [
+      {
+        fieldPath: 'flowProperty[#prop-1].meanValue',
+        key: 'flow-property-highlight-1',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Fix the flow property mean value.',
+        tabName: 'flowProperties',
+        validationCode: 'custom',
+      },
+      {
+        fieldPath: 'flowProperty[#prop-1].meanValue',
+        key: 'flow-property-highlight-2',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Fix the flow property mean value.',
+        tabName: 'flowProperties',
+        validationCode: 'custom',
+      },
+      {
+        fieldPath: 'flowProperty[#prop-1].meanValue',
+        key: 'flow-property-highlight-3',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Provide a longer flow property value.',
+        tabName: 'flowProperties',
+        validationCode: 'string_too_short',
+      },
+    ];
+
+    const { rerender } = renderWithProviders(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={sdkHighlights as any}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    rerender(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={[...sdkHighlights] as any}
+      />,
+    );
+    await waitFor(() =>
+      expect(lastFormApi.setFields).toHaveBeenCalledWith([
+        {
+          errors: ['Fix the flow property mean value', 'Provide a longer flow property value'],
+          name: ['meanValue'],
+        },
+      ]),
+    );
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(lastFormApi.scrollToField).toHaveBeenCalledWith(['meanValue'], { focus: true });
+
+    lastFormApi.setFields.mockClear();
+    rerender(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={[...sdkHighlights] as any}
+      />,
+    );
+
+    expect(lastFormApi.setFields).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it('keeps existing local field errors when a required sdk highlight targets the same field', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    const { rerender } = renderWithProviders(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+
+    lastFormApi.setFields([
+      {
+        errors: ['Local mean value error'],
+        name: ['meanValue'],
+      },
+    ]);
+    lastFormApi.setFields.mockClear();
+
+    rerender(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={
+          [
+            {
+              fieldPath: 'flowProperty[#prop-1].meanValue',
+              key: 'flow-property-required-highlight',
+              reasonMessage: 'Validation failed',
+              suggestedFix: 'Fill in the required value for this field.',
+              tabName: 'flowProperties',
+              validationCode: 'required_missing',
+            },
+          ] as any
+        }
+      />,
+    );
+
+    expect(lastFormApi.setFields).not.toHaveBeenCalled();
+    expect(lastFormApi.getFieldError(['meanValue'])).toEqual(['Local mean value error']);
   });
 });

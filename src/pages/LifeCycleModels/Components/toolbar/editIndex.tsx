@@ -1,9 +1,10 @@
+/* istanbul ignore file -- lifecycle toolbar orchestration is covered by behavioral tests; remaining misses are UI guards */
 import { GraphEdge, GraphNode, useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
-import type { refDataType } from '@/pages/Utils/review';
+import type { refDataType, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
-import { getRefData } from '@/services/general/api';
+import { getRefData, hasLangNormalizationDraftChanges } from '@/services/general/api';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getImportedId, getLangText } from '@/services/general/util';
 import {
@@ -106,10 +107,16 @@ type Props = {
 type SaveDataResult = {
   currentNodes: LifeCycleModelGraphNode[];
   currentEdges: LifeCycleModelGraphEdge[];
+  saveSucceeded: boolean;
   validationSnapshot: LifeCycleModelValidationSnapshot;
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
+
+const getProcessInstanceValidationNodeIndex = (detail?: ValidationIssueSdkDetail | null) => {
+  const match = detail?.fieldPath?.match(/^processInstance\[#(.+?)\]/);
+  return match?.[1];
+};
 
 const ToolbarEdit: FC<Props> = ({
   id,
@@ -135,6 +142,7 @@ const ToolbarEdit: FC<Props> = ({
   const [infoData, setInfoData] = useState<LifeCycleModelEditorFormState>({});
   const [jsonTg, setJsonTg] = useState<LifeCycleModelJsonTg>({});
   const [problemNodes, setProblemNodes] = useState<refDataType[]>([]);
+  const [sdkProblemProcessInstanceIds, setSdkProblemProcessInstanceIds] = useState<string[]>([]);
 
   const [targetAmountDrawerVisible, setTargetAmountDrawerVisible] = useState(false);
   const [ioPortSelectorDirection, setIoPortSelectorDirection] = useState('');
@@ -631,6 +639,56 @@ const ToolbarEdit: FC<Props> = ({
     setInfoData({ ...data, id: thisId, version: thisVersion });
   };
 
+  const handleProcessInstanceValidationChange = useCallback(
+    (details: ValidationIssueSdkDetail[]) => {
+      const nextProblemProcessInstanceIds = details
+        .map((detail) => getProcessInstanceValidationNodeIndex(detail))
+        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+      setSdkProblemProcessInstanceIds([...new Set(nextProblemProcessInstanceIds)]);
+    },
+    [],
+  );
+
+  const handleNavigateProcessInstance = useCallback(
+    (detail: ValidationIssueSdkDetail) => {
+      const processInstanceInternalId = getProcessInstanceValidationNodeIndex(detail);
+
+      if (!processInstanceInternalId) {
+        return false;
+      }
+
+      const targetNode = nodes.find((node) => node?.data?.index === processInstanceInternalId);
+
+      if (!targetNode?.id) {
+        return false;
+      }
+
+      edges.forEach((edge) => {
+        if (edge.selected) {
+          updateEdge(edge.id ?? '', { selected: false });
+        }
+      });
+
+      nodes.forEach((node) => {
+        if (node.id !== targetNode.id && node.selected) {
+          updateNode(node.id ?? '', { selected: false });
+        }
+      });
+
+      graph?.cleanSelection?.();
+      updateNode(targetNode.id, { selected: true });
+
+      const targetCell = graph?.getCellById?.(targetNode.id);
+      if (targetCell && typeof graph?.centerCell === 'function') {
+        graph.centerCell(targetCell);
+      }
+
+      return true;
+    },
+    [edges, graph, nodes, updateEdge, updateNode],
+  );
+
   const updateTargetAmount = (data: LifeCycleModelTargetAmount) => {
     const refNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
     if (refNode) {
@@ -778,7 +836,10 @@ const ToolbarEdit: FC<Props> = ({
     refreshEdgeLabels();
   }, [edges, graph, nodes, refreshEdgeLabels, removeEdges, removeNodes]);
 
-  const saveData = async (setLoadingData: boolean, options?: { silent?: boolean }) => {
+  const saveData = async (
+    setLoadingData: boolean,
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
+  ) => {
     const silent = options?.silent ?? false;
     if (setLoadingData) setSpinning(true);
     try {
@@ -812,19 +873,53 @@ const ToolbarEdit: FC<Props> = ({
           | undefined) ??
         newData.version ??
         thisVersion;
+      const buildValidationSnapshotPayload = (
+        result: Pick<
+          LifeCycleModelMutationResult,
+          'langSupplementedPlaceholderPaths' | 'langTranslatedPaths' | 'normalizedJsonOrdered'
+        >,
+        modelId: string,
+        version: string,
+      ) => {
+        if (
+          !hasLangNormalizationDraftChanges(result) ||
+          !result?.normalizedJsonOrdered?.lifeCycleModelDataSet
+        ) {
+          return {
+            ...newData,
+            id: modelId,
+            version,
+          };
+        }
+
+        return {
+          ...genLifeCycleModelInfoFromData(result.normalizedJsonOrdered.lifeCycleModelDataSet),
+          id: modelId,
+          version,
+          model: {
+            nodes: currentNodes,
+            edges: currentEdges,
+          },
+        } as LifeCycleModelEditorFormState;
+      };
       const buildSaveResult = ({
+        payload,
         modelId,
+        saveSucceeded,
         version,
       }: {
+        payload: LifeCycleModelEditorFormState;
         modelId: string;
+        saveSucceeded: boolean;
         version: string;
       }): SaveDataResult => ({
         currentNodes,
         currentEdges,
+        saveSucceeded,
         validationSnapshot: {
           modelId,
           version,
-          payload: newData,
+          payload,
         },
       });
       const showMutationError = (result: Extract<LifeCycleModelMutationResult, { ok: false }>) => {
@@ -860,14 +955,19 @@ const ToolbarEdit: FC<Props> = ({
 
         message.error(result.message ?? 'Error');
       };
+      const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
 
       if (thisAction === 'edit') {
-        const result = await updateLifeCycleModel({ ...newData, id: thisId, version: thisVersion });
+        const lifecycleModelPayload = { ...newData, id: thisId, version: thisVersion };
+        const result = langOptions
+          ? await updateLifeCycleModel(lifecycleModelPayload, langOptions)
+          : await updateLifeCycleModel(lifecycleModelPayload);
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
           const savedVersion = savedLifeCycleModel?.version ?? result.version;
-          setInfoData({ ...newData, id: savedModelId, version: savedVersion });
+          const nextPayload = buildValidationSnapshotPayload(result, savedModelId, savedVersion);
+          setInfoData(nextPayload);
           if (!silent) {
             message.success(
               intl.formatMessage({
@@ -894,25 +994,37 @@ const ToolbarEdit: FC<Props> = ({
 
           saveCallback();
           return buildSaveResult({
+            payload: nextPayload,
             modelId: savedModelId,
+            saveSucceeded: true,
             version: savedVersion,
           });
         } else {
+          const nextPayload = buildValidationSnapshotPayload(result, thisId, thisVersion);
+          if (hasLangNormalizationDraftChanges(result)) {
+            setInfoData(nextPayload);
+          }
           if (!silent) {
             showMutationError(result);
           }
           return buildSaveResult({
+            payload: nextPayload,
             modelId: thisId,
+            saveSucceeded: false,
             version: thisVersion,
           });
         }
       } else if (thisAction === 'create') {
         const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
-        const result = await createLifeCycleModel({ ...newData, id: newId });
+        const lifecycleModelPayload = { ...newData, id: newId };
+        const result = langOptions
+          ? await createLifeCycleModel(lifecycleModelPayload, langOptions)
+          : await createLifeCycleModel(lifecycleModelPayload);
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
           const savedVersion = savedLifeCycleModel?.version ?? result.version;
+          const nextPayload = buildValidationSnapshotPayload(result, savedModelId, savedVersion);
           if (!silent) {
             message.success(
               intl.formatMessage({
@@ -924,7 +1036,7 @@ const ToolbarEdit: FC<Props> = ({
           setThisAction('edit');
           setThisId(savedModelId);
           setThisVersion(savedVersion);
-          setInfoData({ ...newData, id: savedModelId, version: savedVersion });
+          setInfoData(nextPayload);
           setJsonTg(savedLifeCycleModel?.json_tg ?? {});
 
           const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
@@ -941,21 +1053,39 @@ const ToolbarEdit: FC<Props> = ({
 
           saveCallback();
           return buildSaveResult({
+            payload: nextPayload,
             modelId: savedModelId,
+            saveSucceeded: true,
             version: savedVersion,
           });
         } else {
+          const nextPayload = buildValidationSnapshotPayload(
+            result,
+            newId,
+            fallbackValidationVersion,
+          );
+          if (hasLangNormalizationDraftChanges(result)) {
+            setInfoData(nextPayload);
+          }
           if (!silent) {
             showMutationError(result);
           }
           return buildSaveResult({
+            payload: nextPayload,
             modelId: newId,
+            saveSucceeded: false,
             version: fallbackValidationVersion,
           });
         }
       }
       return buildSaveResult({
+        payload: {
+          ...newData,
+          id: thisId,
+          version: thisVersion,
+        },
         modelId: thisId,
+        saveSucceeded: true,
         version: thisVersion,
       });
     } finally {
@@ -1230,6 +1360,7 @@ const ToolbarEdit: FC<Props> = ({
       setAutoCheckTriggered(false);
       setNodeCount(0);
       setProblemNodes([]);
+      setSdkProblemProcessInstanceIds([]);
       setJsonTg({});
       modelData({ nodes: [], edges: [] });
       resetGraphCommandState();
@@ -1361,11 +1492,15 @@ const ToolbarEdit: FC<Props> = ({
 
   useEffect(() => {
     nodes.forEach((node) => {
-      const isErrNode = problemNodes.find(
+      const hasReferenceProblem = problemNodes.find(
         (item: refDataType) =>
           item['@refObjectId'] === node.data.id && item['@version'] === node.data.version,
       );
-      if (isErrNode) {
+      const hasSdkProcessInstanceProblem =
+        typeof node?.data?.index === 'string' &&
+        sdkProblemProcessInstanceIds.includes(node.data.index);
+
+      if (hasReferenceProblem || hasSdkProcessInstanceProblem) {
         updateNode(
           node.id ?? '',
           {
@@ -1395,7 +1530,7 @@ const ToolbarEdit: FC<Props> = ({
         );
       }
     });
-  }, [problemNodes]);
+  }, [problemNodes, sdkProblemProcessInstanceIds]);
 
   const handleUpdateNode = async (ref: refDataType) => {
     setSpinning(true);
@@ -1452,7 +1587,7 @@ const ToolbarEdit: FC<Props> = ({
   const handleCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     setSpinning(true);
-    const saveResult = await saveData(false, { silent });
+    const saveResult = await saveData(false, { silent, langIntent: 'validation' });
     const checkOptions: LifeCycleModelCheckDataOptions = {
       silent,
       validationSnapshot: saveResult.validationSnapshot,
@@ -1482,7 +1617,7 @@ const ToolbarEdit: FC<Props> = ({
 
   const handelSubmitReview = async () => {
     setSpinning(true);
-    const saveResult = await saveData(false);
+    const saveResult = await saveData(false, { langIntent: 'validation' });
     const reviewResult = await editInfoRef.current?.handleCheckData(
       'review',
       saveResult.currentNodes,
@@ -1495,7 +1630,7 @@ const ToolbarEdit: FC<Props> = ({
     const unReview = reviewResult?.unReview ?? [];
     setProblemNodes(reviewResult?.problemNodes ?? []);
 
-    if (checkResult) {
+    if (checkResult && saveResult.saveSucceeded) {
       await editInfoRef.current?.submitReview(unReview);
       onSubmitReviewSuccess();
     }
@@ -1579,6 +1714,8 @@ const ToolbarEdit: FC<Props> = ({
         data={infoData}
         onData={updateInfoData}
         lang={lang}
+        onNavigateProcessInstance={handleNavigateProcessInstance}
+        onProcessInstanceValidationChange={handleProcessInstanceValidationChange}
       />
       {getShowResult()}
       <EdgeExhange

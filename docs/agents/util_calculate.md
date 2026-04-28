@@ -20,8 +20,8 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 ---
 
 # Lifecycle Model Calculation Reference
@@ -39,6 +39,7 @@ lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 - repo-wide workflow rules
 - branch or validation policy
 - solver internals outside the frontend-side calculation pipeline
+- dataset-validation adapter changes that only affect save-time normalization, editor navigation, or review messaging
 
 ## Source Of Truth
 

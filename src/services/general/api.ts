@@ -13,6 +13,7 @@ import {
   getLangText,
   getLangValidationErrorMessage,
   jsonToList,
+  type LangNormalizationIntent,
   normalizeLangPayloadBeforeSave,
 } from '../general/util';
 import { getILCDLocationByValues } from '../locations/api';
@@ -41,6 +42,51 @@ type ResolvedFunctionInvokeError = {
 
 type GetRefDataOptions = {
   fallbackToLatest?: boolean;
+};
+
+export type NormalizeLangPayloadForSaveOptions = {
+  intent?: LangNormalizationIntent;
+};
+
+export type LangNormalizationMetadata = {
+  normalizedJsonOrdered?: any;
+  langSupplementedPlaceholderPaths?: string[];
+  langTranslatedPaths?: string[];
+};
+
+export const hasLangNormalizationDraftChanges = (
+  value?: LangNormalizationMetadata | null,
+): boolean =>
+  Boolean(
+    (value?.langSupplementedPlaceholderPaths?.length ?? 0) > 0 ||
+    (value?.langTranslatedPaths?.length ?? 0) > 0,
+  );
+
+export const buildLangNormalizationMetadata = (
+  normalizedResult: {
+    payload?: any;
+    supplementedEnglishPlaceholderPaths?: string[];
+    translatedPaths?: string[];
+  },
+  rawPayload: any,
+): LangNormalizationMetadata => ({
+  normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+  langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+  langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+});
+
+export const attachLangNormalizationMetadata = <T>(
+  result: T,
+  metadata: LangNormalizationMetadata,
+  options?: NormalizeLangPayloadForSaveOptions,
+): T | (T & LangNormalizationMetadata) => {
+  if ((options?.intent ?? 'save') !== 'validation') {
+    return result;
+  }
+  return {
+    ...((result as Record<string, unknown>) ?? {}),
+    ...metadata,
+  } as T & LangNormalizationMetadata;
 };
 
 const INTERNAL_SUPABASE_DOWNLOAD_HOSTS = new Set(['kong', 'storage']);
@@ -1798,8 +1844,13 @@ export async function translateZhTextToEnglish(text: string): Promise<string | u
   return translatedText.trim();
 }
 
-export async function normalizeLangPayloadForSave(payload: any) {
+export async function normalizeLangPayloadForSave(
+  payload: any,
+  options: NormalizeLangPayloadForSaveOptions = {},
+) {
+  const intent = options.intent ?? 'save';
   const normalized = await normalizeLangPayloadBeforeSave(payload, {
+    intent,
     translateZhToEn: translateZhTextToEnglish,
   });
 
@@ -1807,6 +1858,8 @@ export async function normalizeLangPayloadForSave(payload: any) {
   return {
     payload: normalized.payload,
     issues: normalized.issues,
+    supplementedEnglishPlaceholderPaths: normalized.supplementedEnglishPlaceholderPaths,
+    translatedPaths: normalized.translatedPaths,
     validationError: validationError || undefined,
   };
 }

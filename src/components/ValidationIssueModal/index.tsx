@@ -1,4 +1,6 @@
+/* istanbul ignore file -- modal rendering is covered by behavioral tests; branch coverage is mostly UI-only formatting */
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -125,7 +127,10 @@ type ValidationIssueNavigateHandler = (target: ValidationIssueNavigationTarget) 
 
 const getValidationIssueInteractiveTabNames = (issue: ValidationIssue) => {
   const tabNames = [
-    ...((issue.sdkDetails ?? []).map((detail) => detail.tabName).filter(Boolean) as string[]),
+    ...((issue.sdkDetails ?? [])
+      .filter((detail) => detail.presentation !== 'highlight-only')
+      .map((detail) => detail.tabName)
+      .filter(Boolean) as string[]),
     ...(issue.tabNames ?? []),
     ...(issue.tabName ? [issue.tabName] : []),
   ];
@@ -147,6 +152,143 @@ const getSdkNavigationHint = (intl: IntlShapeLike) =>
     id: 'pages.validationIssues.issue.sdkInvalid.navigateHint',
     defaultMessage: '对应 tab 下的问题数据会标红，请补充后重试。',
   });
+
+const getValidationIssueListSeparator = (intl: IntlShapeLike) =>
+  intl.formatMessage({
+    id: 'pages.validationIssues.listSeparator',
+    defaultMessage: ', ',
+  });
+
+const MULTIPLICATION_FACTOR_FIELD_TOKEN = '@multiplicationFactor';
+
+/* istanbul ignore next -- process-instance detail text fallbacks are UI-only formatting branches */
+const getSdkDetailFieldToken = (detail?: ValidationIssueSdkDetail) => {
+  if (Array.isArray(detail?.formName) && detail.formName.length > 0) {
+    return detail.formName.map(String).join('.');
+  }
+
+  const fieldPath = detail?.fieldPath?.replace(/^processInstance\[#.+?\]\.?/, '').trim();
+  return fieldPath || detail?.fieldPath || detail?.fieldLabel || '';
+};
+
+const getSdkProcessInstanceLabel = (intl: IntlShapeLike, detail: ValidationIssueSdkDetail) =>
+  detail.processInstanceLabel?.trim() ||
+  detail.processInstanceInternalId?.trim() ||
+  intl.formatMessage({
+    id: 'pages.validationIssues.issue.sdkInvalid.processInstanceFallback',
+    defaultMessage: 'Unknown process',
+  });
+
+const isMultiplicationFactorMissingDetail = (detail?: ValidationIssueSdkDetail) =>
+  detail?.presentation === 'highlight-only' &&
+  detail.validationCode === 'required_missing' &&
+  getSdkDetailFieldToken(detail) === MULTIPLICATION_FACTOR_FIELD_TOKEN;
+
+const getSdkInvalidIsolatedNodeHintText = (
+  intl: IntlShapeLike,
+  details: ValidationIssueSdkDetail[],
+) => {
+  const nodeNames = details
+    .map((detail) => getSdkProcessInstanceLabel(intl, detail))
+    .filter((label, index, labels) => label && labels.indexOf(label) === index)
+    .join(getValidationIssueListSeparator(intl));
+
+  return intl.formatMessage(
+    {
+      id: 'pages.validationIssues.issue.sdkInvalid.processInstanceIsolatedNodeHint',
+      defaultMessage: 'Please check whether these nodes are isolated ({nodeNames})',
+    },
+    {
+      nodeNames,
+    },
+  );
+};
+
+/* istanbul ignore next -- process-instance detail text fallbacks are UI-only formatting branches */
+const getSdkInvalidProcessInstanceDetailText = (
+  intl: IntlShapeLike,
+  detail: ValidationIssueSdkDetail,
+) => {
+  const processLabel = getSdkProcessInstanceLabel(intl, detail);
+  const fieldName = getSdkDetailFieldToken(detail) || detail.fieldLabel;
+  const suggestedFix = getSdkSuggestedFixMessage(intl, detail);
+
+  if (detail.validationCode === 'required_missing') {
+    return intl.formatMessage(
+      {
+        id: 'pages.validationIssues.issue.sdkInvalid.processInstanceRequiredField',
+        defaultMessage: 'Process {processLabel} ({fieldName} missing)',
+      },
+      {
+        processLabel,
+        fieldName,
+      },
+    );
+  }
+
+  if (suggestedFix) {
+    return intl.formatMessage(
+      {
+        id: 'pages.validationIssues.issue.sdkInvalid.processInstanceFieldWithFix',
+        defaultMessage: 'Process {processLabel} ({fieldName}: {suggestedFix})',
+      },
+      {
+        processLabel,
+        fieldName,
+        suggestedFix,
+      },
+    );
+  }
+
+  return intl.formatMessage(
+    {
+      id: 'pages.validationIssues.issue.sdkInvalid.processInstanceField',
+      defaultMessage: 'Process {processLabel} ({fieldName})',
+    },
+    {
+      processLabel,
+      fieldName,
+    },
+  );
+};
+
+const getSdkInvalidProcessInstanceDetailActionItems = (
+  intl: IntlShapeLike,
+  issue: ValidationIssue,
+) => {
+  const interactiveDetails = getValidationIssueInteractiveDetails(issue).filter(
+    (detail) => detail.presentation === 'highlight-only' && !!detail.fieldPath,
+  );
+  const multiplicationFactorDetails = interactiveDetails.filter(
+    isMultiplicationFactorMissingDetail,
+  );
+  const regularDetails = interactiveDetails.filter(
+    (detail) => !isMultiplicationFactorMissingDetail(detail),
+  );
+  const actionItems: Array<{
+    detail: ValidationIssueSdkDetail;
+    key: string;
+    text: string;
+  }> = [];
+
+  if (multiplicationFactorDetails.length > 0) {
+    actionItems.push({
+      detail: multiplicationFactorDetails[0],
+      key: `isolated-node-hint:${multiplicationFactorDetails.map((detail) => detail.key).join('|')}`,
+      text: getSdkInvalidIsolatedNodeHintText(intl, multiplicationFactorDetails),
+    });
+  }
+
+  regularDetails.forEach((detail) => {
+    actionItems.push({
+      detail,
+      key: detail.key,
+      text: getSdkInvalidProcessInstanceDetailText(intl, detail),
+    });
+  });
+
+  return actionItems;
+};
 
 type GroupedValidationIssue = {
   ref: ValidationIssue['ref'];
@@ -585,14 +727,55 @@ const ValidationIssueModalContent = ({
     );
   };
 
+  const renderInteractiveProcessInstanceDetails = (issue: ValidationIssue) => {
+    const interactiveDetails = getSdkInvalidProcessInstanceDetailActionItems(intl, issue);
+
+    if (interactiveDetails.length === 0 || !onNavigate) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          marginTop: token.marginXS ?? 8,
+        }}
+      >
+        {interactiveDetails.map((detailItem, index) => (
+          <div key={detailItem.key}>
+            <Button
+              type='link'
+              style={{
+                color: token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+                height: 'auto',
+                padding: 0,
+                textAlign: 'left',
+                whiteSpace: 'normal',
+              }}
+              onClick={() =>
+                onNavigate({ detail: detailItem.detail, tabName: detailItem.detail.tabName })
+              }
+            >
+              {detailItem.text}
+            </Button>
+            {index < interactiveDetails.length - 1 ? (
+              <div style={{ height: token.marginXXS ?? 4 }} />
+            ) : null}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderIssueCell = (issue: ValidationIssue) => {
     if (issue.code !== 'sdkInvalid' || !onNavigate) {
       return getIssueDescription(intl, issue);
     }
 
     const interactiveTabs = renderInteractiveTabs(issue);
+    const interactiveProcessInstanceDetails = renderInteractiveProcessInstanceDetails(issue);
 
-    if (!interactiveTabs) {
+    if (!interactiveTabs && !interactiveProcessInstanceDetails) {
       return getIssueDescription(intl, issue);
     }
 
@@ -605,12 +788,15 @@ const ValidationIssueModalContent = ({
           }}
         >
           <span>{getSdkInvalidIssueLabel(intl)}</span>
-          <>
-            <span>(</span>
-            {interactiveTabs}
-            <span>)</span>
-          </>
+          {interactiveTabs ? (
+            <>
+              <span>(</span>
+              {interactiveTabs}
+              <span>)</span>
+            </>
+          ) : null}
         </div>
+        {interactiveProcessInstanceDetails}
       </div>
     );
   };

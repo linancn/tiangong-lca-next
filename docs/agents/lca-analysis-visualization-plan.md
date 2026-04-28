@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 ---
 
 # LCA Analysis And Visualization Plan
@@ -55,6 +55,7 @@ The repo already exposes solver-backed LCIA results, but it still needs a stable
 - prefer robust analytical charts over decorative charts
 - make normalization explicit whenever values across categories are compared on one canvas
 - editor-side validation and correction affordances should not mutate the analysis result contract; keep those concerns outside the analysis surfaces
+- dataset-validation UX refactors may change editor affordances, but they should not change the analysis page data contract without an explicit plan update
 
 ## Phase Scope
 
