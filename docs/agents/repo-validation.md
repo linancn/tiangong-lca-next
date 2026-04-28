@@ -21,8 +21,8 @@ checkPaths:
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: bc446e0fcc3bcdbe022f76f62731247b25d6bdfb
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -64,6 +64,10 @@ npm run prepush:gate
 | repo docs only | `docpact lint --root . --files "<csv>" --mode enforce` | `docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
 
 If the change touches `scripts/test-runner.cjs` or protected-branch gate reproduction, run `npm run test:ci` and `npm run prepush:gate` serially locally because both commands regenerate `.umi-test`.
+
+Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
+
+If a coverage change excludes framework-heavy wrapper files from `collectCoverageFrom`, document why those files are excluded and re-check the affected save, validation, navigation, and highlighting flows with focused tests before relying on `npm run prepush:gate`.
 
 ## Minimum PR Validation Note
 

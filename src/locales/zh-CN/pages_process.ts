@@ -667,7 +667,7 @@ export default {
   'pages.process.validator.resultingAmount.required': '请输入结果量',
   'pages.process.validator.dataDerivationTypeStatus.required': '请输入数据推导类型/状态',
   'pages.process.validator.exchanges.required': '至少添加一条数据',
-  'pages.process.validator.exchanges.quantitativeReference.required': '以下数据中必须有且仅有一个基准流',
+  'pages.process.validator.exchanges.quantitativeReference.required': '以下数据必须有且仅有一条数据作为基准',
 
   'pages.process.review.submitSuccess': '提交审核成功',
   'pages.process.review.submitError': '提交审核失败',

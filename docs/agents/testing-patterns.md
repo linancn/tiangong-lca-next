@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/testing-troubleshooting.md
   - tests/helpers/**
   - package.json
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: bc446e0fcc3bcdbe022f76f62731247b25d6bdfb
 ---
 
 # Testing Patterns Reference
@@ -58,6 +58,11 @@ lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 2. build the minimum input
 3. assert outputs and side effects explicitly
 4. cover the real branch conditions, not just the happy path
+
+Validation-specific rule:
+
+- page-specific SDK-code adapters under `src/pages/*/sdkValidation.ts` and shared helpers under `src/pages/Utils/validation/**` should default to direct unit tests
+- wrapper components that mainly coordinate drawers, forms, or modal jumps should keep behavior coverage through focused component or integration tests instead of artificial branch forcing
 
 ## Integration Pattern
 

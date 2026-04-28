@@ -22,7 +22,7 @@ export default {
   'validator.lang.mustBeEnglish': 'English is a required language',
   'validator.lang.text.required': 'Please input this field',
   'validator.lang.mustNotContainSemicolon': 'Must not contain semicolon',
-  'validator.langValidation.missingEnglish': 'The following fields are missing English: {fields}.',
-  'validator.langValidation.missingEnglishMore': 'The following fields are missing English: {fields} and {count} more field(s).',
+  'validator.langValidation.missingEnglish': 'Save failed, the following fields are missing English: {fields}.',
+  'validator.langValidation.missingEnglishMore': 'Save failed, the following fields are missing English: {fields} and {count} more field(s).',
   'validator.langValidation.root': '(root)',
 };

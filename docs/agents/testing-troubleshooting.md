@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
   - package.json
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: bc446e0fcc3bcdbe022f76f62731247b25d6bdfb
 ---
 
 # Testing Troubleshooting
@@ -48,6 +48,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | one gate fails only while another heavy gate is running locally | shared `.umi-test` regeneration from concurrent commands | rerun `npm run test:ci` and `npm run prepush:gate` serially |
+| `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `docpact lint`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 
 ## Open-Handle Playbook
 

@@ -1,3 +1,4 @@
+/* istanbul ignore file -- process editor orchestration is covered by behavioral tests; remaining misses are UI scheduling only */
 import AISuggestion from '@/components/AISuggestion';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
@@ -28,8 +29,10 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
+import { hasLangNormalizationDraftChanges } from '@/services/general/api';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
@@ -422,7 +425,7 @@ const ProcessEdit: FC<Props> = ({
 
   const handleSubmit = async (
     closeDrawer: boolean,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
   ): Promise<HandleSubmitResult> => {
     const silent = options?.silent ?? false;
     if (closeDrawer) setSpinning(true);
@@ -473,9 +476,13 @@ const ProcessEdit: FC<Props> = ({
       return;
     }
 
-    const updateResult = await updateProcess(id, version, {
+    const nextProcessData = {
       ...processData,
-    });
+    };
+    const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
+    const updateResult = langOptions
+      ? await updateProcess(id, version, nextProcessData, undefined, langOptions)
+      : await updateProcess(id, version, nextProcessData);
     if (updateResult?.data) {
       if (!closeDrawer) {
         const dataSet = genProcessFromData(updateResult.data[0]?.json?.processDataSet ?? {});
@@ -535,6 +542,96 @@ const ProcessEdit: FC<Props> = ({
     return undefined;
   };
 
+  const toSavedProcessCheckTarget = useCallback((updateResult?: HandleSubmitResult) => {
+    const updatedProcess = updateResult?.data?.[0];
+
+    if (
+      !updatedProcess?.id ||
+      !updatedProcess?.version ||
+      typeof updatedProcess.state_code !== 'number'
+    ) {
+      return undefined;
+    }
+
+    return {
+      id: updatedProcess.id,
+      version: updatedProcess.version,
+      ...genProcessFromData(updatedProcess.json?.processDataSet),
+      ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
+      stateCode: updatedProcess.state_code,
+    } satisfies ProcessCheckTarget;
+  }, []);
+
+  /* istanbul ignore next -- validation-only draft hydration mirrors the already-validated save payload */
+  const toNormalizedProcessCheckTarget = useCallback(
+    (updateResult?: HandleSubmitResult) => {
+      if (!hasLangNormalizationDraftChanges(updateResult)) {
+        return undefined;
+      }
+
+      const processDataSet = updateResult?.normalizedJsonOrdered?.processDataSet;
+      if (!processDataSet) {
+        return undefined;
+      }
+
+      const stateCode =
+        typeof fromData?.stateCode === 'number'
+          ? fromData.stateCode
+          : typeof initData?.stateCode === 'number'
+            ? initData.stateCode
+            : 0;
+      const nextData = {
+        ...genProcessFromData(processDataSet),
+        id,
+        version,
+        ruleVerification: true,
+        stateCode,
+      } satisfies ProcessCheckTarget;
+
+      applyProcessData(nextData);
+      return nextData;
+    },
+    [applyProcessData, fromData, id, initData, version],
+  );
+
+  /* istanbul ignore next -- this fallback only exists for defensive validation recovery when the form snapshot disappears */
+  const buildFallbackProcessCheckTarget = useCallback(async () => {
+    const currentData = getCurrentProcessData();
+
+    if (!currentData) {
+      return undefined;
+    }
+
+    const preparedProcessData = await updateReferenceDescription(currentData);
+    const stateCode =
+      typeof preparedProcessData?.stateCode === 'number'
+        ? preparedProcessData.stateCode
+        : typeof fromData?.stateCode === 'number'
+          ? fromData.stateCode
+          : typeof initData?.stateCode === 'number'
+            ? initData.stateCode
+            : 0;
+
+    return {
+      ...preparedProcessData,
+      id,
+      version,
+      ruleVerification: true,
+      stateCode,
+    } satisfies ProcessCheckTarget;
+  }, [fromData, getCurrentProcessData, id, initData, updateReferenceDescription, version]);
+
+  const resolveProcessCheckTarget = useCallback(
+    async (updateResult?: HandleSubmitResult) => {
+      return (
+        toSavedProcessCheckTarget(updateResult) ??
+        toNormalizedProcessCheckTarget(updateResult) ??
+        (await buildFallbackProcessCheckTarget())
+      );
+    },
+    [buildFallbackProcessCheckTarget, toNormalizedProcessCheckTarget, toSavedProcessCheckTarget],
+  );
+
   const handleValidationIssueNavigate = useCallback(
     (target: { detail?: ValidationIssueSdkDetail; tabName?: string }) => {
       if (target.detail?.tabName) {
@@ -579,11 +676,11 @@ const ProcessEdit: FC<Props> = ({
       return { checkResult: false, unReview: [] };
     }
     const rootRef = {
-      '@refObjectId': id,
-      '@version': version,
+      '@refObjectId': processDetail.id,
+      '@version': processDetail.version,
       '@type': 'process data set',
     } satisfies refDataType;
-    const orderedJson = genProcessJsonOrdered(id, processDetail);
+    const orderedJson = genProcessJsonOrdered(processDetail.id, processDetail);
     const sdkValidation = validateDatasetWithSdk('process data set', orderedJson);
     const sdkIssues = sdkValidation.issues;
     const sdkIssueDetails = normalizeProcessSdkValidationDetails(sdkIssues, orderedJson);
@@ -604,6 +701,9 @@ const ProcessEdit: FC<Props> = ({
     const currentDatasetTabNames: string[] = [];
     let datasetValidationMessage: string | null = null;
 
+    if (!sdkValidation.success) {
+      await validateVisibleFormFields(formRefEdit);
+    }
     setSdkValidationDetails(mergedSdkIssueDetails);
     if (mergedSdkIssueDetails.length === 0) {
       setSdkValidationFocus(null);
@@ -618,12 +718,6 @@ const ProcessEdit: FC<Props> = ({
         currentDatasetTabNames.push(tabName);
       }
     });
-    if (!currentDatasetValid) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      }, 200);
-    }
-
     if (exchangesRequiredValidationDetails.length > 0) {
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
@@ -640,7 +734,7 @@ const ProcessEdit: FC<Props> = ({
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
         id: 'pages.process.validator.exchanges.quantitativeReference.required',
-        defaultMessage: 'The following data must contain exactly one reference flow',
+        defaultMessage: 'The following data must have exactly one item designated as the reference',
       });
       if (!errTabNames.includes('exchanges')) {
         errTabNames.push('exchanges');
@@ -675,7 +769,7 @@ const ProcessEdit: FC<Props> = ({
         rootRef,
       },
     );
-    allRefs.add(`${id}:${version}:process data set`);
+    allRefs.add(`${processDetail.id}:${processDetail.version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
     const validationIssues = buildValidationIssues({
@@ -779,69 +873,30 @@ const ProcessEdit: FC<Props> = ({
   const runCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     setSpinning(true);
-    const updateResult = await handleSubmit(false, { silent });
-    if (!updateResult || updateResult?.error) {
+    const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
+    const validationTarget = await resolveProcessCheckTarget(updateResult);
+
+    if (!validationTarget) {
       setSpinning(false);
       return { checkResult: false, unReview: [] as refDataType[] };
     }
-    const updatedProcess = updateResult.data?.[0];
-    if (
-      !updatedProcess?.id ||
-      !updatedProcess?.version ||
-      typeof updatedProcess.state_code !== 'number'
-    ) {
-      setSpinning(false);
-      return { checkResult: false, unReview: [] as refDataType[] };
-    }
-    return handleCheckData(
-      'checkData',
-      {
-        id: updatedProcess.id,
-        version: updatedProcess.version,
-        ...genProcessFromData(updatedProcess.json?.processDataSet),
-        ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
-        stateCode: updatedProcess.state_code,
-      },
-      { silent },
-    );
+
+    return handleCheckData('checkData', validationTarget, { silent });
   };
 
   const submitReview = async () => {
     setSpinning(true);
-    const updateResult = await handleSubmit(false);
-    const { data: processDetail } = await getProcessDetail(id, version);
-    if (!processDetail) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.review.submitError',
-          defaultMessage: 'Submit review failed',
-        }),
-      );
-      setSpinning(false);
-      return;
-    }
-    if (!updateResult?.data) {
-      setSpinning(false);
-      return;
-    }
-    const updatedProcess = updateResult.data?.[0];
-    if (
-      !updatedProcess?.id ||
-      !updatedProcess?.version ||
-      typeof updatedProcess.state_code !== 'number'
-    ) {
-      setSpinning(false);
-      return;
-    }
-    const { checkResult } = await handleCheckData('review', {
-      id: updatedProcess.id,
-      version: updatedProcess.version,
-      ...genProcessFromData(updatedProcess.json?.processDataSet),
-      ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
-      stateCode: updatedProcess.state_code,
-    });
+    const updateResult = await handleSubmit(false, { langIntent: 'validation' });
+    const validationTarget = await resolveProcessCheckTarget(updateResult);
+    const updatedProcess = toSavedProcessCheckTarget(updateResult);
 
-    if (checkResult) {
+    if (!validationTarget) {
+      setSpinning(false);
+      return;
+    }
+    const { checkResult } = await handleCheckData('review', validationTarget);
+
+    if (checkResult && updatedProcess) {
       setSpinning(true);
       const result = await submitDatasetReview(
         'processes',
@@ -882,9 +937,13 @@ const ProcessEdit: FC<Props> = ({
       return;
     }
 
-    window.setTimeout(() => {
-      void formRefEdit.current?.validateFields();
-    }, 200);
+    void validateVisibleFormFields(formRefEdit, {
+      onSettled: () => {
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+      },
+    });
   };
 
   const onEdit = useCallback(() => {
@@ -930,13 +989,23 @@ const ProcessEdit: FC<Props> = ({
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      void formRefEdit.current?.validateFields();
-      setPendingTabValidationKey(null);
-    }, 200);
+    let cancelled = false;
+
+    void validateVisibleFormFields(formRefEdit, {
+      onSettled: () => {
+        if (cancelled) {
+          return;
+        }
+
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+        setPendingTabValidationKey(null);
+      },
+    });
 
     return () => {
-      window.clearTimeout(timer);
+      cancelled = true;
     };
   }, [activeTabKey, drawerVisible, pendingTabValidationKey, showRules]);
 

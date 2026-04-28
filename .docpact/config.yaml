@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-04-24"
-lastReviewedCommit: "4affbbd020fdc02e6898e721ed99992f94b91bdd"
+lastReviewedAt: "2026-04-28"
+lastReviewedCommit: "bc446e0fcc3bcdbe022f76f62731247b25d6bdfb"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -198,8 +198,8 @@ routing:
         - public/locations/**
         - public/lciamethods/**
 
-# Reviewed 2026-04-23 for process SDK validation guidance, lifecycle-model
-# ordered-dataset shaping, and local CI gate reproduction updates.
+# Reviewed 2026-04-28 for unified dataset SDK validation adapters, shared
+# localized validation helpers, and full-coverage gate collection updates.
 docInventory:
   include:
     - AGENTS.md

@@ -13,14 +13,32 @@ const toText = (node: any): string => {
   return '';
 };
 
+let mockSdkValidationCountsByTab: Record<string, number> = {};
+let mockThemeToken = {
+  colorError: '#ff4d4f',
+  colorPrimary: '#1677ff',
+  colorTextDescription: '#999',
+  fontWeightStrong: 600,
+};
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
 }));
 
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
   getRules: jest.fn((rules: any) => rules ?? []),
+}));
+
+jest.mock('@/pages/Utils/validation/formSupport', () => ({
+  __esModule: true,
+  useDatasetSdkValidationFormSupport: () => ({
+    sdkValidationCountsByTab: mockSdkValidationCountsByTab,
+  }),
 }));
 
 jest.mock('@/components/LangTextItem/form', () => ({
@@ -110,7 +128,7 @@ jest.mock('antd', () => {
               data-active={tab.key === activeTabKey}
               onClick={() => onTabChange?.(tab.key)}
             >
-              {toText(tab.tab)}
+              {tab.tab}
             </button>
           ))}
         </div>
@@ -149,9 +167,7 @@ jest.mock('antd', () => {
 
   const theme = {
     useToken: () => ({
-      token: {
-        colorTextDescription: '#999',
-      },
+      token: mockThemeToken,
     }),
   };
 
@@ -177,6 +193,13 @@ describe('LifeCycleModelForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSdkValidationCountsByTab = {};
+    mockThemeToken = {
+      colorError: '#ff4d4f',
+      colorPrimary: '#1677ff',
+      colorTextDescription: '#999',
+      fontWeightStrong: 600,
+    };
   });
 
   it('renders the information tab and wires classification/source helpers', async () => {
@@ -272,5 +295,39 @@ describe('LifeCycleModelForm', () => {
     );
 
     expect(screen.getAllByTestId('lang-text-form')[0]).not.toHaveTextContent('"rulesCount":0');
+  });
+
+  it('highlights tabs with sdk validation issues using the error color token', () => {
+    mockSdkValidationCountsByTab = {
+      validation: 1,
+    };
+
+    renderWithProviders(
+      <LifeCycleModelForm {...baseProps} activeTabKey='lifeCycleModelInformation' />,
+    );
+
+    expect(screen.getByText('Validation').parentElement).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
+  });
+
+  it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
+    mockSdkValidationCountsByTab = {
+      complianceDeclarations: 1,
+    };
+    mockThemeToken = {
+      ...mockThemeToken,
+      colorError: undefined,
+    } as any;
+
+    renderWithProviders(
+      <LifeCycleModelForm {...baseProps} activeTabKey='lifeCycleModelInformation' />,
+    );
+
+    expect(screen.getByText('Compliance declarations').parentElement).toHaveStyle({
+      color: '#1677ff',
+      fontWeight: '600',
+    });
   });
 });

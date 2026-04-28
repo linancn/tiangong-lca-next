@@ -182,7 +182,10 @@ describe('ValidationIssueModal', () => {
   const mockUpsertValidationIssueNotification =
     upsertValidationIssueNotification as jest.MockedFunction<any>;
   const intl = {
-    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => {
+    formatMessage: (
+      { id, defaultMessage }: { id: string; defaultMessage?: string },
+      values?: Record<string, string | number | undefined>,
+    ) => {
       const messages: Record<string, string> = {
         'pages.validationIssues.downloadHtml': '下载数据校验报告',
         'pages.validationIssues.datasetType.contact': '联系人',
@@ -198,8 +201,18 @@ describe('ValidationIssueModal', () => {
         'pages.validationIssues.issue.nonExistentRef': '数据不存在',
         'pages.validationIssues.issue.ruleVerificationFailed': '数据校验不通过',
         'pages.validationIssues.issue.sdkInvalid': '当前数据集校验失败',
+        'pages.validationIssues.listSeparator': '，',
         'pages.validationIssues.issue.sdkInvalid.navigateHint':
           '对应 tab 下的问题数据会标红，请补充后重试。',
+        'pages.validationIssues.issue.sdkInvalid.processInstanceFallback': '未知过程',
+        'pages.validationIssues.issue.sdkInvalid.processInstanceIsolatedNodeHint':
+          '请检测一下节点是否为孤立节点({nodeNames})',
+        'pages.validationIssues.issue.sdkInvalid.processInstanceRequiredField':
+          '过程 {processLabel}（缺少 {fieldName}）',
+        'pages.validationIssues.issue.sdkInvalid.processInstanceField':
+          '过程 {processLabel}（{fieldName}）',
+        'pages.validationIssues.issue.sdkInvalid.processInstanceFieldWithFix':
+          '过程 {processLabel}（{fieldName}：{suggestedFix}）',
         'pages.validationIssues.confirm': '知道了',
         'pages.process.view.processInformation': '过程信息',
         'pages.process.view.modellingAndValidation': '建模信息',
@@ -213,7 +226,14 @@ describe('ValidationIssueModal', () => {
         'pages.validationIssues.notifyDataOwner.error': '通知数据拥有者失败。',
       };
 
-      return messages[id] ?? defaultMessage ?? id;
+      const template = messages[id] ?? defaultMessage ?? id;
+      if (!values) {
+        return template;
+      }
+
+      return Object.entries(values).reduce((messageText, [key, value]) => {
+        return messageText.split(`{${key}}`).join(String(value ?? ''));
+      }, template);
     },
   };
 
@@ -606,6 +626,307 @@ describe('ValidationIssueModal', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('renders clickable process-instance detail rows for lifecycle model sdk issues', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/models?id=model-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'model-1',
+              '@type': 'lifeCycleModel data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-lcm-pi-1',
+                fieldLabel: '@multiplicationFactor',
+                fieldPath: 'processInstance[#node-1].@multiplicationFactor',
+                formName: ['@multiplicationFactor'],
+                presentation: 'highlight-only',
+                processInstanceInternalId: 'node-1',
+                processInstanceLabel: '三元正极材料',
+                reasonMessage: 'Required value is missing',
+                tabName: 'lifeCycleModelInformation',
+                validationCode: 'required_missing',
+              },
+            ],
+            tabNames: [],
+          },
+        ],
+        onNavigate,
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'lifeCycleModelInformation',
+      }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('当前数据集校验失败')).toBeInTheDocument();
+    expect(screen.queryByText('当前数据集校验失败()')).not.toBeInTheDocument();
+    const detailButton = screen.getByRole('button', {
+      name: '请检测一下节点是否为孤立节点(三元正极材料)',
+    });
+    expect(detailButton).toBeInTheDocument();
+    expect(screen.queryByText(/@multiplicationFactor/)).not.toBeInTheDocument();
+
+    fireEvent.click(detailButton);
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: expect.objectContaining({
+        key: 'sdk-lcm-pi-1',
+        processInstanceInternalId: 'node-1',
+        processInstanceLabel: '三元正极材料',
+      }),
+      tabName: 'lifeCycleModelInformation',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('does not render process-instance detail copy for flow-property highlight issues', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/flows?id=flow-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'flow-1',
+              '@type': 'flow data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-flow-property-quantitative-reference-1',
+                fieldLabel: 'Quantitative reference',
+                fieldPath: 'flowProperty[#prop-1].quantitativeReference',
+                presentation: 'highlight-only',
+                reasonMessage: 'Only one quantitative reference is allowed',
+                suggestedFix: '以下数据必须有且仅有一条数据作为基准',
+                tabName: 'flowProperties',
+                validationCode: 'quantitative_reference_count_invalid',
+              },
+            ],
+            tabNames: ['flowProperties'],
+          },
+        ],
+        onNavigate,
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    const tabButton = screen.getByRole('button', { name: 'flowProperties' });
+    expect(tabButton).toBeInTheDocument();
+    expect(screen.queryByText(/未知过程/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/quantitativeReference/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/以下数据必须有且仅有一条数据作为基准/)).not.toBeInTheDocument();
+
+    fireEvent.click(tabButton);
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: expect.objectContaining({
+        key: 'sdk-flow-property-quantitative-reference-1',
+        tabName: 'flowProperties',
+      }),
+      tabName: 'flowProperties',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('aggregates multiplication-factor lifecycle model sdk issues into one isolated-node hint', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/models?id=model-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'model-1',
+              '@type': 'lifeCycleModel data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-lcm-pi-1',
+                fieldLabel: '@multiplicationFactor',
+                fieldPath: 'processInstance[#node-b].@multiplicationFactor',
+                formName: ['@multiplicationFactor'],
+                presentation: 'highlight-only',
+                processInstanceInternalId: 'node-b',
+                processInstanceLabel: 'nodeB',
+                reasonMessage: 'Required value is missing',
+                tabName: 'lifeCycleModelInformation',
+                validationCode: 'required_missing',
+              },
+              {
+                key: 'sdk-lcm-pi-2',
+                fieldLabel: '@multiplicationFactor',
+                fieldPath: 'processInstance[#node-c].@multiplicationFactor',
+                formName: ['@multiplicationFactor'],
+                presentation: 'highlight-only',
+                processInstanceInternalId: 'node-c',
+                processInstanceLabel: 'nodeC',
+                reasonMessage: 'Required value is missing',
+                tabName: 'lifeCycleModelInformation',
+                validationCode: 'required_missing',
+              },
+            ],
+            tabNames: [],
+          },
+        ],
+        onNavigate,
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    const detailButton = screen.getByRole('button', {
+      name: '请检测一下节点是否为孤立节点(nodeB，nodeC)',
+    });
+    expect(detailButton).toBeInTheDocument();
+    expect(screen.queryByText(/@multiplicationFactor/)).not.toBeInTheDocument();
+
+    fireEvent.click(detailButton);
+
+    expect(onNavigate).toHaveBeenCalledWith({
+      detail: expect.objectContaining({
+        key: 'sdk-lcm-pi-1',
+        processInstanceInternalId: 'node-b',
+      }),
+      tabName: 'lifeCycleModelInformation',
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('localizes isolated-node hints for multiplication-factor lifecycle model sdk issues in English', async () => {
+    const onNavigate = jest.fn();
+    const enIntl = {
+      formatMessage: (
+        { id, defaultMessage }: { id: string; defaultMessage?: string },
+        values?: Record<string, string | number | undefined>,
+      ) => {
+        const messages: Record<string, string> = {
+          'pages.validationIssues.downloadHtml': 'Download Data Validation Report',
+          'pages.validationIssues.datasetType.lifecyclemodel': 'Lifecycle model',
+          'pages.validationIssues.table.issue': 'Issue',
+          'pages.validationIssues.table.user': 'Data owner',
+          'pages.validationIssues.table.action': 'Action',
+          'pages.validationIssues.issue.sdkInvalid': 'Current dataset validation failed',
+          'pages.validationIssues.listSeparator': ', ',
+          'pages.validationIssues.issue.sdkInvalid.navigateHint':
+            'The invalid data in the corresponding tab will be highlighted. Complete it and try again.',
+          'pages.validationIssues.issue.sdkInvalid.processInstanceFallback': 'Unknown process',
+          'pages.validationIssues.issue.sdkInvalid.processInstanceIsolatedNodeHint':
+            'Please check whether these nodes are isolated ({nodeNames})',
+          'pages.validationIssues.confirm': 'Got it',
+          'pages.validationIssues.fixIssue': 'Fix issue',
+        };
+
+        const template = messages[id] ?? defaultMessage ?? id;
+        if (!values) {
+          return template;
+        }
+
+        return Object.entries(values).reduce((messageText, [key, value]) => {
+          return messageText.split(`{${key}}`).join(String(value ?? ''));
+        }, template);
+      },
+    };
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl: enIntl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/models?id=model-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'model-1',
+              '@type': 'lifeCycleModel data set',
+              '@version': '01.00.000',
+            },
+            sdkDetails: [
+              {
+                key: 'sdk-lcm-pi-en-1',
+                fieldLabel: '@multiplicationFactor',
+                fieldPath: 'processInstance[#node-b].@multiplicationFactor',
+                formName: ['@multiplicationFactor'],
+                presentation: 'highlight-only',
+                processInstanceInternalId: 'node-b',
+                processInstanceLabel: 'nodeB',
+                reasonMessage: 'Required value is missing',
+                tabName: 'lifeCycleModelInformation',
+                validationCode: 'required_missing',
+              },
+              {
+                key: 'sdk-lcm-pi-en-2',
+                fieldLabel: '@multiplicationFactor',
+                fieldPath: 'processInstance[#node-c].@multiplicationFactor',
+                formName: ['@multiplicationFactor'],
+                presentation: 'highlight-only',
+                processInstanceInternalId: 'node-c',
+                processInstanceLabel: 'nodeC',
+                reasonMessage: 'Required value is missing',
+                tabName: 'lifeCycleModelInformation',
+                validationCode: 'required_missing',
+              },
+            ],
+            tabNames: [],
+          },
+        ],
+        onNavigate,
+        title: 'Validation issues',
+      }) as { destroy: () => void };
+    });
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Please check whether these nodes are isolated (nodeB, nodeC)',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/@multiplicationFactor/)).not.toBeInTheDocument();
 
     await act(async () => {
       modalHandle?.destroy();
@@ -1142,9 +1463,7 @@ describe('ValidationIssueModal', () => {
 
     expect(screen.getByText('Dataset is under review')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'Another version {underReviewVersion} of this dataset is already under review',
-      ),
+      screen.getByText('Another version - of this dataset is already under review'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('Current version is lower than the published version'),

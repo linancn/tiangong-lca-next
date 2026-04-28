@@ -29,6 +29,9 @@ const createDeferred = <T,>() => {
 };
 
 let mockLatestRefsDrawerProps: any = null;
+let latestContactFormProps: any = null;
+let mockValidateFieldsCallCount = 0;
+let mockSdkValidationRenderValidateCallCounts: number[] = [];
 const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
 const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
 const mockUpdateRefsData = jest.fn((data: any) => data);
@@ -40,6 +43,7 @@ const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => iss
 const mockGenContactJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
+const mockHasLangNormalizationDraftChanges = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -202,7 +206,10 @@ jest.mock('@ant-design/pro-components', () => {
             }
             return valuesRef.current[name];
           },
-          validateFields: async () => valuesRef.current,
+          validateFields: async () => {
+            mockValidateFieldsCallCount += 1;
+            return valuesRef.current;
+          },
         };
       }
     });
@@ -264,7 +271,12 @@ jest.mock('@/pages/Contacts/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    ContactForm: ({ onData, onTabChange, showRules }: any) => {
+    ContactForm: (props: any) => {
+      latestContactFormProps = props;
+      if (props.sdkValidationDetails?.length) {
+        mockSdkValidationRenderValidateCallCounts.push(mockValidateFieldsCallCount);
+      }
+      const { onData, onTabChange, showRules } = props;
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -383,6 +395,8 @@ jest.mock('@/services/general/api', () => ({
   __esModule: true,
   getDataDetail: jest.fn(() => Promise.resolve({ data: {} })),
   getDataDetailById: jest.fn(() => Promise.resolve({ data: [] })),
+  hasLangNormalizationDraftChanges: (...args: any[]) =>
+    mockHasLangNormalizationDraftChanges(...args),
   publishDatasetApi: jest.fn(() => Promise.resolve({ data: [{ state_code: 100 }], error: null })),
   getRefData: jest.fn(() => Promise.resolve({ success: true, data: {} })),
 }));
@@ -405,12 +419,16 @@ jest.mock('@/services/roles/api', () => ({
   getUserTeamId: jest.fn(() => Promise.resolve('team-1')),
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createContact: jest.fn(() => ({
-    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
-  })),
-}));
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createContact: jest.fn(() => ({
+      validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+    })),
+  }),
+  { virtual: true },
+);
 
 const { getContactDetail: mockGetContactDetail, updateContact: mockUpdateContact } =
   jest.requireMock('@/services/contacts/api');
@@ -428,7 +446,16 @@ const { ReffPath: mockReffPath } = jest.requireMock('@/pages/Utils/review');
 describe('ContactEdit component', () => {
   beforeEach(() => {
     mockLatestRefsDrawerProps = null;
+    latestContactFormProps = null;
+    mockValidateFieldsCallCount = 0;
+    mockSdkValidationRenderValidateCallCounts = [];
     jest.clearAllMocks();
+    mockHasLangNormalizationDraftChanges.mockImplementation((value: any) =>
+      Boolean(
+        (value?.langSupplementedPlaceholderPaths?.length ?? 0) > 0 ||
+        (value?.langTranslatedPaths?.length ?? 0) > 0,
+      ),
+    );
     mockBuildValidationIssues.mockReturnValue([]);
     mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGetContactDetail.mockResolvedValue({
@@ -1350,7 +1377,7 @@ describe('ContactEdit component', () => {
     );
   });
 
-  it('stops sync and data check when the background save fails', async () => {
+  it('keeps data check running when the background save fails', async () => {
     const user = userEvent.setup();
     mockGetReviewUserRoleApi.mockResolvedValue({ user_id: 'review-admin-1', role: 'review-admin' });
 
@@ -1385,7 +1412,8 @@ describe('ContactEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('check blocked'));
-    expect(mockCheckData).not.toHaveBeenCalled();
+    expect(mockCheckData).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('requires rule verification before syncing to open data', async () => {
@@ -1800,5 +1828,207 @@ describe('ContactEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
+  });
+
+  it('normalizes contact sdk details and supports modal navigation to the target tab', async () => {
+    const user = userEvent.setup();
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Invalid input: expected string, received undefined',
+          path: [
+            'contactDataSet',
+            'administrativeInformation',
+            'publicationAndOwnership',
+            'common:dataSetVersion',
+          ],
+          severity: 'error',
+        },
+      ],
+    });
+    mockBuildValidationIssues.mockImplementationOnce(
+      ({ rootRef, sdkInvalidDetails, sdkInvalidTabNames }) => [
+        {
+          code: 'sdkInvalid',
+          link: '/mydata/contacts?id=contact-123&version=01.00.000',
+          ref: rootRef,
+          sdkDetails: sdkInvalidDetails,
+          tabNames: sdkInvalidTabNames,
+        },
+      ],
+    );
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sdkInvalidDetails: [
+            expect.objectContaining({
+              fieldPath: 'administrativeInformation.publicationAndOwnership.common:dataSetVersion',
+              tabName: 'administrativeInformation',
+              validationCode: 'required_missing',
+            }),
+          ],
+        }),
+      ),
+    );
+
+    expect(latestContactFormProps.sdkValidationDetails).toEqual([
+      expect.objectContaining({
+        fieldPath: 'administrativeInformation.publicationAndOwnership.common:dataSetVersion',
+        tabName: 'administrativeInformation',
+      }),
+    ]);
+
+    const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
+    const sdkDetail = latestContactFormProps.sdkValidationDetails[0];
+
+    act(() => {
+      navigate({ detail: sdkDetail, tabName: sdkDetail.tabName });
+    });
+
+    await waitFor(() => {
+      expect(latestContactFormProps.activeTabKey).toBe('administrativeInformation');
+      expect(latestContactFormProps.sdkValidationFocus).toEqual(sdkDetail);
+    });
+  });
+
+  it('waits for form validation before rendering localized-text sdk details', async () => {
+    const user = userEvent.setup();
+    mockGenContactJsonOrdered.mockReturnValue({
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:name': [
+              { '@xml:lang': 'en', '#text': 'English contact name' },
+              { '@xml:lang': 'zh', '#text': 'not-chinese' },
+            ],
+          },
+        },
+      },
+    });
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'localized_text_zh_must_include_chinese_character',
+          message:
+            "@xml:lang values starting with 'zh' must include at least one Chinese character",
+          path: [
+            'contactDataSet',
+            'contactInformation',
+            'dataSetInformation',
+            'common:name',
+            1,
+            '#text',
+          ],
+          rawCode: 'custom',
+          severity: 'error',
+        },
+      ],
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(latestContactFormProps.sdkValidationDetails).toEqual([
+        expect.objectContaining({
+          fieldPath: 'contactInformation.dataSetInformation.common:name.1.#text',
+          tabName: 'contactInformation',
+          validationCode: 'localized_text_zh_must_include_chinese_character',
+        }),
+      ]),
+    );
+
+    expect(mockSdkValidationRenderValidateCallCounts[0]).toBeGreaterThan(0);
+  });
+
+  it('maps single-entry short-name localized-text issues onto the indexed lang-text field', async () => {
+    const user = userEvent.setup();
+    mockGenContactJsonOrdered.mockReturnValue({
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:shortName': {
+              '@xml:lang': 'en',
+              '#text': '中文',
+            },
+          },
+        },
+      },
+    });
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'localized_text_en_must_not_contain_chinese_character',
+          message: "@xml:lang values starting with 'en' must not contain Chinese characters",
+          path: [
+            'contactDataSet',
+            'contactInformation',
+            'dataSetInformation',
+            'common:shortName',
+            '#text',
+          ],
+          rawCode: 'custom',
+          severity: 'error',
+        },
+      ],
+    });
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(latestContactFormProps.sdkValidationDetails).toEqual([
+        expect.objectContaining({
+          fieldPath: 'contactInformation.dataSetInformation.common:shortName.0.#text',
+          formName: ['contactInformation', 'dataSetInformation', 'common:shortName', 0, '#text'],
+          tabName: 'contactInformation',
+          validationCode: 'localized_text_en_must_not_contain_chinese_character',
+        }),
+      ]),
+    );
+
+    expect(mockSdkValidationRenderValidateCallCounts[0]).toBeGreaterThan(0);
   });
 });

@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
+lastReviewedAt: 2026-04-28
+lastReviewedCommit: bc446e0fcc3bcdbe022f76f62731247b25d6bdfb
 ---
 
 # Testing Strategy
@@ -34,6 +34,7 @@ lastReviewedCommit: e0f38d0a61b18c35680cbf1b0df0036bcff0011b
 - full closure already exists; the job is to preserve it while the codebase changes
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
+- shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 
 ## Operating Principles
 

@@ -168,6 +168,8 @@ export type ValidationIssueSdkDetail = {
   key: string;
   limit?: number | string;
   presentation?: 'field' | 'section' | 'highlight-only';
+  processInstanceInternalId?: string;
+  processInstanceLabel?: string;
   rawCode?: string;
   reasonMessage: string;
   suggestedFix?: string;
@@ -1411,14 +1413,46 @@ export const checkData = async (
   unRuleVerification: refDataType[],
   nonExistentRef: refDataType[],
   pathRef: ReffPath,
+  options: {
+    exactVersion?: boolean;
+    orderedJson?: any;
+    userTeamId?: string;
+  } = {},
 ) => {
+  const exactVersion = options.exactVersion ?? true;
+  const userTeamId = options.userTeamId ?? '';
+
+  if (typeof options.orderedJson !== 'undefined') {
+    const refs = filterOutRootSelfReferences(getAllRefObj(options.orderedJson), data);
+
+    if (refs.length > 0) {
+      await checkReferences(
+        refs,
+        new Map<string, any>(),
+        userTeamId,
+        [],
+        [],
+        unRuleVerification,
+        nonExistentRef,
+        pathRef,
+        undefined,
+        {
+          exactVersion,
+          rootRef: data,
+        },
+      );
+    }
+
+    return;
+  }
+
   const { data: detail } = await getRefData(
     data['@refObjectId'],
     data['@version'],
     getRefTableName(data['@type']),
-    '',
+    userTeamId,
     {
-      fallbackToLatest: false,
+      fallbackToLatest: exactVersion !== true,
     },
   );
   if (detail) {
@@ -1426,7 +1460,7 @@ export const checkData = async (
     await checkReferences(
       refs,
       new Map<string, any>(),
-      '',
+      userTeamId,
       [],
       [],
       unRuleVerification,
@@ -1434,7 +1468,7 @@ export const checkData = async (
       pathRef,
       undefined,
       {
-        exactVersion: true,
+        exactVersion,
         rootRef: data,
       },
     );

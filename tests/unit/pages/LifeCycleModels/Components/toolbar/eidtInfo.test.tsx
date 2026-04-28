@@ -5,12 +5,16 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { render, screen, waitFor } from '../../../../../helpers/testUtils';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createLifeCycleModel: jest.fn().mockReturnValue({
-    validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createLifeCycleModel: jest.fn().mockReturnValue({
+      validateEnhanced: jest.fn().mockReturnValue({ success: true }),
+    }),
   }),
-}));
+  { virtual: true },
+);
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -98,6 +102,12 @@ jest.mock('@/components/ValidationIssueModal', () => ({
 const { showValidationIssueModal: mockShowValidationIssueModal } = jest.requireMock(
   '@/components/ValidationIssueModal',
 );
+const mockValidateVisibleFormFields = jest.fn();
+
+jest.mock('@/pages/Utils/validation/formSupport', () => ({
+  __esModule: true,
+  validateVisibleFormFields: (...args: any[]) => mockValidateVisibleFormFields(...args),
+}));
 
 jest.mock('@/style/custom.less', () => ({
   __esModule: true,
@@ -461,21 +471,26 @@ jest.mock('uuid', () => ({
   v4: () => 'uuid-1',
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createLifeCycleModel: jest.fn(() => ({
-    validateEnhanced: jest.fn(() => ({ success: true, error: { issues: [] } })),
-    lifeCycleModelDataSet: {
-      lifeCycleModelInformation: {
-        dataSetInformation: {},
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createLifeCycleModel: jest.fn(() => ({
+      validateEnhanced: jest.fn(() => ({ success: true, error: { issues: [] } })),
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          dataSetInformation: {},
+        },
       },
-    },
-  })),
-}));
+    })),
+  }),
+  { virtual: true },
+);
 
 beforeEach(() => {
   Object.values(mockAntdMessage).forEach((fn) => fn.mockReset());
   mockShowValidationIssueModal.mockReset();
+  mockValidateVisibleFormFields.mockReset().mockResolvedValue(undefined);
   latestRefsDrawerProps = null;
   mockCheckReferences.mockReset();
   mockCheckRequiredFields.mockReset().mockReturnValue({ checkResult: true, tabName: '' });
@@ -882,9 +897,11 @@ describe('ToolbarEditInfo', () => {
     expect(Array.isArray(result.unReview)).toBe(true);
   });
 
-  it('fails data check when the lifecycle model detail cannot be loaded', async () => {
+  it('continues data check when the lifecycle model detail cannot be loaded', async () => {
     const ref = React.createRef<any>();
     mockGetLifeCycleModelDetail.mockResolvedValue({ success: false });
+    mockGetProcessDetail.mockResolvedValue(undefined);
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
 
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
@@ -894,8 +911,8 @@ describe('ToolbarEditInfo', () => {
       result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
     });
 
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
-    expect(result).toEqual({ checkResult: false, unReview: [] });
+    expect(mockAntdMessage.error).not.toHaveBeenCalledWith('Data check failed!');
+    expect(result).toEqual({ checkResult: true, problemNodes: [], unReview: [] });
   });
 
   it('falls back to empty id and version when the current model identity is missing', async () => {
@@ -931,11 +948,6 @@ describe('ToolbarEditInfo', () => {
     );
     mockGetProcessDetail.mockResolvedValue({});
     mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
-    const normalizedOrderedJson = {
-      lifeCycleModelDataSet: {
-        normalized: true,
-      },
-    };
     const finalOrderedJson = {
       lifeCycleModelDataSet: {
         finalized: true,
@@ -963,9 +975,6 @@ describe('ToolbarEditInfo', () => {
       lifeCycleModelDataSet: validationSnapshot.payload,
     };
     mockGenLifeCycleModelJsonOrdered.mockReturnValue(rawOrderedJson);
-    mockNormalizeLangPayloadForSave.mockResolvedValue({
-      payload: normalizedOrderedJson,
-    });
     mockGenLifeCycleModelProcesses.mockResolvedValue({
       lifeCycleModelProcesses: [{ modelInfo: { id: 'primary-process' } }],
       up2DownEdges: [],
@@ -986,22 +995,56 @@ describe('ToolbarEditInfo', () => {
       'model-saved',
       validationSnapshot.payload,
     );
-    expect(mockNormalizeLangPayloadForSave).toHaveBeenCalledWith(rawOrderedJson);
+    expect(mockNormalizeLangPayloadForSave).not.toHaveBeenCalled();
     expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
       'model-saved',
       validationSnapshot.payload.model.nodes,
-      normalizedOrderedJson,
+      rawOrderedJson,
       [{ id: 'sub-1', type: 'secondary' }],
     );
     expect(mockGenReferenceToResultingProcess).toHaveBeenCalledWith(
       [{ modelInfo: { id: 'primary-process' } }],
       '2.0',
-      normalizedOrderedJson,
+      rawOrderedJson,
     );
     expect(mockValidateDatasetWithSdk).toHaveBeenCalledWith(
       'lifeCycleModel data set',
       finalOrderedJson,
     );
+  });
+
+  it('revalidates metadata fields after opening the base info drawer for sdk errors', async () => {
+    const ref = React.createRef<any>();
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({});
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+    mockValidateDatasetWithSdk.mockReturnValue({
+      success: false,
+      issues: [
+        {
+          code: 'required_missing',
+          path: [
+            'lifeCycleModelDataSet',
+            'lifeCycleModelInformation',
+            'dataSetInformation',
+            'name',
+            'baseName',
+          ],
+        },
+      ],
+    });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    await act(async () => {
+      await ref.current?.handleCheckData('checkData', nodes, []);
+    });
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Model base infomation' })).toBeInTheDocument(),
+    );
+    await waitFor(() => expect(mockValidateVisibleFormFields).toHaveBeenCalledTimes(2));
   });
 
   it('uses structuredClone while falling back to raw sdk validation payloads and empty model nodes', async () => {
@@ -1434,6 +1477,123 @@ describe('ToolbarEditInfo', () => {
     expect(result.checkResult).toBe(false);
   });
 
+  it('emits normalized process-instance sdk details for graph navigation callbacks', async () => {
+    const ref = React.createRef<any>();
+    const onProcessInstanceValidationChange = jest.fn();
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'required_missing',
+          path: [
+            'lifeCycleModelDataSet',
+            'lifeCycleModelInformation',
+            'technology',
+            'processes',
+            'processInstance',
+            0,
+            'referenceToProcess',
+            '@refObjectId',
+          ],
+        },
+      ],
+    });
+    mockGenReferenceToResultingProcess.mockReturnValueOnce({
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'pi-1',
+                  referenceToProcess: {},
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(
+      <ToolbarEditInfo
+        ref={ref}
+        {...baseProps}
+        onProcessInstanceValidationChange={onProcessInstanceValidationChange}
+      />,
+    );
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    await act(async () => {
+      await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(onProcessInstanceValidationChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({
+        fieldPath: 'processInstance[#pi-1].referenceToProcess.@refObjectId',
+        formName: ['referenceToProcess', '@refObjectId'],
+        presentation: 'highlight-only',
+        tabName: 'lifeCycleModelInformation',
+      }),
+    ]);
+  });
+
+  it('does not count highlight-only process-instance sdk details as lifecycle-model tab issues', async () => {
+    const ref = React.createRef<any>();
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'required_missing',
+          path: [
+            'lifeCycleModelDataSet',
+            'lifeCycleModelInformation',
+            'technology',
+            'processes',
+            'processInstance',
+            0,
+            '@multiplicationFactor',
+          ],
+        },
+      ],
+    });
+    mockGenReferenceToResultingProcess.mockReturnValueOnce({
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'pi-1',
+                  referenceToProcess: {},
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+    mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
+    mockGetProcessDetail.mockResolvedValue({ data: {} });
+    mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
+
+    render(<ToolbarEditInfo ref={ref} {...baseProps} />);
+
+    const nodes = [{ data: { quantitativeReference: '1', id: 'proc-1', version: '1.0' } }];
+    await act(async () => {
+      await ref.current?.handleCheckData('checkData', nodes, [{}]);
+    });
+
+    expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sdkInvalidTabNames: [],
+      }),
+    );
+  });
+
   it.each([
     ['checkData', 'Data validation issues'],
     ['review', 'Review submission blocked'],
@@ -1516,7 +1676,6 @@ describe('ToolbarEditInfo', () => {
   });
 
   it('shows tab-level validation errors and reopens the drawer for correction', async () => {
-    jest.useFakeTimers();
     const ref = React.createRef<any>();
     mockValidateDatasetWithSdk.mockReturnValueOnce({
       success: false,
@@ -1564,11 +1723,8 @@ describe('ToolbarEditInfo', () => {
     let result;
     await act(async () => {
       result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
+      await Promise.resolve();
     });
-    await act(async () => {
-      jest.runAllTimers();
-    });
-    jest.useRealTimers();
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
       'lifeCycleModelInformation，administrativeInformation，modellingAndValidation，technology：Data check failed!',
