@@ -19,6 +19,7 @@ const mockProcessExchangeCreate = jest.fn();
 const mockProcessExchangeEdit = jest.fn();
 const mockProcessExchangeDelete = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockProcessLciaResultsPanel = jest.fn();
 const mockSourceSelectForm = jest.fn();
 const mockGetLangText = jest.fn(() => 'text');
 const mockJsonToList = jest.fn((value: any) =>
@@ -38,6 +39,9 @@ const createMockFormInstance = () => {
       fields.forEach((field) => {
         errorStore.set(normalizeFieldName(field.name), [...(field.errors ?? [])]);
       });
+      ((globalThis as any).__TEST_PROCESS_FORM_LISTENERS__ ?? []).forEach((notify: () => void) =>
+        notify(),
+      );
     }),
   };
 };
@@ -69,7 +73,6 @@ jest.mock('umi', () => ({
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
-  CalculatorOutlined: () => <span data-testid='icon-calculator' />,
   CloseOutlined: () => <span data-testid='icon-close' />,
 }));
 
@@ -115,21 +118,6 @@ jest.mock('@/services/general/util', () => ({
   jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
-jest.mock('@/services/lciaMethods/util', () => {
-  const mockLCIAResultCalculation = jest.fn(() => Promise.resolve([{ key: '1', meanAmount: 12 }]));
-  const mockGetReferenceQuantityFromMethod = jest.fn(() => Promise.resolve());
-  return {
-    __esModule: true,
-    default: mockLCIAResultCalculation,
-    LCIAResultCalculation: mockLCIAResultCalculation,
-    getReferenceQuantityFromMethod: mockGetReferenceQuantityFromMethod,
-  };
-});
-
-const { default: mockLCIAResultCalculation } = jest.requireMock('@/services/lciaMethods/util');
-const { getReferenceQuantityFromMethod: mockGetReferenceQuantityFromMethod } = jest.requireMock(
-  '@/services/lciaMethods/util',
-);
 const { getProcessExchange: mockGetProcessExchange } = jest.requireMock('@/services/processes/api');
 const { getFlowStateCodeByIdsAndVersions: mockGetFlowStateCodeByIdsAndVersions } =
   jest.requireMock('@/services/flows/api');
@@ -142,6 +130,14 @@ jest.mock('@/components/ToolBarButton', () => ({
       {toText(tooltip) || 'button'}
     </button>
   ),
+}));
+
+jest.mock('@/pages/Processes/Components/processLciaResultsPanel', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockProcessLciaResultsPanel(props);
+    return <div data-testid='process-lcia-results-panel'>process-lcia-results-panel</div>;
+  },
 }));
 
 jest.mock('@/pages/Flows/Components/select/form', () => ({
@@ -318,7 +314,27 @@ jest.mock('antd', () => {
   );
 
   const FormComponent = ({ children }: any) => <form>{children}</form>;
-  FormComponent.Item = ({ children, name }: any) => {
+  const FormItem = ({ children, name }: any) => {
+    const [, forceRender] = React.useState(0);
+    const notifyRef = React.useRef<() => void>();
+    const listeners = ((globalThis as any).__TEST_PROCESS_FORM_LISTENERS__ ??= new Set<
+      () => void
+    >());
+
+    if (!notifyRef.current) {
+      notifyRef.current = () => forceRender((renderCount: number) => renderCount + 1);
+    }
+
+    listeners.add(notifyRef.current);
+
+    React.useEffect(() => {
+      return () => {
+        if (notifyRef.current) {
+          listeners.delete(notifyRef.current);
+        }
+      };
+    }, [listeners]);
+
     const activeFormInstance = (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__;
     const rawErrors =
       name && typeof activeFormInstance?.getFieldError === 'function'
@@ -339,6 +355,7 @@ jest.mock('antd', () => {
       </div>
     );
   };
+  FormComponent.Item = FormItem;
   const MockFormList = ({ children, name, initialValue = [], rules = [] }: any) => {
     const initialCount = initialValue.length > 0 ? initialValue.length : 1;
     const [fieldCount, setFieldCount] = React.useState(initialCount);
@@ -434,7 +451,6 @@ const defaultProps = {
   onExchangeData: jest.fn(),
   onExchangeDataCreate: jest.fn(),
   onTabChange: jest.fn(),
-  onLciaResults: jest.fn(),
   exchangeDataSource: [sampleExchange],
   formType: 'create',
   showRules: false,
@@ -456,9 +472,11 @@ describe('ProcessForm component', () => {
     proTableInstances.length = 0;
     Object.keys(formListInstances).forEach((key) => delete formListInstances[key]);
     mockRefCheckContextValue = { refCheckData: [] };
+    (globalThis as any).__TEST_PROCESS_FORM_LISTENERS__ = new Set();
     (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__ = createMockFormInstance();
     defaultProps.formRef = { current: (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__ };
     mockSourceSelectForm.mockClear();
+    mockProcessLciaResultsPanel.mockClear();
     mockGetLangText.mockReset();
     mockGetLangText.mockReturnValue('text');
     mockGetProcessExchange.mockReset();
@@ -467,10 +485,6 @@ describe('ProcessForm component', () => {
     mockGetUnitData.mockResolvedValue([]);
     mockGetFlowStateCodeByIdsAndVersions.mockReset();
     mockGetFlowStateCodeByIdsAndVersions.mockResolvedValue({ error: null, data: [] });
-    mockLCIAResultCalculation.mockReset();
-    mockLCIAResultCalculation.mockResolvedValue([{ key: '1', meanAmount: 12 }]);
-    mockGetReferenceQuantityFromMethod.mockReset();
-    mockGetReferenceQuantityFromMethod.mockResolvedValue();
   });
 
   it('marks rows with issues when rules are enabled', async () => {
@@ -908,7 +922,6 @@ describe('ProcessForm component', () => {
     );
 
     await waitFor(() => {
-      expect(mockGetReferenceQuantityFromMethod).toHaveBeenCalled();
       expect(screen.getByText('Enter this in the correct format')).toBeInTheDocument();
       expect(screen.getByTestId('review-form')).toBeInTheDocument();
     });
@@ -966,48 +979,28 @@ describe('ProcessForm component', () => {
     });
   });
 
-  it('calculates LCIA results when toolbar button is clicked', async () => {
-    const onLciaResults = jest.fn();
-    const exchangeData = [{ id: 'exchange-1' }];
-
+  it('renders the shared LCIA panel without exposing local calculation', () => {
     render(
       <ProcessForm
         {...defaultProps}
         activeTabKey='lciaResults'
-        onLciaResults={onLciaResults}
-        exchangeDataSource={exchangeData}
+        processId='process-1'
+        processVersion='1.0.0'
       />,
     );
 
-    const calculateButton = screen.getByRole('button', { name: 'Calculate LCIA Results' });
-    fireEvent.click(calculateButton);
-
-    await waitFor(() => {
-      expect(mockLCIAResultCalculation).toHaveBeenCalledWith(exchangeData);
-      expect(onLciaResults).toHaveBeenCalledWith([{ key: '1', meanAmount: 12 }]);
-    });
-  });
-
-  it('returns an empty LCIA payload when calculation resolves to null', async () => {
-    const onLciaResults = jest.fn();
-    mockLCIAResultCalculation.mockResolvedValueOnce(null);
-
-    render(
-      <ProcessForm
-        {...defaultProps}
-        activeTabKey='lciaResults'
-        onLciaResults={onLciaResults}
-        exchangeDataSource={[{ id: 'exchange-2' }]}
-      />,
+    expect(screen.getByTestId('process-lcia-results-panel')).toBeInTheDocument();
+    expect(mockProcessLciaResultsPanel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        baseRows: [],
+        lang: 'en',
+        processId: 'process-1',
+        processVersion: '1.0.0',
+      }),
     );
-
-    mockGetReferenceQuantityFromMethod.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Calculate LCIA Results' }));
-
-    await waitFor(() => {
-      expect(onLciaResults).toHaveBeenCalledWith([]);
-    });
-    expect(mockGetReferenceQuantityFromMethod).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole('button', { name: 'Calculate LCIA Results' }),
+    ).not.toBeInTheDocument();
   });
 
   it('loads input exchanges, resolves units, and injects flow state metadata', async () => {
@@ -1221,7 +1214,7 @@ describe('ProcessForm component', () => {
     unmount();
   });
 
-  it('syncs reference quantities whenever lciaResults prop changes', async () => {
+  it('passes updated LCIA rows through to the shared panel', () => {
     const initialResults = [
       {
         key: 'lcia-1',
@@ -1235,11 +1228,11 @@ describe('ProcessForm component', () => {
       <ProcessForm {...defaultProps} activeTabKey='lciaResults' lciaResults={initialResults} />,
     );
 
-    await waitFor(() => {
-      expect(mockGetReferenceQuantityFromMethod).toHaveBeenCalledWith([
-        expect.objectContaining({ key: 'lcia-1' }),
-      ]);
-    });
+    expect(mockProcessLciaResultsPanel).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        baseRows: [expect.objectContaining({ key: 'lcia-1' })],
+      }),
+    );
 
     const nextResults = [
       {
@@ -1254,16 +1247,14 @@ describe('ProcessForm component', () => {
       <ProcessForm {...defaultProps} activeTabKey='lciaResults' lciaResults={nextResults} />,
     );
 
-    await waitFor(() => {
-      expect(mockGetReferenceQuantityFromMethod).toHaveBeenCalledWith([
-        expect.objectContaining({ key: 'lcia-2' }),
-      ]);
-    });
-
-    expect(screen.getByTestId('pro-row-lcia-2')).toBeInTheDocument();
+    expect(mockProcessLciaResultsPanel).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        baseRows: [expect.objectContaining({ key: 'lcia-2' })],
+      }),
+    );
   });
 
-  it('falls back to a dash when the LCIA reference quantity label is empty', async () => {
+  it('passes LCIA rows with missing reference quantity labels through to the shared panel', () => {
     mockGetLangText.mockImplementation((value: any) =>
       value === 'missing-quantity' ? '' : 'text',
     );
@@ -1284,11 +1275,11 @@ describe('ProcessForm component', () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(screen.getByTestId('pro-row-lcia-empty')).toBeInTheDocument();
-    });
-
-    expect(within(screen.getByTestId('pro-row-lcia-empty')).getAllByText('-')).toHaveLength(2);
+    expect(mockProcessLciaResultsPanel).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        baseRows: [expect.objectContaining({ key: 'lcia-empty' })],
+      }),
+    );
   });
 
   it('validates and mutates modelling data-source references through the form list controls', async () => {
@@ -1587,6 +1578,19 @@ describe('ProcessForm component', () => {
         activeTabKey='processInformation'
         showRules
         sdkValidationDetails={[rootDetail, { ...rootDetail, key: 'sdk-root-reference-year-2' }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Please input reference year')).toHaveLength(1);
+    });
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[rootDetail]}
       />,
     );
 

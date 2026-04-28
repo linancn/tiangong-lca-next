@@ -222,22 +222,6 @@ const ProcessCreate: FC<CreateProps> = ({
     setFromData({ ...fromData, exchanges: { exchange: exchangeDataSource } } as FormProcessWithId);
   }, [exchangeDataSource]);
 
-  const handleLciaResults = (result: LCIAResultTable[]) => {
-    const updatedLciaResults = result.map((item) => ({
-      referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
-      meanAmount: String(item.meanAmount ?? ''),
-    }));
-    setFromData(
-      (prev) =>
-        ({
-          ...prev,
-          LCIAResults: {
-            LCIAResult: updatedLciaResults,
-          },
-        }) as FormProcessWithId,
-    );
-  };
-
   return (
     <>
       <Tooltip
@@ -432,7 +416,6 @@ const ProcessCreate: FC<CreateProps> = ({
               onTabChange={(key) => onTabChange(key as TabKeysType)}
               exchangeDataSource={exchangeDataSource}
               lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
-              onLciaResults={handleLciaResults}
             />
           </ProForm>
         </Spin>
