@@ -63,7 +63,7 @@ It does not own:
 - hook behavior and CI behavior must match the documented policy
 - no protected merge path may bypass the full gate
 - branch policy must stay aligned with `dev -> main`
-- any coverage collection exclusions must be explicit, reviewed, and backed by focused behavior tests for the excluded wrappers
+- any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 
 ## Short Rule Summary
 
@@ -71,4 +71,4 @@ It does not own:
 - protect the actual merge points
 - avoid forcing the heaviest gate on every local feature push
 - reproduce `lint-and-test` and `Full Gate` serially on one workstation; GitHub runs them in isolated jobs
-- keep `100%` coverage on every tracked file even when framework-heavy orchestration wrappers are excluded from direct collection
+- keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern

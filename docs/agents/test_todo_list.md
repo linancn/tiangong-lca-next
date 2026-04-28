@@ -42,7 +42,7 @@ lastReviewedCommit: 232b36c46bfc7b0d6095af577334ad6efb4e6e61
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
-- file-level coverage collection excludes a small set of UI orchestration wrappers whose behavior is covered by focused tests
+- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection; if that list changes, re-check save, validation, navigation, and highlighting flows before treating the baseline as settled
 
 ## Reopen Conditions
 

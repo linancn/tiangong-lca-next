@@ -1105,6 +1105,7 @@ describe('SourceEdit component', () => {
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
     expect(screen.getByText('source-rules-visible')).toBeInTheDocument();
+    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('shows the generic source data-check error when issues do not map to tabs', async () => {

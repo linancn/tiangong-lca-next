@@ -796,6 +796,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('reports flow data-check errors from refs and validation issues', async () => {

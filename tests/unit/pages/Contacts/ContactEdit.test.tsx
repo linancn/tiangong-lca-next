@@ -1413,6 +1413,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
+    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('requires rule verification before syncing to open data', async () => {

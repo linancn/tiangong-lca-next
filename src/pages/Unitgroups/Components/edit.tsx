@@ -16,7 +16,10 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
-import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import {
+  resolveDataCheckFeedbackState,
+  validateVisibleFormFields,
+} from '@/pages/Utils/validation/formSupport';
 import {
   hasLangNormalizationDraftChanges,
   type LangNormalizationMetadata,
@@ -507,12 +510,15 @@ const UnitGroupEdit: FC<Props> = ({
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
-    if (
-      currentDatasetValid &&
-      unRuleVerification.length === 0 &&
-      nonExistentRef.length === 0 &&
-      problemNodes.length === 0
-    ) {
+    const feedbackState = resolveDataCheckFeedbackState({
+      hasValidationIssues:
+        !currentDatasetValid ||
+        unRuleVerification.length > 0 ||
+        nonExistentRef.length > 0 ||
+        problemNodes.length > 0,
+      saveSucceeded,
+    });
+    if (feedbackState === 'success') {
       if (!silent) {
         message.success(
           intl.formatMessage({
@@ -521,7 +527,7 @@ const UnitGroupEdit: FC<Props> = ({
           }),
         );
       }
-    } else {
+    } else if (feedbackState === 'validation-error') {
       let validationHint = intl.formatMessage({
         id: 'pages.button.check.error',
         defaultMessage: 'Data check failed!',

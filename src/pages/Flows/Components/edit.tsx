@@ -17,7 +17,10 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
-import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import {
+  resolveDataCheckFeedbackState,
+  validateVisibleFormFields,
+} from '@/pages/Utils/validation/formSupport';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
@@ -545,12 +548,15 @@ const FlowsEdit: FC<Props> = ({
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
-    if (
-      currentDatasetValid &&
-      unRuleVerification.length === 0 &&
-      nonExistentRef.length === 0 &&
-      problemNodes.length === 0
-    ) {
+    const feedbackState = resolveDataCheckFeedbackState({
+      hasValidationIssues:
+        !currentDatasetValid ||
+        unRuleVerification.length > 0 ||
+        nonExistentRef.length > 0 ||
+        problemNodes.length > 0,
+      saveSucceeded,
+    });
+    if (feedbackState === 'success') {
       if (!silent) {
         message.success(
           intl.formatMessage({
@@ -559,7 +565,7 @@ const FlowsEdit: FC<Props> = ({
           }),
         );
       }
-    } else {
+    } else if (feedbackState === 'validation-error') {
       let validationHint = intl.formatMessage({
         id: 'pages.button.check.error',
         defaultMessage: 'Data check failed!',

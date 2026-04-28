@@ -738,6 +738,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('cannot save draft'));
     expect(mockCheckData).toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('shows a validation error when quantitative reference count is invalid', async () => {

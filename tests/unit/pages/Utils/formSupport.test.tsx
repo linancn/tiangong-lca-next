@@ -5,6 +5,7 @@ import type { MutableRefObject } from 'react';
 import { act } from 'react';
 
 import {
+  resolveDataCheckFeedbackState,
   useDatasetSdkValidationFormSupport,
   validateVisibleFormFields,
 } from '@/pages/Utils/validation/formSupport';
@@ -61,6 +62,29 @@ const intl = {
 };
 
 describe('useDatasetSdkValidationFormSupport', () => {
+  it('treats save-only failures as a separate feedback state', () => {
+    expect(
+      resolveDataCheckFeedbackState({
+        hasValidationIssues: false,
+        saveSucceeded: false,
+      }),
+    ).toBe('save-error-only');
+
+    expect(
+      resolveDataCheckFeedbackState({
+        hasValidationIssues: false,
+        saveSucceeded: true,
+      }),
+    ).toBe('success');
+
+    expect(
+      resolveDataCheckFeedbackState({
+        hasValidationIssues: true,
+        saveSucceeded: false,
+      }),
+    ).toBe('validation-error');
+  });
+
   it('waits for the next animation frame before validating by default', async () => {
     const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
     const validateFields = jest.fn().mockResolvedValue(undefined);

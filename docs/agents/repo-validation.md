@@ -67,7 +67,7 @@ If the change touches `scripts/test-runner.cjs` or protected-branch gate reprodu
 
 Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
 
-If a coverage change excludes framework-heavy wrapper files from `collectCoverageFrom`, document why those files are excluded and keep the behavior covered by focused unit or integration tests before relying on `npm run prepush:gate`.
+If a coverage change excludes framework-heavy wrapper files from `collectCoverageFrom`, document why those files are excluded and re-check the affected save, validation, navigation, and highlighting flows with focused tests before relying on `npm run prepush:gate`.
 
 ## Minimum PR Validation Note
 

@@ -81,6 +81,20 @@ export const validateVisibleFormFields = async (
   options?.onSettled?.();
 };
 
+export const resolveDataCheckFeedbackState = ({
+  hasValidationIssues,
+  saveSucceeded,
+}: {
+  hasValidationIssues: boolean;
+  saveSucceeded: boolean;
+}): 'success' | 'validation-error' | 'save-error-only' => {
+  if (!hasValidationIssues) {
+    return saveSucceeded ? 'success' : 'save-error-only';
+  }
+
+  return 'validation-error';
+};
+
 const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
   !detail.presentation || detail.presentation === 'field';
 

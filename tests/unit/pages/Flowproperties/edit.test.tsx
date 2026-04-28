@@ -569,6 +569,7 @@ describe('FlowpropertiesEdit', () => {
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
     expect(screen.getByText('rules-visible')).toBeInTheDocument();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('opens the refs drawer and lets the user update or keep versions', async () => {

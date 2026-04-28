@@ -14,7 +14,10 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
-import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import {
+  resolveDataCheckFeedbackState,
+  validateVisibleFormFields,
+} from '@/pages/Utils/validation/formSupport';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import {
   FlowPropertyDataSetObjectKeys,
@@ -465,13 +468,16 @@ const FlowpropertiesEdit: FC<Props> = ({
       sdkInvalidTabNames,
       unRuleVerification,
     });
-    if (
-      unRuleVerification.length === 0 &&
-      nonExistentRef.length === 0 &&
-      errTabNames.length === 0 &&
-      problemNodes.length === 0 &&
-      sdkIssues.length === 0
-    ) {
+    const feedbackState = resolveDataCheckFeedbackState({
+      hasValidationIssues:
+        unRuleVerification.length > 0 ||
+        nonExistentRef.length > 0 ||
+        errTabNames.length > 0 ||
+        problemNodes.length > 0 ||
+        sdkIssues.length > 0,
+      saveSucceeded,
+    });
+    if (feedbackState === 'success') {
       if (!silent) {
         message.success(
           intl.formatMessage({
@@ -480,7 +486,7 @@ const FlowpropertiesEdit: FC<Props> = ({
           }),
         );
       }
-    } else {
+    } else if (feedbackState === 'validation-error') {
       const validationHint =
         errTabNames && errTabNames.length > 0
           ? errTabNames
