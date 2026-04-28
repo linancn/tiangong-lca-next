@@ -1588,6 +1588,19 @@ describe('ProcessForm component', () => {
     rerender(
       <ProcessForm
         {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[rootDetail]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Please input reference year')).toHaveLength(1);
+    });
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
         activeTabKey='exchanges'
         sdkValidationDetails={[exchangeDetail]}
         sdkValidationFocus={exchangeDetail}

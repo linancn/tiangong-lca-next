@@ -206,7 +206,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
             } as SolverLcaImpactValueRow;
           })
           .filter((row) => row.impact_id.length > 0)
-          .sort((left, right) => (left.impact_index ?? 0) - (right.impact_index ?? 0));
+          .sort((left, right) => Number(left.impact_index) - Number(right.impact_index));
         const methodMetaById = await getLcaMethodMetaMap(
           solverRows.map((solverRow) => solverRow.impact_id),
         );
