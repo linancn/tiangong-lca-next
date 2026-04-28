@@ -1860,78 +1860,18 @@ describe('ProcessEdit component', () => {
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
-  it('normalizes LCIA results before saving', async () => {
+  it('passes solver-backed LCIA props to the shared process form', async () => {
     render(<ProcessEdit {...baseProps} />);
 
     fireEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Edit process' });
 
-    await act(async () => {
-      latestProcessFormProps.onLciaResults([
-        {
-          referenceToLCIAMethodDataSet: { '@refObjectId': 'lcia-1', '@version': '1.0.0' },
-          meanAmount: 12.5,
-        },
-      ]);
+    expect(latestProcessFormProps).toMatchObject({
+      lciaResultsMode: 'solver',
+      processId: 'process-1',
+      processVersion: '1.0.0',
     });
-    await act(async () => {
-      await proFormApi?.submit();
-    });
-
-    expect(mockUpdateProcess).toHaveBeenCalledWith(
-      'process-1',
-      '1.0.0',
-      expect.objectContaining({
-        LCIAResults: {
-          LCIAResult: [
-            {
-              referenceToLCIAMethodDataSet: {
-                '@refObjectId': 'lcia-1',
-                '@version': '1.0.0',
-              },
-              meanAmount: '12.5',
-            },
-          ],
-        },
-      }),
-    );
-  });
-
-  it('normalizes missing LCIA mean amounts to empty strings before saving', async () => {
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    await act(async () => {
-      latestProcessFormProps.onLciaResults([
-        {
-          referenceToLCIAMethodDataSet: { '@refObjectId': 'lcia-1', '@version': '1.0.0' },
-          meanAmount: undefined,
-        },
-      ]);
-    });
-    await act(async () => {
-      await proFormApi?.submit();
-    });
-
-    expect(mockUpdateProcess).toHaveBeenCalledWith(
-      'process-1',
-      '1.0.0',
-      expect.objectContaining({
-        LCIAResults: {
-          LCIAResult: [
-            {
-              referenceToLCIAMethodDataSet: {
-                '@refObjectId': 'lcia-1',
-                '@version': '1.0.0',
-              },
-              meanAmount: '',
-            },
-          ],
-        },
-      }),
-    );
+    expect(latestProcessFormProps).not.toHaveProperty('onLciaResults');
   });
 
   it('ignores reference updates and saves until the process payload has loaded', async () => {

@@ -1017,22 +1017,6 @@ const ProcessEdit: FC<Props> = ({
     void runCheckData({ silent: true });
   }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, runCheckData, spinning]);
 
-  const handleLciaResults = (result: LCIAResultTable[]) => {
-    const updatedLciaResults = result.map((item) => ({
-      referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
-      meanAmount: String(item.meanAmount ?? ''),
-    }));
-    setFromData(
-      (prev) =>
-        ({
-          ...prev,
-          LCIAResults: {
-            LCIAResult: updatedLciaResults,
-          },
-        }) as FormProcessWithDatas,
-    );
-  };
-
   return (
     <>
       {!autoOpen &&
@@ -1229,11 +1213,13 @@ const ProcessEdit: FC<Props> = ({
                 exchangeDataSource={exchangeDataSource}
                 formRef={formRefEdit}
                 lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
+                lciaResultsMode='solver'
                 onData={handletFromData}
                 onExchangeData={handletExchangeData}
                 onExchangeDataCreate={handletExchangeDataCreate}
-                onLciaResults={handleLciaResults}
                 onTabChange={(key) => onTabChange(key as TabKeysType)}
+                processId={id}
+                processVersion={version}
                 sdkValidationDetails={sdkValidationDetails}
                 sdkValidationFocus={sdkValidationFocus}
                 showRules={showRules}

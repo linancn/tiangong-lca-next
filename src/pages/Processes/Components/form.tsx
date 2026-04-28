@@ -55,6 +55,7 @@ import {
   uncertaintyDistributionTypeOptions,
   workflowAndPublicationStatusOptions,
 } from './optiondata';
+import ProcessLciaResultsPanel from './processLciaResultsPanel';
 import ReveiwItemForm from './Review/form';
 
 type Props = {
@@ -65,10 +66,13 @@ type Props = {
   onExchangeData: (data: ProcessExchangeData[]) => void;
   onExchangeDataCreate: (data: ProcessExchangeData) => void;
   onTabChange: (key: string) => void;
-  onLciaResults: (result: LCIAResultTable[]) => void;
+  onLciaResults?: (result: LCIAResultTable[]) => void;
   exchangeDataSource: ProcessExchangeData[];
   lciaResults: LCIAResultTable[];
   formType?: string;
+  lciaResultsMode?: 'local' | 'solver';
+  processId?: string;
+  processVersion?: string;
   showRules?: boolean;
   actionFrom?: 'modelResult';
   sdkValidationDetails?: ValidationIssueSdkDetail[];
@@ -228,6 +232,9 @@ export const ProcessForm: FC<Props> = ({
   onLciaResults,
   exchangeDataSource,
   formType,
+  lciaResultsMode = 'local',
+  processId,
+  processVersion,
   showRules = false,
   lciaResults,
   actionFrom,
@@ -258,6 +265,7 @@ export const ProcessForm: FC<Props> = ({
     jsonToList(lciaResults),
   );
   const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
+  const shouldUseSolverLciaResults = lciaResultsMode === 'solver' && !!processId;
 
   const { token } = theme.useToken();
 
@@ -808,7 +816,7 @@ export const ProcessForm: FC<Props> = ({
     setLciaResultDataSourceLoading(true);
     const lciaResults = await LCIAResultCalculation(exchangeDataSource);
     await syncReferenceQuantityToLciaResults(JSON.parse(JSON.stringify(lciaResults)));
-    onLciaResults(lciaResults ?? []);
+    onLciaResults?.(lciaResults ?? []);
     setLciaResultDataSourceLoading(false);
   };
   const tabContent: { [key: string]: JSX.Element } = {
@@ -2749,7 +2757,14 @@ export const ProcessForm: FC<Props> = ({
         />
       </>
     ),
-    lciaResults: (
+    lciaResults: shouldUseSolverLciaResults ? (
+      <ProcessLciaResultsPanel
+        baseRows={lciaResults}
+        lang={lang}
+        processId={processId}
+        processVersion={processVersion}
+      />
+    ) : (
       <ProTable<LCIAResultTable, ListPagination>
         actionRef={actionRefLciaResultTable}
         rowKey={(record) => record.key}

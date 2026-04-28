@@ -19,6 +19,7 @@ const mockProcessExchangeCreate = jest.fn();
 const mockProcessExchangeEdit = jest.fn();
 const mockProcessExchangeDelete = jest.fn();
 const mockProcessExchangeView = jest.fn();
+const mockProcessLciaResultsPanel = jest.fn();
 const mockSourceSelectForm = jest.fn();
 const mockGetLangText = jest.fn(() => 'text');
 const mockJsonToList = jest.fn((value: any) =>
@@ -142,6 +143,14 @@ jest.mock('@/components/ToolBarButton', () => ({
       {toText(tooltip) || 'button'}
     </button>
   ),
+}));
+
+jest.mock('@/pages/Processes/Components/processLciaResultsPanel', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockProcessLciaResultsPanel(props);
+    return <div data-testid='process-lcia-results-panel'>process-lcia-results-panel</div>;
+  },
 }));
 
 jest.mock('@/pages/Flows/Components/select/form', () => ({
@@ -459,6 +468,7 @@ describe('ProcessForm component', () => {
     (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__ = createMockFormInstance();
     defaultProps.formRef = { current: (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__ };
     mockSourceSelectForm.mockClear();
+    mockProcessLciaResultsPanel.mockClear();
     mockGetLangText.mockReset();
     mockGetLangText.mockReturnValue('text');
     mockGetProcessExchange.mockReset();
@@ -1008,6 +1018,34 @@ describe('ProcessForm component', () => {
       expect(onLciaResults).toHaveBeenCalledWith([]);
     });
     expect(mockGetReferenceQuantityFromMethod).not.toHaveBeenCalled();
+  });
+
+  it('renders the shared solver-backed LCIA panel in solver mode', async () => {
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='lciaResults'
+        lciaResultsMode='solver'
+        processId='process-1'
+        processVersion='1.0.0'
+      />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetReferenceQuantityFromMethod).toHaveBeenCalled();
+    });
+    expect(screen.getByTestId('process-lcia-results-panel')).toBeInTheDocument();
+    expect(mockProcessLciaResultsPanel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        baseRows: [],
+        lang: 'en',
+        processId: 'process-1',
+        processVersion: '1.0.0',
+      }),
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Calculate LCIA Results' }),
+    ).not.toBeInTheDocument();
   });
 
   it('loads input exchanges, resolves units, and injects flow state metadata', async () => {

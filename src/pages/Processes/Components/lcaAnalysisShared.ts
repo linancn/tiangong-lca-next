@@ -41,6 +41,7 @@ type LcaMethodMeta = {
 
 export type SolverLcaImpactValueRow = {
   impact_id: string;
+  impact_index?: number;
   impact_name: string;
   unit: string;
   value: number;
@@ -207,7 +208,12 @@ export async function getLcaMethodMetaMap(
     return new Map<string, LcaMethodMeta>();
   }
 
-  const files = await getLciaMethodListEntries();
+  let files: LciaMethodListEntry[];
+  try {
+    files = await getLciaMethodListEntries();
+  } catch {
+    return new Map<string, LcaMethodMeta>();
+  }
   const byId = new Map<string, LcaMethodMeta>();
 
   files.forEach((item) => {
