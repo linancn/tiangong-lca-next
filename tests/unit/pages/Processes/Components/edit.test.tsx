@@ -1860,14 +1860,13 @@ describe('ProcessEdit component', () => {
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
-  it('passes solver-backed LCIA props to the shared process form', async () => {
+  it('passes process identity for the shared LCIA panel to the process form', async () => {
     render(<ProcessEdit {...baseProps} />);
 
     fireEvent.click(screen.getByRole('button'));
     await screen.findByRole('dialog', { name: 'Edit process' });
 
     expect(latestProcessFormProps).toMatchObject({
-      lciaResultsMode: 'solver',
       processId: 'process-1',
       processVersion: '1.0.0',
     });

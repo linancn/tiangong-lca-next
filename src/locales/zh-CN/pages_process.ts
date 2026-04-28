@@ -401,7 +401,6 @@ export default {
 
   'pages.process.view.exchanges': '输入/输出',
   'pages.process.view.lciaresults': 'LCIA 结果',
-  'pages.process.view.lciaresults.calculate': '计算 LCIA 结果',
   'pages.process.view.lciaresults.shortDescription': 'LCIA',
   'pages.process.view.lciaresults.meanAmount': '平均量',
   'pages.process.view.lciaresults.unit': '单位',

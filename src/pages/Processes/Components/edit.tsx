@@ -1213,7 +1213,6 @@ const ProcessEdit: FC<Props> = ({
                 exchangeDataSource={exchangeDataSource}
                 formRef={formRefEdit}
                 lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
-                lciaResultsMode='solver'
                 onData={handletFromData}
                 onExchangeData={handletExchangeData}
                 onExchangeDataCreate={handletExchangeDataCreate}

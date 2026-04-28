@@ -4,21 +4,18 @@ import LocationTextItemForm from '@/components/LocationTextItem/form';
 import ContactSelectForm from '@/pages/Contacts/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
-import AlignedNumber from '@/components/AlignedNumber';
 import RequiredMark from '@/components/RequiredMark';
-import ToolBarButton from '@/components/ToolBarButton';
 import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangText, getUnitData, jsonToList } from '@/services/general/util';
+import { getUnitData } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
-import LCIAResultCalculation, { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeData, ProcessExchangeTable } from '@/services/processes/data';
 import { genProcessExchangeTableData } from '@/services/processes/util';
-import { CalculatorOutlined, CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import {
   Button,
@@ -31,7 +28,6 @@ import {
   Select,
   Space,
   theme,
-  Tooltip,
 } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -66,11 +62,9 @@ type Props = {
   onExchangeData: (data: ProcessExchangeData[]) => void;
   onExchangeDataCreate: (data: ProcessExchangeData) => void;
   onTabChange: (key: string) => void;
-  onLciaResults?: (result: LCIAResultTable[]) => void;
   exchangeDataSource: ProcessExchangeData[];
   lciaResults: LCIAResultTable[];
   formType?: string;
-  lciaResultsMode?: 'local' | 'solver';
   processId?: string;
   processVersion?: string;
   showRules?: boolean;
@@ -229,10 +223,8 @@ export const ProcessForm: FC<Props> = ({
   onExchangeData,
   onExchangeDataCreate,
   onTabChange,
-  onLciaResults,
   exchangeDataSource,
   formType,
-  lciaResultsMode = 'local',
   processId,
   processVersion,
   showRules = false,
@@ -245,7 +237,6 @@ export const ProcessForm: FC<Props> = ({
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
-  const actionRefLciaResultTable = useRef<ActionType>();
   const rootSdkFieldMessagesRef = useRef<
     Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
   >(new Map());
@@ -260,12 +251,6 @@ export const ProcessForm: FC<Props> = ({
     useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
-
-  const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>(
-    jsonToList(lciaResults),
-  );
-  const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
-  const shouldUseSolverLciaResults = lciaResultsMode === 'solver' && !!processId;
 
   const { token } = theme.useToken();
 
@@ -739,86 +724,6 @@ export const ProcessForm: FC<Props> = ({
       },
     },
   ];
-  const lciaResultColumns: ProColumns<LCIAResultTable>[] = [
-    {
-      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
-      dataIndex: 'index',
-      valueType: 'index',
-      search: false,
-      width: 70,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.shortDescription'
-          defaultMessage='LCIA'
-        />
-      ),
-      dataIndex: 'Name',
-      search: false,
-      width: 500,
-      render: (_, row) => {
-        return [
-          <span key={0}>
-            {getLangText(row?.referenceToLCIAMethodDataSet?.['common:shortDescription'], lang)}
-          </span>,
-        ];
-      },
-    },
-
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.meanAmount'
-          defaultMessage='Mean amount'
-        />
-      ),
-      dataIndex: 'meanAmount',
-      search: false,
-      render: (_, row) => {
-        return [<AlignedNumber key={0} value={row.meanAmount} />];
-      },
-    },
-    {
-      title: <FormattedMessage id='pages.process.view.lciaresults.unit' defaultMessage='Unit' />,
-      dataIndex: 'referenceQuantity',
-      search: false,
-      render: (_, row) => {
-        return [<span key={0}>{getLangText(row?.referenceQuantityDesc, lang) || '-'}</span>];
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
-          defaultMessage='Version'
-        />
-      ),
-      dataIndex: 'Version',
-      search: false,
-      render: (_, row) => {
-        const version = row.referenceToLCIAMethodDataSet?.['@version'] ?? '-';
-        return [
-          <Tooltip key={0} placement='topLeft' title={version}>
-            {version}
-          </Tooltip>,
-        ];
-      },
-    },
-  ];
-  const syncReferenceQuantityToLciaResults = async (lciaResults: LCIAResultTable[] | undefined) => {
-    if (!lciaResults) return;
-    const listLciaResults = jsonToList(lciaResults);
-    await getReferenceQuantityFromMethod(listLciaResults);
-    setLciaResultDataSource(listLciaResults);
-  };
-  const getLCIAResult = async () => {
-    setLciaResultDataSourceLoading(true);
-    const lciaResults = await LCIAResultCalculation(exchangeDataSource);
-    await syncReferenceQuantityToLciaResults(JSON.parse(JSON.stringify(lciaResults)));
-    onLciaResults?.(lciaResults ?? []);
-    setLciaResultDataSourceLoading(false);
-  };
   const tabContent: { [key: string]: JSX.Element } = {
     processInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
@@ -2757,34 +2662,12 @@ export const ProcessForm: FC<Props> = ({
         />
       </>
     ),
-    lciaResults: shouldUseSolverLciaResults ? (
+    lciaResults: (
       <ProcessLciaResultsPanel
         baseRows={lciaResults}
         lang={lang}
         processId={processId}
         processVersion={processVersion}
-      />
-    ) : (
-      <ProTable<LCIAResultTable, ListPagination>
-        actionRef={actionRefLciaResultTable}
-        rowKey={(record) => record.key}
-        search={false}
-        loading={lciaResultDataSourceLoading}
-        toolBarRender={() => [
-          <ToolBarButton
-            key='calculate'
-            icon={<CalculatorOutlined />}
-            tooltip={
-              <FormattedMessage
-                id='pages.process.view.lciaresults.calculate'
-                defaultMessage='Calculate LCIA Results'
-              />
-            }
-            onClick={getLCIAResult}
-          />,
-        ]}
-        dataSource={lciaResultDataSource}
-        columns={lciaResultColumns}
       />
     ),
     validation: (
@@ -2818,13 +2701,6 @@ export const ProcessForm: FC<Props> = ({
     actionRefExchangeTableInput.current?.reload();
     actionRefExchangeTableOutput.current?.reload();
   }, [exchangeDataSource]);
-
-  useEffect(() => {
-    actionRefLciaResultTable.current?.reload();
-    syncReferenceQuantityToLciaResults(
-      JSON.parse(JSON.stringify(lciaResults)) as LCIAResultTable[],
-    );
-  }, [lciaResults]);
 
   return (
     <Card
