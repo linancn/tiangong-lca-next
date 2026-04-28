@@ -4,12 +4,10 @@ import LocationTextItemDescription from '@/components/LocationTextItem/descripti
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
-import AlignedNumber from '@/components/AlignedNumber';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
 import { ListPagination } from '@/services/general/data';
-import { getLangJson, getLangText, getUnitData, jsonToList } from '@/services/general/util';
-import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
-import type { LciaMethodListData, LCIAResultTable } from '@/services/lciaMethods/data';
+import { getUnitData, jsonToList } from '@/services/general/util';
+import type { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
 import {
   FormProcess,
@@ -21,11 +19,6 @@ import { genProcessExchangeTableData, genProcessFromData } from '@/services/proc
 
 import { getClassificationValues } from '@/pages/Utils';
 import { getRejectedComments, mergeCommentsToData } from '@/pages/Utils/review';
-import {
-  cacheAndDecompressMethod,
-  getDecompressedMethod,
-  getReferenceQuantityFromMethod,
-} from '@/services/lciaMethods/util';
 import { CloseOutlined, ProductOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import {
@@ -42,8 +35,8 @@ import {
 } from 'antd';
 import type { ButtonType } from 'antd/es/button';
 import type { FC, ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
-import { FormattedMessage, useLocation } from 'umi';
+import { useState } from 'react';
+import { FormattedMessage } from 'umi';
 import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
 import {
@@ -55,8 +48,10 @@ import {
 import ReviewItemView from './Review/view';
 
 import { getExchangeColumns } from './Exchange/column';
-import { getDefaultLcaDataScopeForPath } from './lcaAnalysisShared';
-import LcaProfileSummary from './lcaProfileSummary';
+import {
+  buildMergedLcaRows as buildMergedLciaRows,
+  getLcaMethodMetaMap,
+} from './lcaAnalysisShared';
 import {
   copyrightOptions,
   LCIMethodApproachOptions,
@@ -64,6 +59,7 @@ import {
   licenseTypeOptions,
   processtypeOfDataSetOptions,
 } from './optiondata';
+import ProcessLciaResultsPanel from './processLciaResultsPanel';
 
 type Props = {
   id: string;
@@ -95,131 +91,6 @@ type ProcessExchangeResponse = {
   page?: number;
   success?: boolean;
   total?: number;
-};
-
-type SolverLciaValueRow = {
-  impact_id: string;
-  impact_index: number;
-  impact_name: string;
-  unit: string;
-  value: number;
-};
-
-type LciaMethodListEntry = {
-  id?: string;
-  version?: string;
-  description?: unknown;
-  referenceQuantity?: {
-    'common:shortDescription'?: unknown;
-  };
-};
-
-type LciaMethodMeta = {
-  description?: unknown;
-  version?: string;
-  referenceQuantityDesc?: unknown;
-};
-
-const LCA_SCOPE = 'dev-v1';
-const UNKNOWN_LCIA_UNIT = 'unknown';
-
-const getLciaMethodMetaMap = async (impactIds: string[]): Promise<Map<string, LciaMethodMeta>> => {
-  const impactIdSet = new Set(impactIds.filter((id) => !!id));
-  if (impactIdSet.size === 0) {
-    return new Map<string, LciaMethodMeta>();
-  }
-
-  let listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-  const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
-  if (!listData || needsUpdate) {
-    const cached = await cacheAndDecompressMethod('list.json');
-    if (!cached) {
-      return new Map<string, LciaMethodMeta>();
-    }
-    listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-  }
-
-  const files = Array.isArray(listData?.files) ? (listData.files as LciaMethodListEntry[]) : [];
-  const byId = new Map<string, LciaMethodMeta>();
-  files.forEach((item) => {
-    const methodId = String(item?.id ?? '');
-    if (!methodId || !impactIdSet.has(methodId)) {
-      return;
-    }
-    byId.set(methodId, {
-      description: item?.description,
-      version: item?.version,
-      referenceQuantityDesc: getLangJson(item?.referenceQuantity?.['common:shortDescription']),
-    });
-  });
-  return byId;
-};
-
-const toLangFallback = (text: string) => getLangJson({ '@xml:lang': 'en', '#text': text });
-
-const buildMergedLciaRows = (
-  baseRows: LCIAResultTable[],
-  solverRows: SolverLciaValueRow[],
-  methodMetaById: Map<string, LciaMethodMeta>,
-): LCIAResultTable[] => {
-  const mergedRows = baseRows.map((row) => ({
-    ...row,
-    referenceToLCIAMethodDataSet: { ...row.referenceToLCIAMethodDataSet },
-  }));
-  const indexByMethodId = new Map<string, number>();
-  mergedRows.forEach((row, idx) => {
-    const methodId = String(row?.referenceToLCIAMethodDataSet?.['@refObjectId'] ?? '');
-    if (methodId) {
-      indexByMethodId.set(methodId, idx);
-    }
-  });
-
-  solverRows.forEach((solverRow) => {
-    const methodId = solverRow.impact_id;
-    const methodMeta = methodMetaById.get(methodId);
-    const shortDescription =
-      methodMeta?.description ??
-      toLangFallback(solverRow.impact_name?.trim() || solverRow.impact_id || '-');
-    const unitDesc =
-      methodMeta?.referenceQuantityDesc ??
-      (solverRow.unit?.trim() && solverRow.unit !== UNKNOWN_LCIA_UNIT
-        ? toLangFallback(solverRow.unit)
-        : undefined);
-    const existingIdx = indexByMethodId.get(methodId);
-
-    if (existingIdx !== undefined) {
-      const existing = mergedRows[existingIdx];
-      mergedRows[existingIdx] = {
-        ...existing,
-        meanAmount: solverRow.value,
-        referenceQuantityDesc: existing.referenceQuantityDesc || unitDesc,
-        referenceToLCIAMethodDataSet: {
-          ...existing.referenceToLCIAMethodDataSet,
-          '@version':
-            existing.referenceToLCIAMethodDataSet?.['@version'] || methodMeta?.version || '',
-          'common:shortDescription':
-            existing.referenceToLCIAMethodDataSet?.['common:shortDescription'] ||
-            (shortDescription as any),
-        },
-      };
-      return;
-    }
-
-    mergedRows.push({
-      key: methodId,
-      referenceToLCIAMethodDataSet: {
-        '@refObjectId': methodId,
-        '@type': 'lCIA method data set',
-        '@uri': `../lciamethods/${methodId}.xml`,
-        '@version': methodMeta?.version || '',
-        'common:shortDescription': shortDescription as any,
-      },
-      meanAmount: solverRow.value,
-      referenceQuantityDesc: unitDesc,
-    });
-  });
-
-  return mergedRows;
 };
 
 const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
@@ -276,8 +147,6 @@ const ProcessView: FC<Props> = ({
   buttonTypeProp = 'default',
   triggerLabel,
 }) => {
-  const location = useLocation();
-  const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -285,21 +154,6 @@ const ProcessView: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<Partial<ProcessFormWithId>>({});
   const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
-  const [baseLciaResultDataSource, setBaseLciaResultDataSource] = useState<LCIAResultTable[]>([]);
-  const [solverLciaLoading, setSolverLciaLoading] = useState(false);
-  const [solverLciaLoaded, setSolverLciaLoaded] = useState(false);
-  const [solverLciaError, setSolverLciaError] = useState<string | null>(null);
-  const [solverLciaMeta, setSolverLciaMeta] = useState<{
-    snapshotId: string;
-    resultId: string;
-    source: string;
-    computedAt: string;
-  } | null>(null);
-  const [solverLciaPendingBuild, setSolverLciaPendingBuild] = useState<{
-    jobId: string;
-    snapshotId: string;
-  } | null>(null);
-  // const [lciaResultDataSourceLoading, setLciaResultDataSourceLoading] = useState(false);
   const tabList = [
     {
       key: 'processInformation',
@@ -375,190 +229,6 @@ const ProcessView: FC<Props> = ({
       },
     },
   ];
-  const lciaResultColumns: ProColumns<LCIAResultTable>[] = [
-    {
-      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
-      dataIndex: 'index',
-      valueType: 'index',
-      search: false,
-      width: 70,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.shortDescription'
-          defaultMessage='LCIA'
-        />
-      ),
-      dataIndex: 'Name',
-      search: false,
-      width: 500,
-      render: (_, row) => {
-        return [
-          <span key={0}>
-            {getLangText(row?.referenceToLCIAMethodDataSet?.['common:shortDescription'], lang)}
-          </span>,
-        ];
-      },
-    },
-
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.meanAmount'
-          defaultMessage='Mean amount'
-        />
-      ),
-      dataIndex: 'meanAmount',
-      search: false,
-      render: (_, row) => {
-        return [<AlignedNumber key={0} value={row.meanAmount} />];
-      },
-    },
-    {
-      title: <FormattedMessage id='pages.process.view.lciaresults.unit' defaultMessage='Unit' />,
-      dataIndex: 'referenceQuantity',
-      search: false,
-      render: (_, row) => {
-        return [<span key={0}>{getLangText(row?.referenceQuantityDesc, lang) || '-'}</span>];
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id='pages.process.view.lciaresults.referenceToLCIAMethodDataSetVersion'
-          defaultMessage='Version'
-        />
-      ),
-      dataIndex: 'Version',
-      search: false,
-      render: (_, row) => {
-        return [
-          <Tooltip
-            key={0}
-            placement='topLeft'
-            title={row?.referenceToLCIAMethodDataSet?.['@version']}
-          >
-            {row?.referenceToLCIAMethodDataSet?.['@version']}
-          </Tooltip>,
-        ];
-      },
-    },
-  ];
-  const loadSolverLciaResults = useCallback(
-    async (forceReload: boolean) => {
-      if (solverLciaLoading) {
-        return;
-      }
-      if (solverLciaLoaded && !forceReload) {
-        return;
-      }
-      setSolverLciaLoading(true);
-      setSolverLciaError(null);
-      setSolverLciaPendingBuild(null);
-      try {
-        const queried = await queryLcaResults({
-          scope: LCA_SCOPE,
-          ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
-          mode: 'process_all_impacts',
-          process_id: id,
-          process_version: version,
-          allow_fallback: false,
-        });
-        const values = (queried.data as { values?: unknown[] })?.values;
-        const rows = (Array.isArray(values) ? values : [])
-          .map((item) => {
-            const row = item as {
-              impact_id?: unknown;
-              impact_index?: unknown;
-              impact_name?: unknown;
-              unit?: unknown;
-              value?: unknown;
-            };
-            return {
-              impact_id: String(row.impact_id ?? ''),
-              impact_index: Number(row.impact_index ?? 0),
-              impact_name: String(row.impact_name ?? ''),
-              unit: String(row.unit ?? ''),
-              value: Number(row.value ?? 0),
-            } as SolverLciaValueRow;
-          })
-          .filter((row) => row.impact_id.length > 0)
-          .sort((a, b) => a.impact_index - b.impact_index);
-        const methodMetaById = await getLciaMethodMetaMap(rows.map((row) => row.impact_id));
-        const mergedRows = buildMergedLciaRows(baseLciaResultDataSource, rows, methodMetaById);
-        setLciaResultDataSource(mergedRows);
-        setSolverLciaMeta({
-          snapshotId: queried.snapshot_id,
-          resultId: queried.result_id,
-          source: queried.source,
-          computedAt: queried.meta.computed_at,
-        });
-        setSolverLciaPendingBuild(null);
-        setSolverLciaLoaded(true);
-      } catch (error: unknown) {
-        if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_build_queued') {
-          const buildJobId =
-            typeof error.body?.build_job_id === 'string' ? error.body.build_job_id.trim() : '';
-          const buildSnapshotId =
-            typeof error.body?.build_snapshot_id === 'string'
-              ? error.body.build_snapshot_id.trim()
-              : '';
-          if (buildJobId && buildSnapshotId) {
-            setSolverLciaPendingBuild({
-              jobId: buildJobId,
-              snapshotId: buildSnapshotId,
-            });
-            setSolverLciaMeta(null);
-            setSolverLciaError(null);
-            setSolverLciaLoaded(true);
-            return;
-          }
-        }
-        setSolverLciaPendingBuild(null);
-        setLciaResultDataSource(baseLciaResultDataSource);
-        setSolverLciaMeta(null);
-        setSolverLciaError(error instanceof Error ? error.message : String(error));
-        setSolverLciaLoaded(true);
-      } finally {
-        setSolverLciaLoading(false);
-      }
-    },
-    [
-      baseLciaResultDataSource,
-      defaultLcaDataScope,
-      id,
-      solverLciaLoaded,
-      solverLciaLoading,
-      version,
-    ],
-  );
-
-  useEffect(() => {
-    if (!drawerVisible || activeTabKey !== 'lciaResults') {
-      return;
-    }
-    void loadSolverLciaResults(false);
-  }, [activeTabKey, drawerVisible, loadSolverLciaResults]);
-
-  useEffect(() => {
-    if (!drawerVisible || activeTabKey !== 'lciaResults' || !solverLciaPendingBuild) {
-      return;
-    }
-    const timer = globalThis.setTimeout(() => {
-      void loadSolverLciaResults(true);
-    }, 4000);
-    return () => {
-      globalThis.clearTimeout(timer);
-    };
-  }, [activeTabKey, drawerVisible, loadSolverLciaResults, solverLciaPendingBuild]);
-
-  // const getLCIAResult = async () => {
-  //   setLciaResultDataSourceLoading(true);
-  //   const lciaResults = await LCIAResultCalculation(exchangeDataSource);
-  //   setLciaResultDataSource(lciaResults ?? []);
-  //   setLciaResultDataSourceLoading(false);
-  // };
 
   const contentList: Record<string, React.ReactNode> = {
     processInformation: (
@@ -1919,54 +1589,12 @@ const ProcessView: FC<Props> = ({
       </>
     ),
     lciaResults: (
-      <Space direction='vertical' size={'middle'} style={{ width: '100%' }}>
-        <Space size={'middle'} wrap>
-          <Button
-            size='small'
-            loading={solverLciaLoading}
-            onClick={() => {
-              void loadSolverLciaResults(true);
-            }}
-          >
-            <FormattedMessage
-              id='pages.process.view.lciaresults.solver.reload'
-              defaultMessage='Refresh latest calculated results'
-            />
-          </Button>
-          {solverLciaMeta && (
-            <Typography.Text type='secondary'>
-              {`source=${solverLciaMeta.source}, snapshot=${solverLciaMeta.snapshotId}, result=${solverLciaMeta.resultId}, computed_at=${solverLciaMeta.computedAt}`}
-            </Typography.Text>
-          )}
-          {solverLciaPendingBuild && (
-            <Typography.Text type='secondary'>
-              <FormattedMessage
-                id='pages.process.view.lciaresults.solver.snapshotBuilding'
-                defaultMessage='Snapshot is rebuilding (job {jobId}). Retrying automatically...'
-                values={{ jobId: solverLciaPendingBuild.jobId }}
-              />
-            </Typography.Text>
-          )}
-        </Space>
-        {solverLciaError && !solverLciaPendingBuild && (
-          <Typography.Text type='danger'>
-            <FormattedMessage
-              id='pages.process.view.lciaresults.solver.error'
-              defaultMessage='Result query failed: {message}'
-              values={{ message: solverLciaError }}
-            />
-          </Typography.Text>
-        )}
-        <LcaProfileSummary rows={lciaResultDataSource} lang={lang} loading={solverLciaLoading} />
-        <ProTable<LCIAResultTable, ListPagination>
-          rowKey={(row) => row.referenceToLCIAMethodDataSet?.['@refObjectId'] || row.key}
-          loading={solverLciaLoading}
-          search={false}
-          options={false}
-          dataSource={lciaResultDataSource}
-          columns={lciaResultColumns}
-        />
-      </Space>
+      <ProcessLciaResultsPanel
+        baseRows={lciaResultDataSource}
+        lang={lang}
+        processId={id}
+        processVersion={version}
+      />
     ),
     validation: (
       <ReviewItemView data={initData?.modellingAndValidation?.validation?.review ?? []} />
@@ -1983,12 +1611,6 @@ const ProcessView: FC<Props> = ({
     setActiveTabKey('processInformation');
     setSpinning(true);
     setLciaResultDataSource([]);
-    setBaseLciaResultDataSource([]);
-    setSolverLciaError(null);
-    setSolverLciaMeta(null);
-    setSolverLciaPendingBuild(null);
-    setSolverLciaLoaded(false);
-    setSolverLciaLoading(false);
     getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
       const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
       if ((result?.data?.stateCode ?? 100) < 100) {
@@ -1998,8 +1620,6 @@ const ProcessView: FC<Props> = ({
       setInitData({ ...formData, id: id });
       setExchangeDataSource([...(formData?.exchanges?.exchange ?? [])]);
       const sourceData = jsonToList(formData?.LCIAResults?.LCIAResult) as LCIAResultTable[];
-      await getReferenceQuantityFromMethod(sourceData);
-      setBaseLciaResultDataSource(sourceData);
       setLciaResultDataSource(sourceData);
       // if (dataSource === 'my') {
       //   setFooterButtons(
@@ -2126,4 +1746,4 @@ const ProcessView: FC<Props> = ({
 
 export default ProcessView;
 
-export { buildMergedLciaRows, getLciaMethodMetaMap, toReferenceValue };
+export { buildMergedLciaRows, getLcaMethodMetaMap as getLciaMethodMetaMap, toReferenceValue };
