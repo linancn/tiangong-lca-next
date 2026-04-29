@@ -48,6 +48,7 @@ const TableList: FC = () => {
   const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
@@ -59,6 +60,7 @@ const TableList: FC = () => {
   const id = searchParams.get('id');
   const version = searchParams.get('version');
   const required = searchParams.get('required') === '1';
+  const routeMode = searchParams.get('mode');
 
   const intl = useIntl();
 
@@ -87,9 +89,22 @@ const TableList: FC = () => {
     if (dataSource === 'my' && id && version) {
       setEditId(id);
       setEditVersion(version);
-      setEditDrawerVisible(true);
+      if (routeMode === 'view') {
+        setEditDrawerVisible(false);
+        setViewDrawerVisible(true);
+      } else {
+        setViewDrawerVisible(false);
+        setEditDrawerVisible(true);
+      }
     }
-  }, [dataSource, id, version]);
+  }, [dataSource, id, routeMode, version]);
+
+  const handleRouteDrawerClose = () => {
+    setEditDrawerVisible(false);
+    setViewDrawerVisible(false);
+    setEditId('');
+    setEditVersion('');
+  };
   const processColumns: ProColumns<LifeCycleModelTable>[] = [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
@@ -440,7 +455,18 @@ const TableList: FC = () => {
           buttonType={'icon'}
           autoOpen={true}
           autoCheckRequired={required}
-          onDrawerClose={() => setEditDrawerVisible(false)}
+          onDrawerClose={handleRouteDrawerClose}
+        />
+      )}
+      {viewDrawerVisible && editId && editVersion && (
+        <LifeCycleModelView
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          actionRef={actionRef}
+          buttonType={'icon'}
+          autoOpen={true}
+          onDrawerClose={handleRouteDrawerClose}
         />
       )}
     </PageContainer>

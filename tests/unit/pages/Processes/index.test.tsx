@@ -173,7 +173,14 @@ jest.mock('@/pages/Processes/Components/edit', () => ({
 
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <div data-testid='process-view'>{`${id}:${version}`}</div>,
+  default: ({ id, version, autoOpen, onDrawerClose }: any) => (
+    <div data-testid='process-view'>
+      {JSON.stringify({ id, version, autoOpen })}
+      <button type='button' onClick={() => onDrawerClose?.()}>
+        process-view-close
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Processes/Components/lcaSolveToolbar', () => ({
@@ -695,12 +702,53 @@ describe('ProcessesPage', () => {
     );
   });
 
+  it('opens and closes the route-driven view drawer for my-data view links', async () => {
+    mockLocation = {
+      pathname: '/mydata/processes',
+      search: '?tid=team-1&id=proc-view&version=8.8.8&mode=view',
+    };
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('process-view')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(true),
+    );
+
+    const autoOpenView = screen
+      .getAllByTestId('process-view')
+      .find((node) => node.textContent?.includes('"autoOpen":true'));
+    expect(autoOpenView).toHaveTextContent('"id":"proc-view"');
+    expect(autoOpenView).toHaveTextContent('"version":"8.8.8"');
+    expect(
+      screen
+        .queryAllByTestId('process-edit')
+        .some((node) => node.textContent?.includes('"autoOpen":true')),
+    ).toBe(false);
+
+    await userEvent.click(
+      within(autoOpenView!).getByRole('button', { name: /process-view-close/i }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen
+          .queryAllByTestId('process-view')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(false),
+    );
+  });
+
   it('renders my-data process actions and contributes process data successfully', async () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
-    expect(screen.getByTestId('process-view')).toHaveTextContent('proc-1:1.0.0');
+    expect(screen.getByTestId('process-view')).toHaveTextContent('"id":"proc-1"');
+    expect(screen.getByTestId('process-view')).toHaveTextContent('"version":"1.0.0"');
     expect(screen.getByTestId('process-delete')).toHaveTextContent('proc-1:1.0.0');
     expect(screen.getByTestId('review-detail')).toHaveTextContent('proc-1:1.0.0');
     expect(screen.getByTestId('export-data')).toHaveTextContent('processes:proc-1:1.0.0');

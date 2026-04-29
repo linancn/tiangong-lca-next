@@ -240,6 +240,34 @@ describe('LifeCycleModelView', () => {
     );
   });
 
+  it('opens automatically without rendering a trigger when autoOpen is enabled', async () => {
+    const onDrawerClose = jest.fn();
+
+    renderWithProviders(
+      <LifeCycleModelView
+        id='model-auto'
+        version='6.0.0'
+        buttonType='icon'
+        lang='en'
+        autoOpen
+        onDrawerClose={onDrawerClose}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /^view$/i })).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: /view model/i })).toBeInTheDocument(),
+    );
+    expect(latestToolbarProps).toMatchObject({
+      id: 'model-auto',
+      version: '6.0.0',
+      drawerVisible: true,
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
+    expect(onDrawerClose).toHaveBeenCalledTimes(1);
+  });
+
   it('closes through the drawer mask-close action', async () => {
     renderWithProviders(
       <LifeCycleModelView id='model-5' version='5.0.0' buttonType='text' lang='en' />,

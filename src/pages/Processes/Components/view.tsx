@@ -35,7 +35,7 @@ import {
 } from 'antd';
 import type { ButtonType } from 'antd/es/button';
 import type { FC, ReactNode } from 'react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
@@ -70,6 +70,8 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
   triggerLabel?: ReactNode;
+  autoOpen?: boolean;
+  onDrawerClose?: () => void;
 };
 
 type ProcessFormWithId = FormProcess & { id?: string };
@@ -146,6 +148,8 @@ const ProcessView: FC<Props> = ({
   disabled,
   buttonTypeProp = 'default',
   triggerLabel,
+  autoOpen = false,
+  onDrawerClose,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
@@ -1606,7 +1610,12 @@ const ProcessView: FC<Props> = ({
     ),
   };
 
-  const onView = async () => {
+  const closeDrawer = useCallback(() => {
+    setDrawerVisible(false);
+    onDrawerClose?.();
+  }, [onDrawerClose]);
+
+  const onView = useCallback(async () => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
     setSpinning(true);
@@ -1643,11 +1652,17 @@ const ProcessView: FC<Props> = ({
       // }
       setSpinning(false);
     });
-  };
+  }, [id, version]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      void onView();
+    }
+  }, [autoOpen, id, onView, version]);
 
   return (
     <>
-      {buttonType === 'toolIcon' ? (
+      {!autoOpen && buttonType === 'toolIcon' ? (
         <Tooltip
           title={
             <FormattedMessage
@@ -1666,7 +1681,7 @@ const ProcessView: FC<Props> = ({
             disabled={disabled}
           />
         </Tooltip>
-      ) : buttonType === 'toolResultIcon' ? (
+      ) : !autoOpen && buttonType === 'toolResultIcon' ? (
         <Tooltip
           title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
           placement='left'
@@ -1680,7 +1695,7 @@ const ProcessView: FC<Props> = ({
             onClick={onView}
           />
         </Tooltip>
-      ) : buttonType === 'icon' ? (
+      ) : !autoOpen && buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
           <Button
             shape='circle'
@@ -1690,7 +1705,7 @@ const ProcessView: FC<Props> = ({
             onClick={onView}
           />
         </Tooltip>
-      ) : buttonType === 'link' ? (
+      ) : !autoOpen && buttonType === 'link' ? (
         disabled || id === '' ? (
           <Typography.Text type='secondary'>
             {triggerLabel ?? <FormattedMessage id='pages.button.view' defaultMessage='View' />}
@@ -1700,11 +1715,11 @@ const ProcessView: FC<Props> = ({
             {triggerLabel ?? <FormattedMessage id='pages.button.view' defaultMessage='View' />}
           </Typography.Link>
         )
-      ) : (
+      ) : !autoOpen ? (
         <Button onClick={onView}>
           <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
-      )}
+      ) : null}
 
       <Drawer
         getContainer={() => document.body}
@@ -1713,13 +1728,7 @@ const ProcessView: FC<Props> = ({
         }
         width='90%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         // footer={
         //   <Space size={'middle'} className={styles.footer_right}>
         //     {footerButtons}
@@ -1727,7 +1736,7 @@ const ProcessView: FC<Props> = ({
         // }
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={closeDrawer}
       >
         <Spin spinning={spinning}>
           <Card
