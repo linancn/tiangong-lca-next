@@ -5,7 +5,7 @@ import { ActionType } from '@ant-design/pro-components';
 import { Button, Drawer, Layout, theme, Tooltip } from 'antd';
 import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { lifeCycleModelConnectionOptions } from './graphConnectionOptions';
 import ToolbarView from './toolbar/viewIndex';
@@ -17,6 +17,8 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
   disabled?: boolean;
+  autoOpen?: boolean;
+  onDrawerClose?: () => void;
 };
 const LifeCycleModelView: FC<Props> = ({
   id,
@@ -26,15 +28,28 @@ const LifeCycleModelView: FC<Props> = ({
   actionRef,
   buttonTypeProp = 'default',
   disabled = false,
+  autoOpen = false,
+  onDrawerClose,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { token } = theme.useToken();
 
   const { Sider, Content } = Layout;
 
-  const onView = () => {
+  const onView = useCallback(() => {
     setDrawerVisible(true);
-  };
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerVisible(false);
+    onDrawerClose?.();
+  }, [onDrawerClose]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      onView();
+    }
+  }, [autoOpen, id, onView, version]);
 
   const siderStyle: React.CSSProperties = {
     paddingTop: 8,
@@ -55,7 +70,7 @@ const LifeCycleModelView: FC<Props> = ({
 
   return (
     <>
-      {buttonType === 'toolIcon' ? (
+      {!autoOpen && buttonType === 'toolIcon' ? (
         <Tooltip
           title={
             <FormattedMessage
@@ -74,7 +89,7 @@ const LifeCycleModelView: FC<Props> = ({
             disabled={disabled}
           />
         </Tooltip>
-      ) : buttonType === 'icon' ? (
+      ) : !autoOpen && buttonType === 'icon' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
           <Button
             shape='circle'
@@ -84,7 +99,7 @@ const LifeCycleModelView: FC<Props> = ({
             onClick={onView}
           />
         </Tooltip>
-      ) : buttonType === 'iconModel' ? (
+      ) : !autoOpen && buttonType === 'iconModel' ? (
         <Tooltip title={<FormattedMessage id='pages.button.view.model' defaultMessage='View' />}>
           <Button
             disabled={disabled}
@@ -95,11 +110,11 @@ const LifeCycleModelView: FC<Props> = ({
             onClick={onView}
           />
         </Tooltip>
-      ) : (
+      ) : !autoOpen ? (
         <Button onClick={onView}>
           <FormattedMessage id='pages.button.view' defaultMessage='View' />
         </Button>
-      )}
+      ) : null}
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}
@@ -108,20 +123,10 @@ const LifeCycleModelView: FC<Props> = ({
         }
         width='100%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => {
-              setDrawerVisible(false);
-            }}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => {
-          setDrawerVisible(false);
-        }}
+        onClose={closeDrawer}
       >
         <GraphProvider>
           <Layout style={layoutStyle}>

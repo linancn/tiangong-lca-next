@@ -65,6 +65,7 @@ const TableList: FC = () => {
   const [importData, setImportData] = useState<ProcessImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
+  const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
   const { token } = theme.useToken();
@@ -76,6 +77,7 @@ const TableList: FC = () => {
   const id = searchParams.get('id');
   const version = searchParams.get('version');
   const required = searchParams.get('required') === '1';
+  const routeMode = searchParams.get('mode');
 
   const intl = useIntl();
 
@@ -444,12 +446,19 @@ const TableList: FC = () => {
     if (id && version && dataSource === 'my') {
       setEditId(id);
       setEditVersion(version);
-      setEditDrawerVisible(true);
+      if (routeMode === 'view') {
+        setEditDrawerVisible(false);
+        setViewDrawerVisible(true);
+      } else {
+        setViewDrawerVisible(false);
+        setEditDrawerVisible(true);
+      }
     }
-  }, [id, version, dataSource]);
+  }, [id, version, dataSource, routeMode]);
 
   const handleEditClose = () => {
     setEditDrawerVisible(false);
+    setViewDrawerVisible(false);
     setEditId('');
     setEditVersion('');
   };
@@ -679,6 +688,18 @@ const TableList: FC = () => {
           setViewDrawerVisible={handleEditClose}
           autoOpen={true}
           autoCheckRequired={required}
+        />
+      )}
+      {viewDrawerVisible && editId && editVersion && (
+        <ProcessView
+          id={editId}
+          version={editVersion}
+          lang={lang}
+          buttonType={'icon'}
+          disabled={false}
+          actionRef={actionRef}
+          autoOpen={true}
+          onDrawerClose={handleEditClose}
         />
       )}
     </PageContainer>

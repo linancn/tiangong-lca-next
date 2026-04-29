@@ -1,7 +1,7 @@
 import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
 import { buildAppAbsoluteUrl } from '@/utils/appUrl';
-import { Button, Space, Table, Tag, Tooltip, theme } from 'antd';
+import { Button, Modal, Space, Table, Tag, Typography, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'umi';
@@ -27,6 +27,9 @@ interface DataNotificationProps {
 const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataLoaded }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataNotificationItem[]>([]);
+  const [selectedRejectedRecord, setSelectedRejectedRecord] = useState<DataNotificationItem | null>(
+    null,
+  );
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -34,6 +37,43 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
   });
   const intl = useIntl();
   const { token } = theme.useToken();
+
+  const getNotificationDataPath = (
+    record: DataNotificationItem,
+    mode: 'view' | 'edit',
+    options: { forceProcess?: boolean } = {},
+  ) => {
+    const dataId = record?.json?.data?.id ?? '';
+    const dataVersion = record?.json?.data?.version ?? '';
+    const basePath =
+      options.forceProcess || !record.isFromLifeCycle ? '/mydata/processes' : '/mydata/models';
+    return buildAppAbsoluteUrl(
+      `${basePath}?id=${encodeURIComponent(dataId)}&version=${encodeURIComponent(
+        dataVersion,
+      )}&mode=${mode}`,
+    );
+  };
+
+  const openNotificationData = (
+    record: DataNotificationItem,
+    mode: 'view' | 'edit',
+    options?: { forceProcess?: boolean },
+  ) => {
+    window.open(getNotificationDataPath(record, mode, options), '_blank', 'noopener,noreferrer');
+  };
+
+  const getRejectReason = (item: ReviewsTable) => {
+    const comment = (item.json as any)?.comment;
+    if (!comment) return '';
+    if (typeof comment === 'string') {
+      try {
+        return JSON.parse(comment)?.message ?? '';
+      } catch {
+        return '';
+      }
+    }
+    return comment?.message ?? '';
+  };
 
   const fetchDataNotifications = async (page = 1, pageSize = 10) => {
     setLoading(true);
@@ -55,7 +95,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
           userName: item.userName,
           modifiedAt: item.modifiedAt ?? '',
           isFromLifeCycle: item.isFromLifeCycle,
-          rejectReason: (item.json as any)?.comment?.message || '',
+          rejectReason: getRejectReason(item),
           stateCode: item.stateCode,
           json: item.json,
         })) || [];
@@ -114,10 +154,30 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
       default:
         return {
           color: token.colorTextDisabled,
-          text: intl.formatMessage({ id: 'teams.members.role.empty', defaultMessage: 'Empty' }),
+          text: intl.formatMessage({
+            id: 'pages.review.data.empty',
+            defaultMessage: 'No information',
+          }),
         };
     }
   };
+
+  const handleActionClick = (record: DataNotificationItem) => {
+    if (record.stateCode === -1) {
+      setSelectedRejectedRecord(record);
+      return;
+    }
+    openNotificationData(record, 'view');
+  };
+
+  const handleFixRejectedData = () => {
+    openNotificationData(selectedRejectedRecord as DataNotificationItem, 'edit', {
+      forceProcess: true,
+    });
+    setSelectedRejectedRecord(null);
+  };
+
+  const rejectReason = selectedRejectedRecord?.rejectReason;
 
   const columns: ColumnsType<DataNotificationItem> = [
     {
@@ -144,13 +204,9 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
       title: intl.formatMessage({ id: 'pages.review.table.status', defaultMessage: 'Status' }),
       dataIndex: 'status',
       key: 'status',
-      render: (stateCode: number, record: DataNotificationItem) => {
+      render: (_stateCode: number, record: DataNotificationItem) => {
         const statusTag = getStatusTag(record.stateCode);
-        return (
-          <Tooltip title={record.rejectReason} placement='topLeft'>
-            <Tag color={statusTag.color}>{statusTag.text}</Tag>
-          </Tooltip>
-        );
+        return <Tag color={statusTag.color}>{statusTag.text}</Tag>;
       },
     },
     {
@@ -184,14 +240,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
             type='link'
             size='small'
             style={{ color: token.colorPrimary }}
-            onClick={() => {
-              window.open(
-                buildAppAbsoluteUrl(
-                  `/mydata/processes?id=${record?.json?.data?.id}&version=${record?.json?.data?.version}`,
-                ),
-                '_blank',
-              );
-            }}
+            onClick={() => handleActionClick(record)}
           >
             {intl.formatMessage({ id: 'pages.review.table.view', defaultMessage: 'View' })}
           </Button>
@@ -201,25 +250,64 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      loading={loading}
-      pagination={{
-        current: pagination.current,
-        pageSize: pagination.pageSize,
-        total: pagination.total,
-        // showSizeChanger: true,
-        // showQuickJumper: true,
-        showTotal: (total, range) =>
-          intl.formatMessage(
-            { id: 'pages.pagination.showTotal', defaultMessage: 'Items {start}-{end} of {total}' },
-            { start: range[0], end: range[1], total },
-          ),
-        onChange: handleTableChange,
-      }}
-      size='small'
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={data}
+        loading={loading}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          // showSizeChanger: true,
+          // showQuickJumper: true,
+          showTotal: (total, range) =>
+            intl.formatMessage(
+              {
+                id: 'pages.pagination.showTotal',
+                defaultMessage: 'Items {start}-{end} of {total}',
+              },
+              { start: range[0], end: range[1], total },
+            ),
+          onChange: handleTableChange,
+        }}
+        size='small'
+      />
+      <Modal
+        title={intl.formatMessage({
+          id: 'notifications.data.rejectionModal.title',
+          defaultMessage: 'Review Comment',
+        })}
+        open={!!selectedRejectedRecord}
+        onCancel={() => setSelectedRejectedRecord(null)}
+        onOk={handleFixRejectedData}
+        cancelText={intl.formatMessage({
+          id: 'notifications.data.rejectionModal.close',
+          defaultMessage: 'Close',
+        })}
+        okText={intl.formatMessage({
+          id: 'notifications.data.rejectionModal.fix',
+          defaultMessage: 'Fix Data',
+        })}
+        width={640}
+      >
+        <Typography.Paragraph
+          style={{
+            maxHeight: 320,
+            overflowY: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            marginBottom: 0,
+          }}
+        >
+          {rejectReason ||
+            intl.formatMessage({
+              id: 'notifications.data.rejectionModal.empty',
+              defaultMessage: 'No review comment available.',
+            })}
+        </Typography.Paragraph>
+      </Modal>
+    </>
   );
 };
 
