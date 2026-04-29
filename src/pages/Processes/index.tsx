@@ -110,7 +110,7 @@ const TableList: FC = () => {
   const keyWordRef = useRef('');
   const stateCodeRef = useRef<string | number>('all');
   const typeOfDataSetRef = useRef<string>('all');
-  const typeOfDataSetFilter = (width = 160) => {
+  const typeOfDataSetFilter = (width: number) => {
     const onChange = (value: string) => {
       typeOfDataSetRef.current = value;
       setTypeOfDataSet(value);

@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/flowproperties',
   search: '?tid=team-1',
 };
+let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
 const mockGetFlowpropertyTableAll = jest.fn();
@@ -233,6 +234,9 @@ jest.mock('antd', () => {
     Checkbox,
     Col,
     ConfigProvider,
+    Grid: {
+      useBreakpoint: () => mockBreakpointScreens,
+    },
     Input,
     Row,
     Space,
@@ -325,6 +329,7 @@ describe('FlowpropertiesPage', () => {
       pathname: '/mydata/flowproperties',
       search: '?tid=team-1',
     };
+    mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetTeamById.mockResolvedValue({
       data: [{ json: { title: [{ '@xml:lang': 'en', '#text': 'Flowproperty Team' }] } }],
@@ -397,6 +402,17 @@ describe('FlowpropertiesPage', () => {
         .some((node) => node.textContent?.includes('"importCount":0')),
     ).toBe(true);
     await userEvent.click(screen.getByTestId('flowproperty-delete'));
+  });
+
+  it('uses compact mobile controls for my data rows', async () => {
+    mockBreakpointScreens = { md: false };
+
+    renderWithProviders(<FlowpropertiesPage />);
+
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
   it('reloads the table with the selected state filter', async () => {
