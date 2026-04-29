@@ -464,7 +464,7 @@ describe('ProcessView component', () => {
     fireEvent.click(lciaTab);
 
     await waitFor(() => {
-      expect(screen.getByTestId('card')).toHaveAttribute('data-active-key', 'lciaResults');
+      expect(screen.getAllByTestId('card')[0]).toHaveAttribute('data-active-key', 'lciaResults');
     });
 
     await waitFor(() => {
