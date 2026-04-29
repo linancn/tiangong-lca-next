@@ -171,8 +171,9 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
   };
 
   const handleFixRejectedData = () => {
-    if (!selectedRejectedRecord) return;
-    openNotificationData(selectedRejectedRecord, 'edit', { forceProcess: true });
+    openNotificationData(selectedRejectedRecord as DataNotificationItem, 'edit', {
+      forceProcess: true,
+    });
     setSelectedRejectedRecord(null);
   };
 
