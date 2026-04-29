@@ -7,7 +7,7 @@ import {
 } from '@/services/processes/api';
 import { BarChartOutlined } from '@ant-design/icons';
 
-import { Card, Checkbox, Col, Input, message, Row, Select, Space, Tooltip } from 'antd';
+import { Card, Checkbox, Col, Input, message, Row, Select, Space } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
@@ -19,6 +19,21 @@ import {
 } from '@/components/ContributeData/utils';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import {
+  DATA_LIST_COLUMN_RESPONSIVE,
+  dataListActionColumn,
+  dataListIndexColumn,
+  dataListText,
+  dataListTextColumn,
+  ResponsiveDataListActions,
+  responsiveDataListTableProps,
+  ResponsiveDataListToolbarMore,
+  responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
+  responsiveSearchPrimaryColProps,
+  responsiveSearchRowProps,
+  useResponsiveDataListMobile,
+} from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import ToolBarButton from '@/components/ToolBarButton';
 import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
@@ -30,14 +45,7 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
-import {
-  ActionType,
-  PageContainer,
-  ProColumns,
-  ProTable,
-  TableDropdown,
-} from '@ant-design/pro-components';
-import { theme } from 'antd';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { FC, ReactElement } from 'react';
@@ -68,7 +76,7 @@ const TableList: FC = () => {
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
-  const { token } = theme.useToken();
+  const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -102,14 +110,14 @@ const TableList: FC = () => {
   const keyWordRef = useRef('');
   const stateCodeRef = useRef<string | number>('all');
   const typeOfDataSetRef = useRef<string>('all');
-  const typeOfDataSetFilter = () => {
+  const typeOfDataSetFilter = (width = 160) => {
     const onChange = (value: string) => {
       typeOfDataSetRef.current = value;
       setTypeOfDataSet(value);
       actionRef.current?.reloadAndRest?.();
     };
     return (
-      <Select defaultValue={'all'} style={{ width: 160 }} onChange={onChange}>
+      <Select defaultValue={'all'} style={{ width }} onChange={onChange}>
         <Select.Option value={'all'}>
           <FormattedMessage id='pages.table.filter.all.datasetType' />
         </Select.Option>
@@ -123,25 +131,23 @@ const TableList: FC = () => {
   };
   const processColumns: ProColumns<ProcessTable>[] = [
     {
+      ...dataListIndexColumn<ProcessTable>(),
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
-      search: false,
     },
     {
+      ...dataListTextColumn<ProcessTable>(300),
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: true,
       search: false,
       render: (_, row) => {
-        return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
-            {row.name}
-          </Tooltip>,
-        ];
+        return dataListText(row.name, row.generalComment);
       },
     },
     {
+      ...dataListTextColumn<ProcessTable>(260, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: (
         <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
@@ -149,14 +155,11 @@ const TableList: FC = () => {
       sorter: true,
       search: false,
       render: (_, row) => {
-        return (
-          <div>
-            {row.classification && row.classification !== 'undefined' ? row.classification : '-'}
-          </div>
-        );
+        return dataListText(row.classification);
       },
     },
     {
+      ...dataListTextColumn<ProcessTable>(180, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: (
         <FormattedMessage
           id='pages.process.view.modellingAndValidation.typeOfDataSet'
@@ -167,22 +170,25 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return getProcesstypeOfDataSetOptions(row.typeOfDataSet);
+        return dataListText(getProcesstypeOfDataSetOptions(row.typeOfDataSet));
       },
     },
     {
+      ...dataListTextColumn<ProcessTable>(132, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
       dataIndex: 'referenceYear',
       sorter: false,
       search: false,
     },
     {
+      ...dataListTextColumn<ProcessTable>(132, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
       dataIndex: 'location',
       sorter: false,
       search: false,
     },
     {
+      ...dataListTextColumn<ProcessTable>(132),
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
@@ -224,6 +230,7 @@ const TableList: FC = () => {
       },
     },
     {
+      ...dataListTextColumn<ProcessTable>(180, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -231,14 +238,81 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      ...dataListActionColumn<ProcessTable>(
+        isMobileDataList ? 72 : dataSource === 'my' ? 204 : 168,
+      ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
-      search: false,
       render: (_, row) => {
         const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
-            <Space size={'small'} key={0}>
+            <ResponsiveDataListActions
+              key={0}
+              isMobile={isMobileDataList}
+              moreMenus={[
+                {
+                  key: 'logs',
+                  name: <ReviewDetail processId={row.id} processVersion={row.version} />,
+                },
+                {
+                  key: 'export',
+                  name: <ExportData tableName='processes' id={row.id} version={row.version} />,
+                },
+                {
+                  key: 'copy',
+                  name: (
+                    <>
+                      {row.modelId ? (
+                        <LifeCycleModelCreate
+                          actionType='copy'
+                          id={row.modelId}
+                          version={row.version}
+                          lang={lang}
+                          actionRef={actionRef}
+                          buttonType={'icon'}
+                        />
+                      ) : (
+                        <ProcessCreate
+                          actionType='copy'
+                          id={row.id}
+                          version={row.version}
+                          lang={lang}
+                          actionRef={actionRef}
+                        />
+                      )}
+                    </>
+                  ),
+                },
+                {
+                  key: 'contribute',
+                  name: (
+                    <ContributeData
+                      onOk={async () => {
+                        const contributeResult = row.modelId
+                          ? await contributeLifeCycleModel(row.modelId, row.version)
+                          : await contributeProcess(row.id, row.version);
+                        const contributeError = extractContributeDataError(contributeResult);
+
+                        if (contributeError) {
+                          message.error(getContributeDataErrorMessage(intl, contributeError));
+                          console.log(contributeError);
+                        } else {
+                          message.success(
+                            intl.formatMessage({
+                              id: 'component.contributeData.success',
+                              defaultMessage: 'Contribute successfully',
+                            }),
+                          );
+                        }
+                        actionRef.current?.reload();
+                      }}
+                      disabled={!!row.teamId}
+                    />
+                  ),
+                },
+              ]}
+            >
               <ProcessView
                 id={row.id}
                 version={row.version}
@@ -285,79 +359,33 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <TableDropdown
-                style={{
-                  color: token.colorPrimary,
-                }}
-                menus={[
-                  {
-                    key: 'logs',
-                    name: <ReviewDetail processId={row.id} processVersion={row.version} />,
-                  },
-                  {
-                    key: 'export',
-                    name: <ExportData tableName='processes' id={row.id} version={row.version} />,
-                  },
-                  {
-                    key: 'copy',
-                    name: (
-                      <>
-                        {row.modelId ? (
-                          <LifeCycleModelCreate
-                            actionType='copy'
-                            id={row.modelId}
-                            version={row.version}
-                            lang={lang}
-                            actionRef={actionRef}
-                            buttonType={'icon'}
-                          />
-                        ) : (
-                          <ProcessCreate
-                            actionType='copy'
-                            id={row.id}
-                            version={row.version}
-                            lang={lang}
-                            actionRef={actionRef}
-                          />
-                        )}
-                      </>
-                    ),
-                  },
-                  {
-                    key: 'contribute',
-                    name: (
-                      <ContributeData
-                        onOk={async () => {
-                          const contributeResult = row.modelId
-                            ? await contributeLifeCycleModel(row.modelId, row.version)
-                            : await contributeProcess(row.id, row.version);
-                          const contributeError = extractContributeDataError(contributeResult);
-
-                          if (contributeError) {
-                            message.error(getContributeDataErrorMessage(intl, contributeError));
-                            console.log(contributeError);
-                          } else {
-                            message.success(
-                              intl.formatMessage({
-                                id: 'component.contributeData.success',
-                                defaultMessage: 'Contribute successfully',
-                              }),
-                            );
-                          }
-                          actionRef.current?.reload();
-                        }}
-                        disabled={!!row.teamId}
-                      />
-                    ),
-                  },
-                ]}
-              />
-            </Space>,
+            </ResponsiveDataListActions>,
           ];
         }
         if (dataSource === 'tg') {
           return [
-            <Space size={'small'} key={0}>
+            <ResponsiveDataListActions
+              key={0}
+              isMobile={isMobileDataList}
+              moreMenus={[
+                {
+                  key: 'copy',
+                  name: (
+                    <ProcessCreate
+                      actionType='copy'
+                      id={row.id}
+                      version={row.version}
+                      lang={lang}
+                      actionRef={actionRef}
+                    />
+                  ),
+                },
+                {
+                  key: 'export',
+                  name: <ExportData tableName='processes' id={row.id} version={row.version} />,
+                },
+              ]}
+            >
               <ProcessView
                 id={row.id}
                 version={row.version}
@@ -376,35 +404,11 @@ const TableList: FC = () => {
                 actionRef={actionRef}
               />
               <ReviewDetail processId={row.id} processVersion={row.version} />
-
-              <TableDropdown
-                style={{
-                  color: token.colorPrimary,
-                }}
-                menus={[
-                  {
-                    key: 'copy',
-                    name: (
-                      <ProcessCreate
-                        actionType='copy'
-                        id={row.id}
-                        version={row.version}
-                        lang={lang}
-                        actionRef={actionRef}
-                      />
-                    ),
-                  },
-                  {
-                    key: 'export',
-                    name: <ExportData tableName='processes' id={row.id} version={row.version} />,
-                  },
-                ]}
-              />
-            </Space>,
+            </ResponsiveDataListActions>,
           ];
         }
         return [
-          <Space size={'small'} key={0}>
+          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
             <ProcessView
               id={row.id}
               version={row.version}
@@ -430,7 +434,7 @@ const TableList: FC = () => {
               actionRef={actionRef}
             />
             <ExportData tableName='processes' id={row.id} version={row.version} />
-          </Space>,
+          </ResponsiveDataListActions>,
         ];
       },
     },
@@ -489,9 +493,9 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card>
-        <Row align={'middle'}>
-          <Col flex='auto' style={{ marginRight: '10px' }}>
+      <Card className={responsiveSearchCardClassName}>
+        <Row {...responsiveSearchRowProps}>
+          <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
               placeholder={
@@ -503,7 +507,7 @@ const TableList: FC = () => {
               enterButton
             />
           </Col>
-          <Col flex='100px'>
+          <Col {...responsiveSearchExtraColProps}>
             <Checkbox
               onChange={(e) => {
                 setOpenAI(e.target.checked);
@@ -515,6 +519,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<ProcessTable, ListPagination>
+        {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
@@ -524,64 +529,100 @@ const TableList: FC = () => {
         }
         actionRef={actionRef}
         search={false}
-        options={{ fullScreen: true }}
-        optionsRender={(_, defaultOptions) => {
-          const settings = (defaultOptions ?? []) as ReactElement[];
-          if (dataSource !== 'my') {
-            return settings;
-          }
-          const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
-          const analysisPageOption = (
-            <ToolBarButton
-              key='lca-analysis-page-option'
-              icon={<BarChartOutlined />}
-              tooltip={intl.formatMessage({
-                id: 'pages.process.lca.page.title',
-                defaultMessage: 'LCA Analysis',
-              })}
-              onClick={() => {
-                history.push('/mydata/processes/analysis');
-              }}
-            />
-          );
-          const reloadIndex = settings.findIndex((item) => item.key === 'reload');
-          if (reloadIndex < 0) {
-            return [...settings, calcOption, analysisPageOption];
-          }
-          return [
-            ...settings.slice(0, reloadIndex + 1),
-            calcOption,
-            analysisPageOption,
-            ...settings.slice(reloadIndex + 1),
-          ];
-        }}
+        options={isMobileDataList ? false : { fullScreen: true }}
+        optionsRender={
+          isMobileDataList
+            ? undefined
+            : (_, defaultOptions) => {
+                const settings = (defaultOptions ?? []) as ReactElement[];
+                if (dataSource !== 'my') {
+                  return settings;
+                }
+                const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
+                const analysisPageOption = (
+                  <ToolBarButton
+                    key='lca-analysis-page-option'
+                    icon={<BarChartOutlined />}
+                    tooltip={intl.formatMessage({
+                      id: 'pages.process.lca.page.title',
+                      defaultMessage: 'LCA Analysis',
+                    })}
+                    onClick={() => {
+                      history.push('/mydata/processes/analysis');
+                    }}
+                  />
+                );
+                const reloadIndex = settings.findIndex((item) => item.key === 'reload');
+                if (reloadIndex < 0) {
+                  return [...settings, calcOption, analysisPageOption];
+                }
+                return [
+                  ...settings.slice(0, reloadIndex + 1),
+                  calcOption,
+                  analysisPageOption,
+                  ...settings.slice(reloadIndex + 1),
+                ];
+              }
+        }
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [
-              <span key={3}>{typeOfDataSetFilter()}</span>,
+            const filters = [
+              <span key={3}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>,
               <TableFilter
                 key={2}
+                width={isMobileDataList ? 112 : 140}
                 onChange={(val) => {
                   stateCodeRef.current = val;
                   setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
-              <ProcessCreate
-                importData={importData}
-                onClose={() => setImportData(null)}
-                key={0}
-                lang={lang}
-                actionRef={actionRef}
-              />,
-              <ImportData onJsonData={handleImportData} key={1} />,
             ];
+            const mobileActions = isMobileDataList
+              ? [
+                  <ResponsiveDataListToolbarMore key='process-mobile-toolbar-more'>
+                    <ProcessCreate
+                      importData={importData}
+                      onClose={() => setImportData(null)}
+                      key='process-create-option'
+                      lang={lang}
+                      actionRef={actionRef}
+                    />
+                    <LcaSolveToolbar key='lca-calc-option' />
+                    <ToolBarButton
+                      key='lca-analysis-page-option'
+                      icon={<BarChartOutlined />}
+                      tooltip={intl.formatMessage({
+                        id: 'pages.process.lca.page.title',
+                        defaultMessage: 'LCA Analysis',
+                      })}
+                      onClick={() => {
+                        history.push('/mydata/processes/analysis');
+                      }}
+                    />
+                    <ImportData onJsonData={handleImportData} key='process-import-option' />
+                  </ResponsiveDataListToolbarMore>,
+                ]
+              : [];
+            const desktopActions = isMobileDataList
+              ? []
+              : [
+                  <ProcessCreate
+                    importData={importData}
+                    onClose={() => setImportData(null)}
+                    key={0}
+                    lang={lang}
+                    actionRef={actionRef}
+                  />,
+                  <ImportData onJsonData={handleImportData} key={1} />,
+                ];
+            return [...filters, ...mobileActions, ...desktopActions];
           }
-          return [<span key={0}>{typeOfDataSetFilter()}</span>];
+          return [<span key={0}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>];
         }}
         request={async (
           params: {

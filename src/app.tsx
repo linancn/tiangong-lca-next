@@ -123,15 +123,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       render: () => {
         return (
           <AvatarDropdown>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                height: '48px',
-                padding: '0 12px',
-                cursor: 'pointer',
-              }}
-            >
+            <div className='tg-global-header-avatar-trigger'>
               <AvatarName />
             </div>
           </AvatarDropdown>

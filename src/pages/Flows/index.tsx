@@ -3,7 +3,7 @@ import {
   getFlowTableAll,
   getFlowTablePgroongaSearch,
 } from '@/services/flows/api';
-import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -15,6 +15,20 @@ import {
 } from '@/components/ContributeData/utils';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import {
+  DATA_LIST_COLUMN_RESPONSIVE,
+  ResponsiveDataListActions,
+  dataListActionColumn,
+  dataListIndexColumn,
+  dataListText,
+  dataListTextColumn,
+  responsiveDataListTableProps,
+  responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
+  responsiveSearchPrimaryColProps,
+  responsiveSearchRowProps,
+  useResponsiveDataListMobile,
+} from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import { getCachedFlowCategorizationAll } from '@/services/classifications/cache';
 import { FlowImportData, FlowTable } from '@/services/flows/data';
@@ -23,14 +37,7 @@ import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import {
-  ActionType,
-  PageContainer,
-  ProColumns,
-  ProTable,
-  TableDropdown,
-} from '@ant-design/pro-components';
-import { theme } from 'antd';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/lib/table/interface';
 import type { FC, ReactNode } from 'react';
@@ -58,7 +65,7 @@ const TableList: FC = () => {
   const [classificationFilterOptions, setClassificationFilterOptions] = useState<
     Array<{ text: ReactNode; value: string }>
   >([]);
-  const { token } = theme.useToken();
+  const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
   const [, setStateCode] = useState<string | number>('all');
@@ -125,25 +132,23 @@ const TableList: FC = () => {
   }, [dataSource, id, version]);
   const flowsColumns: ProColumns<FlowTable>[] = [
     {
+      ...dataListIndexColumn<FlowTable>(),
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
-      search: false,
     },
     {
+      ...dataListTextColumn<FlowTable>(300),
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: true,
       search: false,
       render: (_, row) => {
-        return [
-          <Tooltip key={0} placement='topLeft' title={row.synonyms}>
-            {row.name}
-          </Tooltip>,
-        ];
+        return dataListText(row.name, row.synonyms);
       },
     },
     {
+      ...dataListTextColumn<FlowTable>(160, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: <FormattedMessage id='pages.flow.flowType' defaultMessage='Flow type' />,
       dataIndex: 'flowType',
       sorter: false,
@@ -152,12 +157,13 @@ const TableList: FC = () => {
       render: (_, row) => {
         const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
         if (flowType) {
-          return flowType.label;
+          return dataListText(flowType.label);
         }
-        return row.flowType;
+        return dataListText(row.flowType);
       },
     },
     {
+      ...dataListTextColumn<FlowTable>(260, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: (
         <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
@@ -166,19 +172,19 @@ const TableList: FC = () => {
       filters: classificationFilterOptions.length > 0 ? classificationFilterOptions : undefined,
       filterMultiple: true,
       render: (_, row) => {
-        return row?.classification && row?.classification !== 'undefined'
-          ? row.classification
-          : '-';
+        return dataListText(row.classification);
       },
     },
 
     {
+      ...dataListTextColumn<FlowTable>(132, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: <FormattedMessage id='pages.flow.CASNumber' defaultMessage='CAS Number' />,
       dataIndex: 'CASNumber',
       sorter: false,
       search: false,
     },
     {
+      ...dataListTextColumn<FlowTable>(168, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: (
         <FormattedMessage id='pages.flow.locationOfSupply' defaultMessage='Location of supply' />
       ),
@@ -187,6 +193,7 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      ...dataListTextColumn<FlowTable>(132),
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
@@ -229,6 +236,7 @@ const TableList: FC = () => {
       },
     },
     {
+      ...dataListTextColumn<FlowTable>(180, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -236,14 +244,64 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      ...dataListActionColumn<FlowTable>(isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
-      search: false,
       render: (_, row) => {
         const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
-            <Space size={'small'} key={0}>
+            <ResponsiveDataListActions
+              key={0}
+              isMobile={isMobileDataList}
+              moreMenus={[
+                {
+                  key: 'export',
+                  name: <ExportData tableName='flows' id={row.id} version={row.version} />,
+                },
+                {
+                  key: 'copy',
+                  name: (
+                    <FlowsCreate
+                      actionType='copy'
+                      id={row.id}
+                      version={row.version}
+                      lang={lang}
+                      actionRef={actionRef}
+                    />
+                  ),
+                },
+                {
+                  key: 'contribute',
+                  name: (
+                    <ContributeData
+                      onOk={async () => {
+                        const contributeResult = await contributeSource(
+                          'flows',
+                          row.id,
+                          row.version,
+                        );
+                        const contributeError = extractContributeDataError(contributeResult);
+
+                        if (contributeError) {
+                          message.error(getContributeDataErrorMessage(intl, contributeError));
+                          console.log(contributeError);
+                        } else {
+                          message.success(
+                            intl.formatMessage({
+                              id: 'component.contributeData.success',
+                              defaultMessage: 'Contribute successfully',
+                            }),
+                          );
+                          actionRef.current?.reload();
+                        }
+                      }}
+                      disabled={!!row.teamId}
+                    />
+                  ),
+                },
+              ]}
+            >
               <FlowsView
                 // actionRef={actionRef}
                 buttonType={'icon'}
@@ -267,63 +325,11 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <TableDropdown
-                style={{
-                  color: token.colorPrimary,
-                }}
-                menus={[
-                  {
-                    key: 'export',
-                    name: <ExportData tableName='flows' id={row.id} version={row.version} />,
-                  },
-                  {
-                    key: 'copy',
-                    name: (
-                      <FlowsCreate
-                        actionType='copy'
-                        id={row.id}
-                        version={row.version}
-                        lang={lang}
-                        actionRef={actionRef}
-                      />
-                    ),
-                  },
-                  {
-                    key: 'contribute',
-                    name: (
-                      <ContributeData
-                        onOk={async () => {
-                          const contributeResult = await contributeSource(
-                            'flows',
-                            row.id,
-                            row.version,
-                          );
-                          const contributeError = extractContributeDataError(contributeResult);
-
-                          if (contributeError) {
-                            message.error(getContributeDataErrorMessage(intl, contributeError));
-                            console.log(contributeError);
-                          } else {
-                            message.success(
-                              intl.formatMessage({
-                                id: 'component.contributeData.success',
-                                defaultMessage: 'Contribute successfully',
-                              }),
-                            );
-                            actionRef.current?.reload();
-                          }
-                        }}
-                        disabled={!!row.teamId}
-                      />
-                    ),
-                  },
-                ]}
-              />
-            </Space>,
+            </ResponsiveDataListActions>,
           ];
         }
         return [
-          <Space size={'small'} key={0}>
+          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
             <FlowsView
               // actionRef={actionRef}
               buttonType={'icon'}
@@ -339,7 +345,7 @@ const TableList: FC = () => {
               actionRef={actionRef}
             />
             <ExportData tableName='flows' id={row.id} version={row.version} />
-          </Space>,
+          </ResponsiveDataListActions>,
         ];
       },
     },
@@ -404,9 +410,9 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card>
-        <Row align={'middle'}>
-          <Col flex='auto' style={{ marginRight: '10px' }}>
+      <Card className={responsiveSearchCardClassName}>
+        <Row {...responsiveSearchRowProps}>
+          <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
               placeholder={
@@ -418,7 +424,7 @@ const TableList: FC = () => {
               enterButton
             />
           </Col>
-          <Col flex='100px'>
+          <Col {...responsiveSearchExtraColProps}>
             <Checkbox
               onChange={(e) => {
                 setOpenAI(e.target.checked);
@@ -430,6 +436,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<FlowTable, ListPagination>
+        {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
@@ -439,22 +446,26 @@ const TableList: FC = () => {
         }
         actionRef={actionRef}
         search={false}
-        options={{ fullScreen: true }}
+        options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [
+            const filters = [
               <TableFilter
                 key={2}
+                width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
                   stateCodeRef.current = val;
                   setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
+            ];
+            return [
+              ...filters,
               <FlowsCreate
                 importData={importData}
                 onClose={() => setImportData(null)}
