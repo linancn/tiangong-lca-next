@@ -18,6 +18,8 @@ import { FormattedMessage, useIntl } from 'umi';
 import schema from '../sources_schema.json';
 import { publicationTypeOptions } from './optiondata';
 
+const SOURCE_SCHEMA_PATH_PREFIX = ['sourceDataSet'];
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -60,6 +62,8 @@ export const SourceForm: FC<Props> = ({
     intl,
     sdkValidationDetails,
     sdkValidationFocus,
+    schemaPathPrefix: SOURCE_SCHEMA_PATH_PREFIX,
+    schemaRoot: schema,
     showRules,
   });
   const handlePreview = async (file: UploadFile) => {

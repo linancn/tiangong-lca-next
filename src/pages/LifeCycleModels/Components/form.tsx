@@ -18,6 +18,8 @@ import { FormattedMessage, useIntl } from 'umi';
 import schema from '../lifecyclemodels.json';
 import { licenseTypeOptions } from './optiondata';
 
+const LIFE_CYCLE_MODEL_SCHEMA_PATH_PREFIX = ['lifeCycleModelDataSet'];
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -55,6 +57,8 @@ export const LifeCycleModelForm: FC<Props> = ({
     intl,
     sdkValidationDetails,
     sdkValidationFocus,
+    schemaPathPrefix: LIFE_CYCLE_MODEL_SCHEMA_PATH_PREFIX,
+    schemaRoot: schema,
     showRules,
   });
 

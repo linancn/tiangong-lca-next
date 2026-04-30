@@ -29,7 +29,7 @@ import {
   Space,
   theme,
 } from 'antd';
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../processes_schema.json';
 import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../sdkValidationUi';
@@ -234,6 +234,8 @@ export const ProcessForm: FC<Props> = ({
   sdkValidationFocus,
 }) => {
   const intl = useIntl();
+  const intlRef = useRef(intl);
+  intlRef.current = intl;
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
@@ -254,8 +256,10 @@ export const ProcessForm: FC<Props> = ({
 
   const { token } = theme.useToken();
 
-  const formatSdkDetailMessage = (detail: ValidationIssueSdkDetail) =>
-    getSdkSuggestedFixMessage(intl, detail);
+  const formatSdkDetailMessage = useCallback(
+    (detail: ValidationIssueSdkDetail) => getSdkSuggestedFixMessage(intlRef.current, detail),
+    [],
+  );
 
   const sdkVisibleSectionAnchorsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
     (accumulator, detail) => {
@@ -322,73 +326,82 @@ export const ProcessForm: FC<Props> = ({
     },
     {},
   );
-  const sdkExchangeFieldDetailsByExchangeId = sdkValidationDetails.reduce<
-    Record<string, ValidationIssueSdkDetail[]>
-  >((accumulator, detail) => {
-    if (
-      !detail.exchangeInternalId ||
-      !isSdkFieldDetail(detail) ||
-      isSdkSectionDetail(detail) ||
-      isSdkHighlightOnlyDetail(detail)
-    ) {
-      return accumulator;
-    }
+  const sdkExchangeFieldDetailsByExchangeId = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, ValidationIssueSdkDetail[]>>(
+        (accumulator, detail) => {
+          if (
+            !detail.exchangeInternalId ||
+            !isSdkFieldDetail(detail) ||
+            isSdkSectionDetail(detail) ||
+            isSdkHighlightOnlyDetail(detail)
+          ) {
+            return accumulator;
+          }
 
-    if (!accumulator[detail.exchangeInternalId]) {
-      accumulator[detail.exchangeInternalId] = [];
-    }
+          if (!accumulator[detail.exchangeInternalId]) {
+            accumulator[detail.exchangeInternalId] = [];
+          }
 
-    accumulator[detail.exchangeInternalId].push(detail);
-    return accumulator;
-  }, {});
-  const sdkRootFieldMessages = sdkValidationDetails.reduce<
-    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
-  >((accumulator, detail) => {
-    if (detail.exchangeInternalId || !isSdkFieldDetail(detail)) {
-      return accumulator;
-    }
+          accumulator[detail.exchangeInternalId].push(detail);
+          return accumulator;
+        },
+        {},
+      ),
+    [sdkValidationDetails],
+  );
+  const sdkRootFieldMessages = useMemo(
+    () =>
+      sdkValidationDetails.reduce<
+        Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+      >((accumulator, detail) => {
+        if (detail.exchangeInternalId || !isSdkFieldDetail(detail)) {
+          return accumulator;
+        }
 
-    const formName = parseSdkDetailFormName(detail);
-    const serializedFormName = stringifySdkFormName(formName);
+        const formName = parseSdkDetailFormName(detail);
+        const serializedFormName = stringifySdkFormName(formName);
 
-    if (
-      !formName ||
-      !serializedFormName ||
-      serializedFormName === 'modellingAndValidation.validation.review' ||
-      serializedFormName === 'modellingAndValidation.complianceDeclarations.compliance'
-    ) {
-      return accumulator;
-    }
+        if (
+          !formName ||
+          !serializedFormName ||
+          serializedFormName === 'modellingAndValidation.validation.review' ||
+          serializedFormName === 'modellingAndValidation.complianceDeclarations.compliance'
+        ) {
+          return accumulator;
+        }
 
-    const formattedMessage = formatSdkDetailMessage(detail);
-    if (!formattedMessage) {
-      return accumulator;
-    }
-    const messageEntry: SdkFieldMessageEntry = {
-      text: formattedMessage,
-      validationCode: detail.validationCode,
-    };
+        const formattedMessage = formatSdkDetailMessage(detail);
+        if (!formattedMessage) {
+          return accumulator;
+        }
+        const messageEntry: SdkFieldMessageEntry = {
+          text: formattedMessage,
+          validationCode: detail.validationCode,
+        };
 
-    const currentEntry = accumulator.get(serializedFormName);
-    if (currentEntry) {
-      if (
-        !currentEntry.entries.some(
-          (entry) =>
-            entry.text === messageEntry.text &&
-            entry.validationCode === messageEntry.validationCode,
-        )
-      ) {
-        currentEntry.entries.push(messageEntry);
-      }
-      return accumulator;
-    }
+        const currentEntry = accumulator.get(serializedFormName);
+        if (currentEntry) {
+          if (
+            !currentEntry.entries.some(
+              (entry) =>
+                entry.text === messageEntry.text &&
+                entry.validationCode === messageEntry.validationCode,
+            )
+          ) {
+            currentEntry.entries.push(messageEntry);
+          }
+          return accumulator;
+        }
 
-    accumulator.set(serializedFormName, {
-      entries: [messageEntry],
-      name: formName,
-    });
-    return accumulator;
-  }, new Map());
+        accumulator.set(serializedFormName, {
+          entries: [messageEntry],
+          name: formName,
+        });
+        return accumulator;
+      }, new Map()),
+    [formatSdkDetailMessage, sdkValidationDetails],
+  );
   const sdkValidationSectionMessages = sdkValidationDetails.reduce<Record<string, string[]>>(
     (accumulator, detail) => {
       if (detail.exchangeInternalId || isSdkHighlightOnlyDetail(detail)) {
@@ -499,7 +512,7 @@ export const ProcessForm: FC<Props> = ({
           context: 'process',
           fieldName,
           frontendRulesEnabled: showRules,
-          intl,
+          intl: intlRef.current,
           retainedErrors,
           schemaRoot: schema,
           validationCode: entry.validationCode,
@@ -548,7 +561,7 @@ export const ProcessForm: FC<Props> = ({
     }
 
     rootSdkFieldMessagesRef.current = appliedEntries;
-  }, [formRef, intl, showRules, sdkRootFieldMessages]);
+  }, [formRef, showRules, sdkRootFieldMessages]);
 
   useEffect(() => {
     if (
