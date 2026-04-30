@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/flows',
   search: '?tid=team-1',
 };
+let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
 const mockGetFlowTableAll = jest.fn();
@@ -251,6 +252,9 @@ jest.mock('antd', () => {
     Checkbox,
     Col,
     ConfigProvider,
+    Grid: {
+      useBreakpoint: () => mockBreakpointScreens,
+    },
     Input,
     Row,
     Space,
@@ -392,6 +396,7 @@ describe('FlowsPage', () => {
       pathname: '/mydata/flows',
       search: '?tid=team-1',
     };
+    mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetTeamById.mockResolvedValue({
       data: [{ json: { title: [{ '@xml:lang': 'en', '#text': 'Flow Team' }] } }],
@@ -455,6 +460,17 @@ describe('FlowsPage', () => {
 
     await user.click(screen.getByRole('button', { name: /close-flow-create-create/i }));
     expect(screen.getByTestId('flow-create-create')).toHaveTextContent('"importCount":0');
+  });
+
+  it('uses compact mobile controls for my data rows', async () => {
+    mockBreakpointScreens = { md: false };
+
+    renderWithProviders(<FlowsPage />);
+
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+    expect(await screen.findByText('Flow One')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
   it('reloads the table with the selected state filter and uses search placeholders for both modes', async () => {

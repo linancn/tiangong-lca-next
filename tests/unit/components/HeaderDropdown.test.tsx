@@ -62,7 +62,7 @@ describe('HeaderDropdown', () => {
     expect(props.placement).toBe('bottomLeft');
   });
 
-  it('uses full-width overlay style on narrow screens', () => {
+  it('constrains overlay width to the viewport', () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
@@ -77,7 +77,10 @@ describe('HeaderDropdown', () => {
     );
 
     const props = mockDropdown.mock.calls[0][0];
-    expect(props.overlayStyle).toEqual({ width: '100%' });
+    expect(props.overlayStyle).toEqual({
+      minWidth: 168,
+      maxWidth: 'calc(100vw - 24px)',
+    });
 
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,

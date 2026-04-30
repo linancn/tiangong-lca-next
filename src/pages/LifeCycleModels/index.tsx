@@ -6,6 +6,20 @@ import {
 } from '@/components/ContributeData/utils';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import {
+  DATA_LIST_COLUMN_RESPONSIVE,
+  ResponsiveDataListActions,
+  dataListActionColumn,
+  dataListIndexColumn,
+  dataListText,
+  dataListTextColumn,
+  responsiveDataListTableProps,
+  responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
+  responsiveSearchPrimaryColProps,
+  responsiveSearchRowProps,
+  useResponsiveDataListMobile,
+} from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import { attachStateCodesToRows } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -22,14 +36,8 @@ import type {
 } from '@/services/lifeCycleModels/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
-import {
-  ActionType,
-  PageContainer,
-  ProColumns,
-  ProTable,
-  TableDropdown,
-} from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -51,7 +59,7 @@ const TableList: FC = () => {
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
-  const { token } = theme.useToken();
+  const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -107,25 +115,23 @@ const TableList: FC = () => {
   };
   const processColumns: ProColumns<LifeCycleModelTable>[] = [
     {
+      ...dataListIndexColumn<LifeCycleModelTable>(),
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
-      search: false,
     },
     {
+      ...dataListTextColumn<LifeCycleModelTable>(320),
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: true,
       search: false,
       render: (_, row) => {
-        return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
-            {row.name}
-          </Tooltip>,
-        ];
+        return dataListText(row.name, row.generalComment);
       },
     },
     {
+      ...dataListTextColumn<LifeCycleModelTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: (
         <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
@@ -133,14 +139,11 @@ const TableList: FC = () => {
       sorter: true,
       search: false,
       render: (_, row) => {
-        return (
-          <div>
-            {row.classification && row.classification !== 'undefined' ? row.classification : '-'}
-          </div>
-        );
+        return dataListText(row.classification);
       },
     },
     {
+      ...dataListTextColumn<LifeCycleModelTable>(132),
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
@@ -180,6 +183,7 @@ const TableList: FC = () => {
       },
     },
     {
+      ...dataListTextColumn<LifeCycleModelTable>(180, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -187,14 +191,68 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      ...dataListActionColumn<LifeCycleModelTable>(
+        isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152,
+      ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
-      search: false,
       render: (_, row) => {
         const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
-            <Space size={'small'} key={0}>
+            <ResponsiveDataListActions
+              key={0}
+              isMobile={isMobileDataList}
+              moreMenus={[
+                {
+                  key: 'export',
+                  name: (
+                    <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
+                  ),
+                },
+                {
+                  key: 'copy',
+                  name: (
+                    <LifeCycleModelCreate
+                      actionType='copy'
+                      id={row.id}
+                      version={row.version}
+                      lang={lang}
+                      actionRef={actionRef}
+                      buttonType={'icon'}
+                    />
+                  ),
+                },
+                {
+                  key: 'contribute',
+                  name: (
+                    <ContributeData
+                      onOk={async () => {
+                        const contributeResult = await contributeLifeCycleModel(
+                          row.id,
+                          row.version,
+                        );
+                        const contributeError = extractContributeDataError(contributeResult);
+
+                        if (contributeError) {
+                          message.error(getContributeDataErrorMessage(intl, contributeError));
+                          console.log(contributeError);
+                        } else {
+                          message.success(
+                            intl.formatMessage({
+                              id: 'component.contributeData.success',
+                              defaultMessage: 'Contribute successfully',
+                            }),
+                          );
+                          actionRef.current?.reload();
+                        }
+                      }}
+                      disabled={!!row.teamId}
+                    />
+                  ),
+                },
+              ]}
+            >
               <LifeCycleModelView
                 id={row.id}
                 version={row.version}
@@ -218,65 +276,11 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <TableDropdown
-                style={{
-                  color: token.colorPrimary,
-                }}
-                menus={[
-                  {
-                    key: 'export',
-                    name: (
-                      <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
-                    ),
-                  },
-                  {
-                    key: 'copy',
-                    name: (
-                      <LifeCycleModelCreate
-                        actionType='copy'
-                        id={row.id}
-                        version={row.version}
-                        lang={lang}
-                        actionRef={actionRef}
-                        buttonType={'icon'}
-                      />
-                    ),
-                  },
-                  {
-                    key: 'contribute',
-                    name: (
-                      <ContributeData
-                        onOk={async () => {
-                          const contributeResult = await contributeLifeCycleModel(
-                            row.id,
-                            row.version,
-                          );
-                          const contributeError = extractContributeDataError(contributeResult);
-
-                          if (contributeError) {
-                            message.error(getContributeDataErrorMessage(intl, contributeError));
-                            console.log(contributeError);
-                          } else {
-                            message.success(
-                              intl.formatMessage({
-                                id: 'component.contributeData.success',
-                                defaultMessage: 'Contribute successfully',
-                              }),
-                            );
-                            actionRef.current?.reload();
-                          }
-                        }}
-                        disabled={!!row.teamId}
-                      />
-                    ),
-                  },
-                ]}
-              />
-            </Space>,
+            </ResponsiveDataListActions>,
           ];
         }
         return [
-          <Space size={'small'} key={0}>
+          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
             <LifeCycleModelView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
             <LifeCycleModelCreate
               actionType='copy'
@@ -287,7 +291,7 @@ const TableList: FC = () => {
               buttonType={'icon'}
             />
             <ExportData tableName='lifecyclemodels' id={row.id} version={row.version} />
-          </Space>,
+          </ResponsiveDataListActions>,
         ];
       },
     },
@@ -318,9 +322,9 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card>
-        <Row align={'middle'}>
-          <Col flex='auto' style={{ marginRight: '10px' }}>
+      <Card className={responsiveSearchCardClassName}>
+        <Row {...responsiveSearchRowProps}>
+          <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
               placeholder={
@@ -332,7 +336,7 @@ const TableList: FC = () => {
               enterButton
             />
           </Col>
-          <Col flex='100px'>
+          <Col {...responsiveSearchExtraColProps}>
             <Checkbox
               onChange={(e) => {
                 setOpenAI(e.target.checked);
@@ -344,6 +348,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
+        {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
@@ -353,22 +358,26 @@ const TableList: FC = () => {
         }
         actionRef={actionRef}
         search={false}
-        options={{ fullScreen: true }}
+        options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [
+            const filters = [
               <TableFilter
                 key={2}
+                width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
                   stateCodeRef.current = val;
                   setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
+            ];
+            return [
+              ...filters,
               <LifeCycleModelCreate
                 importData={importData}
                 onClose={() => setImportData(null)}

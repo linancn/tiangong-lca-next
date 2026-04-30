@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/sources',
   search: '?tid=team-1',
 };
+let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
 const mockGetSourceTableAll = jest.fn();
@@ -229,6 +230,9 @@ jest.mock('antd', () => {
     Checkbox,
     Col,
     ConfigProvider,
+    Grid: {
+      useBreakpoint: () => mockBreakpointScreens,
+    },
     Input,
     Row,
     Space,
@@ -320,6 +324,7 @@ describe('SourcesPage', () => {
       pathname: '/mydata/sources',
       search: '?tid=team-1',
     };
+    mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -355,6 +360,17 @@ describe('SourcesPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /close-source-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-source-delete/i }));
+  });
+
+  it('uses compact mobile controls for my data rows', async () => {
+    mockBreakpointScreens = { md: false };
+
+    renderWithProviders(<SourcesPage />);
+
+    await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalled());
+    expect(await screen.findByTestId('source-view')).toHaveTextContent('view:source-1');
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
   it('supports pgroonga search, AI search, and contribute flows', async () => {
