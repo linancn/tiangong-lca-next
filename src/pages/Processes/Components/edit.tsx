@@ -75,6 +75,35 @@ type RefProblemNode = ProblemNode & {
   versionIsInTg?: boolean;
 };
 
+const collectChangedFieldPaths = (
+  value: unknown,
+  prefix: Array<string | number> = [],
+): Array<Array<string | number>> => {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return prefix.length > 0 ? [prefix] : [];
+    }
+
+    return value.flatMap((item, index) => collectChangedFieldPaths(item, [...prefix, index]));
+  }
+
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>);
+
+    if (entries.length === 0) {
+      return prefix.length > 0 ? [prefix] : [];
+    }
+
+    return entries.flatMap(([key, childValue]) =>
+      collectChangedFieldPaths(childValue, [...prefix, key]),
+    );
+  }
+
+  return prefix.length > 0 ? [prefix] : [];
+};
+
+const stringifyProcessFieldPath = (path: Array<string | number>) => path.map(String).join('.');
+
 const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
   return Array.isArray(reference) ? reference[0] : reference;
 };
@@ -154,6 +183,9 @@ const ProcessEdit: FC<Props> = ({
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
     null,
   );
+  const [sdkValidationDismissedFieldKeys, setSdkValidationDismissedFieldKeys] = useState<
+    ReadonlySet<string>
+  >(new Set());
   const [pendingTabValidationKey, setPendingTabValidationKey] = useState<TabKeysType | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
@@ -243,6 +275,37 @@ const ProcessEdit: FC<Props> = ({
   const handleLatestJsonChange = (latestJson: ProcessDetailData['json']) => {
     aiSuggestionDataRef.current = latestJson;
   };
+
+  const dismissChangedSdkValidationFields = useCallback(
+    (changedValues: unknown) => {
+      if (!showRules || sdkValidationDetails.length === 0) {
+        return;
+      }
+
+      const changedFieldKeys = collectChangedFieldPaths(changedValues)
+        .map(stringifyProcessFieldPath)
+        .filter(Boolean);
+
+      if (changedFieldKeys.length === 0) {
+        return;
+      }
+
+      setSdkValidationDismissedFieldKeys((currentKeys) => {
+        let hasNewKey = false;
+        const nextKeys = new Set(currentKeys);
+
+        changedFieldKeys.forEach((fieldKey) => {
+          if (!nextKeys.has(fieldKey)) {
+            nextKeys.add(fieldKey);
+            hasNewKey = true;
+          }
+        });
+
+        return hasNewKey ? nextKeys : currentKeys;
+      });
+    },
+    [sdkValidationDetails.length, showRules],
+  );
 
   const handleAISuggestionClose = () => {
     const dataSet = genProcessFromData(aiSuggestionDataRef.current?.processDataSet ?? {});
@@ -663,6 +726,7 @@ const ProcessEdit: FC<Props> = ({
     const silent = options?.silent ?? false;
     setSpinning(true);
     setShowRules(true);
+    setSdkValidationDismissedFieldKeys(new Set());
     if (processDetail.stateCode >= 20 && processDetail.stateCode < 100 && from === 'checkData') {
       if (!silent) {
         message.error(
@@ -975,6 +1039,7 @@ const ProcessEdit: FC<Props> = ({
       setRefCheckData([]);
       setSdkValidationDetails([]);
       setSdkValidationFocus(null);
+      setSdkValidationDismissedFieldKeys(new Set());
       setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       // setUnRuleVerificationData([]);
@@ -1170,7 +1235,8 @@ const ProcessEdit: FC<Props> = ({
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
-              onValuesChange={async (_, allValues) => {
+              onValuesChange={async (changedValues, allValues) => {
+                dismissChangedSdkValidationFields(changedValues);
                 if (activeTabKey === 'validation') {
                   await setFromData({
                     ...fromData,
@@ -1220,6 +1286,7 @@ const ProcessEdit: FC<Props> = ({
                 processId={id}
                 processVersion={version}
                 sdkValidationDetails={sdkValidationDetails}
+                sdkValidationDismissedFieldKeys={sdkValidationDismissedFieldKeys}
                 sdkValidationFocus={sdkValidationFocus}
                 showRules={showRules}
               />

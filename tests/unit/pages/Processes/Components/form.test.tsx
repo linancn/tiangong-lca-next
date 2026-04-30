@@ -870,6 +870,56 @@ describe('ProcessForm component', () => {
     expect(screen.queryByText('Fill in this field')).not.toBeInTheDocument();
   });
 
+  it('clears dismissed root sdk messages instead of replaying them on rerender', async () => {
+    const fieldName = ['processInformation', 'time', 'common:referenceYear'];
+    const sdkValidationDetail = {
+      key: 'sdk-root-reference-year-required',
+      tabName: 'processInformation',
+      fieldKey: 'common:referenceYear',
+      fieldLabel: 'Reference year',
+      fieldPath: 'processInformation.time.common:referenceYear',
+      formName: fieldName,
+      reasonMessage: 'Required value is missing.',
+      suggestedFix: 'Fill in the required value for this field.',
+      validationCode: 'required_missing',
+    };
+
+    const { rerender } = render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Please input reference year')).toBeInTheDocument();
+    });
+
+    defaultProps.formRef.current.setFields.mockClear();
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail]}
+        sdkValidationDismissedFieldKeys={new Set(['processInformation.time.common:referenceYear'])}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Please input reference year')).not.toBeInTheDocument();
+    });
+    expect(defaultProps.formRef.current.setFields).toHaveBeenCalledWith([
+      {
+        errors: [],
+        name: fieldName,
+      },
+    ]);
+  });
+
   it('uses the year validation copy for reference year range sdk issues', async () => {
     render(
       <ProcessForm
