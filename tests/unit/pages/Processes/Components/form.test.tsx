@@ -298,7 +298,7 @@ jest.mock('antd', () => {
     <div data-testid='card' data-active-key={activeTabKey}>
       {tabList.map((item: any) => (
         <button type='button' key={item.key} onClick={() => onTabChange?.(item.key)}>
-          {toText(item.tab)}
+          {item.tab}
         </button>
       ))}
       <div>{children}</div>
@@ -422,7 +422,7 @@ jest.mock('antd', () => {
     theme: {
       defaultAlgorithm: {},
       darkAlgorithm: {},
-      useToken: () => ({ token: {} }),
+      useToken: () => ({ token: { colorError: 'red', fontWeightStrong: 600 } }),
     },
   };
 });
@@ -912,6 +912,9 @@ describe('ProcessForm component', () => {
     await waitFor(() => {
       expect(screen.queryByText('Please input reference year')).not.toBeInTheDocument();
     });
+    expect(
+      screen.getByRole('button', { name: 'Process information' }).querySelector('span'),
+    ).toHaveStyle({ color: 'red' });
     expect(defaultProps.formRef.current.setFields).toHaveBeenCalledWith([
       {
         errors: [],
