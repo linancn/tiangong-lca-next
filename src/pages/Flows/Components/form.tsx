@@ -22,7 +22,7 @@ import { getLangText, getUnitData } from '@/services/general/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Divider, Form, Input, Select, Space, theme, Tooltip } from 'antd';
 import type { FC } from 'react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../flows_schema.json';
 import { complianceOptions, myFlowTypeOptions } from './optiondata';
@@ -32,6 +32,9 @@ import PropertyEdit from './Property/edit';
 import PropertyView from './Property/view';
 // import FlowsSelectForm from './select/form';
 import AlignedNumber from '@/components/AlignedNumber';
+
+const FLOW_SCHEMA_PATH_PREFIX = ['flowDataSet'];
+
 type Props = {
   lang: string;
   activeTabKey: FlowDataSetObjectKeys;
@@ -92,8 +95,9 @@ export const FlowForm: FC<Props> = ({
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
-  const sdkRootValidationDetails = sdkValidationDetails.filter(
-    (detail) => !getFlowPropertyInternalId(detail),
+  const sdkRootValidationDetails = useMemo(
+    () => sdkValidationDetails.filter((detail) => !getFlowPropertyInternalId(detail)),
+    [sdkValidationDetails],
   );
   const { sdkValidationCountsByTab: rootSdkValidationCountsByTab, sdkValidationSectionMessages } =
     useDatasetSdkValidationFormSupport({
@@ -102,62 +106,75 @@ export const FlowForm: FC<Props> = ({
       intl,
       sdkValidationDetails: sdkRootValidationDetails,
       sdkValidationFocus: getFlowPropertyInternalId(sdkValidationFocus) ? null : sdkValidationFocus,
+      schemaPathPrefix: FLOW_SCHEMA_PATH_PREFIX,
+      schemaRoot: schema,
       showRules,
     });
-  const sdkFlowPropertyRowHighlightsById = sdkValidationDetails.reduce<
-    Record<string, ValidationIssueSdkDetail[]>
-  >((accumulator, detail) => {
-    const flowPropertyInternalId = getFlowPropertyInternalId(detail);
+  const sdkFlowPropertyRowHighlightsById = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, ValidationIssueSdkDetail[]>>(
+        (accumulator, detail) => {
+          const flowPropertyInternalId = getFlowPropertyInternalId(detail);
 
-    if (!flowPropertyInternalId || isSdkSectionDetail(detail)) {
-      return accumulator;
-    }
+          if (!flowPropertyInternalId || isSdkSectionDetail(detail)) {
+            return accumulator;
+          }
 
-    if (!accumulator[flowPropertyInternalId]) {
-      accumulator[flowPropertyInternalId] = [];
-    }
+          if (!accumulator[flowPropertyInternalId]) {
+            accumulator[flowPropertyInternalId] = [];
+          }
 
-    accumulator[flowPropertyInternalId].push(detail);
-    return accumulator;
-  }, {});
-  const sdkFlowPropertyFieldDetailsById = sdkValidationDetails.reduce<
-    Record<string, ValidationIssueSdkDetail[]>
-  >((accumulator, detail) => {
-    const flowPropertyInternalId = getFlowPropertyInternalId(detail);
+          accumulator[flowPropertyInternalId].push(detail);
+          return accumulator;
+        },
+        {},
+      ),
+    [sdkValidationDetails],
+  );
+  const sdkFlowPropertyFieldDetailsById = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, ValidationIssueSdkDetail[]>>(
+        (accumulator, detail) => {
+          const flowPropertyInternalId = getFlowPropertyInternalId(detail);
 
-    if (
-      !flowPropertyInternalId ||
-      !isSdkFieldDetail(detail) ||
-      isSdkSectionDetail(detail) ||
-      isSdkHighlightOnlyDetail(detail)
-    ) {
-      return accumulator;
-    }
+          if (
+            !flowPropertyInternalId ||
+            !isSdkFieldDetail(detail) ||
+            isSdkSectionDetail(detail) ||
+            isSdkHighlightOnlyDetail(detail)
+          ) {
+            return accumulator;
+          }
 
-    if (!accumulator[flowPropertyInternalId]) {
-      accumulator[flowPropertyInternalId] = [];
-    }
+          if (!accumulator[flowPropertyInternalId]) {
+            accumulator[flowPropertyInternalId] = [];
+          }
 
-    accumulator[flowPropertyInternalId].push(detail);
-    return accumulator;
-  }, {});
-  const sdkVisibleFlowPropertyRowsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
-    (accumulator, detail) => {
-      const flowPropertyInternalId = getFlowPropertyInternalId(detail);
-      const tabName = detail.tabName;
+          accumulator[flowPropertyInternalId].push(detail);
+          return accumulator;
+        },
+        {},
+      ),
+    [sdkValidationDetails],
+  );
+  const sdkVisibleFlowPropertyRowsByTab = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, Set<string>>>((accumulator, detail) => {
+        const flowPropertyInternalId = getFlowPropertyInternalId(detail);
+        const tabName = detail.tabName;
 
-      if (!flowPropertyInternalId || !tabName || isSdkSectionDetail(detail)) {
+        if (!flowPropertyInternalId || !tabName || isSdkSectionDetail(detail)) {
+          return accumulator;
+        }
+
+        if (!accumulator[tabName]) {
+          accumulator[tabName] = new Set<string>();
+        }
+
+        accumulator[tabName].add(flowPropertyInternalId);
         return accumulator;
-      }
-
-      if (!accumulator[tabName]) {
-        accumulator[tabName] = new Set<string>();
-      }
-
-      accumulator[tabName].add(flowPropertyInternalId);
-      return accumulator;
-    },
-    {},
+      }, {}),
+    [sdkValidationDetails],
   );
   const sdkValidationCountsByTab: Record<string, number> = {
     ...rootSdkValidationCountsByTab,

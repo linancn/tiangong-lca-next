@@ -24,7 +24,7 @@ import {
   Tooltip,
 } from 'antd';
 import type { FC, ReactNode } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../../processes_schema.json';
 import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../../sdkValidationUi';
@@ -114,6 +114,8 @@ const ProcessExchangeEdit: FC<Props> = ({
   autoOpen = false,
 }) => {
   const intl = useIntl();
+  const intlRef = useRef(intl);
+  intlRef.current = intl;
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<ProcessExchangeData>({});
@@ -134,45 +136,49 @@ const ProcessExchangeEdit: FC<Props> = ({
     }
   }, [unitConvertVisible]);
 
-  const sdkFieldMessages = sdkHighlights.reduce<
-    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
-  >((accumulator, detail) => {
-    const formName =
-      (Array.isArray(detail.formName) && detail.formName.length > 0
-        ? detail.formName
-        : parseSdkFieldPathToFormName(detail.fieldPath)) ??
-      (detail.fieldKey ? [detail.fieldKey] : undefined);
-    const fieldKey = formName ? formName.map(String).join('.') : '';
-    const messageText = getSdkSuggestedFixMessage(intl, detail);
+  const sdkFieldMessages = useMemo(
+    () =>
+      sdkHighlights.reduce<
+        Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+      >((accumulator, detail) => {
+        const formName =
+          (Array.isArray(detail.formName) && detail.formName.length > 0
+            ? detail.formName
+            : parseSdkFieldPathToFormName(detail.fieldPath)) ??
+          (detail.fieldKey ? [detail.fieldKey] : undefined);
+        const fieldKey = formName ? formName.map(String).join('.') : '';
+        const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
-    if (!formName || !fieldKey || !messageText) {
-      return accumulator;
-    }
-    const messageEntry: SdkFieldMessageEntry = {
-      text: messageText,
-      validationCode: detail.validationCode,
-    };
+        if (!formName || !fieldKey || !messageText) {
+          return accumulator;
+        }
+        const messageEntry: SdkFieldMessageEntry = {
+          text: messageText,
+          validationCode: detail.validationCode,
+        };
 
-    const currentEntry = accumulator.get(fieldKey);
-    if (currentEntry) {
-      if (
-        !currentEntry.entries.some(
-          (entry) =>
-            entry.text === messageEntry.text &&
-            entry.validationCode === messageEntry.validationCode,
-        )
-      ) {
-        currentEntry.entries.push(messageEntry);
-      }
-      return accumulator;
-    }
+        const currentEntry = accumulator.get(fieldKey);
+        if (currentEntry) {
+          if (
+            !currentEntry.entries.some(
+              (entry) =>
+                entry.text === messageEntry.text &&
+                entry.validationCode === messageEntry.validationCode,
+            )
+          ) {
+            currentEntry.entries.push(messageEntry);
+          }
+          return accumulator;
+        }
 
-    accumulator.set(fieldKey, {
-      entries: [messageEntry],
-      name: formName,
-    });
-    return accumulator;
-  }, new Map());
+        accumulator.set(fieldKey, {
+          entries: [messageEntry],
+          name: formName,
+        });
+        return accumulator;
+      }, new Map()),
+    [sdkHighlights],
+  );
 
   const renderSdkHighlightedField = (_fieldKey: string, content: ReactNode) => content;
 
@@ -263,7 +269,7 @@ const ProcessExchangeEdit: FC<Props> = ({
           context: 'exchange',
           fieldName,
           frontendRulesEnabled: showRules,
-          intl,
+          intl: intlRef.current,
           retainedErrors,
           schemaRoot: schema,
           validationCode: entry.validationCode,
@@ -312,7 +318,7 @@ const ProcessExchangeEdit: FC<Props> = ({
     }
 
     sdkFieldMessagesRef.current = appliedEntries;
-  }, [drawerVisible, intl, showRules, sdkFieldMessages]);
+  }, [drawerVisible, showRules, sdkFieldMessages]);
 
   useEffect(() => {
     if (!drawerVisible || sdkHighlights.length === 0) {

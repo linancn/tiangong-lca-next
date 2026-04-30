@@ -555,4 +555,50 @@ describe('FlowPropertyEdit', () => {
     expect(lastFormApi.setFields).not.toHaveBeenCalled();
     expect(lastFormApi.getFieldError(['meanValue'])).toEqual(['Local mean value error']);
   });
+
+  it('uses the flow-property frontend required copy for sdk required_missing highlights', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    const sdkHighlights = [
+      {
+        fieldPath: 'flowProperty[#prop-1].meanValue',
+        key: 'flow-property-required-highlight',
+        reasonMessage: 'Validation failed',
+        suggestedFix: 'Fill in the required value for this field.',
+        tabName: 'flowProperties',
+        validationCode: 'required_missing',
+      },
+    ] as any;
+    renderWithProviders(
+      <PropertyEdit
+        id='1'
+        data={[{ '@dataSetInternalID': '1', meanValue: '10' }] as any}
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        showRules
+        sdkHighlights={sdkHighlights}
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+    expect(lastFormApi.setFields).toHaveBeenCalledWith([
+      {
+        errors: ['Please input mean value (of flow property)'],
+        name: ['meanValue'],
+      },
+    ]);
+
+    lastFormApi.setFields([{ errors: [], name: ['meanValue'] }]);
+    lastFormApi.setFields.mockClear();
+
+    await act(async () => {
+      lastFormApi.setFieldsValue({ meanValue: '42' });
+    });
+
+    expect(lastFormApi.setFields).not.toHaveBeenCalled();
+  });
 });

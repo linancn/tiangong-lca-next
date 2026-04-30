@@ -11,6 +11,9 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space, theme } from 'antd';
 import { FC, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+
+const CONTACT_SCHEMA_PATH_PREFIX = ['contactDataSet'];
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -44,6 +47,8 @@ export const ContactForm: FC<Props> = ({
     intl,
     sdkValidationDetails,
     sdkValidationFocus,
+    schemaPathPrefix: CONTACT_SCHEMA_PATH_PREFIX,
+    schemaRoot: schema,
     showRules,
   });
 

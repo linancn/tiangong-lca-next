@@ -1,6 +1,9 @@
 import {
+  formatRequiredRuleMessage,
+  getSchemaRequiredRule,
   getSdkSuggestedFixMessage,
   normalizeValidationMessageText,
+  resolveRequiredValidationMessage,
 } from '@/pages/Utils/validation/messages';
 
 const intl = {
@@ -88,5 +91,102 @@ describe('validation message helpers', () => {
 
     expect(getSdkSuggestedFixMessage(intl, { suggestedFix: undefined })).toBe('');
     expect(getSdkSuggestedFixMessage(intl)).toBe('');
+  });
+
+  it('resolves sdk required_missing to frontend required copy when schema rules exist', () => {
+    const schema = {
+      flowDataSet: {
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: {
+              rules: [
+                {
+                  defaultMessage: 'Please input type of flow',
+                  messageKey: 'pages.flow.validator.typeOfDataSet.required',
+                  required: true,
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    expect(
+      resolveRequiredValidationMessage({
+        fieldName: ['modellingAndValidation', 'LCIMethod', 'typeOfDataSet'],
+        frontendRulesEnabled: true,
+        intl,
+        retainedErrors: [],
+        schemaPathPrefix: ['flowDataSet'],
+        schemaRoot: schema,
+        validationCode: 'required_missing',
+      }),
+    ).toEqual({
+      replacementMessage: 'Please input type of flow',
+      suppressSdkMessage: false,
+    });
+  });
+
+  it('finds lang-text required rules on the frontend group field', () => {
+    const schema = {
+      contactDataSet: {
+        contactInformation: {
+          dataSetInformation: {
+            'common:shortName': {
+              rules: [
+                {
+                  defaultMessage: 'Please input contact short name',
+                  messageKey: 'pages.contact.validator.shortName.required',
+                  required: true,
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    expect(
+      getSchemaRequiredRule({
+        fieldName: ['contactInformation', 'dataSetInformation', 'common:shortName', 0, '#text'],
+        schemaPathPrefix: ['contactDataSet'],
+        schemaRoot: schema,
+      }),
+    ).toMatchObject({
+      defaultMessage: 'Please input contact short name',
+    });
+  });
+
+  it('suppresses sdk required_missing when local frontend errors already exist', () => {
+    expect(
+      resolveRequiredValidationMessage({
+        fieldName: ['meanValue'],
+        frontendRulesEnabled: true,
+        intl,
+        retainedErrors: ['Please input mean value'],
+        validationCode: 'required_missing',
+      }),
+    ).toEqual({
+      suppressSdkMessage: true,
+    });
+  });
+
+  it('keeps sdk fallback when no frontend required rule is available', () => {
+    expect(
+      resolveRequiredValidationMessage({
+        fieldName: ['optionalComment'],
+        frontendRulesEnabled: true,
+        intl,
+        retainedErrors: [],
+        schemaPathPrefix: ['flowDataSet'],
+        schemaRoot: { flowDataSet: { optionalComment: {} } },
+        validationCode: 'required_missing',
+      }),
+    ).toEqual({
+      suppressSdkMessage: false,
+    });
+
+    expect(formatRequiredRuleMessage(intl)).toBe('Please complete this field');
   });
 });
