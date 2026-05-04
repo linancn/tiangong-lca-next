@@ -43,7 +43,7 @@ export type LifeCycleModelDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof LifeCycleModel['lifeCycleModelDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormLifeCycleModel = Pick<

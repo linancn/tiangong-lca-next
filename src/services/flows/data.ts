@@ -89,7 +89,7 @@ export type FlowDataSetObjectKeys = Exclude<
   {
     [K in keyof Flow['flowDataSet']]: Flow['flowDataSet'][K] extends object | undefined ? K : never;
   }[keyof Flow['flowDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormFlow = Pick<Flow['flowDataSet'], FlowDataSetObjectKeys>;
