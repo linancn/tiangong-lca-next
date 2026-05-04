@@ -226,7 +226,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       return () => {
         cancelled = true;
       };
-    }, [activeTabKey, drawerVisible, showRules]);
+    }, [drawerVisible, showRules]);
 
     const handleUpdateRefsVersion = async (newRefs: RefVersionItem[]) => {
       const res = updateRefsData(fromData, newRefs, true);

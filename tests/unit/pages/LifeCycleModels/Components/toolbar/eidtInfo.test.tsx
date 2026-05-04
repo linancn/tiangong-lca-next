@@ -1013,7 +1013,7 @@ describe('ToolbarEditInfo', () => {
     );
   });
 
-  it('revalidates metadata fields after opening the base info drawer for sdk errors', async () => {
+  it('revalidates metadata fields after opening the base info drawer for sdk errors without revalidating on tab switch', async () => {
     const ref = React.createRef<any>();
     mockGetLifeCycleModelDetail.mockResolvedValue(createModelDetail());
     mockGetProcessDetail.mockResolvedValue({});
@@ -1045,6 +1045,10 @@ describe('ToolbarEditInfo', () => {
       expect(screen.getByRole('dialog', { name: 'Model base infomation' })).toBeInTheDocument(),
     );
     await waitFor(() => expect(mockValidateVisibleFormFields).toHaveBeenCalledTimes(2));
+
+    await userEvent.click(screen.getByRole('button', { name: 'switch-validation' }));
+    await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('validation'));
+    expect(mockValidateVisibleFormFields).toHaveBeenCalledTimes(2);
   });
 
   it('uses structuredClone while falling back to raw sdk validation payloads and empty model nodes', async () => {

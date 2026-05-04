@@ -29,7 +29,7 @@ import {
   Space,
   theme,
 } from 'antd';
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../processes_schema.json';
 import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../sdkValidationUi';
@@ -70,6 +70,7 @@ type Props = {
   showRules?: boolean;
   actionFrom?: 'modelResult';
   sdkValidationDetails?: ValidationIssueSdkDetail[];
+  sdkValidationDismissedFieldKeys?: ReadonlySet<string>;
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
 };
 
@@ -96,6 +97,8 @@ type SdkFieldMessageEntry = {
   text: string;
   validationCode?: string;
 };
+
+const EMPTY_SDK_DISMISSED_FIELD_KEYS = new Set<string>();
 
 const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
   !detail.presentation || detail.presentation === 'field';
@@ -136,6 +139,43 @@ const stringifySdkFormName = (name?: Array<string | number>) => {
   }
 
   return name.map(String).join('.');
+};
+
+const isDismissedSdkFieldKey = (dismissedFieldKeys: ReadonlySet<string>, fieldKey: string) => {
+  if (!fieldKey || dismissedFieldKeys.size === 0) {
+    return false;
+  }
+
+  return Array.from(dismissedFieldKeys).some((dismissedFieldKey) => {
+    if (
+      dismissedFieldKey === fieldKey ||
+      dismissedFieldKey.startsWith(`${fieldKey}.`) ||
+      fieldKey.startsWith(`${dismissedFieldKey}.`)
+    ) {
+      return true;
+    }
+
+    return false;
+  });
+};
+
+const isDismissedRootSdkFieldDetail = (
+  detail: ValidationIssueSdkDetail,
+  dismissedFieldKeys: ReadonlySet<string>,
+) => {
+  if (
+    detail.exchangeInternalId ||
+    !isSdkFieldDetail(detail) ||
+    isSdkSectionDetail(detail) ||
+    isSdkHighlightOnlyDetail(detail)
+  ) {
+    return false;
+  }
+
+  return isDismissedSdkFieldKey(
+    dismissedFieldKeys,
+    stringifySdkFormName(parseSdkDetailFormName(detail)),
+  );
 };
 
 const PROCESS_VALIDATION_REVIEW_FIELD_PATH = 'modellingAndValidation.validation.review';
@@ -231,9 +271,12 @@ export const ProcessForm: FC<Props> = ({
   lciaResults,
   actionFrom,
   sdkValidationDetails = [],
+  sdkValidationDismissedFieldKeys = EMPTY_SDK_DISMISSED_FIELD_KEYS,
   sdkValidationFocus,
 }) => {
   const intl = useIntl();
+  const intlRef = useRef(intl);
+  intlRef.current = intl;
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
@@ -254,8 +297,19 @@ export const ProcessForm: FC<Props> = ({
 
   const { token } = theme.useToken();
 
-  const formatSdkDetailMessage = (detail: ValidationIssueSdkDetail) =>
-    getSdkSuggestedFixMessage(intl, detail);
+  const formatSdkDetailMessage = useCallback(
+    (detail: ValidationIssueSdkDetail) => getSdkSuggestedFixMessage(intlRef.current, detail),
+    [],
+  );
+  const fieldMessageSdkValidationDetails = useMemo(() => {
+    if (sdkValidationDismissedFieldKeys.size === 0) {
+      return sdkValidationDetails;
+    }
+
+    return sdkValidationDetails.filter(
+      (detail) => !isDismissedRootSdkFieldDetail(detail, sdkValidationDismissedFieldKeys),
+    );
+  }, [sdkValidationDetails, sdkValidationDismissedFieldKeys]);
 
   const sdkVisibleSectionAnchorsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
     (accumulator, detail) => {
@@ -322,29 +376,103 @@ export const ProcessForm: FC<Props> = ({
     },
     {},
   );
-  const sdkExchangeFieldDetailsByExchangeId = sdkValidationDetails.reduce<
-    Record<string, ValidationIssueSdkDetail[]>
+  const sdkExchangeFieldDetailsByExchangeId = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, ValidationIssueSdkDetail[]>>(
+        (accumulator, detail) => {
+          if (
+            !detail.exchangeInternalId ||
+            !isSdkFieldDetail(detail) ||
+            isSdkSectionDetail(detail) ||
+            isSdkHighlightOnlyDetail(detail)
+          ) {
+            return accumulator;
+          }
+
+          if (!accumulator[detail.exchangeInternalId]) {
+            accumulator[detail.exchangeInternalId] = [];
+          }
+
+          accumulator[detail.exchangeInternalId].push(detail);
+          return accumulator;
+        },
+        {},
+      ),
+    [sdkValidationDetails],
+  );
+  const sdkRootFieldMessages = useMemo(
+    () =>
+      fieldMessageSdkValidationDetails.reduce<
+        Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+      >((accumulator, detail) => {
+        if (detail.exchangeInternalId || !isSdkFieldDetail(detail)) {
+          return accumulator;
+        }
+
+        const formName = parseSdkDetailFormName(detail);
+        const serializedFormName = stringifySdkFormName(formName);
+
+        if (
+          !formName ||
+          !serializedFormName ||
+          serializedFormName === 'modellingAndValidation.validation.review' ||
+          serializedFormName === 'modellingAndValidation.complianceDeclarations.compliance'
+        ) {
+          return accumulator;
+        }
+
+        const formattedMessage = formatSdkDetailMessage(detail);
+        if (!formattedMessage) {
+          return accumulator;
+        }
+        const messageEntry: SdkFieldMessageEntry = {
+          text: formattedMessage,
+          validationCode: detail.validationCode,
+        };
+
+        const currentEntry = accumulator.get(serializedFormName);
+        if (currentEntry) {
+          if (
+            !currentEntry.entries.some(
+              (entry) =>
+                entry.text === messageEntry.text &&
+                entry.validationCode === messageEntry.validationCode,
+            )
+          ) {
+            currentEntry.entries.push(messageEntry);
+          }
+          return accumulator;
+        }
+
+        accumulator.set(serializedFormName, {
+          entries: [messageEntry],
+          name: formName,
+        });
+        return accumulator;
+      }, new Map()),
+    [fieldMessageSdkValidationDetails, formatSdkDetailMessage],
+  );
+  const sdkValidationSectionMessages = fieldMessageSdkValidationDetails.reduce<
+    Record<string, string[]>
   >((accumulator, detail) => {
-    if (
-      !detail.exchangeInternalId ||
-      !isSdkFieldDetail(detail) ||
-      isSdkSectionDetail(detail) ||
-      isSdkHighlightOnlyDetail(detail)
-    ) {
+    if (detail.exchangeInternalId || isSdkHighlightOnlyDetail(detail)) {
       return accumulator;
     }
 
-    if (!accumulator[detail.exchangeInternalId]) {
-      accumulator[detail.exchangeInternalId] = [];
-    }
+    if (isSdkSectionDetail(detail)) {
+      const formattedMessage = formatSdkDetailMessage(detail);
+      if (!formattedMessage) {
+        return accumulator;
+      }
 
-    accumulator[detail.exchangeInternalId].push(detail);
-    return accumulator;
-  }, {});
-  const sdkRootFieldMessages = sdkValidationDetails.reduce<
-    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
-  >((accumulator, detail) => {
-    if (detail.exchangeInternalId || !isSdkFieldDetail(detail)) {
+      if (!accumulator[detail.fieldPath]) {
+        accumulator[detail.fieldPath] = [];
+      }
+
+      if (!accumulator[detail.fieldPath].includes(formattedMessage)) {
+        accumulator[detail.fieldPath].push(formattedMessage);
+      }
+
       return accumulator;
     }
 
@@ -352,10 +480,8 @@ export const ProcessForm: FC<Props> = ({
     const serializedFormName = stringifySdkFormName(formName);
 
     if (
-      !formName ||
-      !serializedFormName ||
-      serializedFormName === 'modellingAndValidation.validation.review' ||
-      serializedFormName === 'modellingAndValidation.complianceDeclarations.compliance'
+      serializedFormName !== 'modellingAndValidation.validation.review' &&
+      serializedFormName !== 'modellingAndValidation.complianceDeclarations.compliance'
     ) {
       return accumulator;
     }
@@ -364,81 +490,17 @@ export const ProcessForm: FC<Props> = ({
     if (!formattedMessage) {
       return accumulator;
     }
-    const messageEntry: SdkFieldMessageEntry = {
-      text: formattedMessage,
-      validationCode: detail.validationCode,
-    };
 
-    const currentEntry = accumulator.get(serializedFormName);
-    if (currentEntry) {
-      if (
-        !currentEntry.entries.some(
-          (entry) =>
-            entry.text === messageEntry.text &&
-            entry.validationCode === messageEntry.validationCode,
-        )
-      ) {
-        currentEntry.entries.push(messageEntry);
-      }
-      return accumulator;
+    if (!accumulator[serializedFormName]) {
+      accumulator[serializedFormName] = [];
     }
 
-    accumulator.set(serializedFormName, {
-      entries: [messageEntry],
-      name: formName,
-    });
+    if (!accumulator[serializedFormName].includes(formattedMessage)) {
+      accumulator[serializedFormName].push(formattedMessage);
+    }
+
     return accumulator;
-  }, new Map());
-  const sdkValidationSectionMessages = sdkValidationDetails.reduce<Record<string, string[]>>(
-    (accumulator, detail) => {
-      if (detail.exchangeInternalId || isSdkHighlightOnlyDetail(detail)) {
-        return accumulator;
-      }
-
-      if (isSdkSectionDetail(detail)) {
-        const formattedMessage = formatSdkDetailMessage(detail);
-        if (!formattedMessage) {
-          return accumulator;
-        }
-
-        if (!accumulator[detail.fieldPath]) {
-          accumulator[detail.fieldPath] = [];
-        }
-
-        if (!accumulator[detail.fieldPath].includes(formattedMessage)) {
-          accumulator[detail.fieldPath].push(formattedMessage);
-        }
-
-        return accumulator;
-      }
-
-      const formName = parseSdkDetailFormName(detail);
-      const serializedFormName = stringifySdkFormName(formName);
-
-      if (
-        serializedFormName !== 'modellingAndValidation.validation.review' &&
-        serializedFormName !== 'modellingAndValidation.complianceDeclarations.compliance'
-      ) {
-        return accumulator;
-      }
-
-      const formattedMessage = formatSdkDetailMessage(detail);
-      if (!formattedMessage) {
-        return accumulator;
-      }
-
-      if (!accumulator[serializedFormName]) {
-        accumulator[serializedFormName] = [];
-      }
-
-      if (!accumulator[serializedFormName].includes(formattedMessage)) {
-        accumulator[serializedFormName].push(formattedMessage);
-      }
-
-      return accumulator;
-    },
-    {},
-  );
+  }, {});
   const sdkValidationCountsByTab = [
     ...new Set([
       ...Object.keys(sdkVisibleSectionAnchorsByTab),
@@ -499,7 +561,7 @@ export const ProcessForm: FC<Props> = ({
           context: 'process',
           fieldName,
           frontendRulesEnabled: showRules,
-          intl,
+          intl: intlRef.current,
           retainedErrors,
           schemaRoot: schema,
           validationCode: entry.validationCode,
@@ -548,14 +610,15 @@ export const ProcessForm: FC<Props> = ({
     }
 
     rootSdkFieldMessagesRef.current = appliedEntries;
-  }, [formRef, intl, showRules, sdkRootFieldMessages]);
+  }, [formRef, showRules, sdkRootFieldMessages]);
 
   useEffect(() => {
     if (
       !sdkValidationFocus ||
       sdkValidationFocus.exchangeInternalId ||
       !isSdkFieldDetail(sdkValidationFocus) ||
-      sdkValidationFocus.tabName !== activeTabKey
+      sdkValidationFocus.tabName !== activeTabKey ||
+      isDismissedRootSdkFieldDetail(sdkValidationFocus, sdkValidationDismissedFieldKeys)
     ) {
       return;
     }
@@ -574,7 +637,7 @@ export const ProcessForm: FC<Props> = ({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [activeTabKey, formRef, sdkValidationFocus]);
+  }, [activeTabKey, formRef, sdkValidationDismissedFieldKeys, sdkValidationFocus]);
 
   const renderSdkSectionMessages = (fieldPath: string) => {
     const messages = sdkValidationSectionMessages[fieldPath] ?? [];

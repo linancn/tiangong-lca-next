@@ -18,6 +18,8 @@ import { FormattedMessage, useIntl } from 'umi';
 import schema from '../lifecyclemodels.json';
 import { licenseTypeOptions } from './optiondata';
 
+const LIFE_CYCLE_MODEL_SCHEMA_PATH_PREFIX = ['lifeCycleModelDataSet'];
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -55,6 +57,8 @@ export const LifeCycleModelForm: FC<Props> = ({
     intl,
     sdkValidationDetails,
     sdkValidationFocus,
+    schemaPathPrefix: LIFE_CYCLE_MODEL_SCHEMA_PATH_PREFIX,
+    schemaRoot: schema,
     showRules,
   });
 
@@ -838,12 +842,12 @@ export const LifeCycleModelForm: FC<Props> = ({
       activeTabKey={activeTabKey}
       onTabChange={onTabChange}
     >
-      {/* {Object.keys(tabContent).map((key) => (
+      {Object.keys(tabContent).map((key) => (
         <div key={key} style={{ display: key === activeTabKey ? 'block' : 'none' }}>
           {tabContent[key]}
         </div>
-      ))} */}
-      {tabContent[activeTabKey]}
+      ))}
+      {/* {tabContent[activeTabKey]} */}
     </Card>
   );
 };

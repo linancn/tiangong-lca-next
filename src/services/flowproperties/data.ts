@@ -56,7 +56,7 @@ export type FlowPropertyDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof FlowProperty['flowPropertyDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormFlowProperty = Pick<

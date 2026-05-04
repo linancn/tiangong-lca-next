@@ -43,7 +43,7 @@ export type SourceDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof Source['sourceDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormSource = Pick<Source['sourceDataSet'], SourceDataSetObjectKeys>;

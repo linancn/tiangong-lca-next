@@ -1,7 +1,11 @@
 import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { useEffect, useMemo, useRef } from 'react';
-import { getSdkSuggestedFixMessage } from './messages';
+import {
+  getSdkSuggestedFixMessage,
+  resolveRequiredValidationMessage,
+  type SdkFieldFormName,
+} from './messages';
 
 type IntlShapeLike = {
   formatMessage: (
@@ -26,8 +30,13 @@ type UseDatasetSdkValidationFormSupportOptions = {
   intl: IntlShapeLike;
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  schemaPathPrefix?: Array<string | number>;
+  schemaRoot?: unknown;
   showRules?: boolean;
+  usesLocalRequiredValidationUi?: (fieldName?: SdkFieldFormName) => boolean;
 };
+
+const EMPTY_SCHEMA_PATH_PREFIX: Array<string | number> = [];
 
 const waitForNextValidationTurn = async () => {
   await new Promise<void>((resolve) => {
@@ -136,8 +145,13 @@ export const useDatasetSdkValidationFormSupport = ({
   intl,
   sdkValidationDetails = [],
   sdkValidationFocus,
+  schemaPathPrefix = EMPTY_SCHEMA_PATH_PREFIX,
+  schemaRoot,
   showRules = false,
+  usesLocalRequiredValidationUi,
 }: UseDatasetSdkValidationFormSupportOptions) => {
+  const intlRef = useRef(intl);
+  intlRef.current = intl;
   const rootSdkFieldMessagesRef = useRef<
     Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
   >(new Map());
@@ -159,7 +173,7 @@ export const useDatasetSdkValidationFormSupport = ({
         return accumulator;
       }
 
-      const messageText = getSdkSuggestedFixMessage(intl, detail);
+      const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
       if (!messageText) {
         return accumulator;
@@ -175,7 +189,7 @@ export const useDatasetSdkValidationFormSupport = ({
 
       return accumulator;
     }, {});
-  }, [intl, sdkValidationDetails]);
+  }, [sdkValidationDetails]);
 
   const sdkRootFieldMessages = useMemo(() => {
     return sdkValidationDetails.reduce<
@@ -187,7 +201,7 @@ export const useDatasetSdkValidationFormSupport = ({
 
       const formName = parseSdkDetailFormName(detail);
       const serializedFormName = stringifySdkFormName(formName);
-      const messageText = getSdkSuggestedFixMessage(intl, detail);
+      const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
       if (!formName || !serializedFormName || !messageText) {
         return accumulator;
@@ -219,7 +233,7 @@ export const useDatasetSdkValidationFormSupport = ({
 
       return accumulator;
     }, new Map());
-  }, [intl, sdkValidationDetails]);
+  }, [sdkValidationDetails]);
 
   useEffect(() => {
     const formInstance = formRef.current;
@@ -263,15 +277,31 @@ export const useDatasetSdkValidationFormSupport = ({
       const nextAppliedFieldEntries: SdkFieldMessageEntry[] = [];
 
       (nextEntry?.entries ?? []).forEach((entry) => {
-        if (entry.validationCode === 'required_missing' && retainedErrors.length > 0) {
+        const requiredResolution = resolveRequiredValidationMessage({
+          fieldName,
+          frontendRulesEnabled: showRules,
+          intl: intlRef.current,
+          retainedErrors,
+          schemaPathPrefix,
+          schemaRoot,
+          usesLocalRequiredValidationUi,
+          validationCode: entry.validationCode,
+        });
+
+        if (requiredResolution.suppressSdkMessage) {
           return;
         }
 
-        if (!nextErrors.includes(entry.text)) {
-          nextErrors.push(entry.text);
+        const resolvedEntry = {
+          ...entry,
+          text: requiredResolution.replacementMessage ?? entry.text,
+        };
+
+        if (!nextErrors.includes(resolvedEntry.text)) {
+          nextErrors.push(resolvedEntry.text);
         }
 
-        nextAppliedFieldEntries.push(entry);
+        nextAppliedFieldEntries.push(resolvedEntry);
       });
 
       if (nextAppliedFieldEntries.length > 0) {
@@ -301,7 +331,14 @@ export const useDatasetSdkValidationFormSupport = ({
     }
 
     rootSdkFieldMessagesRef.current = appliedEntries;
-  }, [formRef, showRules, sdkRootFieldMessages]);
+  }, [
+    formRef,
+    schemaPathPrefix,
+    schemaRoot,
+    showRules,
+    sdkRootFieldMessages,
+    usesLocalRequiredValidationUi,
+  ]);
 
   useEffect(() => {
     if (

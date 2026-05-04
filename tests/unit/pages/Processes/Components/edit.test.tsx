@@ -1558,6 +1558,66 @@ describe('ProcessEdit component', () => {
     );
   });
 
+  it('dismisses changed sdk field messages for the current process validation run', async () => {
+    mockGenProcessJsonOrdered.mockImplementation((_id, processDetail) => ({
+      processDataSet: processDetail,
+    }));
+    mockValidateDatasetWithSdk
+      .mockReturnValueOnce({
+        success: false,
+        issues: [
+          {
+            code: 'required_missing',
+            message: 'Required value is missing.',
+            path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+          },
+        ],
+      })
+      .mockReturnValueOnce({ success: true, issues: [] });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => {
+      expect(latestProcessFormProps.sdkValidationDetails.length).toBeGreaterThan(0);
+    });
+    expect(latestProcessFormProps.sdkValidationDismissedFieldKeys.size).toBe(0);
+
+    await act(async () => {
+      await triggerValuesChange?.(
+        {
+          processInformation: {
+            time: {
+              'common:referenceYear': 2026,
+            },
+          },
+        },
+        {
+          processInformation: {
+            time: {
+              'common:referenceYear': 2026,
+            },
+          },
+        },
+      );
+    });
+
+    await waitFor(() => {
+      expect(Array.from(latestProcessFormProps.sdkValidationDismissedFieldKeys)).toContain(
+        'processInformation.time.common:referenceYear',
+      );
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() => {
+      expect(latestProcessFormProps.sdkValidationDismissedFieldKeys.size).toBe(0);
+    });
+  });
+
   it('shows a validation error when exchanges do not contain exactly one quantitative reference', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [

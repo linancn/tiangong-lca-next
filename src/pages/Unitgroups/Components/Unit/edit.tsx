@@ -8,7 +8,7 @@ import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Drawer, Form, Input, Space, Switch, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 type SdkFieldMessageEntry = {
@@ -53,6 +53,8 @@ const UnitEdit: FC<Props> = ({
   autoOpen = false,
 }) => {
   const intl = useIntl();
+  const intlRef = useRef(intl);
+  intlRef.current = intl;
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<UnitDraft>({});
   const [initData, setInitData] = useState<UnitDraft>({});
@@ -62,47 +64,51 @@ const UnitEdit: FC<Props> = ({
     Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
   >(new Map());
 
-  const sdkFieldMessages = sdkHighlights.reduce<
-    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
-  >((accumulator, detail) => {
-    const formName =
-      (Array.isArray(detail.formName) && detail.formName.length > 0
-        ? detail.formName
-        : parseSdkFieldPathToFormName(detail.fieldPath)) ??
-      (detail.fieldKey ? [detail.fieldKey] : undefined);
-    const fieldKey = formName ? formName.map(String).join('.') : '';
-    const messageText = getSdkSuggestedFixMessage(intl, detail);
+  const sdkFieldMessages = useMemo(
+    () =>
+      sdkHighlights.reduce<
+        Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+      >((accumulator, detail) => {
+        const formName =
+          (Array.isArray(detail.formName) && detail.formName.length > 0
+            ? detail.formName
+            : parseSdkFieldPathToFormName(detail.fieldPath)) ??
+          (detail.fieldKey ? [detail.fieldKey] : undefined);
+        const fieldKey = formName ? formName.map(String).join('.') : '';
+        const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
-    if (!formName || !fieldKey || !messageText) {
-      return accumulator;
-    }
+        if (!formName || !fieldKey || !messageText) {
+          return accumulator;
+        }
 
-    const messageEntry: SdkFieldMessageEntry = {
-      text: messageText,
-      validationCode: detail.validationCode,
-    };
-    const currentEntry = accumulator.get(fieldKey);
+        const messageEntry: SdkFieldMessageEntry = {
+          text: messageText,
+          validationCode: detail.validationCode,
+        };
+        const currentEntry = accumulator.get(fieldKey);
 
-    if (currentEntry) {
-      if (
-        !currentEntry.entries.some(
-          (entry) =>
-            entry.text === messageEntry.text &&
-            entry.validationCode === messageEntry.validationCode,
-        )
-      ) {
-        currentEntry.entries.push(messageEntry);
-      }
+        if (currentEntry) {
+          if (
+            !currentEntry.entries.some(
+              (entry) =>
+                entry.text === messageEntry.text &&
+                entry.validationCode === messageEntry.validationCode,
+            )
+          ) {
+            currentEntry.entries.push(messageEntry);
+          }
 
-      return accumulator;
-    }
+          return accumulator;
+        }
 
-    accumulator.set(fieldKey, {
-      entries: [messageEntry],
-      name: formName,
-    });
-    return accumulator;
-  }, new Map());
+        accumulator.set(fieldKey, {
+          entries: [messageEntry],
+          name: formName,
+        });
+        return accumulator;
+      }, new Map()),
+    [sdkHighlights],
+  );
 
   useEffect(() => {
     if (!autoOpen) {
