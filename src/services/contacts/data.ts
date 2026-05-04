@@ -49,5 +49,5 @@ export type ContactDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof Contact['contactDataSet']],
-  undefined
+  undefined | 'common:other'
 >;

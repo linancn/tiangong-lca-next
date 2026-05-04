@@ -298,7 +298,7 @@ jest.mock('antd', () => {
     <div data-testid='card' data-active-key={activeTabKey}>
       {tabList.map((item: any) => (
         <button type='button' key={item.key} onClick={() => onTabChange?.(item.key)}>
-          {toText(item.tab)}
+          {item.tab}
         </button>
       ))}
       <div>{children}</div>
@@ -422,7 +422,7 @@ jest.mock('antd', () => {
     theme: {
       defaultAlgorithm: {},
       darkAlgorithm: {},
-      useToken: () => ({ token: {} }),
+      useToken: () => ({ token: { colorError: 'red', fontWeightStrong: 600 } }),
     },
   };
 });
@@ -868,6 +868,128 @@ describe('ProcessForm component', () => {
     });
 
     expect(screen.queryByText('Fill in this field')).not.toBeInTheDocument();
+  });
+
+  it('clears dismissed root sdk messages instead of replaying them on rerender', async () => {
+    const fieldName = ['processInformation', 'time', 'common:referenceYear'];
+    const sdkValidationDetail = {
+      key: 'sdk-root-reference-year-required',
+      tabName: 'processInformation',
+      fieldKey: 'common:referenceYear',
+      fieldLabel: 'Reference year',
+      fieldPath: 'processInformation.time.common:referenceYear',
+      formName: fieldName,
+      reasonMessage: 'Required value is missing.',
+      suggestedFix: 'Fill in the required value for this field.',
+      validationCode: 'required_missing',
+    };
+
+    const { rerender } = render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Please input reference year')).toBeInTheDocument();
+    });
+
+    defaultProps.formRef.current.setFields.mockClear();
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail]}
+        sdkValidationDismissedFieldKeys={new Set(['processInformation.time.common:referenceYear'])}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Please input reference year')).not.toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('button', { name: 'Process information' }).querySelector('span'),
+    ).toHaveStyle({ color: 'red' });
+    expect(defaultProps.formRef.current.setFields).toHaveBeenCalledWith([
+      {
+        errors: [],
+        name: fieldName,
+      },
+    ]);
+  });
+
+  it('matches dismissed sdk fields by parent and child paths while keeping unrelated details', async () => {
+    const sdkValidationDetail = {
+      key: 'sdk-root-reference-year-required',
+      tabName: 'processInformation',
+      fieldKey: 'common:referenceYear',
+      fieldLabel: 'Reference year',
+      fieldPath: 'processInformation.time.common:referenceYear',
+      formName: ['processInformation', 'time', 'common:referenceYear'],
+      reasonMessage: 'Required value is missing.',
+      suggestedFix: 'Fill in the required value for this field.',
+      validationCode: 'required_missing',
+    };
+    const exchangeValidationDetail = {
+      exchangeInternalId: 'row-0',
+      key: 'sdk-exchange-mean-amount',
+      tabName: 'exchanges',
+      fieldKey: 'meanAmount',
+      fieldLabel: 'Mean amount',
+      fieldPath: 'exchanges.exchange.meanAmount',
+      formName: ['exchanges', 'exchange', 0, 'meanAmount'],
+      suggestedFix: 'Fill in the exchange amount.',
+      validationCode: 'required_missing',
+    };
+
+    const { rerender } = render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail]}
+        sdkValidationDismissedFieldKeys={new Set(['processInformation.time'])}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Please input reference year')).not.toBeInTheDocument();
+    });
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail]}
+        sdkValidationDismissedFieldKeys={
+          new Set(['processInformation.time.common:referenceYear.detail'])
+        }
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Please input reference year')).not.toBeInTheDocument();
+    });
+
+    rerender(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='processInformation'
+        showRules
+        sdkValidationDetails={[sdkValidationDetail, exchangeValidationDetail]}
+        sdkValidationDismissedFieldKeys={new Set(['administrativeInformation.unrelated'])}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Please input reference year')).toBeInTheDocument();
+    });
   });
 
   it('uses the year validation copy for reference year range sdk issues', async () => {

@@ -14,7 +14,7 @@ import { UnitDraft, UnitItem, UnitTable } from '@/services/unitgroups/data';
 import { genUnitTableData } from '@/services/unitgroups/util';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
-import { FC, useRef, useState } from 'react';
+import { FC, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../unitgroups_schema.json';
 import UnitCreate from './Unit/create';
@@ -24,6 +24,8 @@ import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
 // import UnitGroupSelectFrom from './select/form';
 import { toSuperscript } from '@/components/AlignedNumber';
+
+const UNIT_GROUP_SCHEMA_PATH_PREFIX = ['unitGroupDataSet'];
 
 type Props = {
   lang: string;
@@ -71,8 +73,9 @@ export const UnitGroupForm: FC<Props> = ({
   const intl = useIntl();
   const actionRefUnitTable = useRef<ActionType>();
   const [showNameError, setShowNameError] = useState(false);
-  const sdkRootValidationDetails = sdkValidationDetails.filter(
-    (detail) => !getUnitInternalId(detail),
+  const sdkRootValidationDetails = useMemo(
+    () => sdkValidationDetails.filter((detail) => !getUnitInternalId(detail)),
+    [sdkValidationDetails],
   );
   const { sdkValidationCountsByTab: rootSdkValidationCountsByTab, sdkValidationSectionMessages } =
     useDatasetSdkValidationFormSupport({
@@ -81,62 +84,75 @@ export const UnitGroupForm: FC<Props> = ({
       intl,
       sdkValidationDetails: sdkRootValidationDetails,
       sdkValidationFocus: getUnitInternalId(sdkValidationFocus) ? null : sdkValidationFocus,
+      schemaPathPrefix: UNIT_GROUP_SCHEMA_PATH_PREFIX,
+      schemaRoot: schema,
       showRules,
     });
-  const sdkUnitRowHighlightsById = sdkValidationDetails.reduce<
-    Record<string, ValidationIssueSdkDetail[]>
-  >((accumulator, detail) => {
-    const unitInternalId = getUnitInternalId(detail);
+  const sdkUnitRowHighlightsById = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, ValidationIssueSdkDetail[]>>(
+        (accumulator, detail) => {
+          const unitInternalId = getUnitInternalId(detail);
 
-    if (!unitInternalId || isSdkSectionDetail(detail)) {
-      return accumulator;
-    }
+          if (!unitInternalId || isSdkSectionDetail(detail)) {
+            return accumulator;
+          }
 
-    if (!accumulator[unitInternalId]) {
-      accumulator[unitInternalId] = [];
-    }
+          if (!accumulator[unitInternalId]) {
+            accumulator[unitInternalId] = [];
+          }
 
-    accumulator[unitInternalId].push(detail);
-    return accumulator;
-  }, {});
-  const sdkUnitFieldDetailsById = sdkValidationDetails.reduce<
-    Record<string, ValidationIssueSdkDetail[]>
-  >((accumulator, detail) => {
-    const unitInternalId = getUnitInternalId(detail);
+          accumulator[unitInternalId].push(detail);
+          return accumulator;
+        },
+        {},
+      ),
+    [sdkValidationDetails],
+  );
+  const sdkUnitFieldDetailsById = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, ValidationIssueSdkDetail[]>>(
+        (accumulator, detail) => {
+          const unitInternalId = getUnitInternalId(detail);
 
-    if (
-      !unitInternalId ||
-      !isSdkFieldDetail(detail) ||
-      isSdkSectionDetail(detail) ||
-      isSdkHighlightOnlyDetail(detail)
-    ) {
-      return accumulator;
-    }
+          if (
+            !unitInternalId ||
+            !isSdkFieldDetail(detail) ||
+            isSdkSectionDetail(detail) ||
+            isSdkHighlightOnlyDetail(detail)
+          ) {
+            return accumulator;
+          }
 
-    if (!accumulator[unitInternalId]) {
-      accumulator[unitInternalId] = [];
-    }
+          if (!accumulator[unitInternalId]) {
+            accumulator[unitInternalId] = [];
+          }
 
-    accumulator[unitInternalId].push(detail);
-    return accumulator;
-  }, {});
-  const sdkVisibleUnitRowsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
-    (accumulator, detail) => {
-      const unitInternalId = getUnitInternalId(detail);
-      const tabName = detail.tabName;
+          accumulator[unitInternalId].push(detail);
+          return accumulator;
+        },
+        {},
+      ),
+    [sdkValidationDetails],
+  );
+  const sdkVisibleUnitRowsByTab = useMemo(
+    () =>
+      sdkValidationDetails.reduce<Record<string, Set<string>>>((accumulator, detail) => {
+        const unitInternalId = getUnitInternalId(detail);
+        const tabName = detail.tabName;
 
-      if (!unitInternalId || !tabName || isSdkSectionDetail(detail)) {
+        if (!unitInternalId || !tabName || isSdkSectionDetail(detail)) {
+          return accumulator;
+        }
+
+        if (!accumulator[tabName]) {
+          accumulator[tabName] = new Set<string>();
+        }
+
+        accumulator[tabName].add(unitInternalId);
         return accumulator;
-      }
-
-      if (!accumulator[tabName]) {
-        accumulator[tabName] = new Set<string>();
-      }
-
-      accumulator[tabName].add(unitInternalId);
-      return accumulator;
-    },
-    {},
+      }, {}),
+    [sdkValidationDetails],
   );
   const sdkValidationCountsByTab: Record<string, number> = {
     ...rootSdkValidationCountsByTab,

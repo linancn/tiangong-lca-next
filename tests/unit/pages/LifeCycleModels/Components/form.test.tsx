@@ -202,19 +202,25 @@ describe('LifeCycleModelForm', () => {
     };
   });
 
+  const getSourceSelects = () => screen.getAllByTestId('source-select');
+
+  const getSourceSelectByLabel = (label: string) =>
+    getSourceSelects().find((sourceSelect) =>
+      sourceSelect.textContent?.includes(`"label":"${label}"`),
+    );
+
   it('renders the information tab and wires classification/source helpers', async () => {
     renderWithProviders(
       <LifeCycleModelForm {...baseProps} activeTabKey='lifeCycleModelInformation' />,
     );
 
     expect(screen.getByTestId('level-text-form')).toHaveTextContent('"dataType":"LifeCycleModel"');
-    expect(screen.getAllByTestId('source-select')).toHaveLength(2);
-    expect(screen.getAllByTestId('source-select')[0]).toHaveTextContent(
+    expect(getSourceSelectByLabel('Data set report, background info')).toHaveTextContent(
       '"label":"Data set report, background info"',
     );
-    expect(screen.getAllByTestId('source-select')[1]).toHaveTextContent(
-      '"label":"Life cycle model diagramm(s) or screenshot(s)"',
-    );
+    expect(
+      getSourceSelectByLabel('Life cycle model diagramm(s) or screenshot(s)'),
+    ).toHaveTextContent('"label":"Life cycle model diagramm(s) or screenshot(s)"');
 
     await userEvent.click(screen.getByTestId('level-text-form'));
     expect(baseProps.onData).toHaveBeenCalledTimes(1);
@@ -231,7 +237,7 @@ describe('LifeCycleModelForm', () => {
     );
 
     expect(screen.getAllByRole('textbox')[1]).toBeDisabled();
-    expect(screen.getByTestId('source-select')).toHaveTextContent(
+    expect(getSourceSelectByLabel('Data set format(s)')).toHaveTextContent(
       '"defaultSourceName":"ILCD format"',
     );
     expect(screen.getAllByTestId('contact-select')[0]).toHaveTextContent(
@@ -249,7 +255,11 @@ describe('LifeCycleModelForm', () => {
     );
 
     expect(screen.getAllByRole('textbox')[1]).not.toBeDisabled();
-    expect(screen.getByTestId('source-select')).not.toHaveTextContent('ILCD format');
+    expect(
+      getSourceSelects().every(
+        (sourceSelect) => !sourceSelect.textContent?.includes('ILCD format'),
+      ),
+    ).toBe(true);
   });
 
   it('renders validation and compliance child forms with lifecycle paths', () => {

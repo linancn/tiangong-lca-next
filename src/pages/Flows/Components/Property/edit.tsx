@@ -3,7 +3,10 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import FlowpropertiesSelectForm from '@/pages/Flowproperties/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
-import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
+import {
+  getSdkSuggestedFixMessage,
+  resolveRequiredValidationMessage,
+} from '@/pages/Utils/validation/messages';
 import { FlowPropertyData } from '@/services/flows/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
@@ -21,7 +24,7 @@ import {
   Tooltip,
 } from 'antd';
 import type { FC } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../../flows_schema.json';
 import { dataDerivationTypeStatusOptions, uncertaintyDistributionTypeOptions } from '../optiondata';
@@ -30,6 +33,8 @@ type SdkFieldMessageEntry = {
   text: string;
   validationCode?: string;
 };
+
+const FLOW_PROPERTY_SCHEMA_PATH_PREFIX = ['flowDataSet', 'flowProperties', 'flowProperty'];
 
 type Props = {
   id: string;
@@ -72,6 +77,8 @@ const PropertyEdit: FC<Props> = ({
   autoOpen = false,
 }) => {
   const intl = useIntl();
+  const intlRef = useRef(intl);
+  intlRef.current = intl;
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance>();
   const [fromData, setFromData] = useState<FlowPropertyData>({});
@@ -81,47 +88,51 @@ const PropertyEdit: FC<Props> = ({
     Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
   >(new Map());
 
-  const sdkFieldMessages = sdkHighlights.reduce<
-    Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
-  >((accumulator, detail) => {
-    const formName =
-      (Array.isArray(detail.formName) && detail.formName.length > 0
-        ? detail.formName
-        : parseSdkFieldPathToFormName(detail.fieldPath)) ??
-      (detail.fieldKey ? [detail.fieldKey] : undefined);
-    const fieldKey = formName ? formName.map(String).join('.') : '';
-    const messageText = getSdkSuggestedFixMessage(intl, detail);
+  const sdkFieldMessages = useMemo(
+    () =>
+      sdkHighlights.reduce<
+        Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
+      >((accumulator, detail) => {
+        const formName =
+          (Array.isArray(detail.formName) && detail.formName.length > 0
+            ? detail.formName
+            : parseSdkFieldPathToFormName(detail.fieldPath)) ??
+          (detail.fieldKey ? [detail.fieldKey] : undefined);
+        const fieldKey = formName ? formName.map(String).join('.') : '';
+        const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
-    if (!formName || !fieldKey || !messageText) {
-      return accumulator;
-    }
+        if (!formName || !fieldKey || !messageText) {
+          return accumulator;
+        }
 
-    const messageEntry: SdkFieldMessageEntry = {
-      text: messageText,
-      validationCode: detail.validationCode,
-    };
-    const currentEntry = accumulator.get(fieldKey);
+        const messageEntry: SdkFieldMessageEntry = {
+          text: messageText,
+          validationCode: detail.validationCode,
+        };
+        const currentEntry = accumulator.get(fieldKey);
 
-    if (currentEntry) {
-      if (
-        !currentEntry.entries.some(
-          (entry) =>
-            entry.text === messageEntry.text &&
-            entry.validationCode === messageEntry.validationCode,
-        )
-      ) {
-        currentEntry.entries.push(messageEntry);
-      }
+        if (currentEntry) {
+          if (
+            !currentEntry.entries.some(
+              (entry) =>
+                entry.text === messageEntry.text &&
+                entry.validationCode === messageEntry.validationCode,
+            )
+          ) {
+            currentEntry.entries.push(messageEntry);
+          }
 
-      return accumulator;
-    }
+          return accumulator;
+        }
 
-    accumulator.set(fieldKey, {
-      entries: [messageEntry],
-      name: formName,
-    });
-    return accumulator;
-  }, new Map());
+        accumulator.set(fieldKey, {
+          entries: [messageEntry],
+          name: formName,
+        });
+        return accumulator;
+      }, new Map()),
+    [sdkHighlights],
+  );
 
   useEffect(() => {
     if (!autoOpen) {
@@ -200,15 +211,30 @@ const PropertyEdit: FC<Props> = ({
       const nextAppliedFieldEntries: SdkFieldMessageEntry[] = [];
 
       (nextEntry?.entries ?? []).forEach((entry) => {
-        if (entry.validationCode === 'required_missing' && retainedErrors.length > 0) {
+        const requiredResolution = resolveRequiredValidationMessage({
+          fieldName,
+          frontendRulesEnabled: showRules,
+          intl: intlRef.current,
+          retainedErrors,
+          schemaPathPrefix: FLOW_PROPERTY_SCHEMA_PATH_PREFIX,
+          schemaRoot: schema,
+          validationCode: entry.validationCode,
+        });
+
+        if (requiredResolution.suppressSdkMessage) {
           return;
         }
 
-        if (!nextErrors.includes(entry.text)) {
-          nextErrors.push(entry.text);
+        const resolvedEntry = {
+          ...entry,
+          text: requiredResolution.replacementMessage ?? entry.text,
+        };
+
+        if (!nextErrors.includes(resolvedEntry.text)) {
+          nextErrors.push(resolvedEntry.text);
         }
 
-        nextAppliedFieldEntries.push(entry);
+        nextAppliedFieldEntries.push(resolvedEntry);
       });
 
       if (nextAppliedFieldEntries.length > 0) {
@@ -238,7 +264,7 @@ const PropertyEdit: FC<Props> = ({
     }
 
     sdkFieldMessagesRef.current = appliedEntries;
-  }, [drawerVisible, sdkFieldMessages]);
+  }, [drawerVisible, showRules, sdkFieldMessages]);
 
   useEffect(() => {
     const highlightedField = sdkHighlights.find(

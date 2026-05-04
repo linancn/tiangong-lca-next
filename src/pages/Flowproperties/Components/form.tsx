@@ -17,6 +17,8 @@ import schema from '../flowproperties_schema.json';
 import { complianceOptions } from './optiondata';
 // import FlowpropertiesSelectForm from './select/form';
 
+const FLOW_PROPERTY_DATASET_SCHEMA_PATH_PREFIX = ['flowPropertyDataSet'];
+
 type Props = {
   lang: string;
   activeTabKey: string;
@@ -50,6 +52,8 @@ export const FlowpropertyForm: FC<Props> = ({
     intl,
     sdkValidationDetails,
     sdkValidationFocus,
+    schemaPathPrefix: FLOW_PROPERTY_DATASET_SCHEMA_PATH_PREFIX,
+    schemaRoot: schema,
     showRules,
   });
 

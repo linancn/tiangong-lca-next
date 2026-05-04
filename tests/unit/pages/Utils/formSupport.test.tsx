@@ -294,6 +294,55 @@ describe('useDatasetSdkValidationFormSupport', () => {
     ).toEqual(['Name is required']);
   });
 
+  it('uses frontend required rule messages instead of sdk required_missing copy', () => {
+    const { formRef, setFields } = createFormRef();
+    const schema = {
+      flowDataSet: {
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: {
+              rules: [
+                {
+                  defaultMessage: 'Please input type of flow',
+                  messageKey: 'pages.flow.validator.typeOfDataSet.required',
+                  required: true,
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    renderHook(() =>
+      useDatasetSdkValidationFormSupport({
+        activeTabKey: 'flowInformation',
+        formRef,
+        intl,
+        schemaPathPrefix: ['flowDataSet'],
+        schemaRoot: schema,
+        sdkValidationDetails: [
+          createSdkDetail({
+            fieldPath: 'modellingAndValidation.LCIMethod.typeOfDataSet',
+            formName: ['modellingAndValidation', 'LCIMethod', 'typeOfDataSet'],
+            key: 'flow-type-required',
+            suggestedFix: 'Fill in the required value for this field.',
+            tabName: 'flowInformation',
+            validationCode: 'required_missing',
+          }),
+        ],
+        showRules: true,
+      }),
+    );
+
+    expect(setFields).toHaveBeenCalledWith([
+      {
+        errors: ['Please input type of flow'],
+        name: ['modellingAndValidation', 'LCIMethod', 'typeOfDataSet'],
+      },
+    ]);
+  });
+
   it('clears stale sdk errors while preserving non-sdk errors on rerender', () => {
     const { formRef, errorMap, setFields } = createFormRef({
       'sourceInformation.dataSetInformation.common:shortName.0.#text': ['Existing local error'],
