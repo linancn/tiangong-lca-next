@@ -1,5 +1,6 @@
 import {
   formatRequiredRuleMessage,
+  getSchemaNodeAtPath,
   getSchemaRequiredRule,
   getSdkSuggestedFixMessage,
   normalizeValidationMessageText,
@@ -89,6 +90,13 @@ describe('validation message helpers', () => {
       }),
     ).toBe('Keep the non-year fallback');
 
+    expect(
+      getSdkSuggestedFixMessage(intl, {
+        validationCode: 'custom',
+        suggestedFix: undefined,
+      }),
+    ).toBe('Resolve  custom issues');
+
     expect(getSdkSuggestedFixMessage(intl, { suggestedFix: undefined })).toBe('');
     expect(getSdkSuggestedFixMessage(intl)).toBe('');
   });
@@ -158,6 +166,41 @@ describe('validation message helpers', () => {
     });
   });
 
+  it('walks array-backed schema nodes and safely stops on invalid paths', () => {
+    const schema = {
+      processDataSet: {
+        exchanges: {
+          exchange: [
+            {
+              meanAmount: {
+                rules: [{ message: 'Please input mean amount', required: true }],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    expect(
+      getSchemaNodeAtPath(schema, ['processDataSet', 'exchanges', 'exchange', 0, 'meanAmount']),
+    ).toEqual({
+      rules: [{ message: 'Please input mean amount', required: true }],
+    });
+    expect(
+      getSchemaNodeAtPath(schema, ['processDataSet', 'exchanges', 'exchange', 'meanAmount']),
+    ).toEqual({
+      rules: [{ message: 'Please input mean amount', required: true }],
+    });
+    expect(getSchemaNodeAtPath({ value: null }, ['value', 'nested'])).toBeUndefined();
+
+    expect(
+      getSchemaRequiredRule({
+        fieldName: undefined,
+        schemaRoot: schema,
+      }),
+    ).toBeUndefined();
+  });
+
   it('suppresses sdk required_missing when local frontend errors already exist', () => {
     expect(
       resolveRequiredValidationMessage({
@@ -188,5 +231,102 @@ describe('validation message helpers', () => {
     });
 
     expect(formatRequiredRuleMessage(intl)).toBe('Please complete this field');
+  });
+
+  it('formats direct and element-style frontend required messages', () => {
+    expect(
+      formatRequiredRuleMessage(intl, {
+        message: 'Please input direct message.',
+        required: true,
+      }),
+    ).toBe('Please input direct message');
+
+    expect(
+      formatRequiredRuleMessage(intl, {
+        message: {
+          props: {
+            defaultMessage: 'Please input {field}.',
+            id: 'validator.customRequired',
+            values: { field: 'owner' },
+          },
+        },
+        required: true,
+      }),
+    ).toBe('Please input owner');
+
+    expect(
+      formatRequiredRuleMessage(intl, {
+        message: {
+          props: undefined,
+        },
+        required: true,
+      }),
+    ).toBe('Please complete this field');
+
+    expect(
+      formatRequiredRuleMessage(intl, {
+        message: {
+          props: {
+            defaultMessage: undefined,
+            id: undefined,
+          },
+        },
+        required: true,
+      }),
+    ).toBe('Please complete this field');
+
+    expect(
+      formatRequiredRuleMessage(intl, {
+        defaultMessage: 'Please input default-only message.',
+        required: true,
+      }),
+    ).toBe('Please input default-only message');
+
+    expect(
+      formatRequiredRuleMessage(intl, {
+        messageKey: 'validator.unknownRequired',
+        required: true,
+      }),
+    ).toBe('Please complete this field');
+  });
+
+  it('suppresses required_missing when the field uses local required validation UI', () => {
+    expect(
+      resolveRequiredValidationMessage({
+        fieldName: ['administrativeInformation', 'publicationAndOwnership', 'common:copyright'],
+        frontendRulesEnabled: true,
+        intl,
+        retainedErrors: [],
+        usesLocalRequiredValidationUi: () => true,
+        validationCode: 'required_missing',
+      }),
+    ).toEqual({
+      suppressSdkMessage: true,
+    });
+  });
+
+  it('keeps sdk messages for non-required validations and when frontend rules are disabled', () => {
+    expect(
+      resolveRequiredValidationMessage({
+        fieldName: ['someField'],
+        intl,
+        retainedErrors: [],
+        validationCode: 'invalid_type',
+      }),
+    ).toEqual({
+      suppressSdkMessage: false,
+    });
+
+    expect(
+      resolveRequiredValidationMessage({
+        fieldName: ['someField'],
+        frontendRulesEnabled: false,
+        intl,
+        retainedErrors: [],
+        validationCode: 'required_missing',
+      }),
+    ).toEqual({
+      suppressSdkMessage: false,
+    });
   });
 });

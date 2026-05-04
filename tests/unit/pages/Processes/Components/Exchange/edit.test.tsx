@@ -759,6 +759,39 @@ describe('ProcessExchangeEdit', () => {
     expect(setFieldsSpy).not.toHaveBeenCalled();
   });
 
+  it('skips sdk field updates when rerendered highlights keep the same field errors', async () => {
+    const highlight = {
+      key: 'sdk-stable-mean-amount',
+      fieldKey: 'meanAmount',
+      fieldLabel: 'Mean amount',
+      fieldPath: 'exchange[#0].meanAmount',
+      formName: ['meanAmount'],
+      suggestedFix: 'Stable sdk warning',
+      validationCode: 'invalid_type',
+    };
+    const { rerender } = render(
+      <ProcessExchangeEdit {...defaultProps} autoOpen sdkHighlights={[highlight]} />,
+    );
+
+    await waitFor(() => {
+      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Stable sdk warning']);
+    });
+
+    const setFieldsSpy = jest.spyOn(mockProFormApi, 'setFields');
+    setFieldsSpy.mockClear();
+
+    rerender(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[{ ...highlight, fieldLabel: 'Mean amount' }]}
+      />,
+    );
+
+    await act(async () => {});
+    expect(setFieldsSpy).not.toHaveBeenCalled();
+  });
+
   it('suppresses local required sdk copy for exchange selectors', async () => {
     render(
       <ProcessExchangeEdit
