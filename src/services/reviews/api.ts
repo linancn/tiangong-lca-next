@@ -6,7 +6,7 @@ import {
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
-import { getLangText } from '../general/util';
+import { getLangText, jsonToList } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { isCurrentAssignedReviewerCommentState } from './util';
@@ -552,7 +552,8 @@ export async function getLifeCycleModelSubTableDataBatch(
     const processInstances =
       json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology?.processes
         ?.processInstance ?? [];
-    processInstances.forEach((instance: any) => {
+
+    jsonToList(processInstances).forEach((instance: any) => {
       const refObjectId = instance?.referenceToProcess?.['@refObjectId'];
       const refVersion = instance?.referenceToProcess?.['@version'];
       if (refObjectId && refVersion) {
