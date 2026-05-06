@@ -73,6 +73,10 @@ jest.mock('@/services/general/util', () => {
   return {
     __esModule: true,
     getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
+    jsonToList: (json: any) => {
+      if (!json) return [];
+      return Array.isArray(json) ? json : [json];
+    },
   };
 });
 
