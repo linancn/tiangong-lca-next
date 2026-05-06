@@ -262,11 +262,9 @@ rules:
         kind: repo-landing
     requiredDocs:
       - path: AGENTS.md
-        mode: review_or_update
-      - path: README.md
-        mode: review_or_update
-      - path: README_CN.md
-        mode: review_or_update
+        mode: must_exist
+      - path: .docpact/config.yaml
+        mode: must_exist
     reason: Repo landing docs should stay aligned with the repo contract and current entry guidance.
   - id: next-pr-handoff-contract
     scope: repo
