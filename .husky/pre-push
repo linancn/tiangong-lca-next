@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 export NVM_DIR="$HOME/.nvm"
 if [ -s "$NVM_DIR/nvm.sh" ]; then
@@ -8,11 +9,21 @@ fi
 
 current_branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
 
+docpact_base_ref="${DOCPACT_BASE_REF:-origin/dev}"
+case "$current_branch" in
+  main | master | promote/* | hotfix/*)
+    docpact_base_ref="${DOCPACT_BASE_REF:-origin/main}"
+    ;;
+esac
+
+echo "Running docpact gate against ${docpact_base_ref}."
+npm run docpact:gate -- --base "$docpact_base_ref"
+
 if [ "$current_branch" != "main" ]; then
   if [ -n "$current_branch" ]; then
-    echo "Skipping prepush:gate on branch '$current_branch'. Full gate is enforced on PRs to dev/main."
+    echo "Skipping full prepush:gate on branch '$current_branch'. Full gate is enforced on PRs to dev/main."
   else
-    echo "Skipping prepush:gate because HEAD is detached. Full gate is enforced on PRs to dev/main."
+    echo "Skipping full prepush:gate because HEAD is detached. Full gate is enforced on PRs to dev/main."
   fi
   exit 0
 fi

@@ -21,8 +21,8 @@ checkPaths:
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-05-06
-lastReviewedCommit: 0340a89c1079470aa2cbade3feb6a73ba3bba9a3
+lastReviewedAt: 2026-05-08
+lastReviewedCommit: de2e3f56b98c5d6f36e7480b40544b85fcb3bf58
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -49,6 +49,10 @@ npm run build
 The authoritative protected-branch gate is:
 
 ```bash
+npm run docpact:gate
+```
+
+```bash
 npm run prepush:gate
 ```
 
@@ -60,10 +64,14 @@ npm run prepush:gate
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
 | static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
-| tests, coverage, or gate scripts | `npm run lint`; `npm run test:ci`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
+| tests, coverage, or gate scripts | `npm run docpact:gate`; `npm run lint`; `npm run test:ci`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
 | repo docs only | `docpact lint --root . --files "<csv>" --mode enforce` | `docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
 
+The local `pre-push` hook always runs `npm run docpact:gate` first. Non-main branches then skip the heavy `npm run prepush:gate`; local `main` pushes run both. The docpact gate defaults to `origin/dev` and can be redirected with `DOCPACT_BASE_REF=<ref>` for promote or hotfix branches.
+
 If the change touches `scripts/test-runner.cjs` or protected-branch gate reproduction, run `npm run test:ci` and `npm run prepush:gate` serially locally because both commands regenerate `.umi-test`.
+
+For deployment-only workflow changes under `.github/workflows/ci.yml`, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the EdgeOne Pages deploy step remains a post-merge `main` push concern.
 
 Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
 

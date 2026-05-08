@@ -26,8 +26,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-05-06
-lastReviewedCommit: 078a3cb530d7fab806a49a51ba0205d64479cee3
+lastReviewedAt: 2026-05-08
+lastReviewedCommit: de2e3f56b98c5d6f36e7480b40544b85fcb3bf58
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -115,6 +115,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - shared dev environment: `npm start` (`npm run start:dev` is equivalent)
 - explicit main-environment run: `npm run start:main`
 - default lint gate: `npm run lint`
+- local documentation gate before push: `npm run docpact:gate`
 - default CI-style test entry: `npm test`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
