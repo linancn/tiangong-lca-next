@@ -86,6 +86,10 @@ function runDocpact(docpact, args) {
     console.error(result.error.message);
     process.exit(1);
   }
+  if (result.signal || result.status === null) {
+    console.error(`docpact was terminated${result.signal ? ` by ${result.signal}` : ''}.`);
+    process.exit(1);
+  }
   if (result.status !== 0) {
     process.exit(result.status);
   }

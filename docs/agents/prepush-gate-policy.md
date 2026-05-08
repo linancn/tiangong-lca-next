@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .github/workflows/**
 lastReviewedAt: 2026-05-08
-lastReviewedCommit: 7f5bcf88987926f6dd027aefe0bdc59f734e0239
+lastReviewedCommit: de2e3f56b98c5d6f36e7480b40544b85fcb3bf58
 ---
 
 # Pre-Push Gate Policy
