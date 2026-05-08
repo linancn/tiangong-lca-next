@@ -21,8 +21,8 @@ checkPaths:
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-05-06
-lastReviewedCommit: 0340a89c1079470aa2cbade3feb6a73ba3bba9a3
+lastReviewedAt: 2026-05-08
+lastReviewedCommit: 7f5bcf88987926f6dd027aefe0bdc59f734e0239
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -64,6 +64,8 @@ npm run prepush:gate
 | repo docs only | `docpact lint --root . --files "<csv>" --mode enforce` | `docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
 
 If the change touches `scripts/test-runner.cjs` or protected-branch gate reproduction, run `npm run test:ci` and `npm run prepush:gate` serially locally because both commands regenerate `.umi-test`.
+
+For deployment-only workflow changes under `.github/workflows/ci.yml`, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the EdgeOne Pages deploy step remains a post-merge `main` push concern.
 
 Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
 
