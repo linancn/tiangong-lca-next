@@ -30,9 +30,13 @@ lastReviewedCommit: 7f5bcf88987926f6dd027aefe0bdc59f734e0239
 
 ## Purpose
 
-Define the intended trigger policy for the existing `npm run prepush:gate` command without changing the quality bar.
+Define the intended trigger policy for the existing local docpact gate and `npm run prepush:gate` command without changing the quality bar.
 
 ## Exact Gate Command
+
+```bash
+npm run docpact:gate
+```
 
 ```bash
 npm run prepush:gate
@@ -52,10 +56,10 @@ It does not own:
 
 | Surface                         | Target rule                                            |
 | ------------------------------- | ------------------------------------------------------ |
-| local `pre-push` hook on `main` | always run the full gate                               |
+| local `pre-push` hook on `main` | run docpact first, then always run the full gate       |
 | PRs into `dev`                  | run the full gate in CI                                |
 | PRs into `main`                 | run the full gate in CI                                |
-| feature-branch local pushes     | do not force the full gate automatically               |
+| feature-branch local pushes     | run docpact only; do not force the full gate           |
 | post-merge pushes               | keep branch-specific protection, do not lower the gate |
 
 ## Adoption Conditions
@@ -68,6 +72,7 @@ It does not own:
 ## Short Rule Summary
 
 - keep one authoritative full gate
+- run the lightweight docpact gate before local push so governed-doc review failures surface before GitHub PR checks
 - protect the actual merge points
 - avoid forcing the heaviest gate on every local feature push
 - reproduce `lint-and-test` and `Full Gate` serially on one workstation; GitHub runs them in isolated jobs

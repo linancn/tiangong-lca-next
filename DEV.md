@@ -71,6 +71,7 @@ npm install
 | start shared `dev` env | `npm start` |
 | explicit shared `dev` env | `npm run start:dev` |
 | explicit `main` env | `npm run start:main` |
+| local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
 | focused Jest suite | `npm run test:ci -- <jest-args>` |
@@ -86,6 +87,7 @@ npm install
 - `npm start` and `npm run start:dev` are equivalent
 - use `npm run start:main` only when the task explicitly requires the `main` environment
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
+- local pushes run `npm run docpact:gate` before branch-specific push policy
 - treat `npm run prepush:gate` as the authoritative local parity check
 - when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 

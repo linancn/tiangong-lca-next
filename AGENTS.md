@@ -115,6 +115,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - shared dev environment: `npm start` (`npm run start:dev` is equivalent)
 - explicit main-environment run: `npm run start:main`
 - default lint gate: `npm run lint`
+- local documentation gate before push: `npm run docpact:gate`
 - default CI-style test entry: `npm test`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
