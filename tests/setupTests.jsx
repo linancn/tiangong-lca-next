@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
+import { webcrypto } from 'node:crypto';
 import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
 import React from 'react';
 import { TextDecoder, TextEncoder } from 'util';
-import { v4 as uuidv4 } from 'uuid';
 
 if (typeof global.React === 'undefined') {
   global.React = React;
@@ -29,13 +29,39 @@ if (typeof global.TransformStream === 'undefined') {
   global.TransformStream = TransformStream;
 }
 
-// Polyfill for crypto.randomUUID for jsdom environment
-if (typeof global.crypto === 'undefined') {
-  global.crypto = {};
+// uuid@14 expects a standards-compliant global crypto implementation.
+const cryptoImpl = typeof globalThis.crypto !== 'undefined' ? globalThis.crypto : webcrypto;
+
+if (typeof globalThis.crypto === 'undefined') {
+  Object.defineProperty(globalThis, 'crypto', {
+    configurable: true,
+    writable: true,
+    value: cryptoImpl,
+  });
 }
 
-if (!global.crypto.randomUUID) {
-  global.crypto.randomUUID = () => uuidv4();
+if (typeof window !== 'undefined' && typeof window.crypto === 'undefined') {
+  Object.defineProperty(window, 'crypto', {
+    configurable: true,
+    writable: true,
+    value: globalThis.crypto,
+  });
+}
+
+if (!globalThis.crypto.getRandomValues) {
+  Object.defineProperty(globalThis.crypto, 'getRandomValues', {
+    configurable: true,
+    writable: true,
+    value: webcrypto.getRandomValues.bind(webcrypto),
+  });
+}
+
+if (!globalThis.crypto.randomUUID) {
+  Object.defineProperty(globalThis.crypto, 'randomUUID', {
+    configurable: true,
+    writable: true,
+    value: webcrypto.randomUUID.bind(webcrypto),
+  });
 }
 
 if (typeof window !== 'undefined' && window.localStorage) {

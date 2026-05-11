@@ -75,6 +75,8 @@ jest.mock('@/services/classifications/cache', () => ({
 }));
 
 jest.mock('@/services/general/api', () => ({
+  attachLangNormalizationMetadata: jest.fn(),
+  buildLangNormalizationMetadata: jest.fn(),
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
@@ -89,8 +91,14 @@ const { supabase } = jest.requireMock('@/services/supabase');
 const { classificationToString, genClassificationZH, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
-const { getDataDetail, getTeamIdByUserId, invokeDatasetCommand, normalizeLangPayloadForSave } =
-  jest.requireMock('@/services/general/api');
+const {
+  attachLangNormalizationMetadata,
+  buildLangNormalizationMetadata,
+  getDataDetail,
+  getTeamIdByUserId,
+  invokeDatasetCommand,
+  normalizeLangPayloadForSave,
+} = jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
 const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
 
@@ -111,6 +119,12 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       payload,
       validationError: undefined,
     }));
+    buildLangNormalizationMetadata.mockImplementation((normalizedResult: any, rawPayload: any) => ({
+      normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+      langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+      langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+    }));
+    attachLangNormalizationMetadata.mockImplementation((result: any) => result);
     // Setup default SDK mock behavior
     mockCreateSource.mockReturnValue({
       validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -134,7 +148,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       const result = await createSource(mockId, mockData);
 
       expect(genSourceJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
-      expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
+      expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData, undefined);
       expect(mockCreateSource).toHaveBeenCalledWith(mockOrderedData);
       expect(mockValidateEnhanced).toHaveBeenCalled();
       expect(invokeDatasetCommand).toHaveBeenCalledWith(
@@ -277,7 +291,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await updateSource(mockId, mockVersion, mockData);
 
-      expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData);
+      expect(normalizeLangPayloadForSave).toHaveBeenCalledWith(mockOrderedData, undefined);
       expect(invokeDatasetCommand).toHaveBeenCalledWith(
         'app_dataset_save_draft',
         {

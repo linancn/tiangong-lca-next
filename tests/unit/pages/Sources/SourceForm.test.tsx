@@ -16,13 +16,30 @@ const toText = (node: any): string => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
 }));
 
 const mockGetRules = jest.fn(() => [{ required: true, message: 'Required' }]);
+let mockSdkValidationCountsByTab: Record<string, number> = {};
+let mockThemeToken = {
+  colorError: '#ff4d4f',
+  colorPrimary: '#1677ff',
+  colorTextDescription: '#8c8c8c',
+  fontWeightStrong: 600,
+};
 
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
   getRules: jest.fn((rules: any) => mockGetRules(rules)),
+}));
+
+jest.mock('@/pages/Utils/validation/formSupport', () => ({
+  __esModule: true,
+  useDatasetSdkValidationFormSupport: () => ({
+    sdkValidationCountsByTab: mockSdkValidationCountsByTab,
+  }),
 }));
 
 const mockLangTextItemForm = jest.fn(({ label, name, rules }: any) => (
@@ -153,7 +170,7 @@ jest.mock('antd', () => {
             aria-pressed={tab.key === activeTabKey}
             onClick={() => onTabChange?.(tab.key)}
           >
-            {toText(tab.tab)}
+            {tab.tab}
           </button>
         ))}
       </nav>
@@ -246,10 +263,7 @@ jest.mock('antd', () => {
 
   const theme = {
     useToken: () => ({
-      token: {
-        colorPrimary: '#1677ff',
-        colorTextDescription: '#8c8c8c',
-      },
+      token: mockThemeToken,
     }),
   };
 
@@ -270,6 +284,13 @@ describe('SourceForm component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsImage.mockReturnValue(true);
+    mockSdkValidationCountsByTab = {};
+    mockThemeToken = {
+      colorError: '#ff4d4f',
+      colorPrimary: '#1677ff',
+      colorTextDescription: '#8c8c8c',
+      fontWeightStrong: 600,
+    };
     mockSchema.sourceDataSet.sourceInformation.dataSetInformation['common:shortName'].rules = [
       { required: true },
     ];
@@ -417,6 +438,36 @@ describe('SourceForm component', () => {
     );
 
     expect(dataSetFormatCall?.[0]?.defaultSourceName).toBeUndefined();
+  });
+
+  it('highlights tabs with sdk validation issues using the error color token', () => {
+    mockSdkValidationCountsByTab = {
+      administrativeInformation: 1,
+    };
+
+    renderForm();
+
+    expect(screen.getByText('Administrative information')).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
+  });
+
+  it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
+    mockSdkValidationCountsByTab = {
+      sourceInformation: 1,
+    };
+    mockThemeToken = {
+      ...mockThemeToken,
+      colorError: undefined,
+    } as any;
+
+    renderForm();
+
+    expect(screen.getByText('Source information')).toHaveStyle({
+      color: '#1677ff',
+      fontWeight: '600',
+    });
   });
 
   it('uses the default showRules=false value when the prop is omitted', () => {

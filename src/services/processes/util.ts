@@ -52,7 +52,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
   const exchange = exchangeList.map((item: any) => {
-    if (item?.quantitativeReference) {
+    if (item?.quantitativeReference === true) {
       quantitativeReference = {
         '@type': 'Reference flow(s)',
         referenceToReferenceFlow: item?.['@dataSetInternalID'],

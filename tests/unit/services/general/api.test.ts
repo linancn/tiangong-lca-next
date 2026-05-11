@@ -147,6 +147,84 @@ describe('createLegacyMutationRemovedResult', () => {
   });
 });
 
+describe('lang normalization metadata helpers', () => {
+  it('detects whether validation-time normalization produced draft changes', () => {
+    expect(generalApi.hasLangNormalizationDraftChanges(null)).toBe(false);
+    expect(
+      generalApi.hasLangNormalizationDraftChanges({
+        langSupplementedPlaceholderPaths: [],
+        langTranslatedPaths: [],
+      }),
+    ).toBe(false);
+    expect(
+      generalApi.hasLangNormalizationDraftChanges({
+        langSupplementedPlaceholderPaths: ['title'],
+        langTranslatedPaths: [],
+      }),
+    ).toBe(true);
+    expect(
+      generalApi.hasLangNormalizationDraftChanges({
+        langSupplementedPlaceholderPaths: [],
+        langTranslatedPaths: ['description'],
+      }),
+    ).toBe(true);
+  });
+
+  it('builds normalization metadata with raw-payload and empty-array fallbacks', () => {
+    const rawPayload = { title: 'raw' };
+
+    expect(
+      generalApi.buildLangNormalizationMetadata(
+        {
+          payload: { title: 'normalized' },
+          supplementedEnglishPlaceholderPaths: ['title'],
+          translatedPaths: ['description'],
+        },
+        rawPayload,
+      ),
+    ).toEqual({
+      normalizedJsonOrdered: { title: 'normalized' },
+      langSupplementedPlaceholderPaths: ['title'],
+      langTranslatedPaths: ['description'],
+    });
+
+    expect(generalApi.buildLangNormalizationMetadata({}, rawPayload)).toEqual({
+      normalizedJsonOrdered: rawPayload,
+      langSupplementedPlaceholderPaths: [],
+      langTranslatedPaths: [],
+    });
+  });
+
+  it('attaches normalization metadata only for validation intent', () => {
+    const result = { data: 'ok' };
+    const metadata = {
+      normalizedJsonOrdered: { title: 'normalized' },
+      langSupplementedPlaceholderPaths: ['title'],
+      langTranslatedPaths: ['description'],
+    };
+
+    expect(generalApi.attachLangNormalizationMetadata(result, metadata)).toBe(result);
+    expect(
+      generalApi.attachLangNormalizationMetadata(result, metadata, {
+        intent: 'save',
+      }),
+    ).toBe(result);
+    expect(
+      generalApi.attachLangNormalizationMetadata(result, metadata, {
+        intent: 'validation',
+      }),
+    ).toEqual({
+      ...result,
+      ...metadata,
+    });
+    expect(
+      generalApi.attachLangNormalizationMetadata(undefined as any, metadata, {
+        intent: 'validation',
+      }),
+    ).toEqual(metadata);
+  });
+});
+
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -1370,7 +1448,9 @@ describe('multilingual save normalization', () => {
       title: [{ '@xml:lang': 'en', '#text': 'Steel钢铁' }],
     });
 
-    expect(result.validationError).toBe('The following fields are missing English: title.');
+    expect(result.validationError).toBe(
+      'Save failed, the following fields are missing English: title.',
+    );
     expect(result.issues).toHaveLength(1);
     expect(result.issues[0].code).toBe('invalid_en');
   });
@@ -1382,7 +1462,7 @@ describe('multilingual save normalization', () => {
       title: [{ '@xml:lang': 'en', '#text': 'Steel钢铁' }],
     });
 
-    expect(result.validationError).toBe('以下字段缺少英文：title.');
+    expect(result.validationError).toBe('保存失败，以下字段缺少英文：title.');
     expect(result.issues).toHaveLength(1);
     expect(result.issues[0].code).toBe('invalid_en');
   });

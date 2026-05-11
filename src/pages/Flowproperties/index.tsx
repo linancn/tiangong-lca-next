@@ -14,13 +14,7 @@ import {
   isDataUnderReview,
 } from '@/services/general/util';
 import { TeamTable } from '@/services/teams/data';
-import {
-  ActionType,
-  PageContainer,
-  ProColumns,
-  ProTable,
-  TableDropdown,
-} from '@ant-design/pro-components';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -38,8 +32,21 @@ import type { FC } from 'react';
 import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
+import {
+  DATA_LIST_COLUMN_RESPONSIVE,
+  ResponsiveDataListActions,
+  dataListActionColumn,
+  dataListIndexColumn,
+  dataListText,
+  dataListTextColumn,
+  responsiveDataListTableProps,
+  responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
+  responsiveSearchPrimaryColProps,
+  responsiveSearchRowProps,
+  useResponsiveDataListMobile,
+} from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
-import { theme } from 'antd';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
@@ -57,7 +64,7 @@ const TableList: FC = () => {
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
-  const { token } = theme.useToken();
+  const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
 
@@ -113,22 +120,20 @@ const TableList: FC = () => {
   }, [dataSource, id, version]);
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
     {
+      ...dataListIndexColumn<FlowpropertyTable>(),
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
-      search: false,
     },
     {
+      ...dataListTextColumn<FlowpropertyTable>(300),
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: false,
-      render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
-          {row.name}
-        </Tooltip>,
-      ],
+      render: (_, row) => dataListText(row.name, row.generalComment),
     },
     {
+      ...dataListTextColumn<FlowpropertyTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: (
         <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
       ),
@@ -136,14 +141,11 @@ const TableList: FC = () => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return (
-          <div>
-            {row.classification && row.classification !== 'undefined' ? row.classification : '-'}
-          </div>
-        );
+        return dataListText(row.classification);
       },
     },
     {
+      ...dataListTextColumn<FlowpropertyTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: (
         <FormattedMessage
           id='pages.flowproperty.referenceToReferenceUnitGroup'
@@ -155,7 +157,7 @@ const TableList: FC = () => {
       search: false,
       render: (_, row) => {
         return [
-          <span key={0}>
+          <span className='responsive-data-list-cell-text' key={0}>
             {getLangText(row.refUnitRes?.name, lang)} (
             <Tooltip
               placement='topLeft'
@@ -165,17 +167,11 @@ const TableList: FC = () => {
             </Tooltip>
             )
           </span>,
-          // <ReferenceUnit
-          //   key={1}
-          //   id={row.refUnitGroupId}
-          //   version={row.version}
-          //   idType={'unitgroup'}
-          //   lang={lang}
-          // />,
         ];
       },
     },
     {
+      ...dataListTextColumn<FlowpropertyTable>(132),
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
       sorter: false,
@@ -216,6 +212,7 @@ const TableList: FC = () => {
       },
     },
     {
+      ...dataListTextColumn<FlowpropertyTable>(180, DATA_LIST_COLUMN_RESPONSIVE.wide),
       title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
       dataIndex: 'modifiedAt',
       valueType: 'dateTime',
@@ -223,14 +220,66 @@ const TableList: FC = () => {
       search: false,
     },
     {
+      ...dataListActionColumn<FlowpropertyTable>(
+        isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152,
+      ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
-      search: false,
       render: (_, row) => {
         const actionDisabled = isDataUnderReview(row.stateCode);
         if (dataSource === 'my') {
           return [
-            <Space size={'small'} key={0}>
+            <ResponsiveDataListActions
+              key={0}
+              isMobile={isMobileDataList}
+              moreMenus={[
+                {
+                  key: 'export',
+                  name: <ExportData tableName='flowproperties' id={row.id} version={row.version} />,
+                },
+                {
+                  key: 'copy',
+                  name: (
+                    <FlowpropertiesCreate
+                      actionType='copy'
+                      id={row.id}
+                      version={row.version}
+                      actionRef={actionRef}
+                      lang={lang}
+                    />
+                  ),
+                },
+                {
+                  key: 'contribute',
+                  name: (
+                    <ContributeData
+                      onOk={async () => {
+                        const contributeResult = await contributeSource(
+                          'flowproperties',
+                          row.id,
+                          row.version,
+                        );
+                        const contributeError = extractContributeDataError(contributeResult);
+
+                        if (contributeError) {
+                          message.error(getContributeDataErrorMessage(intl, contributeError));
+                          console.log(contributeError);
+                        } else {
+                          message.success(
+                            intl.formatMessage({
+                              id: 'component.contributeData.success',
+                              defaultMessage: 'Contribute successfully',
+                            }),
+                          );
+                          actionRef.current?.reload();
+                        }
+                      }}
+                      disabled={!!row.teamId}
+                    />
+                  ),
+                },
+              ]}
+            >
               <FlowpropertyView
                 actionRef={actionRef}
                 lang={lang}
@@ -254,65 +303,11 @@ const TableList: FC = () => {
                 actionRef={actionRef}
                 setViewDrawerVisible={() => {}}
               />
-              <TableDropdown
-                style={{
-                  color: token.colorPrimary,
-                }}
-                menus={[
-                  {
-                    key: 'export',
-                    name: (
-                      <ExportData tableName='flowproperties' id={row.id} version={row.version} />
-                    ),
-                  },
-                  {
-                    key: 'copy',
-                    name: (
-                      <FlowpropertiesCreate
-                        actionType='copy'
-                        id={row.id}
-                        version={row.version}
-                        actionRef={actionRef}
-                        lang={lang}
-                      />
-                    ),
-                  },
-                  {
-                    key: 'contribute',
-                    name: (
-                      <ContributeData
-                        onOk={async () => {
-                          const contributeResult = await contributeSource(
-                            'flowproperties',
-                            row.id,
-                            row.version,
-                          );
-                          const contributeError = extractContributeDataError(contributeResult);
-
-                          if (contributeError) {
-                            message.error(getContributeDataErrorMessage(intl, contributeError));
-                            console.log(contributeError);
-                          } else {
-                            message.success(
-                              intl.formatMessage({
-                                id: 'component.contributeData.success',
-                                defaultMessage: 'Contribute successfully',
-                              }),
-                            );
-                            actionRef.current?.reload();
-                          }
-                        }}
-                        disabled={!!row.teamId}
-                      />
-                    ),
-                  },
-                ]}
-              />
-            </Space>,
+            </ResponsiveDataListActions>,
           ];
         }
         return [
-          <Space size={'small'} key={0}>
+          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
             <FlowpropertyView
               actionRef={actionRef}
               lang={lang}
@@ -328,7 +323,7 @@ const TableList: FC = () => {
               lang={lang}
             />
             <ExportData tableName='flowproperties' id={row.id} version={row.version} />
-          </Space>,
+          </ResponsiveDataListActions>,
         ];
       },
     },
@@ -356,9 +351,9 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card>
-        <Row align={'middle'}>
-          <Col flex='auto' style={{ marginRight: '10px' }}>
+      <Card className={responsiveSearchCardClassName}>
+        <Row {...responsiveSearchRowProps}>
+          <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
               placeholder={
@@ -370,7 +365,7 @@ const TableList: FC = () => {
               enterButton
             />
           </Col>
-          <Col style={{ display: 'none' }} flex='100px'>
+          <Col {...responsiveSearchExtraColProps} style={{ display: 'none' }}>
             <Checkbox
               onChange={(e) => {
                 setOpenAI(e.target.checked);
@@ -382,6 +377,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
+        {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
           <>
@@ -391,22 +387,26 @@ const TableList: FC = () => {
         }
         actionRef={actionRef}
         search={false}
-        options={{ fullScreen: true }}
+        options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            return [
+            const filters = [
               <TableFilter
                 key={2}
+                width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
                   stateCodeRef.current = val;
                   setStateCode(val);
                   actionRef.current?.reload();
                 }}
               />,
+            ];
+            return [
+              ...filters,
               <FlowpropertiesCreate
                 importData={importData}
                 onClose={() => setImportData(null)}

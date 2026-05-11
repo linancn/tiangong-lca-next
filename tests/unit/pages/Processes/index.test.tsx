@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/processes',
   search: '?tid=team-1',
 };
+let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockGetProcessTableAll = jest.fn();
 const mockGetProcessTablePgroongaSearch = jest.fn();
@@ -173,7 +174,14 @@ jest.mock('@/pages/Processes/Components/edit', () => ({
 
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <div data-testid='process-view'>{`${id}:${version}`}</div>,
+  default: ({ id, version, autoOpen, onDrawerClose }: any) => (
+    <div data-testid='process-view'>
+      {JSON.stringify({ id, version, autoOpen })}
+      <button type='button' onClick={() => onDrawerClose?.()}>
+        process-view-close
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('@/pages/Processes/Components/lcaSolveToolbar', () => ({
@@ -279,6 +287,9 @@ jest.mock('antd', () => {
     Checkbox,
     Col,
     ConfigProvider,
+    Grid: {
+      useBreakpoint: () => mockBreakpointScreens,
+    },
     Input,
     Select,
     Row,
@@ -396,6 +407,7 @@ describe('ProcessesPage', () => {
       pathname: '/mydata/processes',
       search: '?tid=team-1',
     };
+    mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockContributeProcess.mockResolvedValue({ error: null });
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
@@ -463,6 +475,29 @@ describe('ProcessesPage', () => {
       .find((node) => node.textContent?.includes('"actionType":"create"'));
     expect(createAction).toHaveTextContent('"importCount":1');
 
+    await userEvent.click(
+      within(createAction!).getByRole('button', { name: /process-create-close/i }),
+    );
+    await waitFor(() => expect(createAction).toHaveTextContent('"importCount":0'));
+  });
+
+  it('uses compact mobile controls for my data rows', async () => {
+    const { history } = jest.requireMock('umi');
+    mockBreakpointScreens = { md: false };
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: /dataset-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'LCA Analysis' }));
+    expect(history.push).toHaveBeenCalledWith('/mydata/processes/analysis');
+
+    const createAction = screen
+      .getAllByTestId('process-create')
+      .find((node) => node.textContent?.includes('"actionType":"create"'));
     await userEvent.click(
       within(createAction!).getByRole('button', { name: /process-create-close/i }),
     );
@@ -695,12 +730,53 @@ describe('ProcessesPage', () => {
     );
   });
 
+  it('opens and closes the route-driven view drawer for my-data view links', async () => {
+    mockLocation = {
+      pathname: '/mydata/processes',
+      search: '?tid=team-1&id=proc-view&version=8.8.8&mode=view',
+    };
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('process-view')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(true),
+    );
+
+    const autoOpenView = screen
+      .getAllByTestId('process-view')
+      .find((node) => node.textContent?.includes('"autoOpen":true'));
+    expect(autoOpenView).toHaveTextContent('"id":"proc-view"');
+    expect(autoOpenView).toHaveTextContent('"version":"8.8.8"');
+    expect(
+      screen
+        .queryAllByTestId('process-edit')
+        .some((node) => node.textContent?.includes('"autoOpen":true')),
+    ).toBe(false);
+
+    await userEvent.click(
+      within(autoOpenView!).getByRole('button', { name: /process-view-close/i }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen
+          .queryAllByTestId('process-view')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(false),
+    );
+  });
+
   it('renders my-data process actions and contributes process data successfully', async () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
-    expect(screen.getByTestId('process-view')).toHaveTextContent('proc-1:1.0.0');
+    expect(screen.getByTestId('process-view')).toHaveTextContent('"id":"proc-1"');
+    expect(screen.getByTestId('process-view')).toHaveTextContent('"version":"1.0.0"');
     expect(screen.getByTestId('process-delete')).toHaveTextContent('proc-1:1.0.0');
     expect(screen.getByTestId('review-detail')).toHaveTextContent('proc-1:1.0.0');
     expect(screen.getByTestId('export-data')).toHaveTextContent('processes:proc-1:1.0.0');
@@ -860,6 +936,18 @@ describe('ProcessesPage', () => {
         .getAllByTestId('process-create')
         .some((node) => node.textContent?.includes('"actionType":"copy"')),
     ).toBe(true);
+  });
+
+  it('uses compact mobile controls for non-my process data', async () => {
+    mockBreakpointScreens = { md: false };
+    mockGetDataSource.mockReturnValue('tg');
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: /dataset-filter/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
   });
 
   it('falls back to empty tid and null team when the route has no team query or team data payload', async () => {

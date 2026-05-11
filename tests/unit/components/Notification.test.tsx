@@ -251,6 +251,7 @@ describe('Notification Component', () => {
     fireEvent.click(icon);
 
     expect(screen.getByTestId('team-notification')).toBeInTheDocument();
+    expect(screen.getByText('Notifications from team invitations.')).toBeInTheDocument();
   });
 
   it('should switch to data notification tab when clicked', async () => {
@@ -267,6 +268,28 @@ describe('Notification Component', () => {
     fireEvent.click(dataTab);
 
     expect(screen.getByTestId('data-notification')).toBeInTheDocument();
+    expect(
+      screen.getByText('Status changes from review workflows for data you submitted.'),
+    ).toBeInTheDocument();
+  });
+
+  it('should show issue notification source copy when switching to issue notifications', async () => {
+    render(
+      <ConfigProvider>
+        <Notification />
+      </ConfigProvider>,
+    );
+
+    const icon = await screen.findByRole('img', { hidden: true });
+    fireEvent.click(icon);
+
+    const issueTab = screen.getByText('Issue Notifications');
+    fireEvent.click(issueTab);
+
+    expect(screen.getByTestId('issue-notification')).toBeInTheDocument();
+    expect(
+      screen.getByText('Validation issue notifications reported by other users.'),
+    ).toBeInTheDocument();
   });
 
   it('should render time filter select', async () => {

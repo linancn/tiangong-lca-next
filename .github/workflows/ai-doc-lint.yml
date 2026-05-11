@@ -1,0 +1,34 @@
+name: ai-doc-lint
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ai-doc-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install docpact
+        run: cargo install docpact --version 0.1.4 --force
+
+      - name: Validate docpact config
+        run: docpact validate-config --root . --strict
+
+      - name: Run docpact lint
+        run: >
+          docpact lint
+          --root .
+          --base "${{ github.event.pull_request.base.sha }}"
+          --head "${{ github.event.pull_request.head.sha }}"
+          --mode enforce

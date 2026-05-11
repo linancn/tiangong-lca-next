@@ -43,7 +43,7 @@ export type LifeCycleModelDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof LifeCycleModel['lifeCycleModelDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormLifeCycleModel = Pick<
@@ -205,6 +205,11 @@ export type LifeCycleModelValidationSnapshot = {
   payload: LifeCycleModelEditorFormState;
 };
 
+export type LifeCycleModelSaveAttemptResult = {
+  saveSucceeded: boolean;
+  validationSnapshot: LifeCycleModelValidationSnapshot;
+};
+
 export type LifeCycleModelCheckDataOptions = {
   silent?: boolean;
   validationSnapshot?: LifeCycleModelValidationSnapshot;
@@ -327,17 +332,23 @@ export type LifeCycleModelMutationRecord = {
   ruleVerification?: boolean;
 };
 
+export type LifeCycleModelLangNormalizationMetadata = {
+  normalizedJsonOrdered?: any;
+  langSupplementedPlaceholderPaths?: string[];
+  langTranslatedPaths?: string[];
+};
+
 export type LifeCycleModelMutationResult =
-  | {
+  | ({
       ok: true;
       modelId: string;
       version: string;
       lifecycleModel?: LifeCycleModelMutationRecord;
       warnings?: string[];
-    }
-  | {
+    } & LifeCycleModelLangNormalizationMetadata)
+  | ({
       ok: false;
       code: string;
       message: string;
       details?: unknown;
-    };
+    } & LifeCycleModelLangNormalizationMetadata);

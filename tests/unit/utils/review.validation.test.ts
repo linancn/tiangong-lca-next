@@ -8,6 +8,7 @@ import {
   getDatasetDetailUrl,
   getDatasetPath,
   mapValidationIssuesToRefCheckData,
+  normalizeSdkValidationResult,
   validateDatasetRuleVerification,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
@@ -242,6 +243,16 @@ describe('review helper coverage', () => {
     const issues = buildValidationIssues({
       actionFrom: 'review',
       datasetSdkValid: false,
+      sdkInvalidDetails: [
+        {
+          key: 'sdk-detail-1',
+          tabName: 'validation',
+          fieldKey: 'generalComment',
+          fieldLabel: 'Comment',
+          fieldPath: 'process.validation.generalComment',
+          reasonMessage: 'Text length 520 exceeds maximum 500',
+        },
+      ],
       sdkInvalidTabNames: ['validation', 'validation', 'compliance'],
       nonExistentRef: [
         {
@@ -298,6 +309,16 @@ describe('review helper coverage', () => {
         code: 'sdkInvalid',
         link: 'http://localhost:8000/#/mydata/models?id=model-1&version=01.00.000&required=1',
         ref: rootRef,
+        sdkDetails: [
+          {
+            key: 'sdk-detail-1',
+            tabName: 'validation',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'process.validation.generalComment',
+            reasonMessage: 'Text length 520 exceeds maximum 500',
+          },
+        ],
         tabNames: ['validation', 'compliance'],
       },
       {
@@ -361,6 +382,47 @@ describe('review helper coverage', () => {
         },
       }),
     ).toEqual([]);
+  });
+
+  it('suppresses the root rule-verification issue when sdk invalid already covers the same dataset', () => {
+    const rootRef = {
+      '@type': 'process data set',
+      '@refObjectId': 'process-root',
+      '@version': '01.00.000',
+    } as const;
+
+    expect(
+      buildValidationIssues({
+        datasetSdkValid: false,
+        rootRef,
+        sdkInvalidTabNames: ['processInformation'],
+        unRuleVerification: [
+          rootRef,
+          {
+            '@type': 'process data set',
+            '@refObjectId': 'process-child',
+            '@version': '02.00.000',
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        code: 'sdkInvalid',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-root&version=01.00.000&required=1',
+        ref: rootRef,
+        sdkDetails: [],
+        tabNames: ['processInformation'],
+      },
+      {
+        code: 'ruleVerificationFailed',
+        link: 'http://localhost:8000/#/mydata/processes?id=process-child&version=02.00.000&required=1',
+        ref: {
+          '@type': 'process data set',
+          '@refObjectId': 'process-child',
+          '@version': '02.00.000',
+        },
+      },
+    ]);
   });
 
   it('returns the same empty issue list when owner enrichment receives no issues', async () => {
@@ -715,34 +777,37 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('contact data set', { id: 'contact' })).toEqual({
       success: false,
-      issues: [{ path: ['contact'] }],
+      issues: [expect.objectContaining({ path: ['contact'] })],
     });
     expect(validateDatasetWithSdk('source data set', { id: 'source' })).toEqual({
       success: false,
-      issues: [{ path: ['source'] }],
+      issues: [expect.objectContaining({ path: ['source'] })],
     });
     expect(validateDatasetWithSdk('unit group data set', { id: 'unitgroup' })).toEqual({
       success: false,
-      issues: [{ path: ['unitgroup'] }],
+      issues: [expect.objectContaining({ path: ['unitgroup'] })],
     });
     expect(validateDatasetWithSdk('flow property data set', { id: 'flowproperty' })).toEqual({
       success: false,
-      issues: [{ path: ['flowProperty'] }],
+      issues: [expect.objectContaining({ path: ['flowProperty'] })],
     });
     expect(validateDatasetWithSdk('flow data set', { id: 'flow' })).toEqual({
       success: false,
-      issues: [{ path: ['flow'] }],
+      issues: [expect.objectContaining({ path: ['flow'] })],
     });
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: ['processInformation'] }, { path: ['common:reviewCompliance'] }],
+      issues: [
+        expect.objectContaining({ path: ['processInformation'] }),
+        expect.objectContaining({ path: ['common:reviewCompliance'] }),
+      ],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
       issues: [
-        {
+        expect.objectContaining({
           path: ['lifeCycleModelDataSet', 'modellingAndValidation', 'dataSourcesTreatmentEtc'],
-        },
+        }),
       ],
     });
     expect(validateDatasetWithSdk('unknown data set' as any, { id: 'unknown' })).toEqual({
@@ -819,11 +884,11 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: ['common:approvalOfOverallCompliance'] }],
+      issues: [expect.objectContaining({ path: ['common:approvalOfOverallCompliance'] })],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
-      issues: [{ path: ['common:reviewCompliance'] }],
+      issues: [expect.objectContaining({ path: ['common:reviewCompliance'] })],
     });
   });
 
@@ -847,11 +912,11 @@ describe('review helper coverage', () => {
 
     expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
       success: false,
-      issues: [{ path: undefined }],
+      issues: [expect.objectContaining({ path: [] })],
     });
     expect(validateDatasetWithSdk('lifeCycleModel data set', { id: 'model' })).toEqual({
       success: false,
-      issues: [{ path: undefined }],
+      issues: [expect.objectContaining({ path: [] })],
     });
   });
 
@@ -933,6 +998,585 @@ describe('review helper coverage', () => {
     expect(validateDatasetWithSdk('contact data set', { id: 'contact' })).toEqual({
       success: false,
       issues: [],
+    });
+  });
+
+  it('prefers normalized sdk validation issues over raw zod issues when available', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'custom',
+              message:
+                "@xml:lang values starting with 'zh' must include at least one Chinese character",
+              path: [
+                'processDataSet',
+                'processInformation',
+                'time',
+                'common:timeRepresentativenessDescription',
+                1,
+                '#text',
+              ],
+            },
+          ],
+        },
+        validationIssues: [
+          {
+            code: 'localized_text_zh_must_include_chinese_character',
+            message:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            path: [
+              'processDataSet',
+              'processInformation',
+              'time',
+              'common:timeRepresentativenessDescription',
+              1,
+              '#text',
+            ],
+            rawCode: 'custom',
+            severity: 'error',
+          },
+        ],
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'localized_text_zh_must_include_chinese_character',
+          rawCode: 'custom',
+          severity: 'error',
+        }),
+      ],
+    });
+  });
+
+  it('normalizes legacy sdk issue codes, params, and path shapes when validationIssues are absent', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'object',
+              input: undefined,
+              message: 'Required object missing',
+              path: 'processDataSet.processInformation.time.common:referenceYear',
+            },
+            {
+              code: 'invalid_type',
+              expected: 'number',
+              input: null,
+              message: 'Wrong type',
+              path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+            },
+            {
+              code: 'too_big',
+              exact: false,
+              inclusive: true,
+              input: 'abcd',
+              maximum: 3,
+              message: 'Too long',
+              origin: 'string',
+              path: ['processDataSet', 'processInformation', 'dataSetInformation', '@uuid'],
+            },
+            {
+              code: 'too_big',
+              exact: false,
+              inclusive: true,
+              input: [1, 2, 3],
+              maximum: 2,
+              message: 'Too many',
+              origin: 'array',
+              path: ['processDataSet', 'processInformation', 'time', 'common:other'],
+            },
+            {
+              code: 'too_big',
+              exact: false,
+              inclusive: true,
+              input: 12,
+              maximum: 10,
+              message: 'Too large',
+              origin: 'number',
+              path: ['processDataSet', 'processInformation', 'time', 'common:number'],
+            },
+            {
+              code: 'too_small',
+              exact: false,
+              inclusive: true,
+              input: 'ab',
+              message: 'Too short',
+              minimum: 3,
+              origin: 'string',
+              path: ['processDataSet', 'processInformation', 'time', 'common:label'],
+            },
+            {
+              code: 'too_small',
+              exact: false,
+              inclusive: true,
+              input: [1],
+              message: 'Too few',
+              minimum: 2,
+              origin: 'array',
+              path: ['processDataSet', 'processInformation', 'time', 'common:list'],
+            },
+            {
+              code: 'too_small',
+              exact: false,
+              inclusive: true,
+              input: 1,
+              message: 'Too small',
+              minimum: 2,
+              origin: 'bigint',
+              path: ['processDataSet', 'processInformation', 'time', 'common:value'],
+            },
+            {
+              code: 'invalid_format',
+              format: 'uuid',
+              message: 'Bad format',
+              path: ['processDataSet', 'processInformation', 'dataSetInformation', '@uuid'],
+            },
+            {
+              code: 'invalid_value',
+              message: 'Bad value',
+              path: ['processDataSet', 'processInformation', 'quantitativeReference', '@type'],
+              values: ['A', 'B'],
+            },
+            {
+              code: 'unrecognized_keys',
+              keys: ['foo', 'bar'],
+              message: 'Unknown keys',
+              path: ['processDataSet', 'processInformation'],
+            },
+            {
+              code: 'invalid_union',
+              input: undefined,
+              message: 'Missing union value',
+              path: [
+                'processDataSet',
+                'modellingAndValidation',
+                'LCIMethodAndAllocation',
+                'typeOfDataSet',
+              ],
+            },
+            {
+              code: 'custom',
+              message: 'Custom validation failed',
+              path: ['processDataSet', 'processInformation', 'time', 'common:custom'],
+            },
+            {
+              code: 'brand_new_code',
+              message: 'Unknown validation failed',
+              path: undefined,
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'required_missing',
+          params: { expected: 'object' },
+          path: ['processDataSet.processInformation.time.common:referenceYear'],
+          rawCode: 'invalid_type',
+        }),
+        expect.objectContaining({
+          code: 'invalid_type',
+          params: { expected: 'number', received: 'null' },
+        }),
+        expect.objectContaining({
+          code: 'string_too_long',
+          params: expect.objectContaining({
+            actualLength: 4,
+            maximum: 3,
+            origin: 'string',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'array_too_large',
+          params: expect.objectContaining({
+            actualLength: 3,
+            maximum: 2,
+            origin: 'array',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'number_too_large',
+          params: expect.objectContaining({
+            actual: 12,
+            maximum: 10,
+            origin: 'number',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'string_too_short',
+          params: expect.objectContaining({
+            actualLength: 2,
+            minimum: 3,
+            origin: 'string',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'array_too_small',
+          params: expect.objectContaining({
+            actualLength: 1,
+            minimum: 2,
+            origin: 'array',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'number_too_small',
+          params: expect.objectContaining({
+            actual: 1,
+            minimum: 2,
+            origin: 'bigint',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'invalid_format',
+          params: { format: 'uuid' },
+        }),
+        expect.objectContaining({
+          code: 'invalid_value',
+          params: { allowedValues: 'A, B' },
+        }),
+        expect.objectContaining({
+          code: 'unrecognized_keys',
+          params: { keys: 'foo, bar' },
+        }),
+        expect.objectContaining({
+          code: 'required_missing',
+          rawCode: 'invalid_union',
+        }),
+        expect.objectContaining({
+          code: 'custom',
+          rawCode: 'custom',
+        }),
+        expect.objectContaining({
+          code: 'unknown',
+          path: [],
+          rawCode: 'brand_new_code',
+        }),
+      ],
+    });
+  });
+
+  it('merges structured validationIssues with raw zod issues and normalizes missing paths', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              input: undefined,
+              path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+            },
+            {
+              code: 'too_small',
+              inclusive: true,
+              input: 1890,
+              minimum: 1900,
+              origin: 'number',
+              path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+            },
+          ],
+        },
+        validationIssues: [
+          {
+            code: 'required_missing',
+            message: 'Required value is missing',
+            path: 'processDataSet.processInformation.time.common:referenceYear',
+          },
+          {
+            code: 'number_too_small',
+            message: 'Year is too small',
+          },
+        ],
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'required_missing',
+          expected: 'string',
+          input: undefined,
+          path: ['processDataSet.processInformation.time.common:referenceYear'],
+          rawCode: 'invalid_type',
+        }),
+        expect.objectContaining({
+          code: 'number_too_small',
+          inclusive: true,
+          minimum: 1900,
+          origin: 'number',
+          path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+          rawCode: 'too_small',
+        }),
+      ],
+    });
+  });
+
+  it('normalizes legacy array inputs and unknown size origins', () => {
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'object',
+              input: [],
+              message: 'Expected object but received array',
+              path: ['processDataSet', 'processInformation', 'time', 'common:list'],
+            },
+            {
+              code: 'too_big',
+              exact: false,
+              inclusive: true,
+              input: [1, 2, 3],
+              maximum: 1,
+              message: 'Too big',
+              origin: 'set',
+              path: ['processDataSet', 'processInformation', 'time', 'common:customSet'],
+            },
+            {
+              code: 'too_small',
+              exact: false,
+              inclusive: true,
+              input: [],
+              minimum: 1,
+              message: 'Too small',
+              origin: 'map',
+              path: ['processDataSet', 'processInformation', 'time', 'common:customMap'],
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'invalid_type',
+          params: {
+            expected: 'object',
+            received: 'array',
+          },
+        }),
+        expect.objectContaining({
+          code: 'unknown',
+          rawCode: 'too_big',
+        }),
+        expect.objectContaining({
+          code: 'unknown',
+          rawCode: 'too_small',
+        }),
+      ],
+    });
+  });
+
+  it('covers sparse normalization fallbacks for legacy and structured sdk results', () => {
+    expect(
+      normalizeSdkValidationResult({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'invalid_union',
+              input: 0,
+              message: 'Union mismatch',
+              path: ['processDataSet', 'processInformation', 'time', 'common:union'],
+            },
+            {
+              code: 'too_big',
+              input: 2n,
+              maximum: 1,
+              message: 'Bigint too large',
+              origin: 'bigint',
+              path: ['processDataSet', 'processInformation', 'time', 'common:big'],
+            },
+            {
+              code: 'too_small',
+              input: 1n,
+              minimum: 2,
+              message: 'Bigint too small',
+              origin: 'bigint',
+              path: ['processDataSet', 'processInformation', 'time', 'common:smallBig'],
+            },
+            {
+              code: 'invalid_format',
+              message: 'Format missing',
+              path: ['processDataSet', 'processInformation', 'time', 'common:format'],
+            },
+            {
+              code: 'invalid_value',
+              message: 'Values missing',
+              values: 'broken',
+              path: ['processDataSet', 'processInformation', 'time', 'common:value'],
+            },
+            {
+              code: 'unrecognized_keys',
+              keys: [],
+              message: 'Keys missing',
+              path: ['processDataSet', 'processInformation', 'time', 'common:keys'],
+            },
+          ],
+        },
+      }),
+    ).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'invalid_union',
+          rawCode: 'invalid_union',
+        }),
+        expect.objectContaining({
+          code: 'number_too_large',
+          params: expect.objectContaining({
+            actual: 2,
+            maximum: 1,
+            origin: 'bigint',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'number_too_small',
+          params: expect.objectContaining({
+            actual: 1,
+            minimum: 2,
+            origin: 'bigint',
+          }),
+        }),
+        expect.objectContaining({
+          code: 'invalid_format',
+          params: undefined,
+        }),
+        expect.objectContaining({
+          code: 'invalid_value',
+          params: undefined,
+        }),
+        expect.objectContaining({
+          code: 'unrecognized_keys',
+          params: undefined,
+        }),
+      ],
+    });
+
+    expect(
+      normalizeSdkValidationResult({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              input: 'raw-string',
+              path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+            },
+          ],
+        },
+        validationIssues: [
+          {
+            message: 'Structured fallback',
+            path: undefined,
+          },
+        ],
+      }),
+    ).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'invalid_type',
+          expected: 'string',
+          input: 'raw-string',
+          path: ['processDataSet', 'processInformation', 'time', 'common:referenceYear'],
+          rawCode: 'invalid_type',
+          severity: 'error',
+        }),
+      ],
+    });
+
+    expect(
+      normalizeSdkValidationResult({
+        success: false,
+        error: {
+          issues: null,
+        },
+      }),
+    ).toEqual({
+      success: false,
+      issues: [],
+    });
+  });
+
+  it('normalizes legacy object inputs and filters validation-only sdk issues from string paths while keeping undefined paths', () => {
+    expect(
+      normalizeSdkValidationResult({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              input: {
+                raw: true,
+              },
+              message: 'Object received',
+              path: ['processDataSet', 'processInformation', 'time', 'common:objectType'],
+            },
+          ],
+        },
+      }),
+    ).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'invalid_type',
+          params: {
+            expected: 'string',
+            received: 'object',
+          },
+        }),
+      ],
+    });
+
+    mockCreateProcess.mockImplementation(
+      makeSdkFactory({
+        success: false,
+        validationIssues: [
+          {
+            code: 'invalid_type',
+            message: 'Review path should be filtered',
+            path: 'processDataSet.modellingAndValidation.validation.review',
+          },
+          {
+            code: 'invalid_type',
+            message: 'Keep undefined path issue',
+            path: undefined,
+          },
+        ],
+      }),
+    );
+
+    expect(validateDatasetWithSdk('process data set', { id: 'process' })).toEqual({
+      success: false,
+      issues: [
+        expect.objectContaining({
+          code: 'invalid_type',
+          message: 'Keep undefined path issue',
+          path: [],
+        }),
+      ],
     });
   });
 

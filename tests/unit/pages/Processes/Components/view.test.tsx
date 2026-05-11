@@ -464,7 +464,7 @@ describe('ProcessView component', () => {
     fireEvent.click(lciaTab);
 
     await waitFor(() => {
-      expect(screen.getByTestId('card')).toHaveAttribute('data-active-key', 'lciaResults');
+      expect(screen.getAllByTestId('card')[0]).toHaveAttribute('data-active-key', 'lciaResults');
     });
 
     await waitFor(() => {
@@ -1249,6 +1249,24 @@ describe('ProcessView component', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'View process' })).not.toBeInTheDocument(),
     );
+  });
+
+  it('opens automatically without rendering a manual trigger when autoOpen is enabled', async () => {
+    const onDrawerClose = jest.fn();
+
+    render(<ProcessView {...defaultProps} autoOpen onDrawerClose={onDrawerClose} />);
+
+    expect(screen.queryByRole('button', { name: 'View' })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'View process' })).toBeInTheDocument();
+      expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0');
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+    expect(onDrawerClose).toHaveBeenCalledTimes(1);
   });
 
   it('returns a method meta map only for requested method ids', async () => {

@@ -5,11 +5,15 @@ import {
 } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
 import {
+  attachLangNormalizationMetadata,
+  buildLangNormalizationMetadata,
   contributeSource,
   createLegacyMutationRemovedError,
   getRefData,
   invokeDatasetCommand,
   normalizeLangPayloadForSave,
+  type LangNormalizationMetadata,
+  type NormalizeLangPayloadForSaveOptions,
 } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
@@ -54,7 +58,8 @@ type ProcessCommandRow = {
   rule_verification?: boolean;
 };
 
-export type UpdateProcessResult = SupabaseMutationResult<ProcessCommandRow>;
+export type UpdateProcessResult = SupabaseMutationResult<ProcessCommandRow> &
+  LangNormalizationMetadata;
 
 export type LcaMyProcessOption = {
   id: string;
@@ -168,25 +173,35 @@ export async function listMyProcessesForLca(
   return { data, success: true };
 }
 
-export async function createProcess(id: string, data: any, modelId?: string) {
+export async function createProcess(
+  id: string,
+  data: any,
+  modelId?: string,
+  options?: NormalizeLangPayloadForSaveOptions,
+) {
   const rawData = genProcessJsonOrdered(id, data);
-  const normalizedResult = await normalizeLangPayloadForSave(rawData);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData, options);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(normalizedResult, rawData);
   if (validationError) {
-    return {
-      data: null,
-      error: {
-        message: validationError,
-        code: 'LANG_VALIDATION_ERROR',
-        details: '',
-        hint: '',
-        name: 'LangValidationError',
+    return attachLangNormalizationMetadata(
+      {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
       },
-      status: 400,
-      statusText: 'LANG_VALIDATION_ERROR',
-      count: null,
-    };
+      langMetadata,
+      options,
+    );
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
@@ -194,7 +209,7 @@ export async function createProcess(id: string, data: any, modelId?: string) {
     newData,
     userTeamId,
   );
-  return invokeDatasetCommand<ProcessCommandRow>(
+  const result = await invokeDatasetCommand<ProcessCommandRow>(
     'app_dataset_create',
     {
       id,
@@ -207,6 +222,7 @@ export async function createProcess(id: string, data: any, modelId?: string) {
       ruleVerification: rule_verification,
     },
   );
+  return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 
 export async function updateProcess(
@@ -214,25 +230,31 @@ export async function updateProcess(
   version: string,
   data: any,
   modelId?: string,
+  options?: NormalizeLangPayloadForSaveOptions,
 ): Promise<UpdateProcessResult | undefined> {
   const rawData = genProcessJsonOrdered(id, data);
-  const normalizedResult = await normalizeLangPayloadForSave(rawData);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData, options);
   const newData = normalizedResult?.payload ?? rawData;
   const validationError = normalizedResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(normalizedResult, rawData);
   if (validationError) {
-    return {
-      data: null,
-      error: {
-        message: validationError,
-        code: 'LANG_VALIDATION_ERROR',
-        details: '',
-        hint: '',
-        name: 'LangValidationError',
+    return attachLangNormalizationMetadata(
+      {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
       },
-      status: 400,
-      statusText: 'LANG_VALIDATION_ERROR',
-      count: null,
-    };
+      langMetadata,
+      options,
+    );
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
@@ -240,7 +262,7 @@ export async function updateProcess(
     newData,
     userTeamId,
   );
-  return invokeDatasetCommand<ProcessCommandRow>(
+  const result = await invokeDatasetCommand<ProcessCommandRow>(
     'app_dataset_save_draft',
     {
       id,
@@ -254,6 +276,7 @@ export async function updateProcess(
       ruleVerification: rule_verification,
     },
   );
+  return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 
 export async function updateProcessApi(id: string, version: string, data: any) {

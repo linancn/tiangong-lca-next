@@ -466,6 +466,8 @@ export function getLangList(langTexts: any) {
 
 export type LangValidationIssueCode = 'missing_en' | 'invalid_en';
 
+export type LangNormalizationIntent = 'save' | 'validation';
+
 export type LangValidationIssue = {
   path: string;
   code: LangValidationIssueCode;
@@ -473,11 +475,23 @@ export type LangValidationIssue = {
 };
 
 type LangValidationOptions = {
+  intent?: LangNormalizationIntent;
   translateZhToEn?: (text: string, path: string) => Promise<string | undefined>;
+};
+
+export type LangNormalizationResult = {
+  payload: any;
+  issues: LangValidationIssue[];
+  supplementedEnglishPlaceholderPaths: string[];
+  translatedPaths: string[];
 };
 
 const LANG_KEY = '@xml:lang';
 const TEXT_KEY = '#text';
+type NormalizedLangEntry = {
+  [LANG_KEY]: string;
+  [TEXT_KEY]: string | undefined;
+};
 const NON_ENGLISH_SCRIPT_REGEX =
   /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Cyrillic}\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Devanagari}\p{Script=Thai}]/u;
 
@@ -492,6 +506,11 @@ const normalizeLangCode = (lang: unknown): string => {
   return lang.trim().toLowerCase();
 };
 
+const isEnglishLangCode = (langCode: string): boolean => langCode === 'en';
+
+const isChineseLangCode = (langCode: string): boolean =>
+  langCode === 'zh' || langCode.startsWith('zh-');
+
 const normalizeLangTextValue = (text: unknown): string => {
   if (typeof text === 'string') return text.trim();
   if (text === null || text === undefined) return '';
@@ -501,12 +520,23 @@ const normalizeLangTextValue = (text: unknown): string => {
 const hasDisallowedScriptsForEnglish = (text: string): boolean =>
   NON_ENGLISH_SCRIPT_REGEX.test(text);
 
+const pushUniquePath = (paths: string[], path: string) => {
+  if (!path || paths.includes(path)) {
+    return;
+  }
+  paths.push(path);
+};
+
 async function normalizeLangEntries(
   langEntries: any[],
   path: string,
   issues: LangValidationIssue[],
   options: LangValidationOptions,
   translationCache: Map<string, string | undefined>,
+  metadata: {
+    supplementedEnglishPlaceholderPaths: string[];
+    translatedPaths: string[];
+  },
 ) {
   const getValidEnglishTranslation = async (
     sourceText: string | undefined,
@@ -531,6 +561,7 @@ async function normalizeLangEntries(
     return normalizedTranslation;
   };
 
+  const rawLangCodes: string[] = [];
   const normalizedMap = new Map<string, string>();
   const orderedLangCodes: string[] = [];
 
@@ -540,27 +571,73 @@ async function normalizeLangEntries(
     }
     const langCode = normalizeLangCode(entry[LANG_KEY]);
     const textValue = normalizeLangTextValue(entry[TEXT_KEY]);
-    if (!langCode || !textValue) {
+    if (!langCode) {
       continue;
     }
-    if (!normalizedMap.has(langCode)) {
+    if (!rawLangCodes.includes(langCode)) {
+      rawLangCodes.push(langCode);
+    }
+    if (!textValue) {
+      continue;
+    }
+    if (!orderedLangCodes.includes(langCode)) {
       orderedLangCodes.push(langCode);
     }
     normalizedMap.set(langCode, textValue);
   }
 
-  let normalizedList = orderedLangCodes.map((langCode) => ({
+  let normalizedList: NormalizedLangEntry[] = orderedLangCodes.map((langCode) => ({
     [LANG_KEY]: langCode,
     [TEXT_KEY]: normalizedMap.get(langCode),
   }));
 
-  const englishEntry = normalizedList.find((entry) => entry[LANG_KEY] === 'en');
-  const chineseEntry = normalizedList.find((entry) => entry[LANG_KEY] === 'zh');
+  const englishEntry = normalizedList.find((entry) => isEnglishLangCode(String(entry[LANG_KEY])));
+  const chineseSourceLangCode = orderedLangCodes.find((langCode) => isChineseLangCode(langCode));
+  const chineseEntry = chineseSourceLangCode
+    ? normalizedList.find((entry) => entry[LANG_KEY] === chineseSourceLangCode)
+    : undefined;
+  const hasOnlyChineseMeaningfulTexts =
+    orderedLangCodes.length > 0 &&
+    orderedLangCodes.every((langCode) => isChineseLangCode(langCode));
+  const rawLanguagesSupportValidationPlaceholder =
+    rawLangCodes.length > 0 &&
+    rawLangCodes.every((langCode) => isChineseLangCode(langCode) || isEnglishLangCode(langCode));
+  const shouldSupplementEnglishPlaceholder =
+    (options.intent ?? 'save') === 'validation' &&
+    hasOnlyChineseMeaningfulTexts &&
+    rawLanguagesSupportValidationPlaceholder &&
+    !englishEntry;
 
   if (!englishEntry) {
     const translatedEnglish = await getValidEnglishTranslation(chineseEntry?.[TEXT_KEY]);
     if (translatedEnglish) {
       normalizedList = [{ [LANG_KEY]: 'en', [TEXT_KEY]: translatedEnglish }, ...normalizedList];
+      pushUniquePath(metadata.translatedPaths, path);
+    } else if (shouldSupplementEnglishPlaceholder) {
+      const placeholderEntry: NormalizedLangEntry = {
+        [LANG_KEY]: 'en',
+        [TEXT_KEY]: undefined,
+      };
+      if (!rawLangCodes.includes('en')) {
+        normalizedList = [...normalizedList, placeholderEntry];
+      } else {
+        const entriesByLang = new Map<string, NormalizedLangEntry>();
+        normalizedList.forEach((entry) => {
+          entriesByLang.set(String(entry[LANG_KEY]), entry);
+        });
+        entriesByLang.set('en', placeholderEntry);
+        const nextList: NormalizedLangEntry[] = [];
+        const consumedLangs = new Set<string>();
+        rawLangCodes.forEach((langCode) => {
+          const entry = entriesByLang.get(langCode);
+          if (entry && !consumedLangs.has(langCode)) {
+            nextList.push(entry);
+            consumedLangs.add(langCode);
+          }
+        });
+        normalizedList = nextList;
+      }
+      pushUniquePath(metadata.supplementedEnglishPlaceholderPaths, path);
     } else if (normalizedList.length > 0) {
       issues.push({
         path,
@@ -575,6 +652,7 @@ async function normalizeLangEntries(
       : await getValidEnglishTranslation(englishEntry[TEXT_KEY]);
     if (translatedFromEn) {
       englishEntry[TEXT_KEY] = translatedFromEn;
+      pushUniquePath(metadata.translatedPaths, path);
     } else {
       issues.push({
         path,
@@ -603,6 +681,10 @@ async function normalizeLangNode(
   issues: LangValidationIssue[],
   options: LangValidationOptions,
   translationCache: Map<string, string | undefined>,
+  metadata: {
+    supplementedEnglishPlaceholderPaths: string[];
+    translatedPaths: string[];
+  },
 ): Promise<any> {
   if (value === null || value === undefined) {
     return value;
@@ -611,18 +693,25 @@ async function normalizeLangNode(
   if (Array.isArray(value)) {
     const looksLikeLangList = value.some((item) => isLangTextEntry(item));
     if (looksLikeLangList) {
-      return normalizeLangEntries(value, path, issues, options, translationCache);
+      return normalizeLangEntries(value, path, issues, options, translationCache, metadata);
     }
     const mapped = await Promise.all(
       value.map((item, index) =>
-        normalizeLangNode(item, buildPath(path, index), issues, options, translationCache),
+        normalizeLangNode(
+          item,
+          buildPath(path, index),
+          issues,
+          options,
+          translationCache,
+          metadata,
+        ),
       ),
     );
     return mapped;
   }
 
   if (isLangTextEntry(value)) {
-    return normalizeLangEntries([value], path, issues, options, translationCache);
+    return normalizeLangEntries([value], path, issues, options, translationCache, metadata);
   }
 
   if (isObject(value)) {
@@ -635,6 +724,7 @@ async function normalizeLangNode(
           issues,
           options,
           translationCache,
+          metadata,
         );
         return [key, normalizedValue] as const;
       }),
@@ -648,13 +738,26 @@ async function normalizeLangNode(
 export async function normalizeLangPayloadBeforeSave(
   payload: any,
   options: LangValidationOptions = {},
-): Promise<{ payload: any; issues: LangValidationIssue[] }> {
+): Promise<LangNormalizationResult> {
   const issues: LangValidationIssue[] = [];
   const translationCache = new Map<string, string | undefined>();
-  const normalizedPayload = await normalizeLangNode(payload, '', issues, options, translationCache);
+  const metadata = {
+    supplementedEnglishPlaceholderPaths: [] as string[],
+    translatedPaths: [] as string[],
+  };
+  const normalizedPayload = await normalizeLangNode(
+    payload,
+    '',
+    issues,
+    options,
+    translationCache,
+    metadata,
+  );
   return {
     payload: normalizedPayload,
     issues,
+    supplementedEnglishPlaceholderPaths: metadata.supplementedEnglishPlaceholderPaths,
+    translatedPaths: metadata.translatedPaths,
   };
 }
 
@@ -667,10 +770,10 @@ const getLangValidationLocaleMessages = (locale: string) => {
   return {
     missingEnglish:
       messages['validator.langValidation.missingEnglish'] ??
-      'The following fields are missing English: {fields}.',
+      'Save failed, the following fields are missing English: {fields}.',
     missingEnglishMore:
       messages['validator.langValidation.missingEnglishMore'] ??
-      'The following fields are missing English: {fields} and {count} more field(s).',
+      'Save failed, the following fields are missing English: {fields} and {count} more field(s).',
     root: messages['validator.langValidation.root'] ?? (locale === 'zh-CN' ? '根节点' : '(root)'),
   };
 };

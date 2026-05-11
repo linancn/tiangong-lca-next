@@ -42,9 +42,13 @@ const mockGetTeamIdByUserId = jest.fn();
 const mockContributeSource = jest.fn();
 const mockGetRefData = jest.fn();
 const mockNormalizeLangPayloadForSave = jest.fn();
+const mockBuildLangNormalizationMetadata = jest.fn();
+const mockAttachLangNormalizationMetadata = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachLangNormalizationMetadata: (...args: any[]) => mockAttachLangNormalizationMetadata(...args),
+  buildLangNormalizationMetadata: (...args: any[]) => mockBuildLangNormalizationMetadata(...args),
   contributeSource: (...args: any[]) => mockContributeSource(...args),
   getRefData: (...args: any[]) => mockGetRefData(...args),
   getTeamIdByUserId: (...args: any[]) => mockGetTeamIdByUserId(...args),
@@ -233,6 +237,8 @@ beforeEach(() => {
   mockContributeSource.mockReset();
   mockGetRefData.mockReset();
   mockNormalizeLangPayloadForSave.mockReset();
+  mockBuildLangNormalizationMetadata.mockReset();
+  mockAttachLangNormalizationMetadata.mockReset();
   mockClassificationToString.mockReset();
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
@@ -259,6 +265,14 @@ beforeEach(() => {
     payload,
     validationError: undefined,
   }));
+  mockBuildLangNormalizationMetadata.mockImplementation(
+    (normalizedResult: any, rawPayload: any) => ({
+      normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+      langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+      langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+    }),
+  );
+  mockAttachLangNormalizationMetadata.mockImplementation((result: any) => result);
   mockClassificationToString.mockReturnValue('classification-string');
   mockGenClassificationZH.mockReturnValue(['classification-zh']);
   mockGetLangText.mockReturnValue('localized-text');

@@ -4,7 +4,14 @@ import {
   validateDatasetRuleVerification,
 } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
-import { contributeSource, getRefData, normalizeLangPayloadForSave } from '@/services/general/api';
+import {
+  attachLangNormalizationMetadata,
+  buildLangNormalizationMetadata,
+  contributeSource,
+  getRefData,
+  normalizeLangPayloadForSave,
+  type NormalizeLangPayloadForSaveOptions,
+} from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -201,14 +208,28 @@ async function applyReferenceAwareRuleVerification(
   };
 }
 
-export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
+export async function createLifeCycleModel(
+  data: any,
+  options?: NormalizeLangPayloadForSaveOptions,
+): Promise<LifeCycleModelMutationResult> {
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
-  const normalizedCreateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
+  const normalizedCreateResult = await normalizeLangPayloadForSave(
+    rawLifeCycleModelJsonOrdered,
+    options,
+  );
   const normalizedLifeCycleModelJsonOrdered =
     normalizedCreateResult?.payload ?? rawLifeCycleModelJsonOrdered;
   const validationError = normalizedCreateResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(
+    normalizedCreateResult,
+    rawLifeCycleModelJsonOrdered,
+  );
   if (validationError) {
-    return buildLangValidationError(validationError);
+    return attachLangNormalizationMetadata(
+      buildLangValidationError(validationError),
+      langMetadata,
+      options,
+    );
   }
 
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
@@ -219,6 +240,7 @@ export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMut
   );
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
+    langIntent: options?.intent,
     mode: 'create',
     modelId: data.id,
     lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
@@ -229,14 +251,34 @@ export async function createLifeCycleModel(data: any): Promise<LifeCycleModelMut
   });
 
   if (!planResult.ok) {
-    return buildMutationError(planResult.code, planResult.message, planResult.details);
+    return attachLangNormalizationMetadata(
+      buildMutationError(planResult.code, planResult.message, planResult.details),
+      langMetadata,
+      options,
+    );
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
-  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
+  const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
+  return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 
-export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMutationResult> {
+export async function updateLifeCycleModel(
+  data: any,
+  options?: NormalizeLangPayloadForSaveOptions,
+): Promise<LifeCycleModelMutationResult> {
+  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+  const normalizedUpdateResult = await normalizeLangPayloadForSave(
+    rawLifeCycleModelJsonOrdered,
+    options,
+  );
+  const normalizedLifeCycleModelJsonOrdered =
+    normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
+  const validationError = normalizedUpdateResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(
+    normalizedUpdateResult,
+    rawLifeCycleModelJsonOrdered,
+  );
   const currentModelResult = await supabase
     .from('lifecyclemodels')
     .select('id, json_tg->submodels')
@@ -244,25 +286,32 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
     .eq('version', data.version);
 
   if (currentModelResult.error) {
-    return buildMutationError(
-      'MODEL_LOOKUP_FAILED',
-      'Failed to load lifecycle model before saving',
-      currentModelResult.error,
+    return attachLangNormalizationMetadata(
+      buildMutationError(
+        'MODEL_LOOKUP_FAILED',
+        'Failed to load lifecycle model before saving',
+        currentModelResult.error,
+      ),
+      langMetadata,
+      options,
     );
   }
 
   if (!currentModelResult.data || currentModelResult.data.length !== 1) {
-    return buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found');
+    return attachLangNormalizationMetadata(
+      buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found'),
+      langMetadata,
+      options,
+    );
   }
 
   const oldSubmodels = jsonToList(currentModelResult.data[0].submodels);
-  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
-  const normalizedUpdateResult = await normalizeLangPayloadForSave(rawLifeCycleModelJsonOrdered);
-  const normalizedLifeCycleModelJsonOrdered =
-    normalizedUpdateResult?.payload ?? rawLifeCycleModelJsonOrdered;
-  const validationError = normalizedUpdateResult?.validationError;
   if (validationError) {
-    return buildLangValidationError(validationError);
+    return attachLangNormalizationMetadata(
+      buildLangValidationError(validationError),
+      langMetadata,
+      options,
+    );
   }
 
   const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
@@ -279,6 +328,7 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   const oldProcesses = oldProcessesResult?.data ?? [];
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
+    langIntent: options?.intent,
     mode: 'update',
     modelId: data.id,
     version: data.version,
@@ -292,11 +342,16 @@ export async function updateLifeCycleModel(data: any): Promise<LifeCycleModelMut
   });
 
   if (!planResult.ok) {
-    return buildMutationError(planResult.code, planResult.message, planResult.details);
+    return attachLangNormalizationMetadata(
+      buildMutationError(planResult.code, planResult.message, planResult.details),
+      langMetadata,
+      options,
+    );
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
-  return invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
+  const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
+  return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 
 export async function updateLifeCycleModelJsonApi(

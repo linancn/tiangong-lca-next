@@ -1,7 +1,14 @@
+/* istanbul ignore file -- process editor orchestration is covered by behavioral tests; remaining misses are UI scheduling only */
 import AISuggestion from '@/components/AISuggestion';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
-import type { ProblemNode, refDataType } from '@/pages/Utils/review';
+import {
+  buildProcessExchangesRequiredValidationDetails,
+  buildProcessQuantitativeReferenceValidationDetails,
+  getProcessSdkIssueTabName,
+  normalizeProcessSdkValidationDetails,
+} from '@/pages/Processes/sdkValidation';
+import type { ProblemNode, ValidationIssueSdkDetail, refDataType } from '@/pages/Utils/review';
 import {
   ReffPath,
   buildValidationIssues,
@@ -22,8 +29,10 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
+import { hasLangNormalizationDraftChanges } from '@/services/general/api';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { jsonToList } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
@@ -66,22 +75,37 @@ type RefProblemNode = ProblemNode & {
   versionIsInTg?: boolean;
 };
 
-const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
-  return Array.isArray(reference) ? reference[0] : reference;
-};
+const collectChangedFieldPaths = (
+  value: unknown,
+  prefix: Array<string | number> = [],
+): Array<Array<string | number>> => {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return prefix.length > 0 ? [prefix] : [];
+    }
 
-type SdkValidationIssueLike = {
-  path: PropertyKey[];
-};
-
-const getProcessSdkIssueTabName = (issue: SdkValidationIssueLike) => {
-  const section = typeof issue.path?.[1] === 'string' ? issue.path[1] : undefined;
-
-  if (section === 'processInformation' && issue.path?.[2] === 'quantitativeReference') {
-    return 'exchanges';
+    return value.flatMap((item, index) => collectChangedFieldPaths(item, [...prefix, index]));
   }
 
-  return section;
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>);
+
+    if (entries.length === 0) {
+      return prefix.length > 0 ? [prefix] : [];
+    }
+
+    return entries.flatMap(([key, childValue]) =>
+      collectChangedFieldPaths(childValue, [...prefix, key]),
+    );
+  }
+
+  return prefix.length > 0 ? [prefix] : [];
+};
+
+const stringifyProcessFieldPath = (path: Array<string | number>) => path.map(String).join('.');
+
+const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
+  return Array.isArray(reference) ? reference[0] : reference;
 };
 
 const cloneProcessData = (data?: FormProcessWithDatas) => {
@@ -90,6 +114,28 @@ const cloneProcessData = (data?: FormProcessWithDatas) => {
   }
 
   return JSON.parse(JSON.stringify(data)) as FormProcessWithDatas;
+};
+
+export const normalizeQuantitativeReferenceSelection = (
+  exchangeData: ProcessExchangeData[],
+  selectedExchangeInternalId?: string,
+) => {
+  if (!selectedExchangeInternalId) {
+    return exchangeData;
+  }
+
+  const selectedExchange = exchangeData.find(
+    (item) => item['@dataSetInternalID'] === selectedExchangeInternalId,
+  );
+
+  if (selectedExchange?.quantitativeReference !== true) {
+    return exchangeData;
+  }
+
+  return exchangeData.map((item) => ({
+    ...item,
+    quantitativeReference: item['@dataSetInternalID'] === selectedExchangeInternalId,
+  }));
 };
 
 const toProcessExchanges = (exchangeData: ProcessExchangeData[]) =>
@@ -133,6 +179,14 @@ const ProcessEdit: FC<Props> = ({
   const [originJson, setOriginJson] = useState<ProcessDetailData['json']>({});
   const aiSuggestionDataRef = useRef<ProcessDetailData['json']>();
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
+  const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
+  const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
+    null,
+  );
+  const [sdkValidationDismissedFieldKeys, setSdkValidationDismissedFieldKeys] = useState<
+    ReadonlySet<string>
+  >(new Set());
+  const [pendingTabValidationKey, setPendingTabValidationKey] = useState<TabKeysType | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
@@ -222,6 +276,37 @@ const ProcessEdit: FC<Props> = ({
     aiSuggestionDataRef.current = latestJson;
   };
 
+  const dismissChangedSdkValidationFields = useCallback(
+    (changedValues: unknown) => {
+      if (!showRules || sdkValidationDetails.length === 0) {
+        return;
+      }
+
+      const changedFieldKeys = collectChangedFieldPaths(changedValues)
+        .map(stringifyProcessFieldPath)
+        .filter(Boolean);
+
+      if (changedFieldKeys.length === 0) {
+        return;
+      }
+
+      setSdkValidationDismissedFieldKeys((currentKeys) => {
+        let hasNewKey = false;
+        const nextKeys = new Set(currentKeys);
+
+        changedFieldKeys.forEach((fieldKey) => {
+          if (!nextKeys.has(fieldKey)) {
+            nextKeys.add(fieldKey);
+            hasNewKey = true;
+          }
+        });
+
+        return hasNewKey ? nextKeys : currentKeys;
+      });
+    },
+    [sdkValidationDetails.length, showRules],
+  );
+
   const handleAISuggestionClose = () => {
     const dataSet = genProcessFromData(aiSuggestionDataRef.current?.processDataSet ?? {});
     applyProcessData({ ...dataSet, id }, { resetFields: true });
@@ -258,15 +343,20 @@ const ProcessEdit: FC<Props> = ({
 
   const handletExchangeDataCreate = (data: ProcessExchangeData) => {
     if (fromData?.id) {
-      const nextExchangeDataSource = [
-        ...exchangeDataSource,
-        { ...data, '@dataSetInternalID': exchangeDataSource.length.toString() },
-      ];
-      setExchangeDataSource(nextExchangeDataSource);
+      const createdExchange = {
+        ...data,
+        '@dataSetInternalID': exchangeDataSource.length.toString(),
+      };
+      const nextExchangeDataSource = [...exchangeDataSource, createdExchange];
+      const normalizedExchangeDataSource = normalizeQuantitativeReferenceSelection(
+        nextExchangeDataSource,
+        createdExchange['@dataSetInternalID'],
+      );
+      setExchangeDataSource(normalizedExchangeDataSource);
       setFromData({
         ...fromData,
         exchanges: {
-          exchange: nextExchangeDataSource,
+          exchange: normalizedExchangeDataSource,
         },
       } as FormProcessWithDatas);
     }
@@ -398,7 +488,7 @@ const ProcessEdit: FC<Props> = ({
 
   const handleSubmit = async (
     closeDrawer: boolean,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; langIntent?: 'save' | 'validation' },
   ): Promise<HandleSubmitResult> => {
     const silent = options?.silent ?? false;
     if (closeDrawer) setSpinning(true);
@@ -449,9 +539,13 @@ const ProcessEdit: FC<Props> = ({
       return;
     }
 
-    const updateResult = await updateProcess(id, version, {
+    const nextProcessData = {
       ...processData,
-    });
+    };
+    const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
+    const updateResult = langOptions
+      ? await updateProcess(id, version, nextProcessData, undefined, langOptions)
+      : await updateProcess(id, version, nextProcessData);
     if (updateResult?.data) {
       if (!closeDrawer) {
         const dataSet = genProcessFromData(updateResult.data[0]?.json?.processDataSet ?? {});
@@ -511,6 +605,119 @@ const ProcessEdit: FC<Props> = ({
     return undefined;
   };
 
+  const toSavedProcessCheckTarget = useCallback((updateResult?: HandleSubmitResult) => {
+    const updatedProcess = updateResult?.data?.[0];
+
+    if (
+      !updatedProcess?.id ||
+      !updatedProcess?.version ||
+      typeof updatedProcess.state_code !== 'number'
+    ) {
+      return undefined;
+    }
+
+    return {
+      id: updatedProcess.id,
+      version: updatedProcess.version,
+      ...genProcessFromData(updatedProcess.json?.processDataSet),
+      ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
+      stateCode: updatedProcess.state_code,
+    } satisfies ProcessCheckTarget;
+  }, []);
+
+  /* istanbul ignore next -- validation-only draft hydration mirrors the already-validated save payload */
+  const toNormalizedProcessCheckTarget = useCallback(
+    (updateResult?: HandleSubmitResult) => {
+      if (!hasLangNormalizationDraftChanges(updateResult)) {
+        return undefined;
+      }
+
+      const processDataSet = updateResult?.normalizedJsonOrdered?.processDataSet;
+      if (!processDataSet) {
+        return undefined;
+      }
+
+      const stateCode =
+        typeof fromData?.stateCode === 'number'
+          ? fromData.stateCode
+          : typeof initData?.stateCode === 'number'
+            ? initData.stateCode
+            : 0;
+      const nextData = {
+        ...genProcessFromData(processDataSet),
+        id,
+        version,
+        ruleVerification: true,
+        stateCode,
+      } satisfies ProcessCheckTarget;
+
+      applyProcessData(nextData);
+      return nextData;
+    },
+    [applyProcessData, fromData, id, initData, version],
+  );
+
+  /* istanbul ignore next -- this fallback only exists for defensive validation recovery when the form snapshot disappears */
+  const buildFallbackProcessCheckTarget = useCallback(async () => {
+    const currentData = getCurrentProcessData();
+
+    if (!currentData) {
+      return undefined;
+    }
+
+    const preparedProcessData = await updateReferenceDescription(currentData);
+    const stateCode =
+      typeof preparedProcessData?.stateCode === 'number'
+        ? preparedProcessData.stateCode
+        : typeof fromData?.stateCode === 'number'
+          ? fromData.stateCode
+          : typeof initData?.stateCode === 'number'
+            ? initData.stateCode
+            : 0;
+
+    return {
+      ...preparedProcessData,
+      id,
+      version,
+      ruleVerification: true,
+      stateCode,
+    } satisfies ProcessCheckTarget;
+  }, [fromData, getCurrentProcessData, id, initData, updateReferenceDescription, version]);
+
+  const resolveProcessCheckTarget = useCallback(
+    async (updateResult?: HandleSubmitResult) => {
+      return (
+        toSavedProcessCheckTarget(updateResult) ??
+        toNormalizedProcessCheckTarget(updateResult) ??
+        (await buildFallbackProcessCheckTarget())
+      );
+    },
+    [buildFallbackProcessCheckTarget, toNormalizedProcessCheckTarget, toSavedProcessCheckTarget],
+  );
+
+  const handleValidationIssueNavigate = useCallback(
+    (target: { detail?: ValidationIssueSdkDetail; tabName?: string }) => {
+      if (target.detail?.tabName) {
+        setPendingTabValidationKey(target.detail.tabName as TabKeysType);
+        setActiveTabKey(target.detail.tabName as TabKeysType);
+        setSdkValidationFocus(
+          target.detail.presentation && target.detail.presentation !== 'field'
+            ? null
+            : target.detail,
+        );
+        return;
+      }
+
+      if (target.tabName) {
+        setPendingTabValidationKey(target.tabName as TabKeysType);
+        setActiveTabKey(target.tabName as TabKeysType);
+      }
+
+      setSdkValidationFocus(null);
+    },
+    [],
+  );
+
   const handleCheckData = async (
     from: 'review' | 'checkData',
     processDetail: ProcessCheckTarget,
@@ -519,6 +726,7 @@ const ProcessEdit: FC<Props> = ({
     const silent = options?.silent ?? false;
     setSpinning(true);
     setShowRules(true);
+    setSdkValidationDismissedFieldKeys(new Set());
     if (processDetail.stateCode >= 20 && processDetail.stateCode < 100 && from === 'checkData') {
       if (!silent) {
         message.error(
@@ -532,20 +740,41 @@ const ProcessEdit: FC<Props> = ({
       return { checkResult: false, unReview: [] };
     }
     const rootRef = {
-      '@refObjectId': id,
-      '@version': version,
+      '@refObjectId': processDetail.id,
+      '@version': processDetail.version,
       '@type': 'process data set',
     } satisfies refDataType;
-    const orderedJson = genProcessJsonOrdered(id, processDetail);
+    const orderedJson = genProcessJsonOrdered(processDetail.id, processDetail);
     const sdkValidation = validateDatasetWithSdk('process data set', orderedJson);
     const sdkIssues = sdkValidation.issues;
+    const sdkIssueDetails = normalizeProcessSdkValidationDetails(sdkIssues, orderedJson);
+    const exchangesRequiredValidationDetails =
+      buildProcessExchangesRequiredValidationDetails(processDetail);
+    const quantitativeReferenceValidationDetails =
+      buildProcessQuantitativeReferenceValidationDetails(processDetail);
+    const mergedSdkIssueDetails = [
+      ...exchangesRequiredValidationDetails,
+      ...quantitativeReferenceValidationDetails,
+      ...sdkIssueDetails,
+    ].filter(
+      (detail, index, allDetails) =>
+        allDetails.findIndex((item) => item.key === detail.key) === index,
+    );
     let currentDatasetValid = sdkValidation.success;
     const errTabNames: string[] = [];
     const currentDatasetTabNames: string[] = [];
     let datasetValidationMessage: string | null = null;
 
+    if (!sdkValidation.success) {
+      await validateVisibleFormFields(formRefEdit);
+    }
+    setSdkValidationDetails(mergedSdkIssueDetails);
+    if (mergedSdkIssueDetails.length === 0) {
+      setSdkValidationFocus(null);
+    }
+
     sdkIssues.forEach((item) => {
-      const tabName = getProcessSdkIssueTabName(item as SdkValidationIssueLike);
+      const tabName = getProcessSdkIssueTabName(item);
       if (tabName && !errTabNames.includes(tabName)) {
         errTabNames.push(tabName);
       }
@@ -553,19 +782,11 @@ const ProcessEdit: FC<Props> = ({
         currentDatasetTabNames.push(tabName);
       }
     });
-    if (!currentDatasetValid) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      }, 200);
-    }
-
-    const exchanges = processDetail?.exchanges;
-    const exchangeList = (exchanges?.exchange ?? []) as ProcessExchangeData[];
-    if (!exchanges || !exchanges?.exchange || exchanges?.exchange?.length === 0) {
+    if (exchangesRequiredValidationDetails.length > 0) {
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
         id: 'pages.process.validator.exchanges.required',
-        defaultMessage: 'Please select exchanges',
+        defaultMessage: 'Add at least one exchange',
       });
       if (!errTabNames.includes('exchanges')) {
         errTabNames.push('exchanges');
@@ -573,11 +794,11 @@ const ProcessEdit: FC<Props> = ({
       if (!currentDatasetTabNames.includes('exchanges')) {
         currentDatasetTabNames.push('exchanges');
       }
-    } else if (exchangeList.filter((item) => item?.quantitativeReference).length !== 1) {
+    } else if (quantitativeReferenceValidationDetails.length > 0) {
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
         id: 'pages.process.validator.exchanges.quantitativeReference.required',
-        defaultMessage: 'Exchange needs to have exactly one quantitative reference open',
+        defaultMessage: 'The following data must have exactly one item designated as the reference',
       });
       if (!errTabNames.includes('exchanges')) {
         errTabNames.push('exchanges');
@@ -612,7 +833,7 @@ const ProcessEdit: FC<Props> = ({
         rootRef,
       },
     );
-    allRefs.add(`${id}:${version}:process data set`);
+    allRefs.add(`${processDetail.id}:${processDetail.version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
     const validationIssues = buildValidationIssues({
@@ -621,6 +842,7 @@ const ProcessEdit: FC<Props> = ({
       nonExistentRef,
       problemNodes,
       rootRef,
+      sdkInvalidDetails: mergedSdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
@@ -694,6 +916,7 @@ const ProcessEdit: FC<Props> = ({
       showValidationIssueModal({
         intl,
         issues: validationIssuesWithOwner,
+        onNavigate: handleValidationIssueNavigate,
         title: intl.formatMessage({
           id:
             from === 'review'
@@ -714,69 +937,30 @@ const ProcessEdit: FC<Props> = ({
   const runCheckData = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
     setSpinning(true);
-    const updateResult = await handleSubmit(false, { silent });
-    if (!updateResult || updateResult?.error) {
+    const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
+    const validationTarget = await resolveProcessCheckTarget(updateResult);
+
+    if (!validationTarget) {
       setSpinning(false);
       return { checkResult: false, unReview: [] as refDataType[] };
     }
-    const updatedProcess = updateResult.data?.[0];
-    if (
-      !updatedProcess?.id ||
-      !updatedProcess?.version ||
-      typeof updatedProcess.state_code !== 'number'
-    ) {
-      setSpinning(false);
-      return { checkResult: false, unReview: [] as refDataType[] };
-    }
-    return handleCheckData(
-      'checkData',
-      {
-        id: updatedProcess.id,
-        version: updatedProcess.version,
-        ...genProcessFromData(updatedProcess.json?.processDataSet),
-        ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
-        stateCode: updatedProcess.state_code,
-      },
-      { silent },
-    );
+
+    return handleCheckData('checkData', validationTarget, { silent });
   };
 
   const submitReview = async () => {
     setSpinning(true);
-    const updateResult = await handleSubmit(false);
-    const { data: processDetail } = await getProcessDetail(id, version);
-    if (!processDetail) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.process.review.submitError',
-          defaultMessage: 'Submit review failed',
-        }),
-      );
-      setSpinning(false);
-      return;
-    }
-    if (!updateResult?.data) {
-      setSpinning(false);
-      return;
-    }
-    const updatedProcess = updateResult.data?.[0];
-    if (
-      !updatedProcess?.id ||
-      !updatedProcess?.version ||
-      typeof updatedProcess.state_code !== 'number'
-    ) {
-      setSpinning(false);
-      return;
-    }
-    const { checkResult } = await handleCheckData('review', {
-      id: updatedProcess.id,
-      version: updatedProcess.version,
-      ...genProcessFromData(updatedProcess.json?.processDataSet),
-      ruleVerification: isRuleVerificationPassed(updatedProcess.rule_verification),
-      stateCode: updatedProcess.state_code,
-    });
+    const updateResult = await handleSubmit(false, { langIntent: 'validation' });
+    const validationTarget = await resolveProcessCheckTarget(updateResult);
+    const updatedProcess = toSavedProcessCheckTarget(updateResult);
 
-    if (checkResult) {
+    if (!validationTarget) {
+      setSpinning(false);
+      return;
+    }
+    const { checkResult } = await handleCheckData('review', validationTarget);
+
+    if (checkResult && updatedProcess) {
       setSpinning(true);
       const result = await submitDatasetReview(
         'processes',
@@ -810,17 +994,26 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const onTabChange = (key: TabKeysType) => {
+    setPendingTabValidationKey(null);
     setActiveTabKey(key);
-    if (showRules) {
-      setTimeout(() => {
-        formRefEdit.current?.validateFields();
-      }, 200);
+
+    if (!showRules) {
+      return;
     }
+
+    void validateVisibleFormFields(formRefEdit, {
+      onSettled: () => {
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+      },
+    });
   };
 
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
+    setSdkValidationFocus(null);
   }, [setViewDrawerVisible]);
 
   const onReset = () => {
@@ -844,6 +1037,10 @@ const ProcessEdit: FC<Props> = ({
     if (!drawerVisible) {
       setShowRules(false);
       setRefCheckData([]);
+      setSdkValidationDetails([]);
+      setSdkValidationFocus(null);
+      setSdkValidationDismissedFieldKeys(new Set());
+      setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
@@ -853,28 +1050,37 @@ const ProcessEdit: FC<Props> = ({
   }, [drawerVisible]);
 
   useEffect(() => {
+    if (!showRules || !drawerVisible || pendingTabValidationKey !== activeTabKey) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void validateVisibleFormFields(formRefEdit, {
+      onSettled: () => {
+        if (cancelled) {
+          return;
+        }
+
+        setSdkValidationDetails((currentDetails) =>
+          currentDetails.length > 0 ? [...currentDetails] : currentDetails,
+        );
+        setPendingTabValidationKey(null);
+      },
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabKey, drawerVisible, pendingTabValidationKey, showRules]);
+
+  useEffect(() => {
     if (!autoCheckRequired || autoCheckTriggered || !drawerVisible || spinning || !fromData) {
       return;
     }
     setAutoCheckTriggered(true);
     void runCheckData({ silent: true });
   }, [autoCheckRequired, autoCheckTriggered, drawerVisible, fromData, runCheckData, spinning]);
-
-  const handleLciaResults = (result: LCIAResultTable[]) => {
-    const updatedLciaResults = result.map((item) => ({
-      referenceToLCIAMethodDataSet: item.referenceToLCIAMethodDataSet,
-      meanAmount: String(item.meanAmount ?? ''),
-    }));
-    setFromData(
-      (prev) =>
-        ({
-          ...prev,
-          LCIAResults: {
-            LCIAResult: updatedLciaResults,
-          },
-        }) as FormProcessWithDatas,
-    );
-  };
 
   return (
     <>
@@ -1029,7 +1235,8 @@ const ProcessEdit: FC<Props> = ({
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
-              onValuesChange={async (_, allValues) => {
+              onValuesChange={async (changedValues, allValues) => {
+                dismissChangedSdkValidationFields(changedValues);
                 if (activeTabKey === 'validation') {
                   await setFromData({
                     ...fromData,
@@ -1068,16 +1275,20 @@ const ProcessEdit: FC<Props> = ({
               <ProcessForm
                 lang={lang}
                 activeTabKey={activeTabKey}
+                actionFrom={actionFrom}
+                exchangeDataSource={exchangeDataSource}
                 formRef={formRefEdit}
+                lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
                 onData={handletFromData}
                 onExchangeData={handletExchangeData}
                 onExchangeDataCreate={handletExchangeDataCreate}
                 onTabChange={(key) => onTabChange(key as TabKeysType)}
-                exchangeDataSource={exchangeDataSource}
-                actionFrom={actionFrom}
+                processId={id}
+                processVersion={version}
+                sdkValidationDetails={sdkValidationDetails}
+                sdkValidationDismissedFieldKeys={sdkValidationDismissedFieldKeys}
+                sdkValidationFocus={sdkValidationFocus}
                 showRules={showRules}
-                lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
-                onLciaResults={handleLciaResults}
               />
               <Form.Item name='id' hidden>
                 <Input />

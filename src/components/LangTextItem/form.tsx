@@ -30,6 +30,10 @@ const LangTextItemForm: FC<Props> = ({
   const formContext = Form.useFormInstance();
   const form = formRef?.current || formContext;
 
+  const normalizeTextValue = (value: unknown) => {
+    return typeof value === 'string' ? value.trim() : '';
+  };
+
   let formValues = [];
   if (listName) {
     formValues = form?.getFieldValue([...listName]);
@@ -55,7 +59,20 @@ const LangTextItemForm: FC<Props> = ({
                 {
                   // When adding or deleting items, check whether the language meets the requirements
                   validator: async (_, value) => {
-                    const lists = value.filter(
+                    const normalizedValue = Array.isArray(value) ? value : [];
+                    const hasAnyMeaningfulValue = normalizedValue.some((item: any) => {
+                      return (
+                        !!item &&
+                        (!!item['@xml:lang'] || normalizeTextValue(item['#text']).length > 0)
+                      );
+                    });
+
+                    if (!hasAnyMeaningfulValue) {
+                      if (setRuleErrorState) setRuleErrorState(false);
+                      return Promise.resolve();
+                    }
+
+                    const lists = normalizedValue.filter(
                       (item: any) => item && item.hasOwnProperty('@xml:lang'),
                     );
                     const langs = lists.map((item: any) => item['@xml:lang']);
@@ -93,6 +110,27 @@ const LangTextItemForm: FC<Props> = ({
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField) => {
                 const currentLang = formValues?.[subField.name]?.['@xml:lang'];
+                const textRules = isRequired
+                  ? [
+                      {
+                        validator: async (_: unknown, value: unknown) => {
+                          if (normalizeTextValue(value).length > 0) {
+                            return Promise.resolve();
+                          }
+
+                          return Promise.reject(
+                            new Error(
+                              intl.formatMessage({
+                                id: 'validator.lang.text.required',
+                                defaultMessage: 'Please input this field!',
+                              }),
+                            ),
+                          );
+                        },
+                      },
+                      ...rules.filter((rule) => !rule?.required),
+                    ]
+                  : rules;
 
                 const optionsWithDisabled = langOptions.map((option) => ({
                   ...option,
@@ -109,16 +147,18 @@ const LangTextItemForm: FC<Props> = ({
                           isRequired
                             ? [
                                 {
-                                  required: true,
-                                  message: (
-                                    <FormattedMessage
-                                      id='validator.lang.select'
-                                      defaultMessage='Please select a language!'
-                                    />
-                                  ),
-                                },
-                                {
                                   validator: async (_, value) => {
+                                    if (!value) {
+                                      return Promise.reject(
+                                        new Error(
+                                          intl.formatMessage({
+                                            id: 'validator.lang.select',
+                                            defaultMessage: 'Please select a language!',
+                                          }),
+                                        ),
+                                      );
+                                    }
+
                                     if (value === 'en' && setRuleErrorState) {
                                       setRuleErrorState(false);
                                     }
@@ -145,7 +185,7 @@ const LangTextItemForm: FC<Props> = ({
                     <Col flex='auto'>
                       <Form.Item
                         name={[subField.name, '#text']}
-                        rules={rules}
+                        rules={textRules}
                         style={{ marginBottom: 0 }}
                       >
                         <TextArea rows={1} />

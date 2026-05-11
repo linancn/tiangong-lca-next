@@ -232,13 +232,23 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
 
     fireEvent.click(screen.getByTestId('submit'));
 
-    await waitFor(() => {
-      expect(mockNotification.error).toHaveBeenCalledWith({
-        message: 'The email was not sent successfully, please try again!',
-        description: 'Error: boom',
-        placement: 'top',
-      });
-    });
+    await waitFor(
+      () => {
+        expect(mockForgotPasswordSendEmail).toHaveBeenCalledWith({ email: 'user@test.com' });
+      },
+      { timeout: 5000 },
+    );
+
+    await waitFor(
+      () => {
+        expect(mockNotification.error).toHaveBeenCalledWith({
+          message: 'The email was not sent successfully, please try again!',
+          description: 'Error: boom',
+          placement: 'top',
+        });
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('falls back to empty init data and supports dark mode toggle from localStorage', async () => {

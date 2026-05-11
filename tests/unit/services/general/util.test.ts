@@ -1039,6 +1039,63 @@ describe('General Utility Functions', () => {
         { '@xml:lang': 'zh', '#text': '钢铁制造' },
       ]);
     });
+
+    it('should supplement an empty English placeholder during validation-only normalization', async () => {
+      const payload = {
+        title: [{ '@xml:lang': 'zh', '#text': '钢铁制造' }],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue(undefined);
+
+      const result = await normalizeLangPayloadBeforeSave(payload, {
+        intent: 'validation',
+        translateZhToEn,
+      });
+
+      expect(result.issues).toEqual([]);
+      expect(result.payload.title).toEqual([
+        { '@xml:lang': 'zh', '#text': '钢铁制造' },
+        { '@xml:lang': 'en', '#text': undefined },
+      ]);
+      expect(result.supplementedEnglishPlaceholderPaths).toEqual(['title']);
+      expect(result.translatedPaths).toEqual([]);
+    });
+
+    it('should preserve raw language ordering when validation-only normalization adds a missing English placeholder', async () => {
+      const payload = {
+        title: [
+          { '@xml:lang': 'zh', '#text': '钢铁制造' },
+          { '@xml:lang': 'en', '#text': '' },
+        ],
+      };
+      const translateZhToEn = jest.fn().mockResolvedValue(undefined);
+
+      const result = await normalizeLangPayloadBeforeSave(payload, {
+        intent: 'validation',
+        translateZhToEn,
+      });
+
+      expect(result.payload.title).toEqual([
+        { '@xml:lang': 'zh', '#text': '钢铁制造' },
+        { '@xml:lang': 'en', '#text': undefined },
+      ]);
+      expect(result.supplementedEnglishPlaceholderPaths).toEqual(['title']);
+      expect(result.translatedPaths).toEqual([]);
+    });
+
+    it('should avoid recording an empty root path when validation-only normalization supplements a root lang list', async () => {
+      const payload = [{ '@xml:lang': 'zh', '#text': '钢铁制造' }];
+
+      const result = await normalizeLangPayloadBeforeSave(payload, {
+        intent: 'validation',
+        translateZhToEn: jest.fn().mockResolvedValue(undefined),
+      });
+
+      expect(result.payload).toEqual([
+        { '@xml:lang': 'zh', '#text': '钢铁制造' },
+        { '@xml:lang': 'en', '#text': undefined },
+      ]);
+      expect(result.supplementedEnglishPlaceholderPaths).toEqual([]);
+    });
   });
 
   describe('getLangValidationErrorMessage', () => {
@@ -1057,7 +1114,7 @@ describe('General Utility Functions', () => {
       ]);
 
       expect(message).toBe(
-        'The following fields are missing English: treatmentStandardsRoutes,baseName.',
+        'Save failed, the following fields are missing English: treatmentStandardsRoutes,baseName.',
       );
     });
 
@@ -1079,7 +1136,7 @@ describe('General Utility Functions', () => {
         'zh-CN',
       );
 
-      expect(message).toBe('以下字段缺少英文：treatmentStandardsRoutes,baseName.');
+      expect(message).toBe('保存失败，以下字段缺少英文：treatmentStandardsRoutes,baseName.');
     });
 
     it('should return empty string when there are no issues', () => {
@@ -1098,14 +1155,16 @@ describe('General Utility Functions', () => {
         2,
       );
 
-      expect(message).toBe('The following fields are missing English: a,b and 2 more field(s).');
+      expect(message).toBe(
+        'Save failed, the following fields are missing English: a,b and 2 more field(s).',
+      );
     });
 
     it('should treat empty issue paths as root', () => {
       const message = getLangValidationErrorMessage([
         { path: '', code: 'missing_en', message: 'x' },
       ]);
-      expect(message).toBe('The following fields are missing English: (root).');
+      expect(message).toBe('Save failed, the following fields are missing English: (root).');
     });
 
     it('should fall back to built-in English templates when validator locale messages are missing', () => {
@@ -1123,7 +1182,7 @@ describe('General Utility Functions', () => {
       try {
         expect(
           getLangValidationErrorMessage([{ path: '', code: 'missing_en', message: 'x' }]),
-        ).toBe('The following fields are missing English: (root).');
+        ).toBe('Save failed, the following fields are missing English: (root).');
 
         expect(
           getLangValidationErrorMessage(
@@ -1133,7 +1192,7 @@ describe('General Utility Functions', () => {
             ],
             1,
           ),
-        ).toBe('The following fields are missing English: a and 1 more field(s).');
+        ).toBe('Save failed, the following fields are missing English: a and 1 more field(s).');
       } finally {
         mutableEnMessages['validator.langValidation.missingEnglish'] =
           originalMessages.missingEnglish;
@@ -1156,7 +1215,7 @@ describe('General Utility Functions', () => {
             5,
             'zh-CN',
           ),
-        ).toBe('以下字段缺少英文：根节点.');
+        ).toBe('保存失败，以下字段缺少英文：根节点.');
       } finally {
         mutableZhMessages['validator.langValidation.root'] = originalRoot;
       }
@@ -1167,7 +1226,7 @@ describe('General Utility Functions', () => {
         { path: 'items.[0]', code: 'missing_en', message: 'x' },
       ]);
 
-      expect(message).toBe('The following fields are missing English: (root).');
+      expect(message).toBe('Save failed, the following fields are missing English: (root).');
     });
 
     it('should reuse the normalized path when split().pop() returns undefined', () => {
@@ -1177,7 +1236,9 @@ describe('General Utility Functions', () => {
 
       const message = getLangValidationErrorMessage([{ path, code: 'missing_en', message: 'x' }]);
 
-      expect(message).toBe('The following fields are missing English: syntheticField.');
+      expect(message).toBe(
+        'Save failed, the following fields are missing English: syntheticField.',
+      );
     });
   });
 

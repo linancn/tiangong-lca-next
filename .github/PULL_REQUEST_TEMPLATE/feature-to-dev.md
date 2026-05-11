@@ -1,26 +1,47 @@
+---
+title: next Feature To Dev PR Template
+docType: template
+scope: repo
+status: active
+authoritative: false
+owner: next
+language: en
+whenToUse:
+  - when opening a routine feature or fix PR into dev
+  - when checking the expected validation and handoff note shape for dev-bound work
+whenToUpdate:
+  - when branch handoff expectations for dev-bound PRs change
+  - when the validation note shape for routine repo delivery changes
+checkPaths:
+  - .github/PULL_REQUEST_TEMPLATE/feature-to-dev.md
+  - AGENTS.md
+  - docs/agents/repo-validation.md
+lastReviewedAt: 2026-04-23
+lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+---
+
 ## Branch Contract
 
-- Base branch: `dev`
-- Validated environment: `dev` / `main` / `local Supabase`
-- Back-merge required after merge?: `No` / `Yes (explain)`
-- Root workspace integration expected?: `No` / `Yes (explain)`
+- base branch: `dev`
+- validated environment: `dev` / `main` / `local Supabase`
+- back-merge required after merge: `No` / `Yes (explain)`
+- root workspace integration expected: `No` / `Yes (explain)`
 
-- [ ] This PR targets `dev`.
-- [ ] I confirm this repo's GitHub default branch may still appear as `main`, but routine feature and fix PRs must target `dev`.
-- [ ] If this change actually started from `main`, I documented why this is a hotfix or production-only exception.
+- [ ] this PR targets `dev`
+- [ ] if the work started from `main`, this PR documents why it is a hotfix or production-only exception
 
 ## Linked Issue
 
 Closes #
 
-## Summary
+## Change Facts
 
-<!-- What changed and why? -->
+<!-- Changed paths, behavior change, and reason. Keep this factual and short. -->
 
-## Validation
+## Validation Facts
 
-<!-- Commands run, environments checked, screenshots, preview links, or notes. -->
+<!-- Exact commands, exact environment, exact evidence. -->
 
-## Risks / Follow-up
+## Risks And Follow-Up
 
 <!-- Rollback notes, back-merge notes, root integration notes, or follow-up issues. -->

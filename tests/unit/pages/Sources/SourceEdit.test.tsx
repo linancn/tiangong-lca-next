@@ -21,6 +21,7 @@ const toText = (node: any): string => {
 };
 
 let latestRefsDrawerProps: any = null;
+let latestSourceFormProps: any = null;
 const mockGetRefsOfCurrentVersion = jest.fn(async () => ({ oldRefs: [] }));
 const mockGetRefsOfNewVersion = jest.fn(async () => ({ newRefs: [], oldRefs: [] }));
 const mockUpdateRefsData = jest.fn((data: any) => data);
@@ -323,7 +324,9 @@ jest.mock('@/pages/Sources/Components/form', () => {
   const { __ProFormContext } = jest.requireMock('@ant-design/pro-components');
   return {
     __esModule: true,
-    SourceForm: ({ onData, onTabChange, setFileList, setLoadFiles, showRules }: any) => {
+    SourceForm: (props: any) => {
+      latestSourceFormProps = props;
+      const { onData, onTabChange, setFileList, setLoadFiles, showRules } = props;
       const context =
         React.useContext(__ProFormContext) ?? ({ values: {}, setFieldValue: () => {} } as any);
 
@@ -465,12 +468,16 @@ jest.mock('@/services/supabase/key', () => ({
   supabaseStorageBucket: 'sources',
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createSource: jest.fn(() => ({
-    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
-  })),
-}));
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createSource: jest.fn(() => ({
+      validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+    })),
+  }),
+  { virtual: true },
+);
 
 const { getSourceDetail: mockGetSourceDetail, updateSource: mockUpdateSource } =
   jest.requireMock('@/services/sources/api');
@@ -484,6 +491,7 @@ const { ReffPath: mockReffPath } = jest.requireMock('@/pages/Utils/review');
 describe('SourceEdit component', () => {
   beforeEach(() => {
     latestRefsDrawerProps = null;
+    latestSourceFormProps = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
     mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
@@ -992,6 +1000,9 @@ describe('SourceEdit component', () => {
         expect.objectContaining({
           findProblemNodes: expect.any(Function),
         }),
+        expect.objectContaining({
+          orderedJson: { mocked: true },
+        }),
       ),
     );
     expect(mockReffPath).toHaveBeenLastCalledWith(
@@ -1069,7 +1080,7 @@ describe('SourceEdit component', () => {
     );
   });
 
-  it('stops source data checks when the background save fails', async () => {
+  it('keeps source data checks running when the background save fails', async () => {
     const user = userEvent.setup();
     mockUpdateSource.mockResolvedValueOnce({
       data: null,
@@ -1092,8 +1103,9 @@ describe('SourceEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('check blocked'));
-    expect(mockCheckData).not.toHaveBeenCalled();
-    expect(screen.queryByText('source-rules-visible')).not.toBeInTheDocument();
+    expect(mockCheckData).toHaveBeenCalled();
+    expect(screen.getByText('source-rules-visible')).toBeInTheDocument();
+    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('shows the generic source data-check error when issues do not map to tabs', async () => {
@@ -1338,5 +1350,79 @@ describe('SourceEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
+  });
+
+  it('normalizes source sdk details and supports modal navigation to the target tab', async () => {
+    const user = userEvent.setup();
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Invalid input: expected string, received undefined',
+          path: ['sourceDataSet', 'sourceInformation', 'dataSetInformation', 'sourceCitation'],
+          severity: 'error',
+        },
+      ],
+    });
+    mockBuildValidationIssues.mockImplementationOnce(
+      ({ rootRef, sdkInvalidDetails, sdkInvalidTabNames }) => [
+        {
+          code: 'sdkInvalid',
+          link: '/mydata/sources?id=source-123&version=01.00.000',
+          ref: rootRef,
+          sdkDetails: sdkInvalidDetails,
+          tabNames: sdkInvalidTabNames,
+        },
+      ],
+    );
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sdkInvalidDetails: [
+            expect.objectContaining({
+              fieldPath: 'sourceInformation.dataSetInformation.sourceCitation',
+              tabName: 'sourceInformation',
+              validationCode: 'required_missing',
+            }),
+          ],
+        }),
+      ),
+    );
+
+    expect(latestSourceFormProps.sdkValidationDetails).toEqual([
+      expect.objectContaining({
+        fieldPath: 'sourceInformation.dataSetInformation.sourceCitation',
+        tabName: 'sourceInformation',
+      }),
+    ]);
+
+    const navigate = mockShowValidationIssueModal.mock.calls[0][0].onNavigate;
+    const sdkDetail = latestSourceFormProps.sdkValidationDetails[0];
+
+    act(() => {
+      navigate({ detail: sdkDetail, tabName: sdkDetail.tabName });
+    });
+
+    await waitFor(() => {
+      expect(latestSourceFormProps.activeTabKey).toBe('sourceInformation');
+      expect(latestSourceFormProps.sdkValidationFocus).toEqual(sdkDetail);
+    });
   });
 });

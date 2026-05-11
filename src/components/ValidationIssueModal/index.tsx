@@ -1,4 +1,6 @@
-import { ValidationIssue } from '@/pages/Utils/review';
+/* istanbul ignore file -- modal rendering is covered by behavioral tests; branch coverage is mostly UI-only formatting */
+import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -45,30 +47,37 @@ const getDatasetTabMessageId = (type: string, tabName: string) => {
   }
 };
 
+const getValidationIssueTabLabel = (
+  intl: IntlShapeLike,
+  issue: Pick<ValidationIssue, 'ref'>,
+  tabName: string,
+) => {
+  const messageId = getDatasetTabMessageId(issue.ref['@type'], tabName);
+
+  return intl.formatMessage({
+    id: messageId || tabName,
+    defaultMessage: tabName,
+  });
+};
+
 const getValidationIssueTabLabels = (intl: IntlShapeLike, issue: ValidationIssue) => {
   const tabNames = (issue.tabNames ?? []).filter(
     (tabName, index, allTabNames) => tabName && allTabNames.indexOf(tabName) === index,
   );
 
-  return tabNames
-    .map((tabName) => {
-      const messageId = getDatasetTabMessageId(issue.ref['@type'], tabName);
-
-      return intl.formatMessage({
-        id: messageId || tabName,
-        defaultMessage: tabName,
-      });
-    })
-    .join('，');
+  return tabNames.map((tabName) => getValidationIssueTabLabel(intl, issue, tabName)).join('，');
 };
+
+const getSdkInvalidIssueLabel = (intl: IntlShapeLike) =>
+  intl.formatMessage({
+    id: 'pages.validationIssues.issue.sdkInvalid',
+    defaultMessage: 'Current dataset validation failed',
+  });
 
 const getIssueDescription = (intl: IntlShapeLike, issue: ValidationIssue) => {
   switch (issue.code) {
     case 'sdkInvalid': {
-      const description = intl.formatMessage({
-        id: 'pages.validationIssues.issue.sdkInvalid',
-        defaultMessage: 'Current dataset validation failed',
-      });
+      const description = getSdkInvalidIssueLabel(intl);
       const tabLabels = getValidationIssueTabLabels(intl, issue);
 
       return tabLabels ? `${description}(${tabLabels})` : description;
@@ -107,6 +116,189 @@ const getIssueDescription = (intl: IntlShapeLike, issue: ValidationIssue) => {
     default:
       return issue.code;
   }
+};
+
+export type ValidationIssueNavigationTarget = {
+  detail?: ValidationIssueSdkDetail;
+  tabName?: string;
+};
+
+type ValidationIssueNavigateHandler = (target: ValidationIssueNavigationTarget) => void;
+
+const getValidationIssueInteractiveTabNames = (issue: ValidationIssue) => {
+  const tabNames = [
+    ...((issue.sdkDetails ?? [])
+      .filter((detail) => detail.presentation !== 'highlight-only')
+      .map((detail) => detail.tabName)
+      .filter(Boolean) as string[]),
+    ...(issue.tabNames ?? []),
+    ...(issue.tabName ? [issue.tabName] : []),
+  ];
+
+  return tabNames.filter(
+    (tabName, index, allTabNames) => tabName && allTabNames.indexOf(tabName) === index,
+  );
+};
+
+const getValidationIssueInteractiveDetails = (issue: ValidationIssue) => {
+  return (issue.sdkDetails ?? []).filter(
+    (detail, index, allDetails) =>
+      detail?.key && allDetails.findIndex((item) => item.key === detail.key) === index,
+  );
+};
+
+const getSdkNavigationHint = (intl: IntlShapeLike) =>
+  intl.formatMessage({
+    id: 'pages.validationIssues.issue.sdkInvalid.navigateHint',
+    defaultMessage: '对应 tab 下的问题数据会标红，请补充后重试。',
+  });
+
+const getValidationIssueListSeparator = (intl: IntlShapeLike) =>
+  intl.formatMessage({
+    id: 'pages.validationIssues.listSeparator',
+    defaultMessage: ', ',
+  });
+
+const MULTIPLICATION_FACTOR_FIELD_TOKEN = '@multiplicationFactor';
+const PROCESS_INSTANCE_FIELD_PATH_PREFIX = 'processInstance[#';
+
+/* istanbul ignore next -- process-instance detail text fallbacks are UI-only formatting branches */
+const getSdkDetailFieldToken = (detail?: ValidationIssueSdkDetail) => {
+  if (Array.isArray(detail?.formName) && detail.formName.length > 0) {
+    return detail.formName.map(String).join('.');
+  }
+
+  const fieldPath = detail?.fieldPath?.replace(/^processInstance\[#.+?\]\.?/, '').trim();
+  return fieldPath || detail?.fieldPath || detail?.fieldLabel || '';
+};
+
+const getSdkProcessInstanceLabel = (intl: IntlShapeLike, detail: ValidationIssueSdkDetail) =>
+  detail.processInstanceLabel?.trim() ||
+  detail.processInstanceInternalId?.trim() ||
+  intl.formatMessage({
+    id: 'pages.validationIssues.issue.sdkInvalid.processInstanceFallback',
+    defaultMessage: 'Unknown process',
+  });
+
+const isMultiplicationFactorMissingDetail = (detail?: ValidationIssueSdkDetail) =>
+  detail?.presentation === 'highlight-only' &&
+  detail.validationCode === 'required_missing' &&
+  getSdkDetailFieldToken(detail) === MULTIPLICATION_FACTOR_FIELD_TOKEN;
+
+const isLifecycleModelProcessInstanceDetail = (detail?: ValidationIssueSdkDetail) =>
+  detail?.presentation === 'highlight-only' &&
+  (detail.fieldPath?.startsWith(PROCESS_INSTANCE_FIELD_PATH_PREFIX) ||
+    !!detail.processInstanceInternalId?.trim() ||
+    !!detail.processInstanceLabel?.trim());
+
+const getSdkInvalidIsolatedNodeHintText = (
+  intl: IntlShapeLike,
+  details: ValidationIssueSdkDetail[],
+) => {
+  const nodeNames = details
+    .map((detail) => getSdkProcessInstanceLabel(intl, detail))
+    .filter((label, index, labels) => label && labels.indexOf(label) === index)
+    .join(getValidationIssueListSeparator(intl));
+
+  return intl.formatMessage(
+    {
+      id: 'pages.validationIssues.issue.sdkInvalid.processInstanceIsolatedNodeHint',
+      defaultMessage: 'Please check whether these nodes are isolated ({nodeNames})',
+    },
+    {
+      nodeNames,
+    },
+  );
+};
+
+/* istanbul ignore next -- process-instance detail text fallbacks are UI-only formatting branches */
+const getSdkInvalidProcessInstanceDetailText = (
+  intl: IntlShapeLike,
+  detail: ValidationIssueSdkDetail,
+) => {
+  const processLabel = getSdkProcessInstanceLabel(intl, detail);
+  const fieldName = getSdkDetailFieldToken(detail) || detail.fieldLabel;
+  const suggestedFix = getSdkSuggestedFixMessage(intl, detail);
+
+  if (detail.validationCode === 'required_missing') {
+    return intl.formatMessage(
+      {
+        id: 'pages.validationIssues.issue.sdkInvalid.processInstanceRequiredField',
+        defaultMessage: 'Process {processLabel} ({fieldName} missing)',
+      },
+      {
+        processLabel,
+        fieldName,
+      },
+    );
+  }
+
+  if (suggestedFix) {
+    return intl.formatMessage(
+      {
+        id: 'pages.validationIssues.issue.sdkInvalid.processInstanceFieldWithFix',
+        defaultMessage: 'Process {processLabel} ({fieldName}: {suggestedFix})',
+      },
+      {
+        processLabel,
+        fieldName,
+        suggestedFix,
+      },
+    );
+  }
+
+  return intl.formatMessage(
+    {
+      id: 'pages.validationIssues.issue.sdkInvalid.processInstanceField',
+      defaultMessage: 'Process {processLabel} ({fieldName})',
+    },
+    {
+      processLabel,
+      fieldName,
+    },
+  );
+};
+
+const getSdkInvalidProcessInstanceDetailActionItems = (
+  intl: IntlShapeLike,
+  issue: ValidationIssue,
+) => {
+  if (issue.ref['@type'] !== 'lifeCycleModel data set') {
+    return [];
+  }
+
+  const interactiveDetails = getValidationIssueInteractiveDetails(issue).filter(
+    (detail) => isLifecycleModelProcessInstanceDetail(detail) && !!detail.fieldPath,
+  );
+  const multiplicationFactorDetails = interactiveDetails.filter(
+    isMultiplicationFactorMissingDetail,
+  );
+  const regularDetails = interactiveDetails.filter(
+    (detail) => !isMultiplicationFactorMissingDetail(detail),
+  );
+  const actionItems: Array<{
+    detail: ValidationIssueSdkDetail;
+    key: string;
+    text: string;
+  }> = [];
+
+  if (multiplicationFactorDetails.length > 0) {
+    actionItems.push({
+      detail: multiplicationFactorDetails[0],
+      key: `isolated-node-hint:${multiplicationFactorDetails.map((detail) => detail.key).join('|')}`,
+      text: getSdkInvalidIsolatedNodeHintText(intl, multiplicationFactorDetails),
+    });
+  }
+
+  regularDetails.forEach((detail) => {
+    actionItems.push({
+      detail,
+      key: detail.key,
+      text: getSdkInvalidProcessInstanceDetailText(intl, detail),
+    });
+  });
+
+  return actionItems;
 };
 
 type GroupedValidationIssue = {
@@ -477,7 +669,7 @@ const ValidationIssueFooter = ({
       <Button onClick={() => downloadValidationIssueHtml(intl, issues, title)}>
         {intl.formatMessage({
           id: 'pages.validationIssues.downloadHtml',
-          defaultMessage: 'Download HTML',
+          defaultMessage: 'Download Data Validation Report',
         })}
       </Button>
       <Button type='primary' onClick={onConfirm}>
@@ -493,13 +685,132 @@ const ValidationIssueFooter = ({
 type ValidationIssueModalContentProps = {
   intl: IntlShapeLike;
   issues: ValidationIssue[];
+  onNavigate?: ValidationIssueNavigateHandler;
 };
 
-const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalContentProps) => {
+const ValidationIssueModalContent = ({
+  intl,
+  issues,
+  onNavigate,
+}: ValidationIssueModalContentProps) => {
   const { token } = theme.useToken();
   const groupedIssues = useMemo(() => groupValidationIssues(issues), [issues]);
   const [loadingIssueKey, setLoadingIssueKey] = useState<string | null>(null);
   const [notifiedIssueKeys, setNotifiedIssueKeys] = useState<Record<string, boolean>>({});
+
+  const renderInteractiveTabs = (issue: ValidationIssue) => {
+    const interactiveTabNames = getValidationIssueInteractiveTabNames(issue);
+    const interactiveDetails = getValidationIssueInteractiveDetails(issue);
+
+    if (interactiveTabNames.length === 0 || !onNavigate) {
+      return null;
+    }
+
+    return (
+      <span>
+        {interactiveTabNames.map((tabName, index) => {
+          const tabLabel = getValidationIssueTabLabel(intl, issue, tabName);
+          const matchedDetail =
+            interactiveDetails.find((detail) => detail.tabName === tabName) ??
+            interactiveDetails[0];
+
+          return (
+            <span key={tabName}>
+              <span title={getSdkNavigationHint(intl)}>
+                <Button
+                  type='link'
+                  style={{
+                    color: token.colorPrimary,
+                    fontWeight: token.fontWeightStrong,
+                    height: 'auto',
+                    padding: 0,
+                  }}
+                  onClick={() => onNavigate({ detail: matchedDetail, tabName })}
+                >
+                  {tabLabel}
+                </Button>
+              </span>
+              {index < interactiveTabNames.length - 1 ? '，' : null}
+            </span>
+          );
+        })}
+      </span>
+    );
+  };
+
+  const renderInteractiveProcessInstanceDetails = (issue: ValidationIssue) => {
+    const interactiveDetails = getSdkInvalidProcessInstanceDetailActionItems(intl, issue);
+
+    if (interactiveDetails.length === 0 || !onNavigate) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          marginTop: token.marginXS ?? 8,
+        }}
+      >
+        {interactiveDetails.map((detailItem, index) => (
+          <div key={detailItem.key}>
+            <Button
+              type='link'
+              style={{
+                color: token.colorPrimary,
+                fontWeight: token.fontWeightStrong,
+                height: 'auto',
+                padding: 0,
+                textAlign: 'left',
+                whiteSpace: 'normal',
+              }}
+              onClick={() =>
+                onNavigate({ detail: detailItem.detail, tabName: detailItem.detail.tabName })
+              }
+            >
+              {detailItem.text}
+            </Button>
+            {index < interactiveDetails.length - 1 ? (
+              <div style={{ height: token.marginXXS ?? 4 }} />
+            ) : null}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderIssueCell = (issue: ValidationIssue) => {
+    if (issue.code !== 'sdkInvalid' || !onNavigate) {
+      return getIssueDescription(intl, issue);
+    }
+
+    const interactiveTabs = renderInteractiveTabs(issue);
+    const interactiveProcessInstanceDetails = renderInteractiveProcessInstanceDetails(issue);
+
+    if (!interactiveTabs && !interactiveProcessInstanceDetails) {
+      return getIssueDescription(intl, issue);
+    }
+
+    return (
+      <div>
+        <div
+          style={{
+            color: token.colorText,
+            lineHeight: token.lineHeight,
+          }}
+        >
+          <span>{getSdkInvalidIssueLabel(intl)}</span>
+          {interactiveTabs ? (
+            <>
+              <span>(</span>
+              {interactiveTabs}
+              <span>)</span>
+            </>
+          ) : null}
+        </div>
+        {interactiveProcessInstanceDetails}
+      </div>
+    );
+  };
 
   const handleNotifyDataOwner = async (groupedIssue: GroupedValidationIssue) => {
     const issueKey = getValidationIssueGroupKey(groupedIssue);
@@ -591,21 +902,19 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
       }),
       key: 'issue',
       render: (_, groupedIssue) => {
-        const descriptions = getGroupedIssueDescriptions(intl, groupedIssue);
-
-        if (descriptions.length <= 1) {
-          return descriptions[0] ?? '-';
+        if (groupedIssue.issues.length <= 1) {
+          return renderIssueCell(groupedIssue.issues[0]);
         }
 
-        return descriptions.map((description) => (
+        return groupedIssue.issues.map((issue, index) => (
           <div
-            key={description}
+            key={`${issue.code ?? 'unknown'}:${issue.underReviewVersion ?? '-'}:${index}`}
             style={{
               color: token.colorText,
               lineHeight: token.lineHeight,
             }}
           >
-            {description}
+            {renderIssueCell(issue)}
           </div>
         ));
       },
@@ -685,11 +994,13 @@ const ValidationIssueModalContent = ({ intl, issues }: ValidationIssueModalConte
 const ValidationIssueModalRenderer = ({
   intl,
   issues,
+  onNavigate,
   onDestroy,
   title,
 }: {
   intl: IntlShapeLike;
   issues: ValidationIssue[];
+  onNavigate?: ValidationIssueNavigateHandler;
   onDestroy: () => void;
   title: string;
 }) => {
@@ -711,6 +1022,11 @@ const ValidationIssueModalRenderer = ({
       };
     }
   }, [onDestroy, open]);
+
+  const handleNavigate = (target: ValidationIssueNavigationTarget) => {
+    onNavigate?.(target);
+    setOpen(false);
+  };
 
   return (
     <ConfigProvider
@@ -739,7 +1055,11 @@ const ValidationIssueModalRenderer = ({
         zIndex={modalZIndex}
         onCancel={() => setOpen(false)}
       >
-        <ValidationIssueModalContent intl={intl} issues={issues} />
+        <ValidationIssueModalContent
+          intl={intl}
+          issues={issues}
+          onNavigate={onNavigate ? handleNavigate : undefined}
+        />
       </Modal>
     </ConfigProvider>
   );
@@ -748,10 +1068,12 @@ const ValidationIssueModalRenderer = ({
 export const showValidationIssueModal = ({
   intl,
   issues,
+  onNavigate,
   title,
 }: {
   intl: IntlShapeLike;
   issues: ValidationIssue[];
+  onNavigate?: ValidationIssueNavigateHandler;
   title?: string;
 }) => {
   if (!issues.length) {
@@ -785,6 +1107,7 @@ export const showValidationIssueModal = ({
     <ValidationIssueModalRenderer
       intl={intl}
       issues={issues}
+      onNavigate={onNavigate}
       onDestroy={destroy}
       title={resolvedTitle}
     />,

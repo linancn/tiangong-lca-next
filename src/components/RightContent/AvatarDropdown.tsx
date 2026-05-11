@@ -27,19 +27,18 @@ export const AvatarName = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
   const { token } = theme.useToken();
+  const displayName = currentUser?.name ?? '';
   return (
     <span
+      className='tg-global-header-avatar-name'
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        height: '100%',
-        lineHeight: 'inherit',
-        gap: '8px',
         color: token.colorText,
       }}
     >
       <UserOutlined />
-      {currentUser?.name}
+      <span className='tg-global-header-avatar-name-text' title={displayName}>
+        {displayName}
+      </span>
     </span>
   );
 };
@@ -266,6 +265,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   return (
     <>
       <HeaderDropdown
+        overlayClassName='tg-global-header-avatar-dropdown'
         menu={{
           selectedKeys: [],
           onClick: onMenuClick,

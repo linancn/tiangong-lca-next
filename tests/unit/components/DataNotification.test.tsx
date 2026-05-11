@@ -238,7 +238,7 @@ describe('DataNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Empty')).toBeInTheDocument();
+      expect(screen.getByText('No information')).toBeInTheDocument();
     });
   });
 
@@ -348,7 +348,7 @@ describe('DataNotification Component', () => {
     });
   });
 
-  it('should open new window when view button is clicked', async () => {
+  it('opens process view mode when a non-rejected process notification is viewed', async () => {
     const mockOpen = jest.fn();
     Object.defineProperty(window, 'open', {
       value: mockOpen,
@@ -367,8 +367,77 @@ describe('DataNotification Component', () => {
     });
 
     expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0',
+      'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0&mode=view',
       '_blank',
+      'noopener,noreferrer',
+    );
+  });
+
+  it('opens model view mode when a non-rejected lifecycle notification is viewed', async () => {
+    const mockOpen = jest.fn();
+    Object.defineProperty(window, 'open', {
+      value: mockOpen,
+      writable: true,
+    });
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[1],
+          stateCode: 2,
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const viewButton = await screen.findByText('View');
+    fireEvent.click(viewButton);
+
+    expect(mockOpen).toHaveBeenCalledWith(
+      'http://localhost:8000/#/mydata/models?id=process-2&version=2.0.0&mode=view',
+      '_blank',
+      'noopener,noreferrer',
+    );
+  });
+
+  it('uses empty route params when notification data identifiers are missing', async () => {
+    const mockOpen = jest.fn();
+    Object.defineProperty(window, 'open', {
+      value: mockOpen,
+      writable: true,
+    });
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          json: {
+            ...mockReviewData.data[0].json,
+            data: {},
+          },
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(await screen.findByText('View'));
+
+    expect(mockOpen).toHaveBeenCalledWith(
+      'http://localhost:8000/#/mydata/processes?id=&version=&mode=view',
+      '_blank',
+      'noopener,noreferrer',
     );
   });
 
@@ -481,19 +550,141 @@ describe('DataNotification Component', () => {
     expect(screen.queryByText('View')).not.toBeInTheDocument();
   });
 
-  it('should render tooltip with reject reason', async () => {
+  it('opens rejection comment modal and fixes rejected data from the current process link', async () => {
+    const mockOpen = jest.fn();
+    Object.defineProperty(window, 'open', {
+      value: mockOpen,
+      writable: true,
+    });
+
     render(
       <ConfigProvider>
         <DataNotification {...defaultProps} />
       </ConfigProvider>,
     );
 
-    const rejectedTag = await screen.findByText('Rejected');
-    fireEvent.mouseOver(rejectedTag);
+    const rejectedViewButton = (await screen.findAllByText('View'))[1];
+    fireEvent.click(rejectedViewButton);
 
     await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Review Comment' })).toBeInTheDocument();
       expect(screen.getByText('Rejected comment')).toBeInTheDocument();
     });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fix Data' }));
+
+    expect(mockOpen).toHaveBeenCalledWith(
+      'http://localhost:8000/#/mydata/processes?id=process-2&version=2.0.0&mode=edit',
+      '_blank',
+      'noopener,noreferrer',
+    );
+  });
+
+  it('shows rejection comments stored as serialized JSON strings', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[1],
+          json: {
+            ...mockReviewData.data[1].json,
+            comment: JSON.stringify({ message: 'Serialized rejected comment' }),
+          },
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(await screen.findByText('View'));
+
+    expect(await screen.findByText('Serialized rejected comment')).toBeInTheDocument();
+  });
+
+  it('falls back for malformed serialized rejection comments and closes the modal', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[1],
+          json: {
+            ...mockReviewData.data[1].json,
+            comment: '{not-json',
+          },
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(await screen.findByText('View'));
+
+    expect(await screen.findByText('No review comment available.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Close'));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Review Comment' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('falls back when rejection comment payloads omit the message field', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[1],
+          key: 'review-string-without-message',
+          id: 'review-string-without-message',
+          json: {
+            ...mockReviewData.data[1].json,
+            comment: JSON.stringify({ detail: 'missing message' }),
+          },
+        },
+        {
+          ...mockReviewData.data[1],
+          key: 'review-object-without-message',
+          id: 'review-object-without-message',
+          json: {
+            ...mockReviewData.data[1].json,
+            data: { id: 'process-4', version: '4.0.0' },
+            comment: { detail: 'missing message' },
+          },
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const viewButtons = await screen.findAllByText('View');
+    fireEvent.click(viewButtons[0]);
+
+    expect(await screen.findByText('No review comment available.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Close'));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Review Comment' })).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(viewButtons[1]);
+
+    expect(await screen.findByText('No review comment available.')).toBeInTheDocument();
   });
 
   it('should render name in correct language', async () => {

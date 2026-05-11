@@ -1,7 +1,7 @@
 // @ts-nocheck
 import AddMemberModal from '@/pages/Review/Components/AddMemberModal';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '../../../../helpers/testUtils';
+import { fireEvent, render, screen, waitFor } from '../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -319,11 +319,10 @@ describe('ReviewAddMemberModal', () => {
 
     mockGetUserInfoByEmail.mockRejectedValue(new Error('boom'));
 
-    await userEvent.type(
-      screen.getByPlaceholderText('Please enter email and click query'),
-      'broken@example.com',
-    );
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    fireEvent.change(screen.getByPlaceholderText('Please enter email and click query'), {
+      target: { value: 'broken@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Query failed'));
     expect(consoleErrorSpy).toHaveBeenCalled();

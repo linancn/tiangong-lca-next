@@ -50,7 +50,7 @@ export type UnitGroupDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof UnitGroup['unitGroupDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormUnitGroup = Pick<UnitGroup['unitGroupDataSet'], UnitGroupDataSetObjectKeys>;

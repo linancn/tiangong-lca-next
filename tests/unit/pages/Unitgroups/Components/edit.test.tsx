@@ -267,12 +267,16 @@ jest.mock('@/services/unitgroups/util', () => ({
 
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
-  __esModule: true,
-  createUnitGroup: jest.fn(() => ({
-    validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
-  })),
-}));
+jest.mock(
+  '@tiangong-lca/tidas-sdk',
+  () => ({
+    __esModule: true,
+    createUnitGroup: jest.fn(() => ({
+      validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),
+    })),
+  }),
+  { virtual: true },
+);
 
 jest.mock('@/pages/Unitgroups/Components/form', () => ({
   __esModule: true,
@@ -711,7 +715,7 @@ describe('UnitGroupEdit', () => {
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Saved successfully!');
   });
 
-  it('stops data check early when the temporary save fails', async () => {
+  it('keeps data check running when the temporary save fails', async () => {
     mockUpdateUnitGroup.mockResolvedValue({
       data: null,
       error: { state_code: 500, message: 'cannot save draft' },
@@ -733,7 +737,8 @@ describe('UnitGroupEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('cannot save draft'));
-    expect(mockCheckData).not.toHaveBeenCalled();
+    expect(mockCheckData).toHaveBeenCalled();
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
   });
 
   it('shows a validation error when quantitative reference count is invalid', async () => {
@@ -1035,20 +1040,29 @@ describe('UnitGroupEdit', () => {
   });
 
   it('shows the validation-issue modal when structured unit-group validation issues exist', async () => {
-    mockCheckData.mockImplementationOnce(async (_ref: any, unRule: any[]) => {
-      unRule.push({ '@refObjectId': 'flow-1', '@version': '1.0.0' });
-    });
-    mockBuildValidationIssues.mockReturnValueOnce([
-      {
-        code: 'ruleVerificationFailed',
-        link: '/mydata/unitgroups?id=unitgroup-1&version=1.0.0',
-        ref: {
-          '@type': 'unit group data set',
-          '@refObjectId': 'unitgroup-1',
-          '@version': '1.0.0',
+    mockValidateDatasetWithSdk.mockReturnValueOnce({
+      success: false,
+      issues: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Invalid input: expected string, received undefined',
+          path: ['unitGroupDataSet', 'unitGroupInformation', 'dataSetInformation', 'common:name'],
+          severity: 'error',
         },
-      },
-    ]);
+      ],
+    });
+    mockBuildValidationIssues.mockImplementation(
+      ({ rootRef, sdkInvalidDetails, sdkInvalidTabNames }) => [
+        {
+          code: 'sdkInvalid',
+          link: '/mydata/unitgroups?id=unitgroup-1&version=1.0.0',
+          ref: rootRef,
+          sdkDetails: sdkInvalidDetails,
+          tabNames: sdkInvalidTabNames,
+        },
+      ],
+    );
 
     renderWithProviders(
       <UnitGroupEdit
@@ -1064,6 +1078,19 @@ describe('UnitGroupEdit', () => {
     const drawer = await screen.findByRole('dialog', { name: /edit/i });
     await userEvent.click(within(drawer).getByRole('button', { name: /data check/i }));
 
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sdkInvalidTabNames: ['unitGroupInformation'],
+          sdkInvalidDetails: [
+            expect.objectContaining({
+              fieldPath: 'unitGroupInformation.dataSetInformation.common:name.0.#text',
+              tabName: 'unitGroupInformation',
+            }),
+          ],
+        }),
+      ),
+    );
     await waitFor(() => expect(mockShowValidationIssueModal).toHaveBeenCalledTimes(1));
   });
 });

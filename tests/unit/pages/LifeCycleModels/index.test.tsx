@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/lifecyclemodels',
   search: '?tid=team-1',
 };
+let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
@@ -182,7 +183,17 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
   __esModule: true,
-  default: ({ id }: any) => <button type='button'>{`lifecycle-view-${id}`}</button>,
+  default: ({ id, version, autoOpen, onDrawerClose }: any) =>
+    autoOpen ? (
+      <div data-testid='lifecycle-view'>
+        {JSON.stringify({ id, version, autoOpen })}
+        <button type='button' onClick={() => onDrawerClose?.()}>
+          lifecycle-view-close
+        </button>
+      </div>
+    ) : (
+      <button type='button'>{`lifecycle-view-${id}`}</button>
+    ),
 }));
 
 jest.mock('antd', () => {
@@ -246,6 +257,9 @@ jest.mock('antd', () => {
     Checkbox,
     Col,
     ConfigProvider,
+    Grid: {
+      useBreakpoint: () => mockBreakpointScreens,
+    },
     Input,
     Row,
     Space,
@@ -366,6 +380,7 @@ describe('LifeCycleModelsPage', () => {
       pathname: '/mydata/lifecyclemodels',
       search: '?tid=team-1',
     };
+    mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -443,6 +458,17 @@ describe('LifeCycleModelsPage', () => {
 
     await user.click(screen.getByRole('button', { name: /close-lifecycle-create-create/i }));
     expect(screen.getByTestId('lifecycle-create-create')).toHaveTextContent('"importCount":0');
+  });
+
+  it('uses compact mobile controls for my data rows', async () => {
+    mockBreakpointScreens = { md: false };
+
+    renderWithProviders(<LifeCycleModelsPage />);
+
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    expect(screen.getByText('Lifecycle model 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
   it('uses current state filters for pgroonga search, sort conversion, and AI search', async () => {
@@ -668,6 +694,47 @@ describe('LifeCycleModelsPage', () => {
       expect(
         screen
           .getAllByTestId('lifecycle-edit')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(false),
+    );
+  });
+
+  it('opens and closes the route-driven view drawer for my-data view links', async () => {
+    mockLocation = {
+      pathname: '/mydata/lifecyclemodels',
+      search: '?tid=team-1&id=model-view&version=8.8.8&mode=view',
+    };
+
+    renderWithProviders(<LifeCycleModelsPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('lifecycle-view')
+          .some((node) => node.textContent?.includes('"autoOpen":true')),
+      ).toBe(true),
+    );
+
+    const autoOpenView = screen
+      .getAllByTestId('lifecycle-view')
+      .find((node) => node.textContent?.includes('"autoOpen":true'));
+
+    expect(autoOpenView).toHaveTextContent('"id":"model-view"');
+    expect(autoOpenView).toHaveTextContent('"version":"8.8.8"');
+    expect(
+      screen
+        .queryAllByTestId('lifecycle-edit')
+        .some((node) => node.textContent?.includes('"autoOpen":true')),
+    ).toBe(false);
+
+    await userEvent.click(
+      within(autoOpenView!).getByRole('button', { name: /lifecycle-view-close/i }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen
+          .queryAllByTestId('lifecycle-view')
           .some((node) => node.textContent?.includes('"autoOpen":true')),
       ).toBe(false),
     );

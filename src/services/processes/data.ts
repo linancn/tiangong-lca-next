@@ -1,5 +1,5 @@
 import type { LangTextValue, ReferenceItem } from '@/services/general/data';
-import type { Process } from '@tiangong-lca/tidas-sdk/types';
+import type { CommonOther, Process } from '@tiangong-lca/tidas-sdk/types';
 
 export type ProcessTable = {
   key: string;
@@ -54,7 +54,7 @@ export type ProcessExchangeData = {
   dataDerivationTypeStatus?: string;
   referencesToDataSource?: {
     referenceToDataSource?: ReferenceItem | ReferenceItem[];
-    'common:other'?: string;
+    'common:other'?: string | CommonOther;
   };
   generalComment?: LangTextValue;
   quantitativeReference?: boolean;
@@ -173,7 +173,7 @@ export type ProcessDataSetObjectKeys = Exclude<
       ? K
       : never;
   }[keyof Process['processDataSet']],
-  undefined
+  undefined | 'common:other'
 >;
 
 export type FormProcess = Pick<Process['processDataSet'], ProcessDataSetObjectKeys>;

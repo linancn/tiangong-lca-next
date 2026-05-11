@@ -28,6 +28,9 @@ let mockRefCheckContextValue: any = { refCheckData: [] };
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
 }));
 
 jest.mock('@ant-design/pro-components', () => {
@@ -378,5 +381,70 @@ describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
         (call) => Array.isArray(call.name) && call.name.includes('common:referenceToDataSetFormat'),
       )?.defaultSourceName,
     ).toBeUndefined();
+  });
+
+  it('passes sdk row highlights to property drawers and marks the focused row', async () => {
+    mockGetUnitData.mockResolvedValue([
+      {
+        dataSetInternalID: '0',
+        referenceToFlowPropertyDataSetId: 'flow-1',
+        referenceToFlowPropertyDataSetVersion: '1.0',
+        meanValue: '1',
+      },
+    ]);
+    const focusedDetail = {
+      fieldLabel: 'Mean value (of flow property)',
+      fieldPath: 'flowProperty[#0].meanValue',
+      formName: ['meanValue'],
+      key: 'flow-property-0:meanValue',
+      reasonMessage: 'Required value is missing',
+      suggestedFix: 'Fill in the required value for this field.',
+      tabName: 'flowProperties',
+      validationCode: 'required_missing',
+    };
+
+    await act(async () => {
+      render(
+        <FlowForm
+          {...baseProps()}
+          activeTabKey='flowProperties'
+          sdkValidationDetails={[focusedDetail]}
+          sdkValidationFocus={focusedDetail}
+        />,
+      );
+    });
+
+    const table = await screen.findByTestId('pro-table');
+    expect(table.getAttribute('data-row-class')).toBe('sdk-error-row sdk-focus-row');
+    expect(mockPropertyEditProps?.sdkHighlights).toEqual([focusedDetail]);
+    expect(mockPropertyEditProps?.autoOpen).toBe(true);
+  });
+
+  it('renders flow-properties section validation as a single compact alert line', async () => {
+    await act(async () => {
+      render(
+        <FlowForm
+          {...baseProps()}
+          activeTabKey='flowProperties'
+          sdkValidationDetails={[
+            {
+              fieldKey: 'flowProperties',
+              fieldLabel: 'Flow properties',
+              fieldPath: 'flowProperties.requiredSummary',
+              key: 'flowProperties:required:section',
+              presentation: 'section',
+              reasonMessage: 'Please select flow properties',
+              suggestedFix: 'Please select flow properties',
+              tabName: 'flowProperties',
+              validationCode: 'flow_properties_required',
+            },
+          ]}
+        />,
+      );
+    });
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('Please select flow properties');
+    expect(alert.children).toHaveLength(0);
   });
 });

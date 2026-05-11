@@ -986,6 +986,81 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
     });
   });
 
+  it('uses normalized sdk validation issues when computing rule verification flags', async () => {
+    mockCreateTidasLifeCycleModel.mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'custom',
+              path: ['lifeCycleModelDataSet', 'modellingAndValidation', 'validation', 'review'],
+            },
+          ],
+        },
+        validationIssues: [
+          {
+            code: 'localized_text_zh_must_include_chinese_character',
+            path: ['lifeCycleModelDataSet', 'lifeCycleModelInformation', 'name', '#text'],
+            rawCode: 'custom',
+            severity: 'error',
+          },
+        ],
+      }),
+    });
+    mockCreateTidasProcess.mockReturnValueOnce({
+      validateEnhanced: jest.fn().mockReturnValue({
+        success: false,
+        error: {
+          issues: [
+            {
+              code: 'custom',
+              path: ['processDataSet', 'modellingAndValidation', 'validation', 'review'],
+            },
+          ],
+        },
+        validationIssues: [
+          {
+            code: 'localized_text_en_must_not_contain_chinese_character',
+            path: ['processDataSet', 'processInformation', 'time', '#text'],
+            rawCode: 'custom',
+            severity: 'error',
+          },
+        ],
+      }),
+    });
+
+    const result = await buildSaveLifeCycleModelPersistencePlan({
+      mode: 'create',
+      modelId: sampleModelId,
+      lifeCycleModelJsonOrdered: buildLifecycleModelJsonOrdered(),
+      nodes: [],
+      edges: [],
+      up2DownEdges: [],
+      lifeCycleModelProcesses: [
+        {
+          modelInfo: { id: 'process-1', type: 'primary' },
+          data: { processDataSet: buildProcessDataSet() },
+        },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      plan: {
+        parent: {
+          ruleVerification: false,
+        },
+        processMutations: [
+          expect.objectContaining({
+            id: 'process-1',
+            ruleVerification: false,
+          }),
+        ],
+      },
+    });
+  });
+
   it('preserves persisted payloads when sdk validation mutates its input objects', async () => {
     const lifeCycleModelJsonOrdered = buildLifecycleModelJsonOrdered();
     (

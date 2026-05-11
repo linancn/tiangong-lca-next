@@ -1,148 +1,183 @@
-# AGENTS – Tiangong LCA Next
+---
+title: next Repo Contract
+docType: contract
+scope: repo
+status: active
+authoritative: true
+owner: next
+language: en
+whenToUse:
+  - when the task may change shipped frontend behavior, repo rules, validation, or documentation ownership
+  - when routing work from the workspace root into this repo
+  - when deciding which document owns a rule, command, or decision
+whenToUpdate:
+  - when repo facts, branch rules, quality gates, or documentation ownership change
+  - when a command, environment rule, or repo boundary becomes inaccurate
+  - when the current documentation system becomes redundant or ambiguous
+checkPaths:
+  - AGENTS.md
+  - DEV.md
+  - README.md
+  - README_CN.md
+  - .docpact/**/*.yaml
+  - docs/agents/**
+  - .github/PULL_REQUEST_TEMPLATE/*.md
+  - package.json
+  - .nvmrc
+  - .husky/pre-push
+  - .github/workflows/**
+lastReviewedAt: 2026-05-10
+lastReviewedCommit: cd3f259972a49c387cffab9d5f4c902df2638daa
+related:
+  - .docpact/config.yaml
+  - docs/agents/repo-validation.md
+  - docs/agents/repo-architecture.md
+  - DEV.md
+---
 
-Use this file as the single entry point for coding agents.
+## Repo Contract
 
-> Language contract: agents load English docs only (no `_CN` suffix). Every edited English doc must update its `_CN` mirror in the same change.
+`tiangong-lca-next` owns shipped frontend behavior for TianGong LCA: routes, pages, UI components, app-side services, static resource consumption, and local product packaging surfaces.
 
-## Why This File Exists
+Start here when the task may change what users see, how the frontend talks to the backend, how the repo is validated, or how repo documentation is organized.
 
-- Minimize context/token usage: start here, then open only the docs needed for the current task.
-- Keep requirements consistent across development, testing, and delivery.
+## Documentation System Principles
 
-## Runtime Baseline
+This repository treats documentation as an information system, not as narrative writing.
 
-- Node.js **>= 24** (`nvm use 24`; `.nvmrc` is `24`).
-- Stack: React 18 + `@umijs/max` 4 + Ant Design Pro 5 + TypeScript.
-- Supabase frontend env keys are prewired via committed runtime env files such as `.env` and `.env.development`: use `npm start` as the default entry point for the persistent Supabase `dev` branch, keep `npm run start:dev` as the equivalent explicit dev alias, and use `npm run start:main` only when a task explicitly needs the `main` database. Do not create ad-hoc Supabase clients outside `src/services/**`.
-- Database-side Edge Function SQL must read branch-specific Vault secrets. Standard webhook auth uses `project_url` and `project_secret_key`; legacy `generate_flow_embedding()` compatibility additionally uses `project_x_key`. Never hardcode branch URLs or service keys in SQL, migrations, or baseline dumps.
-- The Supabase schema source of truth now lives in `tiangong-lca/database-engine`. This repo is a consumer of that database. Do not author schema/config/migration changes here.
-- Do not add npm dependencies without explicit human approval.
+Required principles:
 
-## Development Workflow Summary
+- single source of truth: one rule has one owning document
+- one document, one job: each document solves one problem clearly
+- conclusion first: put purpose, rules, steps, and boundaries before background
+- no redundant prose: keep facts, rules, commands, exceptions, and validation; remove filler
+- no ambiguity: prefer explicit conditions and exact actions over vague guidance
+- executable commands: any documented command must run as written
+- verifiable rules: readers must be able to tell whether they followed the rule correctly
+- rules before explanation: operational content comes before rationale
+- stable structure: same document type uses the same section order where practical
+- reference instead of duplication: when a rule already has an owner, link to it instead of restating it
 
-- This repository keeps GitHub default branch `main` as a platform exception, but the daily trunk is Git `dev`.
-- Routine branch progression is `feature/* -> dev -> main`.
-- Start normal work from the latest Git `dev`, then create a feature branch from `dev`.
-- Open routine feature and fix PRs into Git `dev`, not directly into Git `main`.
-- Use `npm start` for routine frontend work against the shared persistent Supabase `dev` branch; `npm run start:dev` remains the equivalent explicit alias.
-- Author schema changes in `tiangong-lca/database-engine`, then validate this frontend against the relevant local, preview, `dev`, or `main` environment. Do not use the shared remote `dev` database as the first place to invent schema changes from this repo.
-- After a PR merges into Git `dev`, verify the integrated result in the shared Supabase `dev` branch.
-- Promote validated changes by opening a PR from Git `dev` into Git `main`.
-- Use `main` only through the explicit `npm run start:main` workflow for task-specific verification, production investigation, or hotfix work.
-- Branch from Git `main` only when the work must start from production, such as a hotfix. After that work merges to `main`, back-merge `main` into `dev`.
-- Do not infer the daily trunk from GitHub default-branch UI alone; in this repository, routine work still starts from `dev`.
-- `docs/agents/supabase-branching.md` is the canonical detailed procedure for app-side environment selection in this repo and points to `database-engine` for database ownership.
+## Documentation Roles
 
-## Core Commands
+| Document | Owns | Does not own |
+| --- | --- | --- |
+| `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, hard boundaries | deep implementation details, large reference material |
+| `DEV.md` | local bootstrap and the shortest repeatable work loop | repo contract, branch policy, proof matrix |
+| `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, governed-doc inventory | prose explanations and narrative summaries |
+| `docs/agents/repo-validation.md` | minimum proof by change type and PR validation note shape | bootstrap, business logic details |
+| `docs/agents/repo-architecture.md` | compact repo mental model and stable path map | execution checklists and present-state testing facts |
+| `docs/agents/test_todo_list.md` | current testing execution state | long-term testing strategy |
+| `docs/agents/supabase-branching.md` | frontend environment selection and database ownership workflow | schema truth |
+| `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
+| `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
 
-```bash
-npm install
-npm start
-npm run start:dev
-npm run start:main
-npm run lint
-npm test
-npm run test:coverage
-npm run test:coverage:assert-full
-npm run test:coverage:report
-npm run prepush:gate
-npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
-npm run test:data-workflows:unit
-npm run build
-```
+Additional governed source docs, not part of the default first-load surface:
 
-Notes:
+| Document | Owns | Does not own |
+| --- | --- | --- |
+| `README.md` and `README_CN.md` | repo landing context and high-level product overview | repo contract, proof bar, or branch policy truth |
+| `docs/agents/testing-patterns.md` | reusable test-selection and test-structure patterns | minimum proof bar or current queue state |
+| `docs/agents/testing-troubleshooting.md` | shortest recovery path for failing or hanging tests | strategy or canonical proof requirements |
+| `docs/agents/prepush-gate-policy.md` | intended protected-branch and pre-push rollout contract | live hook/runtime truth |
+| `docs/agents/test_improvement_plan.md` | long-term testing strategy and reopen conditions | current operational queue or proof baseline |
+| `docs/agents/contribution-path-analysis-design.md` and `docs/agents/lca-analysis-visualization-plan.md` | scoped design references for analysis features | current runtime truth or active delivery state |
+| `.github/PULL_REQUEST_TEMPLATE/feature-to-dev.md` and `.github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md` | branch-specific PR note shape and handoff prompts | canonical proof rules or repo branch policy truth |
 
-- `npm start` and `npm run start:dev` are equivalent dev-target commands. `npm run start:main` is the explicit main-target command.
-- `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
-- Data workflow harness unit tests live in `tests/data-workflows/unit/**` and run only through `npm run test:data-workflows:unit`; they are intentionally outside the default `npm test`, `npm run test:ci`, and coverage gates.
-- The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
-- `npm run test:coverage` and `npm run test:coverage:report` already include `NODE_OPTIONS=--max-old-space-size=8192`; use the scripts directly for full coverage work.
-- `npm run test:coverage:assert-full` reads the latest coverage artifact and fails unless the repo is still at `100%` statements / branches / functions / lines with zero remaining queue files.
-- `npm run prepush:gate` is the authoritative full gate command: `lint + full coverage + strict 100% assertion`.
-- `.husky/pre-push` only auto-runs that heavy gate on local `main` pushes. PRs targeting `dev` or `main` must enforce the same command in GitHub Actions.
-- `npm run test:coverage:report` is the default coverage review artifact. It prints the global summary, category summary, closure-queue summary, shared-fixture batches, and the next 25 ordered incomplete files using full project-relative paths (no `...` truncation for file/cluster labels).
-- `node scripts/test-coverage-report.js --full` prints the full ordered incomplete-file queue. Use it to inspect the full file-by-file state or refresh the queue snapshot, not to subjectively re-rank by ROI.
-- For focused suites with extra flags, prefer `npm run test:ci -- <jest-args>` instead of nesting flags after `npm test`.
+## Load Order
 
-## Token-Efficient Doc Routing
+Read in this order:
 
-Read only what matches the current task:
+1. `AGENTS.md`
+2. `.docpact/config.yaml`
+3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
+4. the narrow source doc that owns the current subject
 
-1. Feature/page implementation
-   - `docs/agents/ai-dev-guide.md`
-2. Any test creation/debugging
-   - `docs/agents/ai-testing-guide.md` (first)
-   - `docs/agents/testing-patterns.md` (templates)
-   - `docs/agents/testing-troubleshooting.md` (failures/timeouts/handles)
-3. Lifecycle-model calculation changes
-   - `docs/agents/util_calculate.md`
-4. Test coverage backlog tracking
-   - `docs/agents/test_todo_list.md` (actionable source of truth)
-   - `docs/agents/test_improvement_plan.md` (long-term context and strategy)
-5. Team/data audit process tasks
-   - `docs/agents/team_management.md`
-   - `docs/agents/data_audit_instruction.md`
-6. Supabase Branching / environment configuration
-   - `docs/agents/supabase-branching.md`
+Do not start from additional governed source docs, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
 
-## Repo Landmarks
+## Operational Pointers
 
-- `config/routes.ts`: mirrored route branches (`/tgdata`, `/codata`, `/mydata`, `/tedata`).
-- `tiangong-lca/database-engine/supabase/**`: the database schema/config source of truth for the workspace. This repo no longer keeps a local `supabase/` source-of-truth tree.
-- `.env.supabase.*.local(.example)`: database-maintenance env files moved to `tiangong-lca/database-engine`; do not reintroduce or maintain them here.
-- `src/services/**`: only allowed boundary for Supabase calls.
-- `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.
-- `src/components/**`, `src/contexts/**`, `types/**`: shared UI/context/types.
-- `tests/{unit,integration}/**`: Jest suites + shared helpers in `tests/helpers/**`.
-- `tests/data-workflows/unit/**`: isolated Jest suites for the real-environment data workflow harness.
-- `tests/data-workflows/fixtures/result/**`: historical expectation references for data workflows. Real workflow assertions are code-owned in `tests/data-workflows/workflows/**`, must not read these files at runtime, and must not expose `--*expected-file` CLI inputs.
-- `docker/volumes/functions/**`: synced self-hosted edge-functions mirror. Do not edit these files in `tiangong-lca-next`.
-- `docker/pull-edge-functions.sh`: the only supported way to refresh `docker/volumes/functions/**` in this repo.
+- local bootstrap and canonical day-to-day commands live in `DEV.md`
+- minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
+- path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
+- app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
+- repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
+- dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
+- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
+- new npm dependencies require human approval
 
-## UI Consistency / Ant Design First
+## Minimal Execution Facts
 
-For `tiangong-lca-next`, UI consistency is a hard product requirement.
+Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
 
-When implementing or modifying frontend UI in this repository, follow these rules:
+- package manager: `npm`
+- Node baseline: `24` via `.nvmrc` and `nvm use 24`
+- shared dev environment: `npm start` (`npm run start:dev` is equivalent)
+- explicit main-environment run: `npm run start:main`
+- default lint gate: `npm run lint`
+- local documentation gate before push: `npm run docpact:gate`
+- default CI-style test entry: `npm test`
+- build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
+- protected-branch parity gate: `npm run prepush:gate`
+- app-side Supabase and API access belongs only in `src/services/**`
 
-1. Reuse existing shared components and established project patterns first.
-2. If no suitable shared abstraction exists, prefer Ant Design native components, documented props, built-in variants, and standard interaction patterns.
-3. For visual decisions that affect product consistency, prefer Ant Design theme tokens, component tokens, or established project token abstractions over ad-hoc hard-coded values.
-4. Avoid unnecessary custom visual styling. Custom CSS, inline styles, and local CSS modules are not the default path when Ant Design or existing shared abstractions can already satisfy the requirement.
-5. Custom styling is allowed only when Ant Design props, tokens, or existing shared abstractions cannot reasonably satisfy the requirement. In such cases, keep the override minimal, preserve the established visual language, and explain the reason in the PR description or code comments when it is not obvious.
-6. If a custom visual pattern starts repeating, extract it into a shared component or reusable abstraction instead of duplicating it locally.
+## Ownership Boundaries
 
-Clarification:
+The authoritative path-level ownership map lives in `.docpact/config.yaml`.
 
-- This rule targets product-facing visual styling and interaction consistency, not a total ban on layout code.
-- Local layout styling is acceptable when appropriate, but prefer existing project patterns and Ant Design layout primitives for simple composition before introducing one-off visual treatments.
+At a human-readable level, this repo owns shipped frontend/runtime behavior plus repo-local governance and bootstrap docs.
 
-## Delivery Contract
+This repo does not own:
 
-- Investigate first (`rg`, nearest feature, existing tests).
-- Keep business logic in services/utilities; React layers stay orchestration-focused.
-- Add/adjust tests matching scope.
-- Any code change is a hard requirement to keep repo-wide coverage at `100%` for statements, branches, functions, and lines.
-- `npm run lint` must pass.
-- Run focused Jest suites relevant to the change.
-- Run `npm run test:coverage:assert-full` whenever you need to verify the hard gate without rerunning coverage.
-- Before push from local `main`, the repo must pass `npm run prepush:gate`.
-- For PRs targeting `dev` or `main`, the same full gate must pass in GitHub Actions before merge.
-- On non-`main` working branches, use `npm run prepush:gate` manually when you need to preflight the exact protected-branch gate before opening or updating a PR.
-- If `npm run test:coverage:report` shows gaps, follow the ordered closure queue in `docs/agents/test_todo_list.md` one file at a time. If it shows no gaps, stay in maintenance mode and keep the repo at full closure.
-- Allowed queue exceptions: batch adjacent files that share the same mock/fixture/test harness, and fix blocking test-infrastructure issues first when they block the current file or its immediate neighbors.
-- If a queued file contains a provably unreachable or business-invalid branch, remove the dead branch without changing behavior instead of inventing synthetic tests, then continue queue order.
-- If test engineering changed (commands, coverage baseline, backlog status, workflow), sync `docs/agents/ai-testing-guide.md`, `docs/agents/test_todo_list.md`, and when strategic context changed also `docs/agents/test_improvement_plan.md`, plus all `_CN` mirrors.
-- Keep diffs scoped; update docs when expectations or workflows change.
-- Never hand-edit `docker/volumes/functions/**`; sync it via `./docker/pull-edge-functions.sh`.
+- database schema, migrations, seeds, or Supabase branch governance
+- Edge Function runtime behavior
+- public docs-site content
+- solver or compute-engine internals
+- root workspace integration after merge
 
-## Documentation Maintenance
+Route those tasks to:
 
-When editing any English doc (`*.md` without `_CN`):
+- `database-engine` for schema truth and Supabase branch governance
+- `edge-functions` for Edge runtime and API orchestration behavior
+- `next-docs` for public docs-site content
+- `calculator` for solver and compute behavior
+- `lca-workspace` for root integration after merge
 
-1. Update the corresponding `_CN` mirror in the same commit.
-2. Keep command examples executable against current scripts.
-3. Avoid duplicating long guidance across files; link back to the source doc.
-4. If workflow changed, update this file first (entry-point accuracy).
-5. For testing-related changes, update `docs/agents/test_todo_list.md` first; if the long-term plan or baseline summary changed, update `docs/agents/test_improvement_plan.md` too.
+## Branch And Delivery Facts
+
+- GitHub default branch: `main`
+- true daily trunk: `dev`
+- routine branch base: `dev`
+- routine PR base: `dev`
+- promote path: `dev -> main`
+- `main` pushes deploy the web app
+- `v*` tags build draft Electron releases
+
+Do not infer daily workflow from GitHub default-branch UI alone.
+
+## Documentation Update Rules
+
+Use the role table in this file as the update map.
+
+- if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
+- if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
+- if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
+- if a document is governed but not in the default first-load surface, route to it on demand instead of duplicating its rules into `AGENTS.md` or `DEV.md`
+- do not copy the same rule into multiple docs just to make it easier to find
+
+## Hard Boundaries
+
+- do not author schema or migration truth here
+- do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh`
+- do not create ad-hoc Supabase clients outside `src/services/**`
+- do not treat a merged repo PR here as workspace-delivery complete if the root repo still needs a submodule bump
+
+## Workspace Integration
+
+A merged PR in `tiangong-lca-next` is repo-complete, not delivery-complete.
+
+If the change must ship through the workspace:
+
+1. merge the child PR into `tiangong-lca-next`
+2. promote or select an eligible child SHA according to workspace policy
+3. update the `lca-workspace` submodule pointer deliberately

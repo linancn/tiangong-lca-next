@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/unitgroups',
   search: '?tid=team-1',
 };
+let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 let mockUnitGroupCreateCalls: any[] = [];
 let mockUnitGroupEditCalls: any[] = [];
 let mockUnitGroupDeleteCalls: any[] = [];
@@ -234,6 +235,9 @@ jest.mock('antd', () => {
     Checkbox,
     Col,
     ConfigProvider,
+    Grid: {
+      useBreakpoint: () => mockBreakpointScreens,
+    },
     Input,
     Row,
     Space,
@@ -331,6 +335,7 @@ describe('UnitgroupsPage', () => {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
     };
+    mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -481,6 +486,22 @@ describe('UnitgroupsPage', () => {
     const { message } = jest.requireMock('antd');
     expect(message.success).toHaveBeenCalledWith('Contribute successfully');
     expect(latestReloadMock).toHaveBeenCalled();
+  });
+
+  it('uses compact mobile controls for admin my data rows', async () => {
+    mockBreakpointScreens = { md: false };
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
   it('logs contribute errors without showing success when the contribute action fails', async () => {

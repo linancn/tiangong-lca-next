@@ -545,16 +545,6 @@ describe('ProcessCreate component', () => {
       });
       triggerValuesChange?.({}, {});
       await latestProcessFormProps.onData();
-      latestProcessFormProps.onLciaResults([
-        {
-          referenceToLCIAMethodDataSet: 'lcia-1',
-          meanAmount: 12,
-        },
-        {
-          referenceToLCIAMethodDataSet: 'lcia-2',
-          meanAmount: undefined,
-        },
-      ]);
       latestProcessFormProps.onExchangeData([
         {
           '@dataSetInternalID': '0',
@@ -574,19 +564,8 @@ describe('ProcessCreate component', () => {
     await waitFor(() =>
       expect(mockCreateProcess).toHaveBeenCalledWith(
         'process-1',
-        expect.objectContaining({
-          LCIAResults: {
-            LCIAResult: [
-              {
-                referenceToLCIAMethodDataSet: 'lcia-1',
-                meanAmount: '12',
-              },
-              {
-                referenceToLCIAMethodDataSet: 'lcia-2',
-                meanAmount: '',
-              },
-            ],
-          },
+        expect.not.objectContaining({
+          LCIAResults: expect.anything(),
         }),
       ),
     );

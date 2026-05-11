@@ -401,7 +401,6 @@ export default {
 
   'pages.process.view.exchanges': '输入/输出',
   'pages.process.view.lciaresults': 'LCIA 结果',
-  'pages.process.view.lciaresults.calculate': '计算 LCIA 结果',
   'pages.process.view.lciaresults.shortDescription': 'LCIA',
   'pages.process.view.lciaresults.meanAmount': '平均量',
   'pages.process.view.lciaresults.unit': '单位',
@@ -666,8 +665,8 @@ export default {
   'pages.process.validator.meanAmount.required': '请输入平均量',
   'pages.process.validator.resultingAmount.required': '请输入结果量',
   'pages.process.validator.dataDerivationTypeStatus.required': '请输入数据推导类型/状态',
-  'pages.process.validator.exchanges.required': '请选择输入/输出',
-  'pages.process.validator.exchanges.quantitativeReference.required': '输入/输出需要有且仅有一条量值参考打开',
+  'pages.process.validator.exchanges.required': '至少添加一条数据',
+  'pages.process.validator.exchanges.quantitativeReference.required': '以下数据必须有且仅有一条数据作为基准',
 
   'pages.process.review.submitSuccess': '提交审核成功',
   'pages.process.review.submitError': '提交审核失败',

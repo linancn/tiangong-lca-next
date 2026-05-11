@@ -39,9 +39,15 @@ const mockContributeSource = jest.fn();
 const mockInvokeDatasetCommand = jest.fn();
 const mockNormalizeLangPayloadForSave = jest.fn();
 const mockResolveFunctionInvokeError = jest.fn();
+const mockBuildLangNormalizationMetadata = jest.fn();
+const mockAttachLangNormalizationMetadata = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
+  attachLangNormalizationMetadata: (...args: any[]) =>
+    mockAttachLangNormalizationMetadata.apply(null, args),
+  buildLangNormalizationMetadata: (...args: any[]) =>
+    mockBuildLangNormalizationMetadata.apply(null, args),
   createLegacyMutationRemovedError: (boundary: string) => ({
     message: 'Use explicit command endpoints instead',
     code: 'LEGACY_ENDPOINT_REMOVED',
@@ -149,6 +155,8 @@ beforeEach(() => {
   mockInvokeDatasetCommand.mockReset();
   mockNormalizeLangPayloadForSave.mockReset();
   mockResolveFunctionInvokeError.mockReset();
+  mockBuildLangNormalizationMetadata.mockReset();
+  mockAttachLangNormalizationMetadata.mockReset();
   mockGetCachedLocationData.mockReset();
   mockGetCachedClassificationData.mockReset();
   mockGetLifeCyclesByIdAndVersion.mockReset();
@@ -181,6 +189,14 @@ beforeEach(() => {
     statusText: 'OK',
   });
   mockNormalizeLangPayloadForSave.mockResolvedValue(undefined);
+  mockBuildLangNormalizationMetadata.mockImplementation(
+    (normalizedResult: any, rawPayload: any) => ({
+      normalizedJsonOrdered: normalizedResult?.payload ?? rawPayload,
+      langSupplementedPlaceholderPaths: normalizedResult?.supplementedEnglishPlaceholderPaths ?? [],
+      langTranslatedPaths: normalizedResult?.translatedPaths ?? [],
+    }),
+  );
+  mockAttachLangNormalizationMetadata.mockImplementation((result: any) => result);
   mockResolveFunctionInvokeError.mockImplementation(async (error: any) => error);
   mockValidateDatasetRuleVerification.mockResolvedValue({ ruleVerification: true });
   (mockCreateTidasProcess as jest.Mock).mockReturnValue({
