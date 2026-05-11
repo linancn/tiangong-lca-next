@@ -42,7 +42,7 @@
     "test:integration": "jest tests/integration --runInBand --testTimeout=20000",
     "test:ci": "node scripts/test-runner.cjs",
     "test:data-workflows:unit": "jest --testMatch \"<rootDir>/tests/data-workflows/unit/**/*.test.{ts,tsx,js,jsx}\" --runInBand --testTimeout=20000",
-    "test:api:smoke": "node scripts/test-api-smoke.cjs",
+    "test:api:smoke": "node tests/data-workflows/test-api-smoke.cjs",
     "test:coverage": "cross-env NODE_OPTIONS=--max-old-space-size=8192 jest --runInBand --testTimeout=20000 --coverage",
     "test:coverage:assert-full": "node scripts/test-coverage-report.js --assert-full",
     "test:coverage:report": "cross-env NODE_OPTIONS=--max-old-space-size=8192 jest --runInBand --testTimeout=20000 --coverage && node scripts/test-coverage-report.js",

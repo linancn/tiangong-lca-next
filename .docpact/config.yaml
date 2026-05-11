@@ -53,7 +53,6 @@ ownership:
           - .github/workflows/build.yml
           - .github/workflows/ai-doc-lint.yml
           - scripts/docpact-gate.js
-          - scripts/test-api-smoke.cjs
           - scripts/test-runner.cjs
           - scripts/test-coverage-report.js
       ownerRepo: next
@@ -95,7 +94,6 @@ coverage:
     - .github/workflows/build.yml
     - .github/workflows/ci.yml
     - scripts/docpact-gate.js
-    - scripts/test-api-smoke.cjs
     - scripts/test-runner.cjs
     - scripts/test-coverage-report.js
   exclude:
@@ -138,7 +136,6 @@ routing:
         - .github/workflows/build.yml
         - .github/workflows/ai-doc-lint.yml
         - scripts/docpact-gate.js
-        - scripts/test-api-smoke.cjs
         - scripts/test-runner.cjs
         - scripts/test-coverage-report.js
         - tests/**
@@ -173,7 +170,6 @@ routing:
         - .github/workflows/ci.yml
         - .github/workflows/build.yml
         - scripts/docpact-gate.js
-        - scripts/test-api-smoke.cjs
         - tests/**
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
@@ -208,6 +204,7 @@ routing:
         - public/lciamethods/**
     data-workflow-fixtures:
       paths:
+        - tests/data-workflows/test-api-smoke.cjs
         - tests/data-workflows/data-workflow-paths.ts
         - tests/data-workflows/fixtures/data/**
         - tests/data-workflows/fixtures/result/**
@@ -440,12 +437,12 @@ rules:
         kind: ci
       - path: scripts/docpact-gate.js
         kind: test-gate
-      - path: scripts/test-api-smoke.cjs
-        kind: test-gate
       - path: scripts/test-runner.cjs
         kind: test-gate
       - path: scripts/test-coverage-report.js
         kind: test-gate
+      - path: tests/data-workflows/test-api-smoke.cjs
+        kind: repo-test
       - path: tests/**
         kind: repo-test
     requiredDocs:
