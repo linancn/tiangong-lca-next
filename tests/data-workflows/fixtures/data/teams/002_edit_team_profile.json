@@ -1,0 +1,28 @@
+{
+  "rank": -1,
+  "isPublic": false,
+  "json": {
+    "title": [
+      {
+        "@xml:lang": "en",
+        "#text": "Data Workflow Team Workspace Edited"
+      },
+      {
+        "@xml:lang": "zh",
+        "#text": "团队数据工作流工作区已编辑"
+      }
+    ],
+    "description": [
+      {
+        "@xml:lang": "en",
+        "#text": "Edited team profile used by the shared data workflow workspace."
+      },
+      {
+        "@xml:lang": "zh",
+        "#text": "共享数据工作流工作区使用的已编辑团队资料。"
+      }
+    ],
+    "lightLogo": "../sys-files/light.png",
+    "darkLogo": "../sys-files/dark.png"
+  }
+}

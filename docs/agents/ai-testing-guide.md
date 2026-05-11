@@ -48,6 +48,14 @@ npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 
 # Focused unit/component suite
 npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
 
+# Isolated data workflow unit suites
+npm run test:data-workflows:unit
+
+# Real-environment data workflow scripts
+npm run test:lifecyclemodels:create -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key> --no-keep-data --detail-result
+npm run test:lifecyclemodels:all -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key> --no-keep-data --detail-result
+npm run test:processes:all -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key> --no-keep-data --detail-result
+
 # Single-file open-handle debugging
 npm run test:ci -- tests/integration/processes/ProcessesWorkflow.integration.test.tsx \
   --runInBand --testTimeout=20000 --detectOpenHandles
@@ -59,11 +67,20 @@ npx jest tests/unit/services/processes/ --watch
 npm run lint
 ```
 
+Data workflow harness unit tests live in `tests/data-workflows/unit/**` and are intentionally isolated from default `npm test`, `npm run test:ci`, and coverage runs. Use `npm run test:data-workflows:unit` when changing the real-environment workflow harness or its fixtures.
+
+Data workflow result fixtures under `tests/data-workflows/fixtures/result/**` are historical references only. Real-environment workflow scripts keep their assertions in code-owned expectation builders under `tests/data-workflows/workflows/**`; do not reintroduce runtime reads from result markdown files or `--*expected-file` CLI inputs. If historical result text changes, update the code expectation builder intentionally.
+
+Data workflow credentials are resolved from `.env.users.local` or environment variables. The lifecycle model create/check/edit/search workflows default to the `user` role (`TEST_USER_EMAIL` / `TEST_USER_PASSWORD`), while `test:lifecyclemodels:create-contribute-team` defaults to the `team-member` role (`TEST_TEAM_MEMBER_EMAIL` / `TEST_TEAM_MEMBER_PASSWORD`).
+
+Real-environment data workflows ensure reusable per-account reference seeds before executing commands. The standard seed names are `test-contact-reference`, `test-source-reference`, `test-unitgroup-reference`, `test-flowproperty-reference`, `test-flow-reference`, and `test-process-reference`; they are based on each type's `002_check_data_success` fixture and are reused across data workflow runs instead of being removed by `--no-keep-data`. Data created during data workflow runs must point references, including same-type self references, to the matching `test-${type}-reference` seed.
+
 ## Coverage Expectations
 
 - Directional goal: move toward 100% meaningful coverage across `src/**`.
 - Hard requirement: any code change must leave repo-wide statements, branches, functions, and lines at `100%`.
 - Enforced gate (current): Jest global thresholds in `jest.config.cjs`.
+- Default Jest discovery is limited to `tests/unit/**`, `tests/integration/**`, and `src/**`; isolated data workflow unit suites are run by their dedicated script instead of the coverage gate.
 - Workflow stability note: the shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker crashes observed in full local and pre-push runs on macOS.
 - Latest verified full run on March 24, 2026 (`npm run test:coverage:report`, followed by `npm run test:coverage:assert-full`) is `309 suites / 3689 tests` with:
   - Statements: `100.00%` (21875/21875)

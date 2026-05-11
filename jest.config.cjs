@@ -53,7 +53,8 @@ module.exports = async () => {
     },
     coverageReporters: ['text', 'text-summary', 'json', 'json-summary', 'lcov', 'html'],
     testMatch: [
-      '<rootDir>/tests/**/*.test.{ts,tsx,js,jsx}',
+      '<rootDir>/tests/unit/**/*.test.{ts,tsx,js,jsx}',
+      '<rootDir>/tests/integration/**/*.test.{ts,tsx,js,jsx}',
       '<rootDir>/src/**/*.test.{ts,tsx,js,jsx}',
     ],
     modulePathIgnorePatterns: [

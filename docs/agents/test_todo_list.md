@@ -98,6 +98,7 @@ Current repo-wide status from the same run:
 ## Reporting Workflow
 
 - The shared `npm test` runner caps the unit/src phase at `--maxWorkers=50%` to avoid intermittent Jest worker `SIGSEGV` crashes seen during full local and pre-push runs on macOS.
+- Data workflow harness unit suites live in `tests/data-workflows/unit/**` and are intentionally isolated from default `npm test`, `npm run test:ci`, and coverage runs. Use `npm run test:data-workflows:unit` for that track.
 - `npm run test:coverage` and `npm run test:coverage:report` already include the required heap setting; use those scripts directly for full coverage work.
 - `npm run test:coverage:assert-full` fails unless the latest coverage artifact still reports full closure for every tracked source file.
 - `npm run prepush:gate` is the exact full gate command: `lint + full coverage + strict full-coverage assertion`.

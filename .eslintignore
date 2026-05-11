@@ -1,5 +1,6 @@
 /lambda/
 /scripts
+/tests/data-workflows/workflows
 /config
 .history
 public

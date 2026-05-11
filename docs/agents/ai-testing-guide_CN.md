@@ -48,6 +48,14 @@ npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 
 # 聚焦单测/组件测
 npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage
 
+# 独立 data workflow 单元测试
+npm run test:data-workflows:unit
+
+# 真实环境 data workflow 脚本
+npm run test:lifecyclemodels:create -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key> --no-keep-data --detail-result
+npm run test:lifecyclemodels:all -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key> --no-keep-data --detail-result
+npm run test:processes:all -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key> --no-keep-data --detail-result
+
 # 单文件句柄排查
 npm run test:ci -- tests/integration/processes/ProcessesWorkflow.integration.test.tsx \
   --runInBand --testTimeout=20000 --detectOpenHandles
@@ -59,11 +67,20 @@ npx jest tests/unit/services/processes/ --watch
 npm run lint
 ```
 
+Data workflow harness 单元测试位于 `tests/data-workflows/unit/**`，有意从默认 `npm test`、`npm run test:ci` 和 coverage 运行中隔离出来。修改真实环境 workflow harness 或其 fixtures 时，使用 `npm run test:data-workflows:unit`。
+
+`tests/data-workflows/fixtures/result/**` 下的 data workflow result fixtures 只作为历史参考。真实环境 workflow 脚本的断言由 `tests/data-workflows/workflows/**` 中的代码化 expectation builder 持有；不要重新引入运行期读取 result markdown 文件的路径，也不要重新暴露 `--*expected-file` CLI 输入。如果历史 result 文本变化，需要有意识地同步更新代码断言 builder。
+
+Data workflow 账号会从 `.env.users.local` 或环境变量解析。生命周期模型 create/check/edit/search 工作流默认使用 `user` 角色（`TEST_USER_EMAIL` / `TEST_USER_PASSWORD`），`test:lifecyclemodels:create-contribute-team` 默认使用 `team-member` 角色（`TEST_TEAM_MEMBER_EMAIL` / `TEST_TEAM_MEMBER_PASSWORD`）。
+
+真实环境 data workflow 会在命令执行前确保当前账号下存在可复用的引用 seed。标准 seed 名称为 `test-contact-reference`、`test-source-reference`、`test-unitgroup-reference`、`test-flowproperty-reference`、`test-flow-reference`、`test-process-reference`；它们基于各自类型的 `002_check_data_success` fixture 创建，并在多次 data workflow 运行之间复用，不会被 `--no-keep-data` 当作普通运行数据清理。Data workflow 运行过程中创建的数据，其所有引用都必须指向匹配的 `test-${type}-reference` seed，包括同类型自引用。
+
 ## 覆盖率预期
 
 - 方向目标：把 `src/**` 持续推进到 100% 的有效覆盖。
 - 硬约束：任何代码修改都必须让全仓 Statements / Branches / Functions / Lines 保持 `100%`。
 - 当前强制门禁：以 `jest.config.cjs` 里的全局阈值为准。
+- 默认 Jest 发现范围限制为 `tests/unit/**`、`tests/integration/**` 和 `src/**`；独立 data workflow 单元测试通过专用脚本运行，不进入 coverage 门禁。
 - 工作流稳定性说明：共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避在 macOS 全量本地运行和 pre-push 中观察到的 Jest worker 偶发崩溃。
 - 截至 2026 年 3 月 24 日，最新已验证全量运行（`npm run test:coverage:report`，随后执行 `npm run test:coverage:assert-full`）是 `309 suites / 3689 tests`，全局覆盖率为：
   - Statements: `100.00%` (21875/21875)

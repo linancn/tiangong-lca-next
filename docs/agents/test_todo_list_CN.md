@@ -98,6 +98,7 @@
 ## 报告工作流
 
 - 共享 `npm test` runner 会把 unit/src 阶段限制为 `--maxWorkers=50%`，用于规避 macOS 全量本地运行和 pre-push 中出现的 Jest worker 偶发 `SIGSEGV` 崩溃。
+- Data workflow harness 单元测试位于 `tests/data-workflows/unit/**`，有意从默认 `npm test`、`npm run test:ci` 和 coverage 运行中隔离出来；该轨道使用 `npm run test:data-workflows:unit`。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 都已内置所需堆内存，全量覆盖率直接用脚本即可。
 - `npm run test:coverage:assert-full` 会对最新 coverage 产物做严格断言，只要任一 tracked source file 不是 `100/100/100/100` 就失败。
 - `npm run prepush:gate` 是完整门禁的精确命令：`lint + 全量 coverage + 严格全仓 100% 断言`。

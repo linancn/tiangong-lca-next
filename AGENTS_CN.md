@@ -47,6 +47,7 @@ npm run test:coverage:assert-full
 npm run test:coverage:report
 npm run prepush:gate
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+npm run test:data-workflows:unit
 npm run build
 ```
 
@@ -54,6 +55,7 @@ npm run build
 
 - `npm start` 与 `npm run start:dev` 是等价的 dev 目标命令；`npm run start:main` 是显式的 main 目标命令。
 - `npm test` 走 CI 风格 runner（`scripts/test-runner.cjs`）：先 unit，再 integration。
+- Data workflow harness 单元测试位于 `tests/data-workflows/unit/**`，只通过 `npm run test:data-workflows:unit` 执行；它们有意不进入默认的 `npm test`、`npm run test:ci` 和 coverage 门禁。
 - 共享 runner 中，unit/src 阶段固定限制为 `--maxWorkers=50%`，用于规避全量本地门禁和 pre-push 中偶发的 Jest worker `SIGSEGV` 崩溃。
 - `npm run test:coverage` 和 `npm run test:coverage:report` 已内置 `NODE_OPTIONS=--max-old-space-size=8192`，全量覆盖率直接用脚本即可。
 - `npm run test:coverage:assert-full` 会读取最新 coverage 产物，只要全仓不是 `100%` statements / branches / functions / lines，或者队列不为空，就直接失败。
@@ -93,6 +95,8 @@ npm run build
 - `src/pages/<Feature>/`：页面入口与 `Components/` 抽屉/弹窗。
 - `src/components/**`、`src/contexts/**`、`types/**`：共享 UI/上下文/类型。
 - `tests/{unit,integration}/**`：Jest 测试，通用能力在 `tests/helpers/**`。
+- `tests/data-workflows/unit/**`：真实环境 data workflow harness 的独立 Jest 测试。
+- `tests/data-workflows/fixtures/result/**`：data workflow 的历史期望参考。真实 workflow 断言归属在 `tests/data-workflows/workflows/**` 的代码中，运行期不得读取这些文件，也不得再暴露 `--*expected-file` CLI 输入。
 - `docker/volumes/functions/**`：自托管 edge-functions 的同步镜像，禁止在 `tiangong-lca-next` 中直接编辑。
 - `docker/pull-edge-functions.sh`：本仓库刷新 `docker/volumes/functions/**` 的唯一正确方式。
 

@@ -1,0 +1,215 @@
+{
+  "table": "processes",
+  "jsonOrdered": {
+    "processDataSet": {
+      "@xmlns": "http://lca.jrc.it/ILCD/Process",
+      "@version": "1.1",
+      "exchanges": {
+        "exchange": [
+          {
+            "meanAmount": "1",
+            "resultingAmount": "1",
+            "exchangeDirection": "Input",
+            "@dataSetInternalID": "0",
+            "referenceToFlowDataSet": {
+              "@uri": "../flows/73ef1fef-6aa1-43b0-8721-c8f2f1385509.xml",
+              "@type": "flow data set",
+              "@version": "01.01.001",
+              "@refObjectId": "73ef1fef-6aa1-43b0-8721-c8f2f1385509",
+              "common:shortDescription": [
+                {
+                  "#text": "Lumber for construction",
+                  "@xml:lang": "en"
+                },
+                {
+                  "#text": "建筑用木料",
+                  "@xml:lang": "zh"
+                }
+              ]
+            },
+            "dataDerivationTypeStatus": "Measured"
+          }
+        ]
+      },
+      "@locations": "../ILCDLocations.xml",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "processInformation": {
+        "time": {
+          "common:referenceYear": 1111
+        },
+        "geography": {
+          "locationOfOperationSupplyOrProduction": {
+            "@location": "RAF"
+          }
+        },
+        "technology": {
+          "technologyDescriptionAndIncludedProcesses": {
+            "#text": "1",
+            "@xml:lang": "en"
+          }
+        },
+        "dataSetInformation": {
+          "name": {
+            "baseName": {
+              "#text": "test-process002_check_data_success",
+              "@xml:lang": "en"
+            },
+            "mixAndLocationTypes": {
+              "#text": "1",
+              "@xml:lang": "en"
+            },
+            "treatmentStandardsRoutes": {
+              "#text": "1",
+              "@xml:lang": "en"
+            }
+          },
+          "common:UUID": "__RUNTIME_PROCESS_ID__",
+          "common:generalComment": {
+            "#text": "1",
+            "@xml:lang": "en"
+          },
+          "classificationInformation": {
+            "common:classification": {
+              "common:class": [
+                {
+                  "#text": "Agriculture, forestry and fishing",
+                  "@level": "0",
+                  "@classId": "A"
+                },
+                {
+                  "#text": "Crop and animal production, hunting and related service activities",
+                  "@level": "1",
+                  "@classId": "01"
+                },
+                {
+                  "#text": "Growing of non-perennial crops",
+                  "@level": "2",
+                  "@classId": "011"
+                },
+                {
+                  "#text": "Growing of cereals (except rice), leguminous crops and oil seeds",
+                  "@level": "3",
+                  "@classId": "0111"
+                }
+              ]
+            }
+          }
+        },
+        "quantitativeReference": {
+          "@type": "Reference flow(s)",
+          "referenceToReferenceFlow": "0"
+        }
+      },
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd",
+      "modellingAndValidation": {
+        "LCIMethodAndAllocation": {
+          "typeOfDataSet": "Unit process, single operation"
+        },
+        "dataSourcesTreatmentAndRepresentativeness": {
+          "referenceToDataSource": {
+            "@uri": "../sources/9e197e97-97cf-4f00-babd-be06e81a04c2.xml",
+            "@type": "source data set",
+            "@version": "01.01.001",
+            "@refObjectId": "9e197e97-97cf-4f00-babd-be06e81a04c2",
+            "common:shortDescription": [
+              {
+                "#text": "过程“三元正极材料（电池材料）；混合、烧结、处理至成品包装；生产混合，在工厂”的审查报告",
+                "@xml:lang": "zh"
+              },
+              {
+                "#text": "Review Report of ’Ternary cathode materials; Mixing, sintering, processing to finished product packaging; Production mixing, in the factory‘ process dataset",
+                "@xml:lang": "en"
+              }
+            ]
+          },
+          "dataCutOffAndCompletenessPrinciples": {
+            "#text": "1",
+            "@xml:lang": "en"
+          }
+        }
+      },
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-20T10:48:39.419Z",
+          "common:referenceToDataSetFormat": {
+            "@uri": "../sources/9e197e97-97cf-4f00-babd-be06e81a04c2.xml",
+            "@type": "source data set",
+            "@version": "01.01.001",
+            "@refObjectId": "9e197e97-97cf-4f00-babd-be06e81a04c2",
+            "common:shortDescription": [
+              {
+                "#text": "过程“三元正极材料（电池材料）；混合、烧结、处理至成品包装；生产混合，在工厂”的审查报告",
+                "@xml:lang": "zh"
+              },
+              {
+                "#text": "Review Report of ’Ternary cathode materials; Mixing, sintering, processing to finished product packaging; Production mixing, in the factory‘ process dataset",
+                "@xml:lang": "en"
+              }
+            ]
+          },
+          "common:referenceToPersonOrEntityEnteringTheData": {
+            "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+            "@type": "contact data set",
+            "@version": "01.01.000",
+            "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+            "common:shortDescription": [
+              {
+                "#text": "TianGong Think Tank",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "天工智库中心",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        },
+        "publicationAndOwnership": {
+          "common:copyright": "true",
+          "common:licenseType": "Free of charge for all users and uses",
+          "common:dataSetVersion": "01.01.000",
+          "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/process.xhtml?uuid=__RUNTIME_PROCESS_ID__&version=01.01.000",
+          "common:referenceToOwnershipOfDataSet": {
+            "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+            "@type": "contact data set",
+            "@version": "01.01.000",
+            "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+            "common:shortDescription": [
+              {
+                "#text": "TianGong Think Tank",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "天工智库中心",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        },
+        "common:commissionerAndGoal": {
+          "common:intendedApplications": {
+            "#text": "1",
+            "@xml:lang": "en"
+          },
+          "common:referenceToCommissioner": {
+            "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+            "@type": "contact data set",
+            "@version": "01.01.000",
+            "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+            "common:shortDescription": [
+              {
+                "#text": "TianGong Think Tank",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "天工智库中心",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -47,6 +47,7 @@ npm run test:coverage:assert-full
 npm run test:coverage:report
 npm run prepush:gate
 npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage
+npm run test:data-workflows:unit
 npm run build
 ```
 
@@ -54,6 +55,7 @@ Notes:
 
 - `npm start` and `npm run start:dev` are equivalent dev-target commands. `npm run start:main` is the explicit main-target command.
 - `npm test` runs the CI-style runner (`scripts/test-runner.cjs`): unit first, then integration.
+- Data workflow harness unit tests live in `tests/data-workflows/unit/**` and run only through `npm run test:data-workflows:unit`; they are intentionally outside the default `npm test`, `npm run test:ci`, and coverage gates.
 - The unit/src phase is capped at `--maxWorkers=50%` in the shared runner to avoid intermittent Jest worker `SIGSEGV` crashes during full local gates and pre-push hooks.
 - `npm run test:coverage` and `npm run test:coverage:report` already include `NODE_OPTIONS=--max-old-space-size=8192`; use the scripts directly for full coverage work.
 - `npm run test:coverage:assert-full` reads the latest coverage artifact and fails unless the repo is still at `100%` statements / branches / functions / lines with zero remaining queue files.
@@ -93,6 +95,8 @@ Read only what matches the current task:
 - `src/pages/<Feature>/`: page entry + `Components/` drawers/modals.
 - `src/components/**`, `src/contexts/**`, `types/**`: shared UI/context/types.
 - `tests/{unit,integration}/**`: Jest suites + shared helpers in `tests/helpers/**`.
+- `tests/data-workflows/unit/**`: isolated Jest suites for the real-environment data workflow harness.
+- `tests/data-workflows/fixtures/result/**`: historical expectation references for data workflows. Real workflow assertions are code-owned in `tests/data-workflows/workflows/**`, must not read these files at runtime, and must not expose `--*expected-file` CLI inputs.
 - `docker/volumes/functions/**`: synced self-hosted edge-functions mirror. Do not edit these files in `tiangong-lca-next`.
 - `docker/pull-edge-functions.sh`: the only supported way to refresh `docker/volumes/functions/**` in this repo.
 

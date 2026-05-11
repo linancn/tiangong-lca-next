@@ -4,7 +4,6 @@ import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage
 import { FunctionRegion } from '@supabase/supabase-js';
 import { message } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getLocale } from 'umi';
 import { getILCDClassification, getILCDFlowCategorizationAll } from '../classifications/api';
 import { genFlowName } from '../flows/util';
 import {
@@ -17,6 +16,7 @@ import {
 } from '../general/util';
 import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
+import { getRuntimeLocale } from './runtimeLocale';
 
 type InvokeErrorBody = {
   code?: string;
@@ -1138,7 +1138,7 @@ export async function contributeSource(tableName: string, id: string, version: s
     });
   } else {
     message.error(
-      getLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',
+      getRuntimeLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',
     );
   }
   return {
@@ -1803,7 +1803,7 @@ export async function normalizeLangPayloadForSave(payload: any) {
     translateZhToEn: translateZhTextToEnglish,
   });
 
-  const validationError = getLangValidationErrorMessage(normalized.issues, 5, getLocale());
+  const validationError = getLangValidationErrorMessage(normalized.issues, 5, getRuntimeLocale());
   return {
     payload: normalized.payload,
     issues: normalized.issues,
