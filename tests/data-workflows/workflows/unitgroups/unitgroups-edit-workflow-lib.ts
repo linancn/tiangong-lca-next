@@ -207,7 +207,7 @@ export const UNITGROUP_EDIT_DATA_WORKFLOW_HELP = `UnitGroup edit data workflow
 
 Usage:
   npm run test:unitgroups:edit -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:unitgroups:edit -- --role system-admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:unitgroups:edit -- --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Workflow:
   1. Create one unit group from tests/data-workflows/fixtures/data/unitgroups/001_create.json
@@ -215,7 +215,7 @@ Workflow:
   3. Edit the same unit group into a validation-failing record from tests/data-workflows/fixtures/data/unitgroups/003_edit_data_validate_false.json
 
 Flags:
-  --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "system-admin")
+  --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "user")
   --frontend-url <url>             Frontend URL to display and optionally probe
   --supabase-url <url>             Supabase API URL or dashboard project URL
   --supabase-project-url <url>     Explicit dashboard project URL
@@ -564,8 +564,8 @@ export async function runUnitGroupEditSmoke(
   const expectedEditRuleVerification = getExpectedRuleVerification(editExpectations);
   const successValidationExpectations: ValidationExpectation[] = [];
   const editValidationExpectations = buildValidationExpectations({
-    datasetSdkValid: true,
-    nonExistentRefCount: 1,
+    datasetSdkValid: false,
+    nonExistentRefCount: 0,
     unRuleVerificationCount: 0,
   });
   const { sourceLabel, users } = await loadUsersConfig(options.usersFile);

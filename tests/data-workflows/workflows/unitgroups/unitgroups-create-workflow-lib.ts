@@ -25,8 +25,8 @@ export const DEFAULT_UNITGROUP_EXPECTED_PATH =
   'tests/data-workflows/fixtures/result/unitgroups/001_create.md';
 export const DEFAULT_USERS_PATH = SHARED_DEFAULT_USERS_PATH;
 export const DEFAULT_USERS_ENV_FILE = SHARED_DEFAULT_USERS_ENV_FILE;
-export const DEFAULT_UNITGROUP_ROLE = 'system-admin';
-export const DEFAULT_UNITGROUP_CONTRIBUTE_TEAM_ROLE = 'system-admin';
+export const DEFAULT_UNITGROUP_ROLE = 'user';
+export const DEFAULT_UNITGROUP_CONTRIBUTE_TEAM_ROLE = 'user';
 export const TEST_USERS_JSON_ENV = SHARED_TEST_USERS_JSON_ENV;
 export const RUNTIME_UNITGROUP_ID_PLACEHOLDER = '__RUNTIME_UNITGROUP_ID__';
 
@@ -208,10 +208,10 @@ export const UNITGROUP_CREATE_DATA_WORKFLOW_HELP = `UnitGroup create data workfl
 
 Usage:
   npm run test:unitgroups:create -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:unitgroups:create -- --role system-admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie --no-keep-data
+  npm run test:unitgroups:create -- --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie --no-keep-data
 
 Flags:
-  --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "system-admin")
+  --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "user")
   --frontend-url <url>             Frontend URL to display and optionally probe
   --supabase-url <url>             Supabase API URL or dashboard project URL
   --supabase-project-url <url>     Explicit dashboard project URL

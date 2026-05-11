@@ -570,10 +570,6 @@ export async function runFlowCreateContributeTeamSmoke(
     generateId: options.generateId,
     generateIdFn: dependencies.generateIdFn,
   });
-  const createExpectations = buildCreateExpectations({
-    labelPrefix: 'Create before contribute',
-    ruleVerification: false,
-  });
   const followUpExpectations = buildCreateContributeTeamExpectations();
   const { sourceLabel, users } = await loadUsersConfig(options.usersFile);
   const selectedCredential = pickCredentialByRole(users, options.role, sourceLabel);
@@ -622,6 +618,10 @@ export async function runFlowCreateContributeTeamSmoke(
   submittedCreateRuleVerification = await (
     dependencies.computeCreateRuleVerificationFn ?? computeFlowRuleVerification
   )(runtimeFixture.fixture.jsonOrdered);
+  const createExpectations = buildCreateExpectations({
+    labelPrefix: 'Create before contribute',
+    ruleVerification: submittedCreateRuleVerification,
+  });
 
   let cleanupAttempted = false;
   let cleanupPassed = true;

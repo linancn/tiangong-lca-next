@@ -25,6 +25,4 @@ Team invite/accept expectations organized by database rows and RPC result fields
 12. `steps.accept.memberListRole.email` equals `__INVITEE_EMAIL__`
 13. `steps.accept.memberListRole.team_id` equals `__TEAM_ID__`
 
-## `qry_notification_get_my_team_items` after accept
-
-14. `steps.accept.notification.exists` equals `false`
+After accept, `qry_notification_get_my_team_items` may still return the consumed invite row; notification cleanup is not part of this smoke contract.

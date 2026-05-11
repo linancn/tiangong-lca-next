@@ -58,10 +58,10 @@ describe('unitgroups-edit-workflow-lib', () => {
     expect(options.runtimeRecordFile).toBe('/repo/output/edit-runtime.json');
   });
 
-  it('defaults role to system-admin when --role is omitted', () => {
+  it('defaults role to user when --role is omitted', () => {
     const options = parseEditCliArgs([], '/repo');
 
-    expect(options.role).toBe('system-admin');
+    expect(options.role).toBe('user');
     expect(options.keepData).toBe(true);
     expect(options.generateId).toBe(true);
     expect(options.writeRuntime).toBe(true);
@@ -80,14 +80,14 @@ describe('unitgroups-edit-workflow-lib', () => {
 
   it('builds code-owned explicit validation expectations', () => {
     const expectations = buildValidationExpectations({
-      datasetSdkValid: true,
-      nonExistentRefCount: 1,
+      datasetSdkValid: false,
+      nonExistentRefCount: 0,
       unRuleVerificationCount: 0,
     });
 
     expect(expectations).toEqual([
       {
-        expected: true,
+        expected: false,
         kind: 'datasetSdkValidEquals',
         label: 'validateDatasetRuleVerification.datasetSdkValid matches code expectation',
       },
@@ -97,7 +97,7 @@ describe('unitgroups-edit-workflow-lib', () => {
         label: 'validateDatasetRuleVerification.unRuleVerification.length matches code expectation',
       },
       {
-        expected: 1,
+        expected: 0,
         kind: 'nonExistentRefCountEquals',
         label: 'validateDatasetRuleVerification.nonExistentRef.length matches code expectation',
       },
@@ -107,22 +107,22 @@ describe('unitgroups-edit-workflow-lib', () => {
   it('evaluates code-owned validation expectations against a validation summary', () => {
     const results = buildParsedValidationExpectationResults(
       {
-        datasetSdkValid: true,
-        nonExistentRefCount: 1,
+        datasetSdkValid: false,
+        nonExistentRefCount: 0,
         ruleVerification: false,
         unRuleVerificationCount: 0,
       },
       buildValidationExpectations({
-        datasetSdkValid: true,
-        nonExistentRefCount: 1,
+        datasetSdkValid: false,
+        nonExistentRefCount: 0,
         unRuleVerificationCount: 0,
       }),
     );
 
     expect(results).toEqual([
       {
-        actual: true,
-        expected: true,
+        actual: false,
+        expected: false,
         label: 'validateDatasetRuleVerification.datasetSdkValid matches code expectation',
         passed: true,
       },
@@ -133,8 +133,8 @@ describe('unitgroups-edit-workflow-lib', () => {
         passed: true,
       },
       {
-        actual: 1,
-        expected: 1,
+        actual: 0,
+        expected: 0,
         label: 'validateDatasetRuleVerification.nonExistentRef.length matches code expectation',
         passed: true,
       },
@@ -189,8 +189,8 @@ describe('unitgroups-edit-workflow-lib', () => {
           submittedRuleVerification: false,
         },
         failingValidation: {
-          datasetSdkValid: true,
-          nonExistentRefCount: 1,
+          datasetSdkValid: false,
+          nonExistentRefCount: 0,
           ruleVerification: false,
           unRuleVerificationCount: 0,
         },
@@ -237,8 +237,8 @@ describe('unitgroups-edit-workflow-lib', () => {
       unRuleVerificationCount: 0,
     });
     expect(runtimeRecord.failingEdit.validation).toEqual({
-      datasetSdkValid: true,
-      nonExistentRefCount: 1,
+      datasetSdkValid: false,
+      nonExistentRefCount: 0,
       ruleVerification: false,
       unRuleVerificationCount: 0,
     });
@@ -440,9 +440,9 @@ describe('unitgroups-edit-workflow-lib', () => {
 6. \`team_id\`为\`NULL\`
 7. \`rule_verification\`为\`FALSE\`
 8. \`reviews\`为\`NULL\`
-9. \`validateDatasetRuleVerification.datasetSdkValid\`为\`TRUE\`
+9. \`validateDatasetRuleVerification.datasetSdkValid\`为\`FALSE\`
 10. \`validateDatasetRuleVerification.unRuleVerification.length\`为0
-11. \`validateDatasetRuleVerification.nonExistentRef.length\`为1
+11. \`validateDatasetRuleVerification.nonExistentRef.length\`为0
 `,
       );
       await writeJson(usersFile, {
@@ -532,8 +532,8 @@ describe('unitgroups-edit-workflow-lib', () => {
           unRuleVerification: [],
         })
         .mockResolvedValueOnce({
-          datasetSdkValid: true,
-          nonExistentRef: [{ id: 'missing-contact' }],
+          datasetSdkValid: false,
+          nonExistentRef: [],
           ruleVerification: false,
           unRuleVerification: [],
         });
@@ -594,8 +594,8 @@ describe('unitgroups-edit-workflow-lib', () => {
         unRuleVerificationCount: 0,
       });
       expect(result.failingValidation).toEqual({
-        datasetSdkValid: true,
-        nonExistentRefCount: 1,
+        datasetSdkValid: false,
+        nonExistentRefCount: 0,
         ruleVerification: false,
         unRuleVerificationCount: 0,
       });
@@ -659,8 +659,8 @@ describe('unitgroups-edit-workflow-lib', () => {
       const writtenRuntimeRecord = JSON.parse(await readFile(runtimeRecordFile, 'utf8'));
       expect(writtenRuntimeRecord.successEdit.persistedRecord.rule_verification).toBe(true);
       expect(writtenRuntimeRecord.failingEdit.validation).toEqual({
-        datasetSdkValid: true,
-        nonExistentRefCount: 1,
+        datasetSdkValid: false,
+        nonExistentRefCount: 0,
         ruleVerification: false,
         unRuleVerificationCount: 0,
       });

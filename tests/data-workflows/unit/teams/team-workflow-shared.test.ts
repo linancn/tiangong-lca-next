@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import {
   DEFAULT_TEAM_ROLE_ALIASES,
+  buildTeamExpectations,
   buildTeamPlaceholders,
   buildTeamWorkspaceRecord,
   parseTeamWorkflowCliArgs,
@@ -288,5 +289,25 @@ describe('team-workflow-shared', () => {
       __SYSTEM_USER_ID__: undefined,
       __TEAM_ID__: 'team-id',
     });
+  });
+
+  it('does not require consumed invitation notifications to clear', () => {
+    const inviteExpectationPaths = buildTeamExpectations({
+      steps: {
+        accept: {},
+        invite: {},
+      },
+    }).map((expectation) => expectation.path);
+    const rejectExpectationPaths = buildTeamExpectations({
+      steps: {
+        reject: {},
+        reinvite: {},
+      },
+    }).map((expectation) => expectation.path);
+
+    expect(inviteExpectationPaths).toContain('steps.invite.notification.exists');
+    expect(inviteExpectationPaths).not.toContain('steps.accept.notification.exists');
+    expect(rejectExpectationPaths).not.toContain('steps.reject.notification.exists');
+    expect(rejectExpectationPaths).toContain('steps.reinvite.notification.exists');
   });
 });

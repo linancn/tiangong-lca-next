@@ -306,7 +306,7 @@ export const UNITGROUP_CREATE_VIEW_COPY_DATA_WORKFLOW_HELP = `UnitGroup create-v
 
 Usage:
   npm run test:unitgroups:create-view-copy -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:unitgroups:create-view-copy -- --role system-admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:unitgroups:create-view-copy -- --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Workflow:
   1. Create one unit group from tests/data-workflows/fixtures/data/unitgroups/001_create_view_copy.json
@@ -315,7 +315,7 @@ Workflow:
   4. View the copied unit group through getUnitGroupDetail
 
 Flags:
-  --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "system-admin")
+  --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "user")
   --frontend-url <url>             Frontend URL to display and optionally probe
   --supabase-url <url>             Supabase API URL or dashboard project URL
   --supabase-project-url <url>     Explicit dashboard project URL

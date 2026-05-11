@@ -136,6 +136,12 @@ type ParsedWorkflowExpectation = {
 type WorkflowActuals = Record<ExpectationKey, boolean | number | string | null>;
 type ExpectationSection = 'create' | 'createVersion' | 'updateReference';
 
+type RuleVerificationExpectations = {
+  createRuleVerification?: boolean;
+  createVersionRuleVerification?: boolean;
+  updateReferenceRuleVerification?: boolean;
+};
+
 type LoadedWorkflowModules = {
   processesUtil: {
     genProcessFromData: (data: any) => any;
@@ -498,7 +504,13 @@ export function parseCreateVersionUpdateReferenceCliArgs(
   return options;
 }
 
-export function buildCreateVersionUpdateReferenceExpectations(): ParsedWorkflowExpectation[] {
+export function buildCreateVersionUpdateReferenceExpectations(
+  options: RuleVerificationExpectations = {},
+): ParsedWorkflowExpectation[] {
+  const createRuleVerification = options.createRuleVerification ?? true;
+  const createVersionRuleVerification = options.createVersionRuleVerification ?? true;
+  const updateReferenceRuleVerification = options.updateReferenceRuleVerification ?? true;
+
   return [
     buildExpectation('create.rowExists', true, 'Create row exists'),
     buildExpectation(
@@ -514,7 +526,11 @@ export function buildCreateVersionUpdateReferenceExpectations(): ParsedWorkflowE
     buildExpectation('create.stateCode', 0, 'Create state_code is 0'),
     buildExpectation('create.version', '01.01.000', 'Create version is 01.01.000'),
     buildExpectation('create.teamIdNull', true, 'Create team_id is null'),
-    buildExpectation('create.ruleVerification', false, 'Create rule_verification is false'),
+    buildExpectation(
+      'create.ruleVerification',
+      createRuleVerification,
+      'Create rule_verification matches submitted rule_verification',
+    ),
     buildExpectation('create.reviewsNull', true, 'Create reviews is null'),
     buildExpectation('createVersion.rowExists', true, 'Create-version row exists'),
     buildExpectation(
@@ -530,8 +546,8 @@ export function buildCreateVersionUpdateReferenceExpectations(): ParsedWorkflowE
     ),
     buildExpectation(
       'createVersion.ruleVerification',
-      false,
-      'Create-version rule_verification is false',
+      createVersionRuleVerification,
+      'Create-version rule_verification matches submitted rule_verification',
     ),
     buildExpectation('updateReference.rowExists', true, 'Update-reference row exists'),
     buildExpectation(
@@ -541,8 +557,8 @@ export function buildCreateVersionUpdateReferenceExpectations(): ParsedWorkflowE
     ),
     buildExpectation(
       'updateReference.ruleVerification',
-      false,
-      'Update-reference rule_verification is false',
+      updateReferenceRuleVerification,
+      'Update-reference rule_verification matches submitted rule_verification',
     ),
   ];
 }
@@ -688,7 +704,7 @@ export async function runProcessCreateVersionUpdateReferenceSmoke(
   const runtimeFixture = prepareRuntimeFixture(await loadProcessFixture(options.dataFile), {
     generateId: options.generateId,
   });
-  const expectations = buildCreateVersionUpdateReferenceExpectations();
+  const defaultExpectations = buildCreateVersionUpdateReferenceExpectations();
   const { sourceLabel, users } = await loadUsersConfig(options.usersFile);
   const selectedCredential = pickCredentialByRole(users, options.role, sourceLabel);
 
@@ -854,7 +870,7 @@ export async function runProcessCreateVersionUpdateReferenceSmoke(
       deepClone(updateReferenceFormData),
     );
     const expectedUpdatedOwnerVersion =
-      expectations.find(
+      defaultExpectations.find(
         (expectation) => expectation.key === 'updateReference.ownerRefVersionEqualsCreatedVersion',
       )?.expected ?? null;
     const selectedNewRef = selectCreatedVersionReferenceCandidate(
@@ -969,6 +985,11 @@ export async function runProcessCreateVersionUpdateReferenceSmoke(
         updatedRecord.version === createdVersionRecord.version,
     };
 
+    const expectations = buildCreateVersionUpdateReferenceExpectations({
+      createRuleVerification: createValidationResult.ruleVerification,
+      createVersionRuleVerification: createVersionValidationResult.ruleVerification,
+      updateReferenceRuleVerification: updateReferenceValidationResult.ruleVerification,
+    });
     const expectationResults = evaluateCreateVersionUpdateReferenceExpectations(
       actuals,
       expectations,

@@ -106,7 +106,7 @@ const expectedMarkdown = `# create
 4. \`state_code\`为0
 5. \`version\`为\`01.01.000\`
 6. \`team_id\`为\`NULL\`
-7. \`rule_verification\`为\`FALSE\`
+7. \`rule_verification\`为\`TRUE\`
 8. \`reviews\`为\`NULL\`
 9. \`json_ordered\`中的\`common:referenceToOwnershipOfDataSet.@refObjectId\`为\`${OWNER_CONTACT_ID}\`
 10. \`json_ordered\`中的\`common:referenceToOwnershipOfDataSet.@uri\`和夹具中的联系人数据一致
@@ -118,14 +118,14 @@ const expectedMarkdown = `# create
 13. \`id\`和刚创建数据一致
 14. \`version\`为\`01.01.001\`
 15. \`json_ordered\`中除\`common:dataSetVersion\`、\`common:timeStamp\`、\`common:permanentDataSetURI\`外其余字段和刚创建数据一致
-16. \`rule_verification\`为\`FALSE\`
+16. \`rule_verification\`为\`TRUE\`
 17. \`json_ordered\`中的\`common:referenceToOwnershipOfDataSet.@version\`仍为\`01.01.000\`
 
 # update reference
 
 18. 数据库可根据相同\`id\`和新\`version\`查询到更新引用后的数据
 19. \`version\`仍为\`01.01.001\`
-20. \`rule_verification\`为\`FALSE\`
+20. \`rule_verification\`为\`TRUE\`
 21. \`json_ordered\`中的\`common:referenceToOwnershipOfDataSet.@refObjectId\`仍为\`${OWNER_CONTACT_ID}\`
 22. \`json_ordered\`中的\`common:referenceToOwnershipOfDataSet.common:shortDescription\`和当前数据中的联系人描述一致
 23. \`json_ordered\`中的\`common:referenceToOwnershipOfDataSet.@version\`仍为\`01.01.001\`
@@ -197,9 +197,9 @@ describe('processes-create-version-update-reference-workflow-lib', () => {
           label: 'Create-version version is 01.01.001',
         },
         {
-          expected: false,
+          expected: true,
           key: 'updateReference.ruleVerification',
-          label: 'Update-reference rule_verification is false',
+          label: 'Update-reference rule_verification matches submitted rule_verification',
         },
       ]),
     );
@@ -560,7 +560,7 @@ describe('processes-create-version-update-reference-workflow-lib', () => {
                 validateDatasetRuleVerification: jest.fn().mockResolvedValue({
                   datasetSdkValid: true,
                   nonExistentRef: [],
-                  ruleVerification: false,
+                  ruleVerification: true,
                   unRuleVerification: [],
                 }),
               },

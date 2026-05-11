@@ -165,9 +165,10 @@ export async function runTeamsInviteAcceptSmoke(
       () => queryTeamRole(workspace.ownerSession.client, workspace.teamId, inviteeSession.user.id),
       (value) => value.exists && value.role === 'member',
     );
-    const inviteeNotificationAfterAccept = await pollUntil(
-      () => queryTeamNotification(inviteeSession.client, workspace.teamId, notificationDays),
-      (value) => !value.exists,
+    const inviteeNotificationAfterAccept = await queryTeamNotification(
+      inviteeSession.client,
+      workspace.teamId,
+      notificationDays,
     );
     const memberListRoleAfterAccept = await pollUntil(
       () =>

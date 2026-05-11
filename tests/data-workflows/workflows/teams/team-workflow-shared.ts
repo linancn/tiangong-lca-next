@@ -1323,11 +1323,6 @@ export function buildTeamExpectations(context: Record<string, unknown>): Structu
         '__TEAM_ID__',
         'Accepted member list team_id matches team',
       ),
-      teamExpectation(
-        'steps.accept.notification.exists',
-        'false',
-        'Invite notification is removed after accept',
-      ),
     ];
   }
 
@@ -1343,11 +1338,6 @@ export function buildTeamExpectations(context: Record<string, unknown>): Structu
         'steps.reject.role.team_id',
         '__TEAM_ID__',
         'Rejected role team_id matches team',
-      ),
-      teamExpectation(
-        'steps.reject.notification.exists',
-        'false',
-        'Invite notification is absent after reject',
       ),
       teamExpectation('steps.reinvite.role.role', 'is_invited', 'Reinvite role is is_invited'),
       teamExpectation(

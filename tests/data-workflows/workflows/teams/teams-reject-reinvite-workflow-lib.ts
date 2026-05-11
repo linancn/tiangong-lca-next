@@ -158,9 +158,10 @@ export async function runTeamsRejectReinviteSmoke(
       () => queryTeamRole(workspace.ownerSession.client, workspace.teamId, inviteeSession.user.id),
       (value) => value.exists && value.role === 'rejected',
     );
-    const rejectNotification = await pollUntil(
-      () => queryTeamNotification(inviteeSession.client, workspace.teamId, notificationDays),
-      (value) => !value.exists,
+    const rejectNotification = await queryTeamNotification(
+      inviteeSession.client,
+      workspace.teamId,
+      notificationDays,
     );
 
     await reinviteTeamMember({

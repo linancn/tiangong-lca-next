@@ -79,7 +79,7 @@ const createExpectedMarkdown = `# create
 4. \`state_code\`为0
 5. \`version\`为\`01.01.000\`
 6. \`team_id\`为\`NULL\`
-7. \`rule_verification\`为\`FALSE\`
+7. \`rule_verification\`为\`TRUE\`
 8. \`reviews\`为\`NULL\`
 `;
 
@@ -445,7 +445,7 @@ describe('contacts-create-contribute-team-workflow-lib', () => {
           writeRuntime: true,
         },
         {
-          computeCreateRuleVerificationFn: async () => false,
+          computeCreateRuleVerificationFn: async () => true,
           modulesLoader: async () =>
             ({
               generalApi: {
@@ -486,7 +486,7 @@ describe('contacts-create-contribute-team-workflow-lib', () => {
         expect.objectContaining({
           body: expect.objectContaining({
             id: sourceId,
-            ruleVerification: false,
+            ruleVerification: true,
             table: 'contacts',
           }),
         }),

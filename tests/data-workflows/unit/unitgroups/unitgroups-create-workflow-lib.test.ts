@@ -49,10 +49,10 @@ describe('unitgroups-create-workflow-lib', () => {
     );
   });
 
-  it('defaults role to system-admin when --role is omitted', () => {
+  it('defaults role to user when --role is omitted', () => {
     const options = parseCliArgs([], '/repo');
 
-    expect(options.role).toBe('system-admin');
+    expect(options.role).toBe('user');
     expect(options.keepData).toBe(true);
     expect(options.generateId).toBe(true);
     expect(options.writeRuntime).toBe(true);

@@ -131,13 +131,13 @@ describe('unitgroups-create-contribute-team-workflow-lib', () => {
     expect(options.usersFile).toBe('/repo/tests/data-workflows/fixtures/data/users.json');
   });
 
-  it('defaults role to system-admin when --role is omitted', () => {
+  it('defaults role to user when --role is omitted', () => {
     const options = parseCreateContributeTeamCliArgs([], '/repo');
 
     expect(options.createDataFile).toBe(
       '/repo/tests/data-workflows/fixtures/data/unitgroups/005_create_contribute_team.json',
     );
-    expect(options.role).toBe('system-admin');
+    expect(options.role).toBe('user');
     expect(options.keepData).toBe(true);
     expect(options.generateId).toBe(true);
     expect(options.writeRuntime).toBe(true);

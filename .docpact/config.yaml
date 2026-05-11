@@ -53,6 +53,7 @@ ownership:
           - .github/workflows/build.yml
           - .github/workflows/ai-doc-lint.yml
           - scripts/docpact-gate.js
+          - scripts/test-api-smoke.cjs
           - scripts/test-runner.cjs
           - scripts/test-coverage-report.js
       ownerRepo: next
@@ -94,6 +95,7 @@ coverage:
     - .github/workflows/build.yml
     - .github/workflows/ci.yml
     - scripts/docpact-gate.js
+    - scripts/test-api-smoke.cjs
     - scripts/test-runner.cjs
     - scripts/test-coverage-report.js
   exclude:
@@ -136,6 +138,7 @@ routing:
         - .github/workflows/build.yml
         - .github/workflows/ai-doc-lint.yml
         - scripts/docpact-gate.js
+        - scripts/test-api-smoke.cjs
         - scripts/test-runner.cjs
         - scripts/test-coverage-report.js
         - tests/**
@@ -170,6 +173,7 @@ routing:
         - .github/workflows/ci.yml
         - .github/workflows/build.yml
         - scripts/docpact-gate.js
+        - scripts/test-api-smoke.cjs
         - tests/**
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
