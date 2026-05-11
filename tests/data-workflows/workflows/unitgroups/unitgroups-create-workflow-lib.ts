@@ -207,8 +207,8 @@ export type RuntimeRecord = {
 export const UNITGROUP_CREATE_DATA_WORKFLOW_HELP = `UnitGroup create data workflow
 
 Usage:
-  npm run test:unitgroups:create -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:unitgroups:create -- --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie --no-keep-data
+  npm run test:workflows -- --unitgroups:create --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --unitgroups:create --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie --no-keep-data
 
 Flags:
   --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "user")

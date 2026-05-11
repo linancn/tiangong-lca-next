@@ -24,8 +24,8 @@ import {
 export const TEAMS_MEMBER_ROLE_DATA_WORKFLOW_HELP = `Teams member-role data workflow
 
 Usage:
-  npm run test:teams:member-role -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:teams:member-role -- --owner-role team-owner --member-role invitee-a --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --teams:member-role --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --teams:member-role --owner-role team-owner --member-role invitee-a --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Flags:
   --owner-role <name>              Logical owner role (defaults to "team-owner")

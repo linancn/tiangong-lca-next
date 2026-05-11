@@ -164,8 +164,8 @@ export type ProcessFullTextSearchDependencies = {
 export const PROCESS_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = `Process full-text-search data workflow
 
 Usage:
-  npm run test:processes:full-text-search -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:processes:full-text-search -- --detail-result --no-keep-data
+  npm run test:workflows -- --processes:full-text-search --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --processes:full-text-search --detail-result --no-keep-data
 
 Flags:
   --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "user")

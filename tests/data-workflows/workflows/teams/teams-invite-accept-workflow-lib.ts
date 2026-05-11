@@ -26,8 +26,8 @@ import {
 export const TEAMS_INVITE_ACCEPT_DATA_WORKFLOW_HELP = `Teams invite-accept data workflow
 
 Usage:
-  npm run test:teams:invite-accept -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:teams:invite-accept -- --owner-role team-owner --invitee-role invitee-a --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --teams:invite-accept --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --teams:invite-accept --owner-role team-owner --invitee-role invitee-a --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Flags:
   --owner-role <name>              Logical owner role (defaults to "team-owner")

@@ -18,8 +18,8 @@ import {
 export const TEAMS_CREATE_DATA_WORKFLOW_HELP = `Teams create data workflow
 
 Usage:
-  npm run test:teams:create -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:teams:create -- --role teamless-user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --teams:create --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --teams:create --role teamless-user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Flags:
   --role <name>                    Logical role for the creator (defaults to "teamless-user", resolved to "team-owner")

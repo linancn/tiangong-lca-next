@@ -276,8 +276,8 @@ export type FlowCreateVersionUpdateReferenceDependencies = {
 export const FLOW_CREATE_VERSION_UPDATE_REFERENCE_DATA_WORKFLOW_HELP = `Flow create-version-update-reference data workflow
 
 Usage:
-  npm run test:flows:create-version-update-reference -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:flows:create-version-update-reference -- --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --flows:create-version-update-reference --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --flows:create-version-update-reference --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Workflow:
   1. Create one flow from tests/data-workflows/fixtures/data/flows/004_create_version_update_reference.json

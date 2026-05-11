@@ -385,8 +385,8 @@ export type ProcessCheckDataRuntimeReferencesDependencies = {
 export const PROCESS_CHECK_DATA_RUNTIME_REFERENCES_DATA_WORKFLOW_HELP = `Process check-data runtime-references data workflow
 
 Usage:
-  npm run test:processes:check-data-runtime-references -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:processes:check-data-runtime-references -- --role admin --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie --no-keep-data
+  npm run test:workflows -- --processes:check-data-runtime-references --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --processes:check-data-runtime-references --role admin --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie --no-keep-data
 
 Workflow:
   1. Ensure per-account test reference seeds exist

@@ -38,8 +38,8 @@ export const SOURCE_DATA_WORKFLOWS = [
 export const SOURCE_ALL_DATA_WORKFLOW_HELP = `Sources data workflow suite
 
 Usage:
-  npm run test:sources:all -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
-  npm run test:sources:all -- --detail-result --no-keep-data
+  npm run test:workflows -- --sources:all --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
+  npm run test:workflows -- --sources:all --detail-result --no-keep-data
 
 Behavior:
   - Runs all current source data workflows sequentially

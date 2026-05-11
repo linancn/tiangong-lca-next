@@ -22,8 +22,8 @@ import {
 export const TEAMS_EDIT_DATA_WORKFLOW_HELP = `Teams edit data workflow
 
 Usage:
-  npm run test:teams:edit -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:teams:edit -- --owner-role team-owner --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --teams:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --teams:edit --owner-role team-owner --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Flags:
   --owner-role <name>              Logical owner role (defaults to "team-owner")

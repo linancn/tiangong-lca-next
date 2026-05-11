@@ -44,8 +44,8 @@ export const PROCESS_DATA_WORKFLOWS = [
 export const PROCESS_ALL_DATA_WORKFLOW_HELP = `Processes data workflow suite
 
 Usage:
-  npm run test:processes:all -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
-  npm run test:processes:all -- --detail-result --no-keep-data
+  npm run test:workflows -- --processes:all --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
+  npm run test:workflows -- --processes:all --detail-result --no-keep-data
 
 Behavior:
   - Runs all current process data workflows sequentially

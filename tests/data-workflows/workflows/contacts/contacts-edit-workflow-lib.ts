@@ -206,8 +206,8 @@ export type ContactEditDependencies = {
 export const CONTACT_EDIT_DATA_WORKFLOW_HELP = `Contact edit data workflow
 
 Usage:
-  npm run test:contacts:edit -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:contacts:edit -- --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --contacts:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --contacts:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Workflow:
   1. Create one contact from tests/data-workflows/fixtures/data/contacts/001_create.json

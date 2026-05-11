@@ -235,8 +235,8 @@ const EXPECTATION_KEYS = new Set<ExpectationKey>([
 export const SOURCE_CREATE_CONTRIBUTE_TEAM_DATA_WORKFLOW_HELP = `Source create-contribute-team data workflow
 
 Usage:
-  npm run test:sources:create-contribute-team -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:sources:create-contribute-team -- --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --sources:create-contribute-team --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --sources:create-contribute-team --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Workflow:
   1. Create one source from tests/data-workflows/fixtures/data/sources/005_create_contribute_team.json

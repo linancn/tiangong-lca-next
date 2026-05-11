@@ -206,8 +206,8 @@ export type SourceEditDependencies = {
 export const SOURCE_EDIT_DATA_WORKFLOW_HELP = `Source edit data workflow
 
 Usage:
-  npm run test:sources:edit -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:sources:edit -- --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --sources:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --sources:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Workflow:
   1. Create one source from tests/data-workflows/fixtures/data/sources/001_create.json

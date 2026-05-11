@@ -76,6 +76,7 @@ npm install
 | shared CI-style test runner | `npm test` |
 | focused Jest suite | `npm run test:ci -- <jest-args>` |
 | data workflow unit proof | `npm run test:data-workflows:unit` |
+| focused live data workflow | `npm run test:workflows -- --<workflow> <workflow-args>` |
 | live API smoke workflows | `npm run test:api:smoke -- <workflow-args>` |
 | full coverage | `npm run test:coverage` |
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
@@ -89,6 +90,7 @@ npm install
 - `npm start` and `npm run start:dev` are equivalent
 - use `npm run start:main` only when the task explicitly requires the `main` environment
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
+- use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - local pushes run `npm run docpact:gate` before branch-specific push policy
 - treat `npm run prepush:gate` as the authoritative local parity check

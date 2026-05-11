@@ -25,8 +25,8 @@ import {
 export const TEAMS_REJECT_REINVITE_DATA_WORKFLOW_HELP = `Teams reject-reinvite data workflow
 
 Usage:
-  npm run test:teams:reject-reinvite -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:teams:reject-reinvite -- --owner-role team-owner --invitee-role invitee-b --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --teams:reject-reinvite --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --teams:reject-reinvite --owner-role team-owner --invitee-role invitee-b --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
 
 Flags:
   --owner-role <name>              Logical owner role (defaults to "team-owner")
