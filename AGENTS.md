@@ -26,8 +26,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-05-10
-lastReviewedCommit: cd3f259972a49c387cffab9d5f4c902df2638daa
+lastReviewedAt: 2026-05-11
+lastReviewedCommit: d41c978ab936d3cd1d4b4518fbdf9e3eea278538
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -103,6 +103,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
+- data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
 - new npm dependencies require human approval
 

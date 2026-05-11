@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-05-10
-lastReviewedCommit: 884ec46b2d1e1dc8ac4c4bdf071a028fd960144e
+lastReviewedAt: 2026-05-11
+lastReviewedCommit: d41c978ab936d3cd1d4b4518fbdf9e3eea278538
 ---
 
 # Testing Strategy
@@ -35,12 +35,14 @@ lastReviewedCommit: 884ec46b2d1e1dc8ac4c4bdf071a028fd960144e
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
+- data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
 
 ## Operating Principles
 
 - every touched behavior ships with matching proof
 - current-state queue data belongs in `test_todo_list.md`
 - make strategy changes explicit
+- keep data workflow fixture relationships explicit so expected-result Markdown remains reviewable instead of becoming an opaque snapshot set
 - dead branches should be removed instead of defended by artificial tests
 
 ## Integration Testing North Star

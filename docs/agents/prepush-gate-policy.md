@@ -20,8 +20,8 @@ checkPaths:
   - .husky/pre-push
   - package.json
   - .github/workflows/**
-lastReviewedAt: 2026-05-10
-lastReviewedCommit: 884ec46b2d1e1dc8ac4c4bdf071a028fd960144e
+lastReviewedAt: 2026-05-11
+lastReviewedCommit: d41c978ab936d3cd1d4b4518fbdf9e3eea278538
 ---
 
 # Pre-Push Gate Policy
@@ -68,6 +68,7 @@ It does not own:
 - no protected merge path may bypass the full gate
 - branch policy must stay aligned with `dev -> main`
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
+- data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
 
 ## Short Rule Summary
 

@@ -20,8 +20,8 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-05-10
-lastReviewedCommit: cd3f259972a49c387cffab9d5f4c902df2638daa
+lastReviewedAt: 2026-05-11
+lastReviewedCommit: d41c978ab936d3cd1d4b4518fbdf9e3eea278538
 ---
 
 # Development Bootstrap
@@ -75,6 +75,7 @@ npm install
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
 | focused Jest suite | `npm run test:ci -- <jest-args>` |
+| data workflow unit proof | `npm run test:data-workflows:unit` |
 | full coverage | `npm run test:coverage` |
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
