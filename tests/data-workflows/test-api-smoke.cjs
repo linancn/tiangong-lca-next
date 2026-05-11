@@ -87,9 +87,8 @@ Behavior:
   - Runs supported live API smoke workflows sequentially, with team workflows first
   - Forwards shared CLI arguments to every workflow
   - Prints the covered API smoke workflows before running
-  - Records failures, skips failing workflow exit propagation, and continues
+  - Records failures, continues through remaining workflows, and reports CLI failure after the summary
   - Prints per-command results with failure reasons at the end
-  - Exits zero after reporting child workflow failures
 
 Workflows:
 ${API_SMOKE_WORKFLOWS.map((workflow, index) => `  ${index + 1}. ${workflow.command}`).join('\n')}
@@ -347,7 +346,7 @@ async function runApiSmokeSuite(argv = process.argv.slice(2), dependencies = {})
   });
   log(`Overall success: ${passed ? 'yes' : 'no'}`);
   log(
-    'Exit behavior: child workflow failures are reported but do not make this command exit non-zero.',
+    'Exit behavior: child workflow failures are reported after all workflows run, then this command exits non-zero.',
   );
 
   return {
@@ -357,8 +356,12 @@ async function runApiSmokeSuite(argv = process.argv.slice(2), dependencies = {})
   };
 }
 
-async function main(argv = process.argv.slice(2)) {
-  await runApiSmokeSuite(argv);
+async function main(argv = process.argv.slice(2), dependencies = {}) {
+  const result = await runApiSmokeSuite(argv, dependencies);
+
+  if (!result.helpShown && !result.passed) {
+    throw new Error('API smoke workflow suite failed.');
+  }
 }
 
 if (require.main === module) {
@@ -373,5 +376,6 @@ module.exports = {
   HELP_TEXT,
   buildWorkflowArgv,
   formatWorkflowResult,
+  main,
   runApiSmokeSuite,
 };
