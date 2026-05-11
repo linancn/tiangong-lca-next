@@ -1,0 +1,34 @@
+{
+  "id": "96926fa6-658a-465e-8f2e-022259ef9e6d",
+  "table": "processes",
+  "jsonOrdered": {
+    "processDataSet": {
+        "@xmlns": "http://lca.jrc.it/ILCD/Process",
+        "@version": "1.1",
+        "@locations": "../ILCDLocations.xml",
+        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+        "processInformation": {
+            "dataSetInformation": {
+                "name": {
+                    "baseName": {
+                        "#text": "test-process001_create_view_copy",
+                        "@xml:lang": "en"
+                    }
+                },
+                "common:UUID": "__RUNTIME_PROCESS_ID__"
+            }
+        },
+        "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Process ../../schemas/ILCD_ProcessDataSet.xsd",
+        "administrativeInformation": {
+            "dataEntryBy": {
+                "common:timeStamp": "2026-04-20T10:45:09.368Z"
+            },
+            "publicationAndOwnership": {
+                "common:dataSetVersion": "01.01.000",
+                "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/process.xhtml?uuid=__RUNTIME_PROCESS_ID__&version=01.01.000"
+            }
+        }
+    }
+}
+}

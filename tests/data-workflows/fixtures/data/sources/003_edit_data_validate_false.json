@@ -1,0 +1,49 @@
+{
+  "table": "sources",
+  "jsonOrdered": {
+    "sourceDataSet": {
+      "@xmlns": "http://lca.jrc.it/ILCD/Source",
+      "@version": "1.1",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "sourceInformation": {
+        "dataSetInformation": {
+          "common:UUID": "__RUNTIME_SOURCE_ID__",
+          "common:shortName": {
+            "#text": "test-source-edit-data-validate-false",
+            "@xml:lang": "en"
+          },
+          "classificationInformation": {
+            "common:classification": {
+              "common:class": {
+                "#text": "Images",
+                "@level": "0",
+                "@classId": "0"
+              }
+            }
+          }
+        }
+      },
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Source ../../schemas/ILCD_SourceDataSet.xsd",
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-20T06:44:41.703Z",
+          "common:referenceToDataSetFormat": {
+            "@uri": "../sources/__RUNTIME_SOURCE_ID__.xml",
+            "@type": "source data set",
+            "@version": "01.01.000",
+            "@refObjectId": "__RUNTIME_SOURCE_ID__",
+            "common:shortDescription": {
+              "#text": "test-source-check-data-success",
+              "@xml:lang": "en"
+            }
+          }
+        },
+        "publicationAndOwnership": {
+          "common:dataSetVersion": "01.01.000",
+          "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/source.xhtml?uuid=__RUNTIME_SOURCE_ID__&version=01.01.000"
+        }
+      }
+    }
+  }
+}

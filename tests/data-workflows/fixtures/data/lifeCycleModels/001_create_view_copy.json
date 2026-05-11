@@ -1,0 +1,411 @@
+{
+  "id": "7f81a402-b700-4bf2-b309-bc6f3db8d5bf",
+  "table": "lifecyclemodels",
+  "payload": {
+    "mode": "create",
+    "modelId": "__RUNTIME_MODEL_ID__",
+    "parent": {
+      "jsonOrdered": {
+        "lifeCycleModelDataSet": {
+          "@xmlns": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017",
+          "@xmlns:acme": "http://acme.com/custom",
+          "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+          "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+          "@locations": "../ILCDLocations.xml",
+          "@version": "1.1",
+          "@xsi:schemaLocation": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd",
+          "lifeCycleModelInformation": {
+            "dataSetInformation": {
+              "common:UUID": "__RUNTIME_MODEL_ID__",
+              "name": {
+                "baseName": {
+                  "@xml:lang": "en",
+                  "#text": "test-create-model-copy"
+                }
+              },
+              "classificationInformation": {
+                "common:classification": {
+                  "common:class": {
+                    "@level": "0"
+                  }
+                }
+              }
+            },
+            "quantitativeReference": {
+              "referenceToReferenceProcess": "0"
+            },
+            "technology": {
+              "processes": {
+                "processInstance": {
+                  "@dataSetInternalID": "0",
+                  "@multiplicationFactor": "1",
+                  "referenceToProcess": {
+                    "@refObjectId": "__RUNTIME_PRIMARY_PROCESS_ID__",
+                    "@type": "process data set",
+                    "@uri": "../processes/__RUNTIME_PRIMARY_PROCESS_ID__.xml",
+                    "@version": "__RUNTIME_PRIMARY_PROCESS_VERSION__",
+                    "common:shortDescription": {
+                      "@xml:lang": "en",
+                      "#text": "test-process002_check_data_success; 1; 1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "administrativeInformation": {
+            "dataEntryBy": {
+              "common:timeStamp": "2026-05-09T02:54:05.302Z"
+            },
+            "publicationAndOwnership": {
+              "common:dataSetVersion": "01.01.000",
+              "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/lifecyclemodel.xhtml?uuid=__RUNTIME_MODEL_ID__&version=01.01.000"
+            }
+          }
+        }
+      },
+      "jsonTg": {
+        "xflow": {
+          "nodes": [
+            {
+              "position": {
+                "x": 200,
+                "y": 100
+              },
+              "size": {
+                "width": 350,
+                "height": 80
+              },
+              "attrs": {
+                "text": {
+                  "text": ""
+                },
+                "body": {
+                  "stroke": "#5c246a",
+                  "strokeWidth": 1,
+                  "fill": "#ffffff",
+                  "rx": 6,
+                  "ry": 6
+                },
+                "label": {
+                  "fill": "#000",
+                  "refX": 0.5,
+                  "refY": 8,
+                  "textAnchor": "middle",
+                  "textVerticalAnchor": "top"
+                }
+              },
+              "visible": true,
+              "shape": "rect",
+              "id": "bea28231-4c04-4af7-afb6-06b67a5995e5",
+              "data": {
+                "id": "__RUNTIME_PRIMARY_PROCESS_ID__",
+                "version": "__RUNTIME_PRIMARY_PROCESS_VERSION__",
+                "label": {
+                  "baseName": {
+                    "#text": "test-process002_check_data_success",
+                    "@xml:lang": "en"
+                  },
+                  "mixAndLocationTypes": {
+                    "#text": "1",
+                    "@xml:lang": "en"
+                  },
+                  "treatmentStandardsRoutes": {
+                    "#text": "1",
+                    "@xml:lang": "en"
+                  }
+                },
+                "shortDescription": [
+                  {
+                    "@xml:lang": "en",
+                    "#text": "test-process002_check_data_success; 1; 1"
+                  }
+                ],
+                "quantitativeReference": "1",
+                "index": "0"
+              },
+              "tools": {
+                "name": null,
+                "items": [
+                  {
+                    "id": "ref",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "circle",
+                          "selector": "button",
+                          "attrs": {
+                            "r": 10,
+                            "stroke-width": 0,
+                            "fill": "#fff",
+                            "cursor": "pointer"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "★",
+                          "selector": "icon",
+                          "attrs": {
+                            "fill": "#5c246a",
+                            "font-size": 22,
+                            "text-anchor": "middle",
+                            "pointer-events": "none",
+                            "y": "0.3em"
+                          }
+                        },
+                        {
+                          "tagName": "title",
+                          "textContent": "参考节点"
+                        }
+                      ],
+                      "offset": {
+                        "x": 10,
+                        "y": -12
+                      }
+                    }
+                  },
+                  {
+                    "id": "nodeTitle",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "rect",
+                          "selector": "button",
+                          "attrs": {
+                            "width": 350,
+                            "height": 26,
+                            "rx": 4,
+                            "ry": 4,
+                            "fill": "#5c246a",
+                            "stroke": "#5c246a",
+                            "stroke-width": 1,
+                            "cursor": "move"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "test-process002_check_dat...",
+                          "selector": "text",
+                          "attrs": {
+                            "fill": "white",
+                            "font-size": 14,
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle",
+                            "pointer-events": "none",
+                            "x": 175,
+                            "y": 13
+                          }
+                        },
+                        {
+                          "tagName": "title",
+                          "textContent": "test-process002_check_data_success; 1; 1"
+                        }
+                      ],
+                      "events": null,
+                      "x": 0,
+                      "y": 0,
+                      "offset": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  },
+                  {
+                    "id": "inputFlow",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "rect",
+                          "selector": "button",
+                          "attrs": {
+                            "width": 50,
+                            "height": 20,
+                            "rx": 4,
+                            "ry": 4,
+                            "fill": "#ffffff",
+                            "stroke": "#d9d9d9",
+                            "stroke-width": 1,
+                            "cursor": "pointer"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "流入",
+                          "selector": "text",
+                          "attrs": {
+                            "fill": "#000",
+                            "font-size": 12,
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle",
+                            "pointer-events": "none",
+                            "x": 25,
+                            "y": 10
+                          }
+                        }
+                      ],
+                      "offset": {
+                        "x": 10,
+                        "y": 30
+                      }
+                    }
+                  },
+                  {
+                    "id": "outputFlow",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "rect",
+                          "selector": "button",
+                          "attrs": {
+                            "width": 50,
+                            "height": 20,
+                            "rx": 4,
+                            "ry": 4,
+                            "fill": "#ffffff",
+                            "stroke": "#d9d9d9",
+                            "stroke-width": 1,
+                            "cursor": "pointer"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "流出",
+                          "selector": "text",
+                          "attrs": {
+                            "fill": "#000",
+                            "font-size": 12,
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle",
+                            "pointer-events": "none",
+                            "x": 25,
+                            "y": 10
+                          }
+                        }
+                      ],
+                      "x": "100%",
+                      "y": 0,
+                      "offset": {
+                        "x": -60,
+                        "y": 30
+                      }
+                    }
+                  }
+                ]
+              },
+              "ports": {
+                "groups": {
+                  "groupInput": {
+                    "markup": [
+                      {
+                        "tagName": "rect",
+                        "selector": "portBody"
+                      }
+                    ],
+                    "position": {
+                      "name": "absolute"
+                    },
+                    "label": {
+                      "position": {
+                        "name": "right"
+                      }
+                    },
+                    "attrs": {
+                      "portBody": {
+                        "stroke": "#5c246a",
+                        "fill": "#fff",
+                        "strokeWidth": 1,
+                        "width": 8,
+                        "height": 8,
+                        "x": -4,
+                        "y": -4,
+                        "magnet": true
+                      },
+                      "text": {
+                        "fill": "rgba(0,0,0,0.45)",
+                        "fontSize": 14
+                      }
+                    }
+                  },
+                  "groupOutput": {
+                    "markup": [
+                      {
+                        "tagName": "rect",
+                        "selector": "portBody"
+                      }
+                    ],
+                    "position": {
+                      "name": "absolute"
+                    },
+                    "label": {
+                      "position": {
+                        "name": "left"
+                      }
+                    },
+                    "attrs": {
+                      "portBody": {
+                        "stroke": "#5c246a",
+                        "fill": "#fff",
+                        "strokeWidth": 1,
+                        "width": 8,
+                        "height": 8,
+                        "x": -4,
+                        "y": -4,
+                        "magnet": true
+                      },
+                      "text": {
+                        "fill": "rgba(0,0,0,0.45)",
+                        "fontSize": 14
+                      }
+                    }
+                  }
+                },
+                "items": [
+                  {
+                    "id": "INPUT:73ef1fef-6aa1-43b0-8721-c8f2f1385509",
+                    "args": {
+                      "x": 0,
+                      "y": 65
+                    },
+                    "attrs": {
+                      "text": {
+                        "text": "建筑用木料",
+                        "title": "建筑用木料",
+                        "cursor": "pointer",
+                        "fill": "#5c246a",
+                        "font-weight": "bold"
+                      }
+                    },
+                    "group": "groupInput",
+                    "data": {
+                      "textLang": [
+                        {
+                          "#text": "Lumber for construction",
+                          "@xml:lang": "en"
+                        },
+                        {
+                          "#text": "建筑用木料",
+                          "@xml:lang": "zh"
+                        }
+                      ],
+                      "flowId": "73ef1fef-6aa1-43b0-8721-c8f2f1385509",
+                      "flowVersion": "01.01.001",
+                      "quantitativeReference": true
+                    }
+                  }
+                ]
+              },
+              "zIndex": 1
+            }
+          ],
+          "edges": []
+        },
+        "submodels": []
+      }
+    },
+    "processMutations": []
+  }
+}

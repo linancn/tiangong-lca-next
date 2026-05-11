@@ -1,0 +1,110 @@
+{
+  "table": "flowproperties",
+  "jsonOrdered": {
+    "flowPropertyDataSet": {
+      "@xmlns": "http://lca.jrc.it/ILCD/FlowProperty",
+      "@version": "1.1",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/FlowProperty ../../schemas/ILCD_FlowPropertyDataSet.xsd",
+      "modellingAndValidation": {
+        "complianceDeclarations": {
+          "compliance": {
+            "common:approvalOfOverallCompliance": "Fully compliant",
+            "common:referenceToComplianceSystem": {
+              "@uri": "../sources/9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a.xml",
+              "@type": "source data set",
+              "@version": "03.00.003",
+              "@refObjectId": "9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a",
+              "common:shortDescription": {
+                "#text": "ILCD Data Network - compliance (non-Process)",
+                "@xml:lang": "en"
+              }
+            }
+          }
+        }
+      },
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-20T09:33:59.147Z",
+          "common:referenceToDataSetFormat": {
+            "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+            "@type": "source data set",
+            "@version": "03.00.003",
+            "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+            "common:shortDescription": [
+              {
+                "#text": "ILCD format",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "ILCD 数据格式",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        },
+        "publicationAndOwnership": {
+          "common:dataSetVersion": "01.01.000",
+          "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/flowproperty.xhtml?uuid=__RUNTIME_FLOWPROPERTY_ID__&version=01.01.000",
+          "common:referenceToOwnershipOfDataSet": {
+            "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+            "@type": "contact data set",
+            "@version": "01.01.000",
+            "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+            "common:shortDescription": [
+              {
+                "#text": "TianGong Think Tank",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "天工智库中心",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        }
+      },
+      "flowPropertiesInformation": {
+        "dataSetInformation": {
+          "common:UUID": "__RUNTIME_FLOWPROPERTY_ID__",
+          "common:name": {
+            "#text": "test-flowproperty002_check_data_success",
+            "@xml:lang": "en"
+          },
+          "classificationInformation": {
+            "common:classification": {
+              "common:class": {
+                "#text": "Technical flow properties",
+                "@level": "0",
+                "@classId": "1"
+              }
+            }
+          }
+        },
+        "quantitativeReference": {
+          "referenceToReferenceUnitGroup": {
+            "@uri": "../unitgroups/93a60a57-a4c8-11da-a746-0800200c9a66.xml",
+            "@type": "unit group data set",
+            "@version": "03.00.003",
+            "@refObjectId": "93a60a57-a4c8-11da-a746-0800200c9a66",
+            "common:shortDescription": [
+              {
+                "#text": "Units of mass",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "Masseeinheiten",
+                "@xml:lang": "de"
+              },
+              {
+                "#text": "质量",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

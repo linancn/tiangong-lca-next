@@ -1,0 +1,516 @@
+{
+  "id": "7f81a402-b700-4bf2-b309-bc6f3db8d5bf",
+  "table": "lifecyclemodels",
+  "searchKeyword": "data workflow lifecycle model version",
+  "payload": {
+    "mode": "create",
+    "modelId": "__RUNTIME_MODEL_ID__",
+    "parent": {
+      "jsonOrdered": {
+        "lifeCycleModelDataSet": {
+          "@xmlns": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017",
+          "@xmlns:acme": "http://acme.com/custom",
+          "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+          "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+          "@locations": "../ILCDLocations.xml",
+          "@version": "1.1",
+          "@xsi:schemaLocation": "http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017 ../../schemas/ILCD_LifeCycleModelDataSet.xsd",
+          "lifeCycleModelInformation": {
+            "dataSetInformation": {
+              "common:UUID": "__RUNTIME_MODEL_ID__",
+              "name": {
+                "baseName": {
+                  "@xml:lang": "en",
+                  "#text": "test-create-contribute-team"
+                },
+                "mixAndLocationTypes": {
+                  "@xml:lang": "en",
+                  "#text": "1"
+                }
+              },
+              "classificationInformation": {
+                "common:classification": {
+                  "common:class": [
+                    {
+                      "@level": "0",
+                      "@classId": "A",
+                      "#text": "Agriculture, forestry and fishing"
+                    },
+                    {
+                      "@level": "1",
+                      "@classId": "01",
+                      "#text": "Crop and animal production, hunting and related service activities"
+                    },
+                    {
+                      "@level": "2",
+                      "@classId": "011",
+                      "#text": "Growing of non-perennial crops"
+                    },
+                    {
+                      "@level": "3",
+                      "@classId": "0111",
+                      "#text": "Growing of cereals (except rice), leguminous crops and oil seeds"
+                    }
+                  ]
+                }
+              },
+              "common:generalComment": {
+                "@xml:lang": "en",
+                "#text": "1"
+              }
+            },
+            "quantitativeReference": {
+              "referenceToReferenceProcess": "0"
+            },
+            "technology": {
+              "processes": {
+                "processInstance": {
+                  "@dataSetInternalID": "0",
+                  "@multiplicationFactor": "1",
+                  "referenceToProcess": {
+                    "@refObjectId": "__RUNTIME_PRIMARY_PROCESS_ID__",
+                    "@type": "process data set",
+                    "@uri": "../processes/__RUNTIME_PRIMARY_PROCESS_ID__.xml",
+                    "@version": "__RUNTIME_PRIMARY_PROCESS_VERSION__",
+                    "common:shortDescription": {
+                      "@xml:lang": "en",
+                      "#text": "test-process002_check_data_success; 1; 1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "administrativeInformation": {
+            "common:commissionerAndGoal": {
+              "common:referenceToCommissioner": {
+                "@refObjectId": "2673e737-7d02-4dee-aa91-62a8b7472890",
+                "@type": "contact data set",
+                "@uri": "../contacts/2673e737-7d02-4dee-aa91-62a8b7472890.xml",
+                "@version": "01.01.000",
+                "common:shortDescription": [
+                  {
+                    "@xml:lang": "en",
+                    "#text": "Test - Contact"
+                  },
+                  {
+                    "@xml:lang": "zh",
+                    "#text": "测试-联系人"
+                  }
+                ]
+              },
+              "common:intendedApplications": {
+                "@xml:lang": "en",
+                "#text": "1"
+              }
+            },
+            "dataEntryBy": {
+              "common:timeStamp": "2026-05-09T03:04:41.512Z",
+              "common:referenceToDataSetFormat": {
+                "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+                "@type": "source data set",
+                "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+                "@version": "03.00.003",
+                "common:shortDescription": [
+                  {
+                    "@xml:lang": "en",
+                    "#text": "ILCD format"
+                  },
+                  {
+                    "@xml:lang": "zh",
+                    "#text": "ILCD 数据格式"
+                  }
+                ]
+              },
+              "common:referenceToPersonOrEntityEnteringTheData": {
+                "@refObjectId": "2673e737-7d02-4dee-aa91-62a8b7472890",
+                "@type": "contact data set",
+                "@uri": "../contacts/2673e737-7d02-4dee-aa91-62a8b7472890.xml",
+                "@version": "01.01.000",
+                "common:shortDescription": [
+                  {
+                    "@xml:lang": "en",
+                    "#text": "Test - Contact"
+                  },
+                  {
+                    "@xml:lang": "zh",
+                    "#text": "测试-联系人"
+                  }
+                ]
+              }
+            },
+            "publicationAndOwnership": {
+              "common:dataSetVersion": "01.01.001",
+              "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/lifecyclemodel.xhtml?uuid=__RUNTIME_MODEL_ID__&version=01.01.001",
+              "common:referenceToOwnershipOfDataSet": {
+                "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+                "@type": "contact data set",
+                "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+                "@version": "01.01.000",
+                "common:shortDescription": [
+                  {
+                    "@xml:lang": "en",
+                    "#text": "TianGong Think Tank"
+                  },
+                  {
+                    "@xml:lang": "zh",
+                    "#text": "天工智库中心"
+                  }
+                ]
+              },
+              "common:copyright": "false",
+              "common:licenseType": "Free of charge for all users and uses"
+            }
+          }
+        }
+      },
+      "jsonTg": {
+        "xflow": {
+          "nodes": [
+            {
+              "position": {
+                "x": 200,
+                "y": 100
+              },
+              "size": {
+                "width": 350,
+                "height": 80
+              },
+              "attrs": {
+                "text": {
+                  "text": "test-process002_check_dat..."
+                },
+                "body": {
+                  "stroke": "#5c246a",
+                  "strokeWidth": 1,
+                  "fill": "#ffffff",
+                  "rx": 6,
+                  "ry": 6
+                },
+                "label": {
+                  "fill": "#000",
+                  "refX": 0.5,
+                  "refY": 8,
+                  "textAnchor": "middle",
+                  "textVerticalAnchor": "top"
+                }
+              },
+              "visible": true,
+              "shape": "rect",
+              "id": "a707bdb5-2f75-41ca-baa5-8d8b4acde054",
+              "data": {
+                "id": "__RUNTIME_PRIMARY_PROCESS_ID__",
+                "index": "0",
+                "label": {
+                  "baseName": {
+                    "#text": "test-process002_check_data_success",
+                    "@xml:lang": "en"
+                  },
+                  "mixAndLocationTypes": {
+                    "#text": "1",
+                    "@xml:lang": "en"
+                  },
+                  "treatmentStandardsRoutes": {
+                    "#text": "1",
+                    "@xml:lang": "en"
+                  }
+                },
+                "version": "__RUNTIME_PRIMARY_PROCESS_VERSION__",
+                "shortDescription": [
+                  {
+                    "#text": "test-process002_check_data_success; 1; 1",
+                    "@xml:lang": "en"
+                  }
+                ],
+                "quantitativeReference": "1"
+              },
+              "zIndex": 1,
+              "tools": {
+                "name": null,
+                "items": [
+                  {
+                    "id": "ref",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "circle",
+                          "selector": "button",
+                          "attrs": {
+                            "r": 10,
+                            "stroke-width": 0,
+                            "fill": "#fff",
+                            "cursor": "pointer"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "★",
+                          "selector": "icon",
+                          "attrs": {
+                            "fill": "#5c246a",
+                            "font-size": 22,
+                            "text-anchor": "middle",
+                            "pointer-events": "none",
+                            "y": "0.3em"
+                          }
+                        },
+                        {
+                          "tagName": "title",
+                          "textContent": "参考节点"
+                        }
+                      ],
+                      "offset": {
+                        "x": 10,
+                        "y": -12
+                      }
+                    }
+                  },
+                  {
+                    "id": "nodeTitle",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "rect",
+                          "selector": "button",
+                          "attrs": {
+                            "width": 350,
+                            "height": 26,
+                            "rx": 4,
+                            "ry": 4,
+                            "fill": "#5c246a",
+                            "stroke": "#5c246a",
+                            "stroke-width": 1,
+                            "cursor": "move"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "test-process002_check_dat...",
+                          "selector": "text",
+                          "attrs": {
+                            "fill": "white",
+                            "font-size": 14,
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle",
+                            "pointer-events": "none",
+                            "x": 175,
+                            "y": 13
+                          }
+                        },
+                        {
+                          "tagName": "title",
+                          "textContent": "test-process002_check_data_success; 1; 1"
+                        }
+                      ],
+                      "events": null,
+                      "x": 0,
+                      "y": 0,
+                      "offset": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  },
+                  {
+                    "id": "inputFlow",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "rect",
+                          "selector": "button",
+                          "attrs": {
+                            "width": 50,
+                            "height": 20,
+                            "rx": 4,
+                            "ry": 4,
+                            "fill": "#ffffff",
+                            "stroke": "#d9d9d9",
+                            "stroke-width": 1,
+                            "cursor": "pointer"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "流入",
+                          "selector": "text",
+                          "attrs": {
+                            "fill": "#000",
+                            "font-size": 12,
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle",
+                            "pointer-events": "none",
+                            "x": 25,
+                            "y": 10
+                          }
+                        }
+                      ],
+                      "offset": {
+                        "x": 10,
+                        "y": 30
+                      }
+                    }
+                  },
+                  {
+                    "id": "outputFlow",
+                    "name": "button",
+                    "args": {
+                      "markup": [
+                        {
+                          "tagName": "rect",
+                          "selector": "button",
+                          "attrs": {
+                            "width": 50,
+                            "height": 20,
+                            "rx": 4,
+                            "ry": 4,
+                            "fill": "#ffffff",
+                            "stroke": "#d9d9d9",
+                            "stroke-width": 1,
+                            "cursor": "pointer"
+                          }
+                        },
+                        {
+                          "tagName": "text",
+                          "textContent": "流出",
+                          "selector": "text",
+                          "attrs": {
+                            "fill": "#000",
+                            "font-size": 12,
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle",
+                            "pointer-events": "none",
+                            "x": 25,
+                            "y": 10
+                          }
+                        }
+                      ],
+                      "x": "100%",
+                      "y": 0,
+                      "offset": {
+                        "x": -60,
+                        "y": 30
+                      }
+                    }
+                  }
+                ]
+              },
+              "ports": {
+                "items": [
+                  {
+                    "id": "INPUT:73ef1fef-6aa1-43b0-8721-c8f2f1385509",
+                    "args": {
+                      "x": 0,
+                      "y": 65
+                    },
+                    "data": {
+                      "flowId": "73ef1fef-6aa1-43b0-8721-c8f2f1385509",
+                      "textLang": [
+                        {
+                          "#text": "Lumber for construction",
+                          "@xml:lang": "en"
+                        },
+                        {
+                          "#text": "建筑用木料",
+                          "@xml:lang": "zh"
+                        }
+                      ],
+                      "flowVersion": "01.01.001",
+                      "quantitativeReference": true
+                    },
+                    "attrs": {
+                      "text": {
+                        "text": "建筑用木料",
+                        "title": "建筑用木料",
+                        "cursor": "pointer",
+                        "fill": "#5c246a",
+                        "font-weight": "bold"
+                      }
+                    },
+                    "group": "groupInput",
+                    "tools": [
+                      {
+                        "id": "portTool"
+                      }
+                    ]
+                  }
+                ],
+                "groups": {
+                  "groupInput": {
+                    "markup": [
+                      {
+                        "tagName": "rect",
+                        "selector": "portBody"
+                      }
+                    ],
+                    "position": {
+                      "name": "absolute"
+                    },
+                    "label": {
+                      "position": {
+                        "name": "right"
+                      }
+                    },
+                    "attrs": {
+                      "portBody": {
+                        "stroke": "#5c246a",
+                        "fill": "#fff",
+                        "strokeWidth": 1,
+                        "width": 8,
+                        "height": 8,
+                        "x": -4,
+                        "y": -4,
+                        "magnet": true
+                      },
+                      "text": {
+                        "fill": "rgba(0,0,0,0.45)",
+                        "fontSize": 14
+                      }
+                    }
+                  },
+                  "groupOutput": {
+                    "markup": [
+                      {
+                        "tagName": "rect",
+                        "selector": "portBody"
+                      }
+                    ],
+                    "position": {
+                      "name": "absolute"
+                    },
+                    "label": {
+                      "position": {
+                        "name": "left"
+                      }
+                    },
+                    "attrs": {
+                      "portBody": {
+                        "stroke": "#5c246a",
+                        "fill": "#fff",
+                        "strokeWidth": 1,
+                        "width": 8,
+                        "height": 8,
+                        "x": -4,
+                        "y": -4,
+                        "magnet": true
+                      },
+                      "text": {
+                        "fill": "rgba(0,0,0,0.45)",
+                        "fontSize": 14
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "edges": []
+        },
+        "submodels": []
+      }
+    },
+    "processMutations": []
+  }
+}

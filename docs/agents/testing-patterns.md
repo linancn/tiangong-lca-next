@@ -19,9 +19,10 @@ checkPaths:
   - docs/agents/repo-validation.md
   - docs/agents/testing-troubleshooting.md
   - tests/helpers/**
+  - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-05-08
-lastReviewedCommit: de2e3f56b98c5d6f36e7480b40544b85fcb3bf58
+lastReviewedAt: 2026-05-11
+lastReviewedCommit: d41c978ab936d3cd1d4b4518fbdf9e3eea278538
 ---
 
 # Testing Patterns Reference
@@ -75,6 +76,7 @@ Special cases:
 
 - repo integration matrix pattern: use when one service path branches by source, type, or permission
 - permission and URL-state pattern: use when behavior depends on auth, query params, or navigation state
+- data workflow fixture pattern: keep each `tests/data-workflows/fixtures/result/**` expected-result file aligned with its same-scope `fixtures/data/**` payload, workflow lib default path, and unit proof; the fixture relationship map lives in `tests/data-workflows/fixtures/result/README.md`
 - escalate to E2E only when browser-only behavior cannot be proved in Jest
 
 ## Component Pattern

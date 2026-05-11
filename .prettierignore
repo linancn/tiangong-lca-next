@@ -20,3 +20,5 @@ yarn-error.log
 CNAME
 /build
 /public
+tests/data-workflows/fixtures
+tests/data-workflows/runtime

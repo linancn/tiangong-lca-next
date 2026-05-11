@@ -1,0 +1,250 @@
+import { normalizeSupabaseTarget, pollUntil, writeRuntimeRecord } from '../workflow-shared';
+import {
+  DEFAULT_TEAM_CREATE_EXPECTED_PATH,
+  DEFAULT_TEAM_CREATE_FIXTURE_PATH,
+  DEFAULT_TEAM_REJECT_REINVITE_EXPECTED_PATH,
+  DEFAULT_TEAM_REJECT_REINVITE_FIXTURE_PATH,
+  DEFAULT_TEAM_ROLE_ALIASES,
+  buildTeamPlaceholders,
+  closeTeamSessions,
+  ensureTeamWorkspace,
+  evaluateTeamExpectationFile,
+  getTeamAccountSummary,
+  inviteTeamMember,
+  loadTeamInviteWorkflowFixture,
+  parseTeamWorkflowCliArgs,
+  queryTeamNotification,
+  queryTeamRole,
+  reinviteTeamMember,
+  rejectTeamInvitation,
+  resetTeamMemberState,
+  resolveTeamAccount,
+  type TeamWorkflowCliOptions,
+} from './team-workflow-shared';
+
+export const TEAMS_REJECT_REINVITE_DATA_WORKFLOW_HELP = `Teams reject-reinvite data workflow
+
+Usage:
+  npm run test:workflows -- --teams:reject-reinvite --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --teams:reject-reinvite --owner-role team-owner --invitee-role invitee-b --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+
+Flags:
+  --owner-role <name>              Logical owner role (defaults to "team-owner")
+  --invitee-role <name>            Logical invitee role (defaults to "invitee-b", resolved to "user")
+  --frontend-url <url>             Frontend URL to display and optionally probe
+  --supabase-url <url>             Supabase API URL or dashboard project URL
+  --supabase-project-url <url>     Explicit dashboard project URL
+  --supabase-publishable-key <key> Override SUPABASE_PUBLISHABLE_KEY
+  --create-data-file <path>        Defaults to tests/data-workflows/fixtures/data/teams/001_create_team.json
+  --data-file <path>               Defaults to tests/data-workflows/fixtures/data/teams/004_reject_reinvite_member.json
+  --workspace-file <path>          Defaults to tests/data-workflows/runtime/teams/team-workspace.last-run.json
+  --users-file <path>              Legacy JSON fallback, defaults to tests/data-workflows/fixtures/data/users.json after checking .env.users.local
+  --generate-id                    When bootstrap create is needed, generate a fresh team id (default)
+  --no-generate-id                 When bootstrap create is needed, reuse the fixture team id as-is
+  --write-runtime                  Write this run's runtime record to a file (default)
+  --no-write-runtime               Skip writing the runtime record file
+  --runtime-record-file <path>     Override the runtime record output path
+  --verify-frontend                Fetch the frontend URL before run (default)
+  --no-verify-frontend             Skip the frontend fetch probe
+  --help                           Show this help text
+`;
+
+export type TeamsRejectReinviteCliOptions = Required<
+  Pick<
+    TeamWorkflowCliOptions,
+    | 'createDataFile'
+    | 'createExpectedFile'
+    | 'dataFile'
+    | 'expectedFile'
+    | 'inviteeRole'
+    | 'ownerRole'
+  >
+> &
+  Omit<
+    TeamWorkflowCliOptions,
+    | 'createDataFile'
+    | 'createExpectedFile'
+    | 'dataFile'
+    | 'expectedFile'
+    | 'inviteeRole'
+    | 'ownerRole'
+  >;
+
+export type TeamsRejectReinviteSmokeResult = {
+  bootstrapCreated: boolean;
+  expectationResults: Awaited<ReturnType<typeof evaluateTeamExpectationFile>>;
+  frontendProbe: Awaited<ReturnType<typeof ensureTeamWorkspace>>['frontendProbe'];
+  passed: boolean;
+  rejectNotification: Awaited<ReturnType<typeof queryTeamNotification>>;
+  rejectRole: Awaited<ReturnType<typeof queryTeamRole>>;
+  reinviteNotification: Awaited<ReturnType<typeof queryTeamNotification>>;
+  reinviteRole: Awaited<ReturnType<typeof queryTeamRole>>;
+  runtimeRecordFile?: string;
+  runtimeRecordWritten: boolean;
+  supabaseTarget: ReturnType<typeof normalizeSupabaseTarget>;
+  teamId: string;
+  workspaceFile: string;
+};
+
+export function parseTeamsRejectReinviteCliArgs(
+  argv: string[],
+  cwd = process.cwd(),
+): TeamsRejectReinviteCliOptions {
+  return parseTeamWorkflowCliArgs(
+    argv,
+    {
+      createDataFile: DEFAULT_TEAM_CREATE_FIXTURE_PATH,
+      createExpectedFile: DEFAULT_TEAM_CREATE_EXPECTED_PATH,
+      dataFile: DEFAULT_TEAM_REJECT_REINVITE_FIXTURE_PATH,
+      defaultRoles: {
+        inviteeRole: 'invitee-b',
+        ownerRole: 'team-owner',
+      },
+      expectedFile: DEFAULT_TEAM_REJECT_REINVITE_EXPECTED_PATH,
+    },
+    cwd,
+  ) as TeamsRejectReinviteCliOptions;
+}
+
+export async function runTeamsRejectReinviteSmoke(
+  options: TeamsRejectReinviteCliOptions,
+): Promise<TeamsRejectReinviteSmokeResult> {
+  const supabaseTarget = normalizeSupabaseTarget(options);
+  const workspace = await ensureTeamWorkspace({
+    createDataFile: options.createDataFile,
+    createExpectedFile: options.createExpectedFile,
+    frontendUrl: options.frontendUrl,
+    generateId: options.generateId,
+    ownerRole: options.ownerRole,
+    roleAliases: DEFAULT_TEAM_ROLE_ALIASES,
+    supabaseTarget,
+    usersFile: options.usersFile,
+    verifyFrontend: options.verifyFrontend,
+    workspaceFile: options.workspaceFile,
+  });
+  const inviteeSession = await resolveTeamAccount({
+    role: options.inviteeRole,
+    roleAliases: DEFAULT_TEAM_ROLE_ALIASES,
+    supabaseTarget,
+    usersFile: options.usersFile,
+  });
+
+  try {
+    const fixture = await loadTeamInviteWorkflowFixture(options.dataFile);
+    const notificationDays = fixture.notificationDays ?? 7;
+
+    await resetTeamMemberState({
+      ownerSession: workspace.ownerSession,
+      teamId: workspace.teamId,
+      userId: inviteeSession.user.id,
+    });
+
+    await inviteTeamMember({
+      inviteeEmail: inviteeSession.credential.email,
+      ownerSession: workspace.ownerSession,
+      teamId: workspace.teamId,
+    });
+    await pollUntil(
+      () => queryTeamRole(workspace.ownerSession.client, workspace.teamId, inviteeSession.user.id),
+      (value) => value.exists && value.role === 'is_invited',
+    );
+
+    await rejectTeamInvitation({
+      inviteeSession,
+      teamId: workspace.teamId,
+    });
+
+    const rejectRole = await pollUntil(
+      () => queryTeamRole(workspace.ownerSession.client, workspace.teamId, inviteeSession.user.id),
+      (value) => value.exists && value.role === 'rejected',
+    );
+    const rejectNotification = await queryTeamNotification(
+      inviteeSession.client,
+      workspace.teamId,
+      notificationDays,
+    );
+
+    await reinviteTeamMember({
+      ownerSession: workspace.ownerSession,
+      teamId: workspace.teamId,
+      userId: inviteeSession.user.id,
+    });
+
+    const reinviteRole = await pollUntil(
+      () => queryTeamRole(workspace.ownerSession.client, workspace.teamId, inviteeSession.user.id),
+      (value) => value.exists && value.role === 'is_invited',
+    );
+    const reinviteNotification = await pollUntil(
+      () => queryTeamNotification(inviteeSession.client, workspace.teamId, notificationDays),
+      (value) => value.exists && value.role === 'is_invited',
+    );
+
+    const expectationResults = await evaluateTeamExpectationFile({
+      context: {
+        steps: {
+          reinvite: {
+            notification: reinviteNotification,
+            role: reinviteRole,
+          },
+          reject: {
+            notification: rejectNotification,
+            role: rejectRole,
+          },
+        },
+      },
+      expectedFile: options.expectedFile,
+      placeholders: buildTeamPlaceholders({
+        inviteeSession,
+        ownerSession: workspace.ownerSession,
+        teamId: workspace.teamId,
+      }),
+    });
+    const passed = expectationResults.every((item) => item.passed);
+
+    let runtimeRecordWritten = false;
+    let runtimeRecordFile: string | undefined;
+
+    if (options.writeRuntime) {
+      runtimeRecordFile = options.runtimeRecordFile;
+      await writeRuntimeRecord(runtimeRecordFile, {
+        accounts: {
+          invitee: getTeamAccountSummary(inviteeSession),
+          owner: getTeamAccountSummary(workspace.ownerSession),
+        },
+        bootstrapCreated: workspace.workspaceAction === 'created',
+        bootstrapStep: workspace.createStep ?? null,
+        createdAt: new Date().toISOString(),
+        expectationResults,
+        fixtureFile: options.dataFile,
+        frontendProbe: workspace.frontendProbe,
+        passed,
+        supabase: {
+          apiUrl: supabaseTarget.apiUrl,
+          dashboardUrl: supabaseTarget.dashboardUrl,
+          projectId: supabaseTarget.projectId,
+        },
+        teamId: workspace.teamId,
+        workspaceFile: options.workspaceFile,
+      });
+      runtimeRecordWritten = true;
+    }
+
+    return {
+      bootstrapCreated: workspace.workspaceAction === 'created',
+      expectationResults,
+      frontendProbe: workspace.frontendProbe,
+      passed,
+      rejectNotification,
+      rejectRole,
+      reinviteNotification,
+      reinviteRole,
+      runtimeRecordFile,
+      runtimeRecordWritten,
+      supabaseTarget,
+      teamId: workspace.teamId,
+      workspaceFile: options.workspaceFile,
+    };
+  } finally {
+    await closeTeamSessions([workspace.ownerSession, inviteeSession]);
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "id": "96926fa6-658a-465e-8f2e-022259ef9e6d",
+  "table": "unitgroups",
+  "jsonOrdered": {
+    "unitGroupDataSet": {
+      "@xmlns": "http://lca.jrc.it/ILCD/UnitGroup",
+      "@version": "1.1",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/UnitGroup ../../schemas/ILCD_UnitGroupDataSet.xsd",
+      "unitGroupInformation": {
+        "dataSetInformation": {
+          "common:UUID": "__RUNTIME_UNITGROUP_ID__",
+          "common:name": {
+            "#text": "test-unitgroup",
+            "@xml:lang": "en"
+          }
+        }
+      },
+      "modellingAndValidation": {
+        "complianceDeclarations": {
+          "compliance": {
+            "common:approvalOfOverallCompliance": "Fully compliant",
+            "common:referenceToComplianceSystem": {
+              "@uri": "../sources/9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a.xml",
+              "@type": "source data set",
+              "@version": "03.00.003",
+              "@refObjectId": "9ba3ac1e-6797-4cc0-afd5-1b8f7bf28c6a",
+              "common:shortDescription": {
+                "#text": "ILCD Data Network - compliance (non-Process)",
+                "@xml:lang": "en"
+              }
+            }
+          }
+        }
+      },
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-20T08:03:24.182Z",
+          "common:referenceToDataSetFormat": {
+            "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+            "@type": "source data set",
+            "@version": "03.00.003",
+            "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+            "common:shortDescription": [
+              {
+                "#text": "ILCD format",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "ILCD 数据格式",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        },
+        "publicationAndOwnership": {
+          "common:dataSetVersion": "01.01.000"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "table": "flows",
+  "queries": [
+    {
+      "label": "english base name finds runtime flow",
+      "keyword": "test-flow",
+      "dataSource": "my",
+      "pageCurrent": 1,
+      "pageSize": 100,
+      "expectedContainsRuntimeId": true,
+      "expectedMinCount": 1
+    },
+    {
+      "label": "unknown keyword returns no matches",
+      "keyword": "__tiangong_flow_full_text_no_match__",
+      "dataSource": "my",
+      "pageCurrent": 1,
+      "pageSize": 10,
+      "expectedCount": 0
+    }
+  ]
+}
