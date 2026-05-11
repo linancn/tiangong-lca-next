@@ -42,6 +42,9 @@ screenshot
 
 build
 .env.local
+.env.users.local
+tests/data-workflows/fixtures/data/users.json
+tests/data-workflows/runtime/
 
 dev_docs/*
 

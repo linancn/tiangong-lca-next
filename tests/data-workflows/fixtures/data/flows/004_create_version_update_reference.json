@@ -1,0 +1,167 @@
+{
+  "id": "87d48aa7-35cb-4e15-8f32-449d8bd1f569",
+  "table": "flows",
+  "jsonOrdered": {
+    "flowDataSet": {
+      "@xmlns": "http://lca.jrc.it/ILCD/Flow",
+      "@version": "1.1",
+      "@locations": "../ILCDLocations.xml",
+      "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "flowProperties": {
+        "flowProperty": {
+          "meanValue": "1",
+          "@dataSetInternalID": "0",
+          "referenceToFlowPropertyDataSet": {
+            "@uri": "../flowproperties/d703ed04-22ca-4151-85ae-da1fcf54df68.xml",
+            "@type": "flow property data set",
+            "@version": "03.00.003",
+            "@refObjectId": "d703ed04-22ca-4151-85ae-da1fcf54df68",
+            "common:shortDescription": [
+              {
+                "#text": "Niobium content",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "铌含量",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        }
+      },
+      "flowInformation": {
+        "dataSetInformation": {
+          "name": {
+            "baseName": {
+              "#text": "test-flow004_create_version_update_reference",
+              "@xml:lang": "en"
+            },
+            "mixAndLocationTypes": {
+              "#text": "1",
+              "@xml:lang": "en"
+            },
+            "treatmentStandardsRoutes": {
+              "#text": "1",
+              "@xml:lang": "en"
+            }
+          },
+          "common:UUID": "__RUNTIME_FLOW_ID__",
+          "classificationInformation": {
+            "common:classification": {
+              "common:class": [
+                {
+                  "#text": "Ores and minerals; electricity, gas and water",
+                  "@level": "0",
+                  "@classId": "1"
+                },
+                {
+                  "#text": "Coal and peat",
+                  "@level": "1",
+                  "@classId": "11"
+                },
+                {
+                  "#text": "Coal and peat",
+                  "@level": "2",
+                  "@classId": "110"
+                },
+                {
+                  "#text": "Hard coal",
+                  "@level": "3",
+                  "@classId": "1101"
+                },
+                {
+                  "#text": "Anthracite",
+                  "@level": "4",
+                  "@classId": "11011"
+                }
+              ]
+            }
+          }
+        },
+        "quantitativeReference": {
+          "referenceToReferenceFlowProperty": "0"
+        }
+      },
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd",
+      "modellingAndValidation": {
+        "LCIMethod": {
+          "typeOfDataSet": "Product flow"
+        },
+        "complianceDeclarations": {
+          "compliance": {
+            "common:approvalOfOverallCompliance": "Fully compliant",
+            "common:referenceToComplianceSystem": {
+              "@uri": "../sources/d92a1a12-2545-49e2-a585-55c259997756.xml",
+              "@type": "source data set",
+              "@version": "20.20.002",
+              "@refObjectId": "d92a1a12-2545-49e2-a585-55c259997756",
+              "common:shortDescription": {
+                "#text": "ILCD Data Network - Entry-level",
+                "@xml:lang": "en"
+              }
+            }
+          }
+        }
+      },
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-20T09:52:41.859Z",
+          "common:referenceToDataSetFormat": {
+            "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+            "@type": "source data set",
+            "@version": "03.00.003",
+            "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+            "common:shortDescription": [
+              {
+                "#text": "ILCD format",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "ILCD 数据格式",
+                "@xml:lang": "zh"
+              }
+            ]
+          },
+          "common:referenceToPersonOrEntityEnteringTheData": {
+            "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+            "@type": "contact data set",
+            "@version": "01.01.000",
+            "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+            "common:shortDescription": [
+              {
+                "#text": "TianGong Think Tank",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "天工智库中心",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        },
+        "publicationAndOwnership": {
+          "common:dataSetVersion": "01.01.000",
+          "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/productFlow.xhtml?uuid=__RUNTIME_FLOW_ID__&version=01.01.000",
+          "common:referenceToOwnershipOfDataSet": {
+            "@uri": "../contacts/a1d95758-6904-4802-a061-fedc6ac4b4b4.xml",
+            "@type": "contact data set",
+            "@version": "01.01.000",
+            "@refObjectId": "a1d95758-6904-4802-a061-fedc6ac4b4b4",
+            "common:shortDescription": [
+              {
+                "#text": "TianGong Think Tank",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "天工智库中心",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -19,8 +19,8 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-05-06
-lastReviewedCommit: 0340a89c1079470aa2cbade3feb6a73ba3bba9a3
+lastReviewedAt: 2026-05-11
+lastReviewedCommit: d41c978ab936d3cd1d4b4518fbdf9e3eea278538
 ---
 
 # Supabase Environment And Database Workflow
@@ -61,6 +61,7 @@ Rules:
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
+- Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 
 ## Common Scenarios
 

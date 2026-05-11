@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-05-10"
-lastReviewedCommit: "884ec46b2d1e1dc8ac4c4bdf071a028fd960144e"
+lastReviewedAt: '2026-05-11'
+lastReviewedCommit: 'd41c978ab936d3cd1d4b4518fbdf9e3eea278538'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -123,6 +123,7 @@ routing:
         - config/supabaseEnv.ts
         - src/services/auth/**
         - src/services/general/api.ts
+        - src/services/general/runtimeLocale.ts
         - src/services/supabase/**
         - docker/**
     testing-gates:
@@ -201,6 +202,14 @@ routing:
         - public/classifications/**
         - public/locations/**
         - public/lciamethods/**
+    data-workflow-fixtures:
+      paths:
+        - tests/data-workflows/test-api-smoke.cjs
+        - tests/data-workflows/data-workflow-paths.ts
+        - tests/data-workflows/fixtures/data/**
+        - tests/data-workflows/fixtures/result/**
+        - tests/data-workflows/unit/**
+        - tests/data-workflows/workflows/**
 
 # Reviewed 2026-04-28 for unified dataset SDK validation adapters, shared
 # localized validation helpers, and full-coverage gate collection updates.
@@ -432,6 +441,8 @@ rules:
         kind: test-gate
       - path: scripts/test-coverage-report.js
         kind: test-gate
+      - path: tests/data-workflows/test-api-smoke.cjs
+        kind: repo-test
       - path: tests/**
         kind: repo-test
     requiredDocs:

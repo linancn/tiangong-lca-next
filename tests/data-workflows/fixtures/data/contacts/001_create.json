@@ -1,0 +1,47 @@
+{
+  "id": "96926fa6-658a-465e-8f2e-022259ef9e6d",
+  "table": "contacts",
+  "jsonOrdered": {
+    "contactDataSet": {
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "@xmlns": "http://lca.jrc.it/ILCD/Contact",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@version": "1.1",
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Contact ../../schemas/ILCD_ContactDataSet.xsd",
+      "contactInformation": {
+        "dataSetInformation": {
+          "common:UUID": "96926fa6-658a-465e-8f2e-022259ef9e6d",
+          "common:shortName": {
+            "@xml:lang": "en",
+            "#text": "test-contact"
+          }
+        }
+      },
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-16T05:31:26.289Z",
+          "common:referenceToDataSetFormat": {
+            "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+            "@type": "source data set",
+            "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+            "@version": "03.00.003",
+            "common:shortDescription": [
+              {
+                "@xml:lang": "en",
+                "#text": "ILCD format"
+              },
+              {
+                "@xml:lang": "zh",
+                "#text": "ILCD 数据格式"
+              }
+            ]
+          }
+        },
+        "publicationAndOwnership": {
+          "common:dataSetVersion": "01.01.000",
+          "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/contact.xhtml?uuid=96926fa6-658a-465e-8f2e-022259ef9e6d&version=01.01.000"
+        }
+      }
+    }
+  }
+}

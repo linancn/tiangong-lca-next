@@ -1,0 +1,22 @@
+{
+  "table": "unitgroups",
+  "queries": [
+    {
+      "label": "english name finds runtime unit group",
+      "keyword": "test-unitgroup",
+      "dataSource": "my",
+      "pageCurrent": 1,
+      "pageSize": 100,
+      "expectedContainsRuntimeId": true,
+      "expectedMinCount": 1
+    },
+    {
+      "label": "unknown keyword returns no matches",
+      "keyword": "__tiangong_unitgroup_full_text_no_match__",
+      "dataSource": "my",
+      "pageCurrent": 1,
+      "pageSize": 10,
+      "expectedCount": 0
+    }
+  ]
+}

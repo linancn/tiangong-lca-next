@@ -1,0 +1,29 @@
+{
+  "teamId": "00000000-0000-0000-0000-000000001001",
+  "rank": -1,
+  "isPublic": true,
+  "json": {
+    "title": [
+      {
+        "@xml:lang": "en",
+        "#text": "Data Workflow Team Workspace"
+      },
+      {
+        "@xml:lang": "zh",
+        "#text": "团队数据工作流工作区"
+      }
+    ],
+    "description": [
+      {
+        "@xml:lang": "en",
+        "#text": "Shared workspace team for team data workflows."
+      },
+      {
+        "@xml:lang": "zh",
+        "#text": "用于团队数据工作流复用的共享工作区团队。"
+      }
+    ],
+    "lightLogo": "../sys-files/light.png",
+    "darkLogo": "../sys-files/dark.png"
+  }
+}

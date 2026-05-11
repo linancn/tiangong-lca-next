@@ -1,0 +1,9 @@
+{
+  "notificationDays": 7,
+  "memberQuery": {
+    "current": 1,
+    "pageSize": 100,
+    "sortBy": "created_at",
+    "sortOrder": "desc"
+  }
+}

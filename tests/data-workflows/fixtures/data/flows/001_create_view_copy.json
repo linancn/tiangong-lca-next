@@ -1,0 +1,68 @@
+{
+  "id": "96926fa6-658a-465e-8f2e-022259ef9e6d",
+  "table": "flows",
+  "jsonOrdered": {
+    "flowDataSet": {
+      "@xmlns": "http://lca.jrc.it/ILCD/Flow",
+      "@version": "1.1",
+      "@locations": "../ILCDLocations.xml",
+      "@xmlns:ecn": "http://eplca.jrc.ec.europa.eu/ILCD/Extensions/2018/ECNumber",
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xmlns:common": "http://lca.jrc.it/ILCD/Common",
+      "flowInformation": {
+        "dataSetInformation": {
+          "name": {
+            "baseName": {
+              "#text": "test-flow001_create_view_copy",
+              "@xml:lang": "en"
+            }
+          },
+          "common:UUID": "__RUNTIME_FLOW_ID__"
+        }
+      },
+      "@xsi:schemaLocation": "http://lca.jrc.it/ILCD/Flow ../../schemas/ILCD_FlowDataSet.xsd",
+      "modellingAndValidation": {
+        "complianceDeclarations": {
+          "compliance": {
+            "common:approvalOfOverallCompliance": "Fully compliant",
+            "common:referenceToComplianceSystem": {
+              "@uri": "../sources/d92a1a12-2545-49e2-a585-55c259997756.xml",
+              "@type": "source data set",
+              "@version": "20.20.002",
+              "@refObjectId": "d92a1a12-2545-49e2-a585-55c259997756",
+              "common:shortDescription": {
+                "#text": "ILCD Data Network - Entry-level",
+                "@xml:lang": "en"
+              }
+            }
+          }
+        }
+      },
+      "administrativeInformation": {
+        "dataEntryBy": {
+          "common:timeStamp": "2026-04-20T09:49:58.147Z",
+          "common:referenceToDataSetFormat": {
+            "@uri": "../sources/a97a0155-0234-4b87-b4ce-a45da52f2a40.xml",
+            "@type": "source data set",
+            "@version": "03.00.003",
+            "@refObjectId": "a97a0155-0234-4b87-b4ce-a45da52f2a40",
+            "common:shortDescription": [
+              {
+                "#text": "ILCD format",
+                "@xml:lang": "en"
+              },
+              {
+                "#text": "ILCD 数据格式",
+                "@xml:lang": "zh"
+              }
+            ]
+          }
+        },
+        "publicationAndOwnership": {
+          "common:dataSetVersion": "01.01.000",
+          "common:permanentDataSetURI": "https://lcdn.tiangong.earth/datasetdetail/productFlow.xhtml?uuid=__RUNTIME_FLOW_ID__&version=01.01.000"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "id": "7f81a402-b700-4bf2-b309-bc6f3db8d5bf",
+  "table": "lifecyclemodels",
+  "searchKeyword": "__RUNTIME_MODEL_ID__",
+  "payload": {
+    "id": "__RUNTIME_MODEL_ID__",
+    "lifeCycleModelInformation": {
+      "dataSetInformation": {
+        "name": {
+          "baseName": [
+            {
+              "@xml:lang": "en",
+              "#text": "data workflow lifecycle model create"
+            }
+          ],
+          "treatmentStandardsRoutes": [
+            {
+              "@xml:lang": "en",
+              "#text": "search route"
+            }
+          ],
+          "mixAndLocationTypes": [
+            {
+              "@xml:lang": "en",
+              "#text": "search mix"
+            }
+          ]
+        }
+      }
+    },
+    "administrativeInformation": {
+      "publicationAndOwnership": {
+        "common:dataSetVersion": "01.01.000"
+      }
+    },
+    "model": {
+      "nodes": [
+        {
+          "id": "node-primary",
+          "shape": "lifecycle-process",
+          "x": 120,
+          "y": 120,
+          "data": {
+            "id": "__RUNTIME_PRIMARY_PROCESS_ID__",
+            "version": "__RUNTIME_PRIMARY_PROCESS_VERSION__",
+            "index": "0",
+            "shortDescription": [
+              {
+                "@xml:lang": "en",
+                "#text": "Runtime primary process"
+              }
+            ],
+            "quantitativeReference": "1",
+            "targetAmount": "1"
+          },
+          "ports": {
+            "items": []
+          },
+          "tools": []
+        }
+      ],
+      "edges": []
+    }
+  }
+}
