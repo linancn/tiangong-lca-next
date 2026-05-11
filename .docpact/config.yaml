@@ -440,6 +440,8 @@ rules:
         kind: ci
       - path: scripts/docpact-gate.js
         kind: test-gate
+      - path: scripts/test-api-smoke.cjs
+        kind: test-gate
       - path: scripts/test-runner.cjs
         kind: test-gate
       - path: scripts/test-coverage-report.js
