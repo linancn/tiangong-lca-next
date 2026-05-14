@@ -24,6 +24,8 @@ interface AllVersionsListProps {
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
 }
 
+export const getCreateVersionPopupContainer = () => document.body;
+
 const AllVersionsList: FC<AllVersionsListProps> = ({
   searchTableName,
   searchColume,
@@ -179,7 +181,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
             }}
             toolBarRender={() => {
               return [
-                <ConfigProvider key={0} getPopupContainer={() => document.body}>
+                <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>
                   {addVersionComponent({ newVersion: getNewVersion() })}
                 </ConfigProvider>,
               ];
