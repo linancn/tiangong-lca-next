@@ -10,7 +10,7 @@
  * - ProTable integration
  */
 
-import AllVersionsList from '@/components/AllVersions';
+import AllVersionsList, { getCreateVersionPopupContainer } from '@/components/AllVersions';
 import { getAllVersions } from '@/services/general/api';
 import { getDataSource } from '@/services/general/util';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -440,6 +440,10 @@ describe('AllVersionsList Component', () => {
       expect(screen.getByTestId('children')).toBeInTheDocument();
     });
     expect(mockAddVersionComponent).toHaveBeenCalled();
+  });
+
+  it('should place create-version popups in the document body', () => {
+    expect(getCreateVersionPopupContainer()).toBe(document.body);
   });
 
   it('should compute the next version from the highest loaded version after reopening', async () => {

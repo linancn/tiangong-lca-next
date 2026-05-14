@@ -10,7 +10,7 @@ import { ListPagination } from '@/services/general/data';
 import { getDataSource } from '@/services/general/util';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Drawer, Tooltip } from 'antd';
+import { Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
 import type { FC, ReactElement } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
@@ -23,6 +23,8 @@ interface AllVersionsListProps {
   disabled?: boolean;
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
 }
+
+export const getCreateVersionPopupContainer = () => document.body;
 
 const AllVersionsList: FC<AllVersionsListProps> = ({
   searchTableName,
@@ -178,7 +180,11 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
               pageSize: 10,
             }}
             toolBarRender={() => {
-              return [<div key={0}>{addVersionComponent({ newVersion: getNewVersion() })}</div>];
+              return [
+                <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>
+                  {addVersionComponent({ newVersion: getNewVersion() })}
+                </ConfigProvider>,
+              ];
             }}
             request={async (params: { pageSize: number; current: number }, sort) => {
               const result = await getAllVersions(
