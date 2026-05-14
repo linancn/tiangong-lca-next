@@ -357,22 +357,10 @@ const SourceCreate: FC<CreateProps> = ({
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              const nextSlice = allValues[activeTabKey] ?? {};
-              const applyUpdate = () => {
-                setFromData(
-                  (prev) =>
-                    ({
-                      ...prev,
-                      [activeTabKey]: nextSlice,
-                    }) as FormSource,
-                );
-              };
-
-              if (typeof globalThis.queueMicrotask === 'function') {
-                globalThis.queueMicrotask(applyUpdate);
-              } else {
-                Promise.resolve().then(applyUpdate);
-              }
+              setFromData({
+                ...fromData,
+                [activeTabKey]: allValues[activeTabKey] ?? {},
+              } as FormSource);
             }}
             submitter={{
               render: () => {

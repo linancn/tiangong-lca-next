@@ -329,22 +329,10 @@ const FlowsCreate: FC<CreateProps> = ({
               },
             }}
             onValuesChange={(_, allValues) => {
-              const nextSlice = allValues[activeTabKey] ?? {};
-              const applyUpdate = () => {
-                setFromData(
-                  (prev) =>
-                    ({
-                      ...prev,
-                      [activeTabKey]: nextSlice,
-                    }) as FormFlow,
-                );
-              };
-
-              if (typeof globalThis.queueMicrotask === 'function') {
-                globalThis.queueMicrotask(applyUpdate);
-              } else {
-                Promise.resolve().then(applyUpdate);
-              }
+              setFromData({
+                ...fromData,
+                [activeTabKey]: allValues[activeTabKey] ?? {},
+              } as FormFlow);
             }}
             onFinish={async () => {
               setSpinning(true);

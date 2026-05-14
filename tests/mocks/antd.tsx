@@ -738,12 +738,6 @@ export const createAntdMock = () => {
     const api: any = {};
     return [api];
   };
-  function useWatch(name: any) {
-    const context = React.useContext(FormContext);
-    const fieldName = getFieldName(name);
-    return fieldName ? context?.values?.[fieldName] : undefined;
-  }
-  (Form as any).useWatch = useWatch;
 
   const Layout = ({ children, style }: any) => (
     <div data-testid='layout' style={style}>

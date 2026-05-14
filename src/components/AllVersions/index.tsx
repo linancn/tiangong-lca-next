@@ -10,7 +10,7 @@ import { ListPagination } from '@/services/general/data';
 import { getDataSource } from '@/services/general/util';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
+import { Button, Card, Drawer, Tooltip } from 'antd';
 import type { FC, ReactElement } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
@@ -167,39 +167,35 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         }
         maskClosable={false}
       >
-        <ConfigProvider
-          getPopupContainer={(triggerNode) => triggerNode?.parentElement ?? document.body}
-        >
-          <Card>
-            <ProTable<any, ListPagination>
-              rowKey='version'
-              actionRef={actionRef}
-              search={false}
-              options={{ fullScreen: true }}
-              pagination={{
-                showSizeChanger: false,
-                pageSize: 10,
-              }}
-              toolBarRender={() => {
-                return [<div key={0}>{addVersionComponent({ newVersion: getNewVersion() })}</div>];
-              }}
-              request={async (params: { pageSize: number; current: number }, sort) => {
-                const result = await getAllVersions(
-                  searchColume,
-                  searchTableName,
-                  id,
-                  params,
-                  sort,
-                  lang,
-                  dataSource,
-                );
-                tableDataRef.current = result.data;
-                return result;
-              }}
-              columns={allVersionsColumns}
-            />
-          </Card>
-        </ConfigProvider>
+        <Card>
+          <ProTable<any, ListPagination>
+            rowKey='version'
+            actionRef={actionRef}
+            search={false}
+            options={{ fullScreen: true }}
+            pagination={{
+              showSizeChanger: false,
+              pageSize: 10,
+            }}
+            toolBarRender={() => {
+              return [<div key={0}>{addVersionComponent({ newVersion: getNewVersion() })}</div>];
+            }}
+            request={async (params: { pageSize: number; current: number }, sort) => {
+              const result = await getAllVersions(
+                searchColume,
+                searchTableName,
+                id,
+                params,
+                sort,
+                lang,
+                dataSource,
+              );
+              tableDataRef.current = result.data;
+              return result;
+            }}
+            columns={allVersionsColumns}
+          />
+        </Card>
       </Drawer>
     </>
   );

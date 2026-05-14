@@ -108,11 +108,8 @@ const LevelTextItemForm: FC<Props> = ({
     return addFullPath(treeData);
   };
 
-  const field = Form.useWatch(name);
-
-  const setShowValue = async (nextField = formRef.current?.getFieldValue(name)) => {
-    const currentShowValue = formRef.current?.getFieldValue([...name, 'showValue']);
-    const field = nextField;
+  const setShowValue = async () => {
+    const field = formRef.current?.getFieldValue(name);
     if (
       field &&
       field.id &&
@@ -121,9 +118,7 @@ const LevelTextItemForm: FC<Props> = ({
     ) {
       const id = field.id[field.id.length - 1];
       setHasClassId(true);
-      if (currentShowValue !== id) {
-        await formRef.current?.setFieldValue([...name, 'showValue'], id);
-      }
+      await formRef.current?.setFieldValue([...name, 'showValue'], id);
     } else if (
       field &&
       field.value &&
@@ -132,9 +127,7 @@ const LevelTextItemForm: FC<Props> = ({
     ) {
       const value = field.value[field.value.length - 1];
       const id = getIdByValue(value, selectOptions);
-      if (currentShowValue !== id) {
-        await formRef.current?.setFieldValue([...name, 'showValue'], id);
-      }
+      await formRef.current?.setFieldValue([...name, 'showValue'], id);
       setHasClassId(true);
     } else {
       setHasClassId(false);
@@ -159,10 +152,10 @@ const LevelTextItemForm: FC<Props> = ({
   }, [dataType, flowType]);
 
   useEffect(() => {
-    if (selectOptions.length > 0) {
-      setShowValue(field);
-    }
-  }, [field, selectOptions]);
+    setTimeout(() => {
+      setShowValue();
+    });
+  });
 
   const handleValueChange = async (item: any) => {
     const fullPath = getNodePath(item, selectOptions);

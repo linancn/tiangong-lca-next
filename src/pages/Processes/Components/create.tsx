@@ -300,42 +300,30 @@ const ProcessCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
-              const applyUpdate = () => {
-                setFromData((prev) => {
-                  if (activeTabKey === 'validation') {
-                    return {
-                      ...prev,
-                      modellingAndValidation: {
-                        ...prev?.modellingAndValidation,
-                        validation: { ...allValues?.modellingAndValidation?.validation },
-                      },
-                    } as FormProcessWithId;
-                  }
-
-                  if (activeTabKey === 'complianceDeclarations') {
-                    return {
-                      ...prev,
-                      modellingAndValidation: {
-                        ...prev?.modellingAndValidation,
-                        complianceDeclarations: {
-                          ...allValues?.modellingAndValidation?.complianceDeclarations,
-                        },
-                      },
-                    } as FormProcessWithId;
-                  }
-
-                  return {
-                    ...prev,
-                    [activeTabKey]: allValues[activeTabKey] ?? {},
-                  } as FormProcessWithId;
-                });
-              };
-
-              if (typeof globalThis.queueMicrotask === 'function') {
-                globalThis.queueMicrotask(applyUpdate);
+            onValuesChange={async (_, allValues) => {
+              if (activeTabKey === 'validation') {
+                await setFromData({
+                  ...fromData,
+                  modellingAndValidation: {
+                    ...fromData?.modellingAndValidation,
+                    validation: { ...allValues?.modellingAndValidation?.validation },
+                  },
+                } as FormProcessWithId);
+              } else if (activeTabKey === 'complianceDeclarations') {
+                await setFromData({
+                  ...fromData,
+                  modellingAndValidation: {
+                    ...fromData?.modellingAndValidation,
+                    complianceDeclarations: {
+                      ...allValues?.modellingAndValidation?.complianceDeclarations,
+                    },
+                  },
+                } as FormProcessWithId);
               } else {
-                Promise.resolve().then(applyUpdate);
+                await setFromData({
+                  ...fromData,
+                  [activeTabKey]: allValues[activeTabKey] ?? {},
+                } as FormProcessWithId);
               }
             }}
             submitter={{
