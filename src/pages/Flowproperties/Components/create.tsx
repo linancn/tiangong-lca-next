@@ -255,10 +255,22 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             formRef={formRefCreate}
             initialValues={initData}
             onValuesChange={(_, allValues) => {
-              setFromData({
-                ...fromData,
-                [activeTabKey]: allValues[activeTabKey] ?? {},
-              } as FormFlowProperty);
+              const nextSlice = allValues[activeTabKey] ?? {};
+              const applyUpdate = () => {
+                setFromData(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      [activeTabKey]: nextSlice,
+                    }) as FormFlowProperty,
+                );
+              };
+
+              if (typeof globalThis.queueMicrotask === 'function') {
+                globalThis.queueMicrotask(applyUpdate);
+              } else {
+                Promise.resolve().then(applyUpdate);
+              }
             }}
             submitter={{
               render: () => {

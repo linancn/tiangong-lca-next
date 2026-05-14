@@ -59,6 +59,7 @@ jest.mock('antd', () => {
 
   const Form: any = () => null;
   Form.Item = FormItem;
+  Form.useWatch = jest.fn(() => undefined);
 
   const Cascader = ({ options }: any) => (
     <div data-testid='cascader'>{JSON.stringify(options)}</div>
