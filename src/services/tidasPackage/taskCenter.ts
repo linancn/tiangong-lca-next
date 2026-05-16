@@ -47,6 +47,7 @@ const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
 const POLL_INTERVAL_MS = 1500;
 const POLL_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+const QUEUED_PICKUP_TIMEOUT_MS = 5 * 60 * 1000;
 const POLL_TRANSIENT_ERROR_RETRY_LIMIT = 5;
 
 let taskSequence = 0;
@@ -435,6 +436,16 @@ async function pollTask(taskId: string, jobId: string): Promise<void> {
         return;
       }
       if (data.status === 'ready' || data.status === 'completed') {
+        return;
+      }
+      if (data.status === 'queued' && Date.now() - startedAt > QUEUED_PICKUP_TIMEOUT_MS) {
+        upsertTask(taskId, {
+          phase: 'failed',
+          state: 'failed',
+          message: 'Export task was not picked up by the package worker',
+          error:
+            'Package export stayed queued. Check that the TIDAS package worker is deployed and consuming lca_package_jobs.',
+        });
         return;
       }
 

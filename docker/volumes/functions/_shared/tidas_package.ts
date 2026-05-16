@@ -173,6 +173,8 @@ const IMPORT_SOURCE_FILENAME = 'import-source.zip';
 const DEFAULT_STORAGE_BUCKET = 'lca_results';
 const DEFAULT_STORAGE_PREFIX = 'lca-results';
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 60;
+const EXPORT_QUEUED_STALE_MS = 5 * 60 * 1000;
+const EXPORT_RUNNING_STALE_MS = 2 * 60 * 60 * 1000;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class TidasPackageError extends Error {
@@ -1143,9 +1145,14 @@ function buildRetryIdempotencyKey(
 
 export function resolveExportCacheAction(
   cacheRow: ExportRequestCacheRow,
-  jobRow: Pick<PackageJobRow, 'status'> | null,
+  jobRow: Pick<PackageJobRow, 'status' | 'created_at' | 'started_at' | 'updated_at'> | null,
+  now = Date.now(),
 ): ExportCacheAction {
   if (!cacheRow.job_id || !jobRow) {
+    return 'retry';
+  }
+
+  if (isStaleExportJob(jobRow, now)) {
     return 'retry';
   }
 
@@ -1154,6 +1161,34 @@ export function resolveExportCacheAction(
   }
 
   return 'retry';
+}
+
+function isStaleExportJob(
+  jobRow: Pick<PackageJobRow, 'status' | 'created_at' | 'started_at' | 'updated_at'>,
+  now: number,
+): boolean {
+  if (jobRow.status === 'queued') {
+    return hasElapsed(jobRow.updated_at ?? jobRow.created_at, now, EXPORT_QUEUED_STALE_MS);
+  }
+
+  if (jobRow.status === 'running') {
+    return hasElapsed(
+      jobRow.started_at ?? jobRow.updated_at ?? jobRow.created_at,
+      now,
+      EXPORT_RUNNING_STALE_MS,
+    );
+  }
+
+  return false;
+}
+
+function hasElapsed(value: string | null, now: number, thresholdMs: number): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && now - timestamp > thresholdMs;
 }
 
 function parsePrepareImportRequest(body: unknown): Required<NormalizedPrepareImportUploadRequest> {

@@ -457,6 +457,49 @@ describe('tidasPackage/taskCenter', () => {
     nowSpy.mockRestore();
   });
 
+  it('marks queued exports as failed when the package worker never picks them up', async () => {
+    mockQueueExportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'job-stuck-queued',
+        scope: 'current_user',
+        root_count: 1,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockResolvedValue({
+      data: {
+        ok: true,
+        status: 'queued',
+        job_id: 'job-stuck-queued',
+        diagnostics: {},
+        artifacts_by_kind: {},
+      },
+      error: null,
+    });
+
+    const nowSpy = jest.spyOn(Date, 'now');
+    const sequence = [100, 100, 100, 100 + 6 * 60 * 1000];
+    nowSpy.mockImplementation(() => sequence.shift() ?? 100 + 6 * 60 * 1000);
+
+    const timeoutModule = loadTaskCenterModule();
+    const timeoutTask = timeoutModule.submitTidasPackageExportTask({
+      roots: [{ table: 'unitgroups', id: 'ug-1', version: '01.00.000' }],
+    });
+    await flushPromises();
+
+    await waitFor(() => {
+      const failed = timeoutModule
+        .listTidasPackageTasks()
+        .find((item) => item.id === timeoutTask.id)!;
+      expect(failed.state).toBe('failed');
+      expect(failed.message).toBe('Export task was not picked up by the package worker');
+      expect(failed.error).toContain('lca_package_jobs');
+    });
+    nowSpy.mockRestore();
+  });
+
   it('uses fallback messages for invalid queue responses and terminal poll failures without error payloads', async () => {
     jest.useFakeTimers();
     mockQueueExportTidasPackageApi
