@@ -126,6 +126,16 @@ jest.mock('@/components/LangTextItem/form', () => ({
   default: () => <div data-testid='lang-form'>lang-form</div>,
 }));
 
+jest.mock('@/services/locations/api', () => ({
+  __esModule: true,
+  getILCDLocationAll: jest.fn(() =>
+    Promise.resolve({
+      data: [{ location: [{ '@value': 'CN', '#text': 'China' }] }],
+      success: true,
+    }),
+  ),
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -412,6 +422,28 @@ describe('ProcessExchangeCreate', () => {
 
     await waitFor(() => {
       expect(proFormApi?.getFieldValue('meanAmount')).toBe('123');
+    });
+  });
+
+  it('normalizes exchange location to a plain string code before saving', async () => {
+    const onData = jest.fn();
+    render(<ProcessExchangeCreate {...defaultProps} onData={onData} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Create/i }));
+
+    await act(async () => {
+      proFormApi?.setFieldsValue({
+        location: [{ '@xml:lang': 'en', '#text': 'CN' }],
+      });
+      triggerValuesChange?.({}, proFormApi?.getFieldsValue());
+    });
+
+    await act(async () => {
+      await proFormApi?.submit();
+    });
+
+    await waitFor(() => {
+      expect(onData).toHaveBeenCalledWith({ exchangeDirection: 'Output', location: 'CN' });
     });
   });
 

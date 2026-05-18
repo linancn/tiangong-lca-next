@@ -131,6 +131,16 @@ jest.mock('@/components/LangTextItem/form', () => ({
   default: () => <div data-testid='lang-form'>lang</div>,
 }));
 
+jest.mock('@/services/locations/api', () => ({
+  __esModule: true,
+  getILCDLocationAll: jest.fn(() =>
+    Promise.resolve({
+      data: [{ location: [{ '@value': 'CN', '#text': 'China' }] }],
+      success: true,
+    }),
+  ),
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -431,6 +441,27 @@ describe('ProcessExchangeEdit', () => {
     await waitFor(() => {
       expect(mockProFormApi?.getFieldValue('meanAmount')).toBeUndefined();
       expect(mockProFormApi?.getFieldValue('resultingAmount')).toBeUndefined();
+    });
+  });
+
+  it('normalizes legacy multilingual exchange location to a plain string in the form', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        data={[
+          {
+            '@dataSetInternalID': '0',
+            exchangeDirection: 'input',
+            location: [{ '@xml:lang': 'en', '#text': 'CN' }],
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockProFormApi?.getFieldValue('location')).toBe('CN');
     });
   });
 

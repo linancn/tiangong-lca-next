@@ -711,6 +711,53 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet.exchanges.exchange[0].resultingAmount).toBeUndefined();
     });
 
+    it('should save exchange location as a plain string code', () => {
+      const dataWithLocation = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              location: [{ '@xml:lang': 'en', '#text': 'CN' }],
+              meanAmount: '10',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithLocation);
+
+      expect(result.processDataSet.exchanges.exchange[0].location).toBe('CN');
+      expect(Array.isArray(result.processDataSet.exchanges.exchange[0].location)).toBe(false);
+    });
+
+    it('should omit exchange location when the form value is cleared', () => {
+      const dataWithClearedLocation = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              location: '',
+              meanAmount: '10',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithClearedLocation);
+
+      expect(result.processDataSet.exchanges.exchange[0]).not.toHaveProperty('location');
+    });
+
     it('should include allocations in exchanges', () => {
       const dataWithAllocations = {
         ...mockProcessData,
@@ -986,6 +1033,29 @@ describe('Process Utility Functions', () => {
 
       expect(result.exchanges.exchange[0].meanAmount).toBeUndefined();
       expect(result.exchanges.exchange[0].resultingAmount).toBeUndefined();
+    });
+
+    it('should normalize raw exchange location to a plain string code for forms', () => {
+      const dataWithLegacyLocation = {
+        ...mockRawData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              location: [{ '@xml:lang': 'en', '#text': 'CN' }],
+              meanAmount: '10',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessFromData(dataWithLegacyLocation);
+
+      expect(result.exchanges.exchange[0].location).toBe('CN');
     });
 
     it('should handle missing exchanges', () => {
