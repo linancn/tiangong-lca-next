@@ -74,12 +74,12 @@ export const parseAnnualSupplyVolumeText = (value: unknown): AnnualSupplyVolumeT
 
   if (matched) {
     return {
-      numericText: matched[1] ?? '',
+      numericText: matched[1],
       suffixText: normalizeText(matched[5]),
     };
   }
 
-  const [numericText = '', ...suffixParts] = text.split(/\s+/);
+  const [numericText, ...suffixParts] = text.split(/\s+/);
 
   return {
     numericText,

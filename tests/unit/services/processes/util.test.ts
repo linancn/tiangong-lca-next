@@ -490,7 +490,10 @@ describe('Process Utility Functions', () => {
         modellingAndValidation: {
           ...mockProcessData.modellingAndValidation,
           dataSourcesTreatmentAndRepresentativeness: {
-            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 old suffix' }],
+            annualSupplyOrProductionVolume: [
+              { '@xml:lang': 'en', '#text': '100 old suffix' },
+              { '#text': '200 stale fallback suffix' },
+            ],
           },
         },
       };
@@ -500,7 +503,7 @@ describe('Process Utility Functions', () => {
       expect(
         result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
           .annualSupplyOrProductionVolume,
-      ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }]);
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }, { '#text': '200 1 kg steel' }]);
     });
 
     it('should handle process with no quantitative reference', () => {
