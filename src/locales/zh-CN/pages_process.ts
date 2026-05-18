@@ -641,7 +641,7 @@ export default {
   'pages.process.validator.dataCutOffAndCompletenessPrinciples.required': '请输入数据切断和完整性原则',
   'pages.process.validator.referenceToDataSource.required': '请输入使用的数据来源',
   'pages.process.validator.annualSupplyOrProductionVolume.required': '请输入年供应量或生产量',
-  'pages.process.validator.annualSupplyOrProductionVolume.pattern': '请输入数值；基准流后缀将自动补充。',
+  'pages.process.validator.annualSupplyOrProductionVolume.pattern': '请输入数值。',
   'pages.process.validator.reviewType.required': '请输入审查类型',
   'pages.process.validator.scopeName.required': '请输入范围名称',
   'pages.process.validator.methodName.required': '请输入方法名称',

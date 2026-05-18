@@ -1,6 +1,7 @@
 import type { ProcessExchangeData, ProcessRefUnitDisplay } from './data';
 
 export const ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX = 'reference flow';
+const ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS = ['en', 'zh'];
 
 export const ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?\s+\S.*$/;
 
@@ -181,6 +182,56 @@ export const normalizeAnnualSupplyVolumeMultiLang = (
   }
 
   return normalizeItem(value);
+};
+
+const getAnnualSupplyVolumeTextForLang = (value: unknown, lang: string) => {
+  if (Array.isArray(value)) {
+    const valueItems = value.filter(
+      (item): item is Record<string, unknown> => !!item && typeof item === 'object',
+    );
+    const langItem =
+      valueItems.find((item) => item['@xml:lang'] === lang) ??
+      valueItems.find((item) => item['@xml:lang'] === 'en') ??
+      valueItems.find((item) => normalizeText(item['#text'])) ??
+      valueItems[0];
+
+    return langItem ? langItem['#text'] : undefined;
+  }
+
+  if (value && typeof value === 'object') {
+    return (value as Record<string, unknown>)['#text'];
+  }
+
+  return value;
+};
+
+export const getAnnualSupplyVolumeDisplayNumericText = (value: unknown, lang: string) => {
+  const { numericText } = parseAnnualSupplyVolumeText(
+    getAnnualSupplyVolumeTextForLang(value, lang),
+  );
+  return sanitizeAnnualSupplyVolumeNumericInput(numericText);
+};
+
+export const buildAnnualSupplyVolumeMultiLang = (
+  numericValue: unknown,
+  suffixResolver: string | ((lang: string) => string),
+  languages = ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS,
+) => {
+  const { numericText } = parseAnnualSupplyVolumeText(numericValue);
+  const normalizedNumericText = sanitizeAnnualSupplyVolumeNumericInput(numericText);
+
+  if (!normalizedNumericText) {
+    return [];
+  }
+
+  return uniqueNonEmpty(languages).map((lang) => {
+    const suffix = typeof suffixResolver === 'function' ? suffixResolver(lang) : suffixResolver;
+
+    return {
+      '@xml:lang': lang,
+      '#text': formatAnnualSupplyVolumeText(normalizedNumericText, suffix),
+    };
+  });
 };
 
 export const getQuantitativeReferenceExchange = (exchangeDataSource: ProcessExchangeData[]) => {

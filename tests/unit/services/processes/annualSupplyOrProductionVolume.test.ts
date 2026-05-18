@@ -1,9 +1,11 @@
 import {
   ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX,
   ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN,
+  buildAnnualSupplyVolumeMultiLang,
   buildAnnualSupplyVolumeUnitLookupRows,
   deriveAnnualSupplyVolumeSuffix,
   formatAnnualSupplyVolumeText,
+  getAnnualSupplyVolumeDisplayNumericText,
   mergeAnnualSupplyVolumeUnitRows,
   normalizeAnnualSupplyVolumeMultiLang,
   normalizeAnnualSupplyVolumeText,
@@ -73,6 +75,48 @@ describe('annualSupplyOrProductionVolume helpers', () => {
       { '@xml:lang': 'en', '#text': '100 kg/year' },
       { '@xml:lang': 'zh', '#text': '200 千克/年' },
     ]);
+  });
+
+  it('builds multilingual values from one numeric input and reads the displayed numeric value', () => {
+    expect(
+      buildAnnualSupplyVolumeMultiLang(
+        'abc123',
+        (lang) => (lang === 'zh' ? '千克 钢材' : 'kg Steel'),
+        ['en', 'zh', 'en', ''],
+      ),
+    ).toEqual([
+      { '@xml:lang': 'en', '#text': '123 kg Steel' },
+      { '@xml:lang': 'zh', '#text': '123 千克 钢材' },
+    ]);
+    expect(buildAnnualSupplyVolumeMultiLang('', 'kg Steel')).toEqual([]);
+    expect(buildAnnualSupplyVolumeMultiLang('500', 'kg Steel')).toEqual([
+      { '@xml:lang': 'en', '#text': '500 kg Steel' },
+      { '@xml:lang': 'zh', '#text': '500 kg Steel' },
+    ]);
+    expect(
+      getAnnualSupplyVolumeDisplayNumericText(
+        [
+          { '@xml:lang': 'en', '#text': '100 kg Steel' },
+          { '@xml:lang': 'zh', '#text': '200 千克 钢材' },
+        ],
+        'zh',
+      ),
+    ).toBe('200');
+    expect(
+      getAnnualSupplyVolumeDisplayNumericText(
+        [
+          { '@xml:lang': 'en', '#text': '100 kg Steel' },
+          { '@xml:lang': 'zh', '#text': '200 千克 钢材' },
+        ],
+        'de',
+      ),
+    ).toBe('100');
+    expect(
+      getAnnualSupplyVolumeDisplayNumericText([null, { '#text': '600 kg Steel' }] as never, 'de'),
+    ).toBe('600');
+    expect(getAnnualSupplyVolumeDisplayNumericText([], 'en')).toBe('');
+    expect(getAnnualSupplyVolumeDisplayNumericText({ '#text': '300 kg Steel' }, 'en')).toBe('300');
+    expect(getAnnualSupplyVolumeDisplayNumericText('400 kg Steel', 'en')).toBe('400');
   });
 
   it('preserves an existing unit prefix when the derived suffix only has reference flow text', () => {
