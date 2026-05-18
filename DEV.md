@@ -20,8 +20,8 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-05-14
-lastReviewedCommit: 806ed443f2a29ef1666e16f76c8ae0bec12f664f
+lastReviewedAt: 2026-05-18
+lastReviewedCommit: dee91ee1856e0411ec8fb0ccf53dc860d3dffb49
 ---
 
 # Development Bootstrap
