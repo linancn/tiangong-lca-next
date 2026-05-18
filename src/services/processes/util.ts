@@ -19,6 +19,7 @@ import {
   deriveAnnualSupplyVolumeSuffix,
   normalizeAnnualSupplyVolumeMultiLang,
 } from './annualSupplyOrProductionVolume';
+import { normalizeExchangeLocationCode } from './exchangeLocation';
 
 const normalizeExchangeAmountValue = (value: string | number | null | undefined) => {
   if (value === null || value === undefined || value === 'undefined') {
@@ -36,6 +37,11 @@ const toExchangeAmountString = (value: string | number | null | undefined) => {
   }
 
   return `${normalizedValue}`;
+};
+
+const getExchangeLocationField = (value: unknown) => {
+  const location = normalizeExchangeLocationCode(value);
+  return location ? { location } : {};
 };
 
 const normalizeReferenceYearValue = (value: string | number | null | undefined) => {
@@ -83,7 +89,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
           item?.referenceToFlowDataSet?.['common:shortDescription'],
         ),
       },
-      location: item.location,
+      ...getExchangeLocationField(item.location),
       functionType: item.functionType,
       exchangeDirection: item.exchangeDirection,
       referenceToVariable: item.referenceToVariable,
@@ -1523,7 +1529,7 @@ export function genProcessFromData(data: any): FormProcess {
                   item?.referenceToFlowDataSet?.['common:shortDescription'],
                 ),
               },
-              location: item.location,
+              ...getExchangeLocationField(item.location),
               functionType: item.functionType,
               exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
@@ -1573,7 +1579,7 @@ export function genProcessFromData(data: any): FormProcess {
                   item?.referenceToFlowDataSet?.['common:shortDescription'],
                 ),
               },
-              location: item.location,
+              ...getExchangeLocationField(item.location),
               functionType: item.functionType,
               exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,

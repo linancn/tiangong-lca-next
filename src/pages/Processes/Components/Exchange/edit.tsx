@@ -1,4 +1,5 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import LocationCodeSelect from '@/components/LocationTextItem/codeSelect';
 import UnitConvert from '@/components/UnitConvert';
 import { UnitsContext } from '@/contexts/unitContext';
 import FlowsSelectForm from '@/pages/Flows/Components/select/form';
@@ -6,6 +7,7 @@ import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { ProcessExchangeData } from '@/services/processes/data';
+import { normalizeExchangeLocationCode } from '@/services/processes/exchangeLocation';
 import styles from '@/style/custom.less';
 import { CaretRightOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -61,11 +63,17 @@ const normalizeExchangeAmountValue = (value: string | number | null | undefined)
   return value;
 };
 
-const normalizeExchangeFormData = (exchangeData: ProcessExchangeData): ProcessExchangeData => ({
-  ...exchangeData,
-  meanAmount: normalizeExchangeAmountValue(exchangeData?.meanAmount),
-  resultingAmount: normalizeExchangeAmountValue(exchangeData?.resultingAmount),
-});
+const normalizeExchangeFormData = (exchangeData: ProcessExchangeData): ProcessExchangeData => {
+  const { location, ...rest } = exchangeData;
+  const normalizedLocation = normalizeExchangeLocationCode(location);
+
+  return {
+    ...rest,
+    ...(normalizedLocation ? { location: normalizedLocation } : {}),
+    meanAmount: normalizeExchangeAmountValue(exchangeData?.meanAmount),
+    resultingAmount: normalizeExchangeAmountValue(exchangeData?.resultingAmount),
+  };
+};
 
 const normalizeQuantitativeReferenceSelection = (
   exchangeData: ProcessExchangeData[],
@@ -419,10 +427,11 @@ const ProcessExchangeEdit: FC<Props> = ({
             },
           }}
           onFinish={async () => {
+            const nextFormData = normalizeExchangeFormData({ ...fromData });
             const nextExchangeData = normalizeQuantitativeReferenceSelection(
               data.map((item) => {
                 if (item['@dataSetInternalID'] === id) {
-                  return fromData;
+                  return nextFormData;
                 }
                 return item;
               }),
@@ -516,7 +525,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                 }
                 name={'location'}
               >
-                <Input />
+                <LocationCodeSelect lang={lang} />
               </Form.Item>,
             )}
             {renderSdkHighlightedField(
