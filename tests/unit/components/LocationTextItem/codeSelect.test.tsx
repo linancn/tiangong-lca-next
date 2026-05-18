@@ -18,6 +18,7 @@ jest.mock('antd', () => ({
   __esModule: true,
   Select: ({
     allowClear,
+    filterOption,
     loading,
     onChange,
     options = [],
@@ -45,6 +46,18 @@ jest.mock('antd', () => ({
           clear
         </button>
       ) : null}
+      <span data-testid={`${dataTestId}-filter-search`}>
+        {String(filterOption?.('china', { searchText: 'CN China' }))}
+      </span>
+      <span data-testid={`${dataTestId}-filter-label`}>
+        {String(filterOption?.('global', { label: 'GLO (Global)' }))}
+      </span>
+      <span data-testid={`${dataTestId}-filter-value`}>
+        {String(filterOption?.('rer', { value: 'RER' }))}
+      </span>
+      <span data-testid={`${dataTestId}-filter-empty`}>
+        {String(filterOption?.('missing', undefined))}
+      </span>
     </div>
   ),
 }));
@@ -109,5 +122,68 @@ describe('LocationCodeSelect', () => {
     fireEvent.click(screen.getByTestId('loc-clear'));
 
     expect(onChange).toHaveBeenCalledWith(undefined);
+  });
+
+  it('ignores invalid location entries and falls back to the code when localized text is missing', async () => {
+    mockGetILCDLocationAll.mockResolvedValueOnce({
+      data: [
+        {
+          location: [{ '#text': 'Missing code' }, { '@value': 'RER' }],
+        },
+      ],
+      success: true,
+    });
+
+    render(<LocationCodeSelect lang='en' data-testid='loc' />);
+
+    await waitFor(() => {
+      expect(screen.getByText('RER')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Missing code')).not.toBeInTheDocument();
+  });
+
+  it('loads a single location object response', async () => {
+    mockGetILCDLocationAll.mockResolvedValueOnce({
+      data: [
+        {
+          location: { '@value': 'US', '#text': 'United States' },
+        },
+      ],
+      success: true,
+    });
+
+    render(<LocationCodeSelect lang='en' data-testid='loc' />);
+
+    await waitFor(() => {
+      expect(screen.getByText('US (United States)')).toBeInTheDocument();
+    });
+  });
+
+  it('renders no options when the location response has no data', async () => {
+    mockGetILCDLocationAll.mockResolvedValueOnce({
+      success: true,
+    });
+
+    render(<LocationCodeSelect lang='en' data-testid='loc' />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('loc')).toHaveAttribute('data-loading', 'false');
+    });
+
+    expect(screen.queryByText('CN (China)')).not.toBeInTheDocument();
+  });
+
+  it('filters by search text, label, value, and empty option fallbacks', async () => {
+    render(<LocationCodeSelect lang='en' data-testid='loc' />);
+
+    await waitFor(() => {
+      expect(screen.getByText('CN (China)')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('loc-filter-search')).toHaveTextContent('true');
+    expect(screen.getByTestId('loc-filter-label')).toHaveTextContent('true');
+    expect(screen.getByTestId('loc-filter-value')).toHaveTextContent('true');
+    expect(screen.getByTestId('loc-filter-empty')).toHaveTextContent('false');
   });
 });
