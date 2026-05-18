@@ -459,12 +459,21 @@
           ]
         },
         "percentageSupplyOrProductionCovered": "str",
-        "annualSupplyOrProductionVolume": [
-          {
-            "@xml:lang": "str",
-            "#text": "str"
-          }
-        ],
+        "annualSupplyOrProductionVolume": {
+          "value": [
+            {
+              "@xml:lang": "str",
+              "#text": "str"
+            }
+          ],
+          "rules": [
+            {
+              "required": true,
+              "messageKey": "pages.process.validator.annualSupplyOrProductionVolume.required",
+              "defaultMessage": "Please input annual supply or production volume"
+            }
+          ]
+        },
         "samplingProcedure": [
           {
             "@xml:lang": "str",

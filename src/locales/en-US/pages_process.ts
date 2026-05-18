@@ -643,6 +643,8 @@ export default {
   'pages.process.validator.typeOfDataSet.required': 'Please input type of data set',
   'pages.process.validator.dataCutOffAndCompletenessPrinciples.required': 'Please input data cut-off and completeness principles',
   'pages.process.validator.referenceToDataSource.required': 'Please input data source(s) used for this data set',
+  'pages.process.validator.annualSupplyOrProductionVolume.required': 'Please input annual supply or production volume',
+  'pages.process.validator.annualSupplyOrProductionVolume.pattern': 'Please enter a number; the reference flow suffix is added automatically.',
   'pages.process.validator.reviewType.required': 'Please input type of review',
   'pages.process.validator.scopeName.required': 'Please input scope name',
   'pages.process.validator.methodName.required': 'Please input method name',

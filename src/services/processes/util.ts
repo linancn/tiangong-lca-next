@@ -15,6 +15,10 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
+import {
+  deriveAnnualSupplyVolumeSuffix,
+  normalizeAnnualSupplyVolumeMultiLang,
+} from './annualSupplyOrProductionVolume';
 
 const normalizeExchangeAmountValue = (value: string | number | null | undefined) => {
   if (value === null || value === undefined || value === 'undefined') {
@@ -51,6 +55,13 @@ const normalizeReferenceYearValue = (value: string | number | null | undefined) 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
+  const normalizeAnnualSupplyOrProductionVolume = (value: unknown) =>
+    normalizeAnnualSupplyVolumeMultiLang(value, (item) =>
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: exchangeList,
+        lang: typeof item?.['@xml:lang'] === 'string' ? item['@xml:lang'] : 'en',
+      }),
+    );
   const exchange = exchangeList.map((item: any) => {
     if (item?.quantitativeReference === true) {
       quantitativeReference = {
@@ -400,8 +411,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.percentageSupplyOrProductionCovered ?? {},
           annualSupplyOrProductionVolume: getLangJson(
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.annualSupplyOrProductionVolume,
+            normalizeAnnualSupplyOrProductionVolume(
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.annualSupplyOrProductionVolume,
+            ),
           ),
           samplingProcedure: getLangJson(
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness

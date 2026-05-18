@@ -54,6 +54,7 @@ const PROCESS_REQUIRED_LANG_TEXT_FIELDS = new Set<string>([
   'processInformation.dataSetInformation.common:generalComment',
   'processInformation.technology.technologyDescriptionAndIncludedProcesses',
   'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.dataCutOffAndCompletenessPrinciples',
+  'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume',
   'administrativeInformation.common:commissionerAndGoal.common:intendedApplications',
 ]);
 

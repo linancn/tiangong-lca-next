@@ -484,6 +484,25 @@ describe('Process Utility Functions', () => {
       ).toBe('2');
     });
 
+    it('should normalize annual supply volume numeric text with the quantitative reference suffix', () => {
+      const dataWithAnnualSupplyVolume = {
+        ...mockProcessData,
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 old suffix' }],
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithAnnualSupplyVolume);
+
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }]);
+    });
+
     it('should handle process with no quantitative reference', () => {
       const dataWithoutRef = {
         ...mockProcessData,

@@ -293,6 +293,8 @@ jest.mock('antd', () => {
   );
 
   const Space = ({ children }: any) => <div>{children}</div>;
+  const Row = ({ children }: any) => <div>{children}</div>;
+  const Col = ({ children }: any) => <div>{children}</div>;
 
   const Card = ({ tabList = [], activeTabKey, onTabChange, children }: any) => (
     <div data-testid='card' data-active-key={activeTabKey}>
@@ -409,11 +411,13 @@ jest.mock('antd', () => {
   return {
     __esModule: true,
     Button,
+    Col,
     Space,
     Card,
     Collapse,
     Form: FormComponent,
     Input,
+    Row,
     Select,
     InputNumber,
     Switch,
