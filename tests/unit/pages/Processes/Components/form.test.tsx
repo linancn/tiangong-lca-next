@@ -377,13 +377,13 @@ jest.mock('antd', () => {
     value,
     'data-testid': dataTestId,
     'aria-label': ariaLabel,
-    readOnly,
+    disabled,
     style,
   }: any) => (
     <input
       aria-label={ariaLabel}
       data-testid={dataTestId}
-      readOnly={readOnly}
+      disabled={disabled}
       style={style}
       value={value ?? ''}
       onChange={(event) => onChange?.(event.target.value)}

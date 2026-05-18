@@ -182,7 +182,7 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
         </Form.Item>
         <Input
           aria-label='annual-supply-volume-context'
-          readOnly
+          disabled
           style={{ width: '50%' }}
           value={currentSuffix}
         />

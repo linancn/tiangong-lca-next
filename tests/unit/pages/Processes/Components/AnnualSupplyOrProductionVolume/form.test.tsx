@@ -58,8 +58,8 @@ jest.mock('antd', () => {
       />
     </label>
   );
-  const Input = ({ 'aria-label': ariaLabel, readOnly, style, value = '' }: any) => (
-    <input aria-label={ariaLabel} readOnly={readOnly} style={style} value={value} />
+  const Input = ({ 'aria-label': ariaLabel, disabled, style, value = '' }: any) => (
+    <input aria-label={ariaLabel} disabled={disabled} style={style} value={value} />
   );
   const Space = ({ children }: any) => <div>{children}</div>;
   Space.Compact = ({ children }: any) => <div data-testid='annual-volume-compact'>{children}</div>;
@@ -97,7 +97,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     mockGetUnitData.mockImplementation(async (_idType: string, rows: any[]) => rows);
   });
 
-  it('resolves the reference flow unit and displays the current-language suffix in a read-only input', async () => {
+  it('resolves the reference flow unit and displays the current-language suffix in a disabled input', async () => {
     mockGetUnitData.mockResolvedValueOnce([
       {
         referenceToFlowDataSetId: 'flow-1',
@@ -153,7 +153,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       );
     });
     expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg 钢材');
-    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveAttribute('readonly');
+    expect(screen.getByLabelText('annual-supply-volume-context')).toBeDisabled();
     expect(screen.queryByLabelText('language')).not.toBeInTheDocument();
   });
 
