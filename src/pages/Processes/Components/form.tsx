@@ -293,8 +293,6 @@ export const ProcessForm: FC<Props> = ({
   ] = useState(false);
   const [dataCutOffAndCompletenessPrinciplesError, setDataCutOffAndCompletenessPrinciplesError] =
     useState(false);
-  const [annualSupplyOrProductionVolumeError, setAnnualSupplyOrProductionVolumeError] =
-    useState(false);
   const [intendedApplicationsError, setIntendedApplicationsError] = useState(false);
   const [generalCommentError, setGeneralCommentError] = useState(false);
 
@@ -1859,7 +1857,7 @@ export const ProcessForm: FC<Props> = ({
                   defaultMessage='Annual supply or production volume'
                 />
               }
-              showError={annualSupplyOrProductionVolumeError}
+              showError={false}
             />
           </Divider>
           <AnnualSupplyOrProductionVolumeForm
@@ -1887,7 +1885,6 @@ export const ProcessForm: FC<Props> = ({
                   )
                 : []
             }
-            setRuleErrorState={setAnnualSupplyOrProductionVolumeError}
           />
 
           <Divider orientationMargin='0' orientation='left' plain>
