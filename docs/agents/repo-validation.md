@@ -21,8 +21,8 @@ checkPaths:
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-05-14
-lastReviewedCommit: d3fb24a7306cac0c0ef4bba8595c759bfac72140
+lastReviewedAt: 2026-05-18
+lastReviewedCommit: 997f79c642ef4bc2cc7715db07057944ffa15665
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
