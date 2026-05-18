@@ -4,7 +4,6 @@ import type { SelectProps } from 'antd';
 import { Select } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { FormattedMessage } from 'umi';
 
 type LocationCodeOption = {
   label: string;
@@ -97,12 +96,6 @@ const LocationCodeSelect: FC<LocationCodeSelectProps> = ({
       loading={loading}
       optionFilterProp='label'
       optionLabelProp='label'
-      placeholder={
-        <FormattedMessage
-          id='pages.process.exchange.location.placeholder'
-          defaultMessage='Select location code'
-        />
-      }
       {...selectProps}
       value={normalizedValue}
       options={options}
