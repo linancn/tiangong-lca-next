@@ -18,6 +18,8 @@ const requiredFields = {
     'modellingAndValidation',
   'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.referenceToDataSource':
     'modellingAndValidation',
+  'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume':
+    'modellingAndValidation',
 
   'administrativeInformation.common:commissionerAndGoal.common:referenceToCommissioner':
     'administrativeInformation',

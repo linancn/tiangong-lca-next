@@ -12,6 +12,11 @@ describe('Processes requiredFields', () => {
     );
     expect(
       requiredFieldsMap[
+        'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume'
+      ],
+    ).toBe('modellingAndValidation');
+    expect(
+      requiredFieldsMap[
         'administrativeInformation.publicationAndOwnership.common:referenceToOwnershipOfDataSet'
       ],
     ).toBe('administrativeInformation');

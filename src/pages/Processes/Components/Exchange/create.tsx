@@ -1,4 +1,5 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import LocationCodeSelect from '@/components/LocationTextItem/codeSelect';
 import ToolBarButton from '@/components/ToolBarButton';
 import UnitConvert from '@/components/UnitConvert';
 import { UnitsContext } from '@/contexts/unitContext';
@@ -6,6 +7,7 @@ import FlowsSelectForm from '@/pages/Flows/Components/select/form';
 import SourceSelectForm from '@/pages/Sources/Components/select/form';
 import { getRules } from '@/pages/Utils';
 import { ProcessExchangeData } from '@/services/processes/data';
+import { normalizeExchangeLocationCode } from '@/services/processes/exchangeLocation';
 import styles from '@/style/custom.less';
 import { CaretRightOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -39,6 +41,14 @@ type Props = {
   showRules?: boolean;
   disabled?: boolean;
 };
+
+const normalizeExchangeFormData = (exchangeData: ProcessExchangeData): ProcessExchangeData => {
+  const { location, ...rest } = exchangeData;
+  const normalizedLocation = normalizeExchangeLocationCode(location);
+
+  return normalizedLocation ? { ...rest, location: normalizedLocation } : rest;
+};
+
 const ProcessExchangeCreate: FC<Props> = ({
   direction,
   lang,
@@ -150,7 +160,7 @@ const ProcessExchangeCreate: FC<Props> = ({
             },
           }}
           onFinish={async () => {
-            onData({ ...fromData });
+            onData(normalizeExchangeFormData({ ...fromData }));
             formRefCreate.current?.resetFields();
             setDrawerVisible(false);
             return true;
@@ -221,7 +231,7 @@ const ProcessExchangeCreate: FC<Props> = ({
               }
               name={'location'}
             >
-              <Input />
+              <LocationCodeSelect lang={lang} />
             </Form.Item>
             <Form.Item
               label={

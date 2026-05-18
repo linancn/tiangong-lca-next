@@ -60,6 +60,48 @@ describe('process sdk validation mapping', () => {
     ]);
   });
 
+  it('maps annual supply volume required issues to the localized numeric text field', () => {
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'invalid_type',
+          expected: 'object',
+          message: 'Invalid input: expected object, received undefined',
+          path: [
+            'processDataSet',
+            'modellingAndValidation',
+            'dataSourcesTreatmentAndRepresentativeness',
+            'annualSupplyOrProductionVolume',
+          ],
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          modellingAndValidation: {
+            dataSourcesTreatmentAndRepresentativeness: {},
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath:
+          'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume.0.#text',
+        formName: [
+          'modellingAndValidation',
+          'dataSourcesTreatmentAndRepresentativeness',
+          'annualSupplyOrProductionVolume',
+          0,
+          '#text',
+        ],
+        tabName: 'modellingAndValidation',
+        validationCode: 'required_missing',
+      }),
+    ]);
+  });
+
   it('keeps missing review list issues on the validation section anchor', () => {
     const details = normalizeProcessSdkValidationDetails(
       [

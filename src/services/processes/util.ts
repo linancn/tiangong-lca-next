@@ -15,6 +15,11 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
+import {
+  deriveAnnualSupplyVolumeSuffix,
+  normalizeAnnualSupplyVolumeMultiLang,
+} from './annualSupplyOrProductionVolume';
+import { normalizeExchangeLocationCode } from './exchangeLocation';
 
 const normalizeExchangeAmountValue = (value: string | number | null | undefined) => {
   if (value === null || value === undefined || value === 'undefined') {
@@ -34,6 +39,11 @@ const toExchangeAmountString = (value: string | number | null | undefined) => {
   return `${normalizedValue}`;
 };
 
+const getExchangeLocationField = (value: unknown) => {
+  const location = normalizeExchangeLocationCode(value);
+  return location ? { location } : {};
+};
+
 const normalizeReferenceYearValue = (value: string | number | null | undefined) => {
   if (value === null || value === undefined || value === '' || value === 'undefined') {
     return undefined;
@@ -51,6 +61,13 @@ const normalizeReferenceYearValue = (value: string | number | null | undefined) 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
+  const normalizeAnnualSupplyOrProductionVolume = (value: unknown) =>
+    normalizeAnnualSupplyVolumeMultiLang(value, (item) =>
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: exchangeList,
+        lang: typeof item?.['@xml:lang'] === 'string' ? item['@xml:lang'] : 'en',
+      }),
+    );
   const exchange = exchangeList.map((item: any) => {
     if (item?.quantitativeReference === true) {
       quantitativeReference = {
@@ -72,7 +89,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
           item?.referenceToFlowDataSet?.['common:shortDescription'],
         ),
       },
-      location: item.location,
+      ...getExchangeLocationField(item.location),
       functionType: item.functionType,
       exchangeDirection: item.exchangeDirection,
       referenceToVariable: item.referenceToVariable,
@@ -400,8 +417,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
               ?.percentageSupplyOrProductionCovered ?? {},
           annualSupplyOrProductionVolume: getLangJson(
-            data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-              ?.annualSupplyOrProductionVolume,
+            normalizeAnnualSupplyOrProductionVolume(
+              data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                ?.annualSupplyOrProductionVolume,
+            ),
           ),
           samplingProcedure: getLangJson(
             data?.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
@@ -1510,7 +1529,7 @@ export function genProcessFromData(data: any): FormProcess {
                   item?.referenceToFlowDataSet?.['common:shortDescription'],
                 ),
               },
-              location: item.location,
+              ...getExchangeLocationField(item.location),
               functionType: item.functionType,
               exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
@@ -1560,7 +1579,7 @@ export function genProcessFromData(data: any): FormProcess {
                   item?.referenceToFlowDataSet?.['common:shortDescription'],
                 ),
               },
-              location: item.location,
+              ...getExchangeLocationField(item.location),
               functionType: item.functionType,
               exchangeDirection: capitalize(item.exchangeDirection),
               referenceToVariable: item.referenceToVariable,
