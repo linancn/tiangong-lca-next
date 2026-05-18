@@ -6,11 +6,12 @@ import {
   formatAnnualSupplyVolumeText,
   normalizeAnnualSupplyVolumeMultiLang,
   parseAnnualSupplyVolumeText,
+  sanitizeAnnualSupplyVolumeNumericInput,
 } from '@/services/processes/annualSupplyOrProductionVolume';
 import type { ProcessExchangeData } from '@/services/processes/data';
 import { CloseOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-components';
-import { Button, Col, Form, Input, Row, Select, message } from 'antd';
+import { Button, Col, Form, InputNumber, Row, Select, message } from 'antd';
 import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -237,15 +238,20 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
                       <Form.Item
                         name={[subField.name, '#text']}
                         getValueProps={(value) => ({
-                          value: parseAnnualSupplyVolumeText(value).numericText,
+                          value: sanitizeAnnualSupplyVolumeNumericInput(
+                            parseAnnualSupplyVolumeText(value).numericText,
+                          ),
                         })}
                         normalize={(value) => formatAnnualSupplyVolumeText(value, currentSuffix)}
                         rules={textRules}
                         style={{ marginBottom: 0 }}
                       >
-                        <Input
+                        <InputNumber
+                          controls={false}
                           inputMode='decimal'
                           onChange={() => onData()}
+                          stringMode
+                          style={{ width: '100%' }}
                           suffix={currentSuffix}
                         />
                       </Form.Item>

@@ -6,6 +6,7 @@ import {
   normalizeAnnualSupplyVolumeMultiLang,
   normalizeAnnualSupplyVolumeText,
   parseAnnualSupplyVolumeText,
+  sanitizeAnnualSupplyVolumeNumericInput,
 } from '@/services/processes/annualSupplyOrProductionVolume';
 
 describe('annualSupplyOrProductionVolume helpers', () => {
@@ -39,10 +40,22 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     expect(formatAnnualSupplyVolumeText('123', 'kg/year')).toBe('123 kg/year');
     expect(formatAnnualSupplyVolumeText('-', 'kg/year')).toBe('- kg/year');
     expect(formatAnnualSupplyVolumeText('', 'kg/year')).toBe('');
+    expect(formatAnnualSupplyVolumeText('abc123', 'kg/year')).toBe('123 kg/year');
     expect(formatAnnualSupplyVolumeText('123', '')).toBe(
       `123 ${ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX}`,
     );
     expect(formatAnnualSupplyVolumeText(123, 'kg/year')).toBe('');
+  });
+
+  it('sanitizes editable numeric input while keeping real-number partial states', () => {
+    expect(sanitizeAnnualSupplyVolumeNumericInput('abc')).toBe('');
+    expect(sanitizeAnnualSupplyVolumeNumericInput('abc123')).toBe('123');
+    expect(sanitizeAnnualSupplyVolumeNumericInput('12abc')).toBe('12');
+    expect(sanitizeAnnualSupplyVolumeNumericInput('1.2.3')).toBe('1.23');
+    expect(sanitizeAnnualSupplyVolumeNumericInput('--1.2E++3')).toBe('-1.2E+3');
+    expect(sanitizeAnnualSupplyVolumeNumericInput('.')).toBe('.');
+    expect(sanitizeAnnualSupplyVolumeNumericInput('1E-')).toBe('1E-');
+    expect(sanitizeAnnualSupplyVolumeNumericInput(123)).toBe('');
   });
 
   it('normalizes localized values with a suffix per language', () => {

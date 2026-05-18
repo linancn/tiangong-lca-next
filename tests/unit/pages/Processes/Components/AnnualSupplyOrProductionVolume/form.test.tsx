@@ -85,7 +85,7 @@ jest.mock('antd', () => {
   );
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
-  const Input = ({ onChange, suffix }: any) => (
+  const InputNumber = ({ onChange, suffix }: any) => (
     <label>
       <span>{suffix}</span>
       <input aria-label='annual-volume' onChange={(event) => onChange?.(event)} />
@@ -106,7 +106,7 @@ jest.mock('antd', () => {
     Button,
     Col,
     Form: FormComponent,
-    Input,
+    InputNumber,
     Row,
     Select,
     message: {
@@ -176,7 +176,9 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
 
     const textItem = findFormItem([0, '#text']);
     expect(textItem.getValueProps('123 kg Steel')).toEqual({ value: '123' });
+    expect(textItem.getValueProps('abc kg Steel')).toEqual({ value: '' });
     expect(textItem.normalize('456')).toBe('456 kg Steel');
+    expect(textItem.normalize('abc789')).toBe('789 kg Steel');
 
     await expect(textItem.rules[0].validator(null, '')).rejects.toThrow(
       'Annual volume is required',

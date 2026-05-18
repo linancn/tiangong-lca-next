@@ -6,6 +6,9 @@ export const ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee]
 
 const ANNUAL_SUPPLY_VOLUME_NUMBER_PREFIX_PATTERN =
   /^\s*([+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?)(?:\s+(.*))?$/;
+const ANNUAL_SUPPLY_VOLUME_NUMERIC_INPUT_PREFIX_PATTERN =
+  /^[+-]?(?:$|\d+(?:\.\d*)?(?:[Ee][+-]?\d*)?|\.\d+(?:[Ee][+-]?\d*)?|\.\d*)$/;
+const ANNUAL_SUPPLY_VOLUME_NUMERIC_INPUT_ALLOWED_PATTERN = /[\d.+\-Ee]/;
 
 type LangTextResolver = (value: unknown, lang: string) => string;
 
@@ -90,8 +93,24 @@ export const parseAnnualSupplyVolumeText = (value: unknown): AnnualSupplyVolumeT
 export const normalizeAnnualSupplyVolumeSuffix = (suffix: unknown) =>
   normalizeText(suffix) || ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX;
 
+export const sanitizeAnnualSupplyVolumeNumericInput = (value: unknown) => {
+  const text = typeof value === 'string' ? value.trim() : '';
+
+  return Array.from(text).reduce((sanitizedText, character) => {
+    if (!ANNUAL_SUPPLY_VOLUME_NUMERIC_INPUT_ALLOWED_PATTERN.test(character)) {
+      return sanitizedText;
+    }
+
+    const nextText = `${sanitizedText}${character}`;
+
+    return ANNUAL_SUPPLY_VOLUME_NUMERIC_INPUT_PREFIX_PATTERN.test(nextText)
+      ? nextText
+      : sanitizedText;
+  }, '');
+};
+
 export const formatAnnualSupplyVolumeText = (numericText: unknown, suffix: unknown) => {
-  const normalizedNumericText = typeof numericText === 'string' ? numericText.trim() : '';
+  const normalizedNumericText = sanitizeAnnualSupplyVolumeNumericInput(numericText);
 
   if (!normalizedNumericText) {
     return '';
