@@ -56,14 +56,11 @@ export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
   const normalizeAnnualSupplyOrProductionVolume = (value: unknown) =>
-    normalizeAnnualSupplyVolumeMultiLang(
-      value,
-      (item) =>
-        deriveAnnualSupplyVolumeSuffix({
-          exchangeDataSource: exchangeList,
-          lang: typeof item?.['@xml:lang'] === 'string' ? item['@xml:lang'] : 'en',
-        }),
-      { useDefaultSuffix: false },
+    normalizeAnnualSupplyVolumeMultiLang(value, (item) =>
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: exchangeList,
+        lang: typeof item?.['@xml:lang'] === 'string' ? item['@xml:lang'] : 'en',
+      }),
     );
   const exchange = exchangeList.map((item: any) => {
     if (item?.quantitativeReference === true) {

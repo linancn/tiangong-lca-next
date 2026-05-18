@@ -540,7 +540,7 @@ describe('Process Utility Functions', () => {
       ).toEqual([{ '@xml:lang': 'en', '#text': '100 kg Steel' }]);
     });
 
-    it('should handle process with no quantitative reference', () => {
+    it('should save annual supply volume with a suffix even when no quantitative reference is selected', () => {
       const dataWithoutRef = {
         ...mockProcessData,
         exchanges: {
@@ -575,7 +575,7 @@ describe('Process Utility Functions', () => {
       expect(
         result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
           .annualSupplyOrProductionVolume,
-      ).toEqual([{ '@xml:lang': 'en', '#text': '100' }]);
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 reference flow' }]);
     });
 
     it('should use resultingAmount if not zero, otherwise use meanAmount', () => {
