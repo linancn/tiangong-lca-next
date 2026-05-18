@@ -1,6 +1,7 @@
 import { langOptions } from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import {
+  ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN,
   ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN,
   buildAnnualSupplyVolumeMultiLang,
   buildAnnualSupplyVolumeUnitLookupRows,
@@ -10,7 +11,7 @@ import {
 } from '@/services/processes/annualSupplyOrProductionVolume';
 import type { ProcessExchangeData } from '@/services/processes/data';
 import type { ProFormInstance } from '@ant-design/pro-components';
-import { Form, InputNumber } from 'antd';
+import { Form, Input, InputNumber, Space } from 'antd';
 import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useIntl } from 'umi';
@@ -130,9 +131,13 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
             );
             const isAnnualSupplyVolumeValid =
               normalizedValues.length > 0 &&
-              normalizedValues.every((item) =>
-                ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN.test(String(item['#text']).trim()),
-              );
+              normalizedValues.every((item) => {
+                const pattern = getSuffixForLang(item['@xml:lang']).trim()
+                  ? ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN
+                  : ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN;
+
+                return pattern.test(String(item['#text']).trim());
+              });
 
             if (!isAnnualSupplyVolumeValid) {
               setRuleErrorState?.(true);
@@ -154,25 +159,34 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
     : [];
 
   return (
-    <Form.Item
-      name={name}
-      getValueProps={(value) => ({
-        value: getAnnualSupplyVolumeDisplayNumericText(value, lang),
-      })}
-      normalize={(value) =>
-        buildAnnualSupplyVolumeMultiLang(value, getSuffixForLang, annualSupplyVolumeLangs)
-      }
-      rules={fieldRules}
-      style={{ marginBottom: 0 }}
-    >
-      <InputNumber
-        controls={false}
-        inputMode='decimal'
-        onChange={() => onData()}
-        stringMode
-        style={{ width: '100%' }}
-        suffix={currentSuffix}
-      />
+    <Form.Item style={{ marginBottom: 0 }}>
+      <Space.Compact block>
+        <Form.Item
+          name={name}
+          getValueProps={(value) => ({
+            value: getAnnualSupplyVolumeDisplayNumericText(value, lang),
+          })}
+          normalize={(value) =>
+            buildAnnualSupplyVolumeMultiLang(value, getSuffixForLang, annualSupplyVolumeLangs)
+          }
+          noStyle
+          rules={fieldRules}
+        >
+          <InputNumber
+            controls={false}
+            inputMode='decimal'
+            onChange={() => onData()}
+            stringMode
+            style={{ width: '50%' }}
+          />
+        </Form.Item>
+        <Input
+          aria-label='annual-supply-volume-context'
+          readOnly
+          style={{ width: '50%' }}
+          value={currentSuffix}
+        />
+      </Space.Compact>
     </Form.Item>
   );
 };

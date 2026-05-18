@@ -49,17 +49,27 @@ jest.mock('antd', () => {
   };
   FormComponent.Item = FormItem;
 
-  const InputNumber = ({ onChange, suffix }: any) => (
+  const InputNumber = ({ onChange, style }: any) => (
     <label>
-      <input aria-label='annual-volume' onChange={(event) => onChange?.(event.target.value)} />
-      <span>{suffix}</span>
+      <input
+        aria-label='annual-volume'
+        onChange={(event) => onChange?.(event.target.value)}
+        style={style}
+      />
     </label>
   );
+  const Input = ({ 'aria-label': ariaLabel, readOnly, style, value = '' }: any) => (
+    <input aria-label={ariaLabel} readOnly={readOnly} style={style} value={value} />
+  );
+  const Space = ({ children }: any) => <div>{children}</div>;
+  Space.Compact = ({ children }: any) => <div data-testid='annual-volume-compact'>{children}</div>;
 
   return {
     __esModule: true,
     Form: FormComponent,
+    Input,
     InputNumber,
+    Space,
   };
 });
 
@@ -87,7 +97,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     mockGetUnitData.mockImplementation(async (_idType: string, rows: any[]) => rows);
   });
 
-  it('resolves the reference flow unit and displays the current-language suffix through InputNumber', async () => {
+  it('resolves the reference flow unit and displays the current-language suffix in a read-only input', async () => {
     mockGetUnitData.mockResolvedValueOnce([
       {
         referenceToFlowDataSetId: 'flow-1',
@@ -142,7 +152,8 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
         ],
       );
     });
-    expect(screen.getByText('kg 钢材')).toBeInTheDocument();
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg 钢材');
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveAttribute('readonly');
     expect(screen.queryByLabelText('language')).not.toBeInTheDocument();
   });
 
@@ -182,7 +193,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
         ],
       );
     });
-    expect(screen.getByText('Steel')).toBeInTheDocument();
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('Steel');
   });
 
   it('normalizes numeric-only input into multilingual storage and validates required values', async () => {
@@ -219,7 +230,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       );
     });
     expect(onData).toHaveBeenCalled();
-    expect(screen.getByText('kg Steel')).toBeInTheDocument();
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg Steel');
 
     const formItem = findFormItem(['modelling', 'annualSupply']);
     expect(formItem.getValueProps([{ '@xml:lang': 'en', '#text': '123 kg Steel' }])).toEqual({
@@ -271,7 +282,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     expect(formItem.rules).toEqual([]);
     expect(form.setFieldValue).not.toHaveBeenCalled();
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.getByText('reference flow')).toBeInTheDocument();
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
 
     mockFormItems.length = 0;
     render(
@@ -286,6 +297,40 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       />,
     );
     expect(findFormItem(['annualSupplyWithoutForm']).rules).toHaveLength(1);
+  });
+
+  it('keeps unit and flow context blank when no reference flow exists', async () => {
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={[]}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='en'
+        name={['annualSupply']}
+        onData={jest.fn()}
+        rules={[{ required: true }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(form.setFieldValue).toHaveBeenLastCalledWith(
+        ['annualSupply'],
+        [
+          { '@xml:lang': 'en', '#text': '100' },
+          { '@xml:lang': 'zh', '#text': '100' },
+        ],
+      );
+    });
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
+
+    const formItem = findFormItem(['annualSupply']);
+    expect(formItem.normalize('789')).toEqual([
+      { '@xml:lang': 'en', '#text': '789' },
+      { '@xml:lang': 'zh', '#text': '789' },
+    ]);
+    await expect(formItem.rules[0].validator(null, '123')).resolves.toBeUndefined();
   });
 
   it('normalizes single-object form values and uses default required validation copy', async () => {

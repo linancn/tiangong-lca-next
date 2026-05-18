@@ -48,6 +48,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     expect(formatAnnualSupplyVolumeText('123', '')).toBe(
       `123 ${ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX}`,
     );
+    expect(formatAnnualSupplyVolumeText('123', '', { useDefaultSuffix: false })).toBe('123');
     expect(formatAnnualSupplyVolumeText(123, 'kg/year')).toBe('');
   });
 
@@ -93,6 +94,10 @@ describe('annualSupplyOrProductionVolume helpers', () => {
       { '@xml:lang': 'en', '#text': '500 kg Steel' },
       { '@xml:lang': 'zh', '#text': '500 kg Steel' },
     ]);
+    expect(buildAnnualSupplyVolumeMultiLang('500', '')).toEqual([
+      { '@xml:lang': 'en', '#text': '500' },
+      { '@xml:lang': 'zh', '#text': '500' },
+    ]);
     expect(
       getAnnualSupplyVolumeDisplayNumericText(
         [
@@ -122,6 +127,9 @@ describe('annualSupplyOrProductionVolume helpers', () => {
   it('preserves an existing unit prefix when the derived suffix only has reference flow text', () => {
     expect(normalizeAnnualSupplyVolumeText('100 kg Steel', 'Steel')).toBe('100 kg Steel');
     expect(normalizeAnnualSupplyVolumeText('100 old suffix', 'Steel')).toBe('100 Steel');
+    expect(normalizeAnnualSupplyVolumeText('100 old suffix', '', { useDefaultSuffix: false })).toBe(
+      '100',
+    );
   });
 
   it('normalizes object values with a shared suffix and leaves malformed values unchanged', () => {
@@ -293,7 +301,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     ).toBe('kg functional unit');
   });
 
-  it('uses reference flow text and the default suffix when no better context exists', () => {
+  it('uses reference flow text and leaves suffix blank when no reference flow exists', () => {
     expect(
       deriveAnnualSupplyVolumeSuffix({
         exchangeDataSource: [
@@ -316,6 +324,6 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         exchangeDataSource: [],
         lang: 'en',
       }),
-    ).toBe(ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX);
+    ).toBe('');
   });
 });

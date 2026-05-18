@@ -293,6 +293,7 @@ jest.mock('antd', () => {
   );
 
   const Space = ({ children }: any) => <div>{children}</div>;
+  Space.Compact = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
 
@@ -371,9 +372,19 @@ jest.mock('antd', () => {
   };
   FormComponent.List = MockFormList;
 
-  const Input = ({ onChange, value, 'data-testid': dataTestId }: any) => (
+  const Input = ({
+    onChange,
+    value,
+    'data-testid': dataTestId,
+    'aria-label': ariaLabel,
+    readOnly,
+    style,
+  }: any) => (
     <input
+      aria-label={ariaLabel}
       data-testid={dataTestId}
+      readOnly={readOnly}
+      style={style}
       value={value ?? ''}
       onChange={(event) => onChange?.(event.target.value)}
     />

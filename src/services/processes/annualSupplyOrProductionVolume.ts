@@ -4,6 +4,8 @@ export const ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX = 'reference flow';
 const ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS = ['en', 'zh'];
 
 export const ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?\s+\S.*$/;
+export const ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN =
+  /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?$/;
 
 const ANNUAL_SUPPLY_VOLUME_NUMBER_PREFIX_PATTERN =
   /^\s*([+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?)(?:\s+(.*))?$/;
@@ -16,6 +18,10 @@ type LangTextResolver = (value: unknown, lang: string) => string;
 type AnnualSupplyVolumeTextParts = {
   numericText: string;
   suffixText: string;
+};
+
+type AnnualSupplyVolumeFormatOptions = {
+  useDefaultSuffix?: boolean;
 };
 
 type AnnualSupplyVolumeUnitLookupRow = {
@@ -106,12 +112,30 @@ export const parseAnnualSupplyVolumeText = (value: unknown): AnnualSupplyVolumeT
   };
 };
 
-export const normalizeAnnualSupplyVolumeSuffix = (suffix: unknown) =>
-  normalizeText(suffix) || ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX;
+export const normalizeAnnualSupplyVolumeSuffix = (
+  suffix: unknown,
+  options: AnnualSupplyVolumeFormatOptions,
+) => {
+  const normalizedSuffix = normalizeText(suffix);
 
-const resolveAnnualSupplyVolumeSuffix = (existingSuffix: unknown, suffix: unknown) => {
+  if (normalizedSuffix || options.useDefaultSuffix === false) {
+    return normalizedSuffix;
+  }
+
+  return ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX;
+};
+
+const resolveAnnualSupplyVolumeSuffix = (
+  existingSuffix: unknown,
+  suffix: unknown,
+  options: AnnualSupplyVolumeFormatOptions,
+) => {
   const normalizedExistingSuffix = normalizeText(existingSuffix);
-  const normalizedSuffix = normalizeAnnualSupplyVolumeSuffix(suffix);
+  const normalizedSuffix = normalizeAnnualSupplyVolumeSuffix(suffix, options);
+
+  if (!normalizedSuffix) {
+    return '';
+  }
 
   if (
     normalizedExistingSuffix &&
@@ -140,27 +164,39 @@ export const sanitizeAnnualSupplyVolumeNumericInput = (value: unknown) => {
   }, '');
 };
 
-export const formatAnnualSupplyVolumeText = (numericText: unknown, suffix: unknown) => {
+export const formatAnnualSupplyVolumeText = (
+  numericText: unknown,
+  suffix: unknown,
+  options: AnnualSupplyVolumeFormatOptions = {},
+) => {
   const normalizedNumericText = sanitizeAnnualSupplyVolumeNumericInput(numericText);
 
   if (!normalizedNumericText) {
     return '';
   }
 
-  return `${normalizedNumericText} ${normalizeAnnualSupplyVolumeSuffix(suffix)}`;
+  const normalizedSuffix = normalizeAnnualSupplyVolumeSuffix(suffix, options);
+
+  return normalizedSuffix ? `${normalizedNumericText} ${normalizedSuffix}` : normalizedNumericText;
 };
 
-export const normalizeAnnualSupplyVolumeText = (value: unknown, suffix: unknown) => {
+export const normalizeAnnualSupplyVolumeText = (
+  value: unknown,
+  suffix: unknown,
+  options: AnnualSupplyVolumeFormatOptions = {},
+) => {
   const { numericText, suffixText } = parseAnnualSupplyVolumeText(value);
   return formatAnnualSupplyVolumeText(
     numericText,
-    resolveAnnualSupplyVolumeSuffix(suffixText, suffix),
+    resolveAnnualSupplyVolumeSuffix(suffixText, suffix, options),
+    options,
   );
 };
 
 export const normalizeAnnualSupplyVolumeMultiLang = (
   value: unknown,
   suffixResolver: string | ((item: Record<string, unknown>) => string),
+  options: AnnualSupplyVolumeFormatOptions = {},
 ) => {
   const normalizeItem = (item: unknown) => {
     if (!item || typeof item !== 'object') {
@@ -173,7 +209,7 @@ export const normalizeAnnualSupplyVolumeMultiLang = (
 
     return {
       ...itemRecord,
-      '#text': normalizeAnnualSupplyVolumeText(itemRecord['#text'], suffix),
+      '#text': normalizeAnnualSupplyVolumeText(itemRecord['#text'], suffix, options),
     };
   };
 
@@ -216,6 +252,7 @@ export const buildAnnualSupplyVolumeMultiLang = (
   numericValue: unknown,
   suffixResolver: string | ((lang: string) => string),
   languages = ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS,
+  options: AnnualSupplyVolumeFormatOptions = { useDefaultSuffix: false },
 ) => {
   const { numericText } = parseAnnualSupplyVolumeText(numericValue);
   const normalizedNumericText = sanitizeAnnualSupplyVolumeNumericInput(numericText);
@@ -229,7 +266,7 @@ export const buildAnnualSupplyVolumeMultiLang = (
 
     return {
       '@xml:lang': lang,
-      '#text': formatAnnualSupplyVolumeText(normalizedNumericText, suffix),
+      '#text': formatAnnualSupplyVolumeText(normalizedNumericText, suffix, options),
     };
   });
 };
@@ -308,6 +345,10 @@ export const deriveAnnualSupplyVolumeSuffix = ({
 }) => {
   const quantitativeReferenceExchange = getQuantitativeReferenceExchange(exchangeDataSource);
   const referenceFlow = toReferenceValue(quantitativeReferenceExchange?.referenceToFlowDataSet);
+  if (!referenceFlow) {
+    return '';
+  }
+
   const refUnitRes = quantitativeReferenceExchange?.refUnitRes as ProcessRefUnitDisplay | undefined;
   const unitName =
     normalizeText(refUnitRes?.refUnitName) || normalizeText(getLangText(refUnitRes?.name, lang));
@@ -319,5 +360,5 @@ export const deriveAnnualSupplyVolumeSuffix = ({
   );
   const suffixParts = uniqueNonEmpty([unitName, contextText || referenceFlowName]);
 
-  return suffixParts.join(' ') || ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX;
+  return suffixParts.join(' ');
 };

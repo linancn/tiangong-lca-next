@@ -547,20 +547,27 @@ describe('Process Utility Functions', () => {
           exchange: [
             {
               '@dataSetInternalID': '1',
-              referenceToFlowDataSet: {
-                '@refObjectId': 'flow-id-1',
-              },
               exchangeDirection: 'Input',
               meanAmount: '10',
               quantitativeReference: false,
             },
           ],
         },
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 old suffix' }],
+          },
+        },
       };
 
       const result = genProcessJsonOrdered('test-id', dataWithoutRef);
 
       expect(result.processDataSet.processInformation.quantitativeReference).toEqual({});
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100' }]);
     });
 
     it('should use resultingAmount if not zero, otherwise use meanAmount', () => {
