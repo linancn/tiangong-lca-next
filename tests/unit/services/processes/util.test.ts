@@ -484,7 +484,63 @@ describe('Process Utility Functions', () => {
       ).toBe('2');
     });
 
-    it('should handle process with no quantitative reference', () => {
+    it('should normalize annual supply volume numeric text with the quantitative reference suffix', () => {
+      const dataWithAnnualSupplyVolume = {
+        ...mockProcessData,
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [
+              { '@xml:lang': 'en', '#text': '100 old suffix' },
+              { '#text': '200 stale fallback suffix' },
+            ],
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithAnnualSupplyVolume);
+
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }, { '#text': '200 1 kg steel' }]);
+    });
+
+    it('should preserve a previously resolved annual supply volume unit suffix while saving', () => {
+      const dataWithAnnualSupplyVolume = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+              },
+              exchangeDirection: 'Output',
+              meanAmount: '1',
+              quantitativeReference: true,
+            },
+          ],
+        },
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 kg Steel' }],
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithAnnualSupplyVolume);
+
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 kg Steel' }]);
+    });
+
+    it('should save annual supply volume with a suffix even when no quantitative reference is selected', () => {
       const dataWithoutRef = {
         ...mockProcessData,
         exchanges: {
@@ -493,6 +549,11 @@ describe('Process Utility Functions', () => {
               '@dataSetInternalID': '1',
               referenceToFlowDataSet: {
                 '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+              },
+              refUnitRes: {
+                refUnitName: 'kg',
               },
               exchangeDirection: 'Input',
               meanAmount: '10',
@@ -500,11 +561,21 @@ describe('Process Utility Functions', () => {
             },
           ],
         },
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 old suffix' }],
+          },
+        },
       };
 
       const result = genProcessJsonOrdered('test-id', dataWithoutRef);
 
       expect(result.processDataSet.processInformation.quantitativeReference).toEqual({});
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 reference flow' }]);
     });
 
     it('should use resultingAmount if not zero, otherwise use meanAmount', () => {
@@ -709,6 +780,53 @@ describe('Process Utility Functions', () => {
 
       expect(result.processDataSet.exchanges.exchange[0].meanAmount).toBeUndefined();
       expect(result.processDataSet.exchanges.exchange[0].resultingAmount).toBeUndefined();
+    });
+
+    it('should save exchange location as a plain string code', () => {
+      const dataWithLocation = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              location: [{ '@xml:lang': 'en', '#text': 'CN' }],
+              meanAmount: '10',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithLocation);
+
+      expect(result.processDataSet.exchanges.exchange[0].location).toBe('CN');
+      expect(Array.isArray(result.processDataSet.exchanges.exchange[0].location)).toBe(false);
+    });
+
+    it('should omit exchange location when the form value is cleared', () => {
+      const dataWithClearedLocation = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              location: '',
+              meanAmount: '10',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithClearedLocation);
+
+      expect(result.processDataSet.exchanges.exchange[0]).not.toHaveProperty('location');
     });
 
     it('should include allocations in exchanges', () => {
@@ -986,6 +1104,29 @@ describe('Process Utility Functions', () => {
 
       expect(result.exchanges.exchange[0].meanAmount).toBeUndefined();
       expect(result.exchanges.exchange[0].resultingAmount).toBeUndefined();
+    });
+
+    it('should normalize raw exchange location to a plain string code for forms', () => {
+      const dataWithLegacyLocation = {
+        ...mockRawData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+              },
+              exchangeDirection: 'Input',
+              location: [{ '@xml:lang': 'en', '#text': 'CN' }],
+              meanAmount: '10',
+            },
+          ],
+        },
+      };
+
+      const result = genProcessFromData(dataWithLegacyLocation);
+
+      expect(result.exchanges.exchange[0].location).toBe('CN');
     });
 
     it('should handle missing exchanges', () => {

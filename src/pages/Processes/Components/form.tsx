@@ -33,6 +33,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'reac
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../processes_schema.json';
 import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../sdkValidationUi';
+import AnnualSupplyOrProductionVolumeForm from './AnnualSupplyOrProductionVolume/form';
 import ComplianceItemForm from './Compliance/form';
 import { getExchangeColumns } from './Exchange/column';
 import ProcessExchangeCreate from './Exchange/create';
@@ -1848,13 +1849,18 @@ export const ProcessForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
-          <Divider orientationMargin='0' orientation='left' plain>
-            <FormattedMessage
-              id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
-              defaultMessage='Annual supply or production volume'
+          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+            <RequiredMark
+              label={
+                <FormattedMessage
+                  id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
+                  defaultMessage='Annual supply or production volume'
+                />
+              }
+              showError={false}
             />
           </Divider>
-          <LangTextItemForm
+          <AnnualSupplyOrProductionVolumeForm
             name={[
               'modellingAndValidation',
               'dataSourcesTreatmentAndRepresentativeness',
@@ -1865,6 +1871,19 @@ export const ProcessForm: FC<Props> = ({
                 id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
                 defaultMessage='Annual supply or production volume'
               />
+            }
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+            exchangeDataSource={exchangeDataSource}
+            rules={
+              showRules
+                ? getRules(
+                    schema['processDataSet']['modellingAndValidation'][
+                      'dataSourcesTreatmentAndRepresentativeness'
+                    ]['annualSupplyOrProductionVolume']['rules'],
+                  )
+                : []
             }
           />
 

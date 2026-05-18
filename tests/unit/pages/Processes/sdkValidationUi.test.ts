@@ -40,6 +40,16 @@ describe('process sdk validation ui helpers', () => {
         '@refObjectId',
       ]),
     ).toBe(true);
+
+    expect(
+      usesProcessLocalRequiredValidationUi([
+        'modellingAndValidation',
+        'dataSourcesTreatmentAndRepresentativeness',
+        'annualSupplyOrProductionVolume',
+        0,
+        '#text',
+      ]),
+    ).toBe(true);
   });
 
   it('only treats exchange reference selectors as local required ui owners', () => {

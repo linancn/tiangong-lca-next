@@ -293,6 +293,9 @@ jest.mock('antd', () => {
   );
 
   const Space = ({ children }: any) => <div>{children}</div>;
+  Space.Compact = ({ children }: any) => <div>{children}</div>;
+  const Row = ({ children }: any) => <div>{children}</div>;
+  const Col = ({ children }: any) => <div>{children}</div>;
 
   const Card = ({ tabList = [], activeTabKey, onTabChange, children }: any) => (
     <div data-testid='card' data-active-key={activeTabKey}>
@@ -369,9 +372,19 @@ jest.mock('antd', () => {
   };
   FormComponent.List = MockFormList;
 
-  const Input = ({ onChange, value, 'data-testid': dataTestId }: any) => (
+  const Input = ({
+    onChange,
+    value,
+    'data-testid': dataTestId,
+    'aria-label': ariaLabel,
+    disabled,
+    style,
+  }: any) => (
     <input
+      aria-label={ariaLabel}
       data-testid={dataTestId}
+      disabled={disabled}
+      style={style}
       value={value ?? ''}
       onChange={(event) => onChange?.(event.target.value)}
     />
@@ -409,11 +422,13 @@ jest.mock('antd', () => {
   return {
     __esModule: true,
     Button,
+    Col,
     Space,
     Card,
     Collapse,
     Form: FormComponent,
     Input,
+    Row,
     Select,
     InputNumber,
     Switch,
