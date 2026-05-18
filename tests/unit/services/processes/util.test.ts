@@ -547,6 +547,14 @@ describe('Process Utility Functions', () => {
           exchange: [
             {
               '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+              },
+              refUnitRes: {
+                refUnitName: 'kg',
+              },
               exchangeDirection: 'Input',
               meanAmount: '10',
               quantitativeReference: false,

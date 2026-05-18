@@ -272,13 +272,7 @@ export const buildAnnualSupplyVolumeMultiLang = (
 };
 
 export const getQuantitativeReferenceExchange = (exchangeDataSource: ProcessExchangeData[]) => {
-  return (
-    exchangeDataSource.find((exchange) => exchange?.quantitativeReference === true) ??
-    exchangeDataSource.find(
-      (exchange) => normalizeText(exchange?.exchangeDirection).toLowerCase() === 'output',
-    ) ??
-    exchangeDataSource[0]
-  );
+  return exchangeDataSource.find((exchange) => exchange?.quantitativeReference === true);
 };
 
 export const buildAnnualSupplyVolumeUnitLookupRows = (

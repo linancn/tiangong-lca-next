@@ -255,7 +255,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     expect(mergeAnnualSupplyVolumeUnitRows(exchangeRows, null)).toEqual(exchangeRows);
   });
 
-  it('derives suffixes from fallback text shapes and output exchange fallback', () => {
+  it('derives suffixes from fallback text shapes on the selected reference exchange', () => {
     expect(
       deriveAnnualSupplyVolumeSuffix({
         exchangeDataSource: [
@@ -269,6 +269,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
           {
             '@dataSetInternalID': 'output-1',
             exchangeDirection: 'Output',
+            quantitativeReference: true,
             functionalUnitOrOther: 'annual output' as unknown as { '#text': string },
             referenceToFlowDataSet: {
               'common:shortDescription': [{ '@xml:lang': 'zh', '#text': '钢板' }],
@@ -287,6 +288,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         exchangeDataSource: [
           {
             '@dataSetInternalID': 'first-1',
+            quantitativeReference: true,
             functionalUnitOrOther: { '#text': 'functional unit' },
             referenceToFlowDataSet: {
               'common:shortDescription': [{ '@xml:lang': 'zh', '#text': '钢板' }],
@@ -301,12 +303,13 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     ).toBe('kg functional unit');
   });
 
-  it('uses reference flow text and leaves suffix blank when no reference flow exists', () => {
+  it('uses reference flow text and leaves suffix blank when no reference flow is selected', () => {
     expect(
       deriveAnnualSupplyVolumeSuffix({
         exchangeDataSource: [
           {
             '@dataSetInternalID': 'first-1',
+            quantitativeReference: true,
             functionalUnitOrOther: 123 as unknown as { '#text': string },
             referenceToFlowDataSet: [
               {
@@ -321,7 +324,19 @@ describe('annualSupplyOrProductionVolume helpers', () => {
 
     expect(
       deriveAnnualSupplyVolumeSuffix({
-        exchangeDataSource: [],
+        exchangeDataSource: [
+          {
+            '@dataSetInternalID': 'output-1',
+            exchangeDirection: 'Output',
+            quantitativeReference: false,
+            referenceToFlowDataSet: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+            },
+            refUnitRes: {
+              refUnitName: 'kg',
+            },
+          },
+        ],
         lang: 'en',
       }),
     ).toBe('');

@@ -333,6 +333,50 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     await expect(formItem.rules[0].validator(null, '123')).resolves.toBeUndefined();
   });
 
+  it('keeps unit and flow context blank when exchanges exist but no reference flow is selected', async () => {
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={[
+          {
+            '@dataSetInternalID': '1',
+            exchangeDirection: 'Output',
+            quantitativeReference: false,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+              '@version': '01.00.000',
+              'common:shortDescription': [
+                { '@xml:lang': 'en', '#text': 'Steel' },
+                { '@xml:lang': 'zh', '#text': '钢材' },
+              ],
+            },
+            refUnitRes: {
+              refUnitName: 'kg',
+            },
+          },
+        ]}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='zh'
+        name={['annualSupply']}
+        onData={jest.fn()}
+        rules={[{ required: true }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(form.setFieldValue).toHaveBeenLastCalledWith(
+        ['annualSupply'],
+        [
+          { '@xml:lang': 'en', '#text': '100' },
+          { '@xml:lang': 'zh', '#text': '100' },
+        ],
+      );
+    });
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
+  });
+
   it('normalizes single-object form values and uses default required validation copy', async () => {
     const form = buildForm({ '@xml:lang': 'en', '#text': '321 kg Steel' });
     const onData = jest.fn();
