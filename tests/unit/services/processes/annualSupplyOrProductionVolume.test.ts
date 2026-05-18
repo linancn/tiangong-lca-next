@@ -1,8 +1,10 @@
 import {
   ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX,
   ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN,
+  buildAnnualSupplyVolumeUnitLookupRows,
   deriveAnnualSupplyVolumeSuffix,
   formatAnnualSupplyVolumeText,
+  mergeAnnualSupplyVolumeUnitRows,
   normalizeAnnualSupplyVolumeMultiLang,
   normalizeAnnualSupplyVolumeText,
   parseAnnualSupplyVolumeText,
@@ -73,6 +75,11 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     ]);
   });
 
+  it('preserves an existing unit prefix when the derived suffix only has reference flow text', () => {
+    expect(normalizeAnnualSupplyVolumeText('100 kg Steel', 'Steel')).toBe('100 kg Steel');
+    expect(normalizeAnnualSupplyVolumeText('100 old suffix', 'Steel')).toBe('100 Steel');
+  });
+
   it('normalizes object values with a shared suffix and leaves malformed values unchanged', () => {
     expect(
       normalizeAnnualSupplyVolumeMultiLang({ '@xml:lang': 'en', '#text': '50 old' }, 'kg'),
@@ -112,6 +119,88 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     expect(suffix).toBe('kg Steel slab');
     expect(normalizeAnnualSupplyVolumeText('100 old suffix', suffix)).toBe('100 kg Steel slab');
     expect(ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN.test('100 kg Steel slab')).toBe(true);
+  });
+
+  it('derives suffixes from unit display names when a unit symbol is unavailable', () => {
+    expect(
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: [
+          {
+            '@dataSetInternalID': 'output-1',
+            exchangeDirection: 'Output',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel slab' }],
+            },
+            refUnitRes: {
+              name: [{ '@xml:lang': 'en', '#text': 'kilogram' }],
+            },
+          },
+        ],
+        lang: 'en',
+      }),
+    ).toBe('kilogram Steel slab');
+  });
+
+  it('builds unit lookup rows and merges resolved flow units into exchange rows', () => {
+    const exchangeRows = [
+      {
+        '@dataSetInternalID': 'output-1',
+        referenceToFlowDataSet: {
+          '@refObjectId': 'flow-1',
+          '@version': '01.00.000',
+        },
+      },
+      {
+        '@dataSetInternalID': 'output-2',
+        referenceToFlowDataSet: [
+          {
+            '@refObjectId': 'flow-2',
+            '@version': '01.00.000',
+          },
+        ],
+      },
+    ];
+
+    expect(buildAnnualSupplyVolumeUnitLookupRows(exchangeRows)).toEqual([
+      {
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '01.00.000',
+      },
+      {
+        referenceToFlowDataSetId: 'flow-2',
+        referenceToFlowDataSetVersion: '01.00.000',
+      },
+    ]);
+
+    expect(buildAnnualSupplyVolumeUnitLookupRows(null as never)).toEqual([]);
+    expect(mergeAnnualSupplyVolumeUnitRows(null as never, [])).toEqual([]);
+
+    expect(
+      mergeAnnualSupplyVolumeUnitRows(exchangeRows, [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '01.00.000',
+          refUnitRes: { refUnitName: 'kg' },
+        },
+        {
+          referenceToFlowDataSetId: 'flow-2',
+          referenceToFlowDataSetVersion: '02.00.000',
+          refUnitRes: { refUnitName: 'm3' },
+        },
+      ]),
+    ).toEqual([
+      {
+        ...exchangeRows[0],
+        refUnitRes: { refUnitName: 'kg' },
+      },
+      {
+        ...exchangeRows[1],
+        refUnitRes: { refUnitName: 'm3' },
+      },
+    ]);
+
+    expect(mergeAnnualSupplyVolumeUnitRows(exchangeRows, null)).toEqual(exchangeRows);
   });
 
   it('derives suffixes from fallback text shapes and output exchange fallback', () => {

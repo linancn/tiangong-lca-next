@@ -506,6 +506,40 @@ describe('Process Utility Functions', () => {
       ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }, { '#text': '200 1 kg steel' }]);
     });
 
+    it('should preserve a previously resolved annual supply volume unit suffix while saving', () => {
+      const dataWithAnnualSupplyVolume = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+              },
+              exchangeDirection: 'Output',
+              meanAmount: '1',
+              quantitativeReference: true,
+            },
+          ],
+        },
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 kg Steel' }],
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithAnnualSupplyVolume);
+
+      expect(
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 kg Steel' }]);
+    });
+
     it('should handle process with no quantitative reference', () => {
       const dataWithoutRef = {
         ...mockProcessData,

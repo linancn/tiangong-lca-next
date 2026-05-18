@@ -1,9 +1,11 @@
 import { langOptions } from '@/services/general/data';
-import { getLangText } from '@/services/general/util';
+import { getLangText, getUnitData } from '@/services/general/util';
 import {
   ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN,
+  buildAnnualSupplyVolumeUnitLookupRows,
   deriveAnnualSupplyVolumeSuffix,
   formatAnnualSupplyVolumeText,
+  mergeAnnualSupplyVolumeUnitRows,
   normalizeAnnualSupplyVolumeMultiLang,
   parseAnnualSupplyVolumeText,
   sanitizeAnnualSupplyVolumeNumericInput,
@@ -13,7 +15,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Col, Form, InputNumber, Row, Select, message } from 'antd';
 import type { FC, ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
@@ -43,6 +45,8 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
 }) => {
   const intl = useIntl();
   const initialRenderRef = useRef(true);
+  const [exchangeDataSourceWithUnits, setExchangeDataSourceWithUnits] =
+    useState(exchangeDataSource);
   const form = formRef?.current;
   const formValues = typeof form?.getFieldValue === 'function' ? form.getFieldValue(name) : [];
   const formValueList = Array.isArray(formValues) ? formValues : formValues ? [formValues] : [];
@@ -54,18 +58,40 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
   const suffixByLang = useMemo(() => {
     return langOptions.reduce<Record<string, string>>((accumulator, option) => {
       accumulator[option.value] = deriveAnnualSupplyVolumeSuffix({
-        exchangeDataSource,
+        exchangeDataSource: exchangeDataSourceWithUnits,
         getLangText,
         lang: option.value,
       });
       return accumulator;
     }, {});
-  }, [exchangeDataSource]);
+  }, [exchangeDataSourceWithUnits]);
 
   const getSuffixForLang = useCallback(
     (value?: string) => suffixByLang[value || lang] ?? suffixByLang.en,
     [lang, suffixByLang],
   );
+
+  useEffect(() => {
+    setExchangeDataSourceWithUnits(exchangeDataSource);
+
+    const unitLookupRows = buildAnnualSupplyVolumeUnitLookupRows(exchangeDataSource);
+    const hasReferenceFlow = unitLookupRows.some((row) => row.referenceToFlowDataSetId);
+
+    if (!hasReferenceFlow) {
+      return;
+    }
+
+    getUnitData('flow', unitLookupRows).then(
+      (unitRows) => {
+        setExchangeDataSourceWithUnits(
+          mergeAnnualSupplyVolumeUnitRows(exchangeDataSource, unitRows),
+        );
+      },
+      () => {
+        setExchangeDataSourceWithUnits(exchangeDataSource);
+      },
+    );
+  }, [exchangeDataSource]);
 
   useEffect(() => {
     if (

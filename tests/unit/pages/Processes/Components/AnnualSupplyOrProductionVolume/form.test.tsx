@@ -3,6 +3,7 @@ import AnnualSupplyOrProductionVolumeForm from '@/pages/Processes/Components/Ann
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const mockMessageError = jest.fn();
+const mockGetUnitData = jest.fn(async (_idType: string, rows: any[]) => rows);
 const mockFormItems: any[] = [];
 let mockListFields: any[] = [{ key: 0, name: 0 }];
 let mockListOperations: any;
@@ -45,6 +46,7 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
+  getUnitData: (...args: any[]) => mockGetUnitData(...args),
   getLangText: (value: any, lang: string) => {
     if (typeof value === 'string') return value;
     if (Array.isArray(value)) {
@@ -133,12 +135,101 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFormItems.length = 0;
+    mockGetUnitData.mockImplementation(async (_idType: string, rows: any[]) => rows);
     mockListFields = [{ key: 0, name: 0 }];
     mockListOperations = undefined;
     global.requestAnimationFrame = (callback: FrameRequestCallback) => {
       callback(0);
       return 0;
     };
+  });
+
+  it('resolves the reference flow unit before deriving the displayed suffix', async () => {
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        referenceToFlowDataSetId: 'flow-1',
+        referenceToFlowDataSetVersion: '01.00.000',
+        refUnitRes: {
+          refUnitName: 'kg',
+        },
+      },
+    ]);
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={[
+          {
+            '@dataSetInternalID': '1',
+            exchangeDirection: 'Output',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+              '@version': '01.00.000',
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+            },
+          },
+        ]}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='en'
+        name={['annualSupply']}
+        onData={jest.fn()}
+        rules={[{ required: true }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(mockGetUnitData).toHaveBeenCalledWith('flow', [
+        {
+          referenceToFlowDataSetId: 'flow-1',
+          referenceToFlowDataSetVersion: '01.00.000',
+        },
+      ]);
+    });
+    await waitFor(() => {
+      expect(form.setFieldValue).toHaveBeenLastCalledWith(
+        ['annualSupply'],
+        [{ '@xml:lang': 'en', '#text': '100 kg Steel' }],
+      );
+    });
+    expect(screen.getByText('kg Steel')).toBeInTheDocument();
+  });
+
+  it('falls back to the raw exchange suffix when unit resolution fails', async () => {
+    mockGetUnitData.mockRejectedValueOnce(new Error('unit lookup failed'));
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={[
+          {
+            '@dataSetInternalID': '1',
+            exchangeDirection: 'Output',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+              '@version': '01.00.000',
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+            },
+          },
+        ]}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='en'
+        name={['annualSupply']}
+        onData={jest.fn()}
+        rules={[{ required: true }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(form.setFieldValue).toHaveBeenLastCalledWith(
+        ['annualSupply'],
+        [{ '@xml:lang': 'en', '#text': '100 Steel' }],
+      );
+    });
+    expect(screen.getByText('Steel')).toBeInTheDocument();
   });
 
   it('normalizes persisted text, exposes numeric input helpers, and validates required entries', async () => {
