@@ -16,7 +16,6 @@ import {
   dataListTextColumn,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
   responsiveSearchPrimaryColProps,
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
@@ -28,14 +27,10 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import {
-  getUnitGroupTableAll,
-  getUnitGroupTablePgroongaSearch,
-  unitgroup_hybrid_search,
-} from '@/services/unitgroups/api';
+import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, message, theme } from 'antd';
+import { Card, Col, Input, Row, Space, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -53,7 +48,6 @@ const TableList: FC = () => {
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
-  const [openAI, setOpenAI] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -350,23 +344,10 @@ const TableList: FC = () => {
             <Search
               disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
-              placeholder={
-                openAI
-                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                  : intl.formatMessage({ id: 'pages.search.keyWord' })
-              }
+              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
               onSearch={onSearch}
               enterButton
             />
-          </Col>
-          <Col {...responsiveSearchExtraColProps} style={{ display: 'none' }}>
-            <Checkbox
-              onChange={(e) => {
-                setOpenAI(e.target.checked);
-              }}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
-            </Checkbox>
           </Col>
         </Row>
       </Card>
@@ -440,18 +421,6 @@ const TableList: FC = () => {
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
           if (currentKeyWord.length > 0) {
-            if (openAI) {
-              return attachReviewState(
-                await unitgroup_hybrid_search(
-                  params,
-                  lang,
-                  dataSource,
-                  currentKeyWord,
-                  {},
-                  currentStateCode,
-                ),
-              );
-            }
             return attachReviewState(
               await getUnitGroupTablePgroongaSearch(
                 params,

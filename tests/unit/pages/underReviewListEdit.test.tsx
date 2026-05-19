@@ -340,7 +340,6 @@ jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: jest.fn(),
   getUnitGroupTablePgroongaSearch: jest.fn(),
-  unitgroup_hybrid_search: jest.fn(),
 }));
 
 jest.mock('@/services/processes/api', () => ({

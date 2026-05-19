@@ -17,7 +17,6 @@
  * Services mocked:
  * - getSourceTableAll
  * - getSourceTablePgroongaSearch
- * - source_hybrid_search
  * - createSource
  * - updateSource
  * - deleteSource
@@ -193,7 +192,6 @@ jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: jest.fn(),
   getSourceTablePgroongaSearch: jest.fn(),
-  source_hybrid_search: jest.fn(),
   createSource: jest.fn(),
   updateSource: jest.fn(),
   deleteSource: jest.fn(),
@@ -203,7 +201,6 @@ jest.mock('@/services/sources/api', () => ({
 const {
   getSourceTableAll: mockGetSourceTableAll,
   getSourceTablePgroongaSearch: mockGetSourceTablePgroongaSearch,
-  source_hybrid_search: mockSourceHybridSearch,
   createSource: mockCreateSource,
   updateSource: mockUpdateSource,
   deleteSource: mockDeleteSource,
@@ -409,8 +406,6 @@ describe('Sources workflow', () => {
     mockGetSourceTablePgroongaSearch.mockResolvedValue(
       createMockTableResponse([searchSource], 1, 1),
     );
-    mockSourceHybridSearch.mockResolvedValue(createMockTableResponse([], 0, 1));
-
     mockCreateSource.mockResolvedValue({ data: [{ id: createdSource.id }] });
     mockUpdateSource.mockResolvedValue({ data: [{ rule_verification: true }] });
     mockDeleteSource.mockResolvedValue({ status: 204 });

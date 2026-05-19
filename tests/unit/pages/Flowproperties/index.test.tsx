@@ -22,7 +22,6 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetFlowpropertyTableAll = jest.fn();
 const mockGetFlowpropertyTablePgroongaSearch = jest.fn();
-const mockFlowpropertyHybridSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => {
@@ -49,7 +48,6 @@ jest.mock('umi', () => ({
 
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
-  flowproperty_hybrid_search: (...args: any[]) => mockFlowpropertyHybridSearch(...args),
   getFlowpropertyTableAll: (...args: any[]) => mockGetFlowpropertyTableAll(...args),
   getFlowpropertyTablePgroongaSearch: (...args: any[]) =>
     mockGetFlowpropertyTablePgroongaSearch(...args),
@@ -351,7 +349,6 @@ describe('FlowpropertiesPage', () => {
     mockContributeSource.mockResolvedValue({ error: null });
     mockGetFlowpropertyTableAll.mockResolvedValue({ data: [row], success: true });
     mockGetFlowpropertyTablePgroongaSearch.mockResolvedValue({ data: [row], success: true });
-    mockFlowpropertyHybridSearch.mockResolvedValue({ data: [row], success: true });
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
@@ -434,7 +431,7 @@ describe('FlowpropertiesPage', () => {
     );
   });
 
-  it('uses the current state filter for pgroonga and AI search', async () => {
+  it('uses the current state filter for pgroonga search', async () => {
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
@@ -453,19 +450,6 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
-        'en',
-        'my',
-        'climate',
-        {},
-        '20',
-      ),
-    );
-
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-    await waitFor(() =>
-      expect(mockFlowpropertyHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',

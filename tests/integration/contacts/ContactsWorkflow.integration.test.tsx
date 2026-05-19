@@ -170,7 +170,6 @@ jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
   getContactTableAll: jest.fn(),
   getContactTablePgroongaSearch: jest.fn(),
-  contact_hybrid_search: jest.fn(),
   createContact: jest.fn(),
   updateContact: jest.fn(),
   deleteContact: jest.fn(),
