@@ -1,10 +1,6 @@
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
-import {
-  getSourceTableAll,
-  getSourceTablePgroongaSearch,
-  source_hybrid_search,
-} from '@/services/sources/api';
-import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
+import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
+import { Card, Col, Input, Row, Space, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getPublicationTypeLabel } from './Components/optiondata';
@@ -26,7 +22,6 @@ import {
   dataListTextColumn,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
   responsiveSearchPrimaryColProps,
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
@@ -50,7 +45,6 @@ const { Search } = Input;
 const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
-  const [openAI, setOpenAI] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -314,23 +308,10 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={
-                openAI
-                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                  : intl.formatMessage({ id: 'pages.search.keyWord' })
-              }
+              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
               onSearch={onSearch}
               enterButton
             />
-          </Col>
-          <Col {...responsiveSearchExtraColProps} style={{ display: 'none' }}>
-            <Checkbox
-              onChange={(e) => {
-                setOpenAI(e.target.checked);
-              }}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
-            </Checkbox>
           </Col>
         </Row>
       </Card>
@@ -386,18 +367,6 @@ const TableList: FC = () => {
           const currentKeyWord = keyWordRef.current;
           const currentStateCode = stateCodeRef.current;
           if (currentKeyWord.length > 0) {
-            if (openAI) {
-              return attachReviewState(
-                await source_hybrid_search(
-                  params,
-                  lang,
-                  dataSource,
-                  currentKeyWord,
-                  {},
-                  currentStateCode,
-                ),
-              );
-            }
             return attachReviewState(
               await getSourceTablePgroongaSearch(
                 params,

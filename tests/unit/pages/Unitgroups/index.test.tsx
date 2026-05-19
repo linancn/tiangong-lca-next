@@ -31,7 +31,6 @@ const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
-const mockUnitgroupHybridSearch = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -71,7 +70,6 @@ jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
   getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
-  unitgroup_hybrid_search: (...args: any[]) => mockUnitgroupHybridSearch(...args),
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -378,21 +376,6 @@ describe('UnitgroupsPage', () => {
       ],
       success: true,
     });
-    mockUnitgroupHybridSearch.mockResolvedValue({
-      data: [
-        {
-          id: 'ug-1',
-          version: '1.0.0',
-          name: 'Length units',
-          refUnitName: 'm2',
-          refUnitGeneralComment: 'Area unit',
-          classification: 'Physical',
-          modifiedAt: '2024-01-01',
-          teamId: '',
-        },
-      ],
-      success: true,
-    });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -411,7 +394,7 @@ describe('UnitgroupsPage', () => {
     expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"disabled":true');
   });
 
-  it('loads admin data, supports pgroonga and hybrid search, and contributes successfully', async () => {
+  it('loads admin data, supports pgroonga search, and contributes successfully', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
         team_id: '00000000-0000-0000-0000-000000000000',
@@ -454,19 +437,6 @@ describe('UnitgroupsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
-        'en',
-        'my',
-        'density',
-        {},
-        '20',
-      ),
-    );
-
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-    await waitFor(() =>
-      expect(mockUnitgroupHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',

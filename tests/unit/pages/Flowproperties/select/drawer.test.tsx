@@ -231,7 +231,6 @@ jest.mock('@/services/flowproperties/api', () => ({
   getFlowpropertyTableAll: (...args: any[]) => mockGetFlowpropertyTableAll(...args),
   getFlowpropertyTablePgroongaSearch: jest.fn(async () => ({ data: [], success: true })),
   getFlowpropertyDetail: jest.fn(),
-  flowproperty_hybrid_search: jest.fn(),
   createFlowproperties: jest.fn(),
   updateFlowproperties: jest.fn(),
   deleteFlowproperties: jest.fn(),

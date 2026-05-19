@@ -23,7 +23,6 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetContactTableAll = jest.fn();
 const mockGetContactTablePgroongaSearch = jest.fn();
-const mockContactHybridSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -52,7 +51,6 @@ jest.mock('umi', () => ({
 
 jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
-  contact_hybrid_search: (...args: any[]) => mockContactHybridSearch(...args),
   getContactTableAll: (...args: any[]) => mockGetContactTableAll(...args),
   getContactTablePgroongaSearch: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
 }));
@@ -329,7 +327,6 @@ describe('ContactsPage', () => {
     });
     mockGetContactTableAll.mockResolvedValue({ data: [baseContactRow], success: true });
     mockGetContactTablePgroongaSearch.mockResolvedValue({ data: [baseContactRow], success: true });
-    mockContactHybridSearch.mockResolvedValue({ data: [baseContactRow], success: true });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -369,7 +366,7 @@ describe('ContactsPage', () => {
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
-  it('supports pgroonga search, AI search, and contribute flows', async () => {
+  it('supports pgroonga search and contribute flows', async () => {
     renderWithProviders(<ContactsPage />);
 
     await screen.findByTestId('contact-view');
@@ -400,19 +397,6 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
-        'en',
-        'my',
-        'alice',
-        {},
-        '20',
-      ),
-    );
-
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-    await waitFor(() =>
-      expect(mockContactHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',

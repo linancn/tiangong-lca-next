@@ -15,17 +15,12 @@ import {
   dataListTextColumn,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
   responsiveSearchPrimaryColProps,
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
-import {
-  contact_hybrid_search,
-  getContactTableAll,
-  getContactTablePgroongaSearch,
-} from '@/services/contacts/api';
+import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactImportData, ContactTable } from '@/services/contacts/data';
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -33,7 +28,7 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
+import { Card, Col, Input, Row, Space, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -49,7 +44,6 @@ const { Search } = Input;
 const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ContactImportData | null>(null);
-  const [openAI, setOpenAI] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -316,23 +310,10 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={
-                openAI
-                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                  : intl.formatMessage({ id: 'pages.search.keyWord' })
-              }
+              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
               onSearch={onSearch}
               enterButton
             />
-          </Col>
-          <Col {...responsiveSearchExtraColProps} style={{ display: 'none' }}>
-            <Checkbox
-              onChange={(e) => {
-                setOpenAI(e.target.checked);
-              }}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
-            </Checkbox>
           </Col>
         </Row>
       </Card>
@@ -388,18 +369,6 @@ const TableList: FC = () => {
           const currentKeyWord = keyWordRef.current;
           const currentStateCode = stateCodeRef.current;
           if (currentKeyWord.length > 0) {
-            if (openAI) {
-              return attachReviewState(
-                await contact_hybrid_search(
-                  params,
-                  lang,
-                  dataSource,
-                  currentKeyWord,
-                  {},
-                  currentStateCode,
-                ),
-              );
-            }
             return attachReviewState(
               await getContactTablePgroongaSearch(
                 params,

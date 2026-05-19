@@ -393,7 +393,6 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
-  contact_hybrid_search: jest.fn(),
   getContactTableAll: jest.fn(),
   getContactTablePgroongaSearch: jest.fn(),
 }));
@@ -402,12 +401,10 @@ jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: jest.fn(),
   getSourceTablePgroongaSearch: jest.fn(),
-  source_hybrid_search: jest.fn(),
 }));
 
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
-  flowproperty_hybrid_search: jest.fn(),
   getFlowpropertyTableAll: jest.fn(),
   getFlowpropertyTablePgroongaSearch: jest.fn(),
 }));
@@ -423,7 +420,6 @@ jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: jest.fn(),
   getUnitGroupTablePgroongaSearch: jest.fn(),
-  unitgroup_hybrid_search: jest.fn(),
 }));
 
 jest.mock('@/services/lifeCycleModels/api', () => ({
