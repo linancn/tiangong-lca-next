@@ -1090,4 +1090,19 @@ describe('Contacts API Service', () => {
       });
     });
   });
+
+  describe('getContactDetail', () => {
+    it('should delegate to getDataDetail with contacts table', async () => {
+      const { getContactDetail } = require('@/services/contacts/api');
+      const { getDataDetail } = jest.requireMock('@/services/general/api');
+      const mockDetail = { data: { id: 'contact-detail' }, success: true };
+
+      getDataDetail.mockResolvedValue(mockDetail);
+
+      const result = await getContactDetail('contact-detail', '01.00.000');
+
+      expect(getDataDetail).toHaveBeenCalledWith('contact-detail', '01.00.000', 'contacts');
+      expect(result).toBe(mockDetail);
+    });
+  });
 });
