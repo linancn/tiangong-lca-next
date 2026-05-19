@@ -9,7 +9,7 @@
  * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
- * - getUnitGroupTableAll, getUnitGroupTablePgroongaSearch, unitgroup_hybrid_search
+ * - getUnitGroupTableAll, getUnitGroupTablePgroongaSearch
  * - getUnitGroupDetail, createUnitGroup, updateUnitGroup, deleteUnitGroup
  * Ancillary mocks:
  * - getRoleByUserId (ensures admin access), getTeamById, contributeSource
@@ -271,7 +271,6 @@ jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: jest.fn(),
   getUnitGroupTablePgroongaSearch: jest.fn(),
-  unitgroup_hybrid_search: jest.fn(),
   createUnitGroup: jest.fn(),
   updateUnitGroup: jest.fn(),
   deleteUnitGroup: jest.fn(),
@@ -288,7 +287,6 @@ const { message } = jest.requireMock('antd');
 const {
   getUnitGroupTableAll,
   getUnitGroupTablePgroongaSearch,
-  unitgroup_hybrid_search,
   createUnitGroup,
   updateUnitGroup,
   deleteUnitGroup,
@@ -329,11 +327,6 @@ describe('Unitgroups Workflow Integration', () => {
       ],
       success: true,
       total: 1,
-    });
-    unitgroup_hybrid_search.mockResolvedValue({
-      data: [],
-      success: true,
-      total: 0,
     });
     createUnitGroup.mockResolvedValue({
       data: [{ id: 'generated-unit-group-id' }],

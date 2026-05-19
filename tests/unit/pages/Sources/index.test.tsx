@@ -23,7 +23,6 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetSourceTableAll = jest.fn();
 const mockGetSourceTablePgroongaSearch = jest.fn();
-const mockSourceHybridSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -53,7 +52,6 @@ jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: (...args: any[]) => mockGetSourceTableAll(...args),
   getSourceTablePgroongaSearch: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
-  source_hybrid_search: (...args: any[]) => mockSourceHybridSearch(...args),
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -333,7 +331,6 @@ describe('SourcesPage', () => {
     });
     mockGetSourceTableAll.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockGetSourceTablePgroongaSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
-    mockSourceHybridSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -373,7 +370,7 @@ describe('SourcesPage', () => {
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
 
-  it('supports pgroonga search, AI search, and contribute flows', async () => {
+  it('supports pgroonga search and contribute flows', async () => {
     renderWithProviders(<SourcesPage />);
 
     await screen.findByTestId('source-view');
@@ -404,19 +401,6 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
-        'en',
-        'my',
-        'iso',
-        {},
-        '20',
-      ),
-    );
-
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
-    await userEvent.click(screen.getByRole('button', { name: /search/i }));
-    await waitFor(() =>
-      expect(mockSourceHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',

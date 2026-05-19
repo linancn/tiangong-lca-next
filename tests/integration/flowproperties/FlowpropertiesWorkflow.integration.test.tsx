@@ -164,7 +164,6 @@ jest.mock('@/services/flowproperties/api', () => ({
       version: '1.0.0',
     },
   })),
-  flowproperty_hybrid_search: jest.fn(),
   getFlowpropertyTablePgroongaSearch: jest.fn(),
 }));
 
