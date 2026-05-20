@@ -43,7 +43,7 @@ lastReviewedCommit: 6c5d02f5cad6a864e290d16b3ce6d3a62c91247b
 - touched code must stay at full closure
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
-- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection; if that list changes, re-check save, validation, navigation, and highlighting flows before treating the baseline as settled
+- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled
 
 ## Reopen Conditions
 
