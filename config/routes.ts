@@ -12,6 +12,12 @@
  */
 export default [
   {
+    path: '/dashboard/national-carbon',
+    layout: false,
+    menu: false,
+    component: './NationalCarbonDashboard',
+  },
+  {
     path: '/manageSystem',
     name: 'manageSystem',
     icon: 'TeamOutlined',

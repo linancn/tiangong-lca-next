@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-05-19"
-lastReviewedCommit: "4016e60eb90b283596d3ff08a0a66eec112e4e9b"
+lastReviewedAt: "2026-05-20"
+lastReviewedCommit: "6c5d02f5cad6a864e290d16b3ce6d3a62c91247b"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -202,6 +202,9 @@ routing:
         - public/classifications/**
         - public/locations/**
         - public/lciamethods/**
+    public-map-assets:
+      paths:
+        - public/maps/**
     data-workflow-fixtures:
       paths:
         - tests/data-workflows/test-api-smoke.cjs
@@ -483,6 +486,20 @@ rules:
       - path: docs/agents/public-classifications-gz-usage.md
         mode: review_or_update
     reason: Static resource changes can invalidate both the repo routing layer and the detailed cache or usage guidance.
+  - id: next-public-map-assets-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: public/maps/**
+        kind: static-map-resource
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+    reason: Public map assets are static resources consumed by route-level pages and should stay aligned with the repo routing layer, architecture map, and proof baseline.
   - id: next-analysis-and-calculation-adjacent-contract
     scope: repo
     repo: next
