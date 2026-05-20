@@ -1,4 +1,4 @@
-import type { LangTextValue, ReferenceItem } from '@/services/general/data';
+import type { LangTextValue, ReferenceItem, VersionedDataRow } from '@/services/general/data';
 import type { UnitGroup } from '@tiangong-lca/tidas-sdk/types';
 
 export type UnitGroupImportItem = {
@@ -10,20 +10,13 @@ type UnitRefValue = {
   generalComment?: LangTextValue;
 };
 
-export type UnitGroupTable = {
-  key?: React.Key;
-  id: string;
+export type UnitGroupTable = VersionedDataRow & {
   lang: string;
   name: string;
   classification: string;
   refUnitId: string;
   refUnitName: string;
   refUnitGeneralComment: string;
-  version: string;
-  versionCount?: number;
-  modifiedAt: Date;
-  stateCode?: number;
-  teamId: string;
 };
 
 export type UnitGroupDetailData = {

@@ -18,6 +18,7 @@ import {
 import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
 import { getRuntimeLocale } from './runtimeLocale';
+import { sortDataSetVersionRows } from './version';
 
 type InvokeErrorBody = {
   code?: string;
@@ -1212,7 +1213,7 @@ export async function getAllVersions(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'version';
   const orderBy = sort[sortBy] ?? 'descend';
 
   let query = supabase
@@ -1712,8 +1713,13 @@ export async function getAllVersions(
       }
     }
 
+    const versionSortedData =
+      sortBy === 'version'
+        ? sortDataSetVersionRows(data, orderBy === 'ascend' ? 'asc' : 'desc')
+        : data;
+
     return Promise.resolve({
-      data: data,
+      data: versionSortedData,
       page: params.current ?? 1,
       success: true,
       total: result.count ?? 0,

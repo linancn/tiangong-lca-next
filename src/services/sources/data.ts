@@ -1,18 +1,12 @@
-import type { ReferenceItem } from '@/services/general/data';
+import type { ReferenceItem, VersionedDataRow } from '@/services/general/data';
 import type { Source } from '@tiangong-lca/tidas-sdk/types';
-export type SourceTable = {
+export type SourceTable = VersionedDataRow & {
   key: React.Key;
-  id: string;
   lang: string;
   shortName: string;
-  version: string;
-  versionCount?: number;
   classification: string;
   sourceCitation: string;
   publicationType: string;
-  modifiedAt: Date;
-  stateCode?: number;
-  teamId: string;
 };
 
 export type SourceImportItem = {

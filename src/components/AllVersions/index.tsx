@@ -6,9 +6,9 @@ import ProcessView from '@/pages/Processes/Components/view';
 import SourceView from '@/pages/Sources/Components/view';
 import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getAllVersions } from '@/services/general/api';
-import { ListPagination } from '@/services/general/data';
+import { ListPagination, VersionedDataRow } from '@/services/general/data';
 import { getDataSource } from '@/services/general/util';
-import { getNextDataSetVersion } from '@/services/general/version';
+import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Badge, Button, Card, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
@@ -57,10 +57,10 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const [selectedVersionRowKeys, setSelectedVersionRowKeys] = useState<Key[]>([]);
-  const [selectedVersionRow, setSelectedVersionRow] = useState<any | null>(null);
+  const [selectedVersionRow, setSelectedVersionRow] = useState<VersionedDataRow | null>(null);
   const location = useLocation();
   const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
-  const tableDataRef = useRef<any[]>([]);
+  const tableDataRef = useRef<VersionedDataRow[]>([]);
   const selectable = Boolean(onSelectVersion);
 
   useEffect(() => {
@@ -147,8 +147,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   ];
 
   const getNewVersion = (): string => {
-    const versions = tableDataRef.current.map((i: any) => i.version);
-    return getNextDataSetVersion(versions);
+    return getNextDataSetVersionFromRows(tableDataRef.current);
   };
 
   return (
@@ -233,7 +232,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
                 lang,
                 dataSource,
               );
-              tableDataRef.current = result.data;
+              tableDataRef.current = result.data ?? [];
               return result;
             }}
             columns={allVersionsColumns}

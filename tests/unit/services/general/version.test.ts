@@ -2,6 +2,8 @@ import {
   compareDataSetVersions,
   getHighestDataSetVersion,
   getNextDataSetVersion,
+  getNextDataSetVersionFromRows,
+  sortDataSetVersionRows,
 } from '@/services/general/version';
 
 describe('dataset version helpers', () => {
@@ -35,5 +37,37 @@ describe('dataset version helpers', () => {
 
   it('rolls over patch and minor versions at their limits', () => {
     expect(getNextDataSetVersion(['01.99.999'])).toBe('02.00.000');
+  });
+
+  it('sorts rows by dataset version using the shared comparator', () => {
+    const rows = [
+      { id: 'invalid', version: 'not-a-version' },
+      { id: 'middle', version: '01.00.010' },
+      { id: 'latest', version: '02.00.000' },
+      { id: 'oldest', version: '00.99.999' },
+    ];
+
+    expect(sortDataSetVersionRows(rows).map((row) => row.id)).toEqual([
+      'latest',
+      'middle',
+      'oldest',
+      'invalid',
+    ]);
+    expect(sortDataSetVersionRows(rows, 'asc').map((row) => row.id)).toEqual([
+      'invalid',
+      'oldest',
+      'middle',
+      'latest',
+    ]);
+  });
+
+  it('computes next dataset version from versioned rows', () => {
+    expect(
+      getNextDataSetVersionFromRows([
+        { version: '01.00.001' },
+        { version: '01.00.010' },
+        { version: undefined },
+      ]),
+    ).toBe('01.00.011');
   });
 });

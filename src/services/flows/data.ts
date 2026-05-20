@@ -1,8 +1,6 @@
-import type { LangTextValue, ReferenceItem } from '@/services/general/data';
+import type { LangTextValue, ReferenceItem, VersionedDataRow } from '@/services/general/data';
 import type { Flow } from '@tiangong-lca/tidas-sdk/types';
-export type FlowTable = {
-  id: string;
-  version: string;
+export type FlowTable = VersionedDataRow & {
   name: string;
   synonyms: string;
   classification: string;
@@ -10,10 +8,6 @@ export type FlowTable = {
   CASNumber: string;
   locationOfSupply: string;
   refFlowPropertyId: string;
-  modifiedAt: Date;
-  stateCode?: number;
-  teamId: string;
-  versionCount?: number;
 };
 
 export type FlowModelTable = {

@@ -1,6 +1,10 @@
 const DATA_SET_VERSION_PART_COUNT = 3;
 const DEFAULT_DATA_SET_VERSION = '00.00.000';
 
+export type DataSetVersionRow = {
+  version?: string | null;
+};
+
 function parseDataSetVersion(version: string | null | undefined): number[] | null {
   if (typeof version !== 'string') {
     return null;
@@ -86,4 +90,19 @@ export function getNextDataSetVersion(versions: Array<string | null | undefined>
   }
 
   return `${String(parts[0]).padStart(2, '0')}.${String(parts[1]).padStart(2, '0')}.${String(parts[2]).padStart(3, '0')}`;
+}
+
+export function sortDataSetVersionRows<T extends DataSetVersionRow>(
+  rows: T[],
+  order: 'asc' | 'desc' = 'desc',
+): T[] {
+  const direction = order === 'asc' ? 1 : -1;
+
+  return [...rows].sort(
+    (leftRow, rightRow) => direction * compareDataSetVersions(leftRow.version, rightRow.version),
+  );
+}
+
+export function getNextDataSetVersionFromRows<T extends DataSetVersionRow>(rows: T[]): string {
+  return getNextDataSetVersion(rows.map((row) => row.version));
 }

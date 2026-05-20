@@ -21,7 +21,7 @@ checkPaths:
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: 9faea22964246dd6e5ceba3a624255f9333cc69f
+lastReviewedCommit: ca4280853d06d12dd6566df5ba0e48cbc3466719
 ---
 
 # LCA Analysis And Visualization Plan

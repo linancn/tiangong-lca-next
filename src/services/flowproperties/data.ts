@@ -1,4 +1,4 @@
-import type { LangTextValue, ReferenceItem } from '@/services/general/data';
+import type { LangTextValue, ReferenceItem, VersionedDataRow } from '@/services/general/data';
 import type { FlowProperty } from '@tiangong-lca/tidas-sdk/types';
 
 export type FlowpropertyReference = ReferenceItem | ReferenceItem[];
@@ -11,20 +11,13 @@ export type FlowpropertyRefUnitDisplay = {
 
 export type FlowpropertyRefUnit = Record<string, unknown>;
 
-export type FlowpropertyTable = {
-  key?: React.Key;
-  id: string;
-  version: string;
+export type FlowpropertyTable = VersionedDataRow & {
   name: string;
   classification: string;
   generalComment: string;
   refUnitGroupId: string;
   refUnitGroupVersion?: string;
   refUnitGroup: string;
-  modifiedAt: Date;
-  versionCount?: number;
-  stateCode?: number;
-  teamId: string;
   refUnitRes: FlowpropertyRefUnit;
 };
 
