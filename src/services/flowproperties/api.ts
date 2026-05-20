@@ -21,6 +21,135 @@ import {
 } from '../general/api';
 import { genFlowpropertyJsonOrdered } from './util';
 
+type FlowpropertyListRpcRow = {
+  id?: string;
+  json?: any;
+  version?: string;
+  modified_at?: string;
+  team_id?: string;
+  version_count?: number | string | null;
+  total_count?: number | string | null;
+};
+
+function normalizeFlowpropertyVersionCount(row: FlowpropertyListRpcRow): number | undefined {
+  const versionCount = Number(row.version_count ?? 0);
+  if (!Number.isFinite(versionCount) || versionCount <= 0) {
+    return undefined;
+  }
+  return versionCount;
+}
+
+function normalizeFlowpropertyTotalCount(row?: FlowpropertyListRpcRow): number {
+  return Number(row?.total_count ?? 0) || 0;
+}
+
+function normalizeFlowpropertySortBy(sortBy: string): string {
+  if (sortBy === 'modifiedAt') {
+    return 'modified_at';
+  }
+  if (sortBy === 'createdAt') {
+    return 'created_at';
+  }
+  return sortBy;
+}
+
+function normalizeFlowpropertySortDirection(orderBy: SortOrder): 'asc' | 'desc' {
+  return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function getOptionalTeamId(tid: string | []): string | null {
+  if (typeof tid === 'string' && tid.length > 0) {
+    return tid;
+  }
+  return null;
+}
+
+async function getFlowpropertyTeamFilter(dataSource: string, tid: string | []) {
+  if (dataSource === 'te') {
+    return await getTeamIdByUserId();
+  }
+  if (dataSource === 'tg' || dataSource === 'co') {
+    return getOptionalTeamId(tid);
+  }
+  return null;
+}
+
+async function mapFlowpropertyListRows(
+  rows: FlowpropertyListRpcRow[],
+  lang: string,
+): Promise<any[]> {
+  if (lang === 'zh') {
+    const classificationData = await getCachedClassificationData('FlowProperty', lang, ['all']);
+    return rows.map((i) => {
+      try {
+        const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
+        const classifications = jsonToList(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+        );
+        const classificationZH = genClassificationZH(classifications, classificationData);
+        const referenceUnitGroup = dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup;
+
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
+          classification: classificationToString(classificationZH),
+          generalComment: getLangText(
+            dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+            lang,
+          ),
+          refUnitGroupId: referenceUnitGroup?.['@refObjectId'] ?? '-',
+          refUnitGroup: getLangText(referenceUnitGroup?.['common:shortDescription'] ?? {}, lang),
+          version: i.version,
+          versionCount: normalizeFlowpropertyVersionCount(i),
+          modifiedAt: new Date(i.modified_at ?? ''),
+          teamId: i.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
+  }
+
+  return rows.map((i) => {
+    try {
+      const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
+      const classifications = jsonToList(
+        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+          'common:class'
+        ],
+      );
+      const referenceUnitGroup = dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup;
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
+        classification: classificationToString(classifications),
+        generalComment: getLangText(
+          dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+          lang,
+        ),
+        refUnitGroupId: referenceUnitGroup?.['@refObjectId'] ?? '-',
+        refUnitGroup: getLangText(referenceUnitGroup?.['common:shortDescription'] ?? {}, lang),
+        version: i.version,
+        versionCount: normalizeFlowpropertyVersionCount(i),
+        modifiedAt: new Date(i.modified_at ?? ''),
+        teamId: i.team_id,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+      };
+    }
+  });
+}
+
 export async function createFlowproperties(
   id: string,
   data: any,
@@ -147,65 +276,32 @@ export async function getFlowpropertyTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-    id,
-    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
-    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
-    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
-    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
-    version,
-    modified_at,
-    team_id
-  `;
-
-  const tableName = 'flowproperties';
-
-  let query = supabase
-    .from(tableName)
-    .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-      });
-    }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
+  const session = await supabase.auth.getSession();
+  if (dataSource === 'my' && !session.data.session) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
   }
 
-  const result = await query;
+  const teamId = await getFlowpropertyTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+    });
+  }
+
+  const result = await supabase.rpc('get_latest_flowproperty_versions', {
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session.data.session?.user?.id ?? '',
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    sort_by: normalizeFlowpropertySortBy(sortBy),
+    sort_direction: normalizeFlowpropertySortDirection(orderBy),
+  });
 
   if (result.error) {
     console.log('error', result.error);
@@ -219,65 +315,13 @@ export async function getFlowpropertyTableAll(
       });
     }
 
-    let data: any[] = [];
-
-    if (lang === 'zh') {
-      await getCachedClassificationData('FlowProperty', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const classifications = jsonToList(i?.['common:class']);
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              name: getLangText(i?.['common:name'], lang),
-              classification: classificationToString(classificationZH),
-              generalComment: getLangText(i?.['common:generalComment'], lang),
-              refUnitGroupId: i?.['@refObjectId'] ?? '-',
-              refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
-              version: i.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const classifications = jsonToList(i?.['common:class']);
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: getLangText(i?.['common:name'], lang),
-            classification: classificationToString(classifications),
-            generalComment: getLangText(i?.['common:generalComment'], lang),
-            refUnitGroupId: i?.['@refObjectId'] ?? '-',
-            refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = await mapFlowpropertyListRows(result.data, lang);
 
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: normalizeFlowpropertyTotalCount(result.data[0]),
     });
   }
   return Promise.resolve({
@@ -297,12 +341,21 @@ export async function getFlowpropertyTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  tid: string | [] = [],
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
+    const teamId = await getFlowpropertyTeamFilter(dataSource, tid);
+    if (dataSource === 'te' && !teamId) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+
     result = await supabase.rpc(
-      'pgroonga_search_flowproperties',
+      'pgroonga_search_flowproperties_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -311,7 +364,8 @@ export async function getFlowpropertyTablePgroongaSearch(
             page_current: params.current ?? 1,
             data_source: dataSource,
             this_user_id: session.data.session.user?.id,
-            state_code: stateCode,
+            team_id_filter: teamId,
+            state_code_filter: stateCode,
           }
         : {
             query_text: queryText,
@@ -320,6 +374,8 @@ export async function getFlowpropertyTablePgroongaSearch(
             page_current: params.current ?? 1,
             data_source: dataSource,
             this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: null,
           },
     );
   }
@@ -333,97 +389,13 @@ export async function getFlowpropertyTablePgroongaSearch(
         success: true,
       });
     }
-    const totalCount = result.data[0].total_count;
-
-    let data: any[] = [];
-
-    if (lang === 'zh') {
-      await getCachedClassificationData('FlowProperty', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-              classification: classificationToString(classificationZH),
-              generalComment: getLangText(
-                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-                lang,
-              ),
-              refUnitGroupId:
-                dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.['@refObjectId'] ??
-                '-',
-              refUnitGroup: getLangText(
-                dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-                  'common:shortDescription'
-                ] ?? {},
-                lang,
-              ),
-              version: i.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-            classification: classificationToString(classifications),
-            generalComment: getLangText(
-              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-              lang,
-            ),
-            refUnitGroupId:
-              dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.['@refObjectId'] ??
-              '-',
-            refUnitGroup: getLangText(
-              dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup?.[
-                'common:shortDescription'
-              ] ?? {},
-              lang,
-            ),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = await mapFlowpropertyListRows(result.data, lang);
 
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: normalizeFlowpropertyTotalCount(result.data[0]),
     });
   }
 

@@ -408,89 +408,135 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
   });
 
   describe('getFlowpropertyTableAll', () => {
-    it('should fetch flow properties with pagination', async () => {
-      const params = { current: 1, pageSize: 10 };
-      const sort = { modified_at: 'descend' as const };
-      const mockData = [
-        {
-          id: 'fp-1',
-          version: '1.0',
-          'common:name': [{ '@xml:lang': 'en', '#text': 'Mass' }],
-          'common:class': [],
-          'common:generalComment': [],
-          '@refObjectId': 'ug-1',
-          'common:shortDescription': [],
-          modified_at: '2024-01-01',
-          team_id: 'team-1',
+    const latestFlowpropertyRow = (overrides: Record<string, any> = {}) => ({
+      id: 'fp-1',
+      version: '01.00.001',
+      modified_at: '2024-01-01T00:00:00Z',
+      team_id: 'team-1',
+      version_count: 2,
+      total_count: 7,
+      json: {
+        flowPropertyDataSet: {
+          flowPropertiesInformation: {
+            dataSetInformation: {
+              'common:name': [
+                { '@xml:lang': 'en', '#text': 'Mass' },
+                { '@xml:lang': 'zh', '#text': '质量' },
+              ],
+              classificationInformation: {
+                'common:classification': {
+                  'common:class': [{ '#text': 'Impact category' }],
+                },
+              },
+              'common:generalComment': [
+                { '@xml:lang': 'en', '#text': 'Mass comment' },
+                { '@xml:lang': 'zh', '#text': '质量说明' },
+              ],
+            },
+            quantitativeReference: {
+              referenceToReferenceUnitGroup: {
+                '@refObjectId': 'ug-1',
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Reference unit group' },
+                  { '@xml:lang': 'zh', '#text': '参考单位组' },
+                ],
+              },
+            },
+          },
         },
-      ];
+      },
+      ...overrides,
+    });
 
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({ data: mockData, error: null, count: 1 });
-
-      supabase.from.mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          order: mockOrder.mockReturnValue({
-            range: mockRange.mockReturnValue({
-              eq: mockEq,
-            }),
-          }),
-        }),
+    beforeEach(() => {
+      getLangText.mockImplementation((value: any, lang: string) => {
+        if (Array.isArray(value)) {
+          return value.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '';
+        }
+        return typeof value === 'string' ? value : '';
       });
-
-      getLangText.mockReturnValue('Mass');
-      classificationToString.mockReturnValue('');
-      jsonToList.mockReturnValue([]);
-      getCachedClassificationData.mockResolvedValue([]);
-
-      const result = await getFlowpropertyTableAll(params, sort, 'en', 'tg', [], undefined);
-
-      expect(supabase.from).toHaveBeenCalledWith('flowproperties');
-      expect(mockOrder).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(result.success).toBe(true);
-      expect(result.data).toHaveLength(1);
+      jsonToList.mockReturnValue([{ '#text': 'Impact category' }]);
+      classificationToString.mockReturnValue('Impact category');
     });
 
-    it('should handle different data sources', async () => {
-      const params = { current: 1, pageSize: 10 };
-      const sort = {};
+    it('should fetch latest flow properties through the RPC with pagination and filters', async () => {
+      supabase.rpc.mockResolvedValueOnce({ data: [latestFlowpropertyRow()], error: null });
 
-      // Test 'tg' data source with team ID
-      const queryBuilder1 = createQueryBuilder({ data: [], error: null, count: 0 });
-      supabase.from.mockReturnValueOnce(queryBuilder1);
+      const result = await getFlowpropertyTableAll(
+        { current: 2, pageSize: 5 },
+        { modifiedAt: 'ascend' },
+        'en',
+        'tg',
+        'team-9',
+        undefined,
+      );
 
-      await getFlowpropertyTableAll(params, sort, 'en', 'tg', 'team-123', undefined);
-      expect(queryBuilder1.eq).toHaveBeenCalledWith('state_code', 100);
-      expect(queryBuilder1.eq).toHaveBeenCalledWith('team_id', 'team-123');
-
-      jest.clearAllMocks();
-
-      // Test 'co' data source with team ID
-      const queryBuilder2 = createQueryBuilder({ data: [], error: null, count: 0 });
-      supabase.from.mockReturnValueOnce(queryBuilder2);
-
-      await getFlowpropertyTableAll(params, sort, 'en', 'co', 'team-456', undefined);
-      expect(queryBuilder2.eq).toHaveBeenCalledWith('state_code', 200);
-      expect(queryBuilder2.eq).toHaveBeenCalledWith('team_id', 'team-456');
+      expect(supabase.rpc).toHaveBeenCalledWith('get_latest_flowproperty_versions', {
+        page_size: 5,
+        page_current: 2,
+        data_source: 'tg',
+        this_user_id: 'user-123',
+        team_id_filter: 'team-9',
+        state_code_filter: null,
+        sort_by: 'modified_at',
+        sort_direction: 'asc',
+      });
+      expect(result).toEqual({
+        data: [
+          {
+            key: 'fp-1:01.00.001',
+            id: 'fp-1',
+            name: 'Mass',
+            classification: 'Impact category',
+            generalComment: 'Mass comment',
+            refUnitGroupId: 'ug-1',
+            refUnitGroup: 'Reference unit group',
+            version: '01.00.001',
+            versionCount: 2,
+            modifiedAt: new Date('2024-01-01T00:00:00Z'),
+            teamId: 'team-1',
+          },
+        ],
+        page: 2,
+        success: true,
+        total: 7,
+      });
     });
 
-    it('should handle my data source with session', async () => {
-      const params = { current: 1, pageSize: 10 };
-      const sort = {};
+    it('should localize flow properties for zh language', async () => {
+      supabase.rpc.mockResolvedValueOnce({
+        data: [
+          latestFlowpropertyRow({
+            id: 'fp-zh',
+            version: '01.00.002',
+            modified_at: '2024-02-01T00:00:00Z',
+          }),
+        ],
+        error: null,
+      });
+      jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
+      genClassificationZH.mockReturnValue(['第0级分类']);
+      classificationToString.mockReturnValue('第0级分类');
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
 
-      const queryBuilder = createQueryBuilder({ data: [], error: null, count: 0 });
-      supabase.from.mockReturnValue(queryBuilder);
+      const result = await getFlowpropertyTableAll({}, {}, 'zh', 'tg', [], undefined);
 
-      const result = await getFlowpropertyTableAll(params, sort, 'en', 'my', [], 100);
-
-      expect(queryBuilder.eq).toHaveBeenCalledWith('state_code', 100);
-      expect(queryBuilder.eq).toHaveBeenCalledWith('user_id', 'user-123');
-      expect(result.success).toBe(true);
+      expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
+      expect(genClassificationZH).toHaveBeenCalledWith(
+        [{ id: 'class-id-1' }],
+        mockILCDClassificationResponse.data,
+      );
+      expect(result.data[0]).toMatchObject({
+        id: 'fp-zh',
+        name: '质量',
+        classification: '第0级分类',
+        refUnitGroupId: 'ug-1',
+        refUnitGroup: '参考单位组',
+      });
+      expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
     });
 
-    it('should return empty when session not available for my data', async () => {
+    it('should return empty when session is not available for my data', async () => {
       supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
 
       const result = await getFlowpropertyTableAll(
@@ -502,34 +548,8 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         100,
       );
 
-      expect(result).toEqual({
-        data: [],
-        success: false,
-      });
-    });
-
-    it('should handle team data source', async () => {
-      getTeamIdByUserId.mockResolvedValue('team-789');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({ data: [], error: null, count: 0 });
-
-      supabase.from.mockReturnValue({
-        select: mockSelect.mockReturnValue({
-          order: mockOrder.mockReturnValue({
-            range: mockRange.mockReturnValue({
-              eq: mockEq,
-            }),
-          }),
-        }),
-      });
-
-      await getFlowpropertyTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', [], undefined);
-
-      expect(getTeamIdByUserId).toHaveBeenCalled();
-      expect(mockEq).toHaveBeenCalledWith('team_id', 'team-789');
+      expect(result).toEqual({ data: [], success: false });
+      expect(supabase.rpc).not.toHaveBeenCalled();
     });
 
     it('should return empty success when team data source has no team', async () => {
@@ -544,231 +564,150 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         undefined,
       );
 
-      expect(result).toEqual({
-        data: [],
-        success: true,
-      });
+      expect(result).toEqual({ data: [], success: true });
+      expect(supabase.rpc).not.toHaveBeenCalled();
     });
 
-    it('should handle error in query', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    it('should apply co source team filters', async () => {
+      supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
 
-      const queryBuilder = createQueryBuilder({
-        data: null,
-        error: { message: 'Query error' },
-        count: 0,
-      });
-      supabase.from.mockReturnValue(queryBuilder);
+      const result = await getFlowpropertyTableAll(
+        { current: 1, pageSize: 10 },
+        { createdAt: 'descend' },
+        'en',
+        'co',
+        'team-456',
+        undefined,
+      );
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_flowproperty_versions',
+        expect.objectContaining({
+          data_source: 'co',
+          team_id_filter: 'team-456',
+          state_code_filter: null,
+          sort_by: 'created_at',
+          sort_direction: 'desc',
+        }),
+      );
+      expect(result).toEqual({ data: [], success: true });
+    });
+
+    it('should apply my source state and user filters when session exists', async () => {
+      supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
 
       const result = await getFlowpropertyTableAll(
         { current: 1, pageSize: 10 },
         {},
         'en',
-        'tg',
+        'my',
+        [],
+        100,
+      );
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_flowproperty_versions',
+        expect.objectContaining({
+          data_source: 'my',
+          this_user_id: 'user-123',
+          state_code_filter: 100,
+        }),
+      );
+      expect(result).toEqual({ data: [], success: true });
+    });
+
+    it('should pass an empty user id when the session omits user details', async () => {
+      supabase.auth.getSession.mockResolvedValueOnce({ data: { session: {} } });
+      supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
+
+      await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_flowproperty_versions',
+        expect.objectContaining({
+          this_user_id: '',
+        }),
+      );
+    });
+
+    it('should apply team scope filter when team id exists', async () => {
+      supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
+      getTeamIdByUserId.mockResolvedValueOnce('team-789');
+
+      const result = await getFlowpropertyTableAll(
+        { current: 1, pageSize: 10 },
+        {},
+        'en',
+        'te',
         [],
         undefined,
       );
 
-      expect(consoleLogSpy).toHaveBeenCalled();
-      expect(result).toEqual({
-        data: [],
-        success: false,
+      expect(getTeamIdByUserId).toHaveBeenCalled();
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_flowproperty_versions',
+        expect.objectContaining({
+          data_source: 'te',
+          team_id_filter: 'team-789',
+        }),
+      );
+      expect(result).toEqual({ data: [], success: true });
+    });
+
+    it('should return failure when query result does not include data payload', async () => {
+      supabase.rpc.mockResolvedValueOnce({ error: null });
+
+      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
+
+      expect(result).toEqual({ data: [], success: false });
+    });
+
+    it('should log query errors and keep transformed response when data is present', async () => {
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      supabase.rpc.mockResolvedValueOnce({
+        data: [latestFlowpropertyRow({ id: 'fp-warning', total_count: 1 })],
+        error: { message: 'Query warning' },
       });
+
+      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Query warning' });
+      expect(result).toEqual(expect.objectContaining({ success: true, total: 1 }));
       consoleLogSpy.mockRestore();
     });
 
-    it('should localize flow properties for zh language', async () => {
-      const params = { current: 1, pageSize: 10 };
-      const sort = {};
-
-      const builder = createQueryBuilder({
-        data: [
-          {
-            id: 'fp-zh',
-            version: '01.00.000',
-            'common:name': mockMultilingualText,
-            'common:class': mockMultilingualText,
-            'common:generalComment': mockMultilingualText,
-            '@refObjectId': 'ug-1',
-            'common:shortDescription': mockMultilingualText,
-            modified_at: '2024-01-01T00:00:00Z',
-            team_id: 'team-1',
-          },
-        ],
+    it('should fallback gracefully when english mapping throws', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      supabase.rpc.mockResolvedValueOnce({
+        data: [latestFlowpropertyRow({ id: 'fp-error', total_count: 1 })],
         error: null,
-        count: 1,
       });
-
-      supabase.from.mockReturnValue(builder);
-
-      jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
-      genClassificationZH.mockReturnValue(['第0级分类']);
-      classificationToString.mockReturnValue('第0级分类');
-      getLangText.mockImplementation((value: any, lang: string) => {
-        if (Array.isArray(value)) {
-          return value.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '';
-        }
-        return typeof value === 'string' ? value : '';
-      });
-      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
-
-      const result = await getFlowpropertyTableAll(params, sort, 'zh', 'tg', [], undefined);
-
-      expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
-      expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
-      expect(genClassificationZH).toHaveBeenCalledWith(
-        [{ id: 'class-id-1' }],
-        mockILCDClassificationResponse.data,
-      );
-      expect(result.success).toBe(true);
-      expect(result.data[0]).toMatchObject({
-        id: 'fp-zh',
-        name: '中文文本',
-        classification: '第0级分类',
-        refUnitGroupId: 'ug-1',
-      });
-      expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
-    });
-
-    it('should use a placeholder reference id for zh rows when the reference unit group is missing', async () => {
-      const builder = createQueryBuilder({
-        data: [
-          {
-            id: 'fp-zh-no-ref',
-            version: '01.00.001',
-            'common:name': mockMultilingualText,
-            'common:class': [],
-            'common:generalComment': mockMultilingualText,
-            '@refObjectId': undefined,
-            'common:shortDescription': mockMultilingualText,
-            modified_at: '2024-01-01T00:00:00Z',
-            team_id: 'team-1',
-          },
-        ],
-        error: null,
-        count: 1,
-      });
-
-      supabase.from.mockReturnValue(builder);
-      jsonToList.mockReturnValue([]);
-      genClassificationZH.mockReturnValue([]);
-      classificationToString.mockReturnValue('');
-      getLangText.mockImplementation((value: any, lang: string) => {
-        if (Array.isArray(value)) {
-          return value.find((item) => item['@xml:lang'] === lang)?.['#text'] ?? '';
-        }
-        return typeof value === 'string' ? value : '';
-      });
-      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
-
-      const result = await getFlowpropertyTableAll({}, {}, 'zh', 'tg', [], undefined);
-
-      expect(result.data[0]).toMatchObject({
-        id: 'fp-zh-no-ref',
-        refUnitGroupId: '-',
-      });
-    });
-
-    it('should fallback gracefully when mapping throws', async () => {
-      const builder = createQueryBuilder({
-        data: [
-          {
-            id: 'fp-error',
-            version: '01.00.000',
-            'common:class': null,
-            modified_at: '2024-01-01T00:00:00Z',
-          },
-        ],
-        error: null,
-        count: 1,
-      });
-
-      supabase.from.mockReturnValue(builder);
       jsonToList.mockImplementationOnce(() => {
         throw new Error('parse error');
       });
 
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      const result = await getFlowpropertyTableAll(
-        { current: 1, pageSize: 10 },
-        {},
-        'en',
-        'tg',
-        [],
-        undefined,
-      );
+      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual([
-        {
-          id: 'fp-error',
-        },
-      ]);
-
+      expect(result).toEqual({
+        data: [{ id: 'fp-error' }],
+        page: 1,
+        success: true,
+        total: 1,
+      });
       consoleErrorSpy.mockRestore();
     });
 
-    it('should use default pagination and placeholder reference fields when optional values are missing', async () => {
-      const builder = createQueryBuilder({
-        data: [
-          {
-            id: 'fp-defaults',
-            version: '01.00.000',
-            'common:name': [],
-            'common:class': [],
-            'common:generalComment': [],
-            '@refObjectId': undefined,
-            'common:shortDescription': undefined,
-            modified_at: '2024-01-01T00:00:00Z',
-            team_id: 'team-1',
-          },
-        ],
-        error: null,
-        count: null,
-      });
-      supabase.from.mockReturnValue(builder);
-      jsonToList.mockReturnValue([]);
-      classificationToString.mockReturnValue('');
-      getLangText.mockReturnValue('');
-
-      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
-
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(result).toEqual({
-        data: [
-          expect.objectContaining({
-            id: 'fp-defaults',
-            refUnitGroupId: '-',
-            refUnitGroup: '',
-          }),
-        ],
-        page: 1,
-        success: true,
-        total: 0,
-      });
-    });
-
     it('should fallback to id-only rows when zh table mapping throws', async () => {
-      const builder = createQueryBuilder({
-        data: [
-          {
-            id: 'fp-zh-bad',
-            version: '01.00.000',
-            'common:class': [],
-            modified_at: '2024-01-01T00:00:00Z',
-          },
-        ],
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      supabase.rpc.mockResolvedValueOnce({
+        data: [latestFlowpropertyRow({ id: 'fp-zh-bad', total_count: 1 })],
         error: null,
-        count: 1,
       });
-      supabase.from.mockReturnValue(builder);
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
       jsonToList.mockImplementationOnce(() => {
         throw new Error('zh parse error');
       });
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const result = await getFlowpropertyTableAll({}, {}, 'zh', 'tg', [], undefined);
 
@@ -780,6 +719,98 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       });
       expect(consoleErrorSpy).toHaveBeenCalled();
       consoleErrorSpy.mockRestore();
+    });
+
+    it('should map english rows when the modified timestamp is missing', async () => {
+      supabase.rpc.mockResolvedValueOnce({
+        data: [latestFlowpropertyRow({ id: 'fp-no-modified-at', modified_at: undefined })],
+        error: null,
+      });
+
+      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
+
+      expect(result.success).toBe(true);
+      expect(result.data[0]).toMatchObject({
+        id: 'fp-no-modified-at',
+        modifiedAt: expect.any(Date),
+      });
+      expect(Number.isNaN(result.data[0].modifiedAt.getTime())).toBe(true);
+    });
+
+    it('should map zh rows when the modified timestamp is missing', async () => {
+      supabase.rpc.mockResolvedValueOnce({
+        data: [latestFlowpropertyRow({ id: 'fp-zh-no-modified-at', modified_at: undefined })],
+        error: null,
+      });
+      getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
+
+      const result = await getFlowpropertyTableAll({}, {}, 'zh', 'tg', [], undefined);
+
+      expect(result.success).toBe(true);
+      expect(result.data[0]).toMatchObject({
+        id: 'fp-zh-no-modified-at',
+        modifiedAt: expect.any(Date),
+      });
+      expect(Number.isNaN(result.data[0].modifiedAt.getTime())).toBe(true);
+    });
+
+    it('should use default pagination and placeholder reference fields when optional values are missing', async () => {
+      supabase.rpc.mockResolvedValueOnce({
+        data: [
+          latestFlowpropertyRow({
+            id: 'fp-defaults',
+            version_count: null,
+            total_count: null,
+            json: {
+              flowPropertyDataSet: {
+                flowPropertiesInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [],
+                      },
+                    },
+                  },
+                  quantitativeReference: {},
+                },
+              },
+            },
+          }),
+        ],
+        error: null,
+      });
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('');
+      getLangText.mockReturnValue('');
+
+      const result = await getFlowpropertyTableAll({}, {}, 'en', 'tg', [], undefined);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_flowproperty_versions',
+        expect.objectContaining({
+          page_size: 10,
+          page_current: 1,
+        }),
+      );
+      expect(result).toEqual({
+        data: [
+          {
+            key: 'fp-defaults:01.00.001',
+            id: 'fp-defaults',
+            name: '',
+            classification: '',
+            generalComment: '',
+            refUnitGroupId: '-',
+            refUnitGroup: '',
+            version: '01.00.001',
+            modifiedAt: new Date('2024-01-01T00:00:00Z'),
+            teamId: 'team-1',
+          },
+        ],
+        page: 1,
+        success: true,
+        total: 0,
+      });
     });
   });
 
@@ -824,13 +855,15 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         undefined,
       );
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties', {
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties_latest', {
         query_text: 'mass',
         filter_condition: {},
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
       });
       expect(result.success).toBe(true);
       expect(result.total).toBe(1);
@@ -875,6 +908,21 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       consoleLogSpy.mockRestore();
     });
 
+    it('should return empty success for team pgroonga search when no team id is available', async () => {
+      getTeamIdByUserId.mockResolvedValueOnce(null);
+
+      const result = await getFlowpropertyTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'te',
+        'team query',
+        {},
+      );
+
+      expect(supabase.rpc).not.toHaveBeenCalled();
+      expect(result).toEqual({ data: [], success: true });
+    });
+
     it('should include state_code when provided', async () => {
       supabase.rpc.mockResolvedValue({ data: [], error: null });
 
@@ -888,9 +936,9 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       );
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_flowproperties',
+        'pgroonga_search_flowproperties_latest',
         expect.objectContaining({
-          state_code: 100,
+          state_code_filter: 100,
         }),
       );
     });
@@ -901,11 +949,11 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       await getFlowpropertyTablePgroongaSearch({}, 'en', 'my', 'test', {}, 100);
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_flowproperties',
+        'pgroonga_search_flowproperties_latest',
         expect.objectContaining({
           page_size: 10,
           page_current: 1,
-          state_code: 100,
+          state_code_filter: 100,
         }),
       );
     });
@@ -1128,13 +1176,15 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         undefined,
       );
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties', {
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties_latest', {
         query_text: '质量',
         filter_condition: {},
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
       });
       expect(result).toEqual({
         data: [
