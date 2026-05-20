@@ -8,9 +8,10 @@ import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getAllVersions } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource } from '@/services/general/util';
+import { getNextDataSetVersion } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
+import { Badge, Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
 import type { FC, ReactElement } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
@@ -21,6 +22,7 @@ interface AllVersionsListProps {
   columns: ProColumns<any>[];
   lang: string;
   disabled?: boolean;
+  versionCount?: number;
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
 }
 
@@ -33,6 +35,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   columns,
   lang,
   disabled = false,
+  versionCount,
   addVersionComponent,
 }) => {
   const actionRef = useRef<ActionType>();
@@ -100,42 +103,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
 
   const getNewVersion = (): string => {
     const versions = tableDataRef.current.map((i: any) => i.version);
-    if (!versions || versions.length === 0) {
-      return '00.00.000';
-    }
-
-    const compareVersions = (v1: string, v2: string): number => {
-      const parts1 = v1.split('.').map(Number);
-      const parts2 = v2.split('.').map(Number);
-
-      for (let i = 0; i < 3; i++) {
-        if (parts1[i] > parts2[i]) return 1;
-        if (parts1[i] < parts2[i]) return -1;
-      }
-      return 0;
-    };
-
-    let maxVersion = versions[0];
-    for (let i = 1; i < versions.length; i++) {
-      if (compareVersions(versions[i], maxVersion) > 0) {
-        maxVersion = versions[i];
-      }
-    }
-
-    const parts = maxVersion.split('.').map(Number);
-    parts[2] += 1;
-
-    if (parts[2] > 999) {
-      parts[2] = 0;
-      parts[1] += 1;
-
-      if (parts[1] > 99) {
-        parts[1] = 0;
-        parts[0] += 1;
-      }
-    }
-
-    return `${String(parts[0]).padStart(2, '0')}.${String(parts[1]).padStart(2, '0')}.${String(parts[2]).padStart(3, '0')}`;
+    return getNextDataSetVersion(versions);
   };
 
   return (
@@ -143,13 +111,15 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       <Tooltip
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
       >
-        <Button
-          disabled={disabled}
-          size='small'
-          shape='circle'
-          icon={<BarsOutlined />}
-          onClick={() => setShowAllVersionsModal(true)}
-        ></Button>
+        <Badge size='small' count={versionCount && versionCount > 1 ? versionCount : 0}>
+          <Button
+            disabled={disabled}
+            size='small'
+            shape='circle'
+            icon={<BarsOutlined />}
+            onClick={() => setShowAllVersionsModal(true)}
+          ></Button>
+        </Badge>
       </Tooltip>
 
       <Drawer

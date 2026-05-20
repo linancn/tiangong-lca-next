@@ -153,6 +153,16 @@ describe('AllVersionsList Component', () => {
     expect(mockGetDataSource).toHaveBeenCalledWith('/test-path');
   });
 
+  it('should show versionCount on the all-versions action when multiple versions exist', () => {
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} versionCount={3} />
+      </ConfigProvider>,
+    );
+
+    expect(screen.getByText('3').closest('.ant-badge-count')).toBeInTheDocument();
+  });
+
   it('should default disabled to false when the prop is omitted', () => {
     const propsWithoutDisabled = Object.fromEntries(
       Object.entries(defaultProps).filter(([key]) => key !== 'disabled'),

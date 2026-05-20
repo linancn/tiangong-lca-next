@@ -6,6 +6,7 @@ export type SourceTable = {
   lang: string;
   shortName: string;
   version: string;
+  versionCount?: number;
   classification: string;
   sourceCitation: string;
   publicationType: string;

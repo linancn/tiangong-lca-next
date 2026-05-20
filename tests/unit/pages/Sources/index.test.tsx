@@ -31,6 +31,7 @@ const mockGetTeamById = jest.fn();
 const baseSourceRow = {
   id: 'source-1',
   version: '1.0.0',
+  versionCount: 2,
   shortName: 'ISO 14044',
   classification: 'Standard',
   publicationType: 'Monograph',
@@ -75,8 +76,10 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>{addVersionComponent?.({ newVersion: '02.00.000' })}</div>
+  default: ({ addVersionComponent, versionCount }: any) => (
+    <div data-testid='all-versions' data-version-count={versionCount}>
+      {addVersionComponent?.({ newVersion: '02.00.000' })}
+    </div>
   ),
 }));
 
@@ -351,6 +354,7 @@ describe('SourcesPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Source Team' })).toBeInTheDocument();
     expect(await screen.findByTestId('source-view')).toHaveTextContent('view:source-1');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-version-count', '2');
     expect(screen.getByTestId('source-edit')).toHaveTextContent('edit:source-1');
     expect(screen.getByTestId('source-delete')).toHaveTextContent('delete:source-1');
     expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"actionType":"create"');
@@ -407,6 +411,7 @@ describe('SourcesPage', () => {
         'iso',
         {},
         '20',
+        'team-1',
       ),
     );
   });

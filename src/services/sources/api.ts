@@ -21,6 +21,117 @@ import {
 } from '../general/api';
 import { genSourceJsonOrdered } from './util';
 
+type SourceListRpcRow = {
+  id?: string;
+  json?: any;
+  version?: string;
+  modified_at?: string;
+  team_id?: string;
+  version_count?: number | string | null;
+  total_count?: number | string | null;
+};
+
+function normalizeSourceVersionCount(row: SourceListRpcRow): number | undefined {
+  const versionCount = Number(row.version_count ?? 0);
+  if (!Number.isFinite(versionCount) || versionCount <= 0) {
+    return undefined;
+  }
+  return versionCount;
+}
+
+function normalizeSourceTotalCount(row?: SourceListRpcRow): number {
+  return Number(row?.total_count ?? 0) || 0;
+}
+
+function normalizeSourceSortBy(sortBy: string): string {
+  if (sortBy === 'modifiedAt') {
+    return 'modified_at';
+  }
+  if (sortBy === 'createdAt') {
+    return 'created_at';
+  }
+  return sortBy;
+}
+
+function normalizeSourceSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
+  return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function getOptionalTeamId(tid: string | []): string | null {
+  if (typeof tid === 'string' && tid.length > 0) {
+    return tid;
+  }
+  return null;
+}
+
+async function getSourceTeamFilter(dataSource: string, tid: string | []) {
+  if (dataSource === 'te') {
+    return await getTeamIdByUserId();
+  }
+  if (dataSource === 'tg' || dataSource === 'co') {
+    return getOptionalTeamId(tid);
+  }
+  return null;
+}
+
+async function mapSourceListRows(rows: SourceListRpcRow[], lang: string): Promise<any[]> {
+  if (lang === 'zh') {
+    const classificationData = await getCachedClassificationData('Source', lang, ['all']);
+    return rows.map((i) => {
+      try {
+        const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
+        const classifications = jsonToList(
+          dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+        );
+        const classificationZH = genClassificationZH(classifications, classificationData);
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          shortName: getLangText(dataInfo?.['common:shortName'], lang),
+          classification: classificationToString(classificationZH),
+          sourceCitation: dataInfo?.sourceCitation ?? '-',
+          publicationType: dataInfo?.publicationType ?? '-',
+          version: i.version,
+          versionCount: normalizeSourceVersionCount(i),
+          modifiedAt: new Date(i.modified_at ?? ''),
+          teamId: i.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
+  }
+
+  return rows.map((i) => {
+    try {
+      const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
+      const classifications = jsonToList(
+        dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
+      );
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        shortName: getLangText(dataInfo?.['common:shortName'], lang),
+        classification: classificationToString(classifications),
+        sourceCitation: dataInfo?.sourceCitation ?? '-',
+        publicationType: dataInfo?.publicationType ?? '-',
+        version: i.version,
+        versionCount: normalizeSourceVersionCount(i),
+        modifiedAt: new Date(i.modified_at ?? ''),
+        teamId: i.team_id,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+      };
+    }
+  });
+}
+
 export async function createSource(
   id: string,
   data: any,
@@ -146,67 +257,32 @@ export async function getSourceTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-    id,
-    json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName",
-    json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
-    json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
-    version,
-    modified_at,
-    team_id
-  `;
-
-  const tableName = 'sources';
-
-  let query = supabase
-    .from(tableName)
-    .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-      });
-    }
-  } else if (dataSource === 'te') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
+  const session = await supabase.auth.getSession();
+  if (dataSource === 'my' && !session.data.session) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
   }
 
-  const result = await query;
+  const teamId = await getSourceTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+    });
+  }
+
+  const result = await supabase.rpc('get_latest_source_versions', {
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session.data.session?.user?.id ?? '',
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    sort_by: normalizeSourceSortBy(sortBy),
+    sort_direction: normalizeSourceSortDirection(orderBy),
+  });
 
   if (result?.error) {
     console.log('error', result?.error);
@@ -220,61 +296,13 @@ export async function getSourceTableAll(
       });
     }
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getCachedClassificationData('Source', lang, ['all']).then((res) => {
-        data = result?.data?.map((i: any) => {
-          try {
-            const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res);
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              shortName: getLangText(i['common:shortName'], lang),
-              classification: classificationToString(classificationZH),
-              sourceCitation: i.sourceCitation ?? '-',
-              publicationType: i.publicationType ?? '-',
-              version: i.version,
-              modifiedAt: new Date(i.modified_at),
-              teamId: i.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result?.data?.map((i: any) => {
-        try {
-          const classifications = jsonToList(i['common:class']);
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            shortName: getLangText(i?.['common:shortName'], lang),
-            classification: classificationToString(classifications),
-            sourceCitation: i?.sourceCitation ?? '-',
-            publicationType: i?.publicationType ?? '-',
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = await mapSourceListRows(result.data, lang);
 
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: normalizeSourceTotalCount(result.data[0]),
     });
   }
   return Promise.resolve({
@@ -294,12 +322,21 @@ export async function getSourceTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  tid: string | [] = [],
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
+    const teamId = await getSourceTeamFilter(dataSource, tid);
+    if (dataSource === 'te' && !teamId) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+
     result = await supabase.rpc(
-      'pgroonga_search_sources',
+      'pgroonga_search_sources_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -308,7 +345,8 @@ export async function getSourceTablePgroongaSearch(
             page_current: params.current ?? 1,
             data_source: dataSource,
             this_user_id: session.data.session.user?.id,
-            state_code: stateCode,
+            team_id_filter: teamId,
+            state_code_filter: stateCode,
           }
         : {
             query_text: queryText,
@@ -317,6 +355,8 @@ export async function getSourceTablePgroongaSearch(
             page_current: params.current ?? 1,
             data_source: dataSource,
             this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: null,
           },
     );
   }
@@ -331,70 +371,13 @@ export async function getSourceTablePgroongaSearch(
       });
     }
 
-    const totalCount = result.data[0].total_count;
-
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getCachedClassificationData('Source', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
-            const classifications = jsonToList(
-              dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-            );
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              shortName: getLangText(dataInfo?.['common:shortName'], lang),
-              classification: classificationToString(classificationZH),
-              sourceCitation: dataInfo?.sourceCitation ?? '-',
-              publicationType: dataInfo?.publicationType ?? '-',
-              version: i.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
-          const classifications = jsonToList(
-            dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-          );
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            shortName: getLangText(dataInfo?.['common:shortName'], lang),
-            classification: classificationToString(classifications),
-            sourceCitation: dataInfo?.sourceCitation ?? '-',
-            publicationType: dataInfo?.publicationType ?? '-',
-            version: i.version,
-            modifiedAt: new Date(dataInfo?.modified_at),
-            teamId: i.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = await mapSourceListRows(result.data, lang);
 
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: normalizeSourceTotalCount(result.data[0]),
     });
   }
 

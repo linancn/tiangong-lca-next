@@ -152,6 +152,7 @@ const TableList: FC = () => {
                 team_id
               `}
               id={row.id}
+              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <SourceCreate
                   newVersion={newVersion}
@@ -375,6 +376,7 @@ const TableList: FC = () => {
                 currentKeyWord,
                 {},
                 currentStateCode,
+                tid ?? '',
               ),
             );
           }
