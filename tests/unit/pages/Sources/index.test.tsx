@@ -76,11 +76,40 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent, versionCount }: any) => (
-    <div data-testid='all-versions' data-version-count={versionCount}>
-      {addVersionComponent?.({ newVersion: '02.00.000' })}
-    </div>
-  ),
+  default: function MockAllVersions({ addVersionComponent, versionCount, operationRender }: any) {
+    const React = require('react');
+    const [showOperation, setShowOperation] = React.useState(false);
+    const allVersionsActionRef = React.useMemo(
+      () => ({
+        current: {
+          reload: () => undefined,
+        },
+      }),
+      [],
+    );
+
+    return (
+      <div data-testid='all-versions' data-version-count={versionCount}>
+        <button type='button' onClick={() => setShowOperation(true)}>
+          render-all-version-actions
+        </button>
+        {showOperation && (
+          <div data-testid='all-version-operation-render'>
+            {operationRender?.(
+              {
+                id: 'source-version',
+                version: '0.9.0',
+                teamId: '',
+                stateCode: 10,
+              },
+              { actionRef: allVersionsActionRef },
+            )}
+          </div>
+        )}
+        {addVersionComponent?.({ newVersion: '02.00.000' })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/ContributeData', () => ({
@@ -125,12 +154,14 @@ jest.mock('@/pages/Utils', () => ({
 
 jest.mock('@/pages/Sources/Components/create', () => ({
   __esModule: true,
-  default: ({ actionType = 'create', importData, newVersion, onClose }: any) => (
+  default: ({ actionType = 'create', id, importData, newVersion, onClose, version }: any) => (
     <div data-testid='source-create'>
       {JSON.stringify({
         actionType,
+        id,
         importCount: importData?.length ?? 0,
         newVersion,
+        version,
       })}
       <button type='button' onClick={() => onClose?.()}>
         close-source-create
@@ -361,6 +392,33 @@ describe('SourcesPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /close-source-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-source-delete/i }));
+  });
+
+  it('renders all-version rows with the same source actions as the outer list', async () => {
+    renderWithProviders(<SourcesPage />);
+
+    await screen.findByTestId('source-view');
+    await userEvent.click(screen.getByRole('button', { name: /render-all-version-actions/i }));
+
+    const allVersionActions = screen.getByTestId('all-version-operation-render');
+    expect(within(allVersionActions).getByTestId('source-view')).toHaveTextContent(
+      'view:source-version',
+    );
+    expect(within(allVersionActions).getByTestId('source-edit')).toHaveTextContent(
+      'edit:source-version',
+    );
+    expect(within(allVersionActions).getByTestId('source-delete')).toHaveTextContent(
+      'delete:source-version',
+    );
+    expect(within(allVersionActions).getByTestId('export-data')).toHaveTextContent(
+      'export:source-version:0.9.0',
+    );
+    expect(within(allVersionActions).getByTestId('source-create')).toHaveTextContent(
+      '"actionType":"copy"',
+    );
+    expect(
+      within(allVersionActions).getByRole('button', { name: /contribute-action/i }),
+    ).toBeInTheDocument();
   });
 
   it('uses compact mobile controls for my data rows', async () => {

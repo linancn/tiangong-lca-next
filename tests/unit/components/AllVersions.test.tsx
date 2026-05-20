@@ -378,6 +378,29 @@ describe('AllVersionsList Component', () => {
     expect(views.length).toBeGreaterThan(0);
   });
 
+  it('should use a custom operation renderer when provided', async () => {
+    const operationRender = jest.fn((row) => (
+      <div data-testid='custom-operation'>{`custom:${row.id}:${row.version}`}</div>
+    ));
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} operationRender={operationRender} />
+      </ConfigProvider>,
+    );
+
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+
+    const operations = await screen.findAllByTestId('custom-operation');
+    expect(operations[0]).toHaveTextContent('custom:1:1.0.0');
+    expect(operationRender).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1', version: '1.0.0' }),
+      expect.objectContaining({ actionRef: expect.any(Object) }),
+    );
+    expect(screen.queryByTestId('process-view')).not.toBeInTheDocument();
+  });
+
   it('should render ContactView for contacts table', async () => {
     render(
       <ConfigProvider>

@@ -12,7 +12,7 @@ import { getNextDataSetVersion } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Badge, Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
-import type { FC, ReactElement } from 'react';
+import type { FC, MutableRefObject, ReactElement, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
 interface AllVersionsListProps {
@@ -24,6 +24,10 @@ interface AllVersionsListProps {
   disabled?: boolean;
   versionCount?: number;
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
+  operationRender?: (
+    row: any,
+    context: { actionRef: MutableRefObject<ActionType | undefined> },
+  ) => ReactNode;
 }
 
 export const getCreateVersionPopupContainer = () => document.body;
@@ -37,6 +41,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   disabled = false,
   versionCount,
   addVersionComponent,
+  operationRender,
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
@@ -58,6 +63,10 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       dataIndex: 'option',
       search: false,
       render: (_: any, row: any) => {
+        if (operationRender) {
+          return operationRender(row, { actionRef });
+        }
+
         switch (searchTableName) {
           case 'lifecyclemodels':
             return (
