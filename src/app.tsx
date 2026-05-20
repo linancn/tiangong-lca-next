@@ -29,6 +29,13 @@ import { errorConfig } from './requestErrorConfig';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 const unAuthorizedPath = ['/user/login/password_forgot'];
+const publicPaths = ['/dashboard/national-carbon'];
+
+function isPublicPath(pathname: string): boolean {
+  return publicPaths.some(
+    (publicPath) => pathname === publicPath || pathname.startsWith(`${publicPath}/`),
+  );
+}
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -63,7 +70,11 @@ export async function getInitialState(): Promise<{
 
   // 如果不是登录页面，执行
   const { location } = history;
-  if (location.pathname !== loginPath && !unAuthorizedPath.includes(location.pathname)) {
+  if (
+    location.pathname !== loginPath &&
+    !unAuthorizedPath.includes(location.pathname) &&
+    !isPublicPath(location.pathname)
+  ) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -140,7 +151,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       if (
         !initialState?.currentUser &&
         location.pathname !== loginPath &&
-        !unAuthorizedPath.includes(location.pathname)
+        !unAuthorizedPath.includes(location.pathname) &&
+        !isPublicPath(location.pathname)
       ) {
         history.push(loginPath);
       }
@@ -162,7 +174,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       if (
         !initialState?.currentUser &&
         history.location.pathname !== loginPath &&
-        !unAuthorizedPath.includes(history.location.pathname)
+        !unAuthorizedPath.includes(history.location.pathname) &&
+        !isPublicPath(history.location.pathname)
       ) {
         history.push(loginPath);
         return null;
