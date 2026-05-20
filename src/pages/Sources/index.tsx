@@ -271,6 +271,7 @@ const TableList: FC = () => {
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderSourceActions(versionRow as SourceTable, allVersionsActionRef)
               }
+              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 216 : 184}
             ></AllVersionsList>
           </Space>
         );

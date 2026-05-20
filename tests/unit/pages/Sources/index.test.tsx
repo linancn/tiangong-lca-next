@@ -76,7 +76,12 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: function MockAllVersions({ addVersionComponent, versionCount, operationRender }: any) {
+  default: function MockAllVersions({
+    addVersionComponent,
+    operationColumnWidth,
+    versionCount,
+    operationRender,
+  }: any) {
     const React = require('react');
     const [showOperation, setShowOperation] = React.useState(false);
     const allVersionsActionRef = React.useMemo(
@@ -89,7 +94,11 @@ jest.mock('@/components/AllVersions', () => ({
     );
 
     return (
-      <div data-testid='all-versions' data-version-count={versionCount}>
+      <div
+        data-testid='all-versions'
+        data-operation-column-width={operationColumnWidth}
+        data-version-count={versionCount}
+      >
         <button type='button' onClick={() => setShowOperation(true)}>
           render-all-version-actions
         </button>
@@ -386,6 +395,10 @@ describe('SourcesPage', () => {
     expect(screen.getByRole('heading', { name: 'Source Team' })).toBeInTheDocument();
     expect(await screen.findByTestId('source-view')).toHaveTextContent('view:source-1');
     expect(screen.getByTestId('all-versions')).toHaveAttribute('data-version-count', '2');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute(
+      'data-operation-column-width',
+      '216',
+    );
     expect(screen.getByTestId('source-edit')).toHaveTextContent('edit:source-1');
     expect(screen.getByTestId('source-delete')).toHaveTextContent('delete:source-1');
     expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"actionType":"create"');

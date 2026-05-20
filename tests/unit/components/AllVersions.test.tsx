@@ -10,7 +10,10 @@
  * - ProTable integration
  */
 
-import AllVersionsList, { getCreateVersionPopupContainer } from '@/components/AllVersions';
+import AllVersionsList, {
+  getAllVersionsOperationColumnWidth,
+  getCreateVersionPopupContainer,
+} from '@/components/AllVersions';
 import { getAllVersions } from '@/services/general/api';
 import { getDataSource } from '@/services/general/util';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -477,6 +480,12 @@ describe('AllVersionsList Component', () => {
 
   it('should place create-version popups in the document body', () => {
     expect(getCreateVersionPopupContainer()).toBe(document.body);
+  });
+
+  it('should size the operation column for default and custom actions', () => {
+    expect(getAllVersionsOperationColumnWidth()).toBe(88);
+    expect(getAllVersionsOperationColumnWidth(undefined, true)).toBe(216);
+    expect(getAllVersionsOperationColumnWidth(184, true)).toBe(184);
   });
 
   it('should compute the next version from the highest loaded version after reopening', async () => {

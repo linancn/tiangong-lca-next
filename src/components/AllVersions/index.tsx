@@ -28,9 +28,15 @@ interface AllVersionsListProps {
     row: any,
     context: { actionRef: MutableRefObject<ActionType | undefined> },
   ) => ReactNode;
+  operationColumnWidth?: number;
 }
 
 export const getCreateVersionPopupContainer = () => document.body;
+
+export const getAllVersionsOperationColumnWidth = (
+  operationColumnWidth?: number,
+  hasCustomOperation = false,
+) => operationColumnWidth ?? (hasCustomOperation ? 216 : 88);
 
 const AllVersionsList: FC<AllVersionsListProps> = ({
   searchTableName,
@@ -42,6 +48,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   versionCount,
   addVersionComponent,
   operationRender,
+  operationColumnWidth,
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
@@ -53,7 +60,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
     actionRef.current?.reload();
   });
 
-  const allVersionsColumns = [
+  const allVersionsColumns: ProColumns<any>[] = [
     ...columns,
 
     {
@@ -62,6 +69,9 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       ),
       dataIndex: 'option',
       search: false,
+      align: 'center',
+      fixed: 'right',
+      width: getAllVersionsOperationColumnWidth(operationColumnWidth, Boolean(operationRender)),
       render: (_: any, row: any) => {
         if (operationRender) {
           return operationRender(row, { actionRef });
@@ -154,6 +164,8 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
             actionRef={actionRef}
             search={false}
             options={{ fullScreen: true }}
+            scroll={{ x: 'max-content' }}
+            tableLayout='fixed'
             pagination={{
               showSizeChanger: false,
               pageSize: 10,
