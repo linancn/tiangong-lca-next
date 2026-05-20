@@ -1361,7 +1361,7 @@ export async function getAllVersions(
                 const classificationZH = genClassificationZH(classifications, res?.data);
 
                 return {
-                  key: i.id,
+                  key: i.id + ':' + i.version,
                   id: i.id,
                   name: getLangText(i?.['common:name'], lang),
                   classification: classificationToString(classificationZH),
@@ -1371,6 +1371,7 @@ export async function getAllVersions(
                   version: i.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1389,7 +1390,7 @@ export async function getAllVersions(
                 (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
               );
               return {
-                key: i.id,
+                key: i.id + ':' + i.version,
                 id: i.id,
                 name: getLangText(i?.['common:name'], lang),
                 classification: classificationToString(classifications),
@@ -1399,6 +1400,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);

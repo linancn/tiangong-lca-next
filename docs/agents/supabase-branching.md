@@ -20,7 +20,7 @@ checkPaths:
   - src/services/**
   - docker/**
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: 3ff59ad75dc5b392b9988ba5bf7003a17f06737b
+lastReviewedCommit: b398fce89daf7199052d89a09f98297fa9507717
 ---
 
 # Supabase Environment And Database Workflow

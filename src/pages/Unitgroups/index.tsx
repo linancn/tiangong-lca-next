@@ -32,7 +32,7 @@ import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data'
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Col, Input, Row, Space, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
+import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -93,6 +93,116 @@ const TableList: FC = () => {
       setEditDrawerVisible(true);
     }
   }, [dataSource, id, version]);
+
+  const renderUnitGroupActions = (
+    row: UnitGroupTable,
+    listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
+  ) => {
+    const actionDisabled = isDataUnderReview(row.stateCode);
+    if (dataSource === 'my') {
+      return [
+        <ResponsiveDataListActions
+          key={0}
+          isMobile={isMobileDataList}
+          moreMenus={[
+            {
+              key: 'export',
+              name: <ExportData tableName='unitgroups' id={row.id} version={row.version} />,
+            },
+            {
+              key: 'copy',
+              name: (
+                <UnitGroupCreate
+                  disabled={!isSystemAdmin}
+                  actionType='copy'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={listActionRef}
+                />
+              ),
+            },
+            {
+              key: 'contribute',
+              name: (
+                <ContributeData
+                  onOk={async () => {
+                    const contributeResult = await contributeSource(
+                      'unitgroups',
+                      row.id,
+                      row.version,
+                    );
+                    const contributeError = extractContributeDataError(contributeResult);
+
+                    if (contributeError) {
+                      message.error(getContributeDataErrorMessage(intl, contributeError));
+                      console.log(contributeError);
+                    } else {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'component.contributeData.success',
+                          defaultMessage: 'Contribute successfully',
+                        }),
+                      );
+                      listActionRef.current?.reload();
+                    }
+                  }}
+                  disabled={!!row.teamId}
+                />
+              ),
+            },
+          ]}
+        >
+          <UnitGroupView
+            actionRef={listActionRef}
+            lang={lang}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+          />
+          <UnitGroupEdit
+            disabled={actionDisabled}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            lang={lang}
+            actionRef={listActionRef}
+            setViewDrawerVisible={() => {}}
+          />
+          <UnitGroupDelete
+            disabled={actionDisabled}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            actionRef={listActionRef}
+            setViewDrawerVisible={() => {}}
+          />
+        </ResponsiveDataListActions>,
+      ];
+    }
+
+    return [
+      <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
+        <UnitGroupView
+          actionRef={listActionRef}
+          lang={lang}
+          id={row.id}
+          version={row.version}
+          buttonType={'icon'}
+        />
+        <UnitGroupCreate
+          disabled={!isSystemAdmin}
+          actionType='copy'
+          id={row.id}
+          version={row.version}
+          lang={lang}
+          actionRef={listActionRef}
+        />
+        <ExportData tableName='unitgroups' id={row.id} version={row.version} />
+      </ResponsiveDataListActions>,
+    ];
+  };
+
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
       ...dataListIndexColumn<UnitGroupTable>(),
@@ -151,7 +261,6 @@ const TableList: FC = () => {
           <Space size={'small'}>
             {row.version}
             <AllVersionsList
-              disabled={!isSystemAdmin}
               lang={lang}
               searchTableName='unitgroups'
               columns={getAllVersionsColumns(unitGroupColumns, 4)}
@@ -163,9 +272,11 @@ const TableList: FC = () => {
                 json->unitGroupDataSet->units->unit,
                 version,
                 modified_at,
-                team_id
+                team_id,
+                state_code
               `}
               id={row.id}
+              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <UnitGroupCreate
                   newVersion={newVersion}
@@ -177,6 +288,10 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
+              operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
+                renderUnitGroupActions(versionRow as UnitGroupTable, allVersionsActionRef)
+              }
+              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 216 : 184}
             ></AllVersionsList>
           </Space>
         );
@@ -203,110 +318,7 @@ const TableList: FC = () => {
         <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
       ),
       dataIndex: 'option',
-      render: (_, row) => {
-        const actionDisabled = isDataUnderReview(row.stateCode);
-        if (dataSource === 'my') {
-          return [
-            <ResponsiveDataListActions
-              key={0}
-              isMobile={isMobileDataList}
-              moreMenus={[
-                {
-                  key: 'export',
-                  name: <ExportData tableName='unitgroups' id={row.id} version={row.version} />,
-                },
-                {
-                  key: 'copy',
-                  name: (
-                    <UnitGroupCreate
-                      disabled={!isSystemAdmin}
-                      actionType='copy'
-                      id={row.id}
-                      version={row.version}
-                      lang={lang}
-                      actionRef={actionRef}
-                    ></UnitGroupCreate>
-                  ),
-                },
-                {
-                  key: 'contribute',
-                  name: (
-                    <ContributeData
-                      onOk={async () => {
-                        const contributeResult = await contributeSource(
-                          'unitgroups',
-                          row.id,
-                          row.version,
-                        );
-                        const contributeError = extractContributeDataError(contributeResult);
-
-                        if (contributeError) {
-                          message.error(getContributeDataErrorMessage(intl, contributeError));
-                          console.log(contributeError);
-                        } else {
-                          message.success(
-                            intl.formatMessage({
-                              id: 'component.contributeData.success',
-                              defaultMessage: 'Contribute successfully',
-                            }),
-                          );
-                          actionRef.current?.reload();
-                        }
-                      }}
-                      disabled={!!row.teamId}
-                    />
-                  ),
-                },
-              ]}
-            >
-              <UnitGroupView
-                actionRef={actionRef}
-                lang={lang}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-              />
-              <UnitGroupEdit
-                disabled={actionDisabled}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                lang={lang}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              ></UnitGroupEdit>
-              <UnitGroupDelete
-                disabled={actionDisabled}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              ></UnitGroupDelete>
-            </ResponsiveDataListActions>,
-          ];
-        }
-        return [
-          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
-            <UnitGroupView
-              actionRef={actionRef}
-              lang={lang}
-              id={row.id}
-              version={row.version}
-              buttonType={'icon'}
-            />
-            <UnitGroupCreate
-              disabled={!isSystemAdmin}
-              actionType='copy'
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              actionRef={actionRef}
-            ></UnitGroupCreate>
-            <ExportData tableName='unitgroups' id={row.id} version={row.version} />
-          </ResponsiveDataListActions>,
-        ];
-      },
+      render: (_, row) => renderUnitGroupActions(row),
     },
   ];
   useEffect(() => {
@@ -429,6 +441,7 @@ const TableList: FC = () => {
                 currentKeyWord,
                 {},
                 currentStateCode,
+                tid ?? '',
               ),
             );
           }

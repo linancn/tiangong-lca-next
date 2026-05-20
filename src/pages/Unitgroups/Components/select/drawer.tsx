@@ -1,4 +1,5 @@
 import { toSuperscript } from '@/components/AlignedNumber';
+import AllVersionsList from '@/components/AllVersions';
 import { ListPagination } from '@/services/general/data';
 import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
@@ -10,6 +11,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 // import UnitGroupCreate from '../create';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import UnitGroupView from '../view';
@@ -39,6 +41,17 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const unitGroupAllVersionsSearchColumn = `
+    id,
+    json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
+    json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
+    json->unitGroupDataSet->units->unit,
+    version,
+    modified_at,
+    team_id,
+    state_code
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -46,6 +59,19 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: UnitGroupTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    onData(row.id, row.version);
+    setDrawerVisible(false);
+  };
+
+  const renderVersionSelectActions = (row: UnitGroupTable) => {
+    return <UnitGroupView id={row.id} version={row.version} lang={lang} buttonType='icon' />;
   };
 
   const onTabChange = async (key: string) => {
@@ -158,6 +184,28 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='unitgroups'
+              columns={getAllVersionsColumns(unitGroupColumns, 4)}
+              searchColume={unitGroupAllVersionsSearchColumn}
+              id={row.id}
+              versionCount={row.versionCount}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) =>
+                renderVersionSelectActions(versionRow as UnitGroupTable)
+              }
+              operationColumnWidth={88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as UnitGroupTable)}
+            />
+          </Space>
+        );
+      },
     },
     // {
     //   title: <FormattedMessage id="unitGroup.email" defaultMessage="Reference Unit"></FormattedMessage>,
