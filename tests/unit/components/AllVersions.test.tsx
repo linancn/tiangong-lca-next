@@ -30,9 +30,54 @@ jest.mock('@/services/general/util', () => ({
 
 jest.mock('antd', () => {
   const actual = jest.requireActual('antd');
+  const ReactRuntime = require('react');
+  const Button = ({
+    children,
+    disabled,
+    icon,
+    onClick,
+    shape,
+    size,
+    style,
+    type,
+  }: {
+    children?: React.ReactNode;
+    disabled?: boolean;
+    icon?: React.ReactNode;
+    onClick?: () => void;
+    shape?: string;
+    size?: string;
+    style?: React.CSSProperties;
+    type?: string;
+  }) => {
+    const buttonRef = ReactRuntime.useRef(null);
+    const classes = [
+      'ant-btn',
+      shape === 'circle' ? 'ant-btn-circle' : '',
+      size === 'small' ? 'ant-btn-sm' : '',
+      type === 'primary' ? 'ant-btn-primary' : '',
+      !children ? 'ant-btn-icon-only' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    ReactRuntime.useEffect(() => {
+      if (buttonRef.current) {
+        buttonRef.current.disabled = Boolean(disabled);
+      }
+    }, [disabled]);
+
+    return (
+      <button ref={buttonRef} className={classes} style={style} type='button' onClick={onClick}>
+        {icon ? <span className='ant-btn-icon'>{icon}</span> : null}
+        {children}
+      </button>
+    );
+  };
 
   return {
     ...actual,
+    Button,
     Drawer: ({
       open,
       onClose,
@@ -59,6 +104,88 @@ jest.mock('antd', () => {
           <div>{footer}</div>
         </div>
       ) : null,
+  };
+});
+
+jest.mock('@ant-design/pro-components', () => {
+  const React = require('react');
+
+  const ProTable = ({
+    actionRef,
+    columns = [],
+    request,
+    rowKey = 'id',
+    rowSelection,
+    toolBarRender,
+  }: any) => {
+    const [rows, setRows] = React.useState([] as any[]);
+    const latestRequestRef = React.useRef(request);
+    latestRequestRef.current = request;
+
+    const loadRows = React.useCallback(async () => {
+      const result = await latestRequestRef.current?.({ pageSize: 10, current: 1 }, {});
+      setRows(result?.data ?? []);
+      return result;
+    }, []);
+
+    React.useLayoutEffect(() => {
+      const api = {
+        reload: loadRows,
+        setPageInfo: jest.fn(),
+      };
+      if (actionRef) {
+        actionRef.current = api;
+      }
+    }, [actionRef, loadRows]);
+
+    return (
+      <div data-testid='pro-table'>
+        <div>{toolBarRender?.()}</div>
+        {rowSelection ? (
+          <button
+            type='button'
+            aria-label='clear-version-selection'
+            onClick={() => rowSelection.onChange?.([], undefined)}
+          />
+        ) : null}
+        {rows.map((row: any, rowIndex: number) => {
+          const key =
+            typeof rowKey === 'function'
+              ? rowKey(row, rowIndex)
+              : rowKey && row[rowKey]
+                ? row[rowKey]
+                : rowIndex;
+
+          return (
+            <div key={key}>
+              {rowSelection ? (
+                <input
+                  aria-label={`select-version-${row.version}`}
+                  checked={rowSelection.selectedRowKeys?.includes(key)}
+                  type='radio'
+                  onChange={() => rowSelection.onChange?.([key], [row])}
+                />
+              ) : null}
+              {columns.map((column: any, columnIndex: number) => {
+                const value = column.dataIndex ? row[column.dataIndex] : undefined;
+                return (
+                  <div key={`${key}:${column.dataIndex ?? columnIndex}`}>
+                    {column.render ? column.render(value, row, rowIndex) : value}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return {
+    __esModule: true,
+    ActionType: class {},
+    ProColumns: class {},
+    ProTable,
   };
 });
 
@@ -260,7 +387,7 @@ describe('AllVersionsList Component', () => {
     });
   });
 
-  it('should not open drawer when button is disabled', () => {
+  it('should not open drawer when button is disabled', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} disabled={true} />
@@ -268,7 +395,8 @@ describe('AllVersionsList Component', () => {
     );
 
     const button = screen.getByRole('button');
-    fireEvent.click(button);
+    await waitFor(() => expect(button).toBeDisabled());
+    button.click();
 
     expect(screen.queryByText('All version')).not.toBeInTheDocument();
   });
@@ -513,6 +641,29 @@ describe('AllVersionsList Component', () => {
     expect(onSelectVersion).toHaveBeenCalledWith(
       expect.objectContaining({ id: '1', version: '1.0.0' }),
     );
+  });
+
+  it('should ignore submit when radio selection has been cleared', async () => {
+    const onSelectVersion = jest.fn();
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} onSelectVersion={onSelectVersion} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    const submitButton = await screen.findByRole('button', { name: /submit/i });
+    fireEvent.click(screen.getByRole('button', { name: 'clear-version-selection' }));
+
+    expect(submitButton).toBeDisabled();
+
+    const forcedSubmitButton = submitButton as HTMLButtonElement;
+    forcedSubmitButton.disabled = false;
+    fireEvent.click(forcedSubmitButton);
+
+    expect(onSelectVersion).not.toHaveBeenCalled();
   });
 
   it('should render children content in toolbar', async () => {

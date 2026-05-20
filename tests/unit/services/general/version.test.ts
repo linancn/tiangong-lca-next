@@ -12,6 +12,14 @@ describe('dataset version helpers', () => {
     expect(compareDataSetVersions('01.00.000', '01.00.000')).toBe(0);
   });
 
+  it('orders invalid or missing dataset versions after numeric versions', () => {
+    expect(compareDataSetVersions('bad-version', 'another-bad-version')).toBeGreaterThan(0);
+    expect(compareDataSetVersions(undefined, null)).toBe(0);
+    expect(compareDataSetVersions('01.invalid.000', '01.00.001')).toBeLessThan(0);
+    expect(compareDataSetVersions(undefined, '01.00.001')).toBeLessThan(0);
+    expect(compareDataSetVersions('01.00.001', undefined)).toBeGreaterThan(0);
+  });
+
   it('finds the highest dataset version while ignoring empty values', () => {
     expect(getHighestDataSetVersion(['01.00.001', undefined, '01.00.010'])).toBe('01.00.010');
   });

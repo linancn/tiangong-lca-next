@@ -34,6 +34,7 @@ jest.mock('@/style/custom.less', () => ({
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
   default: function MockAllVersions({
+    addVersionComponent,
     dataSource,
     onSelectVersion,
     operationRender,
@@ -67,7 +68,13 @@ jest.mock('@/components/AllVersions', () => ({
               />
               {versionRow.version}
             </label>
+            <div data-testid={`all-versions-add-version-${dataSource}`}>
+              {addVersionComponent?.({ newVersion: '01.00.001' })}
+            </div>
             {operationRender?.(versionRow)}
+            <button type='button' onClick={() => onSelectVersion?.({ id: '', version: '' })}>
+              Invalid Version
+            </button>
             <button
               type='button'
               disabled={!selectedVersionRow}
@@ -374,6 +381,13 @@ describe('ContactSelectDrawer', () => {
     expect(
       within(allVersionActions).getByText('view contact-co-version:0.9.0'),
     ).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions-add-version-co')).toBeInTheDocument();
+
+    await userEvent.click(
+      within(allVersionActions).getByRole('button', { name: /invalid version/i }),
+    );
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Selete Contact' })).toBeInTheDocument();
 
     const submitButton = within(allVersionActions).getByRole('button', { name: /^submit$/i });
     expect(submitButton).toBeDisabled();

@@ -509,6 +509,35 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result.data[0].classification).toBe('出版物');
     });
 
+    it('should normalize camel-case sort fields for latest source versions', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
+      getLangText.mockReturnValue('Sorted Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('-');
+
+      await getSourceTableAll(mockPaginationParams, { modifiedAt: 'ascend' }, 'en', 'tg', []);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          sort_by: 'modified_at',
+          sort_direction: 'asc',
+        }),
+      );
+
+      supabase.rpc.mockClear();
+
+      await getSourceTableAll(mockPaginationParams, { createdAt: 'descend' }, 'en', 'tg', []);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          sort_by: 'created_at',
+          sort_direction: 'desc',
+        }),
+      );
+    });
+
     it('should filter by team when dataSource is "tg" with team id', async () => {
       supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getLangText.mockReturnValue('Test Source');
@@ -522,6 +551,23 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
         expect.objectContaining({
           data_source: 'tg',
           team_id_filter: 'team-123',
+        }),
+      );
+    });
+
+    it('should use an empty user id when the session omits user details', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: {} } });
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
+      getLangText.mockReturnValue('Anonymous Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('-');
+
+      await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', []);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          this_user_id: '',
         }),
       );
     });
@@ -861,6 +907,22 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       expect(supabase.rpc).not.toHaveBeenCalled();
       expect(result).toEqual({});
+    });
+
+    it('should skip team pgroonga searches when no team id is available', async () => {
+      const result = await getSourceTablePgroongaSearch(
+        mockPaginationParams,
+        'en',
+        'te',
+        'team query',
+        mockFilterCondition,
+      );
+
+      expect(supabase.rpc).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
     });
 
     it('should fall back to id-only rows when pgroonga row mapping throws', async () => {

@@ -125,6 +125,30 @@ describe('Contacts API Service', () => {
       expect(result.data).toBeDefined();
     });
 
+    it('should create a contact when the user has no team id', async () => {
+      const { createContact } = require('@/services/contacts/api');
+      getTeamIdByUserId.mockResolvedValue(null);
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ id: 'contact-no-team', json_ordered: {} }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const result = await createContact('contact-no-team', {});
+
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        expect.objectContaining({
+          id: 'contact-no-team',
+          table: 'contacts',
+        }),
+        expect.any(Object),
+      );
+      expect(result.data).toBeDefined();
+    });
+
     it('should handle create with invalid data', async () => {
       const { createContact } = require('@/services/contacts/api');
       invokeDatasetCommand.mockResolvedValue({
@@ -305,6 +329,30 @@ describe('Contacts API Service', () => {
         statusText: 'OK',
       });
     });
+
+    it('should update a contact when the user has no team id', async () => {
+      const { updateContact } = require('@/services/contacts/api');
+      getTeamIdByUserId.mockResolvedValue(null);
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const result = await updateContact('contact-no-team', '01.00.000', {});
+
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        expect.objectContaining({
+          id: 'contact-no-team',
+          table: 'contacts',
+        }),
+        expect.any(Object),
+      );
+      expect(result.data).toEqual([{ success: true, rule_verification: true }]);
+    });
   });
 
   describe('deleteContact', () => {
@@ -415,6 +463,74 @@ describe('Contacts API Service', () => {
       });
     });
 
+    it('should map sparse Chinese contact rows with default display fields', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({
+        data: [
+          latestContactRow({
+            version_count: null,
+            modified_at: null,
+            json: {
+              contactDataSet: {
+                contactInformation: {
+                  dataSetInformation: {
+                    'common:shortName': [{ '@xml:lang': 'zh', '#text': '稀疏联系人' }],
+                    'common:name': [{ '@xml:lang': 'zh', '#text': '稀疏联系人全称' }],
+                    classificationInformation: {
+                      'common:classification': { 'common:class': [] },
+                    },
+                    email: undefined,
+                  },
+                },
+              },
+            },
+          }),
+        ],
+        error: null,
+      });
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-1' }]);
+      genClassificationZH.mockReturnValue(['联系人分类']);
+      classificationToString.mockReturnValue('联系人分类');
+      getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
+
+      const result = await getContactTableAll({}, {}, 'zh', 'tg', []);
+
+      expect(result.data[0]).toMatchObject({
+        email: '-',
+        versionCount: undefined,
+      });
+      expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
+    });
+
+    it('should normalize createdAt sorting and fall back on Chinese mapping errors', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+      jsonToList.mockImplementation(() => {
+        throw new Error('Chinese contact transformation error');
+      });
+
+      const result = await getContactTableAll(
+        { current: 1, pageSize: 10 },
+        { createdAt: 'ascend' },
+        'zh',
+        'tg',
+        [],
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          sort_by: 'created_at',
+          sort_direction: 'asc',
+        }),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'contact-1' });
+
+      consoleErrorSpy.mockRestore();
+    });
+
     it('should include team filters for public and collaborative data', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
       mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
@@ -426,6 +542,21 @@ describe('Contacts API Service', () => {
         expect.objectContaining({
           data_source: 'co',
           team_id_filter: 'team-co',
+        }),
+      );
+    });
+
+    it('should use an empty user id when the session omits user details', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockAuth.mockResolvedValue({ data: { session: {} } });
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+
+      await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', []);
+
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          this_user_id: '',
         }),
       );
     });
@@ -526,6 +657,7 @@ describe('Contacts API Service', () => {
           latestContactRow({
             id: 'contact-defaults',
             version_count: null,
+            modified_at: null,
             total_count: null,
             json: {
               contactDataSet: {
