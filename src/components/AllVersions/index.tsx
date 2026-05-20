@@ -21,6 +21,7 @@ interface AllVersionsListProps {
   id: string;
   columns: ProColumns<any>[];
   lang: string;
+  dataSource?: string;
   disabled?: boolean;
   versionCount?: number;
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
@@ -44,6 +45,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   id,
   columns,
   lang,
+  dataSource: dataSourceOverride,
   disabled = false,
   versionCount,
   addVersionComponent,
@@ -53,7 +55,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const location = useLocation();
-  const dataSource = getDataSource(location.pathname);
+  const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
   const tableDataRef = useRef<any[]>([]);
 
   useEffect(() => {

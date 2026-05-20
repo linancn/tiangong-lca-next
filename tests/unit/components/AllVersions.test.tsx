@@ -462,6 +462,31 @@ describe('AllVersionsList Component', () => {
     });
   });
 
+  it('should allow callers to override the data source for embedded selectors', async () => {
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} dataSource='te' />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalledWith(
+        'id',
+        'processes',
+        'test-id',
+        expect.objectContaining({
+          pageSize: 10,
+          current: 1,
+        }),
+        expect.any(Object),
+        'en',
+        'te',
+      );
+    });
+  });
+
   it('should render children content in toolbar', async () => {
     render(
       <ConfigProvider>

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -31,6 +31,33 @@ jest.mock('@/style/custom.less', () => ({
   default: { footer_right: 'footer-right' },
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: function MockAllVersions({ dataSource, operationRender, versionCount }: any) {
+    const React = require('react');
+    const [showOperation, setShowOperation] = React.useState(false);
+
+    return (
+      <div data-testid={`all-versions-${dataSource}`} data-version-count={versionCount}>
+        <button type='button' onClick={() => setShowOperation(true)}>
+          {`all-versions-${dataSource}`}
+        </button>
+        {showOperation && (
+          <div data-testid='all-version-operation-render'>
+            {operationRender?.({
+              id: `source-${dataSource}-version`,
+              version: '0.9.0',
+              shortName: `${dataSource} old source`,
+              classification: 'classification',
+              publicationType: 'report',
+            })}
+          </div>
+        )}
+      </div>
+    );
+  },
+}));
+
 jest.mock('@/pages/Sources/Components/create', () => ({
   __esModule: true,
   default: () => <span>create-source</span>,
@@ -57,6 +84,7 @@ const mockGetSourceTableAll = jest.fn(
         shortName: `${dataSource} source`,
         classification: 'classification',
         publicationType: 'report',
+        versionCount: 2,
       },
     ],
     success: true,
@@ -72,6 +100,7 @@ const mockGetSourceTablePgroongaSearch = jest.fn(
         shortName: `${dataSource}:${keyword}`,
         classification: 'classification',
         publicationType: 'report',
+        versionCount: 2,
       },
     ],
     success: true,
@@ -363,6 +392,27 @@ describe('SourceSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
+  });
+
+  it('selects a concrete source version from the all-versions drawer entry', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<SourceSelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await waitFor(() => expect(screen.getByTestId('all-versions-tg')).toBeInTheDocument());
+    expect(screen.getByTestId('all-versions-tg')).toHaveAttribute('data-version-count', '2');
+
+    await userEvent.click(screen.getByRole('button', { name: 'all-versions-tg' }));
+
+    const allVersionActions = screen.getByTestId('all-version-operation-render');
+    expect(within(allVersionActions).getByText('view source-tg-version:0.9.0')).toBeInTheDocument();
+
+    await userEvent.click(within(allVersionActions).getByRole('button', { name: /^select$/i }));
+
+    expect(onData).toHaveBeenCalledWith('source-tg-version', '0.9.0');
     expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
   });
 

@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
@@ -10,6 +11,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 import SourceCreate from '../create';
 import { default as SourceView } from '../view';
 
@@ -42,6 +44,17 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const sourceAllVersionsSearchColumn = `
+    id,
+    json->sourceDataSet->sourceInformation->dataSetInformation->"common:shortName",
+    json->sourceDataSet->sourceInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->sourceDataSet->sourceInformation->dataSetInformation->>sourceCitation,
+    json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
+    version,
+    modified_at,
+    team_id,
+    state_code
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -49,6 +62,26 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
 
   const onSelectChange = (newSelectedRowKeys: Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: SourceTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    onData(row.id, row.version);
+    setDrawerVisible(false);
+  };
+
+  const renderVersionSelectActions = (row: SourceTable) => {
+    return (
+      <Space size='small'>
+        <SourceView id={row.id} version={row.version} lang={lang} buttonType='icon' />
+        <Button size='small' type='link' onClick={() => onSelectVersion(row)}>
+          <FormattedMessage id='pages.button.select' defaultMessage='Select' />
+        </Button>
+      </Space>
+    );
   };
 
   const onTabChange = async (key: string) => {
@@ -145,6 +178,27 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='sources'
+              columns={getAllVersionsColumns(sourceColumns, 4)}
+              searchColume={sourceAllVersionsSearchColumn}
+              id={row.id}
+              versionCount={row.versionCount}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) =>
+                renderVersionSelectActions(versionRow as SourceTable)
+              }
+              operationColumnWidth={128}
+            />
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,
