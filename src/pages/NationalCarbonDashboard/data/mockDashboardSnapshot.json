@@ -1,0 +1,848 @@
+{
+  "schemaVersion": "dashboard_snapshot_v1",
+  "snapshotId": "fixture-national-carbon-2026-05-19",
+  "scopeKey": "national-carbon-platform",
+  "title": "国家碳数据平台建设进展",
+  "subtitle": "国家碳数据能力建设总览",
+  "dataVersion": "V2026.05",
+  "generatedAt": "2026-05-19T09:30:00+08:00",
+  "dataAsOf": "2026-05-19",
+  "displayMode": "offline_fixture",
+  "summary": {
+    "sampleDatasets": 12486,
+    "coveredRegions": 29,
+    "totalRegions": 31,
+    "publishedDatasets": 1286,
+    "connectivityRate": 82.4
+  },
+  "narrativeStages": [
+    {
+      "key": "sample",
+      "index": "01",
+      "title": "样本沉淀",
+      "description": "多源数据采集覆盖重点行业与产品，样本库数据不断丰富",
+      "tone": "blue"
+    },
+    {
+      "key": "publish",
+      "index": "02",
+      "title": "聚合发布",
+      "description": "数据聚合处理形成统一标准结果，支撑国家与区域统计分析",
+      "tone": "cyan"
+    },
+    {
+      "key": "compute",
+      "index": "03",
+      "title": "可计算网络",
+      "description": "过程间输入输出匹配构建可计算网络，支撑全生命周期核算应用",
+      "tone": "gold"
+    }
+  ],
+  "regions": [
+    {
+      "adcode": 110000,
+      "name": "北京市",
+      "shortName": "北京",
+      "statusCounts": {
+        "filling": 38,
+        "submitted": 42,
+        "reviewing": 71,
+        "sampleAccepted": 95,
+        "postProcessing": 31,
+        "pendingPublish": 18,
+        "published": 63
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 120000,
+      "name": "天津市",
+      "shortName": "天津",
+      "statusCounts": {
+        "filling": 32,
+        "submitted": 35,
+        "reviewing": 62,
+        "sampleAccepted": 86,
+        "postProcessing": 28,
+        "pendingPublish": 14,
+        "published": 51
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 130000,
+      "name": "河北省",
+      "shortName": "河北",
+      "statusCounts": {
+        "filling": 76,
+        "submitted": 84,
+        "reviewing": 136,
+        "sampleAccepted": 248,
+        "postProcessing": 65,
+        "pendingPublish": 34,
+        "published": 122
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 140000,
+      "name": "山西省",
+      "shortName": "山西",
+      "statusCounts": {
+        "filling": 69,
+        "submitted": 77,
+        "reviewing": 118,
+        "sampleAccepted": 198,
+        "postProcessing": 54,
+        "pendingPublish": 27,
+        "published": 84
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 150000,
+      "name": "内蒙古自治区",
+      "shortName": "内蒙古",
+      "statusCounts": {
+        "filling": 58,
+        "submitted": 63,
+        "reviewing": 94,
+        "sampleAccepted": 152,
+        "postProcessing": 42,
+        "pendingPublish": 23,
+        "published": 76
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 210000,
+      "name": "辽宁省",
+      "shortName": "辽宁",
+      "statusCounts": {
+        "filling": 61,
+        "submitted": 55,
+        "reviewing": 109,
+        "sampleAccepted": 176,
+        "postProcessing": 48,
+        "pendingPublish": 25,
+        "published": 91
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 220000,
+      "name": "吉林省",
+      "shortName": "吉林",
+      "statusCounts": {
+        "filling": 41,
+        "submitted": 38,
+        "reviewing": 66,
+        "sampleAccepted": 102,
+        "postProcessing": 29,
+        "pendingPublish": 13,
+        "published": 45
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 230000,
+      "name": "黑龙江省",
+      "shortName": "黑龙江",
+      "statusCounts": {
+        "filling": 46,
+        "submitted": 42,
+        "reviewing": 72,
+        "sampleAccepted": 118,
+        "postProcessing": 33,
+        "pendingPublish": 17,
+        "published": 52
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 310000,
+      "name": "上海市",
+      "shortName": "上海",
+      "statusCounts": {
+        "filling": 44,
+        "submitted": 58,
+        "reviewing": 96,
+        "sampleAccepted": 168,
+        "postProcessing": 47,
+        "pendingPublish": 22,
+        "published": 88
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 320000,
+      "name": "江苏省",
+      "shortName": "江苏",
+      "statusCounts": {
+        "filling": 214,
+        "submitted": 188,
+        "reviewing": 326,
+        "sampleAccepted": 392,
+        "postProcessing": 86,
+        "pendingPublish": 52,
+        "published": 128
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 330000,
+      "name": "浙江省",
+      "shortName": "浙江",
+      "statusCounts": {
+        "filling": 142,
+        "submitted": 126,
+        "reviewing": 236,
+        "sampleAccepted": 318,
+        "postProcessing": 74,
+        "pendingPublish": 43,
+        "published": 112
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 340000,
+      "name": "安徽省",
+      "shortName": "安徽",
+      "statusCounts": {
+        "filling": 82,
+        "submitted": 76,
+        "reviewing": 126,
+        "sampleAccepted": 196,
+        "postProcessing": 51,
+        "pendingPublish": 31,
+        "published": 79
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 350000,
+      "name": "福建省",
+      "shortName": "福建",
+      "statusCounts": {
+        "filling": 73,
+        "submitted": 68,
+        "reviewing": 112,
+        "sampleAccepted": 184,
+        "postProcessing": 45,
+        "pendingPublish": 26,
+        "published": 83
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 360000,
+      "name": "江西省",
+      "shortName": "江西",
+      "statusCounts": {
+        "filling": 65,
+        "submitted": 59,
+        "reviewing": 104,
+        "sampleAccepted": 158,
+        "postProcessing": 41,
+        "pendingPublish": 22,
+        "published": 66
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 370000,
+      "name": "山东省",
+      "shortName": "山东",
+      "statusCounts": {
+        "filling": 148,
+        "submitted": 135,
+        "reviewing": 244,
+        "sampleAccepted": 344,
+        "postProcessing": 82,
+        "pendingPublish": 46,
+        "published": 119
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 410000,
+      "name": "河南省",
+      "shortName": "河南",
+      "statusCounts": {
+        "filling": 98,
+        "submitted": 87,
+        "reviewing": 156,
+        "sampleAccepted": 226,
+        "postProcessing": 57,
+        "pendingPublish": 34,
+        "published": 91
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 420000,
+      "name": "湖北省",
+      "shortName": "湖北",
+      "statusCounts": {
+        "filling": 96,
+        "submitted": 82,
+        "reviewing": 149,
+        "sampleAccepted": 214,
+        "postProcessing": 58,
+        "pendingPublish": 32,
+        "published": 88
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 430000,
+      "name": "湖南省",
+      "shortName": "湖南",
+      "statusCounts": {
+        "filling": 88,
+        "submitted": 79,
+        "reviewing": 138,
+        "sampleAccepted": 205,
+        "postProcessing": 54,
+        "pendingPublish": 30,
+        "published": 82
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 440000,
+      "name": "广东省",
+      "shortName": "广东",
+      "statusCounts": {
+        "filling": 132,
+        "submitted": 118,
+        "reviewing": 219,
+        "sampleAccepted": 326,
+        "postProcessing": 91,
+        "pendingPublish": 55,
+        "published": 136
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 450000,
+      "name": "广西壮族自治区",
+      "shortName": "广西",
+      "statusCounts": {
+        "filling": 54,
+        "submitted": 48,
+        "reviewing": 82,
+        "sampleAccepted": 132,
+        "postProcessing": 34,
+        "pendingPublish": 19,
+        "published": 54
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 460000,
+      "name": "海南省",
+      "shortName": "海南",
+      "statusCounts": {
+        "filling": 22,
+        "submitted": 19,
+        "reviewing": 31,
+        "sampleAccepted": 45,
+        "postProcessing": 12,
+        "pendingPublish": 8,
+        "published": 18
+      },
+      "latestPublishedAt": "2026-03"
+    },
+    {
+      "adcode": 500000,
+      "name": "重庆市",
+      "shortName": "重庆",
+      "statusCounts": {
+        "filling": 57,
+        "submitted": 49,
+        "reviewing": 91,
+        "sampleAccepted": 141,
+        "postProcessing": 36,
+        "pendingPublish": 21,
+        "published": 62
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 510000,
+      "name": "四川省",
+      "shortName": "四川",
+      "statusCounts": {
+        "filling": 116,
+        "submitted": 101,
+        "reviewing": 188,
+        "sampleAccepted": 286,
+        "postProcessing": 72,
+        "pendingPublish": 43,
+        "published": 108
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 520000,
+      "name": "贵州省",
+      "shortName": "贵州",
+      "statusCounts": {
+        "filling": 47,
+        "submitted": 42,
+        "reviewing": 74,
+        "sampleAccepted": 118,
+        "postProcessing": 31,
+        "pendingPublish": 17,
+        "published": 49
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 530000,
+      "name": "云南省",
+      "shortName": "云南",
+      "statusCounts": {
+        "filling": 52,
+        "submitted": 44,
+        "reviewing": 79,
+        "sampleAccepted": 124,
+        "postProcessing": 32,
+        "pendingPublish": 18,
+        "published": 51
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 540000,
+      "name": "西藏自治区",
+      "shortName": "西藏",
+      "statusCounts": {
+        "filling": 14,
+        "submitted": 10,
+        "reviewing": 19,
+        "sampleAccepted": 28,
+        "postProcessing": 8,
+        "pendingPublish": 4,
+        "published": 9
+      },
+      "latestPublishedAt": "2026-02"
+    },
+    {
+      "adcode": 610000,
+      "name": "陕西省",
+      "shortName": "陕西",
+      "statusCounts": {
+        "filling": 69,
+        "submitted": 61,
+        "reviewing": 116,
+        "sampleAccepted": 174,
+        "postProcessing": 45,
+        "pendingPublish": 26,
+        "published": 72
+      },
+      "latestPublishedAt": "2026-05"
+    },
+    {
+      "adcode": 620000,
+      "name": "甘肃省",
+      "shortName": "甘肃",
+      "statusCounts": {
+        "filling": 36,
+        "submitted": 32,
+        "reviewing": 56,
+        "sampleAccepted": 84,
+        "postProcessing": 22,
+        "pendingPublish": 12,
+        "published": 34
+      },
+      "latestPublishedAt": "2026-03"
+    },
+    {
+      "adcode": 630000,
+      "name": "青海省",
+      "shortName": "青海",
+      "statusCounts": {
+        "filling": 20,
+        "submitted": 18,
+        "reviewing": 29,
+        "sampleAccepted": 43,
+        "postProcessing": 11,
+        "pendingPublish": 6,
+        "published": 16
+      },
+      "latestPublishedAt": "2026-03"
+    },
+    {
+      "adcode": 640000,
+      "name": "宁夏回族自治区",
+      "shortName": "宁夏",
+      "statusCounts": {
+        "filling": 24,
+        "submitted": 21,
+        "reviewing": 34,
+        "sampleAccepted": 52,
+        "postProcessing": 14,
+        "pendingPublish": 7,
+        "published": 19
+      },
+      "latestPublishedAt": "2026-03"
+    },
+    {
+      "adcode": 650000,
+      "name": "新疆维吾尔自治区",
+      "shortName": "新疆",
+      "statusCounts": {
+        "filling": 42,
+        "submitted": 37,
+        "reviewing": 65,
+        "sampleAccepted": 96,
+        "postProcessing": 26,
+        "pendingPublish": 15,
+        "published": 43
+      },
+      "latestPublishedAt": "2026-04"
+    },
+    {
+      "adcode": 710000,
+      "name": "台湾省",
+      "shortName": "台湾",
+      "statusCounts": {
+        "filling": 8,
+        "submitted": 7,
+        "reviewing": 11,
+        "sampleAccepted": 18,
+        "postProcessing": 5,
+        "pendingPublish": 3,
+        "published": 6
+      },
+      "latestPublishedAt": "2026-02"
+    },
+    {
+      "adcode": 810000,
+      "name": "香港特别行政区",
+      "shortName": "香港",
+      "statusCounts": {
+        "filling": 6,
+        "submitted": 5,
+        "reviewing": 9,
+        "sampleAccepted": 13,
+        "postProcessing": 4,
+        "pendingPublish": 2,
+        "published": 5
+      },
+      "latestPublishedAt": "2026-02"
+    },
+    {
+      "adcode": 820000,
+      "name": "澳门特别行政区",
+      "shortName": "澳门",
+      "statusCounts": {
+        "filling": 4,
+        "submitted": 3,
+        "reviewing": 5,
+        "sampleAccepted": 8,
+        "postProcessing": 2,
+        "pendingPublish": 1,
+        "published": 3
+      },
+      "latestPublishedAt": "2026-02"
+    }
+  ],
+  "outcome": {
+    "totalOutputs": 13772,
+    "constructionMetrics": [
+      {
+        "key": "sampleDatasets",
+        "label": "样本库数据",
+        "value": 12486,
+        "unit": "个",
+        "tone": "blue"
+      },
+      {
+        "key": "contributors",
+        "label": "参与主体",
+        "value": 836,
+        "unit": "家",
+        "tone": "blue"
+      },
+      {
+        "key": "productCategories",
+        "label": "覆盖产品类别",
+        "value": 142,
+        "unit": "类",
+        "tone": "cyan"
+      },
+      {
+        "key": "productionWeightCoverage",
+        "label": "产量权重覆盖率",
+        "value": 78.6,
+        "unit": "%",
+        "tone": "cyan"
+      }
+    ],
+    "publicationMetrics": [
+      {
+        "key": "publishedDatasets",
+        "label": "正式发布数据",
+        "value": 1286,
+        "unit": "个",
+        "tone": "gold"
+      },
+      {
+        "key": "nationalAverageResults",
+        "label": "国家平均结果",
+        "value": 218,
+        "unit": "个",
+        "tone": "gold"
+      },
+      {
+        "key": "regionalAverageResults",
+        "label": "区域平均结果",
+        "value": 96,
+        "unit": "个",
+        "tone": "gold"
+      },
+      {
+        "key": "latestBatch",
+        "label": "最新发布批次",
+        "value": 202605,
+        "tone": "amber"
+      }
+    ],
+    "industries": [
+      {
+        "key": "steel",
+        "name": "钢铁",
+        "icon": "stack",
+        "sampleCount": 1452,
+        "aggregationCount": 382,
+        "publicationCount": 126,
+        "completionRate": 95,
+        "qualityMark": "权重完整"
+      },
+      {
+        "key": "cement",
+        "name": "水泥",
+        "icon": "truck",
+        "sampleCount": 1184,
+        "aggregationCount": 304,
+        "publicationCount": 104,
+        "completionRate": 90,
+        "qualityMark": "已发布"
+      },
+      {
+        "key": "power",
+        "name": "电力",
+        "icon": "bolt",
+        "sampleCount": 1628,
+        "aggregationCount": 418,
+        "publicationCount": 158,
+        "completionRate": 98,
+        "qualityMark": "高覆盖"
+      },
+      {
+        "key": "nonferrous",
+        "name": "有色金属",
+        "icon": "mineral",
+        "sampleCount": 884,
+        "aggregationCount": 226,
+        "publicationCount": 82,
+        "completionRate": 85,
+        "qualityMark": "待补充权重"
+      },
+      {
+        "key": "chemical",
+        "name": "化工",
+        "icon": "flask",
+        "sampleCount": 1042,
+        "aggregationCount": 268,
+        "publicationCount": 74,
+        "completionRate": 78,
+        "qualityMark": "审核中"
+      },
+      {
+        "key": "building",
+        "name": "建材",
+        "icon": "building",
+        "sampleCount": 762,
+        "aggregationCount": 188,
+        "publicationCount": 48,
+        "completionRate": 65,
+        "qualityMark": "待发布"
+      },
+      {
+        "key": "transport",
+        "name": "交通",
+        "icon": "route",
+        "sampleCount": 556,
+        "aggregationCount": 128,
+        "publicationCount": 26,
+        "completionRate": 50,
+        "qualityMark": "补充中"
+      }
+    ]
+  },
+  "connectivity": {
+    "rate": 82.4,
+    "connectedProcesses": 1284,
+    "unmatchedInputs": 96,
+    "productSystems": 218,
+    "closure": {
+      "inputEdgesTotal": 70262,
+      "writtenEdges": 42514,
+      "noProviderEdges": 27748,
+      "writePct": 60.51,
+      "providerPresentResolvedPct": 100
+    },
+    "quality": {
+      "splitByProcessVolumePct": 78.05,
+      "volumeFallbackToOnePct": 100,
+      "localSubnationalPct": 7.39,
+      "sameCountryPct": 69.27,
+      "singularRiskLevel": "medium"
+    },
+    "gaps": {
+      "topFlows": [
+        {
+          "category": "基础材料",
+          "flow": "石灰石",
+          "count": 807,
+          "sampleHits": 5
+        },
+        {
+          "category": "能源燃料",
+          "flow": "柴油",
+          "count": 648,
+          "sampleHits": 5
+        },
+        {
+          "category": "能源燃料",
+          "flow": "硬煤",
+          "count": 636,
+          "sampleHits": 5
+        },
+        {
+          "category": "电力公用工程",
+          "flow": "交流电",
+          "count": 308,
+          "sampleHits": 5
+        },
+        {
+          "category": "能源燃料",
+          "flow": "天然气",
+          "count": 241,
+          "sampleHits": 5
+        }
+      ]
+    },
+    "matrix": {
+      "rows": 2000,
+      "columns": 2000,
+      "connectedRatio": 0.6051,
+      "unmatchedCells": [
+        {
+          "row": 280,
+          "column": 1640
+        },
+        {
+          "row": 410,
+          "column": 1720
+        },
+        {
+          "row": 1120,
+          "column": 260
+        },
+        {
+          "row": 1260,
+          "column": 420
+        },
+        {
+          "row": 1600,
+          "column": 1540
+        },
+        {
+          "row": 1710,
+          "column": 1680
+        }
+      ],
+      "highlightedPaths": [
+        {
+          "key": "steel-power",
+          "tone": "cyan",
+          "points": [
+            {
+              "row": 520,
+              "column": 180
+            },
+            {
+              "row": 420,
+              "column": 420
+            },
+            {
+              "row": 560,
+              "column": 760
+            },
+            {
+              "row": 820,
+              "column": 960
+            },
+            {
+              "row": 980,
+              "column": 1180
+            }
+          ]
+        },
+        {
+          "key": "cement-transport",
+          "tone": "cyan",
+          "points": [
+            {
+              "row": 1460,
+              "column": 780
+            },
+            {
+              "row": 1380,
+              "column": 1040
+            },
+            {
+              "row": 1450,
+              "column": 1320
+            },
+            {
+              "row": 1540,
+              "column": 1500
+            },
+            {
+              "row": 1420,
+              "column": 1800
+            }
+          ]
+        },
+        {
+          "key": "missing-input",
+          "tone": "gold",
+          "points": [
+            {
+              "row": 1280,
+              "column": 90
+            },
+            {
+              "row": 1120,
+              "column": 240
+            },
+            {
+              "row": 1260,
+              "column": 420
+            },
+            {
+              "row": 1140,
+              "column": 560
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
