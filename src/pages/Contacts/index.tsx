@@ -30,7 +30,7 @@ import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Col, Input, Row, Space, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
+import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -88,6 +88,114 @@ const TableList: FC = () => {
     }
   }, [dataSource, id, version]);
 
+  const renderContactActions = (
+    row: ContactTable,
+    listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
+  ) => {
+    const actionDisabled = isDataUnderReview(row.stateCode);
+    if (dataSource === 'my') {
+      return [
+        <ResponsiveDataListActions
+          key={0}
+          isMobile={isMobileDataList}
+          moreMenus={[
+            {
+              key: 'export',
+              name: <ExportData tableName='contacts' id={row.id} version={row.version} />,
+            },
+            {
+              key: 'copy',
+              name: (
+                <ContactCreate
+                  actionType='copy'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={listActionRef}
+                />
+              ),
+            },
+            {
+              key: 'contribute',
+              name: (
+                <ContributeData
+                  onOk={async () => {
+                    const contributeResult = await contributeSource(
+                      'contacts',
+                      row.id,
+                      row.version,
+                    );
+                    const contributeError = extractContributeDataError(contributeResult);
+
+                    if (contributeError) {
+                      message.error(getContributeDataErrorMessage(intl, contributeError));
+                      console.log(contributeError);
+                    } else {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'component.contributeData.success',
+                          defaultMessage: 'Contribute successfully',
+                        }),
+                      );
+                      listActionRef.current?.reload();
+                    }
+                  }}
+                  disabled={!!row.teamId}
+                />
+              ),
+            },
+          ]}
+        >
+          <ContactView
+            id={row.id}
+            version={row.version}
+            lang={lang}
+            buttonType='icon'
+            actionRef={listActionRef}
+          />
+          <ContactEdit
+            disabled={actionDisabled}
+            id={row.id}
+            version={row.version}
+            lang={lang}
+            buttonType={'icon'}
+            actionRef={listActionRef}
+            setViewDrawerVisible={() => {}}
+            showSyncOpenDataButton={true}
+          />
+          <ContactDelete
+            disabled={actionDisabled}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            actionRef={listActionRef}
+            setViewDrawerVisible={() => {}}
+          />
+        </ResponsiveDataListActions>,
+      ];
+    }
+
+    return [
+      <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
+        <ContactView
+          id={row.id}
+          version={row.version}
+          lang={lang}
+          buttonType='icon'
+          actionRef={listActionRef}
+        />
+        <ContactCreate
+          actionType='copy'
+          id={row.id}
+          version={row.version}
+          lang={lang}
+          actionRef={listActionRef}
+        />
+        <ExportData tableName='contacts' id={row.id} version={row.version} />
+      </ResponsiveDataListActions>,
+    ];
+  };
+
   const contactColumns: ProColumns<ContactTable>[] = [
     {
       ...dataListIndexColumn<ContactTable>(),
@@ -144,9 +252,11 @@ const TableList: FC = () => {
                 json->contactDataSet->contactInformation->dataSetInformation->>email,
                 version,
                 modified_at,
-                team_id
+                team_id,
+                state_code
               `}
               id={row.id}
+              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <ContactCreate
                   newVersion={newVersion}
@@ -157,6 +267,10 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
+              operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
+                renderContactActions(versionRow as ContactTable, allVersionsActionRef)
+              }
+              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 216 : 184}
             ></AllVersionsList>
           </Space>
         );
@@ -176,109 +290,7 @@ const TableList: FC = () => {
       ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
-      render: (_, row) => {
-        const actionDisabled = isDataUnderReview(row.stateCode);
-        if (dataSource === 'my') {
-          return [
-            <ResponsiveDataListActions
-              key={0}
-              isMobile={isMobileDataList}
-              moreMenus={[
-                {
-                  key: 'export',
-                  name: <ExportData tableName='contacts' id={row.id} version={row.version} />,
-                },
-                {
-                  key: 'copy',
-                  name: (
-                    <ContactCreate
-                      actionType='copy'
-                      id={row.id}
-                      version={row.version}
-                      lang={lang}
-                      actionRef={actionRef}
-                    />
-                  ),
-                },
-                {
-                  key: 'contribute',
-                  name: (
-                    <ContributeData
-                      onOk={async () => {
-                        const contributeResult = await contributeSource(
-                          'contacts',
-                          row.id,
-                          row.version,
-                        );
-                        const contributeError = extractContributeDataError(contributeResult);
-
-                        if (contributeError) {
-                          message.error(getContributeDataErrorMessage(intl, contributeError));
-                          console.log(contributeError);
-                        } else {
-                          message.success(
-                            intl.formatMessage({
-                              id: 'component.contributeData.success',
-                              defaultMessage: 'Contribute successfully',
-                            }),
-                          );
-                          actionRef.current?.reload();
-                        }
-                      }}
-                      disabled={!!row.teamId}
-                    />
-                  ),
-                },
-              ]}
-            >
-              <ContactView
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType='icon'
-                actionRef={actionRef}
-              />
-              <ContactEdit
-                disabled={actionDisabled}
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-                showSyncOpenDataButton={true}
-              />
-              <ContactDelete
-                disabled={actionDisabled}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-            </ResponsiveDataListActions>,
-          ];
-        }
-        return [
-          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
-            <ContactView
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              buttonType='icon'
-              actionRef={actionRef}
-            />
-            <ContactCreate
-              actionType='copy'
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              actionRef={actionRef}
-            />
-            <ExportData tableName='contacts' id={row.id} version={row.version} />
-          </ResponsiveDataListActions>,
-        ];
-      },
+      render: (_, row) => renderContactActions(row),
     },
   ];
 
@@ -377,6 +389,7 @@ const TableList: FC = () => {
                 currentKeyWord,
                 {},
                 currentStateCode,
+                tid ?? '',
               ),
             );
           }

@@ -10,6 +10,7 @@ export type ContactTable = {
   name: string;
   classification: string;
   email: string;
+  versionCount?: number;
   modifiedAt: Date;
   stateCode?: number;
   teamId: string;

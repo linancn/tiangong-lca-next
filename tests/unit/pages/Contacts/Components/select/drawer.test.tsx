@@ -1,6 +1,6 @@
 // @ts-nocheck
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -31,6 +31,62 @@ jest.mock('@/style/custom.less', () => ({
   default: { footer_right: 'footer-right' },
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: function MockAllVersions({
+    dataSource,
+    onSelectVersion,
+    operationRender,
+    versionCount,
+  }: any) {
+    const React = require('react');
+    const [showOperation, setShowOperation] = React.useState(false);
+    const [selectedVersionRow, setSelectedVersionRow] = React.useState<any | null>(null);
+    const versionRow = {
+      id: `contact-${dataSource}-version`,
+      version: '0.9.0',
+      shortName: `${dataSource} old contact`,
+      name: `${dataSource} old contact`,
+      classification: 'classification',
+      email: `${dataSource}@example.com`,
+    };
+
+    return (
+      <div data-testid={`all-versions-${dataSource}`} data-version-count={versionCount}>
+        <button type='button' onClick={() => setShowOperation(true)}>
+          {`all-versions-${dataSource}`}
+        </button>
+        {showOperation && (
+          <div data-testid='all-version-operation-render'>
+            <label>
+              <input
+                aria-label={`select-version-${dataSource}`}
+                checked={selectedVersionRow?.version === versionRow.version}
+                type='radio'
+                onChange={() => setSelectedVersionRow(versionRow)}
+              />
+              {versionRow.version}
+            </label>
+            {operationRender?.(versionRow)}
+            <button
+              type='button'
+              disabled={!selectedVersionRow}
+              onClick={() => selectedVersionRow && onSelectVersion?.(selectedVersionRow)}
+            >
+              Submit
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  },
+}));
+
+jest.mock('@/pages/Utils', () => ({
+  __esModule: true,
+  getAllVersionsColumns: jest.fn(() => []),
+}));
+
 jest.mock('@/pages/Contacts/Components/create', () => ({
   __esModule: true,
   default: () => <span>create-contact</span>,
@@ -47,6 +103,7 @@ const mockGetContactTableAll = jest.fn(
       {
         id: `contact-${dataSource}`,
         version: '1.0.0',
+        versionCount: 2,
         shortName: `${dataSource} contact`,
         name: `${dataSource} contact`,
         classification: 'classification',
@@ -63,6 +120,7 @@ const mockGetContactTablePgroongaSearch = jest.fn(
       {
         id: `contact-${dataSource}-search`,
         version: '2.0.0',
+        versionCount: 2,
         shortName: `${dataSource}:${keyword}`,
         name: `${dataSource}:${keyword}`,
         classification: 'classification',
@@ -296,6 +354,39 @@ describe('ContactSelectDrawer', () => {
 
     expect(onData).toHaveBeenCalledWith('contact-my-search', '2.0.0');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('selects a concrete contact version with radio selection from the all-versions drawer entry', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(
+      <ContactSelectDrawer buttonType='text' lang='en' onData={onData} filterTabs={['co']} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await screen.findByText('view contact-co:1.0.0');
+
+    expect(screen.getByTestId('all-versions-co')).toHaveAttribute('data-version-count', '2');
+
+    await userEvent.click(screen.getByRole('button', { name: /all-versions-co/i }));
+
+    const allVersionActions = screen.getByTestId('all-version-operation-render');
+    expect(
+      within(allVersionActions).getByText('view contact-co-version:0.9.0'),
+    ).toBeInTheDocument();
+
+    const submitButton = within(allVersionActions).getByRole('button', { name: /^submit$/i });
+    expect(submitButton).toBeDisabled();
+
+    await userEvent.click(
+      within(allVersionActions).getByRole('radio', { name: /select-version-co/i }),
+    );
+    expect(submitButton).not.toBeDisabled();
+
+    await userEvent.click(submitButton);
+
+    expect(onData).toHaveBeenCalledWith('contact-co-version', '0.9.0');
+    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
   });
 
   it('opens all tabs by default, searches tg/team datasets, and clears selection when reopened', async () => {

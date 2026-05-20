@@ -1282,6 +1282,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
