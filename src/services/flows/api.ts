@@ -433,7 +433,7 @@ export async function getFlowTableAll(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: result.count,
     });
   }
   return Promise.resolve({

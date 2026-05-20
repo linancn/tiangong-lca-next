@@ -40,6 +40,24 @@ jest.mock('@/components/AISuggestion', () => ({
   default: () => <span>ai-suggestion</span>,
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: ({ id, addVersionComponent, operationRender, onSelectVersion }: any) => (
+    <div data-testid={`all-versions-${id}`}>
+      {addVersionComponent?.({ newVersion: '02.00.000' })}
+      <div data-testid={`all-versions-operation-${id}`}>
+        {operationRender?.({ id, version: '02.00.000' })}
+      </div>
+      <button type='button' onClick={() => onSelectVersion?.({ id, version: '02.00.000' })}>
+        select-version-{id}
+      </button>
+      <button type='button' onClick={() => onSelectVersion?.({ version: '02.00.000' })}>
+        select-version-missing-id-{id}
+      </button>
+    </div>
+  ),
+}));
+
 const mockGetProcessTableAll = jest.fn();
 const mockGetProcessTablePgroongaSearch = jest.fn();
 const mockProcessHybridSearch = jest.fn();
@@ -340,8 +358,9 @@ describe('ModelToolbarAdd', () => {
 
   it('renders icon trigger, column renderers, and closes from drawer controls', async () => {
     mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+    const onData = jest.fn();
 
-    render(<ModelToolbarAdd buttonType='icon' lang='en' onData={jest.fn()} />);
+    render(<ModelToolbarAdd buttonType='icon' lang='en' onData={onData} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
     await waitFor(() => {
@@ -363,12 +382,26 @@ describe('ModelToolbarAdd', () => {
       <>
         {latestProTableProps.columns[1].render?.(null, sampleRow)}
         {latestProTableProps.columns[3].render?.(null, sampleRow)}
+        {latestProTableProps.columns[6].render?.(null, sampleRow)}
         {latestProTableProps.columns[8].render?.(null, sampleRow)}
       </>,
     );
 
     expect(screen.getByText('Sample process')).toBeInTheDocument();
-    expect(screen.getByText('process-view')).toBeInTheDocument();
+    expect(screen.getAllByText('process-view').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('all-versions-process-1')).toBeInTheDocument();
+    await act(async () => {
+      latestProTableProps?.rowSelection?.onChange?.(['process-1:01.00.000'], []);
+    });
+    await userEvent.click(
+      screen.getByRole('button', { name: 'select-version-missing-id-process-1' }),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'select-version-process-1' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onData).toHaveBeenCalledWith([{ id: 'process-1', version: '02.00.000' }]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
+    expect(await screen.findByRole('dialog', { name: 'Add process' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
     expect(screen.queryByRole('dialog', { name: 'Add process' })).not.toBeInTheDocument();

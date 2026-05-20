@@ -540,6 +540,7 @@ describe('getFlowTableAll', () => {
           version: '01.00.001',
           modified_at: '2024-01-01T00:00:00Z',
           team_id: 'team-1',
+          version_count: 3,
           name: {
             baseName: [{ '@xml:lang': 'en', '#text': 'Water' }],
           },
@@ -593,12 +594,47 @@ describe('getFlowTableAll', () => {
           version: '01.00.001',
           modifiedAt: new Date('2024-01-01T00:00:00Z'),
           teamId: 'team-1',
+          versionCount: 3,
         },
       ],
       page: 1,
       success: true,
       total: 1,
     });
+  });
+
+  it('normalizes latest-version sort aliases and handles sessions without a user id', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-without-user',
+        },
+      },
+    });
+    createQuery({ data: [], count: 0, error: null });
+
+    await getFlowTableAll({ current: 1, pageSize: 10 }, { modifiedAt: 'ascend' }, 'en', 'tg', '');
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_flow_versions',
+      expect.objectContaining({
+        sort_by: 'modified_at',
+        sort_direction: 'asc',
+        this_user_id: '',
+      }),
+    );
+
+    createQuery({ data: [], count: 0, error: null });
+
+    await getFlowTableAll({ current: 1, pageSize: 10 }, { createdAt: 'descend' }, 'en', 'tg', '');
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_flow_versions',
+      expect.objectContaining({
+        sort_by: 'created_at',
+        sort_direction: 'desc',
+      }),
+    );
   });
 
   it('falls back to ILCD lookup when cached locations are empty', async () => {
@@ -1281,6 +1317,21 @@ describe('getFlowTablePgroongaSearch', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith('error', mockError);
     expect(result).toEqual({ data: [], success: false });
     consoleLogSpy.mockRestore();
+  });
+
+  it('returns empty success when PGroonga team-data search has no resolved team id', async () => {
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+
+    const result = await getFlowTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'te',
+      'water',
+      {},
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('passes state_code and order_by to PGroonga flow search', async () => {

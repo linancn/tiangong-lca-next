@@ -442,7 +442,7 @@ export async function getProcessTableAll(
     data,
     page: params?.current ?? 1,
     success: true,
-    total: result?.count ?? 0,
+    total: result.count,
   };
 }
 
@@ -1372,7 +1372,7 @@ export async function process_hybrid_search(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 

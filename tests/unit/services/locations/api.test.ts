@@ -125,6 +125,17 @@ describe('Locations API (src/services/locations/api.ts)', () => {
     });
   });
 
+  it('returns a failure payload when getILCDLocationByValues cannot load entries', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetCachedOrFetchLocationFileData.mockRejectedValueOnce(new Error('location load failed'));
+
+    const result = await getILCDLocationByValues('en', ['US']);
+
+    expect(result).toEqual({ data: [], success: false });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(Error));
+    consoleErrorSpy.mockRestore();
+  });
+
   it('formats the location label when a matching text value exists', async () => {
     mockGetCachedOrFetchLocationFileData.mockResolvedValue({
       ILCDLocations: {

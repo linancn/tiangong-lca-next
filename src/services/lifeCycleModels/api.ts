@@ -637,7 +637,7 @@ export async function getLifeCycleModelTableAll(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: result.count,
     });
   }
   return Promise.resolve({
@@ -782,7 +782,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 
@@ -899,7 +899,7 @@ export async function lifeCycleModel_hybrid_search(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 

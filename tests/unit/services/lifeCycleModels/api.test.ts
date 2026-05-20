@@ -380,6 +380,7 @@ describe('getLifeCycleModelTableAll', () => {
             version: sampleVersion,
             modified_at: '2026-03-17T10:00:00.000Z',
             team_id: 'team-1',
+            version_count: '5',
           },
         ],
         error: null,
@@ -406,9 +407,68 @@ describe('getLifeCycleModelTableAll', () => {
           generalComment: 'localized-text',
           version: sampleVersion,
           teamId: 'team-1',
+          versionCount: 5,
         },
       ],
     });
+  });
+
+  it('normalizes latest-version sort aliases and handles sessions without a user id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-without-user',
+        },
+      },
+    });
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [],
+        error: null,
+        count: 0,
+      }),
+    );
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { modifiedAt: 'ascend' } as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_lifecyclemodel_versions',
+      expect.objectContaining({
+        sort_by: 'modified_at',
+        sort_direction: 'asc',
+        this_user_id: '',
+      }),
+    );
+
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [],
+        error: null,
+        count: 0,
+      }),
+    );
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { createdAt: 'descend' } as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_lifecyclemodel_versions',
+      expect.objectContaining({
+        sort_by: 'created_at',
+        sort_direction: 'desc',
+      }),
+    );
   });
 });
 
@@ -2129,6 +2189,21 @@ describe('table/search helpers', () => {
       error: { message: 'rpc failed' },
     });
     consoleSpy.mockRestore();
+  });
+
+  it('returns empty success when pgroonga team-data search has no resolved team id', async () => {
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'te',
+      'keyword',
+      {},
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('maps zh pgroonga search rows when classification lookup succeeds', async () => {

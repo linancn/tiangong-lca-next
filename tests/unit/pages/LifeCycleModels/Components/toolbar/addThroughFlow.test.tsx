@@ -11,6 +11,7 @@ jest.mock('umi', () => ({
   useIntl: () => ({
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
+  useLocation: () => ({ pathname: '/lifeCycleModels' }),
 }));
 
 jest.mock('@/style/custom.less', () => ({
@@ -20,6 +21,7 @@ jest.mock('@/style/custom.less', () => ({
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
+  BarsOutlined: () => <span>bars-icon</span>,
   CloseOutlined: () => <span>close-icon</span>,
   PlusOutlined: () => <span>plus-icon</span>,
 }));
@@ -27,6 +29,24 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('@/pages/Flows/Components/view', () => ({
   __esModule: true,
   default: () => <span>flows-view</span>,
+}));
+
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: ({ id, addVersionComponent, operationRender, onSelectVersion }: any) => (
+    <div data-testid={`all-versions-${id}`}>
+      {addVersionComponent?.({ newVersion: '02.00.000' })}
+      <div data-testid={`all-versions-operation-${id}`}>
+        {operationRender?.({ id, version: '02.00.000' })}
+      </div>
+      <button type='button' onClick={() => onSelectVersion?.({ id, version: '02.00.000' })}>
+        select-version-{id}
+      </button>
+      <button type='button' onClick={() => onSelectVersion?.({ id })}>
+        select-version-missing-version-{id}
+      </button>
+    </div>
+  ),
 }));
 
 const mockGetFlowTableAll = jest.fn();
@@ -44,6 +64,7 @@ jest.mock('antd', () => {
   const React = require('react');
   const { toText } = require('../../../../../helpers/nodeToText');
 
+  const Badge = ({ children }: any) => <span>{children}</span>;
   const Button = ({ children, onClick, disabled = false, icon, htmlType = 'button' }: any) => (
     <button
       type={htmlType === 'submit' ? 'submit' : htmlType === 'reset' ? 'reset' : 'button'}
@@ -56,6 +77,20 @@ jest.mock('antd', () => {
   );
 
   const Tooltip = ({ children }: any) => <>{children}</>;
+  const ConfigProvider = ({ children }: any) => <>{children}</>;
+  const Typography = {
+    Text: ({ children }: any) => <span>{toText(children)}</span>,
+    Title: ({ children }: any) => <h1>{toText(children)}</h1>,
+  };
+  const theme = {
+    defaultAlgorithm: () => ({}),
+    darkAlgorithm: () => ({}),
+    useToken: () => ({
+      token: {
+        colorPrimary: '#1677ff',
+      },
+    }),
+  };
 
   const Drawer = ({ open, title, extra, footer, children, onClose, getContainer }: any) => {
     if (!open) return null;
@@ -153,7 +188,9 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Badge,
     Button,
+    ConfigProvider,
     Tooltip,
     Drawer,
     Space,
@@ -162,6 +199,8 @@ jest.mock('antd', () => {
     Checkbox,
     Card,
     Input,
+    Typography,
+    theme,
   };
 });
 
@@ -389,13 +428,14 @@ describe('ModelToolbarAddThroughFlow', () => {
 
   it('renders column helpers and supports icon trigger plus both close paths', async () => {
     mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+    const onData = jest.fn();
 
-    render(<ModelToolbarAddThroughFlow buttonType='icon' lang='en' onData={jest.fn()} />);
+    render(<ModelToolbarAddThroughFlow buttonType='icon' lang='en' onData={onData} />);
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
     expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
 
-    expect(latestProTableProps?.columns).toHaveLength(7);
+    expect(latestProTableProps?.columns).toHaveLength(8);
     const nameCell = latestProTableProps.columns[1].render(null, {
       id: 'flow-1',
       version: '01.00.000',
@@ -404,16 +444,38 @@ describe('ModelToolbarAddThroughFlow', () => {
     });
     expect(String(nameCell[0].props.children)).toContain('Hydrogen');
 
-    const optionCell = latestProTableProps.columns[6].render(null, {
+    const optionCell = latestProTableProps.columns[7].render(null, {
       id: 'flow-1',
       version: '01.00.000',
     });
     expect(optionCell).toHaveLength(1);
 
+    render(
+      <>
+        {latestProTableProps.columns[5].render(null, {
+          id: 'flow-1',
+          version: '01.00.000',
+          versionCount: 2,
+        })}
+      </>,
+    );
+    expect(screen.getByTestId('all-versions-flow-1')).toBeInTheDocument();
+    expect(screen.getByText('flows-view')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'select-version-flow-1' }));
+    expect(onData).toHaveBeenCalledWith(['flow-1:02.00.000']);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'select-version-missing-version-flow-1' }),
+    );
+    expect(onData).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
+    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+
     await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
     expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
     expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'close' }));

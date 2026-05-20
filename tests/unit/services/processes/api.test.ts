@@ -715,6 +715,7 @@ describe('getProcessTableAll', () => {
           typeOfDataSet: 'type-1',
           'common:referenceYear': '2023',
           '@location': 'CN',
+          version_count: '4',
         },
       ],
       count: 1,
@@ -761,12 +762,64 @@ describe('getProcessTableAll', () => {
           modifiedAt: new Date('2024-03-01T12:00:00Z'),
           teamId: 'team-123',
           modelId: undefined,
+          versionCount: 4,
         },
       ],
       page: 2,
       success: true,
       total: 1,
     });
+  });
+
+  it('normalizes latest-version sort aliases, default dataset type, and blank session users', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'token-without-user',
+        },
+      },
+    });
+    createQueryBuilder({ data: [], count: 0 });
+
+    await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      { modifiedAt: 'ascend' },
+      'en',
+      'tg',
+      [],
+      undefined,
+      undefined,
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_process_versions',
+      expect.objectContaining({
+        sort_by: 'modified_at',
+        sort_direction: 'asc',
+        this_user_id: '',
+        type_of_data_set_filter: 'all',
+      }),
+    );
+
+    createQueryBuilder({ data: [], count: 0 });
+
+    await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      { createdAt: 'descend' },
+      'en',
+      'tg',
+      [],
+      undefined,
+      undefined,
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_process_versions',
+      expect.objectContaining({
+        sort_by: 'created_at',
+        sort_direction: 'desc',
+      }),
+    );
   });
 
   it('returns failure when personal data has no active session', async () => {
@@ -2445,8 +2498,10 @@ describe('process_hybrid_search', () => {
         },
       },
     ];
-    (hybridData as any).total_count = 5;
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { data: hybridData, total_count: 5 },
+      error: null,
+    });
     mockGetCachedLocationData.mockResolvedValueOnce([]);
 
     const result = await processesApi.process_hybrid_search(
@@ -2479,6 +2534,77 @@ describe('process_hybrid_search', () => {
       page: 1,
       success: true,
       total: 5,
+    });
+  });
+
+  it('falls back to zero total when hybrid response omits total counts', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-no-total',
+        },
+      },
+    });
+    const hybridData: any = [
+      {
+        id: sampleId,
+        version: sampleVersion,
+        modified_at: '2024-05-04T00:00:00Z',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: { en: 'No total name' },
+                'common:generalComment': { en: 'No total comment' },
+                classificationInformation: {
+                  'common:classification': {
+                    'common:class': { '#text': 'no-total-class' },
+                  },
+                },
+              },
+              geography: {
+                locationOfOperationSupplyOrProduction: {
+                  '@location': undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+
+    const result = await processesApi.process_hybrid_search(
+      {} as any,
+      'en',
+      'tg',
+      'keyword',
+      {},
+      undefined,
+      'all',
+    );
+
+    expect(result).toEqual({
+      data: [
+        {
+          key: `${sampleId}:${sampleVersion}`,
+          id: sampleId,
+          name: 'Process Name',
+          generalComment: 'General comment',
+          classification: 'classification-string',
+          referenceYear: '-',
+          location: '-',
+          version: sampleVersion,
+          typeOfDataSet: '-',
+          modifiedAt: new Date('2024-05-04T00:00:00Z'),
+          teamId: undefined,
+          modelId: undefined,
+        },
+      ],
+      page: 1,
+      success: true,
+      total: 0,
     });
   });
 
@@ -3487,7 +3613,7 @@ describe('getProcessTablePgroongaSearch', () => {
       'search term',
       [],
       100,
-      'all',
+      undefined,
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
@@ -3495,6 +3621,7 @@ describe('getProcessTablePgroongaSearch', () => {
       expect.objectContaining({
         query_text: 'search term',
         order_by: {},
+        type_of_data_set_filter: 'all',
       }),
     );
     expect(result).toBeDefined();
@@ -3570,6 +3697,24 @@ describe('getProcessTablePgroongaSearch', () => {
     expect(logSpy).toHaveBeenCalledWith('error', { message: 'rpc failed' });
     expect(result).toBeUndefined();
     logSpy.mockRestore();
+  });
+
+  it('returns empty success when pgroonga team-data search has no resolved team id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+
+    const result = await processesApi.getProcessTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'te',
+      'keyword',
+      {},
+      undefined,
+      undefined,
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('maps zh pgroonga result rows with location translation and fallback values', async () => {

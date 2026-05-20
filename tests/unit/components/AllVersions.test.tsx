@@ -865,4 +865,23 @@ describe('AllVersionsList Component', () => {
       expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '00.00.000' });
     });
   });
+
+  it('should tolerate version requests that omit the data array', async () => {
+    mockGetAllVersions.mockResolvedValueOnce({
+      success: true,
+      total: 0,
+    });
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '00.00.000' });
+    });
+  });
 });
