@@ -597,6 +597,7 @@ describe('Sources workflow', () => {
       'Search Source',
       {},
       'all',
+      '',
     ]);
 
     await waitFor(() => expect(screen.getByText('Search Result Source')).toBeInTheDocument());
