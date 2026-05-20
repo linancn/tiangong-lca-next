@@ -336,7 +336,7 @@ describe('AllVersionsList Component', () => {
     });
   });
 
-  it('should open drawer when button is clicked', () => {
+  it('should open drawer when button is clicked', async () => {
     render(
       <ConfigProvider>
         <AllVersionsList {...defaultProps} />
@@ -348,6 +348,9 @@ describe('AllVersionsList Component', () => {
 
     expect(screen.getByText('All version')).toBeInTheDocument();
     expect(screen.getByTestId('children')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
   });
 
   it('should close drawer when close button is clicked', async () => {
