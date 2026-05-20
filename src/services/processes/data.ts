@@ -16,6 +16,7 @@ export type ProcessTable = {
   teamId: string;
   modelId: string;
   typeOfDataSet: string;
+  versionCount?: number;
 };
 
 export type ProcessImportItem = {

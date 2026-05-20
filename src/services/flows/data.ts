@@ -13,6 +13,7 @@ export type FlowTable = {
   modifiedAt: Date;
   stateCode?: number;
   teamId: string;
+  versionCount?: number;
 };
 
 export type FlowModelTable = {

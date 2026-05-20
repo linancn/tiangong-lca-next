@@ -1519,6 +1519,7 @@ export async function getAllVersions(
                   version: i.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1562,6 +1563,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1608,6 +1610,8 @@ export async function getAllVersions(
                   location: location ?? '-',
                   modifiedAt: new Date(i.modified_at),
                   teamId: i?.team_id,
+                  modelId: i?.model_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1639,6 +1643,8 @@ export async function getAllVersions(
                 location: location,
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
+                modelId: i?.model_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1668,6 +1674,7 @@ export async function getAllVersions(
                   version: i?.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1690,6 +1697,7 @@ export async function getAllVersions(
                 version: i?.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);

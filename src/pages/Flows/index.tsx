@@ -217,9 +217,11 @@ const TableList: FC = () => {
                 json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
                 version,
                 modified_at,
+                state_code,
                 team_id
               `}
               id={row.id}
+              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <FlowsCreate
                   newVersion={newVersion}
@@ -230,6 +232,17 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
+              operationRender={(versionRow) => {
+                const optionColumn = flowsColumns.find((column) => column.dataIndex === 'option');
+                return optionColumn?.render?.(
+                  null as any,
+                  versionRow,
+                  0,
+                  undefined as any,
+                  {} as any,
+                ) as any;
+              }}
+              operationColumnWidth={isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152}
             ></AllVersionsList>
           </Space>
         );
@@ -530,6 +543,7 @@ const TableList: FC = () => {
                 searchFilters,
                 currentStateCode,
                 orderBy,
+                tid ?? '',
               ),
             );
           }

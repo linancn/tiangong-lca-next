@@ -11,6 +11,7 @@ export type LifeCycleModelTable = {
   modifiedAt: Date;
   stateCode?: number;
   teamId: string;
+  versionCount?: number;
 };
 
 export type Up2DownEdge = {

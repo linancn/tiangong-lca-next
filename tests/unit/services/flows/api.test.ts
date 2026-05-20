@@ -194,7 +194,84 @@ const {
 const defaultLocationResponse = { data: [] };
 const defaultClassificationResponse = { data: { categoryElementaryFlow: [], category: [] } };
 
-const createQuery = <T>(result: T) => new MockQuery(result);
+const createQuery = <T extends { data?: any[] | null; count?: number | null; error?: any }>(
+  result: T,
+) => {
+  const query = new MockQuery(result);
+  mockRpc.mockImplementation((functionName: string, args: any = {}) => {
+    if (functionName !== 'get_latest_flow_versions') {
+      return Promise.resolve({ data: [] });
+    }
+
+    mockFrom('flows');
+    query.order(args.sort_by ?? 'modified_at', {
+      ascending: args.sort_direction === 'asc',
+    });
+    query.range(
+      ((args.page_current ?? 1) - 1) * (args.page_size ?? 10),
+      (args.page_current ?? 1) * (args.page_size ?? 10) - 1,
+    );
+
+    const filters = args.filter_condition ?? {};
+    if (filters.flowType) {
+      const flowTypes = String(filters.flowType)
+        .split(',')
+        .map((type) => type.trim());
+      if (flowTypes.length > 1) {
+        query.in('json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet', flowTypes);
+      } else {
+        query.eq(
+          'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
+          flowTypes[0],
+        );
+      }
+    }
+    if (Array.isArray(filters.classification) && filters.classification.length > 0) {
+      const getPath = (scope: string) =>
+        scope === 'elementary'
+          ? 'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category"'
+          : 'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"';
+      const getMatcher = (scope: string, code: string) =>
+        JSON.stringify([scope === 'elementary' ? { '@catId': code } : { '@classId': code }]);
+      if (filters.classification.length === 1) {
+        const item = filters.classification[0];
+        query.filter(getPath(item.scope), 'cs', getMatcher(item.scope, item.code));
+      } else {
+        query.or(
+          filters.classification
+            .map((item: any) => `${getPath(item.scope)}.cs.${getMatcher(item.scope, item.code)}`)
+            .join(','),
+        );
+      }
+    }
+    if (filters.asInput) {
+      query.not(
+        'json',
+        'cs',
+        '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}',
+      );
+    }
+
+    if (args.data_source === 'tg') {
+      query.eq('state_code', 100);
+    }
+    if (args.data_source === 'co') {
+      query.eq('state_code', 200);
+    }
+    if (args.state_code_filter !== null && args.state_code_filter !== undefined) {
+      query.eq('state_code', args.state_code_filter);
+    }
+    if (args.this_user_id) {
+      query.eq('user_id', args.this_user_id);
+    }
+    if (args.team_id_filter) {
+      query.eq('team_id', args.team_id_filter);
+    }
+
+    return Promise.resolve(result);
+  });
+  return query;
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -1004,11 +1081,12 @@ describe('getFlowTableAll', () => {
           version: '01.00.014',
           modifiedAt: new Date('2024-01-14T00:00:00Z'),
           teamId: undefined,
+          versionCount: undefined,
         },
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 });
@@ -1067,14 +1145,14 @@ describe('getFlowTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_flows_v1',
+      'pgroonga_search_flows_latest',
       expect.objectContaining({
         query_text: 'water',
         data_source: 'tg',
         filter_condition: { flowType: '' },
         page_size: 5,
         page_current: 1,
-        order_by: undefined,
+        order_by: {},
       }),
     );
     expect(result).toEqual({
@@ -1218,13 +1296,15 @@ describe('getFlowTablePgroongaSearch', () => {
       { key: 'baseName', lang: 'zh', order: 'asc' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_v1', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_latest', {
       query_text: 'steel',
       filter_condition: { flowType: 'Product flow' },
       page_size: 15,
       page_current: 3,
       data_source: 'my',
-      state_code: 300,
+      state_code_filter: 300,
+      team_id_filter: null,
+      this_user_id: 'user-id',
       order_by: { key: 'baseName', lang: 'zh', order: 'asc' },
     });
   });
@@ -1473,7 +1553,7 @@ describe('getFlowTablePgroongaSearch', () => {
     });
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_flows_v1',
+      'pgroonga_search_flows_latest',
       expect.objectContaining({
         filter_condition: {
           flowType: 'Product flow',
@@ -1515,14 +1595,16 @@ describe('getFlowTablePgroongaSearch', () => {
 
     const result = await getFlowTablePgroongaSearch({}, 'zh', 'my', 'steel', {}, 300);
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_v1', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_latest', {
       query_text: 'steel',
       filter_condition: {},
       page_size: 10,
       page_current: 1,
       data_source: 'my',
-      state_code: 300,
-      order_by: undefined,
+      state_code_filter: 300,
+      team_id_filter: null,
+      this_user_id: 'user-id',
+      order_by: {},
     });
     expect(result).toEqual({
       data: [
@@ -1551,13 +1633,16 @@ describe('getFlowTablePgroongaSearch', () => {
 
     await getFlowTablePgroongaSearch({}, 'en', 'tg', 'default-query', {});
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_v1', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_latest', {
       query_text: 'default-query',
       filter_condition: {},
       page_size: 10,
       page_current: 1,
       data_source: 'tg',
-      order_by: undefined,
+      state_code_filter: null,
+      team_id_filter: null,
+      this_user_id: 'user-id',
+      order_by: {},
     });
   });
 

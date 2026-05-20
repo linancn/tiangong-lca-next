@@ -140,6 +140,43 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
     limit: jest.fn().mockReturnThis(),
     then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
   };
+  mockRpc.mockImplementation((functionName: string, args: any = {}) => {
+    if (functionName !== 'get_latest_process_versions') {
+      return Promise.resolve({ data: [] });
+    }
+
+    mockFrom('processes');
+    builder.select();
+    builder.order(args.sort_by ?? 'modified_at', {
+      ascending: args.sort_direction === 'asc',
+    });
+    builder.range(
+      ((args.page_current ?? 1) - 1) * (args.page_size ?? 10),
+      (args.page_current ?? 1) * (args.page_size ?? 10) - 1,
+    );
+    if (args.type_of_data_set_filter && args.type_of_data_set_filter !== 'all') {
+      builder.eq(
+        'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
+        args.type_of_data_set_filter,
+      );
+    }
+    if (args.data_source === 'tg') {
+      builder.eq('state_code', 100);
+    }
+    if (args.data_source === 'co') {
+      builder.eq('state_code', 200);
+    }
+    if (args.state_code_filter !== null && args.state_code_filter !== undefined) {
+      builder.eq('state_code', args.state_code_filter);
+    }
+    if (args.this_user_id) {
+      builder.eq('user_id', args.this_user_id);
+    }
+    if (args.team_id_filter) {
+      builder.eq('team_id', args.team_id_filter);
+    }
+    return Promise.resolve(resolvedValue);
+  });
   return builder;
 };
 
@@ -733,8 +770,6 @@ describe('getProcessTableAll', () => {
   });
 
   it('returns failure when personal data has no active session', async () => {
-    const builder = createQueryBuilder({ data: [], count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
 
     const result = await processesApi.getProcessTableAll(
@@ -747,7 +782,7 @@ describe('getProcessTableAll', () => {
       'all',
     );
 
-    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(mockFrom).not.toHaveBeenCalled();
     expect(result).toEqual({ data: [], success: false });
   });
 
@@ -914,11 +949,12 @@ describe('getProcessTableAll', () => {
           modifiedAt: new Date('2024-03-10T00:00:00Z'),
           teamId: 'team-zh',
           modelId: 'model-zh',
+          versionCount: undefined,
         },
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 
@@ -1396,7 +1432,7 @@ describe('listProcessesForLcaAnalysis', () => {
 
     expect(mockRpc).toHaveBeenNthCalledWith(
       1,
-      'pgroonga_search_processes_v1',
+      'pgroonga_search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'my',
@@ -1406,7 +1442,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       2,
-      'pgroonga_search_processes_v1',
+      'pgroonga_search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -1416,7 +1452,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       3,
-      'pgroonga_search_processes_v1',
+      'pgroonga_search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'my',
@@ -1426,7 +1462,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       4,
-      'pgroonga_search_processes_v1',
+      'pgroonga_search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -2007,7 +2043,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_processes_v1',
+      'pgroonga_search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -2494,7 +2530,7 @@ describe('process_hybrid_search', () => {
       data: [{ id: sampleId }],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
     errorSpy.mockRestore();
   });
@@ -2547,7 +2583,7 @@ describe('process_hybrid_search', () => {
       data: [{ id: sampleId }],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
     errorSpy.mockRestore();
   });
@@ -3455,10 +3491,10 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_processes_v1',
+      'pgroonga_search_processes_latest',
       expect.objectContaining({
         query_text: 'search term',
-        order_by: undefined,
+        order_by: {},
       }),
     );
     expect(result).toBeDefined();
@@ -3502,15 +3538,17 @@ describe('getProcessTablePgroongaSearch', () => {
       'foreground',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_processes_v1', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_processes_latest', {
       query_text: 'keyword',
       filter_condition: { processType: 'target' },
       page_size: 10,
       page_current: 1,
       data_source: 'my',
-      order_by: undefined,
-      state_code: 400,
-      type_of_data_set: 'foreground',
+      order_by: {},
+      state_code_filter: 400,
+      team_id_filter: null,
+      this_user_id: undefined,
+      type_of_data_set_filter: 'foreground',
     });
   });
 
