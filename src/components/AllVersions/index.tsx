@@ -11,8 +11,8 @@ import { getDataSource } from '@/services/general/util';
 import { getNextDataSetVersion } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Badge, Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
-import type { FC, MutableRefObject, ReactElement, ReactNode } from 'react';
+import { Badge, Button, Card, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
+import type { FC, Key, MutableRefObject, ReactElement, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
 interface AllVersionsListProps {
@@ -30,6 +30,7 @@ interface AllVersionsListProps {
     context: { actionRef: MutableRefObject<ActionType | undefined> },
   ) => ReactNode;
   operationColumnWidth?: number;
+  onSelectVersion?: (row: any) => void;
 }
 
 export const getCreateVersionPopupContainer = () => document.body;
@@ -51,16 +52,39 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   addVersionComponent,
   operationRender,
   operationColumnWidth,
+  onSelectVersion,
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
+  const [selectedVersionRowKeys, setSelectedVersionRowKeys] = useState<Key[]>([]);
+  const [selectedVersionRow, setSelectedVersionRow] = useState<any | null>(null);
   const location = useLocation();
   const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
   const tableDataRef = useRef<any[]>([]);
+  const selectable = Boolean(onSelectVersion);
 
   useEffect(() => {
+    if (!showAllVersionsModal) {
+      setSelectedVersionRowKeys([]);
+      setSelectedVersionRow(null);
+      return;
+    }
+
     actionRef.current?.reload();
-  });
+  }, [showAllVersionsModal]);
+
+  const closeAllVersionsModal = () => {
+    setShowAllVersionsModal(false);
+  };
+
+  const submitSelectedVersion = () => {
+    if (!selectedVersionRow || !onSelectVersion) {
+      return;
+    }
+
+    onSelectVersion(selectedVersionRow);
+    closeAllVersionsModal();
+  };
 
   const allVersionsColumns: ProColumns<any>[] = [
     ...columns,
@@ -148,15 +172,22 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
         width={'90%'}
         open={showAllVersionsModal}
-        onClose={() => setShowAllVersionsModal(false)}
-        footer={null}
+        onClose={closeAllVersionsModal}
+        footer={
+          selectable ? (
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={closeAllVersionsModal}>
+                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+              </Button>
+              <Button type='primary' disabled={!selectedVersionRow} onClick={submitSelectedVersion}>
+                <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
+              </Button>
+            </Space>
+          ) : null
+        }
         closable={false}
         extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setShowAllVersionsModal(false)}
-          />
+          <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeAllVersionsModal} />
         }
         maskClosable={false}
       >
@@ -172,6 +203,19 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
               showSizeChanger: false,
               pageSize: 10,
             }}
+            rowSelection={
+              selectable
+                ? {
+                    type: 'radio',
+                    alwaysShowAlert: true,
+                    selectedRowKeys: selectedVersionRowKeys,
+                    onChange: (newSelectedRowKeys, selectedRows) => {
+                      setSelectedVersionRowKeys(newSelectedRowKeys);
+                      setSelectedVersionRow(selectedRows?.[0] ?? null);
+                    },
+                  }
+                : undefined
+            }
             toolBarRender={() => {
               return [
                 <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>

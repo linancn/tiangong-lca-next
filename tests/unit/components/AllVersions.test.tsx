@@ -39,6 +39,7 @@ jest.mock('antd', () => {
       title,
       extra,
       children,
+      footer,
       getContainer,
     }: {
       open?: boolean;
@@ -46,6 +47,7 @@ jest.mock('antd', () => {
       title?: React.ReactNode;
       extra?: React.ReactNode;
       children?: React.ReactNode;
+      footer?: React.ReactNode;
       getContainer?: () => HTMLElement;
     }) =>
       open ? (
@@ -54,6 +56,7 @@ jest.mock('antd', () => {
           <div>{title}</div>
           <div>{extra}</div>
           <div>{children}</div>
+          <div>{footer}</div>
         </div>
       ) : null,
   };
@@ -485,6 +488,31 @@ describe('AllVersionsList Component', () => {
         'te',
       );
     });
+  });
+
+  it('should submit a selected version through radio selection mode', async () => {
+    const onSelectVersion = jest.fn();
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} onSelectVersion={onSelectVersion} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    const submitButton = await screen.findByRole('button', { name: /submit/i });
+    expect(submitButton).toBeDisabled();
+
+    const radios = await screen.findAllByRole('radio');
+    fireEvent.click(radios[0]);
+    expect(submitButton).not.toBeDisabled();
+
+    fireEvent.click(submitButton);
+
+    expect(onSelectVersion).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1', version: '1.0.0' }),
+    );
   });
 
   it('should render children content in toolbar', async () => {

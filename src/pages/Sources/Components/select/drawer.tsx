@@ -74,14 +74,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   };
 
   const renderVersionSelectActions = (row: SourceTable) => {
-    return (
-      <Space size='small'>
-        <SourceView id={row.id} version={row.version} lang={lang} buttonType='icon' />
-        <Button size='small' type='link' onClick={() => onSelectVersion(row)}>
-          <FormattedMessage id='pages.button.select' defaultMessage='Select' />
-        </Button>
-      </Space>
-    );
+    return <SourceView id={row.id} version={row.version} lang={lang} buttonType='icon' />;
   };
 
   const onTabChange = async (key: string) => {
@@ -194,7 +187,8 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as SourceTable)
               }
-              operationColumnWidth={128}
+              operationColumnWidth={88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as SourceTable)}
             />
           </Space>
         );

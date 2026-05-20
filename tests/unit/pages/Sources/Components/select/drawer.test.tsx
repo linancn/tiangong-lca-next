@@ -33,9 +33,22 @@ jest.mock('@/style/custom.less', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: function MockAllVersions({ dataSource, operationRender, versionCount }: any) {
+  default: function MockAllVersions({
+    dataSource,
+    onSelectVersion,
+    operationRender,
+    versionCount,
+  }: any) {
     const React = require('react');
     const [showOperation, setShowOperation] = React.useState(false);
+    const [selectedVersionRow, setSelectedVersionRow] = React.useState<any | null>(null);
+    const versionRow = {
+      id: `source-${dataSource}-version`,
+      version: '0.9.0',
+      shortName: `${dataSource} old source`,
+      classification: 'classification',
+      publicationType: 'report',
+    };
 
     return (
       <div data-testid={`all-versions-${dataSource}`} data-version-count={versionCount}>
@@ -44,13 +57,23 @@ jest.mock('@/components/AllVersions', () => ({
         </button>
         {showOperation && (
           <div data-testid='all-version-operation-render'>
-            {operationRender?.({
-              id: `source-${dataSource}-version`,
-              version: '0.9.0',
-              shortName: `${dataSource} old source`,
-              classification: 'classification',
-              publicationType: 'report',
-            })}
+            <label>
+              <input
+                aria-label={`select-version-${dataSource}`}
+                checked={selectedVersionRow?.version === versionRow.version}
+                type='radio'
+                onChange={() => setSelectedVersionRow(versionRow)}
+              />
+              {versionRow.version}
+            </label>
+            {operationRender?.(versionRow)}
+            <button
+              type='button'
+              disabled={!selectedVersionRow}
+              onClick={() => selectedVersionRow && onSelectVersion?.(selectedVersionRow)}
+            >
+              Submit
+            </button>
           </div>
         )}
       </div>
@@ -395,7 +418,7 @@ describe('SourceSelectDrawer', () => {
     expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
   });
 
-  it('selects a concrete source version from the all-versions drawer entry', async () => {
+  it('selects a concrete source version with radio selection from the all-versions drawer entry', async () => {
     const onData = jest.fn();
 
     renderWithProviders(<SourceSelectDrawer buttonType='text' lang='en' onData={onData} />);
@@ -410,7 +433,15 @@ describe('SourceSelectDrawer', () => {
     const allVersionActions = screen.getByTestId('all-version-operation-render');
     expect(within(allVersionActions).getByText('view source-tg-version:0.9.0')).toBeInTheDocument();
 
-    await userEvent.click(within(allVersionActions).getByRole('button', { name: /^select$/i }));
+    const submitButton = within(allVersionActions).getByRole('button', { name: /^submit$/i });
+    expect(submitButton).toBeDisabled();
+
+    await userEvent.click(
+      within(allVersionActions).getByRole('radio', { name: /select-version-tg/i }),
+    );
+    expect(submitButton).not.toBeDisabled();
+
+    await userEvent.click(submitButton);
 
     expect(onData).toHaveBeenCalledWith('source-tg-version', '0.9.0');
     expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
